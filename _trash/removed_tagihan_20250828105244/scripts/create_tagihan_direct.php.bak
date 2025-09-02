@@ -1,0 +1,29 @@
+<?php
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use App\Models\Permohonan;
+use App\Models\Kontainer;
+use App\Models\TagihanKontainerSewa;
+
+$perm = Permohonan::factory()->create(['vendor_perusahaan'=>'ZONA','jumlah_uang_jalan'=>100000,'ukuran'=>'20','tanggal_memo'=>'2025-08-20']);
+$kont = Kontainer::factory()->create(['ukuran'=>'20']);
+$perm->kontainers()->attach($kont->id);
+
+$tanggalTagihan = '2025-08-20';
+$tag = TagihanKontainerSewa::updateOrCreate([
+    'vendor' => $perm->vendor_perusahaan,
+    'tanggal_harga_awal' => $tanggalTagihan,
+], [
+    'tarif' => $perm->jumlah_uang_jalan,
+    'ukuran_kontainer' => $perm->ukuran,
+    'harga' => $perm->total_harga_setelah_adj ?? $perm->jumlah_uang_jalan,
+    'tanggal_harga_akhir' => null,
+    'keterangan' => $perm->catatan,
+]);
+
+echo "created tagihan id: ";
+echo $tag->id . PHP_EOL;
+echo $tag->toJson(JSON_PRETTY_PRINT) . PHP_EOL;

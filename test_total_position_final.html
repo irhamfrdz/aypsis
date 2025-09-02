@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Total Position - Final Fix</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        />
+    </head>
+    <body class="bg-gray-100">
+        <div class="container mx-auto px-4 py-8">
+            <div class="bg-white rounded-lg shadow">
+                <!-- Header -->
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h1 class="text-2xl font-bold text-gray-900">
+                        Test Total Position - Sesuai Screenshot
+                    </h1>
+                    <p class="text-sm text-gray-600 mt-2">
+                        Posisi total sesuai dengan screenshot yang diberikan
+                    </p>
+                </div>
+
+                <div class="p-6">
+                    <!-- Pranota List -->
+                    <div class="bg-white border border-gray-200 rounded-lg">
+                        <div
+                            class="px-4 py-3 border-b border-gray-200 bg-gray-50"
+                        >
+                            <h3 class="text-lg font-medium text-gray-900">
+                                Daftar Pranota (1)
+                            </h3>
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            No
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            No. Pranota
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            Tanggal Pranota
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            Jumlah Tagihan
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            Total Amount
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            Status Pembayaran
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            Tanggal Pembayaran
+                                        </th>
+                                        <th
+                                            class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                        >
+                                            Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody
+                                    class="bg-white divide-y divide-gray-200"
+                                >
+                                    <tr class="hover:bg-gray-50">
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                        >
+                                            1
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap">
+                                            <div
+                                                class="text-sm font-medium text-blue-600"
+                                            >
+                                                PTK1250900001
+                                            </div>
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                        >
+                                            02/09/2025
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
+                                        >
+                                            1item
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 text-right"
+                                        >
+                                            Rp 35.450
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-center"
+                                        >
+                                            <span
+                                                class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800"
+                                            >
+                                                <i
+                                                    class="fas fa-check-circle mr-1"
+                                                ></i>
+                                                Sudah Dibayar
+                                            </span>
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center"
+                                        >
+                                            02/09/2025
+                                        </td>
+                                        <td
+                                            class="px-6 py-4 whitespace-nowrap text-sm font-medium text-center"
+                                        >
+                                            <a
+                                                href="#"
+                                                class="inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-medium rounded-full transition-colors duration-200"
+                                            >
+                                                <i class="fas fa-eye mr-1"></i>
+                                                Lihat
+                                            </a>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                                <tfoot class="bg-gray-50">
+                                    <tr>
+                                        <td colspan="2" class="px-6 py-3"></td>
+                                        <td
+                                            class="px-6 py-3 text-right text-sm font-medium text-gray-900"
+                                        >
+                                            <strong>Total:</strong>
+                                        </td>
+                                        <td class="px-6 py-3"></td>
+                                        <td
+                                            class="px-6 py-3 text-right text-sm font-bold text-gray-900"
+                                        >
+                                            <strong>Rp</strong><br />
+                                            <strong>35.450</strong>
+                                        </td>
+                                        <td colspan="3" class="px-6 py-3"></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Explanation -->
+                    <div
+                        class="mt-6 bg-green-50 border border-green-200 rounded-lg p-4"
+                    >
+                        <h4 class="text-lg font-medium text-green-900 mb-2">
+                            ✅ Posisi Total Diperbaiki:
+                        </h4>
+                        <div
+                            class="grid grid-cols-8 gap-2 text-xs text-green-800 mb-4"
+                        >
+                            <div class="bg-white p-2 rounded text-center">
+                                Col 1<br /><em>kosong</em>
+                            </div>
+                            <div class="bg-white p-2 rounded text-center">
+                                Col 2<br /><em>kosong</em>
+                            </div>
+                            <div
+                                class="bg-yellow-100 p-2 rounded text-center font-bold"
+                            >
+                                Col 3<br />Total:
+                            </div>
+                            <div class="bg-white p-2 rounded text-center">
+                                Col 4<br /><em>kosong</em>
+                            </div>
+                            <div
+                                class="bg-blue-100 p-2 rounded text-center font-bold"
+                            >
+                                Col 5<br />Rp<br />35.450
+                            </div>
+                            <div class="bg-white p-2 rounded text-center">
+                                Col 6<br /><em>kosong</em>
+                            </div>
+                            <div class="bg-white p-2 rounded text-center">
+                                Col 7<br /><em>kosong</em>
+                            </div>
+                            <div class="bg-white p-2 rounded text-center">
+                                Col 8<br /><em>kosong</em>
+                            </div>
+                        </div>
+                        <p class="text-sm text-green-800">
+                            Berdasarkan screenshot, label "Total:" berada di
+                            kolom ke-3 (Tanggal Pranota),<br />
+                            dan nilai total berada di kolom ke-5 (Total Amount).
+                        </p>
+                    </div>
+
+                    <!-- Structure -->
+                    <div
+                        class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-4"
+                    >
+                        <h4 class="text-lg font-medium text-blue-900 mb-2">
+                            📋 Struktur Footer yang Benar:
+                        </h4>
+                        <pre
+                            class="text-xs text-blue-800 bg-white p-2 rounded overflow-x-auto"
+                        ><code>
+&lt;tfoot&gt;
+  &lt;tr&gt;
+    &lt;td colspan="2"&gt;&lt;/td&gt;           &lt;!-- Kolom 1-2 kosong --&gt;
+    &lt;td&gt;Total:&lt;/td&gt;                &lt;!-- Kolom 3: Label Total --&gt;
+    &lt;td&gt;&lt;/td&gt;                      &lt;!-- Kolom 4 kosong --&gt;
+    &lt;td&gt;Rp&lt;br&gt;35.450&lt;/td&gt;          &lt;!-- Kolom 5: Nilai Total --&gt;
+    &lt;td colspan="3"&gt;&lt;/td&gt;           &lt;!-- Kolom 6-8 kosong --&gt;
+  &lt;/tr&gt;
+&lt;/tfoot&gt;
+                    </code></pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </body>
+</html>

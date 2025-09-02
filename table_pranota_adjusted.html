@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tabel Pranota - Penyesuaian</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 1000px;
+                margin: 40px auto;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }
+            .test-container {
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            .test-section {
+                margin: 20px 0;
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background: #f9f9f9;
+            }
+            .success {
+                border-left: 4px solid #28a745;
+                background: #d4edda;
+            }
+            .info {
+                border-left: 4px solid #17a2b8;
+                background: #d1ecf1;
+            }
+            .warning {
+                border-left: 4px solid #ffc107;
+                background: #fff3cd;
+            }
+            .test-links {
+                background: #e9ecef;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .test-links a {
+                display: inline-block;
+                margin: 5px 10px 5px 0;
+                padding: 8px 15px;
+                background: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+            }
+            .test-links a:hover {
+                background: #0056b3;
+            }
+            .comparison-table {
+                width: 100%;
+                border-collapse: collapse;
+                margin: 15px 0;
+            }
+            .comparison-table th,
+            .comparison-table td {
+                border: 1px solid #ddd;
+                padding: 8px;
+                text-align: left;
+            }
+            .comparison-table th {
+                background-color: #f2f2f2;
+                font-weight: bold;
+            }
+            .old-version {
+                background-color: #fff3cd;
+            }
+            .new-version {
+                background-color: #d4edda;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="test-container">
+            <h1>✅ Tabel Pranota - Penyesuaian Selesai</h1>
+
+            <div class="test-section success">
+                <h3>🔧 Perbaikan yang Diterapkan</h3>
+                <ul>
+                    <li>
+                        ✅ <strong>Alignment Amount:</strong> Kolom amount
+                        sekarang rata kanan
+                    </li>
+                    <li>
+                        ✅ <strong>Action Button:</strong> Tombol "Lihat"
+                        menggunakan styling button yang lebih baik
+                    </li>
+                    <li>
+                        ✅ <strong>Error Handling:</strong> Menangani data
+                        pranota yang hilang/kosong
+                    </li>
+                    <li>
+                        ✅ <strong>Responsive Design:</strong> Tabel lebih
+                        responsif di berbagai ukuran layar
+                    </li>
+                    <li>
+                        ✅ <strong>Visual Enhancement:</strong> Total footer
+                        lebih menonjol dengan styling yang lebih baik
+                    </li>
+                    <li>
+                        ✅ <strong>Data Safety:</strong> Pengecekan null untuk
+                        mencegah error
+                    </li>
+                </ul>
+            </div>
+
+            <div class="test-section info">
+                <h3>📊 Perbandingan Before vs After</h3>
+
+                <table class="comparison-table">
+                    <thead>
+                        <tr>
+                            <th>Aspek</th>
+                            <th>Sebelum</th>
+                            <th>Sesudah</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Amount Alignment</strong></td>
+                            <td class="old-version">text-left (rata kiri)</td>
+                            <td class="new-version">text-right (rata kanan)</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Action Button</strong></td>
+                            <td class="old-version">Link biasa</td>
+                            <td class="new-version">
+                                Button dengan background dan icon
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Error Handling</strong></td>
+                            <td class="old-version">Error jika data null</td>
+                            <td class="new-version">
+                                Graceful handling dengan "N/A" atau "Data
+                                Hilang"
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Total Footer</strong></td>
+                            <td class="old-version">Font biasa</td>
+                            <td class="new-version">Bold dan lebih menonjol</td>
+                        </tr>
+                        <tr>
+                            <td><strong>External Number</strong></td>
+                            <td class="old-version">text-sm</td>
+                            <td class="new-version">
+                                text-xs (lebih kecil, lebih rapi)
+                            </td>
+                        </tr>
+                        <tr>
+                            <td><strong>Action Column</strong></td>
+                            <td class="old-version">text-left</td>
+                            <td class="new-version">
+                                text-center (rata tengah)
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="test-section warning">
+                <h3>🎯 Fitur Baru dalam Tabel</h3>
+                <h4>1. Improved Action Buttons:</h4>
+                <ul>
+                    <li>
+                        <strong>Normal State:</strong> Button biru dengan
+                        background
+                    </li>
+                    <li>
+                        <strong>Hover Effect:</strong> Background berubah saat
+                        mouse hover
+                    </li>
+                    <li>
+                        <strong>Missing Data:</strong> Button abu-abu dengan
+                        pesan "Data Hilang"
+                    </li>
+                </ul>
+
+                <h4>2. Better Data Handling:</h4>
+                <ul>
+                    <li>
+                        <strong>Null Safety:</strong> Semua field memiliki
+                        fallback "N/A"
+                    </li>
+                    <li>
+                        <strong>Date Formatting:</strong> Pengecekan data
+                        sebelum format tanggal
+                    </li>
+                    <li>
+                        <strong>Amount Display:</strong> Konsisten dengan format
+                        Rupiah
+                    </li>
+                </ul>
+
+                <h4>3. Enhanced Visual:</h4>
+                <ul>
+                    <li>
+                        <strong>Right-aligned Numbers:</strong> Amount rata
+                        kanan seperti standar akuntansi
+                    </li>
+                    <li>
+                        <strong>Centered Actions:</strong> Tombol action rata
+                        tengah
+                    </li>
+                    <li>
+                        <strong>Bold Total:</strong> Total footer lebih menonjol
+                    </li>
+                </ul>
+            </div>
+
+            <div class="test-links">
+                <h3>🔗 Test Tabel yang Sudah Diperbaiki</h3>
+                <a
+                    href="http://127.0.0.1:8001/pembayaran-pranota-kontainer/2"
+                    target="_blank"
+                    >📋 Lihat Detail Pembayaran #2</a
+                >
+                <a
+                    href="http://127.0.0.1:8001/pembayaran-pranota-kontainer"
+                    target="_blank"
+                    >📋 Daftar Semua Pembayaran</a
+                >
+                <a
+                    href="http://127.0.0.1:8001/pembayaran-pranota-kontainer/2/edit"
+                    target="_blank"
+                    >✏️ Edit Pembayaran #2</a
+                >
+            </div>
+
+            <div class="test-section success">
+                <h3>✅ Checklist Penyesuaian Tabel</h3>
+                <p>Verifikasi bahwa tabel pranota sekarang memiliki:</p>
+                <ul>
+                    <li>
+                        ✅ <strong>Header yang jelas:</strong> "Daftar Pranota
+                        (jumlah)"
+                    </li>
+                    <li>
+                        ✅ <strong>Kolom terorganisir:</strong> No. Invoice,
+                        Tanggal, Customer, Periode, Amount, Action
+                    </li>
+                    <li>
+                        ✅ <strong>Data aman:</strong> Tidak ada error jika ada
+                        data kosong
+                    </li>
+                    <li>
+                        ✅ <strong>Amount rata kanan:</strong> Sesuai standar
+                        penampilan angka
+                    </li>
+                    <li>
+                        ✅ <strong>Action button menarik:</strong> Styling
+                        modern dengan hover effect
+                    </li>
+                    <li>
+                        ✅ <strong>Total yang menonjol:</strong> Footer dengan
+                        angka bold
+                    </li>
+                    <li>
+                        ✅ <strong>Responsive design:</strong> Baik di desktop
+                        maupun mobile
+                    </li>
+                </ul>
+            </div>
+
+            <div class="test-section info">
+                <h3>💡 Struktur Tabel Final</h3>
+                <div
+                    style="
+                        background: #f8f9fa;
+                        padding: 15px;
+                        border-radius: 5px;
+                        font-family: monospace;
+                        font-size: 12px;
+                    "
+                >
+                    | No. Invoice | Tanggal | Customer | Periode | Amount |
+                    Action |<br />
+                    |----------------|------------|----------|------------|-------------|---------|<br />
+                    | PTK1250900001 | 02/09/2025 | N/A | N/A | Rp 35.450 |
+                    [Lihat] |<br />
+                    | | | | Total: | <strong>Rp 35.450</strong> | |
+                </div>
+            </div>
+
+            <div class="test-section success">
+                <h3>🎉 Penyesuaian Selesai!</h3>
+                <p>
+                    <strong>Tabel pranota telah disesuaikan sepenuhnya!</strong>
+                </p>
+                <p>
+                    ✅ Layout profesional dan mudah dibaca<br />
+                    ✅ Error handling yang baik<br />
+                    ✅ Visual yang konsisten<br />
+                    ✅ User experience yang lebih baik
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

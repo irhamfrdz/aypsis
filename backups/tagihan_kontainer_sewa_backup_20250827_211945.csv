@@ -1,0 +1,3 @@
+id;vendor;group_code;masa;tarif;ukuran_kontainer;harga;tanggal_harga_awal;periode;tanggal_harga_akhir;keterangan;status_pembayaran;created_at;updated_at;deleted_at;nomor_kontainer;dpp;ppn;pph;grand_total
+2;ZONA;A003;"28 Agustus - 27 September";Bulanan;20;0.00;2025-08-28;1;;"Pranota otomatis dari permohonan MS125080775438";"Belum Pembayaran";"2025-08-28 01:53:43";"2025-08-28 02:02:35";;1313131,14141414;0.00;0.00;0.00;0.00
+3;TEST;;"28 Agustus - 27 September";Bulanan;20;0.00;2025-08-28;1;;test;"Belum Pembayaran";"2025-08-28 02:06:12";"2025-08-28 02:06:12";;T1;0.00;0.00;0.00;0.00

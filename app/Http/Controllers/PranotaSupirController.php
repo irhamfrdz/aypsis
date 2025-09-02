@@ -1,0 +1,155 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\PranotaSupir;
+use App\Models\Permohonan;
+use App\Models\MasterKegiatan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+class PranotaSupirController extends Controller
+{
+    /**
+     * Menampilkan form untuk membuat pranota baru.
+     */
+    public function create(Request $request)
+    {
+        // Ambil data permohonan sesuai filter tanggal jika ada
+        $permohonans = Permohonan::query();
+        if ($request->start_date) {
+            $permohonans->whereDate('created_at', '>=', $request->start_date);
+        }
+        if ($request->end_date) {
+            $permohonans->whereDate('created_at', '<=', $request->end_date);
+        }
+        $permohonans = $permohonans->get();
+
+        // Nomor cetakan default 1, bisa diubah via query
+        $nomor_cetakan = $request->input('nomor_cetakan', 1);
+        $tahun = now()->format('y');
+        $bulan = now()->format('m');
+        // Running number: jumlah pranota bulan ini + 1
+        $runningNumber = str_pad(
+            PranotaSupir::whereYear('created_at', now()->year)
+                ->whereMonth('created_at', now()->month)
+                ->count() + 1,
+            6, '0', STR_PAD_LEFT
+        );
+        $nomor_pranota_display = "PMS-{$nomor_cetakan}-{$tahun}-{$bulan}-{$runningNumber}";
+
+        // Preload a map of kode_kegiatan => nama_kegiatan so the view can display names without queries inside the loop
+        $kegiatanMap = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
+
+        return view('pranota-supir.create', [
+            'permohonans' => $permohonans,
+            'nomor_pranota_display' => $nomor_pranota_display,
+            'nomor_cetakan' => $nomor_cetakan,
+            'start_date' => $request->start_date,
+            'end_date' => $request->end_date,
+            'kegiatanMap' => $kegiatanMap,
+        ]);
+    }
+
+    /**
+     * Menampilkan daftar pranota supir.
+     */
+    public function index(Request $request)
+    {
+        $query = PranotaSupir::with('permohonans.supir')
+            ->latest('tanggal_pranota');
+
+        // Filter berdasarkan pencarian (nomor pranota atau nama supir)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nomor_pranota', 'like', "%{$search}%")
+                    ->orWhereHas('permohonans.supir', function ($subq) use ($search) {
+                        $subq->where('nama_karyawan', 'like', "%{$search}%")
+                            ->orWhere('nama_panggilan', 'like', "%{$search}%");
+                    });
+            });
+        }
+
+        // Filter berdasarkan status pembayaran
+        if ($request->filled('status_pembayaran')) {
+            $query->where('status_pembayaran', $request->status_pembayaran);
+        }
+
+        $pranotas = $query->paginate(10)->appends($request->query());
+
+        return view('pranota-supir.index', [
+            'pranotas' => $pranotas,
+            'search' => $request->search ?? '',
+            'status_pembayaran' => $request->status_pembayaran ?? ''
+        ]);
+    }
+
+    /**
+     * Menampilkan detail pranota supir.
+     */
+    public function show(PranotaSupir $pranotaSupir)
+    {
+        $pranotaSupir->load('permohonans.supir', 'permohonans.krani', 'permohonans.kontainers');
+
+        return view('pranota-supir.show', compact('pranotaSupir'));
+    }
+
+    /**
+     * Cetak satu pranota (print-friendly)
+     */
+    public function print(PranotaSupir $pranotaSupir)
+    {
+        $pranotaSupir->load('permohonans.supir', 'permohonans.krani', 'permohonans.kontainers');
+        return view('pranota-supir.print', compact('pranotaSupir'));
+    }
+
+    /**
+     * Menyimpan pranota baru ke database.
+     */
+    public function store(Request $request)
+    {
+        $validatedData = $request->validate([
+            'permohonan_ids' => 'required|array',
+            'permohonan_ids.*' => 'exists:permohonans,id',
+            'catatan' => 'nullable|string',
+            'adjustment' => 'nullable|numeric',
+            'alasan_adjustment' => 'nullable|string',
+        ]);
+
+        $total_biaya_memo = Permohonan::whereIn('id', $validatedData['permohonan_ids'])->sum('total_harga_setelah_adj');
+        $adjustment = $validatedData['adjustment'] ?? 0;
+        $total_biaya_pranota = $total_biaya_memo + $adjustment;
+
+        $nomor_cetakan = $request->input('nomor_cetakan', 1);
+
+        DB::beginTransaction();
+        try {
+            $pranota = PranotaSupir::create([
+                'nomor_pranota' => 'TEMP',
+                'tanggal_pranota' => now(),
+                'total_biaya_memo' => $total_biaya_memo,
+                'adjustment' => $adjustment,
+                'alasan_adjustment' => $validatedData['alasan_adjustment'],
+                'total_biaya_pranota' => $total_biaya_pranota,
+                'catatan' => $validatedData['catatan'],
+            ]);
+
+            $tahun = now()->format('y');
+            $bulan = now()->format('m');
+            $runningNumber = str_pad($pranota->id, 6, '0', STR_PAD_LEFT);
+            $nomor_pranota = "PMS-{$nomor_cetakan}-{$tahun}-{$bulan}-{$runningNumber}";
+
+            $pranota->nomor_pranota = $nomor_pranota;
+            $pranota->save();
+            $pranota->permohonans()->sync($validatedData['permohonan_ids']);
+
+            DB::commit();
+            return redirect()->route('dashboard')->with('success', 'Pranota berhasil dibuat!');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Gagal menyimpan pranota: ' . $e->getMessage())->withInput();
+        }
+    }
+}

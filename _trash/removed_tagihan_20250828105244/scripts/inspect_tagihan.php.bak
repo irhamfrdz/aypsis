@@ -1,0 +1,42 @@
+<?php
+require __DIR__ . '/../vendor/autoload.php';
+$app = require_once __DIR__ . '/../bootstrap/app.php';
+
+// Boot the framework
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+$kernel->bootstrap();
+
+use App\Models\Karyawan;
+use App\Models\Permohonan;
+use App\Models\Kontainer;
+use App\Http\Controllers\PenyelesaianController;
+use App\Models\TagihanKontainerSewa;
+use Illuminate\Http\Request;
+
+$supir = Karyawan::factory()->create();
+$perm = Permohonan::factory()->create(['vendor_perusahaan'=>'ZONA','jumlah_uang_jalan'=>100000,'ukuran'=>'20','tanggal_memo'=>'2025-08-20']);
+$kont = Kontainer::factory()->create(['ukuran'=>'20']);
+$perm->kontainers()->attach($kont->id);
+
+$request = Request::create('/', 'POST', ['status_permohonan' => 'selesai', 'tanggal_masuk_sewa' => '2025-08-20']);
+try {
+    $controller = new PenyelesaianController();
+    $response = $controller->store($request, $perm);
+    // Print response and model states
+    echo "Controller response class: " . get_class($response) . PHP_EOL;
+    echo "Response target: " . (method_exists($response, 'getTargetUrl') ? $response->getTargetUrl() : 'n/a') . PHP_EOL;
+    $permFresh = $perm->fresh();
+    echo "Permohonan status: " . $permFresh->status . PHP_EOL;
+    foreach ($permFresh->kontainers as $k) {
+        echo "Kontainer {$k->id} status: {$k->status}, nomor: {$k->nomor_seri_gabungan}\n";
+    }
+    $t = TagihanKontainerSewa::first();
+    if ($t) {
+        echo $t->toJson(JSON_PRETTY_PRINT) . PHP_EOL;
+    } else {
+        echo "NO_RECORD\n";
+    }
+} catch (\Exception $e) {
+    echo "EXCEPTION: " . $e->getMessage() . PHP_EOL;
+    echo $e->getTraceAsString() . PHP_EOL;
+}

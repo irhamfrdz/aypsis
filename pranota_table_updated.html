@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Tabel Pranota - Updated</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 1000px;
+                margin: 40px auto;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }
+            .test-container {
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            .test-section {
+                margin: 20px 0;
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background: #f9f9f9;
+            }
+            .success {
+                border-left: 4px solid #28a745;
+                background: #d4edda;
+            }
+            .info {
+                border-left: 4px solid #17a2b8;
+                background: #d1ecf1;
+            }
+            .comparison {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 20px;
+                margin: 20px 0;
+            }
+            .column-list {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                border: 1px solid #dee2e6;
+            }
+            .column-list h4 {
+                margin-top: 0;
+                color: #495057;
+            }
+            .column-list ul {
+                list-style: none;
+                padding: 0;
+            }
+            .column-list li {
+                padding: 5px 0;
+                border-bottom: 1px solid #e9ecef;
+            }
+            .column-list li:last-child {
+                border-bottom: none;
+            }
+            .test-links {
+                background: #e9ecef;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .test-links a {
+                display: inline-block;
+                margin: 5px 10px 5px 0;
+                padding: 8px 15px;
+                background: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+            }
+            .test-links a:hover {
+                background: #0056b3;
+            }
+            .feature-demo {
+                background: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 10px 0;
+            }
+            .status-badge {
+                display: inline-flex;
+                align-items: center;
+                padding: 4px 8px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 500;
+                background-color: #d4edda;
+                color: #155724;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="test-container">
+            <h1>✅ Tabel Pranota - Disesuaikan dengan Menu Daftar Pranota</h1>
+
+            <div class="test-section success">
+                <h3>🔧 Perubahan yang Dibuat</h3>
+                <ul>
+                    <li>✅ Menambahkan kolom "No" untuk nomor urut</li>
+                    <li>✅ Mengubah "No. Invoice" menjadi "No. Pranota"</li>
+                    <li>✅ Mengubah "Tanggal" menjadi "Tanggal Pranota"</li>
+                    <li>✅ Mengganti "Customer" dengan "Jumlah Tagihan"</li>
+                    <li>✅ Mengganti "Periode" dengan "Total Amount"</li>
+                    <li>✅ Menambahkan kolom "Status Pembayaran"</li>
+                    <li>✅ Menambahkan kolom "Tanggal Pembayaran"</li>
+                    <li>✅ Menyesuaikan layout dan styling</li>
+                </ul>
+            </div>
+
+            <div class="comparison">
+                <div class="column-list">
+                    <h4>❌ Struktur Lama:</h4>
+                    <ul>
+                        <li>1. No. Invoice</li>
+                        <li>2. Tanggal</li>
+                        <li>3. Customer</li>
+                        <li>4. Periode</li>
+                        <li>5. Amount</li>
+                        <li>6. Action</li>
+                    </ul>
+                </div>
+                <div class="column-list">
+                    <h4>✅ Struktur Baru (Sesuai Daftar Pranota):</h4>
+                    <ul>
+                        <li>1. No</li>
+                        <li>2. No. Pranota</li>
+                        <li>3. Tanggal Pranota</li>
+                        <li>4. Jumlah Tagihan</li>
+                        <li>5. Total Amount</li>
+                        <li>6. Status Pembayaran</li>
+                        <li>7. Tanggal Pembayaran</li>
+                        <li>8. Action</li>
+                    </ul>
+                </div>
+            </div>
+
+            <div class="test-section info">
+                <h3>📊 Fitur Tabel yang Diperbarui</h3>
+
+                <div class="feature-demo">
+                    <h4>🔢 Kolom No:</h4>
+                    <p>Menampilkan nomor urut mulai dari 1, 2, 3, dst.</p>
+                </div>
+
+                <div class="feature-demo">
+                    <h4>📋 No. Pranota:</h4>
+                    <p>
+                        Menampilkan nomor pranota dengan warna biru, plus nomor
+                        eksternal jika ada.
+                    </p>
+                </div>
+
+                <div class="feature-demo">
+                    <h4>📅 Tanggal Pranota:</h4>
+                    <p>Menampilkan tanggal invoice dalam format dd/mm/yyyy.</p>
+                </div>
+
+                <div class="feature-demo">
+                    <h4>📦 Jumlah Tagihan:</h4>
+                    <p>
+                        Menampilkan jumlah kontainer atau item (misal: "1item").
+                    </p>
+                </div>
+
+                <div class="feature-demo">
+                    <h4>💰 Total Amount:</h4>
+                    <p>Menampilkan total dalam format rupiah, rata kanan.</p>
+                </div>
+
+                <div class="feature-demo">
+                    <h4>✅ Status Pembayaran:</h4>
+                    <p><span class="status-badge">✓ Sudah Dibayar</span></p>
+                    <p>Badge hijau yang menunjukkan status pembayaran.</p>
+                </div>
+
+                <div class="feature-demo">
+                    <h4>📅 Tanggal Pembayaran:</h4>
+                    <p>Menampilkan tanggal ketika pembayaran dilakukan.</p>
+                </div>
+
+                <div class="feature-demo">
+                    <h4>👁️ Action:</h4>
+                    <p>Tombol "Lihat" untuk melihat detail pranota.</p>
+                </div>
+            </div>
+
+            <div class="test-section success">
+                <h3>🎯 Konsistensi dengan Menu Daftar Pranota</h3>
+                <p>
+                    Tabel pranota di halaman detail pembayaran sekarang
+                    memiliki:
+                </p>
+                <ul>
+                    <li>
+                        ✅ <strong>Struktur kolom yang sama</strong> dengan
+                        halaman daftar pranota
+                    </li>
+                    <li>
+                        ✅ <strong>Nama kolom yang konsisten</strong> (No.
+                        Pranota, Tanggal Pranota, dll)
+                    </li>
+                    <li>
+                        ✅ <strong>Format data yang seragam</strong> (tanggal,
+                        currency, status)
+                    </li>
+                    <li>
+                        ✅ <strong>Styling yang selaras</strong> dengan desain
+                        sistem
+                    </li>
+                    <li>
+                        ✅ <strong>Status badge</strong> yang menunjukkan "Sudah
+                        Dibayar"
+                    </li>
+                    <li>✅ <strong>Action button</strong> yang konsisten</li>
+                </ul>
+            </div>
+
+            <div class="test-links">
+                <h3>🔗 Test Tabel Pranota yang Diperbarui</h3>
+                <a
+                    href="http://127.0.0.1:8001/pembayaran-pranota-kontainer/2"
+                    target="_blank"
+                    >📋 Lihat Detail Pembayaran #2</a
+                >
+                <a
+                    href="http://127.0.0.1:8001/pembayaran-pranota-kontainer"
+                    target="_blank"
+                    >📋 Daftar Pembayaran</a
+                >
+                <a href="http://127.0.0.1:8001/pranota" target="_blank"
+                    >📋 Daftar Pranota (Referensi)</a
+                >
+            </div>
+
+            <div class="test-section info">
+                <h3>📱 Responsive Design</h3>
+                <p>Tabel telah dioptimalkan dengan:</p>
+                <ul>
+                    <li>
+                        ✅ <strong>Overflow horizontal</strong> untuk layar
+                        kecil
+                    </li>
+                    <li>
+                        ✅ <strong>Text alignment</strong> yang tepat (left,
+                        center, right)
+                    </li>
+                    <li>✅ <strong>Hover effects</strong> pada baris tabel</li>
+                    <li>✅ <strong>Consistent spacing</strong> dan padding</li>
+                    <li>✅ <strong>Total row</strong> di footer tabel</li>
+                </ul>
+            </div>
+
+            <div class="test-section success">
+                <h3>🎉 Hasil Akhir</h3>
+                <p>
+                    <strong
+                        >Tabel pranota sekarang konsisten dengan menu Daftar
+                        Pranota!</strong
+                    >
+                </p>
+                <p>
+                    ✅ Struktur kolom sama<br />
+                    ✅ Naming convention seragam<br />
+                    ✅ Data formatting konsisten<br />
+                    ✅ User experience yang lebih baik
+                </p>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,6 @@
+﻿nik;nama_panggilan;nama_lengkap;plat;email;ktp;kk;alamat;rt_rw;kelurahan;kecamatan;kabupaten;provinsi;kode_pos;alamat_lengkap;tempat_lahir;tanggal_lahir;no_hp;jenis_kelamin;status_perkawinan;agama;divisi;pekerjaan;tanggal_masuk;tanggal_berhenti;tanggal_masuk_sebelumnya;tanggal_berhenti_sebelumnya;catatan;status_pajak;nama_bank;akun_bank;atas_nama;jkn;cabang;nik_supervisor;supervisor
+ADM001;Admin;"Administrator Utama";;admin@aypsis.com;;;;;;;;;;;;;"(+62) 439 4465 613";;;;IT;Administrator;2020-08-15;;;;;;;;;;;;
+STF001;Staff;"Staff Operasional";;staff@aypsis.com;;;;;;;;;;;;;"0582 9516 8021";;;;Operasional;Staff;2024-08-15;;;;;;;;;;;;
+SUP001;Emong;"Joko Mahendra";"B 4196 AX";;;;;;;;;;;;;;"0662 1198 6049";;;;Transportasi;"Supir Truck";2023-12-14;;;;;;;;;;;;
+SUP002;Jono;"Darijan Jaga Utama";"B 6622 NF";;;;;;;;;;;;;;"0380 1838 523";;;;Transportasi;"Supir Truck";2016-10-21;;;;;;;;;;;;
+SUP003;Gandi;"Uda Wahyudin";"B 5214 TI";;;;;;;;;;;;;;"0399 1431 2050";;;;Transportasi;"Supir Truck";2018-06-16;;;;;;;;;;;;

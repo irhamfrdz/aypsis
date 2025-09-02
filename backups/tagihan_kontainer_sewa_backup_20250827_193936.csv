@@ -1,0 +1,6 @@
+id;vendor;group_code;masa;nomor_pranota;tarif;ukuran_kontainer;harga;tanggal_harga_awal;periode;tanggal_harga_akhir;keterangan;status_pembayaran;created_at;updated_at;deleted_at;nomor_kontainer;dpp;ppn;pph;grand_total
+3;"PT Contoh Vendor";;;;Bulanan;"20 ft";775.00;2025-07-01;1;;"Tagihan percobaan periode Juli";"Belum Pembayaran";"2025-08-27 10:55:49";"2025-08-27 14:03:45";"2025-08-27 14:03:45";;;;;
+4;"PT Contoh Vendor";;;;Bulanan;"20 ft";775.00;2025-07-01;1;;"Tagihan percobaan periode Juli";"Belum Pembayaran";"2025-08-27 10:55:49";"2025-08-27 14:03:49";"2025-08-27 14:03:49";;;;;
+5;ZONA;A004;"27 Agustus - 26 September";PR2025082715094846;Bulanan;20;0.00;2025-08-27;1;;"Pranota otomatis dari permohonan MS125087329747";"Belum Pembayaran";"2025-08-27 15:09:48";"2025-08-27 17:16:31";;11111111;0.00;0.00;0.00;0.00
+6;ZONA;A005;;PR2025082717360887;Bulanan;20;0.00;2025-08-27;1;;"Pranota otomatis dari permohonan MS125086108502";"Belum Pembayaran";"2025-08-27 17:36:08";"2025-08-27 17:36:08";;288888;0.00;0.00;0.00;0.00
+7;ZONA;A006;;PR2025082717380587;Bulanan;20;0.00;2025-08-27;1;;"Pranota otomatis dari permohonan MS125086226833";"Belum Pembayaran";"2025-08-27 17:38:05";"2025-08-27 17:38:05";;455454;0.00;0.00;0.00;0.00

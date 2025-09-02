@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="id">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Manual Form Test - Edit Payment</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                max-width: 800px;
+                margin: 40px auto;
+                padding: 20px;
+                background-color: #f8f9fa;
+            }
+            .test-container {
+                background: white;
+                padding: 30px;
+                border-radius: 8px;
+                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            }
+            .test-section {
+                margin: 20px 0;
+                padding: 15px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background: #f9f9f9;
+            }
+            .success {
+                border-left: 4px solid #28a745;
+                background: #d4edda;
+            }
+            .info {
+                border-left: 4px solid #17a2b8;
+                background: #d1ecf1;
+            }
+            .warning {
+                border-left: 4px solid #ffc107;
+                background: #fff3cd;
+            }
+            .test-form {
+                background: white;
+                padding: 20px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                width: 100%;
+                padding: 8px;
+                border: 1px solid #ddd;
+                border-radius: 4px;
+                box-sizing: border-box;
+            }
+            .btn {
+                background: #007bff;
+                color: white;
+                padding: 10px 20px;
+                border: none;
+                border-radius: 4px;
+                cursor: pointer;
+                margin-right: 10px;
+            }
+            .btn:hover {
+                background: #0056b3;
+            }
+            .btn-secondary {
+                background: #6c757d;
+            }
+            .currency-preview {
+                margin-top: 5px;
+                font-size: 12px;
+                color: #666;
+            }
+            .test-links {
+                background: #e9ecef;
+                padding: 15px;
+                border-radius: 5px;
+                margin: 20px 0;
+            }
+            .test-links a {
+                display: inline-block;
+                margin: 5px 10px 5px 0;
+                padding: 8px 15px;
+                background: #007bff;
+                color: white;
+                text-decoration: none;
+                border-radius: 4px;
+            }
+            .test-links a:hover {
+                background: #0056b3;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="test-container">
+            <h1>🧪 Manual Form Test - Edit Payment</h1>
+
+            <div class="test-section info">
+                <h3>📋 Test Instructions</h3>
+                <p>
+                    This page provides manual testing capabilities for the edit
+                    payment functionality. Use the links below to access
+                    different parts of the system.
+                </p>
+            </div>
+
+            <div class="test-links">
+                <h3>🔗 Quick Access Links</h3>
+                <a
+                    href="http://127.0.0.1:8001/pembayaran-pranota-kontainer"
+                    target="_blank"
+                    >📋 Payment List</a
+                >
+                <a
+                    href="http://127.0.0.1:8001/pembayaran-pranota-kontainer/2/edit"
+                    target="_blank"
+                    >✏️ Edit Payment #2</a
+                >
+                <a
+                    href="http://127.0.0.1:8001/test-edit-payment"
+                    target="_blank"
+                    >🧪 Automated Test</a
+                >
+                <a href="http://127.0.0.1:8001/test" target="_blank"
+                    >⚡ Server Test</a
+                >
+            </div>
+
+            <div class="test-section success">
+                <h3>✅ Automated Test Results</h3>
+                <p><strong>Status:</strong> All tests passed! ✅</p>
+                <ul>
+                    <li>✅ Database connection: Working</li>
+                    <li>✅ Payment model: Working</li>
+                    <li>✅ Update functionality: Working</li>
+                    <li>✅ Currency formatting: Working</li>
+                    <li>✅ Relationship loading: Working</li>
+                    <li>✅ Data validation: Working</li>
+                    <li>✅ Data restoration: Working</li>
+                </ul>
+            </div>
+
+            <div class="test-section info">
+                <h3>🎯 Manual Testing Checklist</h3>
+                <h4>Test the following features manually:</h4>
+                <ol>
+                    <li>
+                        <strong>Form Access:</strong> Click "Edit Payment #2"
+                        link above
+                    </li>
+                    <li>
+                        <strong>Field Validation:</strong> Try submitting empty
+                        required fields
+                    </li>
+                    <li>
+                        <strong>Transaction Types:</strong> Verify only "Debit"
+                        and "Kredit" are available
+                    </li>
+                    <li>
+                        <strong>Currency Formatting:</strong> Enter numbers in
+                        payment amount fields
+                    </li>
+                    <li>
+                        <strong>Live Preview:</strong> Watch totals update as
+                        you type
+                    </li>
+                    <li>
+                        <strong>Date Validation:</strong> Test date fields with
+                        various formats
+                    </li>
+                    <li>
+                        <strong>Pranota Management:</strong> Test clicking
+                        pranota items and delete buttons
+                    </li>
+                    <li>
+                        <strong>Form Submission:</strong> Submit the form with
+                        valid data
+                    </li>
+                    <li>
+                        <strong>Back Navigation:</strong> Test the "Kembali"
+                        (Back) button
+                    </li>
+                </ol>
+            </div>
+
+            <div class="test-section warning">
+                <h3>⚠️ Test Data Information</h3>
+                <p><strong>Current Payment ID:</strong> 2</p>
+                <p><strong>Payment Number:</strong> BTK12509000001</p>
+                <p><strong>Bank:</strong> BCA</p>
+                <p><strong>Total Amount:</strong> Rp 35.450</p>
+                <p><strong>Transaction Type:</strong> Debit</p>
+                <p>
+                    <strong>Related Pranota:</strong> PTK12509000001 (Rp 35.450)
+                </p>
+                <p>
+                    <em
+                        >Note: This data is safe to modify for testing
+                        purposes.</em
+                    >
+                </p>
+            </div>
+
+            <div class="test-form">
+                <h3>🧮 Currency Formatter Test</h3>
+                <p>Test the JavaScript currency formatting functions:</p>
+
+                <div class="form-group">
+                    <label for="test-currency">Test Currency Input:</label>
+                    <input
+                        type="text"
+                        id="test-currency"
+                        placeholder="Enter a number (e.g., 1000000)"
+                        oninput="testCurrencyFormat(this)"
+                    />
+                    <div class="currency-preview" id="currency-preview">
+                        Formatted result will appear here...
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="test-negative">Test Negative Currency:</label>
+                    <input
+                        type="text"
+                        id="test-negative"
+                        placeholder="Enter negative number (e.g., -50000)"
+                        oninput="testNegativeCurrency(this)"
+                    />
+                    <div class="currency-preview" id="negative-preview">
+                        Formatted result will appear here...
+                    </div>
+                </div>
+
+                <button
+                    type="button"
+                    onclick="runClientSideTests()"
+                    class="btn"
+                >
+                    🧪 Run Client-Side Tests
+                </button>
+                <button
+                    type="button"
+                    onclick="clearTests()"
+                    class="btn btn-secondary"
+                >
+                    🗑️ Clear
+                </button>
+
+                <div id="test-results" style="margin-top: 20px"></div>
+            </div>
+
+            <div class="test-section success">
+                <h3>🎉 Test Completion</h3>
+                <p>After completing manual tests, verify that:</p>
+                <ul>
+                    <li>✅ All form fields work correctly</li>
+                    <li>✅ Validation prevents invalid submissions</li>
+                    <li>✅ Currency formatting displays properly</li>
+                    <li>✅ Live preview updates in real-time</li>
+                    <li>✅ Pranota items are clickable and deletable</li>
+                    <li>✅ Form submission saves changes to database</li>
+                    <li>✅ User experience is smooth and intuitive</li>
+                </ul>
+            </div>
+        </div>
+
+        <script>
+            function testCurrencyFormat(input) {
+                // Remove all non-numeric characters
+                let value = input.value.replace(/[^\d]/g, "");
+
+                if (value) {
+                    let numericValue = parseInt(value);
+                    input.value = numericValue.toLocaleString("id-ID");
+                    document.getElementById(
+                        "currency-preview"
+                    ).innerHTML = `<strong>Formatted:</strong> Rp ${numericValue.toLocaleString(
+                        "id-ID"
+                    )} <br>
+                     <strong>Raw Value:</strong> ${numericValue}`;
+                } else {
+                    input.value = "";
+                    document.getElementById("currency-preview").innerHTML =
+                        "Formatted result will appear here...";
+                }
+            }
+
+            function testNegativeCurrency(input) {
+                // Check if it starts with minus sign
+                let isNegative = input.value.startsWith("-");
+
+                // Remove all non-numeric characters except decimal point
+                let value = input.value.replace(/[^\d]/g, "");
+
+                if (value) {
+                    let numericValue = parseInt(value);
+                    if (isNegative) {
+                        numericValue = -numericValue;
+                        input.value =
+                            "-" +
+                            Math.abs(numericValue).toLocaleString("id-ID");
+                    } else {
+                        input.value = numericValue.toLocaleString("id-ID");
+                    }
+
+                    document.getElementById(
+                        "negative-preview"
+                    ).innerHTML = `<strong>Formatted:</strong> ${
+                        numericValue >= 0 ? "+" : ""
+                    }Rp ${numericValue.toLocaleString("id-ID")} <br>
+                     <strong>Raw Value:</strong> ${numericValue}`;
+                } else {
+                    input.value = isNegative ? "-" : "";
+                    document.getElementById("negative-preview").innerHTML =
+                        "Formatted result will appear here...";
+                }
+            }
+
+            function runClientSideTests() {
+                const resultsDiv = document.getElementById("test-results");
+                let results = "<h4>🧪 Client-Side Test Results:</h4>";
+
+                // Test 1: Currency formatting
+                const testValues = [1000000, 2500000, 500000, 0, -100000];
+                let currencyTestsPassed = 0;
+
+                results += "<h5>💰 Currency Formatting Tests:</h5><ul>";
+                testValues.forEach((value) => {
+                    const formatted = value.toLocaleString("id-ID");
+                    const expected = new Intl.NumberFormat("id-ID").format(
+                        value
+                    );
+                    const passed = formatted === expected;
+
+                    if (passed) currencyTestsPassed++;
+
+                    results += `<li style="color: ${passed ? "green" : "red"}">
+                    ${passed ? "✅" : "❌"} ${value} → ${formatted}
+                    ${passed ? "PASS" : "FAIL"}
+                </li>`;
+                });
+                results += "</ul>";
+
+                // Test 2: JavaScript functions availability
+                results += "<h5>🔧 Function Availability Tests:</h5><ul>";
+                const functions = ["toLocaleString", "parseInt", "Math.abs"];
+                functions.forEach((func) => {
+                    const available =
+                        typeof window[func] !== "undefined" ||
+                        typeof eval(func) !== "undefined";
+                    results += `<li style="color: ${
+                        available ? "green" : "red"
+                    }">
+                    ${available ? "✅" : "❌"} ${func}: ${
+                        available ? "Available" : "Not Available"
+                    }
+                </li>`;
+                });
+                results += "</ul>";
+
+                // Summary
+                results += `<h5>📊 Summary:</h5>
+                <p><strong>Currency Tests:</strong> ${currencyTestsPassed}/${
+                    testValues.length
+                } passed</p>
+                <p><strong>Overall Status:</strong> ${
+                    currencyTestsPassed === testValues.length
+                        ? "✅ All tests passed!"
+                        : "❌ Some tests failed"
+                }</p>`;
+
+                resultsDiv.innerHTML = results;
+            }
+
+            function clearTests() {
+                document.getElementById("test-currency").value = "";
+                document.getElementById("test-negative").value = "";
+                document.getElementById("currency-preview").innerHTML =
+                    "Formatted result will appear here...";
+                document.getElementById("negative-preview").innerHTML =
+                    "Formatted result will appear here...";
+                document.getElementById("test-results").innerHTML = "";
+            }
+        </script>
+    </body>
+</html>

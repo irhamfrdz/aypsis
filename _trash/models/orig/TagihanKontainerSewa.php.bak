@@ -1,0 +1,98 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class TagihanKontainerSewa extends Model
+{
+    use HasFactory;
+    use SoftDeletes;
+
+    protected $table = 'tagihan_kontainer_sewa';
+
+    protected $fillable = [
+        'vendor',
+        'tarif',
+        'ukuran_kontainer',
+    'harga',
+    'periode',
+    'group_code',
+        'tanggal_harga_awal',
+        'tanggal_harga_akhir',
+        'keterangan',
+    'status_pembayaran',
+        'nomor_kontainer',
+        'dpp',
+        'ppn',
+        'pph',
+        'grand_total',
+    'nomor_pranota',
+    'is_pranota',
+    ];
+
+    protected $dates = [
+        'tanggal_harga_awal',
+        'tanggal_harga_akhir',
+    ];
+
+    /**
+     * For Laravel 8+ prefer $casts for date casting alongside $dates for compatibility.
+     */
+    protected $casts = [
+        'tanggal_harga_awal' => 'date',
+        'tanggal_harga_akhir' => 'date',
+    ];
+
+    protected $appends = ['massa'];
+
+    public function getMassaAttribute()
+    {
+        // prefer stored masa string if present
+        try {
+            if (!empty($this->masa) && is_string($this->masa)) {
+                return $this->masa;
+            }
+        } catch (\Exception $e) {
+            // fall through to computed value
+        }
+        try {
+            $start = $this->tanggal_harga_awal ? ($this->tanggal_harga_awal instanceof \Carbon\Carbon ? $this->tanggal_harga_awal->copy() : \Carbon\Carbon::parse($this->tanggal_harga_awal)) : null;
+            $masaStart = $start ? $start->locale('id')->isoFormat('D MMMM') : '-';
+
+            if ($this->masa_awal && $this->masa_akhir) {
+                $s = $this->masa_awal instanceof \Carbon\Carbon ? $this->masa_awal->copy() : \Carbon\Carbon::parse($this->masa_awal);
+                $e = $this->masa_akhir instanceof \Carbon\Carbon ? $this->masa_akhir->copy() : \Carbon\Carbon::parse($this->masa_akhir);
+                $sDisplay = $s->locale('id')->isoFormat('D MMMM');
+                $eDisplay = $e->locale('id')->isoFormat('D MMMM');
+                return $sDisplay === $eDisplay ? $sDisplay : ($sDisplay . ' - ' . $eDisplay);
+            }
+
+            if ($this->tanggal_harga_akhir) {
+                $end = $this->tanggal_harga_akhir instanceof \Carbon\Carbon ? $this->tanggal_harga_akhir->copy()->subDay() : \Carbon\Carbon::parse($this->tanggal_harga_akhir)->subDay();
+                $masaEnd = $end->locale('id')->isoFormat('D MMMM');
+                return $masaStart === '-' && $masaEnd === '-' ? '-' : ($masaStart === '-' ? $masaEnd : ($masaEnd === '-' ? $masaStart : $masaStart . ' - ' . $masaEnd));
+            }
+
+            $p = isset($this->periode) ? intval($this->periode) : 0;
+            if ($start && $p > 0) {
+                $derivedEnd = $start->copy()->addMonths($p)->subDay();
+                $masaEnd = $derivedEnd->locale('id')->isoFormat('D MMMM');
+                return $masaStart === $masaEnd ? $masaStart : ($masaStart . ' - ' . $masaEnd);
+            }
+
+            return $masaStart;
+        } catch (\Exception $e) {
+            return '-';
+        }
+    }
+
+    // no automatic masa_awal/masa_akhir saving hooks — we now use single 'masa' string column persisted
+
+    public function kontainers()
+    {
+    return $this->belongsToMany(\App\Models\Kontainer::class, 'tagihan_kontainer_sewa_kontainers', 'tagihan_id', 'kontainer_id');
+    }
+}

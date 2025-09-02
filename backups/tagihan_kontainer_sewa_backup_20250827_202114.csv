@@ -1,0 +1,4 @@
+id;vendor;group_code;masa;nomor_pranota;tarif;ukuran_kontainer;harga;tanggal_harga_awal;periode;tanggal_harga_akhir;keterangan;status_pembayaran;created_at;updated_at;deleted_at;nomor_kontainer;dpp;ppn;pph;grand_total
+8;ZONA;A007;;PR2025082717444217;Bulanan;20;0.00;2025-08-27;1;;"Pranota otomatis dari permohonan MS125086527343";"Belum Pembayaran";"2025-08-27 17:44:42";"2025-08-27 17:44:42";;123321;0.00;0.00;0.00;0.00
+9;ZONA;A008;;PR2025082718015045;Bulanan;20;0.00;2025-08-28;1;;"Pranota otomatis dari permohonan MS125087632180";"Belum Pembayaran";"2025-08-27 18:01:50";"2025-08-27 18:01:50";;3435534;0.00;0.00;0.00;0.00
+10;ZONA;A009;;PR2025082718040179;Bulanan;20;0.00;2025-08-28;1;;"Pranota otomatis dari permohonan MS125087764196";"Belum Pembayaran";"2025-08-27 18:04:01";"2025-08-27 18:04:01";;1233422;0.00;0.00;0.00;0.00

@@ -1,0 +1,2 @@
+vendor,group_code,masa,tarif,ukuran_kontainer,harga,dpp,ppn,pph,grand_total,nomor_kontainer,tanggal_harga_awal,periode,tanggal_harga_akhir,keterangan,status_pembayaran
+ZONA,A001,"1 Januari - 31 Januari",Bulanan,"20,40",1000000.00,900000.00,108000.00,20000.00,1090000.00,"T20-001,T40-002",2025-01-01,1,,"Contoh: tagihan bulanan untuk vendor ZONA",Belum Pembayaran
