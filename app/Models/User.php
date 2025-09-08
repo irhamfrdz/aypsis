@@ -58,7 +58,7 @@ class User extends Authenticatable
      * @param  string  $permissionName
      * @return bool
      */
-    public function hasPermissionTo($permissionName)
+    public function hasPermissionTo(string $permissionName): bool
     {
         // Check if the user's permissions collection contains the permission with the given name.
         return $this->permissions->contains('name', $permissionName);
