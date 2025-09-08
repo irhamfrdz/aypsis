@@ -18,12 +18,12 @@ $user = User::with('permissions')->first();
 if ($user) {
     echo "   User: {$user->name}\n";
     echo "   Total permissions: " . $user->permissions->count() . "\n";
-    
+
     // Test permission check
     $testPermission = 'master-user';
     $hasPermission = $user->hasPermissionTo($testPermission);
     echo "   Has permission '{$testPermission}': " . ($hasPermission ? 'YES' : 'NO') . "\n";
-    
+
     // Test another permission
     $testPermission2 = 'non-existent-permission';
     $hasPermission2 = $user->hasPermissionTo($testPermission2);
@@ -34,13 +34,13 @@ if ($user) {
 echo "\n2. Test Gate Authorization:\n";
 try {
     auth()->login($user);
-    
+
     $gateResult = Gate::allows('master-user');
     echo "   Gate allows 'master-user': " . ($gateResult ? 'YES' : 'NO') . "\n";
-    
+
     $gateResult2 = Gate::allows('non-existent-permission');
     echo "   Gate allows 'non-existent-permission': " . ($gateResult2 ? 'YES' : 'NO') . "\n";
-    
+
 } catch (Exception $e) {
     echo "   Error testing gates: " . $e->getMessage() . "\n";
 }
@@ -55,10 +55,10 @@ try {
         'name' => 'Test Permission User',
         'password' => bcrypt('password123'),
     ]);
-    
+
     echo "   Test user: {$testUser->name}\n";
     echo "   Before assignment - permissions: " . $testUser->permissions()->count() . "\n";
-    
+
     // Assign a permission
     $permission = Permission::where('name', 'master-user')->first();
     if ($permission) {
@@ -66,13 +66,13 @@ try {
         $testUser->refresh();
         echo "   After assignment - permissions: " . $testUser->permissions()->count() . "\n";
         echo "   Has 'master-user' permission: " . ($testUser->hasPermissionTo('master-user') ? 'YES' : 'NO') . "\n";
-        
+
         // Test gate with this user
         auth()->login($testUser);
         $gateResult = Gate::allows('master-user');
         echo "   Gate allows for test user: " . ($gateResult ? 'YES' : 'NO') . "\n";
     }
-    
+
 } catch (Exception $e) {
     echo "   Error testing assignment: " . $e->getMessage() . "\n";
 }

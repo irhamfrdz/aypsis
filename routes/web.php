@@ -509,6 +509,11 @@ Route::middleware(['auth'])->group(function () {
          ->name('permohonan.import')
          ->middleware('can:master-permohonan');
 
+    // Bulk delete permohonan (declare before resource routes)
+    Route::delete('permohonan/bulk-delete', [PermohonanController::class, 'bulkDelete'])
+         ->name('permohonan.bulk-delete')
+         ->middleware('can:master-permohonan');
+
     Route::resource('permohonan', PermohonanController::class)
          ->middleware('can:master-permohonan');
 

@@ -283,6 +283,61 @@ class PermohonanController extends Controller
     }
 
     /**
+     * Menghapus beberapa permohonan sekaligus (bulk delete).
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'selected_ids' => 'required|array|min:1',
+            'selected_ids.*' => 'exists:permohonans,id'
+        ]);
+
+        try {
+            $selectedIds = $request->input('selected_ids');
+            $deletedCount = 0;
+            $failedMemos = [];
+
+            DB::transaction(function () use ($selectedIds, &$deletedCount, &$failedMemos) {
+                foreach ($selectedIds as $id) {
+                    try {
+                        $permohonan = Permohonan::findOrFail($id);
+                        
+                        // Detach kontainers relationship
+                        $permohonan->kontainers()->detach();
+                        
+                        // Store memo number for success message
+                        $memoNumber = $permohonan->nomor_memo;
+                        
+                        // Delete the permohonan
+                        $permohonan->delete();
+                        $deletedCount++;
+                        
+                    } catch (\Exception $e) {
+                        $failedMemos[] = $permohonan->nomor_memo ?? "ID: {$id}";
+                    }
+                }
+            });
+
+            // Prepare success/error messages
+            $messages = [];
+            if ($deletedCount > 0) {
+                $messages[] = "Berhasil menghapus {$deletedCount} memo permohonan.";
+            }
+            
+            if (!empty($failedMemos)) {
+                $messages[] = "Gagal menghapus memo: " . implode(', ', $failedMemos);
+            }
+
+            $messageType = empty($failedMemos) ? 'success' : ($deletedCount > 0 ? 'warning' : 'error');
+            
+            return redirect()->route('permohonan.index')->with($messageType, implode(' ', $messages));
+            
+        } catch (\Exception $e) {
+            return back()->with('error', 'Gagal menghapus permohonan: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Export permohonan list to CSV.
      */
     public function export(Request $request)

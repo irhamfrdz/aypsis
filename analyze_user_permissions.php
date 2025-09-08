@@ -18,16 +18,16 @@ $users = User::with('permissions')->get();
 foreach ($users as $user) {
     echo "   👤 {$user->name} (@{$user->username})\n";
     echo "      Total permissions: " . $user->permissions->count() . "\n";
-    
+
     if ($user->permissions->count() > 0) {
         echo "      Key permissions:\n";
         $keyPermissions = $user->permissions->whereIn('name', [
-            'master-user', 
-            'master-karyawan', 
-            'master-kontainer', 
+            'master-user',
+            'master-karyawan',
+            'master-kontainer',
             'master-permission'
         ]);
-        
+
         foreach ($keyPermissions as $perm) {
             echo "        ✅ {$perm->name}\n";
         }
@@ -51,7 +51,7 @@ if ($testUser) {
     // Clear all permissions
     $testUser->permissions()->detach();
     $testUser->refresh();
-    
+
     echo "   User: {$testUser->name}\n";
     echo "   Permissions: " . $testUser->permissions->count() . "\n";
     echo "   Can access master-user: " . ($testUser->hasPermissionTo('master-user') ? 'YES' : 'NO') . "\n";

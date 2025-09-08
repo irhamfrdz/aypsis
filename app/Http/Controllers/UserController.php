@@ -38,7 +38,7 @@ class UserController extends Controller
         // Mengambil semua izin yang tersedia dari tabel permission
         $permissions = Permission::select('id', 'name', 'description')->get();
         $karyawans = Karyawan::select('id', 'nama_lengkap')->get();
-        
+
         // Mengambil semua users dengan permissions untuk fitur copy
         $users = User::with('permissions:id,name')->select('id', 'name', 'username')->get();
 
@@ -83,7 +83,7 @@ class UserController extends Controller
         $permissions = Permission::select('id', 'name', 'description')->get();
         $userPermissions = $user->permissions->pluck('id')->toArray();
         $karyawans = Karyawan::select('id', 'nama_lengkap')->get();
-        
+
         // Mengambil semua users dengan permissions untuk fitur copy (kecuali user yang sedang diedit)
         $users = User::with('permissions:id,name')->select('id', 'name', 'username')->where('id', '!=', $user->id)->get();
 

@@ -53,7 +53,7 @@
                     <select name="karyawan_id" id="karyawan_id">
                         <option value="">-- Tidak dihubungkan --</option>
                         @foreach ($karyawans as $karyawan)
-                            <option value="{{ $karyawan->id }}" 
+                            <option value="{{ $karyawan->id }}"
                                     data-nama="{{ $karyawan->nama_lengkap }}"
                                     {{ old('karyawan_id', $user->karyawan_id) == $karyawan->id ? 'selected' : '' }}>
                                 {{ $karyawan->nama_lengkap }}
@@ -90,7 +90,7 @@
         <fieldset class="border p-4 rounded-md">
             <legend class="text-lg font-semibold text-gray-800 px-2">Izin Akses Per User</legend>
             <div class="space-y-4 pt-4">
-                
+
                 {{-- Quick Actions --}}
                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4">
                     <div class="flex flex-wrap gap-2 mb-3">
@@ -107,7 +107,7 @@
                             👑 Izin Admin
                         </button>
                     </div>
-                    
+
                     {{-- Copy Permissions from Another User --}}
                     <div class="border-t pt-3">
                         <label for="copy_from_user" class="block text-sm font-medium text-blue-800 mb-2">📋 Copy Izin dari User Lain:</label>
@@ -129,14 +129,14 @@
                             </button>
                         </div>
                     </div>
-                    
+
                     <p class="text-xs text-blue-700 mt-2">Gunakan tombol di atas untuk memilih grup izin dengan cepat, atau copy dari user yang sudah ada</p>
                 </div>
 
                 {{-- Permission Counter --}}
                 <div class="bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
                     <p class="text-green-800">
-                        <span class="font-medium">Izin dipilih:</span> 
+                        <span class="font-medium">Izin dipilih:</span>
                         <span id="permission_count" class="font-bold">{{ count($userPermissions) }}</span> dari {{ $permissions->count() }} izin tersedia
                     </p>
                 </div>
@@ -146,7 +146,7 @@
                     $groupedPermissions = $permissions->groupBy(function($item) {
                         // Kelompokkan berdasarkan kata kunci yang lebih spesifik
                         $name = $item->name;
-                        
+
                         if (str_contains($name, 'master-pricelist') || str_contains($name, 'pricelist')) {
                             return 'master';
                         } else if (str_contains($name, 'master-')) {
@@ -165,7 +165,7 @@
                         }
                     });
                 @endphp
-                
+
                 <div class="space-y-4">
                     @foreach ($groupedPermissions as $groupName => $groupPermissions)
                         <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -194,15 +194,15 @@
                                     </button>
                                 </div>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
                                 @foreach ($groupPermissions as $permission)
                                     <div class="relative flex items-start">
                                         <div class="flex items-center h-5">
-                                            <input id="permission-{{ $permission->id }}" 
-                                                   name="permissions[]" 
-                                                   type="checkbox" 
-                                                   value="{{ $permission->id }}" 
+                                            <input id="permission-{{ $permission->id }}"
+                                                   name="permissions[]"
+                                                   type="checkbox"
+                                                   value="{{ $permission->id }}"
                                                    data-group="{{ $groupName }}"
                                                    class="permission-checkbox focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
                                                    @if(in_array($permission->id, $userPermissions)) checked @endif>
@@ -212,10 +212,10 @@
                                                 @php
                                                     // Buat deskripsi yang lebih mudah dipahami
                                                     $readableName = $permission->description;
-                                                    
+
                                                     if (!$readableName) {
                                                         $name = $permission->name;
-                                                        
+
                                                         // Mapping nama permission ke deskripsi yang mudah dipahami
                                                         $permissionMap = [
                                                             'master-user' => 'Kelola Data Pengguna',
@@ -237,11 +237,11 @@
                                                             'approval-pranota' => 'Setujui Pranota',
                                                             'approval-pembayaran' => 'Setujui Pembayaran'
                                                         ];
-                                                        
+
                                                         // Cari exact match dulu
                                                         if (isset($permissionMap[$name])) {
                                                             $readableName = $permissionMap[$name];
-                                                        } 
+                                                        }
                                                         // Jika tidak ada exact match, coba deteksi pattern
                                                         else if (str_contains($name, 'master-pricelist')) {
                                                             $readableName = 'Kelola Harga Sewa Kontainer';
@@ -338,10 +338,10 @@
                 const selectedOption = copyFromUser.options[copyFromUser.selectedIndex];
                 if (selectedOption && selectedOption.value) {
                     const permissionIds = JSON.parse(selectedOption.dataset.permissions || '[]');
-                    
+
                     // Clear all checkboxes first
                     allCheckboxes.forEach(cb => cb.checked = false);
-                    
+
                     // Check boxes that match the user's permissions
                     permissionIds.forEach(permissionId => {
                         const checkbox = document.querySelector(`input[value="${permissionId}"]`);
@@ -349,9 +349,9 @@
                             checkbox.checked = true;
                         }
                     });
-                    
+
                     updatePermissionCount();
-                    
+
                     // Show success message
                     const userName = selectedOption.textContent;
                     alert(`✅ Berhasil copy ${permissionIds.length} izin dari ${userName}`);

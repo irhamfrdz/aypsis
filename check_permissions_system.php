@@ -41,7 +41,7 @@ echo "\n4. Cek tabel user_permissions:\n";
 try {
     $userPermissionCount = \DB::table('user_permissions')->count();
     echo "   Total user-permission assignments: {$userPermissionCount}\n";
-    
+
     // Cek contoh assignment
     $samples = \DB::table('user_permissions')
         ->join('users', 'user_permissions.user_id', '=', 'users.id')
@@ -49,7 +49,7 @@ try {
         ->select('users.name as user_name', 'permissions.name as permission_name')
         ->take(10)
         ->get();
-    
+
     echo "   Contoh assignments:\n";
     foreach ($samples as $sample) {
         echo "     * {$sample->user_name} -> {$sample->permission_name}\n";
@@ -65,7 +65,7 @@ try {
     if ($user) {
         echo "   User: {$user->name}\n";
         echo "   Total permissions: " . $user->permissions->count() . "\n";
-        
+
         if ($user->permissions->count() > 0) {
             echo "   First 5 permissions:\n";
             foreach ($user->permissions->take(5) as $perm) {
