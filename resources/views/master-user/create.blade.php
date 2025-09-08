@@ -39,10 +39,6 @@
 
     <form action="{{ route('master.user.store') }}" method="POST" class="space-y-8">
         @csrf
-        
-        {{-- Hidden input untuk menyimpan role yang dipilih --}}
-        <input type="hidden" name="selected_role" id="selected_role" value="staff">
-        
         @php
             $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5";
         @endphp
@@ -91,94 +87,95 @@
 
         {{-- Izin Akses --}}
         <fieldset class="border p-4 rounded-md">
-            <legend class="text-lg font-semibold text-gray-800 px-2">Tingkat Akses</legend>
+            <legend class="text-lg font-semibold text-gray-800 px-2">Izin Akses Per User</legend>
             <div class="space-y-4 pt-4">
                 
-                {{-- Role/Level Akses Utama --}}
-                <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                    <h4 class="font-bold text-md text-blue-800 mb-3">Pilih Level Akses:</h4>
-                    <div class="space-y-3">
-                        <div class="flex items-center">
-                            <input id="role_admin" name="user_role" type="radio" value="admin" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
-                            <label for="role_admin" class="ml-3">
-                                <span class="font-medium text-gray-900">👑 Super Admin</span>
-                                <p class="text-sm text-gray-600">Akses penuh ke semua fitur sistem</p>
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input id="role_manager" name="user_role" type="radio" value="manager" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
-                            <label for="role_manager" class="ml-3">
-                                <span class="font-medium text-gray-900">👨‍💼 Manager</span>
-                                <p class="text-sm text-gray-600">Dapat kelola data master, pranota, dan laporan</p>
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input id="role_staff" name="user_role" type="radio" value="staff" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300" checked>
-                            <label for="role_staff" class="ml-3">
-                                <span class="font-medium text-gray-900">👨‍💻 Staff</span>
-                                <p class="text-sm text-gray-600">Akses dasar untuk input data dan melihat laporan</p>
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input id="role_supir" name="user_role" type="radio" value="supir" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
-                            <label for="role_supir" class="ml-3">
-                                <span class="font-medium text-gray-900">🚛 Supir</span>
-                                <p class="text-sm text-gray-600">Hanya bisa melihat jadwal dan pranota sendiri</p>
-                            </label>
-                        </div>
-                        
-                        <div class="flex items-center">
-                            <input id="role_custom" name="user_role" type="radio" value="custom" class="focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300">
-                            <label for="role_custom" class="ml-3">
-                                <span class="font-medium text-gray-900">⚙️ Custom</span>
-                                <p class="text-sm text-gray-600">Pilih izin secara manual</p>
-                            </label>
-                        </div>
+                {{-- Quick Actions --}}
+                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4">
+                    <div class="flex flex-wrap gap-2">
+                        <button type="button" id="select_all" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
+                            ✅ Pilih Semua
+                        </button>
+                        <button type="button" id="deselect_all" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
+                            ❌ Hapus Semua
+                        </button>
+                        <button type="button" id="select_basic" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
+                            📝 Izin Dasar
+                        </button>
+                        <button type="button" id="select_admin" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
+                            👑 Izin Admin
+                        </button>
                     </div>
+                    <p class="text-xs text-blue-700 mt-2">Gunakan tombol di atas untuk memilih grup izin dengan cepat, lalu sesuaikan secara manual</p>
                 </div>
 
-                {{-- Permission Details (Hidden by default) --}}
-                <div id="custom_permissions" class="bg-gray-50 p-4 rounded-lg border border-gray-200" style="display: none;">
-                    <h4 class="font-bold text-md text-gray-700 mb-3">Pilih Izin Khusus:</h4>
-                    @php
-                        $simplePermissions = [
-                            'Master Data' => ['master-user', 'master-kontainer', 'master-kegiatan', 'master-tujuan'],
-                            'Pranota' => ['pranota-create', 'pranota-edit', 'pranota-view', 'pranota-delete'],
-                            'Pembayaran' => ['pembayaran-view', 'pembayaran-create', 'pembayaran-edit'],
-                            'Laporan' => ['laporan-view', 'laporan-export'],
-                            'Approval' => ['approval-pranota', 'approval-pembayaran']
-                        ];
-                    @endphp
-                    
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        @foreach ($simplePermissions as $groupName => $permissionNames)
-                            <div class="space-y-2">
-                                <h5 class="font-semibold text-gray-700 border-b pb-1">{{ $groupName }}</h5>
-                                @foreach ($permissionNames as $permName)
-                                    @php
-                                        $permission = $permissions->firstWhere('name', $permName);
-                                    @endphp
-                                    @if ($permission)
-                                        <div class="flex items-center">
-                                            <input id="perm-{{ $permission->id }}" name="permissions[]" type="checkbox" value="{{ $permission->id }}" class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
-                                            <label for="perm-{{ $permission->id }}" class="ml-2 text-sm text-gray-700">
+                {{-- Permission Counter --}}
+                <div class="bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
+                    <p class="text-green-800">
+                        <span class="font-medium">Izin dipilih:</span> 
+                        <span id="permission_count" class="font-bold">0</span> dari {{ $permissions->count() }} izin tersedia
+                    </p>
+                </div>
+
+                {{-- Individual Permissions --}}
+                @php
+                    $groupedPermissions = $permissions->groupBy(function($item) {
+                        // Mengambil bagian pertama dari nama izin, cth: 'master-user' -> 'master'
+                        return explode('-', $item->name)[0];
+                    });
+                @endphp
+                
+                <div class="space-y-4">
+                    @foreach ($groupedPermissions as $groupName => $groupPermissions)
+                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                            <div class="flex items-center justify-between mb-3 border-b pb-2">
+                                <h4 class="font-bold text-md text-gray-700">
+                                    @if($groupName == 'master')
+                                        🔧 Master Data
+                                    @elseif($groupName == 'pranota')
+                                        📋 Pranota
+                                    @elseif($groupName == 'pembayaran')
+                                        💰 Pembayaran
+                                    @elseif($groupName == 'laporan')
+                                        📊 Laporan
+                                    @elseif($groupName == 'approval')
+                                        ✅ Approval
+                                    @else
+                                        {{ ucfirst($groupName) }}
+                                    @endif
+                                </h4>
+                                <div class="flex gap-2">
+                                    <button type="button" class="group-select-all text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200" data-group="{{ $groupName }}">
+                                        Pilih Semua
+                                    </button>
+                                    <button type="button" class="group-deselect-all text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" data-group="{{ $groupName }}">
+                                        Hapus Semua
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
+                                @foreach ($groupPermissions as $permission)
+                                    <div class="relative flex items-start">
+                                        <div class="flex items-center h-5">
+                                            <input id="permission-{{ $permission->id }}" 
+                                                   name="permissions[]" 
+                                                   type="checkbox" 
+                                                   value="{{ $permission->id }}" 
+                                                   data-group="{{ $groupName }}"
+                                                   class="permission-checkbox focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded">
+                                        </div>
+                                        <div class="ml-3 text-sm">
+                                            <label for="permission-{{ $permission->id }}" class="font-medium text-gray-700 cursor-pointer hover:text-indigo-600">
                                                 {{ $permission->description ?? str_replace('-', ' ', ucwords($permission->name, '-')) }}
                                             </label>
+                                            <p class="text-xs text-gray-500">{{ $permission->name }}</p>
                                         </div>
-                                    @endif
+                                    </div>
                                 @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                </div>
-                
-                {{-- Quick Permission Summary --}}
-                <div id="permission_summary" class="bg-green-50 p-3 rounded-lg border border-green-200">
-                    <h5 class="font-medium text-green-800 mb-2">✅ Izin yang akan diberikan:</h5>
-                    <p id="summary_text" class="text-sm text-green-700">Staff - Akses dasar untuk input data dan melihat laporan</p>
+                        </div>
+                    @endforeach
                 </div>
             </div>
         </fieldset>
@@ -231,84 +228,71 @@
             });
 
             // === PERMISSION SYSTEM ===
-            const roleRadios = document.querySelectorAll('input[name="user_role"]');
-            const customPermissions = document.getElementById('custom_permissions');
-            const summaryText = document.getElementById('summary_text');
-            const allPermissionCheckboxes = document.querySelectorAll('input[name="permissions[]"]');
+            const allCheckboxes = document.querySelectorAll('.permission-checkbox');
+            const permissionCount = document.getElementById('permission_count');
 
-            // Role descriptions dan permissions
-            const roleDefinitions = {
-                'admin': {
-                    description: 'Super Admin - Akses penuh ke semua fitur sistem',
-                    permissions: 'all' // Semua permission
-                },
-                'manager': {
-                    description: 'Manager - Dapat kelola data master, pranota, dan laporan',
-                    permissions: ['master-user', 'master-kontainer', 'master-kegiatan', 'master-tujuan', 'pranota-create', 'pranota-edit', 'pranota-view', 'pranota-delete', 'pembayaran-view', 'pembayaran-create', 'pembayaran-edit', 'laporan-view', 'laporan-export', 'approval-pranota', 'approval-pembayaran']
-                },
-                'staff': {
-                    description: 'Staff - Akses dasar untuk input data dan melihat laporan',
-                    permissions: ['pranota-create', 'pranota-view', 'pembayaran-view', 'laporan-view']
-                },
-                'supir': {
-                    description: 'Supir - Hanya bisa melihat jadwal dan pranota sendiri',
-                    permissions: ['pranota-view']
-                },
-                'custom': {
-                    description: 'Custom - Izin dipilih secara manual',
-                    permissions: []
-                }
-            };
+            // Update counter
+            function updatePermissionCount() {
+                const checkedCount = document.querySelectorAll('.permission-checkbox:checked').length;
+                permissionCount.textContent = checkedCount;
+            }
 
-            // Handle role change
-            roleRadios.forEach(radio => {
-                radio.addEventListener('change', function() {
-                    const selectedRole = this.value;
-                    const roleData = roleDefinitions[selectedRole];
-                    
-                    // Update hidden input
-                    document.getElementById('selected_role').value = selectedRole;
-                    
-                    // Update summary
-                    summaryText.textContent = roleData.description;
-                    
-                    // Show/hide custom permissions
-                    if (selectedRole === 'custom') {
-                        customPermissions.style.display = 'block';
-                    } else {
-                        customPermissions.style.display = 'none';
-                        
-                        // Auto-select permissions based on role
-                        allPermissionCheckboxes.forEach(checkbox => {
-                            if (roleData.permissions === 'all') {
-                                checkbox.checked = true;
-                            } else if (Array.isArray(roleData.permissions)) {
-                                // Get permission name from the permission ID
-                                const permissionId = checkbox.value;
-                                const permissionLabel = checkbox.nextElementSibling?.textContent || '';
-                                
-                                // Check if this permission should be selected for this role
-                                checkbox.checked = roleData.permissions.some(permName => 
-                                    permissionLabel.toLowerCase().includes(permName.replace('-', ' '))
-                                );
-                            } else {
-                                checkbox.checked = false;
-                            }
-                        });
+            // Tombol Select All
+            document.getElementById('select_all').addEventListener('click', function() {
+                allCheckboxes.forEach(cb => cb.checked = true);
+                updatePermissionCount();
+            });
+
+            // Tombol Deselect All
+            document.getElementById('deselect_all').addEventListener('click', function() {
+                allCheckboxes.forEach(cb => cb.checked = false);
+                updatePermissionCount();
+            });
+
+            // Tombol Select Basic (izin dasar untuk staff)
+            document.getElementById('select_basic').addEventListener('click', function() {
+                allCheckboxes.forEach(cb => cb.checked = false);
+                // Select basic permissions
+                const basicPerms = ['view', 'create', 'edit']; // kata kunci untuk izin dasar
+                allCheckboxes.forEach(cb => {
+                    const label = cb.nextElementSibling.textContent.toLowerCase();
+                    if (basicPerms.some(perm => label.includes(perm))) {
+                        cb.checked = true;
                     }
+                });
+                updatePermissionCount();
+            });
+
+            // Tombol Select Admin (semua izin)
+            document.getElementById('select_admin').addEventListener('click', function() {
+                allCheckboxes.forEach(cb => cb.checked = true);
+                updatePermissionCount();
+            });
+
+            // Group select/deselect buttons
+            document.querySelectorAll('.group-select-all').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.dataset.group;
+                    document.querySelectorAll(`[data-group="${group}"]`).forEach(cb => cb.checked = true);
+                    updatePermissionCount();
                 });
             });
 
-            // Update summary when custom permissions change
-            customPermissions.addEventListener('change', function() {
-                if (document.querySelector('input[name="user_role"]:checked')?.value === 'custom') {
-                    const checkedCount = customPermissions.querySelectorAll('input[type="checkbox"]:checked').length;
-                    summaryText.textContent = `Custom - ${checkedCount} izin khusus dipilih`;
-                }
+            document.querySelectorAll('.group-deselect-all').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const group = this.dataset.group;
+                    document.querySelectorAll(`[data-group="${group}"]`).forEach(cb => cb.checked = false);
+                    updatePermissionCount();
+                });
             });
 
-            // Initialize with default role (staff)
-            document.getElementById('role_staff').dispatchEvent(new Event('change'));
+            // Update counter when individual checkboxes change
+            allCheckboxes.forEach(cb => {
+                cb.addEventListener('change', updatePermissionCount);
+            });
+
+            // Initialize counter
+            updatePermissionCount();
         });
     </script>
 @endpush
