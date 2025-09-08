@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('karyawans', function (Blueprint $table) {
             if (!Schema::hasColumn('karyawans', 'status')) {
-                $table->string('status')->default('active')->after('keterangan');
+                $table->string('status')->default('active')->after('supervisor');
             }
         });
     }
