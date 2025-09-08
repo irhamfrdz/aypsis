@@ -38,8 +38,11 @@ class UserController extends Controller
         // Mengambil semua izin yang tersedia dari tabel permission
         $permissions = Permission::select('id', 'name', 'description')->get();
         $karyawans = Karyawan::select('id', 'nama_lengkap')->get();
+        
+        // Mengambil semua users dengan permissions untuk fitur copy
+        $users = User::with('permissions:id,name')->select('id', 'name', 'username')->get();
 
-        return view('master-user.create', compact('permissions', 'karyawans'));
+        return view('master-user.create', compact('permissions', 'karyawans', 'users'));
     }
 
     /**

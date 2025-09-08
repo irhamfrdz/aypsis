@@ -92,7 +92,7 @@
                 
                 {{-- Quick Actions --}}
                 <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4">
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-wrap gap-2 mb-3">
                         <button type="button" id="select_all" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
                             ✅ Pilih Semua
                         </button>
@@ -106,7 +106,28 @@
                             👑 Izin Admin
                         </button>
                     </div>
-                    <p class="text-xs text-blue-700 mt-2">Gunakan tombol di atas untuk memilih grup izin dengan cepat, lalu sesuaikan secara manual</p>
+                    
+                    {{-- Copy Permissions from Another User --}}
+                    <div class="border-t pt-3">
+                        <label for="copy_from_user" class="block text-sm font-medium text-blue-800 mb-2">📋 Copy Izin dari User Lain:</label>
+                        <div class="flex gap-2">
+                            <select id="copy_from_user" class="flex-1 text-sm border border-blue-300 rounded px-3 py-1 bg-white">
+                                <option value="">-- Pilih user untuk copy izin --</option>
+                                @if(isset($users))
+                                    @foreach($users as $user)
+                                        <option value="{{ $user->id }}" data-permissions="{{ $user->permissions->pluck('id')->toJson() }}">
+                                            {{ $user->name }} ({{ $user->username }})
+                                        </option>
+                                    @endforeach
+                                @endif
+                            </select>
+                            <button type="button" id="copy_permissions_btn" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700" disabled>
+                                📥 Copy Izin
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <p class="text-xs text-blue-700 mt-2">Gunakan tombol di atas untuk memilih grup izin dengan cepat, atau copy dari user yang sudah ada</p>
                 </div>
 
                 {{-- Permission Counter --}}
@@ -312,12 +333,49 @@
             // === PERMISSION SYSTEM ===
             const allCheckboxes = document.querySelectorAll('.permission-checkbox');
             const permissionCount = document.getElementById('permission_count');
+            const copyFromUser = document.getElementById('copy_from_user');
+            const copyPermissionsBtn = document.getElementById('copy_permissions_btn');
 
             // Update counter
             function updatePermissionCount() {
                 const checkedCount = document.querySelectorAll('.permission-checkbox:checked').length;
                 permissionCount.textContent = checkedCount;
             }
+
+            // Enable/disable copy button
+            copyFromUser.addEventListener('change', function() {
+                copyPermissionsBtn.disabled = !this.value;
+                if (this.value) {
+                    copyPermissionsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                } else {
+                    copyPermissionsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                }
+            });
+
+            // Copy permissions from selected user
+            copyPermissionsBtn.addEventListener('click', function() {
+                const selectedOption = copyFromUser.options[copyFromUser.selectedIndex];
+                if (selectedOption && selectedOption.value) {
+                    const permissionIds = JSON.parse(selectedOption.dataset.permissions || '[]');
+                    
+                    // Clear all checkboxes first
+                    allCheckboxes.forEach(cb => cb.checked = false);
+                    
+                    // Check boxes that match the user's permissions
+                    permissionIds.forEach(permissionId => {
+                        const checkbox = document.querySelector(`input[value="${permissionId}"]`);
+                        if (checkbox) {
+                            checkbox.checked = true;
+                        }
+                    });
+                    
+                    updatePermissionCount();
+                    
+                    // Show success message
+                    const userName = selectedOption.textContent;
+                    alert(`✅ Berhasil copy ${permissionIds.length} izin dari ${userName}`);
+                }
+            });
 
             // Tombol Select All
             document.getElementById('select_all').addEventListener('click', function() {
