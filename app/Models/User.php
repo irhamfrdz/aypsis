@@ -20,6 +20,8 @@ class User extends Authenticatable
         'username',
         'password',
         'karyawan_id',
+        'status',
+        'registration_reason',
     ];
 
     /**

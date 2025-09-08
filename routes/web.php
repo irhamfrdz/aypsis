@@ -39,6 +39,12 @@ Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
+// Registration routes
+Route::get('register/karyawan', [AuthController::class, 'showKaryawanRegisterForm'])->name('register.karyawan');
+Route::post('register/karyawan', [AuthController::class, 'registerKaryawan'])->name('register.karyawan.store');
+Route::get('register/user', [AuthController::class, 'showUserRegisterForm'])->name('register.user');
+Route::post('register/user', [AuthController::class, 'registerUser'])->name('register.user.store');
+
 // TEST ROUTES (tanpa middleware auth)
 Route::get('/test', function () {
     return '<h1>TEST ROUTE WORKING!</h1><p>Server is running properly</p>';

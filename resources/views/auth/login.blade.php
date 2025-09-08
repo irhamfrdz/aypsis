@@ -85,6 +85,27 @@
             </div>
         </form>
 
+        <!-- Registration Buttons -->
+        <div class="mt-6 space-y-3">
+            <div class="text-center text-gray-600 text-sm font-medium">
+                Belum memiliki akun?
+            </div>
+            
+            <div class="flex flex-col space-y-2">
+                <a href="{{ route('register.karyawan') }}" class="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-center transition duration-200">
+                    👥 Registrasi Karyawan
+                </a>
+                
+                <a href="{{ route('register.user') }}" class="w-full bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline text-center transition duration-200">
+                    🔐 Registrasi User
+                </a>
+            </div>
+            
+            <div class="text-center text-xs text-gray-500 mt-2">
+                Hubungi administrator untuk persetujuan akun
+            </div>
+        </div>
+
         <p class="text-center text-gray-500 text-xs mt-6">
             &copy;{{ date('Y') }} AYPSIS. All rights reserved.
         </p>
