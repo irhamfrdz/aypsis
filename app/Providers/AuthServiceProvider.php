@@ -5,6 +5,7 @@ namespace App\Providers;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Gate;
 use App\Models\User;
+use App\Models\Permission;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -25,5 +26,17 @@ class AuthServiceProvider extends ServiceProvider
 
             return null;
         });
+
+        // Define permission-based gates
+        try {
+            $permissions = Permission::all();
+            foreach ($permissions as $permission) {
+                Gate::define($permission->name, function (User $user) use ($permission) {
+                    return $user->hasPermissionTo($permission->name);
+                });
+            }
+        } catch (\Throwable $e) {
+            // Handle case where database is not available during early boot
+        }
     }
 }
