@@ -461,7 +461,15 @@ Route::middleware(['auth'])->group(function () {
              ->middleware('can:master-kegiatan');
 
         Route::resource('permission', PermissionController::class)
-             ->names('master.permission')
+             ->names([
+                 'index' => 'master.permission.index',
+                 'create' => 'master.permission.create',
+                 'store' => 'master.permission.store',
+                 'show' => 'master.permission.show',
+                 'edit' => 'master.permission.edit',
+                 'update' => 'master.permission.update',
+                 'destroy' => 'master.permission.destroy'
+             ])
              ->middleware('can:master-permission');
 
         // Additional permission routes
