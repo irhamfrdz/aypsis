@@ -50,6 +50,7 @@ class AuthController extends Controller
         }
 
         return back()->withErrors([
+            'login' => 'Username atau password salah. Silakan periksa kembali data login Anda.',
             'username' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
         ])->onlyInput('username');
     }
