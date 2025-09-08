@@ -462,31 +462,31 @@ Route::middleware(['auth'])->group(function () {
 
         Route::resource('permission', PermissionController::class)
              ->names([
-                 'index' => 'master.permission.index',
-                 'create' => 'master.permission.create',
-                 'store' => 'master.permission.store',
-                 'show' => 'master.permission.show',
-                 'edit' => 'master.permission.edit',
-                 'update' => 'master.permission.update',
-                 'destroy' => 'master.permission.destroy'
+                 'index' => 'permission.index',
+                 'create' => 'permission.create',
+                 'store' => 'permission.store',
+                 'show' => 'permission.show',
+                 'edit' => 'permission.edit',
+                 'update' => 'permission.update',
+                 'destroy' => 'permission.destroy'
              ])
              ->middleware('can:master-permission');
 
         // Additional permission routes
         Route::post('permission/sync', [PermissionController::class, 'sync'])
-             ->name('master.permission.sync')
+             ->name('permission.sync')
              ->middleware('can:master-permission');
 
         Route::post('permission/bulk-delete', [PermissionController::class, 'bulkDelete'])
-             ->name('master.permission.bulk-delete')
+             ->name('permission.bulk-delete')
              ->middleware('can:master-permission');
 
         Route::post('permission/{permission}/assign-users', [PermissionController::class, 'assignUsers'])
-             ->name('master.permission.assign-users')
+             ->name('permission.assign-users')
              ->middleware('can:master-permission');
 
         Route::get('permission/{permission}/users', [PermissionController::class, 'getUsers'])
-             ->name('master.permission.users')
+             ->name('permission.users')
              ->middleware('can:master-permission');
 
         Route::resource('mobil', MobilController::class)
