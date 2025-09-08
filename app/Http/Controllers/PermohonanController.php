@@ -338,6 +338,20 @@ class PermohonanController extends Controller
     }
 
     /**
+     * Print memo surat jalan untuk permohonan tertentu.
+     */
+    public function print(Permohonan $permohonan)
+    {
+        // Load relationships yang diperlukan untuk print
+        $permohonan->load(['supir', 'krani', 'kontainers']);
+        
+        // Ambil data kegiatan untuk display
+        $kegiatan = MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)->first();
+        
+        return view('permohonan.print', compact('permohonan', 'kegiatan'));
+    }
+
+    /**
      * Export permohonan list to CSV.
      */
     public function export(Request $request)

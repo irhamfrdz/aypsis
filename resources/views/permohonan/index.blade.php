@@ -110,6 +110,9 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
                                     <a href="{{ route('permohonan.show', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-indigo-500 text-white hover:bg-indigo-700 transition shadow">Lihat</a>
                                     <a href="{{ route('permohonan.edit', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-700 transition shadow">Edit</a>
+                                    <a href="{{ route('permohonan.print', $permohonan) }}" target="_blank" class="inline-block px-3 py-1 rounded bg-green-500 text-white hover:bg-green-700 transition shadow" title="Print Memo Surat Jalan">
+                                        🖨️ Print
+                                    </a>
                                     <form action="{{ route('permohonan.destroy', $permohonan) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin?');">
                                         @csrf
                                         @method('DELETE')
@@ -141,17 +144,17 @@ function updateBulkActions() {
     const bulkActions = document.getElementById('bulk-actions');
     const selectedCount = document.getElementById('selected-count');
     const selectAllCheckbox = document.getElementById('select-all');
-    
+
     // Update selected count
     selectedCount.textContent = checkedBoxes.length + ' item dipilih';
-    
+
     // Show/hide bulk actions
     if (checkedBoxes.length > 0) {
         bulkActions.classList.remove('hidden');
     } else {
         bulkActions.classList.add('hidden');
     }
-    
+
     // Update select all checkbox state
     if (checkedBoxes.length === checkboxes.length && checkboxes.length > 0) {
         selectAllCheckbox.checked = true;
@@ -168,48 +171,48 @@ function updateBulkActions() {
 function toggleSelectAll() {
     const selectAllCheckbox = document.getElementById('select-all');
     const checkboxes = document.querySelectorAll('.item-checkbox');
-    
+
     checkboxes.forEach(checkbox => {
         checkbox.checked = selectAllCheckbox.checked;
     });
-    
+
     updateBulkActions();
 }
 
 function selectAll() {
     const checkboxes = document.querySelectorAll('.item-checkbox');
     const selectAllCheckbox = document.getElementById('select-all');
-    
+
     checkboxes.forEach(checkbox => {
         checkbox.checked = true;
     });
     selectAllCheckbox.checked = true;
-    
+
     updateBulkActions();
 }
 
 function clearSelection() {
     const checkboxes = document.querySelectorAll('.item-checkbox');
     const selectAllCheckbox = document.getElementById('select-all');
-    
+
     checkboxes.forEach(checkbox => {
         checkbox.checked = false;
     });
     selectAllCheckbox.checked = false;
-    
+
     updateBulkActions();
 }
 
 function bulkDelete() {
     const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-    
+
     if (checkedBoxes.length === 0) {
         alert('Pilih item yang akan dihapus terlebih dahulu.');
         return;
     }
-    
+
     const confirmMsg = `Apakah Anda yakin ingin menghapus ${checkedBoxes.length} memo permohonan yang dipilih?\n\nPerhatian: Aksi ini tidak dapat dibatalkan!`;
-    
+
     if (confirm(confirmMsg)) {
         // Collect memo numbers for confirmation
         const memoNumbers = [];
@@ -220,9 +223,9 @@ function bulkDelete() {
                 memoNumbers.push(memoCell.textContent.trim());
             }
         });
-        
+
         const finalConfirm = `Memo yang akan dihapus:\n${memoNumbers.join(', ')}\n\nLanjutkan?`;
-        
+
         if (confirm(finalConfirm)) {
             document.getElementById('bulk-delete-form').submit();
         }
