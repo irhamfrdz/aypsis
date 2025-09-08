@@ -14,12 +14,12 @@
                     <p class="mt-1 text-sm text-gray-600">Kelola izin akses sistem secara terpusat</p>
                 </div>
                 <div class="flex space-x-3">
-                    <button onclick="syncPermissions()" 
+                    <button onclick="syncPermissions()"
                             class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-sync mr-2"></i>
                         Sinkronisasi
                     </button>
-                    <a href="{{ route('master.permission.create') }}" 
+                    <a href="{{ route('master.permission.create') }}"
                        class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700 active:bg-indigo-900 focus:outline-none focus:border-indigo-900 focus:ring ring-indigo-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-plus mr-2"></i>
                         Tambah Izin
@@ -48,14 +48,14 @@
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <i class="fas fa-search text-gray-400"></i>
                         </div>
-                        <input type="text" 
+                        <input type="text"
                                id="searchPermissions"
-                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                               class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                placeholder="Cari nama izin atau deskripsi...">
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <select id="filterGroup" 
+                    <select id="filterGroup"
                             class="block w-full pl-3 pr-10 py-2 text-base border border-gray-300 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm rounded-md">
                         <option value="">Semua Grup</option>
                         <option value="user">User Management</option>
@@ -166,7 +166,7 @@
                                         {{ $permission->users_count ?? 0 }} pengguna
                                     </div>
                                     @if(($permission->users_count ?? 0) > 0)
-                                        <button onclick="showUsers({{ $permission->id }})" 
+                                        <button onclick="showUsers({{ $permission->id }})"
                                                 class="text-xs text-indigo-600 hover:text-indigo-900">
                                             Lihat detail
                                         </button>
@@ -174,23 +174,23 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-center">
                                     <div class="flex items-center justify-center space-x-2">
-                                        <a href="{{ route('master.permission.edit', $permission->id) }}" 
+                                        <a href="{{ route('master.permission.edit', $permission->id) }}"
                                            class="inline-flex items-center px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-800 text-xs font-medium rounded-full transition-colors duration-200">
                                             <i class="fas fa-edit mr-1"></i>
                                             Edit
                                         </a>
-                                        <button onclick="assignToUsers({{ $permission->id }})" 
+                                        <button onclick="assignToUsers({{ $permission->id }})"
                                                 class="inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-800 text-xs font-medium rounded-full transition-colors duration-200">
                                             <i class="fas fa-users mr-1"></i>
                                             Assign
                                         </button>
-                                        <form action="{{ route('master.permission.destroy', $permission->id) }}" 
-                                              method="POST" 
+                                        <form action="{{ route('master.permission.destroy', $permission->id) }}"
+                                              method="POST"
                                               onsubmit="return confirm('Apakah Anda yakin ingin menghapus izin ini? Tindakan ini tidak dapat dibatalkan.');"
                                               class="inline-block">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" 
+                                            <button type="submit"
                                                     class="inline-flex items-center px-3 py-1 bg-red-100 hover:bg-red-200 text-red-800 text-xs font-medium rounded-full transition-colors duration-200">
                                                 <i class="fas fa-trash mr-1"></i>
                                                 Hapus
@@ -206,7 +206,7 @@
                                         <i class="fas fa-key text-gray-400 text-4xl mb-4"></i>
                                         <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada izin ditemukan</h3>
                                         <p class="text-gray-500 mb-4">Mulai dengan membuat izin akses pertama Anda.</p>
-                                        <a href="{{ route('master.permission.create') }}" 
+                                        <a href="{{ route('master.permission.create') }}"
                                            class="inline-flex items-center px-4 py-2 bg-indigo-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-indigo-700">
                                             <i class="fas fa-plus mr-2"></i>
                                             Tambah Izin Pertama
@@ -228,12 +228,12 @@
                         </span>
                     </div>
                     <div class="flex items-center space-x-3">
-                        <button onclick="bulkAssign()" 
+                        <button onclick="bulkAssign()"
                                 class="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700">
                             <i class="fas fa-users mr-1"></i>
                             Assign ke Pengguna
                         </button>
-                        <button onclick="bulkDelete()" 
+                        <button onclick="bulkDelete()"
                                 class="inline-flex items-center px-3 py-1 bg-red-600 text-white text-sm rounded-md hover:bg-red-700">
                             <i class="fas fa-trash mr-1"></i>
                             Hapus Terpilih
@@ -262,11 +262,11 @@
                 <!-- Content will be loaded here -->
             </div>
             <div class="flex justify-end space-x-3 mt-6">
-                <button onclick="closeUserModal()" 
+                <button onclick="closeUserModal()"
                         class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400">
                     Batal
                 </button>
-                <button onclick="saveUserAssignment()" 
+                <button onclick="saveUserAssignment()"
                         class="px-4 py-2 bg-indigo-600 text-white rounded-md hover:bg-indigo-700">
                     Simpan
                 </button>
@@ -292,10 +292,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const permissionName = row.dataset.permissionName.toLowerCase();
             const permissionGroup = row.dataset.permissionGroup;
             const description = row.querySelector('td:nth-child(4)').textContent.toLowerCase();
-            
+
             const matchesSearch = permissionName.includes(searchTerm) || description.includes(searchTerm);
             const matchesGroup = !selectedGroup || permissionGroup === selectedGroup;
-            
+
             if (matchesSearch && matchesGroup) {
                 row.style.display = '';
                 visibleCount++;
@@ -319,7 +319,7 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateBulkActions() {
         const checked = document.querySelectorAll('.permission-checkbox:checked').length;
         selectedCount.textContent = checked;
-        
+
         if (checked > 0) {
             bulkActions.classList.remove('hidden');
         } else {
@@ -390,12 +390,12 @@ function saveUserAssignment() {
 function bulkAssign() {
     const selectedPermissions = Array.from(document.querySelectorAll('.permission-checkbox:checked'))
         .map(cb => cb.value);
-    
+
     if (selectedPermissions.length === 0) {
         alert('Pilih izin yang akan di-assign terlebih dahulu');
         return;
     }
-    
+
     // Show bulk assignment modal
     assignToUsers(selectedPermissions);
 }
@@ -403,12 +403,12 @@ function bulkAssign() {
 function bulkDelete() {
     const selectedPermissions = Array.from(document.querySelectorAll('.permission-checkbox:checked'))
         .map(cb => cb.value);
-    
+
     if (selectedPermissions.length === 0) {
         alert('Pilih izin yang akan dihapus terlebih dahulu');
         return;
     }
-    
+
     if (confirm(`Apakah Anda yakin ingin menghapus ${selectedPermissions.length} izin terpilih? Tindakan ini tidak dapat dibatalkan.`)) {
         fetch('{{ route("master.permission.bulk-delete") }}', {
             method: 'POST',
