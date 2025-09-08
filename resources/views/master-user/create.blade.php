@@ -120,8 +120,25 @@
                 {{-- Individual Permissions --}}
                 @php
                     $groupedPermissions = $permissions->groupBy(function($item) {
-                        // Mengambil bagian pertama dari nama izin, cth: 'master-user' -> 'master'
-                        return explode('-', $item->name)[0];
+                        // Kelompokkan berdasarkan kata kunci yang lebih spesifik
+                        $name = $item->name;
+                        
+                        if (str_contains($name, 'master-pricelist') || str_contains($name, 'pricelist')) {
+                            return 'master';
+                        } else if (str_contains($name, 'master-')) {
+                            return 'master';
+                        } else if (str_contains($name, 'pranota')) {
+                            return 'pranota';
+                        } else if (str_contains($name, 'pembayaran')) {
+                            return 'pembayaran';
+                        } else if (str_contains($name, 'approval')) {
+                            return 'approval';
+                        } else if (str_contains($name, 'laporan')) {
+                            return 'laporan';
+                        } else {
+                            // Fallback ke grouping lama
+                            return explode('-', $name)[0];
+                        }
                     });
                 @endphp
                 
@@ -167,9 +184,74 @@
                                         </div>
                                         <div class="ml-3 text-sm">
                                             <label for="permission-{{ $permission->id }}" class="font-medium text-gray-700 cursor-pointer hover:text-indigo-600">
-                                                {{ $permission->description ?? str_replace('-', ' ', ucwords($permission->name, '-')) }}
+                                                @php
+                                                    // Buat deskripsi yang lebih mudah dipahami
+                                                    $readableName = $permission->description;
+                                                    
+                                                    if (!$readableName) {
+                                                        $name = $permission->name;
+                                                        
+                                                        // Mapping nama permission ke deskripsi yang mudah dipahami
+                                                        $permissionMap = [
+                                                            'master-user' => 'Kelola Data Pengguna',
+                                                            'master-kontainer' => 'Kelola Data Kontainer',
+                                                            'master-kegiatan' => 'Kelola Data Kegiatan',
+                                                            'master-tujuan' => 'Kelola Data Tujuan',
+                                                            'master-permission' => 'Kelola Izin Akses',
+                                                            'master-mobil' => 'Kelola Data Mobil',
+                                                            'master-pricelist-sewa-kontainer' => 'Kelola Harga Sewa Kontainer',
+                                                            'pranota-create' => 'Buat Pranota Baru',
+                                                            'pranota-edit' => 'Edit Pranota',
+                                                            'pranota-view' => 'Lihat Pranota',
+                                                            'pranota-delete' => 'Hapus Pranota',
+                                                            'pembayaran-view' => 'Lihat Pembayaran',
+                                                            'pembayaran-create' => 'Buat Pembayaran',
+                                                            'pembayaran-edit' => 'Edit Pembayaran',
+                                                            'laporan-view' => 'Lihat Laporan',
+                                                            'laporan-export' => 'Export Laporan',
+                                                            'approval-pranota' => 'Setujui Pranota',
+                                                            'approval-pembayaran' => 'Setujui Pembayaran'
+                                                        ];
+                                                        
+                                                        // Cari exact match dulu
+                                                        if (isset($permissionMap[$name])) {
+                                                            $readableName = $permissionMap[$name];
+                                                        } 
+                                                        // Jika tidak ada exact match, coba deteksi pattern
+                                                        else if (str_contains($name, 'master-pricelist')) {
+                                                            $readableName = 'Kelola Harga Sewa Kontainer';
+                                                        }
+                                                        else if (str_contains($name, 'master-')) {
+                                                            $part = str_replace('master-', '', $name);
+                                                            $readableName = 'Kelola Data ' . ucwords(str_replace('-', ' ', $part));
+                                                        }
+                                                        else if (str_contains($name, 'pranota')) {
+                                                            if (str_contains($name, 'create')) $readableName = 'Buat Pranota';
+                                                            else if (str_contains($name, 'edit')) $readableName = 'Edit Pranota';
+                                                            else if (str_contains($name, 'view')) $readableName = 'Lihat Pranota';
+                                                            else if (str_contains($name, 'delete')) $readableName = 'Hapus Pranota';
+                                                            else $readableName = 'Kelola Pranota';
+                                                        }
+                                                        else if (str_contains($name, 'pembayaran')) {
+                                                            if (str_contains($name, 'create')) $readableName = 'Buat Pembayaran';
+                                                            else if (str_contains($name, 'edit')) $readableName = 'Edit Pembayaran';
+                                                            else if (str_contains($name, 'view')) $readableName = 'Lihat Pembayaran';
+                                                            else $readableName = 'Kelola Pembayaran';
+                                                        }
+                                                        else if (str_contains($name, 'approval')) {
+                                                            $readableName = 'Persetujuan ' . ucwords(str_replace(['approval-', '-'], ['', ' '], $name));
+                                                        }
+                                                        else {
+                                                            // Fallback: convert ke title case
+                                                            $readableName = ucwords(str_replace('-', ' ', $name));
+                                                        }
+                                                    }
+                                                @endphp
+                                                {{ $readableName }}
                                             </label>
-                                            <p class="text-xs text-gray-500">{{ $permission->name }}</p>
+                                            @if (!$permission->description)
+                                                <p class="text-xs text-gray-500">{{ $permission->name }}</p>
+                                            @endif
                                         </div>
                                     </div>
                                 @endforeach
