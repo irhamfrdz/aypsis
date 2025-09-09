@@ -47,9 +47,9 @@
                     </div>
                     <div>
                         <label for="tanggal_kas" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Kas</label>
-                        <input type="date" name="tanggal_kas" id="tanggal_kas"
-                            value="{{ now()->toDateString() }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" required>
+                        <input type="text" name="tanggal_kas" id="tanggal_kas"
+                            value="{{ now()->format('d/M/Y') }}"
+                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" readonly required>
                         {{-- Hidden field required by controller validation: keep in sync with tanggal_kas --}}
                         <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
                     </div>
@@ -135,7 +135,7 @@
                                     <td class="px-4 py-3">{{ $pranota->nomor_pranota }}</td>
                                     <td class="px-4 py-3">
                                         @if ($pranota->tanggal_pranota)
-                                            {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') }}
+                                            {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') }}
                                         @else
                                             -
                                         @endif
@@ -266,14 +266,12 @@
         updateTotalPembayaran();
     });
 
-    // Keep tanggal_pembayaran hidden field synced with tanggal_kas
+    // Keep tanggal_pembayaran hidden field synced with current date
     document.addEventListener('DOMContentLoaded', function () {
-        const tanggalKas = document.getElementById('tanggal_kas');
         const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
-        if (tanggalKas && tanggalPembayaran) {
-            tanggalKas.addEventListener('change', function () {
-                tanggalPembayaran.value = this.value;
-            });
+        if (tanggalPembayaran) {
+            // Keep hidden field with today's date for validation
+            tanggalPembayaran.value = new Date().toISOString().split('T')[0];
         }
     });
 </script>

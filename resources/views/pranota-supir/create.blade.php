@@ -77,7 +77,7 @@
                 <!-- Tanggal Pranota (Otomatis) -->
                 <div>
                     <label for="tanggal_pranota" class="block text-sm font-medium text-gray-700">Tanggal Pranota</label>
-                    <input type="date" name="tanggal_pranota" id="tanggal_pranota" class="{{ $readonlyInputClasses }}" value="{{ now()->toDateString() }}" readonly>
+                    <input type="text" name="tanggal_pranota" id="tanggal_pranota" class="{{ $readonlyInputClasses }}" value="{{ now()->format('d/M/Y') }}" readonly>
                 </div>
             </div>
 

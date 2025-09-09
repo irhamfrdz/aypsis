@@ -43,51 +43,65 @@
                         <a href="{{ route('master.karyawan.create') }}" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-plus mr-2"></i>Tambah Karyawan
                         </a>
+                        
+                        <!-- Template Dropdown -->
                         <div class="relative group">
-                            <a href="{{ route('master.karyawan.template') }}" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition duration-150">
-                                <i class="fas fa-download mr-2"></i>Template CSV
-                            </a>
-                            <!-- Tooltip -->
-                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                                <div class="text-center">
-                                    <div class="font-semibold mb-1">Template CSV Import</div>
-                                    <div>Download file template dengan contoh data untuk memudahkan import karyawan baru</div>
+                            <button class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition duration-150">
+                                <i class="fas fa-download mr-2"></i>Template
+                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <div class="py-1">
+                                    <a href="{{ route('master.karyawan.template') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-file-csv mr-3 text-green-600"></i>
+                                        <div>
+                                            <div class="font-medium">Template CSV</div>
+                                            <div class="text-xs text-gray-500">Format CSV standar</div>
+                                        </div>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.simple-excel-template') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-file-excel mr-3 text-emerald-600"></i>
+                                        <div>
+                                            <div class="font-medium">Template Excel</div>
+                                            <div class="text-xs text-gray-500">Kompatibel dengan Excel</div>
+                                        </div>
+                                    </a>
                                 </div>
-                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                             </div>
                         </div>
-                        <div class="relative group">
-                            <a href="{{ route('master.karyawan.simple-excel-template') }}" class="inline-flex items-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded transition duration-150">
-                                <i class="fas fa-file-excel mr-2"></i>Template Excel
-                            </a>
-                            <!-- Tooltip -->
-                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                                <div class="text-center">
-                                    <div class="font-semibold mb-1">Template Excel Import</div>
-                                    <div>Download template Excel (.csv) yang siap dibuka di Microsoft Excel</div>
-                                </div>
-                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
-                            </div>
-                        </div>
+                        
                         <a href="{{ route('master.karyawan.print') }}" target="_blank" class="inline-flex items-center px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-print mr-2"></i>Cetak Semua
                         </a>
-                        <a href="{{ route('master.karyawan.export') }}?sep=%3B" class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition duration-150">
-                            <i class="fas fa-file-csv mr-2"></i>Export CSV
-                        </a>
+                        
+                        <!-- Export Dropdown -->
                         <div class="relative group">
-                            <a href="{{ route('master.karyawan.export-excel') }}" class="inline-flex items-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded transition duration-150">
-                                <i class="fas fa-file-excel mr-2"></i>Export Excel
-                            </a>
-                            <!-- Tooltip -->
-                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
-                                <div class="text-center">
-                                    <div class="font-semibold mb-1">Export Excel Format</div>
-                                    <div>Export data dengan format khusus untuk Excel - mencegah scientific notation pada nomor panjang</div>
+                            <button class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition duration-150">
+                                <i class="fas fa-download mr-2"></i>Export
+                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            </button>
+                            <!-- Dropdown Menu -->
+                            <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                                <div class="py-1">
+                                    <a href="{{ route('master.karyawan.export') }}?sep=%3B" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-file-csv mr-3 text-purple-600"></i>
+                                        <div>
+                                            <div class="font-medium">Export CSV</div>
+                                            <div class="text-xs text-gray-500">Format CSV dengan separator ;</div>
+                                        </div>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.export-excel') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
+                                        <i class="fas fa-file-excel mr-3 text-indigo-600"></i>
+                                        <div>
+                                            <div class="font-medium">Export Excel</div>
+                                            <div class="text-xs text-gray-500">Anti scientific notation</div>
+                                        </div>
+                                    </a>
                                 </div>
-                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                             </div>
                         </div>
+                        
                         <a href="{{ route('master.karyawan.import') }}" class="inline-flex items-center px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-upload mr-2"></i>Import Excel/CSV
                         </a>
@@ -186,7 +200,23 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NAMA LENGKAP</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>NAMA LENGKAP</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_lengkap', 'direction' => 'asc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'nama_lengkap' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_lengkap', 'direction' => 'desc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'nama_lengkap' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NAMA PANGGILAN</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DIVISI</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PEKERJAAN</th>
@@ -312,6 +342,63 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             clearTimeout(searchTimeout);
             searchForm.submit();
+        }
+    });
+    
+    // Dropdown functionality
+    const dropdowns = document.querySelectorAll('.relative.group');
+    
+    dropdowns.forEach(dropdown => {
+        const button = dropdown.querySelector('button');
+        const menu = dropdown.querySelector('.absolute');
+        
+        if (button && menu) {
+            // Toggle dropdown on button click
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Close other dropdowns
+                dropdowns.forEach(otherDropdown => {
+                    if (otherDropdown !== dropdown) {
+                        const otherMenu = otherDropdown.querySelector('.absolute');
+                        if (otherMenu) {
+                            otherMenu.classList.add('opacity-0', 'invisible');
+                            otherMenu.classList.remove('opacity-100', 'visible');
+                        }
+                    }
+                });
+                
+                // Toggle current dropdown
+                menu.classList.toggle('opacity-0');
+                menu.classList.toggle('opacity-100');
+                menu.classList.toggle('invisible');
+                menu.classList.toggle('visible');
+            });
+        }
+    });
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(e) {
+        dropdowns.forEach(dropdown => {
+            const menu = dropdown.querySelector('.absolute');
+            if (menu && !dropdown.contains(e.target)) {
+                menu.classList.add('opacity-0', 'invisible');
+                menu.classList.remove('opacity-100', 'visible');
+            }
+        });
+    });
+    
+    // Close dropdowns on escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            dropdowns.forEach(dropdown => {
+                const menu = dropdown.querySelector('.absolute');
+                if (menu) {
+                    menu.classList.add('opacity-0', 'invisible');
+                    menu.classList.remove('opacity-100', 'visible');
+                }
+            });
         }
     });
 });

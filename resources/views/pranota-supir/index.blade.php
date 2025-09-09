@@ -51,7 +51,7 @@
                         <div class="text-sm font-medium text-gray-900">{{ $pranota->nomor_pranota }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') }}</div>
+                        <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         @if ($pranota->permohonans->isNotEmpty())

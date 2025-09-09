@@ -24,7 +24,7 @@
                     @forelse ($pembayarans as $pembayaran)
                             <tr class="hover:bg-indigo-50 transition-colors">
                                 <td class="px-4 py-3">{{ $pembayaran->nomor_pembayaran ?? '-' }}</td>
-                                <td class="px-4 py-3">{{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y') }}</td>
+                                <td class="px-4 py-3">{{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/M/Y') }}</td>
                                 <td class="px-4 py-3">
                                     @foreach ($pembayaran->pranotas as $pranota)
                                         <div>{{ $pranota->nomor_pranota }}</div>

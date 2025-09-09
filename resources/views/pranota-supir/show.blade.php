@@ -8,7 +8,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div>
             <label for="tanggal_kas" class="block text-sm font-medium text-gray-700">Tanggal Kas</label>
-            <input type="date" name="tanggal_kas" id="tanggal_kas" value="{{ now()->toDateString() }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" readonly>
+            <input type="text" name="tanggal_kas" id="tanggal_kas" value="{{ now()->format('d/M/Y') }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" readonly>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700">Nomor Pranota</label>
@@ -16,7 +16,7 @@
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700">Tanggal Pranota</label>
-            <p class="mt-1 text-sm text-gray-900">{{ \Carbon\Carbon::parse($pranotaSupir->tanggal_pranota)->format('d/m/Y') }}</p>
+            <p class="mt-1 text-sm text-gray-900">{{ \Carbon\Carbon::parse($pranotaSupir->tanggal_pranota)->format('d/M/Y') }}</p>
         </div>
         <div>
             <label class="block text-sm font-medium text-gray-700">Total Biaya Memo</label>
@@ -99,7 +99,7 @@
                         <div class="text-sm font-medium text-gray-900">{{ $permohonan->nomor_memo }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                        <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($permohonan->tanggal_memo)->format('d/m/Y') }}</div>
+                        <div class="text-sm text-gray-900">{{ \Carbon\Carbon::parse($permohonan->tanggal_memo)->format('d/M/Y') }}</div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
                         <div class="text-sm text-gray-900">{{ $permohonan->kegiatan }}</div>

@@ -41,6 +41,24 @@ class KaryawanController extends Controller
             });
         }
 
+        // Handle sorting
+        $sortField = $request->get('sort', 'nama_lengkap'); // Default sort by nama_lengkap
+        $sortDirection = $request->get('direction', 'asc'); // Default ascending
+
+        // Validate sort field untuk keamanan
+        $allowedSortFields = ['nama_lengkap', 'nik', 'divisi', 'pekerjaan', 'tanggal_masuk'];
+        if (!in_array($sortField, $allowedSortFields)) {
+            $sortField = 'nama_lengkap';
+        }
+
+        // Validate sort direction
+        if (!in_array($sortDirection, ['asc', 'desc'])) {
+            $sortDirection = 'asc';
+        }
+
+        // Apply sorting
+        $query->orderBy($sortField, $sortDirection);
+
         // Menggunakan paginate untuk efisiensi. Angka 15 bisa disesuaikan.
         // Ini akan memuat 15 karyawan per halaman.
         $karyawans = $query->paginate(15)->appends($request->query());

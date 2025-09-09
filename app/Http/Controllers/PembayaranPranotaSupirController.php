@@ -7,6 +7,7 @@ use App\Models\PranotaSupir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Carbon\Carbon;
 
 class PembayaranPranotaSupirController extends Controller
 {
@@ -37,7 +38,7 @@ class PembayaranPranotaSupirController extends Controller
             'nomor_pembayaran' => 'required|string',
             'nomor_cetakan' => 'required|numeric',
             'tanggal_pembayaran' => 'required|date',
-            'tanggal_kas' => 'required|date',
+            'tanggal_kas' => 'required|string', // Changed from 'date' to 'string' since we use d/M/Y format
             'total_pembayaran' => 'required|numeric',
             'bank' => 'required|string',
             'jenis_transaksi' => 'required|string',
@@ -49,11 +50,14 @@ class PembayaranPranotaSupirController extends Controller
 
         DB::beginTransaction();
         try {
+            // Convert tanggal_kas from d/M/Y format to Y-m-d for database storage
+            $tanggal_kas_db = \Carbon\Carbon::createFromFormat('d/M/Y', $validated['tanggal_kas'])->format('Y-m-d');
+            
             $pembayaran = PembayaranPranotaSupir::create([
                 'nomor_pembayaran' => $validated['nomor_pembayaran'],
                 'nomor_cetakan' => $validated['nomor_cetakan'],
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
-                'tanggal_kas' => $validated['tanggal_kas'],
+                'tanggal_kas' => $tanggal_kas_db,
                 'total_pembayaran' => $validated['total_pembayaran'],
                 'bank' => $validated['bank'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
