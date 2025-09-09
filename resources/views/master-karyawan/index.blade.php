@@ -56,6 +56,19 @@
                                 <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
                             </div>
                         </div>
+                        <div class="relative group">
+                            <a href="{{ route('master.karyawan.excel-template') }}" class="inline-flex items-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded transition duration-150">
+                                <i class="fas fa-file-excel mr-2"></i>Template Excel
+                            </a>
+                            <!-- Tooltip -->
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                                <div class="text-center">
+                                    <div class="font-semibold mb-1">Template Excel Import</div>
+                                    <div>Download template Excel (.csv) yang siap dibuka di Microsoft Excel</div>
+                                </div>
+                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                            </div>
+                        </div>
                         <a href="{{ route('master.karyawan.print') }}" target="_blank" class="inline-flex items-center px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-print mr-2"></i>Cetak Semua
                         </a>
@@ -138,12 +151,14 @@
                     <div class="text-sm text-blue-800">
                         <span class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium mr-2">1</span>
                         <a href="{{ route('master.karyawan.template') }}" class="text-blue-600 hover:text-blue-800 underline font-medium">Download Template CSV</a>
+                        atau
+                        <a href="{{ route('master.karyawan.excel-template') }}" class="text-blue-600 hover:text-blue-800 underline font-medium">Template Excel</a>
                         <span class="mx-2">→</span>
                         <span class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium mr-2">2</span>
                         Isi data karyawan
                         <span class="mx-2">→</span>
                         <span class="inline-flex items-center bg-blue-100 text-blue-800 px-2 py-0.5 rounded text-xs font-medium mr-2">3</span>
-                        <a href="{{ route('master.karyawan.import') }}" class="text-blue-600 hover:text-blue-800 underline font-medium">Upload file CSV</a>
+                        <a href="{{ route('master.karyawan.import') }}" class="text-blue-600 hover:text-blue-800 underline font-medium">Upload file CSV/Excel</a>
                     </div>
                 </div>
                 <button onclick="this.parentElement.parentElement.style.display='none'" class="flex-shrink-0 text-blue-400 hover:text-blue-600">

@@ -7,6 +7,7 @@ use App\Models\User;
 use App\Models\Karyawan;
 use App\Models\CrewEquipment;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 
 class KaryawanController extends Controller
@@ -274,6 +275,147 @@ class KaryawanController extends Controller
     }
 
     /**
+     * Download Excel template for import
+     */
+    public function downloadExcelTemplate()
+    {
+        $columns = [
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+        ];
+        
+        $sampleData = [
+            '1234567890', // nik
+            'John', // nama_panggilan
+            'John Doe', // nama_lengkap
+            'B 1234 ABC', // plat
+            'john.doe@example.com', // email
+            '1234567890123456', // ktp
+            '1234567890123456', // kk
+            'Jl. Contoh No. 123', // alamat
+            '001/002', // rt_rw
+            'Kelurahan Contoh', // kelurahan
+            'Kecamatan Contoh', // kecamatan
+            'Kabupaten Contoh', // kabupaten
+            'Provinsi Contoh', // provinsi
+            '12345', // kode_pos
+            'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
+            'Jakarta', // tempat_lahir
+            '1990-01-01', // tanggal_lahir
+            '081234567890', // no_hp
+            'L', // jenis_kelamin
+            'Belum Kawin', // status_perkawinan
+            'Islam', // agama
+            'IT', // divisi
+            'Programmer', // pekerjaan
+            '2024-01-01', // tanggal_masuk
+            '', // tanggal_berhenti
+            '', // tanggal_masuk_sebelumnya
+            '', // tanggal_berhenti_sebelumnya
+            'Catatan contoh', // catatan
+            'K1', // status_pajak
+            'Bank BCA', // nama_bank
+            'Cabang Jakarta Pusat', // bank_cabang
+            '1234567890', // akun_bank
+            'John Doe', // atas_nama
+            '0001234567890', // jkn
+            '12345678901234567', // no_ketenagakerjaan
+            'Jakarta', // cabang
+            '', // nik_supervisor
+            '' // supervisor
+        ];
+        
+        $instructionData = [
+            'Format: Text (pastikan tidak scientific notation)', // nik
+            'Nama panggilan', // nama_panggilan
+            'Nama lengkap sesuai KTP', // nama_lengkap
+            'Nomor plat kendaraan', // plat
+            'Email aktif', // email
+            'Format: Text 16 digit', // ktp
+            'Format: Text 16 digit', // kk
+            'Alamat sesuai KTP', // alamat
+            'RT/RW', // rt_rw
+            'Kelurahan', // kelurahan
+            'Kecamatan', // kecamatan
+            'Kabupaten', // kabupaten
+            'Provinsi', // provinsi
+            'Kode pos', // kode_pos
+            'Alamat lengkap gabungan', // alamat_lengkap
+            'Tempat lahir', // tempat_lahir
+            'Format: YYYY-MM-DD', // tanggal_lahir
+            'Format: Text nomor telepon', // no_hp
+            'L atau P', // jenis_kelamin
+            'Status perkawinan', // status_perkawinan
+            'Agama', // agama
+            'Divisi kerja', // divisi
+            'Jabatan/pekerjaan', // pekerjaan
+            'Format: YYYY-MM-DD', // tanggal_masuk
+            'Format: YYYY-MM-DD (kosongkan jika masih aktif)', // tanggal_berhenti
+            'Format: YYYY-MM-DD', // tanggal_masuk_sebelumnya
+            'Format: YYYY-MM-DD', // tanggal_berhenti_sebelumnya
+            'Catatan tambahan', // catatan
+            'Status pajak (TK0/TK1/K0/K1/K2/K3/K/0/K/1)', // status_pajak
+            'Nama bank', // nama_bank
+            'Cabang bank', // bank_cabang
+            'Format: Text nomor rekening', // akun_bank
+            'Atas nama rekening', // atas_nama
+            'Format: Text nomor JKN', // jkn
+            'Format: Text nomor ketenagakerjaan', // no_ketenagakerjaan
+            'Cabang/lokasi kerja', // cabang
+            'NIK supervisor', // nik_supervisor
+            'Nama supervisor' // supervisor
+        ];
+
+        // Create Excel-compatible CSV file
+        $fileName = 'template_import_karyawan_excel.csv';
+        
+        $callback = function() use ($columns, $instructionData, $sampleData) {
+            $out = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            
+            // Write header manually with semicolon delimiter for Excel
+            fwrite($out, implode(';', $columns) . "\r\n");
+            
+            // Write instruction row
+            $escapedInstructions = array_map(function($field) {
+                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
+                    return '"' . str_replace('"', '""', $field) . '"';
+                }
+                return $field;
+            }, $instructionData);
+            
+            fwrite($out, implode(';', $escapedInstructions) . "\r\n");
+            
+            // Format sample data to prevent scientific notation in Excel
+            $formattedSampleData = [];
+            foreach ($sampleData as $i => $data) {
+                // Add leading apostrophe to numeric fields to force text format in Excel
+                if (in_array($columns[$i], ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($data)) {
+                    $formattedSampleData[] = "'" . $data;
+                } else {
+                    $formattedSampleData[] = $data;
+                }
+            }
+            
+            $escapedData = array_map(function($field) {
+                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
+                    return '"' . str_replace('"', '""', $field) . '"';
+                }
+                return $field;
+            }, $formattedSampleData);
+            
+            fwrite($out, implode(';', $escapedData) . "\r\n");
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
+    }
+
+    /**
      * Menampilkan formulir untuk membuat karyawan baru.
      */
     public function create()
@@ -449,15 +591,32 @@ class KaryawanController extends Controller
     }
 
     /**
-     * Handle CSV import (expects header row with column names matching model attributes like nik,nama_lengkap,...)
+     * Handle CSV/Excel import (expects header row with column names matching model attributes like nik,nama_lengkap,...)
      */
     public function importStore(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt',
+            'csv_file' => 'required|file|mimes:csv,txt,xlsx,xls',
         ]);
 
-        $path = $request->file('csv_file')->getRealPath();
+        $file = $request->file('csv_file');
+        $extension = $file->getClientOriginalExtension();
+        $path = $file->getRealPath();
+        
+        // Handle Excel files by converting to CSV first
+        if (in_array($extension, ['xlsx', 'xls'])) {
+            $csvData = $this->convertExcelToCsv($path, $extension);
+            if (!$csvData) {
+                return redirect()->route('master.karyawan.index')
+                    ->with('error', 'Gagal membaca file Excel. Pastikan file tidak corrupt.');
+            }
+            
+            // Create temporary CSV file
+            $tempPath = tempnam(sys_get_temp_dir(), 'excel_import_');
+            file_put_contents($tempPath, $csvData);
+            $path = $tempPath;
+        }
+
         // Auto-detect delimiter (comma, semicolon or tab) so we support different template variants
         $contents = file_get_contents($path);
         $lines = preg_split('/\r\n|\n|\r/', $contents);
@@ -593,7 +752,7 @@ class KaryawanController extends Controller
                     'nik','nama_lengkap','nama_panggilan','email','tempat_lahir','tanggal_lahir','jenis_kelamin','agama','status_perkawinan','no_hp',
                     'ktp','kk','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','nik_supervisor','supervisor','cabang','plat',
                     'alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap',
-                    'nama_bank','akun_bank','atas_nama','status_pajak','jkn','no_ketenagakerjaan','tanggungan_anak','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan'
+                    'nama_bank','bank_cabang','akun_bank','atas_nama','status_pajak','jkn','no_ketenagakerjaan','tanggungan_anak','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan'
                 ];
                 $payload = [];
                 // Build payload using case-insensitive header names
@@ -838,5 +997,152 @@ class KaryawanController extends Controller
         $checklistItems = $karyawan->crewChecklists()->orderBy('item_name')->get();
 
         return view('master-karyawan.crew-checklist-print', compact('karyawan', 'checklistItems'));
+    }
+
+    /**
+     * Convert Excel file to CSV data using a simple ZIP-based approach for XLSX
+     * or fallback for XLS files
+     */
+    private function convertExcelToCsv($filePath, $extension)
+    {
+        try {
+            if ($extension === 'xlsx') {
+                return $this->convertXlsxToCsv($filePath);
+            } elseif ($extension === 'xls') {
+                // For XLS files, try to read with a simpler approach
+                // This is a basic implementation - you might want to enhance it
+                return $this->convertXlsToCsv($filePath);
+            }
+        } catch (\Exception $e) {
+            Log::error('Excel conversion error: ' . $e->getMessage());
+            return false;
+        }
+        
+        return false;
+    }
+
+    /**
+     * Convert XLSX to CSV by reading the XML content from the ZIP file
+     */
+    private function convertXlsxToCsv($filePath)
+    {
+        if (!class_exists('ZipArchive')) {
+            throw new \Exception('ZipArchive extension not available');
+        }
+
+        $zip = new \ZipArchive();
+        if ($zip->open($filePath) !== TRUE) {
+            throw new \Exception('Cannot open XLSX file');
+        }
+
+        // Read shared strings
+        $sharedStrings = [];
+        $sharedStringsXml = $zip->getFromName('xl/sharedStrings.xml');
+        if ($sharedStringsXml) {
+            $sharedStringsDoc = new \DOMDocument();
+            $sharedStringsDoc->loadXML($sharedStringsXml);
+            $xpath = new \DOMXPath($sharedStringsDoc);
+            $nodes = $xpath->query('//t');
+            foreach ($nodes as $node) {
+                $sharedStrings[] = $node->nodeValue;
+            }
+        }
+
+        // Read the first worksheet
+        $worksheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
+        if (!$worksheetXml) {
+            throw new \Exception('Cannot read worksheet data');
+        }
+
+        $zip->close();
+
+        // Parse worksheet XML
+        $worksheetDoc = new \DOMDocument();
+        $worksheetDoc->loadXML($worksheetXml);
+        $xpath = new \DOMXPath($worksheetDoc);
+        
+        $rows = [];
+        $rowNodes = $xpath->query('//row');
+        
+        foreach ($rowNodes as $rowNode) {
+            $rowData = [];
+            $cellNodes = $xpath->query('.//c', $rowNode);
+            
+            $maxCol = 0;
+            $cells = [];
+            
+            foreach ($cellNodes as $cellNode) {
+                /** @var \DOMElement $cellNode */
+                $cellRef = $cellNode->getAttribute('r');
+                preg_match('/([A-Z]+)(\d+)/', $cellRef, $matches);
+                $colIndex = $this->columnLettersToNumber($matches[1]) - 1;
+                $maxCol = max($maxCol, $colIndex);
+                
+                $cellType = $cellNode->getAttribute('t');
+                $valueNode = $xpath->query('.//v', $cellNode)->item(0);
+                
+                if ($valueNode) {
+                    $value = $valueNode->nodeValue;
+                    
+                    if ($cellType === 's' && isset($sharedStrings[$value])) {
+                        // Shared string
+                        $value = $sharedStrings[$value];
+                    } elseif (is_numeric($value) && $cellType !== 's') {
+                        // Check if it's a date (Excel dates are numbers)
+                        if ($value > 25569) { // Excel epoch starts 1900-01-01, Unix epoch is 1970-01-01
+                            $excelEpoch = new \DateTime('1900-01-01');
+                            $excelEpoch->add(new \DateInterval('P' . intval($value - 2) . 'D')); // -2 for Excel leap year bug
+                            $value = $excelEpoch->format('Y-m-d');
+                        }
+                    }
+                    
+                    $cells[$colIndex] = $value;
+                } else {
+                    $cells[$colIndex] = '';
+                }
+            }
+            
+            // Fill missing columns
+            for ($i = 0; $i <= $maxCol; $i++) {
+                $rowData[] = isset($cells[$i]) ? $cells[$i] : '';
+            }
+            
+            $rows[] = $rowData;
+        }
+
+        // Convert to CSV format
+        $csvOutput = '';
+        foreach ($rows as $row) {
+            $csvOutput .= '"' . implode('","', array_map(function($cell) {
+                return str_replace('"', '""', $cell);
+            }, $row)) . "\"\n";
+        }
+
+        return $csvOutput;
+    }
+
+    /**
+     * Convert XLS to CSV (basic implementation)
+     */
+    private function convertXlsToCsv($filePath)
+    {
+        // This is a simplified approach for XLS files
+        // In a production environment, you'd want to use a proper library
+        throw new \Exception('XLS format not supported yet. Please convert to XLSX or CSV format.');
+    }
+
+    /**
+     * Convert column letters to number (A=1, B=2, etc.)
+     */
+    private function columnLettersToNumber($letters)
+    {
+        $number = 0;
+        $length = strlen($letters);
+        
+        for ($i = 0; $i < $length; $i++) {
+            $number = $number * 26 + (ord($letters[$i]) - ord('A') + 1);
+        }
+        
+        return $number;
     }
 }
