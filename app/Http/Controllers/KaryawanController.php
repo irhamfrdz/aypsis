@@ -426,6 +426,8 @@ class KaryawanController extends Controller
         $processed = 0;
         $skipped = [];
         $errors = [];
+        $successRows = [];
+        $failedRows = [];
 
         if (($handle = fopen($path, 'r')) !== false) {
             $header = null;
@@ -473,7 +475,7 @@ class KaryawanController extends Controller
                 }, $header);
                 $dataRaw = array_combine($normalizedHeader, $row);
                 if (!$dataRaw) {
-                    $skipped[] = "Baris {$lineNumber}: gagal parse baris (kombinasi header/row).";
+                    $failedRows[] = "Baris {$lineNumber}: Gagal parse baris (kombinasi header/row tidak sesuai)";
                     continue;
                 }
                 // Use original keys where possible but operate case-insensitively
@@ -482,13 +484,13 @@ class KaryawanController extends Controller
                     $data[$k] = $v;
                 }
                 if (!$data) {
-                    $skipped[] = "Baris {$lineNumber}: gagal parse baris.";
+                    $failedRows[] = "Baris {$lineNumber}: Gagal parse data";
                     continue;
                 }
                 // Use `nik` as unique key to create or update
                 $nik = trim($data['nik'] ?? '');
                 if (!$nik) {
-                    $skipped[] = "Baris {$lineNumber}: kolom 'nik' kosong.";
+                    $failedRows[] = "Baris {$lineNumber}: NIK kosong atau tidak ditemukan";
                     continue;
                 }
 
@@ -578,40 +580,83 @@ class KaryawanController extends Controller
                 }
 
                 try {
-                    Karyawan::updateOrCreate(['nik' => $nik], $payload);
+                    $existingKaryawan = Karyawan::where('nik', $nik)->first();
+                    $karyawan = Karyawan::updateOrCreate(['nik' => $nik], $payload);
+                    
+                    $namaLengkap = $payload['nama_lengkap'] ?? $nik;
+                    if ($existingKaryawan) {
+                        $successRows[] = "Baris {$lineNumber}: Data karyawan {$nik} - {$namaLengkap} berhasil diupdate";
+                    } else {
+                        $successRows[] = "Baris {$lineNumber}: Data karyawan baru {$nik} - {$namaLengkap} berhasil ditambahkan";
+                    }
                     $processed++;
                 } catch (\Exception $e) {
-                    $errors[] = "Baris {$lineNumber}: " . $e->getMessage();
+                    $errorMessage = $e->getMessage();
+                    $namaLengkap = $payload['nama_lengkap'] ?? $nik;
+                    
+                    // Customize error messages for better user understanding
+                    if (strpos($errorMessage, 'Duplicate entry') !== false) {
+                        if (strpos($errorMessage, 'email') !== false) {
+                            $failedRows[] = "Baris {$lineNumber}: Email " . ($payload['email'] ?? 'tidak valid') . " sudah digunakan karyawan lain";
+                        } elseif (strpos($errorMessage, 'ktp') !== false) {
+                            $failedRows[] = "Baris {$lineNumber}: Nomor KTP " . ($payload['ktp'] ?? 'tidak valid') . " sudah digunakan karyawan lain";
+                        } else {
+                            $failedRows[] = "Baris {$lineNumber}: Data duplikat untuk {$namaLengkap}";
+                        }
+                    } elseif (strpos($errorMessage, 'Data too long') !== false) {
+                        $failedRows[] = "Baris {$lineNumber}: Data terlalu panjang untuk {$namaLengkap}";
+                    } elseif (strpos($errorMessage, 'Incorrect date') !== false) {
+                        $failedRows[] = "Baris {$lineNumber}: Format tanggal tidak valid untuk {$namaLengkap}";
+                    } else {
+                        $failedRows[] = "Baris {$lineNumber}: Error pada {$namaLengkap} - {$errorMessage}";
+                    }
                 }
             }
             fclose($handle);
         }
 
-        // Build flash messages
+        // Build comprehensive flash messages
         $messages = [];
-        if ($processed > 0) {
-            $messages[] = "Import selesai. Baris diproses: {$processed}.";
+        $hasErrors = count($failedRows) > 0;
+        $hasSuccess = $processed > 0;
+        
+        // Success message
+        if ($hasSuccess) {
+            $messages[] = "✅ {$processed} data karyawan berhasil diproses";
+            
+            // Show preview of successful imports (first 3)
+            if (count($successRows) > 0) {
+                $successPreview = array_slice($successRows, 0, 3);
+                $messages[] = "Data berhasil: " . implode('; ', $successPreview) . 
+                    (count($successRows) > 3 ? "; dan " . (count($successRows) - 3) . " lainnya" : "");
+            }
         }
-        if (count($skipped) > 0) {
-            $count = count($skipped);
-            $preview = array_slice($skipped, 0, 5);
-            $messages[] = "Dilewati: {$count} baris. Contoh: " . implode(' | ', $preview) . ( $count > 5 ? ' | ...' : '' );
-        }
-        if (count($errors) > 0) {
-            $count = count($errors);
-            $preview = array_slice($errors, 0, 5);
-            $messages[] = "Error saat proses: {$count} baris. Contoh: " . implode(' | ', $preview) . ( $count > 5 ? ' | ...' : '' );
+        
+        // Error/Warning messages
+        if ($hasErrors) {
+            $totalFailed = count($failedRows);
+            $messages[] = "⚠️ {$totalFailed} data gagal diproses";
+            
+            // Show detailed error information (first 5)
+            $failedPreview = array_slice($failedRows, 0, 5);
+            $messages[] = "Data gagal: " . implode('; ', $failedPreview) . 
+                ($totalFailed > 5 ? "; dan " . ($totalFailed - 5) . " error lainnya" : "");
         }
 
-        if (count($errors) > 0) {
-            return redirect()->route('master.karyawan.index')->with('error', implode('\n', $messages));
+        // Determine flash message type and redirect
+        if ($hasErrors && !$hasSuccess) {
+            // All failed
+            return redirect()->route('master.karyawan.index')
+                ->with('error', implode("\n", $messages));
+        } elseif ($hasErrors && $hasSuccess) {
+            // Partial success
+            return redirect()->route('master.karyawan.index')
+                ->with('warning', implode("\n", $messages));
+        } else {
+            // All success
+            return redirect()->route('master.karyawan.index')
+                ->with('success', implode("\n", $messages));
         }
-
-        if (count($skipped) > 0) {
-            return redirect()->route('master.karyawan.index')->with('warning', implode('\n', $messages));
-        }
-
-        return redirect()->route('master.karyawan.index')->with('success', implode('\n', $messages));
     }
 
     /**
