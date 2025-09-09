@@ -149,13 +149,13 @@ class KaryawanController extends Controller
         ];
         
         $sampleData = [
-            '1234567890', // nik
+            "'1234567890", // nik - dengan apostrophe untuk memaksa format text
             'John', // nama_panggilan
             'John Doe', // nama_lengkap
             'B 1234 ABC', // plat
             'john.doe@example.com', // email
-            '1234567890123456', // ktp
-            '1234567890123456', // kk
+            "'1234567890123456", // ktp - dengan apostrophe untuk memaksa format text
+            "'1234567890123456", // kk - dengan apostrophe untuk memaksa format text
             'Jl. Contoh No. 123', // alamat
             '001/002', // rt_rw
             'Kelurahan Contoh', // kelurahan
@@ -166,7 +166,7 @@ class KaryawanController extends Controller
             'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
             'Jakarta', // tempat_lahir
             '1990-01-01', // tanggal_lahir
-            '081234567890', // no_hp
+            "'081234567890", // no_hp - dengan apostrophe untuk memaksa format text
             'L', // jenis_kelamin
             'Belum Kawin', // status_perkawinan
             'Islam', // agama
@@ -179,19 +179,60 @@ class KaryawanController extends Controller
             'Catatan contoh', // catatan
             'PTKP', // status_pajak
             'Bank BCA', // nama_bank
-            '1234567890', // akun_bank
+            "'1234567890", // akun_bank - dengan apostrophe untuk memaksa format text
             'John Doe', // atas_nama
-            '0001234567890', // jkn
-            '12345678901234567', // no_ketenagakerjaan
+            "'0001234567890", // jkn - dengan apostrophe untuk memaksa format text
+            "'12345678901234567", // no_ketenagakerjaan - dengan apostrophe untuk memaksa format text
             'Jakarta', // cabang
             '', // nik_supervisor
             '' // supervisor
+        ];
+        
+        // Add instruction row
+        $instructionData = [
+            'Format: Text (gunakan apostrophe diawal)', // nik
+            'Nama panggilan', // nama_panggilan
+            'Nama lengkap sesuai KTP', // nama_lengkap
+            'Nomor plat kendaraan', // plat
+            'Email aktif', // email
+            'Format: Text 16 digit (gunakan apostrophe)', // ktp
+            'Format: Text 16 digit (gunakan apostrophe)', // kk
+            'Alamat sesuai KTP', // alamat
+            'RT/RW', // rt_rw
+            'Kelurahan', // kelurahan
+            'Kecamatan', // kecamatan
+            'Kabupaten', // kabupaten
+            'Provinsi', // provinsi
+            'Kode pos', // kode_pos
+            'Alamat lengkap gabungan', // alamat_lengkap
+            'Tempat lahir', // tempat_lahir
+            'Format: YYYY-MM-DD', // tanggal_lahir
+            'Format: Text (gunakan apostrophe)', // no_hp
+            'L atau P', // jenis_kelamin
+            'Status perkawinan', // status_perkawinan
+            'Agama', // agama
+            'Divisi kerja', // divisi
+            'Jabatan/pekerjaan', // pekerjaan
+            'Format: YYYY-MM-DD', // tanggal_masuk
+            'Format: YYYY-MM-DD (kosongkan jika masih aktif)', // tanggal_berhenti
+            'Format: YYYY-MM-DD', // tanggal_masuk_sebelumnya
+            'Format: YYYY-MM-DD', // tanggal_berhenti_sebelumnya
+            'Catatan tambahan', // catatan
+            'Status pajak', // status_pajak
+            'Nama bank', // nama_bank
+            'Format: Text (gunakan apostrophe)', // akun_bank
+            'Atas nama rekening', // atas_nama
+            'Format: Text (gunakan apostrophe)', // jkn
+            'Format: Text (gunakan apostrophe)', // no_ketenagakerjaan
+            'Cabang/lokasi kerja', // cabang
+            'NIK supervisor', // nik_supervisor
+            'Nama supervisor' // supervisor
         ];
 
         $fileName = 'template_import_karyawan.csv';
         
         // Manual CSV generation for better control
-        $callback = function() use ($columns, $sampleData) {
+        $callback = function() use ($columns, $sampleData, $instructionData) {
             $out = fopen('php://output', 'w');
             
             // Write UTF-8 BOM for Excel recognition
@@ -199,6 +240,17 @@ class KaryawanController extends Controller
             
             // Write header manually with semicolon delimiter
             fwrite($out, implode(';', $columns) . "\r\n");
+            
+            // Write instruction row for format guidance
+            $escapedInstructions = array_map(function($field) {
+                // Escape fields that contain semicolons, quotes, or line breaks
+                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
+                    return '"' . str_replace('"', '""', $field) . '"';
+                }
+                return $field;
+            }, $instructionData);
+            
+            fwrite($out, implode(';', $escapedInstructions) . "\r\n");
             
             // Write sample data manually with semicolon delimiter
             $escapedData = array_map(function($field) {
@@ -487,6 +539,44 @@ class KaryawanController extends Controller
                     $failedRows[] = "Baris {$lineNumber}: Gagal parse data";
                     continue;
                 }
+                
+                // Function to normalize numeric fields that might be in scientific notation
+                $normalizeNumericField = function($value) {
+                    if (empty($value)) return null;
+                    
+                    $value = trim($value);
+                    
+                    // Remove leading apostrophe if present (used to force text format in Excel)
+                    if (substr($value, 0, 1) === "'") {
+                        $value = substr($value, 1);
+                    }
+                    
+                    // Check if it's in scientific notation (like 1.23E+15)
+                    if (preg_match('/^-?\d*\.?\d*[eE][+-]?\d+$/', $value)) {
+                        // Convert scientific notation to regular number
+                        $number = sprintf('%.0f', (float)$value);
+                        return $number;
+                    }
+                    
+                    // For phone numbers, preserve leading zeros
+                    if (preg_match('/^0\d+$/', $value)) {
+                        return $value; // Keep as is for phone numbers starting with 0
+                    }
+                    
+                    // Remove any non-digit characters but preserve the cleaned number
+                    $cleaned = preg_replace('/[^\d]/', '', $value);
+                    
+                    return $cleaned ?: null;
+                };
+                
+                // Normalize numeric fields that are prone to scientific notation
+                $numericFields = ['nik', 'ktp', 'kk', 'no_hp'];
+                foreach ($numericFields as $field) {
+                    if (isset($data[$field])) {
+                        $data[$field] = $normalizeNumericField($data[$field]);
+                    }
+                }
+                
                 // Use `nik` as unique key to create or update
                 $nik = trim($data['nik'] ?? '');
                 if (!$nik) {
