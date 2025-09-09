@@ -30,7 +30,7 @@
     @endif
 
     <div class="overflow-x-auto">
-        <table class="min-w-full bg-white text-sm">
+        <table class="min-w-full bg-white">
             <thead>
                 <tr class="bg-gray-100">
                     <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">NIK</th>
@@ -51,17 +51,17 @@
             <tbody class="text-gray-700">
                 @forelse ($karyawans as $karyawan)
                     <tr class="border-b border-gray-200 hover:bg-gray-50">
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->nik }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->nama_lengkap }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->nama_panggilan }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->divisi }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->pekerjaan }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->jkn ?? '-' }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->bpjs_jamsostek ?? '-' }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->no_hp }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->email ?? '-' }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->status_pajak ?? '-' }}</td>
-                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/m/Y') : '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->nik }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->nama_lengkap }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->nama_panggilan }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->divisi }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->pekerjaan }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->jkn ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->bpjs_jamsostek ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->no_hp }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->email ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->status_pajak ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap">{{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/m/Y') : '-' }}</td>
                         <td class="py-2 px-3 whitespace-nowrap text-center">
                             <div class="flex item-center justify-center space-x-1">
                                 {{-- Show crew checklist button only for ABK division --}}

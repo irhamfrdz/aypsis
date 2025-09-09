@@ -7,7 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title','AYPSIS')</title>
     <script src="https://cd            <!-- Main Content -->
-            <div class="lg:col-span-5">tailwindcss.com"></script>
+            <div class="md:col-span-4">tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -77,10 +77,10 @@
         </div>
     </header>
 
-    <div class="container mx-auto mt-8 px-6 flex-grow max-w-7xl">
-        <div class="grid grid-cols-1 lg:grid-cols-6 gap-6">
+    <div class="container mx-auto mt-8 px-6 flex-grow max-w-6xl">
+        <div class="grid grid-cols-1 md:grid-cols-5 gap-6">
             <!-- Sidebar Menu -->
-            <div class="lg:col-span-1 bg-white rounded-xl shadow-lg border border-gray-100">
+            <div class="md:col-span-1 bg-white rounded-xl shadow-lg border border-gray-100">
                 <div class="p-6 border-b border-gray-100">
                     <h3 class="text-xl font-bold text-gray-800 flex items-center">
                         <svg class="w-6 h-6 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
