@@ -652,7 +652,7 @@ Route::middleware(['auth'])->group(function () {
                      ->middleware(['auth', 'role:admin']);
 
      // User Approval System Routes
-     Route::prefix('admin/user-approval')->middleware(['auth', 'permission:manage-users'])->group(function () {
+     Route::prefix('admin/user-approval')->middleware(['auth', 'permission:master-user'])->group(function () {
          Route::get('/', [\App\Http\Controllers\UserApprovalController::class, 'index'])->name('admin.user-approval.index');
          Route::get('/{user}', [\App\Http\Controllers\UserApprovalController::class, 'show'])->name('admin.user-approval.show');
          Route::post('/{user}/approve', [\App\Http\Controllers\UserApprovalController::class, 'approve'])->name('admin.user-approval.approve');

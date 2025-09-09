@@ -311,8 +311,8 @@
                     @endcanany
                     @endif
 
-                    {{-- User Approval Management (only for admins or users with manage-users permission) --}}
-                    @can('manage-users')
+                    {{-- User Approval Management (only for admins or users with master-user permission) --}}
+                    @if($isAdmin || auth()->user()->can('master-user'))
                     @php
                         $isUserApprovalRoute = Request::routeIs('admin.user-approval.*');
                         $pendingUsersCount = \App\Models\User::where('status', 'pending')->count();
@@ -328,7 +328,7 @@
                             @endif
                         </a>
                     </div>
-                    @endcan
+                    @endif
 
                     {{-- Dropdown untuk Tagihan Kontainer Sewa (di luar master data) --}}
                     {{-- Tagihan Kontainer Sewa menu removed (refactored) --}}
