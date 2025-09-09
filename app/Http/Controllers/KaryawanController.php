@@ -52,10 +52,10 @@ class KaryawanController extends Controller
      */
     public function export(\Illuminate\Http\Request $request)
     {
-        // Allow caller to specify separator via ?sep=, default to comma.
-        $sep = $request->query('sep', ',');
-        $delimiter = $sep === ';' ? ';' : ',';
-
+        // Allow caller to specify separator via ?sep=, default to semicolon for Excel compatibility
+        $sep = $request->query('sep', ';');
+        $delimiter = $sep === ',' ? ',' : ';'; // Default to semicolon
+        
         // Check if this is a template request
         $isTemplate = $request->query('template', false);
 
@@ -67,11 +67,13 @@ class KaryawanController extends Controller
 
         $callback = function() use ($columns, $delimiter, $isTemplate) {
             $out = fopen('php://output', 'w');
-            // write UTF-8 BOM so Excel recognizes UTF-8
+            
+            // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            // header row
-            fputcsv($out, $columns, $delimiter);
-
+            
+            // Write header row with proper delimiter
+            fputcsv($out, $columns, $delimiter, '"');
+            
             if ($isTemplate) {
                 // Add sample data row for template
                 $sampleData = [
@@ -113,7 +115,7 @@ class KaryawanController extends Controller
                     '', // nik_supervisor
                     '' // supervisor
                 ];
-                fputcsv($out, $sampleData, $delimiter);
+                fputcsv($out, $sampleData, $delimiter, '"');
             } else {
                 // stream rows for actual export
                 Karyawan::chunk(200, function($rows) use ($out, $columns, $delimiter) {
@@ -125,7 +127,7 @@ class KaryawanController extends Controller
                             if ($val instanceof \DateTimeInterface) $val = $val->format('Y-m-d');
                             $line[] = $val;
                         }
-                        fputcsv($out, $line, $delimiter);
+                        fputcsv($out, $line, $delimiter, '"');
                     }
                 });
             }
@@ -136,16 +138,85 @@ class KaryawanController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
         ]);
-    }
-
-    /**
+    }    /**
      * Download CSV template for import
      */
     public function downloadTemplate(\Illuminate\Http\Request $request)
     {
-        // Force template mode
-        $request->merge(['template' => '1']);
-        return $this->export($request);
+        // Generate template manually to ensure proper formatting
+        $columns = [
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+        ];
+        
+        $sampleData = [
+            '1234567890', // nik
+            'John', // nama_panggilan
+            'John Doe', // nama_lengkap
+            'B 1234 ABC', // plat
+            'john.doe@example.com', // email
+            '1234567890123456', // ktp
+            '1234567890123456', // kk
+            'Jl. Contoh No. 123', // alamat
+            '001/002', // rt_rw
+            'Kelurahan Contoh', // kelurahan
+            'Kecamatan Contoh', // kecamatan
+            'Kabupaten Contoh', // kabupaten
+            'Provinsi Contoh', // provinsi
+            '12345', // kode_pos
+            'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
+            'Jakarta', // tempat_lahir
+            '1990-01-01', // tanggal_lahir
+            '081234567890', // no_hp
+            'L', // jenis_kelamin
+            'Belum Kawin', // status_perkawinan
+            'Islam', // agama
+            'IT', // divisi
+            'Programmer', // pekerjaan
+            '2024-01-01', // tanggal_masuk
+            '', // tanggal_berhenti
+            '', // tanggal_masuk_sebelumnya
+            '', // tanggal_berhenti_sebelumnya
+            'Catatan contoh', // catatan
+            'PTKP', // status_pajak
+            'Bank BCA', // nama_bank
+            '1234567890', // akun_bank
+            'John Doe', // atas_nama
+            '0001234567890', // jkn
+            '12345678901234567', // no_ketenagakerjaan
+            'Jakarta', // cabang
+            '', // nik_supervisor
+            '' // supervisor
+        ];
+
+        $fileName = 'template_import_karyawan.csv';
+        
+        // Manual CSV generation for better control
+        $callback = function() use ($columns, $sampleData) {
+            $out = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            
+            // Write header manually with semicolon delimiter
+            fwrite($out, implode(';', $columns) . "\r\n");
+            
+            // Write sample data manually with semicolon delimiter
+            $escapedData = array_map(function($field) {
+                // Escape fields that contain semicolons, quotes, or line breaks
+                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
+                    return '"' . str_replace('"', '""', $field) . '"';
+                }
+                return $field;
+            }, $sampleData);
+            
+            fwrite($out, implode(';', $escapedData) . "\r\n");
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
     }
 
     /**
