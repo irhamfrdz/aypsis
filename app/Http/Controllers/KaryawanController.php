@@ -271,6 +271,13 @@ class KaryawanController extends Controller
             'supervisor' => 'nullable|string|max:255',
         ]);
 
+        // Convert data to uppercase except email
+        foreach ($validated as $key => $value) {
+            if ($value !== null && $key !== 'email') {
+                $validated[$key] = strtoupper($value);
+            }
+        }
+
         //Simpan data dalam database
         Karyawan::create($validated);
         return redirect()->route('master.karyawan.index')->with('success','Data karyawan berhasil ditambahkan');
@@ -336,6 +343,13 @@ class KaryawanController extends Controller
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
         ]);
+
+        // Convert data to uppercase except email
+        foreach ($validated as $key => $value) {
+            if ($value !== null && $key !== 'email') {
+                $validated[$key] = strtoupper($value);
+            }
+        }
 
         $karyawan->update($validated);
 
@@ -492,6 +506,12 @@ class KaryawanController extends Controller
                         $val = is_null($val) ? null : trim($val);
                         // convert empty string to null so unique/DATE columns don't get ''
                         if ($val === '') $val = null;
+                        
+                        // Convert to uppercase except for email field
+                        if ($val !== null && $col !== 'email') {
+                            $val = strtoupper($val);
+                        }
+                        
                         $payload[$col] = $val;
                     }
                 }
