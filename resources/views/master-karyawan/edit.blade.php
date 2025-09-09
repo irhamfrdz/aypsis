@@ -71,6 +71,18 @@
                 </div>
 
                 <div>
+                    <label for="ktp" class="block text-sm font-medium text-gray-700 mb-1">No. KTP</label>
+                    <input type="text" name="ktp" id="ktp" value="{{ old('ktp', $karyawan->ktp) }}" class="{{ $inputClasses }}">
+                    @error('ktp') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
+                    <label for="kk" class="block text-sm font-medium text-gray-700 mb-1">No. KK</label>
+                    <input type="text" name="kk" id="kk" value="{{ old('kk', $karyawan->kk) }}" class="{{ $inputClasses }}">
+                    @error('kk') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                </div>
+
+                <div>
                     <label for="agama" class="block text-sm font-medium text-gray-700 mb-1">Agama</label>
                     <input type="text" name="agama" id="agama" value="{{ old('agama', $karyawan->agama) }}" class="{{ $inputClasses }}">
                 </div>
@@ -188,20 +200,15 @@
                     <input type="text" name="jkn" id="jkn" value="{{ old('jkn', $karyawan->jkn) }}" class="{{ $inputClasses }}">
                 </div>
                 <div>
+                    <label for="no_ketenagakerjaan" class="block text-sm font-medium text-gray-700 mb-1">No. Ketenagakerjaan</label>
+                    <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" value="{{ old('no_ketenagakerjaan', $karyawan->no_ketenagakerjaan) }}" class="{{ $inputClasses }}">
+                </div>
+                <div>
                     <label for="cabang" class="block text-sm font-medium text-gray-700 mb-1">Cabang</label>
                     <input type="text" name="cabang" id="cabang" value="{{ old('cabang', $karyawan->cabang) }}" class="{{ $inputClasses }}">
                 </div>
 
-                <div>
-                    <label for="kode_pos" class="block text-sm font-medium text-gray-700 mb-1">Kode Pos</label>
-                    <input type="text" name="kode_pos" id="kode_pos" value="{{ old('kode_pos', $karyawan->kode_pos) }}" class="{{ $inputClasses }}">
-                </div>
                 <div class="md:col-span-2 lg:col-span-3">
-                    <label for="alamat_lengkap" class="block text-sm font-medium text-gray-700 mb-1">Alamat Lengkap</label>
-                    <input type="text" name="alamat_lengkap" id="alamat_lengkap" value="{{ old('alamat_lengkap', $karyawan->alamat_lengkap) }}" class="{{ $inputClasses }}">
-                </div>
-
-                <div class="md:col-span-3">
                     <label for="catatan" class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
                     <textarea name="catatan" id="catatan" rows="4" class="{{ $inputClasses }}">{{ old('catatan', $karyawan->catatan) }}</textarea>
                 </div>
