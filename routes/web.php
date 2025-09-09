@@ -425,6 +425,11 @@ Route::middleware(['auth'])->group(function () {
                     ->name('karyawan.export')
                     ->middleware('can:master-karyawan');
 
+               // Export Excel-formatted CSV to prevent scientific notation
+               Route::get('karyawan/export-excel', [KaryawanController::class, 'exportExcel'])
+                    ->name('karyawan.export-excel')
+                    ->middleware('can:master-karyawan');
+
                // Download CSV template for import
                Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
                     ->name('karyawan.template')

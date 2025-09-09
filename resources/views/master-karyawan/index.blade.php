@@ -75,6 +75,19 @@
                         <a href="{{ route('master.karyawan.export') }}?sep=%3B" class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-file-csv mr-2"></i>Export CSV
                         </a>
+                        <div class="relative group">
+                            <a href="{{ route('master.karyawan.export-excel') }}" class="inline-flex items-center px-3 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded transition duration-150">
+                                <i class="fas fa-file-excel mr-2"></i>Export Excel
+                            </a>
+                            <!-- Tooltip -->
+                            <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-64 p-3 bg-gray-900 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none z-50">
+                                <div class="text-center">
+                                    <div class="font-semibold mb-1">Export Excel Format</div>
+                                    <div>Export data dengan format khusus untuk Excel - mencegah scientific notation pada nomor panjang</div>
+                                </div>
+                                <div class="absolute top-full left-1/2 transform -translate-x-1/2 w-0 h-0 border-l-4 border-r-4 border-t-4 border-l-transparent border-r-transparent border-t-gray-900"></div>
+                            </div>
+                        </div>
                         <a href="{{ route('master.karyawan.import') }}" class="inline-flex items-center px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-upload mr-2"></i>Import CSV
                         </a>

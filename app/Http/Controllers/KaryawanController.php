@@ -78,13 +78,13 @@ class KaryawanController extends Controller
             if ($isTemplate) {
                 // Add sample data row for template
                 $sampleData = [
-                    '1234567890', // nik
+                    "'1234567890", // nik - with apostrophe to force text format
                     'John', // nama_panggilan
                     'John Doe', // nama_lengkap
                     'B 1234 ABC', // plat
                     'john.doe@example.com', // email
-                    '1234567890123456', // ktp
-                    '1234567890123456', // kk
+                    "'1234567890123456", // ktp - with apostrophe to force text format
+                    "'1234567890123456", // kk - with apostrophe to force text format
                     'Jl. Contoh No. 123', // alamat
                     '001/002', // rt_rw
                     'Kelurahan Contoh', // kelurahan
@@ -95,7 +95,7 @@ class KaryawanController extends Controller
                     'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
                     'Jakarta', // tempat_lahir
                     '1990-01-01', // tanggal_lahir
-                    '081234567890', // no_hp
+                    "'081234567890", // no_hp - with apostrophe to force text format
                     'L', // jenis_kelamin
                     'Belum Kawin', // status_perkawinan
                     'Islam', // agama
@@ -108,10 +108,11 @@ class KaryawanController extends Controller
                     'Catatan contoh', // catatan
                     'K1', // status_pajak
                     'Bank BCA', // nama_bank
-                    '1234567890', // akun_bank
+                    'Cabang Jakarta Pusat', // bank_cabang
+                    "'1234567890", // akun_bank - with apostrophe to force text format
                     'John Doe', // atas_nama
-                    '0001234567890', // jkn
-                    '12345678901234567', // no_ketenagakerjaan
+                    "'0001234567890", // jkn - with apostrophe to force text format
+                    "'12345678901234567", // no_ketenagakerjaan - with apostrophe to force text format
                     'Jakarta', // cabang
                     '', // nik_supervisor
                     '' // supervisor
@@ -124,8 +125,18 @@ class KaryawanController extends Controller
                         $line = [];
                         foreach ($columns as $col) {
                             $val = $r->{$col} ?? '';
+                            
                             // format dates to Y-m-d for CSV
-                            if ($val instanceof \DateTimeInterface) $val = $val->format('Y-m-d');
+                            if ($val instanceof \DateTimeInterface) {
+                                $val = $val->format('Y-m-d');
+                            }
+                            
+                            // Add leading apostrophe to numeric fields to force text format in Excel
+                            // This prevents scientific notation
+                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
+                                $val = "'" . $val;
+                            }
+                            
                             $line[] = $val;
                         }
                         fputcsv($out, $line, $delimiter, '"');
@@ -139,7 +150,67 @@ class KaryawanController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
         ]);
-    }    /**
+    }
+
+    /**
+     * Export all karyawans as Excel-compatible CSV download with proper number formatting
+     */
+    public function exportExcel()
+    {
+        $columns = [
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+        ];
+
+        $fileName = 'karyawans_excel_export_' . date('Ymd_His') . '.csv';
+
+        $callback = function() use ($columns) {
+            $out = fopen('php://output', 'w');
+            
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            
+            // Write header row with semicolon delimiter for Excel
+            fwrite($out, implode(';', $columns) . "\r\n");
+            
+            // Stream rows for actual export with proper formatting
+            Karyawan::chunk(200, function($rows) use ($out, $columns) {
+                foreach ($rows as $r) {
+                    $line = [];
+                    foreach ($columns as $col) {
+                        $val = $r->{$col} ?? '';
+                        
+                        // Format dates to Y-m-d for CSV
+                        if ($val instanceof \DateTimeInterface) {
+                            $val = $val->format('Y-m-d');
+                        }
+                        
+                        // Add leading apostrophe to numeric fields to force text format in Excel
+                        // This prevents scientific notation for long numbers
+                        if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
+                            $val = "'" . $val;
+                        }
+                        
+                        // Escape fields that contain semicolons, quotes, or line breaks
+                        if (strpos($val, ';') !== false || strpos($val, '"') !== false || strpos($val, "\n") !== false || strpos($val, "\r") !== false) {
+                            $val = '"' . str_replace('"', '""', $val) . '"';
+                        }
+                        
+                        $line[] = $val;
+                    }
+                    fwrite($out, implode(';', $line) . "\r\n");
+                }
+            });
+            
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
+    }
+
+    /**
      * Download CSV template for import
      */
     public function downloadTemplate(\Illuminate\Http\Request $request)
