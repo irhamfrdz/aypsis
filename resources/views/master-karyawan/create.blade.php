@@ -332,6 +332,11 @@
                     <label for="jkn" class="{{ $labelClasses }}">JKN</label>
                     <input type="text" name="jkn" id="jkn" class="{{ $inputClasses }}" placeholder="Nomor JKN/BPJS">
                 </div>
+
+                <div>
+                    <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
+                    <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek">
+                </div>
             </div>
         </fieldset>
 
