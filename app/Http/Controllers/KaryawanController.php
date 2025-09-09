@@ -46,7 +46,7 @@ class KaryawanController extends Controller
         $sortDirection = $request->get('direction', 'asc'); // Default ascending
 
         // Validate sort field untuk keamanan
-        $allowedSortFields = ['nama_lengkap', 'nik', 'divisi', 'pekerjaan', 'tanggal_masuk'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk'];
         if (!in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }

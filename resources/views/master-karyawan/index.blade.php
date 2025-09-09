@@ -10,7 +10,7 @@
         <div class="px-6 py-4 border-b bg-white">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
                 <h2 class="text-xl font-semibold text-gray-900">Daftar Karyawan</h2>
-                
+
                 <!-- Search Box -->
                 <div class="flex flex-col sm:flex-row gap-3 w-full sm:w-auto">
                     <form method="GET" action="{{ route('master.karyawan.index') }}" class="flex-1 sm:flex-initial">
@@ -20,10 +20,10 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                                 </svg>
                             </div>
-                            <input type="text" 
-                                   name="search" 
-                                   value="{{ request('search') }}" 
-                                   class="block w-full sm:w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm" 
+                            <input type="text"
+                                   name="search"
+                                   value="{{ request('search') }}"
+                                   class="block w-full sm:w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
                                    placeholder="Cari nama, NIK, divisi, pekerjaan..."
                                    autocomplete="off">
                             @if(request('search'))
@@ -37,13 +37,13 @@
                             @endif
                         </div>
                     </form>
-                    
+
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap gap-2">
                         <a href="{{ route('master.karyawan.create') }}" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-plus mr-2"></i>Tambah Karyawan
                         </a>
-                        
+
                         <!-- Template Dropdown -->
                         <div class="relative group">
                             <button class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition duration-150">
@@ -70,11 +70,11 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <a href="{{ route('master.karyawan.print') }}" target="_blank" class="inline-flex items-center px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-print mr-2"></i>Cetak Semua
                         </a>
-                        
+
                         <!-- Export Dropdown -->
                         <div class="relative group">
                             <button class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition duration-150">
@@ -101,14 +101,14 @@
                                 </div>
                             </div>
                         </div>
-                        
+
                         <a href="{{ route('master.karyawan.import') }}" class="inline-flex items-center px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded transition duration-150">
                             <i class="fas fa-upload mr-2"></i>Import Excel/CSV
                         </a>
                     </div>
                 </div>
             </div>
-            
+
             @if(request('search'))
                 <div class="mt-3 flex items-center text-sm text-gray-600">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -194,22 +194,38 @@
             </div>
         </div>
 
-        <!-- Table Section -->
-        <div class="overflow-x-auto">
+        <!-- Table Section with Sticky Header -->
+        <div class="table-container overflow-x-auto max-h-screen">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+                <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">>
                     <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NIK</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>NIK</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nik', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'nik' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nik', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'nik' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>NAMA LENGKAP</span>
                                 <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_lengkap', 'direction' => 'asc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_lengkap', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'nama_lengkap' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan A-Z">
                                         <i class="fas fa-sort-up text-xs"></i>
                                     </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_lengkap', 'direction' => 'desc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_lengkap', 'direction' => 'desc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'nama_lengkap' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan Z-A">
                                         <i class="fas fa-sort-down text-xs"></i>
@@ -217,15 +233,159 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NAMA PANGGILAN</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DIVISI</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PEKERJAAN</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JKN</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">BP JAMSOSTEK</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NO HP</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">STATUS PAJAK</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">TANGGAL MASUK</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>NAMA PANGGILAN</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_panggilan', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'nama_panggilan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_panggilan', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'nama_panggilan' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>DIVISI</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'divisi', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'divisi' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'divisi', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'divisi' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>PEKERJAAN</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'pekerjaan', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'pekerjaan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'pekerjaan', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'pekerjaan' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>JKN</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'asc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'jkn' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'desc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'jkn' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>BP JAMSOSTEK</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'asc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'no_ketenagakerjaan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'desc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'no_ketenagakerjaan' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>NO HP</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'asc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'no_hp' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'desc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'no_hp' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>EMAIL</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'asc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'email' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'desc'])) }}" 
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'email' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>STATUS PAJAK</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'status_pajak', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'status_pajak' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan A-Z">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'status_pajak', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'status_pajak' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Z-A">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center space-x-1">
+                                <span>TANGGAL MASUK</span>
+                                <div class="flex flex-col">
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'tanggal_masuk', 'direction' => 'asc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'tanggal_masuk' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Terlama">
+                                        <i class="fas fa-sort-up text-xs"></i>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'tanggal_masuk', 'direction' => 'desc'])) }}"
+                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'tanggal_masuk' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                       title="Urutkan Terbaru">
+                                        <i class="fas fa-sort-down text-xs"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </th>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
                     </tr>
                 </thead>
@@ -237,9 +397,9 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md
-                                    {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' : 
-                                       (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' : 
-                                       (strtolower($karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' : 
+                                    {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
+                                       (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
+                                       (strtolower($karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' :
                                        'bg-gray-100 text-gray-800')) }}">
                                     {{ strtoupper($karyawan->divisi) }}
                                 </span>
@@ -251,10 +411,10 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->email ?? '-' }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md
-                                    {{ 
-                                        strtolower($karyawan->status_pajak ?? '') === 'pkp' ? 'bg-red-100 text-red-800' : 
-                                        (preg_match('/^(k|tk)/i', $karyawan->status_pajak ?? '') ? 'bg-blue-100 text-blue-800' : 
-                                        (strtolower($karyawan->status_pajak ?? '') === 'ptkp' ? 'bg-yellow-100 text-yellow-800' : 
+                                    {{
+                                        strtolower($karyawan->status_pajak ?? '') === 'pkp' ? 'bg-red-100 text-red-800' :
+                                        (preg_match('/^(k|tk)/i', $karyawan->status_pajak ?? '') ? 'bg-blue-100 text-blue-800' :
+                                        (strtolower($karyawan->status_pajak ?? '') === 'ptkp' ? 'bg-yellow-100 text-yellow-800' :
                                         'bg-gray-100 text-gray-800'))
                                     }}">
                                     {{ strtoupper($karyawan->status_pajak ?? '-') }}
@@ -275,15 +435,15 @@
                                     <a href="{{ route('master.karyawan.show', $karyawan->id) }}" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors border border-gray-300" title="Lihat">
                                         <i class="fas fa-eye text-xs"></i>
                                     </a>
-                                    
+
                                     <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors border border-gray-300" title="Cetak">
                                         <i class="fas fa-print text-xs"></i>
                                     </a>
-                                    
+
                                     <a href="{{ route('master.karyawan.edit', $karyawan->id) }}" class="inline-flex items-center justify-center w-8 h-8 text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 rounded-md transition-colors border border-gray-300" title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </a>
-                                    
+
                                     <form action="{{ route('master.karyawan.destroy', $karyawan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus karyawan ini?');" class="inline">
                                         @csrf
                                         @method('DELETE')
@@ -325,7 +485,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('input[name="search"]');
     const searchForm = searchInput.closest('form');
     let searchTimeout;
-    
+
     // Auto-submit form setelah user berhenti mengetik selama 500ms
     searchInput.addEventListener('input', function() {
         clearTimeout(searchTimeout);
@@ -335,7 +495,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }, 500);
     });
-    
+
     // Submit langsung saat Enter ditekan
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {
@@ -344,20 +504,20 @@ document.addEventListener('DOMContentLoaded', function() {
             searchForm.submit();
         }
     });
-    
+
     // Dropdown functionality
     const dropdowns = document.querySelectorAll('.relative.group');
-    
+
     dropdowns.forEach(dropdown => {
         const button = dropdown.querySelector('button');
         const menu = dropdown.querySelector('.absolute');
-        
+
         if (button && menu) {
             // Toggle dropdown on button click
             button.addEventListener('click', function(e) {
                 e.preventDefault();
                 e.stopPropagation();
-                
+
                 // Close other dropdowns
                 dropdowns.forEach(otherDropdown => {
                     if (otherDropdown !== dropdown) {
@@ -368,7 +528,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 });
-                
+
                 // Toggle current dropdown
                 menu.classList.toggle('opacity-0');
                 menu.classList.toggle('opacity-100');
@@ -377,7 +537,7 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
-    
+
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(e) {
         dropdowns.forEach(dropdown => {
@@ -388,7 +548,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
-    
+
     // Close dropdowns on escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
@@ -401,6 +561,87 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         }
     });
+
+    // Sticky Header Enhancement
+    const tableContainer = document.querySelector('.table-container');
+    const stickyHeader = document.querySelector('.sticky-table-header');
+    
+    if (tableContainer && stickyHeader) {
+        // Add scroll event listener for visual feedback
+        tableContainer.addEventListener('scroll', function() {
+            if (tableContainer.scrollTop > 0) {
+                tableContainer.classList.add('scrolled');
+            } else {
+                tableContainer.classList.remove('scrolled');
+            }
+        });
+        
+        // Optional: Add smooth scroll to top button
+        const scrollToTopBtn = document.createElement('button');
+        scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+        scrollToTopBtn.className = 'fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 opacity-0 invisible z-50';
+        scrollToTopBtn.title = 'Scroll ke atas';
+        document.body.appendChild(scrollToTopBtn);
+        
+        // Show/hide scroll to top button
+        tableContainer.addEventListener('scroll', function() {
+            if (tableContainer.scrollTop > 200) {
+                scrollToTopBtn.classList.remove('opacity-0', 'invisible');
+                scrollToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                scrollToTopBtn.classList.add('opacity-0', 'invisible');
+                scrollToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+        
+        // Scroll to top functionality
+        scrollToTopBtn.addEventListener('click', function() {
+            tableContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
 });
 </script>
+
+<style>
+/* Sticky Table Header Styles */
+.sticky-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* bg-gray-50 */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced table container for better scrolling */
+.table-container {
+    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    overflow-y: auto;
+    border: 1px solid rgb(229 231 235); /* border-gray-200 */
+    border-radius: 0.5rem;
+}
+
+/* Smooth scrolling for better UX */
+.table-container {
+    scroll-behavior: smooth;
+}
+
+/* Table header cells need specific background to avoid transparency issues */
+.sticky-table-header th {
+    background-color: rgb(249 250 251) !important;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Optional: Add a subtle border when scrolling */
+.table-container.scrolled .sticky-table-header {
+    border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+
+/* Ensure dropdown menus appear above sticky header */
+.relative.group .absolute {
+    z-index: 20;
+}
+</style>
 @endsection

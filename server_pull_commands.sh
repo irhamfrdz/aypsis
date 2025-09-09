@@ -1,0 +1,64 @@
+#!/bin/bash
+# 🚀 PERINTAH PULL DARI GIT KE SERVER
+# Jalankan perintah ini di server untuk mengupdate aplikasi
+
+echo "🔄 STARTING GIT PULL TO SERVER..."
+echo "================================="
+
+# 1. Navigasi ke direktori aplikasi
+echo "📁 1. Navigating to application directory..."
+cd /path/to/your/aypsis
+
+# 2. Backup database sebelum update (opsional tapi direkomendasikan)
+echo "💾 2. Creating database backup..."
+php artisan backup:run --only-db
+# atau manual: mysqldump -u username -p database_name > backup_$(date +%Y%m%d_%H%M%S).sql
+
+# 3. Set maintenance mode untuk mencegah akses user selama update
+echo "🚧 3. Enabling maintenance mode..."
+php artisan down --message="System Update in Progress" --retry=60
+
+# 4. Pull perubahan terbaru dari git
+echo "📥 4. Pulling latest changes from git..."
+git fetch origin
+git pull origin main
+
+# 5. Update composer dependencies jika ada perubahan
+echo "📦 5. Updating composer dependencies..."
+composer install --no-dev --optimize-autoloader
+
+# 6. Run database migrations jika ada
+echo "🗄️ 6. Running database migrations..."
+php artisan migrate --force
+
+# 7. Clear all caches
+echo "🧹 7. Clearing application caches..."
+php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+
+# 8. Optimize application
+echo "⚡ 8. Optimizing application..."
+    php artisan config:cache
+    php artisan route:cache
+    php artisan view:cache
+
+# 9. Set proper permissions
+echo "🔐 9. Setting proper permissions..."
+chmod -R 755 storage bootstrap/cache
+chown -R www-data:www-data storage bootstrap/cache
+
+# 10. Disable maintenance mode
+echo "✅ 10. Disabling maintenance mode..."
+php artisan up
+
+echo ""
+echo "🎉 GIT PULL TO SERVER COMPLETED SUCCESSFULLY!"
+echo "============================================="
+echo "✅ Application updated to latest version"
+echo "✅ Database migrations applied"
+echo "✅ Caches cleared and optimized"
+echo "✅ Maintenance mode disabled"
+echo ""
+echo "🌐 Your application is now live with the latest changes!"
