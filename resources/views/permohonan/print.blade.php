@@ -12,34 +12,34 @@
             padding: 20px;
             background: white;
         }
-        
+
         .print-container {
             max-width: 800px;
             margin: 0 auto;
             background: white;
             border: 2px solid #000;
         }
-        
+
         .header {
             text-align: center;
             border-bottom: 2px solid #000;
             padding: 15px;
             background: #f8f9fa;
         }
-        
+
         .header h1 {
             margin: 0;
             font-size: 20px;
             font-weight: bold;
             text-transform: uppercase;
         }
-        
+
         .header h2 {
             margin: 5px 0 0 0;
             font-size: 16px;
             color: #666;
         }
-        
+
         .memo-info {
             display: flex;
             justify-content: space-between;
@@ -47,34 +47,34 @@
             border-bottom: 1px solid #ddd;
             background: #fff;
         }
-        
+
         .memo-left, .memo-right {
             width: 48%;
         }
-        
+
         .info-row {
             display: flex;
             margin-bottom: 8px;
             align-items: center;
         }
-        
+
         .info-label {
             font-weight: bold;
             width: 120px;
             flex-shrink: 0;
         }
-        
+
         .info-value {
             flex: 1;
             border-bottom: 1px solid #333;
             min-height: 18px;
             padding-left: 5px;
         }
-        
+
         .content-section {
             padding: 15px;
         }
-        
+
         .section-title {
             font-weight: bold;
             font-size: 14px;
@@ -83,57 +83,57 @@
             border-bottom: 1px solid #333;
             padding-bottom: 5px;
         }
-        
+
         .kontainer-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 20px;
         }
-        
+
         .kontainer-table th,
         .kontainer-table td {
             border: 1px solid #333;
             padding: 8px;
             text-align: left;
         }
-        
+
         .kontainer-table th {
             background: #f0f0f0;
             font-weight: bold;
         }
-        
+
         .signatures {
             display: flex;
             justify-content: space-between;
             margin-top: 40px;
             padding: 20px;
         }
-        
+
         .signature-box {
             text-align: center;
             width: 200px;
         }
-        
+
         .signature-line {
             border-bottom: 1px solid #333;
             height: 60px;
             margin-bottom: 10px;
         }
-        
+
         .total-section {
             background: #f8f9fa;
             border: 2px solid #333;
             padding: 15px;
             margin: 20px 0;
         }
-        
+
         .total-row {
             display: flex;
             justify-content: space-between;
             margin-bottom: 5px;
             font-size: 14px;
         }
-        
+
         .total-final {
             font-weight: bold;
             font-size: 16px;
@@ -141,23 +141,23 @@
             padding-top: 10px;
             margin-top: 10px;
         }
-        
+
         @media print {
             body {
                 margin: 0;
                 padding: 10px;
             }
-            
+
             .print-container {
                 border: none;
                 box-shadow: none;
             }
-            
+
             .no-print {
                 display: none !important;
             }
         }
-        
+
         .print-button {
             position: fixed;
             top: 20px;
@@ -171,7 +171,7 @@
             font-size: 14px;
             z-index: 1000;
         }
-        
+
         .print-button:hover {
             background: #0056b3;
         }
@@ -179,14 +179,14 @@
 </head>
 <body>
     <button class="print-button no-print" onclick="window.print()">🖨️ Print Dokumen</button>
-    
+
     <div class="print-container">
         <!-- Header -->
         <div class="header">
             <h1>Memo Surat Jalan</h1>
             <h2>{{ config('app.name', 'PT. AYPSIS') }}</h2>
         </div>
-        
+
         <!-- Memo Information -->
         <div class="memo-info">
             <div class="memo-left">
@@ -218,7 +218,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Kontainer Details -->
         <div class="content-section">
             <div class="section-title">Detail Kontainer</div>
@@ -250,13 +250,13 @@
                     @endif
                 </tbody>
             </table>
-            
+
             <div class="info-row">
                 <span class="info-label">Jumlah Kontainer:</span>
                 <span class="info-value">{{ $permohonan->jumlah_kontainer }} unit</span>
             </div>
         </div>
-        
+
         <!-- Total Biaya -->
         <div class="total-section">
             <div class="section-title">Rincian Biaya</div>
@@ -273,7 +273,7 @@
                 <span>Rp. {{ number_format($permohonan->total_harga_setelah_adj ?? 0, 0, ',', '.') }}</span>
             </div>
         </div>
-        
+
         <!-- Additional Info -->
         <div class="content-section">
             @if($permohonan->keterangan)
@@ -283,7 +283,7 @@
                 </div>
             @endif
         </div>
-        
+
         <!-- Signatures -->
         <div class="signatures">
             <div class="signature-box">
@@ -302,13 +302,13 @@
                 <div>{{ $permohonan->supir->nama_panggilan ?? 'Supir' }}</div>
             </div>
         </div>
-        
+
         <!-- Footer -->
         <div class="content-section" style="text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd;">
             <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }} | {{ config('app.name') }}</p>
         </div>
     </div>
-    
+
     <script>
         // Auto-focus untuk print
         window.onload = function() {

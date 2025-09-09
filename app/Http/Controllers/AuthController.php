@@ -115,7 +115,7 @@ class AuthController extends Controller
     {
         // Ambil daftar karyawan yang belum memiliki user account
         $karyawans = \App\Models\Karyawan::whereDoesntHave('user')->get();
-        
+
         return view('auth.register-user', compact('karyawans'));
     }
 

@@ -301,17 +301,17 @@ class PermohonanController extends Controller
                 foreach ($selectedIds as $id) {
                     try {
                         $permohonan = Permohonan::findOrFail($id);
-                        
+
                         // Detach kontainers relationship
                         $permohonan->kontainers()->detach();
-                        
+
                         // Store memo number for success message
                         $memoNumber = $permohonan->nomor_memo;
-                        
+
                         // Delete the permohonan
                         $permohonan->delete();
                         $deletedCount++;
-                        
+
                     } catch (\Exception $e) {
                         $failedMemos[] = $permohonan->nomor_memo ?? "ID: {$id}";
                     }
@@ -323,15 +323,15 @@ class PermohonanController extends Controller
             if ($deletedCount > 0) {
                 $messages[] = "Berhasil menghapus {$deletedCount} memo permohonan.";
             }
-            
+
             if (!empty($failedMemos)) {
                 $messages[] = "Gagal menghapus memo: " . implode(', ', $failedMemos);
             }
 
             $messageType = empty($failedMemos) ? 'success' : ($deletedCount > 0 ? 'warning' : 'error');
-            
+
             return redirect()->route('permohonan.index')->with($messageType, implode(' ', $messages));
-            
+
         } catch (\Exception $e) {
             return back()->with('error', 'Gagal menghapus permohonan: ' . $e->getMessage());
         }
@@ -344,10 +344,10 @@ class PermohonanController extends Controller
     {
         // Load relationships yang diperlukan untuk print
         $permohonan->load(['supir', 'krani', 'kontainers']);
-        
+
         // Ambil data kegiatan untuk display
         $kegiatan = MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)->first();
-        
+
         return view('permohonan.print', compact('permohonan', 'kegiatan'));
     }
 
