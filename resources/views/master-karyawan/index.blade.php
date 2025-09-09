@@ -30,32 +30,40 @@
     @endif
 
     <div class="overflow-x-auto">
-        <table class="min-w-full bg-white">
+        <table class="min-w-full bg-white text-sm">
             <thead>
                 <tr class="bg-gray-100">
-                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">NIK</th>
-                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Lengkap</th>
-                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Panggilan</th>
-                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Divisi</th>
-                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pekerjaan</th>
-                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No Hp</th>
-                    <th class="py-3 px-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No Ketenagakerjaan</th>
-                    <th class="py-3 px-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">NIK</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Lengkap</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Nama Panggilan</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Divisi</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Pekerjaan</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">JKN</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">BP Jamsostek</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">No Hp</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Email</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Status Pajak</th>
+                    <th class="py-2 px-3 text-left text-xs font-semibold text-gray-600 uppercase tracking-wider">Tanggal Masuk</th>
+                    <th class="py-2 px-3 text-center text-xs font-semibold text-gray-600 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
 
             <tbody class="text-gray-700">
                 @forelse ($karyawans as $karyawan)
                     <tr class="border-b border-gray-200 hover:bg-gray-50">
-                        <td class="py-3 px-4 whitespace-nowrap">{{ $karyawan->nik }}</td>
-                        <td class="py-3 px-4 whitespace-nowrap">{{ $karyawan->nama_lengkap }}</td>
-                        <td class="py-3 px-4 whitespace-nowrap">{{ $karyawan->nama_panggilan }}</td>
-                        <td class="py-3 px-4 whitespace-nowrap">{{ $karyawan->divisi }}</td>
-                        <td class="py-3 px-4 whitespace-nowrap">{{ $karyawan->pekerjaan }}</td>
-                        <td class="py-3 px-4 whitespace-nowrap">{{ $karyawan->no_hp }}</td>
-                        <td class="py-3 px-4 whitespace-nowrap">{{ $karyawan->no_ketenagakerjaan ?? '-' }}</td>
-                        <td class="py-3 px-4 whitespace-nowrap text-center">
-                            <div class="flex item-center justify-center space-x-2">
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->nik }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->nama_lengkap }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->nama_panggilan }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->divisi }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->pekerjaan }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->jkn ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->bpjs_jamsostek ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->no_hp }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->email ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->status_pajak ?? '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-sm">{{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/m/Y') : '-' }}</td>
+                        <td class="py-2 px-3 whitespace-nowrap text-center">
+                            <div class="flex item-center justify-center space-x-1">
                                 {{-- Show crew checklist button only for ABK division --}}
                                 @if(strtolower($karyawan->divisi) === 'abk')
                                     <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}" class="text-blue-600 hover:text-blue-900" title="Checklist Kelengkapan Crew">
@@ -98,7 +106,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="text-center py-4 text-gray-500">
+                        <td colspan="12" class="text-center py-4 text-gray-500">
                             Belum ada data Karyawan yang ditemukan.
                         </td>
                     </tr>
