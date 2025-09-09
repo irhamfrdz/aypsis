@@ -35,8 +35,8 @@
                     <td style="border:1px solid #ddd;padding:6px;">{{ $k->pekerjaan ?? '-' }}</td>
                     <td style="border:1px solid #ddd;padding:6px;">{{ $k->no_hp ?? '-' }}</td>
                     <td style="border:1px solid #ddd;padding:6px;">{{ $k->email ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->tanggal_masuk ? Carbon::parse($k->tanggal_masuk)->format('Y-m-d') : '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->tanggal_berhenti ? Carbon::parse($k->tanggal_berhenti)->format('Y-m-d') : '-' }}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->tanggal_masuk ? Carbon::parse($k->tanggal_masuk)->format('d/M/Y') : '-' }}</td>
+                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->tanggal_berhenti ? Carbon::parse($k->tanggal_berhenti)->format('d/M/Y') : '-' }}</td>
                 </tr>
             @empty
                 <tr>

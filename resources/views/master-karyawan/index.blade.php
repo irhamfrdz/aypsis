@@ -57,7 +57,7 @@
                             </div>
                         </div>
                         <div class="relative group">
-                            <a href="{{ route('master.karyawan.excel-template') }}" class="inline-flex items-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded transition duration-150">
+                            <a href="{{ route('master.karyawan.simple-excel-template') }}" class="inline-flex items-center px-3 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-medium rounded transition duration-150">
                                 <i class="fas fa-file-excel mr-2"></i>Template Excel
                             </a>
                             <!-- Tooltip -->
@@ -89,7 +89,7 @@
                             </div>
                         </div>
                         <a href="{{ route('master.karyawan.import') }}" class="inline-flex items-center px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded transition duration-150">
-                            <i class="fas fa-upload mr-2"></i>Import CSV
+                            <i class="fas fa-upload mr-2"></i>Import Excel/CSV
                         </a>
                     </div>
                 </div>
@@ -231,7 +231,7 @@
                                 </span>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/m/Y') : '-' }}
+                                {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-1">

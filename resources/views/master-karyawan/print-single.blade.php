@@ -45,7 +45,7 @@
         </tr>
         <tr>
             <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>9. Tempat / Tanggal Lahir</strong></td>
-            <td style="padding:6px;border:1px solid #ddd;">{{ ($karyawan->tempat_lahir ?? '-') . ' / ' . ($karyawan->tanggal_lahir ? Carbon::parse($karyawan->tanggal_lahir)->format('Y-m-d') : '-') }}</td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ ($karyawan->tempat_lahir ?? '-') . ' / ' . ($karyawan->tanggal_lahir ? Carbon::parse($karyawan->tanggal_lahir)->format('d/M/Y') : '-') }}</td>
         </tr>
         <tr>
             <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>10. Agama</strong></td>
@@ -61,7 +61,7 @@
         </tr>
         <tr>
             <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>13. Tanggal Masuk Kerja</strong></td>
-            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->tanggal_masuk ? Carbon::parse($karyawan->tanggal_masuk)->format('Y-m-d') : '-' }}</td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->tanggal_masuk ? Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}</td>
         </tr>
         <tr>
             <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>14. Tanggungan (Anak)</strong></td>

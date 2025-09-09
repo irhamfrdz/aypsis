@@ -9,7 +9,7 @@
         <!-- Header Section -->
         <div class="px-6 py-4 border-b bg-white">
             <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-                <h2 class="text-xl font-semibold text-gray-900">Import Data Karyawan dari CSV/Excel</h2>
+                <h2 class="text-xl font-semibold text-gray-900">Import Data Karyawan dari Excel/CSV</h2>
                 <div class="flex gap-2">
                     <a href="{{ route('master.karyawan.template') }}" class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition duration-150">
                         <i class="fas fa-download mr-2"></i>Template CSV
@@ -71,12 +71,12 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <!-- Upload Form -->
                 <div class="bg-gray-50 rounded-lg p-6">
-                    <h3 class="text-lg font-medium text-gray-900 mb-4">Upload File CSV/Excel</h3>
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Upload File Excel/CSV</h3>
 
                     <form action="{{ route('master.karyawan.import.store') }}" method="POST" enctype="multipart/form-data" id="importForm">
                         @csrf
                         <div class="mb-4">
-                            <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-2">Pilih File CSV/Excel</label>
+                            <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-2">Pilih File Excel/CSV</label>
                             <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-gray-400 transition-colors duration-200" id="dropZone">
                                 <div class="space-y-1 text-center">
                                     <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -89,7 +89,7 @@
                                         </label>
                                         <p class="pl-1">atau drag and drop</p>
                                     </div>
-                                    <p class="text-xs text-gray-500">CSV, TXT, XLSX, XLS hingga 10MB</p>
+                                    <p class="text-xs text-gray-500">XLSX, XLS, CSV, TXT hingga 10MB</p>
                                 </div>
                             </div>
                             <div id="fileInfo" class="mt-2 hidden">
@@ -151,7 +151,14 @@
                             <p>• File harus berformat CSV dengan delimiter koma (,) atau semicolon (;)</p>
                             <p>• Baris pertama harus berisi nama kolom (header)</p>
                             <p>• NIK harus unik untuk setiap karyawan</p>
-                            <p>• Format tanggal: DD/MM/YYYY atau YYYY-MM-DD</p>
+                            <p>• <strong>Format tanggal yang didukung:</strong></p>
+                            <div class="ml-4 space-y-1">
+                                <p>→ DD/MM/YYYY (contoh: 17/02/2020)</p>
+                                <p>→ DD/MMM/YYYY (contoh: 17/Feb/2020, 17/MAR/2020, 17/dec/2020)</p>
+                                <p>→ DD-MM-YYYY (contoh: 17-02-2020)</p>
+                                <p>→ DD-MMM-YYYY (contoh: 17-Feb-2020)</p>
+                                <p>→ YYYY-MM-DD (contoh: 2020-02-17)</p>
+                            </div>
                             <p>• Data yang sudah ada akan diupdate berdasarkan NIK</p>
                             <p>• Kolom kosong akan diisi dengan nilai default atau NULL</p>
                         </div>

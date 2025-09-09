@@ -56,7 +56,7 @@ class KaryawanController extends Controller
         // Allow caller to specify separator via ?sep=, default to semicolon for Excel compatibility
         $sep = $request->query('sep', ';');
         $delimiter = $sep === ',' ? ',' : ';'; // Default to semicolon
-        
+
         // Check if this is a template request
         $isTemplate = $request->query('template', false);
 
@@ -68,23 +68,23 @@ class KaryawanController extends Controller
 
         $callback = function() use ($columns, $delimiter, $isTemplate) {
             $out = fopen('php://output', 'w');
-            
+
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            
+
             // Write header row with proper delimiter
             fputcsv($out, $columns, $delimiter, '"');
-            
+
             if ($isTemplate) {
                 // Add sample data row for template
                 $sampleData = [
-                    "'1234567890", // nik - with apostrophe to force text format
+                    '1234567890', // nik - clean format without apostrophe
                     'John', // nama_panggilan
                     'John Doe', // nama_lengkap
                     'B 1234 ABC', // plat
                     'john.doe@example.com', // email
-                    "'1234567890123456", // ktp - with apostrophe to force text format
-                    "'1234567890123456", // kk - with apostrophe to force text format
+                    '1234567890123456', // ktp - clean format
+                    '1234567890123456', // kk - clean format
                     'Jl. Contoh No. 123', // alamat
                     '001/002', // rt_rw
                     'Kelurahan Contoh', // kelurahan
@@ -94,14 +94,14 @@ class KaryawanController extends Controller
                     '12345', // kode_pos
                     'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
                     'Jakarta', // tempat_lahir
-                    '1990-01-01', // tanggal_lahir
-                    "'081234567890", // no_hp - with apostrophe to force text format
+                    '01/Jan/1990', // tanggal_lahir - format dd/mmm/yyyy
+                    '081234567890', // no_hp - clean format
                     'L', // jenis_kelamin
                     'Belum Kawin', // status_perkawinan
                     'Islam', // agama
                     'IT', // divisi
                     'Programmer', // pekerjaan
-                    '2024-01-01', // tanggal_masuk
+                    '01/Jan/2024', // tanggal_masuk - format dd/mmm/yyyy
                     '', // tanggal_berhenti
                     '', // tanggal_masuk_sebelumnya
                     '', // tanggal_berhenti_sebelumnya
@@ -109,10 +109,10 @@ class KaryawanController extends Controller
                     'K1', // status_pajak
                     'Bank BCA', // nama_bank
                     'Cabang Jakarta Pusat', // bank_cabang
-                    "'1234567890", // akun_bank - with apostrophe to force text format
+                    '1234567890', // akun_bank - clean format
                     'John Doe', // atas_nama
-                    "'0001234567890", // jkn - with apostrophe to force text format
-                    "'12345678901234567", // no_ketenagakerjaan - with apostrophe to force text format
+                    '0001234567890', // jkn - clean format
+                    '12345678901234567', // no_ketenagakerjaan - clean format
                     'Jakarta', // cabang
                     '', // nik_supervisor
                     '' // supervisor
@@ -125,19 +125,27 @@ class KaryawanController extends Controller
                         $line = [];
                         foreach ($columns as $col) {
                             $val = $r->{$col} ?? '';
-                            
-                            // format dates to Y-m-d for CSV
+
+                            // Format dates to dd/mmm/yyyy for CSV export
                             if ($val instanceof \DateTimeInterface) {
-                                $val = $val->format('Y-m-d');
+                                $val = $val->format('d/M/Y');
+                            } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya']) && !empty($val)) {
+                                // Parse string dates and format to dd/mmm/yyyy
+                                try {
+                                    $ts = strtotime($val);
+                                    if ($ts !== false && $ts !== -1) {
+                                        $val = date('d/M/Y', $ts);
+                                    }
+                                } catch (\Throwable $e) {
+                                    // Keep original value if parsing fails
+                                }
                             }
-                            
-                            // Add leading apostrophe to numeric fields to force text format in Excel
-                            // This prevents scientific notation
-                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                                $val = "'" . $val;
-                            }
-                            
-                            $line[] = $val;
+
+                        // Add zero-width space to numeric fields to prevent scientific notation in Excel
+                        // This is invisible but forces Excel to treat as text
+                        if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
+                            $val = "\u{200B}" . $val;
+                        }                            $line[] = $val;
                         }
                         fputcsv($out, $line, $delimiter, '"');
                     }
@@ -165,42 +173,52 @@ class KaryawanController extends Controller
 
         $callback = function() use ($columns) {
             $out = fopen('php://output', 'w');
-            
+
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            
-            // Write header row with semicolon delimiter for Excel
-            fwrite($out, implode(';', $columns) . "\r\n");
-            
+
+            // Write header row with semicolon delimiter for Excel CSV compatibility
+            fwrite($out, implode(";", $columns) . "\r\n");
+
             // Stream rows for actual export with proper formatting
             Karyawan::chunk(200, function($rows) use ($out, $columns) {
                 foreach ($rows as $r) {
                     $line = [];
                     foreach ($columns as $col) {
                         $val = $r->{$col} ?? '';
-                        
-                        // Format dates to Y-m-d for CSV
+
+                        // Format dates to dd/mmm/yyyy for Excel export
                         if ($val instanceof \DateTimeInterface) {
-                            $val = $val->format('Y-m-d');
+                            $val = $val->format('d/M/Y');
+                        } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya']) && !empty($val)) {
+                            // Parse string dates and format to dd/mmm/yyyy
+                            try {
+                                $ts = strtotime($val);
+                                if ($ts !== false && $ts !== -1) {
+                                    $val = date('d/M/Y', $ts);
+                                }
+                            } catch (\Throwable $e) {
+                                // Keep original value if parsing fails
+                            }
                         }
-                        
-                        // Add leading apostrophe to numeric fields to force text format in Excel
-                        // This prevents scientific notation for long numbers
+
+                        // For numeric fields, add invisible zero-width space to prevent scientific notation
+                        // This forces Excel to treat as text without showing visible characters
                         if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                            $val = "'" . $val;
+                            $val = "\u{200B}" . $val; // Zero-width space
                         }
-                        
+
                         // Escape fields that contain semicolons, quotes, or line breaks
-                        if (strpos($val, ';') !== false || strpos($val, '"') !== false || strpos($val, "\n") !== false || strpos($val, "\r") !== false) {
+                        if (strpos($val, ";") !== false || strpos($val, '"') !== false || strpos($val, "\n") !== false || strpos($val, "\r") !== false) {
                             $val = '"' . str_replace('"', '""', $val) . '"';
                         }
-                        
+
                         $line[] = $val;
                     }
-                    fwrite($out, implode(';', $line) . "\r\n");
+                    fwrite($out, implode(";", $line) . "\r\n");
                 }
             });
-            
+
             fclose($out);
         };
 
@@ -219,7 +237,7 @@ class KaryawanController extends Controller
         $columns = [
             'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
-        
+
         $sampleData = [
             "'1234567890", // nik - dengan apostrophe untuk memaksa format text
             'John', // nama_panggilan
@@ -260,7 +278,7 @@ class KaryawanController extends Controller
             '', // nik_supervisor
             '' // supervisor
         ];
-        
+
         // Add instruction row
         $instructionData = [
             'Format: Text (gunakan apostrophe diawal)', // nik
@@ -304,17 +322,17 @@ class KaryawanController extends Controller
         ];
 
         $fileName = 'template_import_karyawan.csv';
-        
+
         // Manual CSV generation for better control
         $callback = function() use ($columns, $sampleData, $instructionData) {
             $out = fopen('php://output', 'w');
-            
+
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            
+
             // Write header manually with semicolon delimiter
             fwrite($out, implode(';', $columns) . "\r\n");
-            
+
             // Write instruction row for format guidance
             $escapedInstructions = array_map(function($field) {
                 // Escape fields that contain semicolons, quotes, or line breaks
@@ -323,9 +341,9 @@ class KaryawanController extends Controller
                 }
                 return $field;
             }, $instructionData);
-            
+
             fwrite($out, implode(';', $escapedInstructions) . "\r\n");
-            
+
             // Write sample data manually with semicolon delimiter
             $escapedData = array_map(function($field) {
                 // Escape fields that contain semicolons, quotes, or line breaks
@@ -334,7 +352,7 @@ class KaryawanController extends Controller
                 }
                 return $field;
             }, $sampleData);
-            
+
             fwrite($out, implode(';', $escapedData) . "\r\n");
             fclose($out);
         };
@@ -353,48 +371,7 @@ class KaryawanController extends Controller
         $columns = [
             'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
-        
-        $sampleData = [
-            '1234567890', // nik
-            'John', // nama_panggilan
-            'John Doe', // nama_lengkap
-            'B 1234 ABC', // plat
-            'john.doe@example.com', // email
-            '1234567890123456', // ktp
-            '1234567890123456', // kk
-            'Jl. Contoh No. 123', // alamat
-            '001/002', // rt_rw
-            'Kelurahan Contoh', // kelurahan
-            'Kecamatan Contoh', // kecamatan
-            'Kabupaten Contoh', // kabupaten
-            'Provinsi Contoh', // provinsi
-            '12345', // kode_pos
-            'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
-            'Jakarta', // tempat_lahir
-            '1990-01-01', // tanggal_lahir
-            '081234567890', // no_hp
-            'L', // jenis_kelamin
-            'Belum Kawin', // status_perkawinan
-            'Islam', // agama
-            'IT', // divisi
-            'Programmer', // pekerjaan
-            '2024-01-01', // tanggal_masuk
-            '', // tanggal_berhenti
-            '', // tanggal_masuk_sebelumnya
-            '', // tanggal_berhenti_sebelumnya
-            'Catatan contoh', // catatan
-            'K1', // status_pajak
-            'Bank BCA', // nama_bank
-            'Cabang Jakarta Pusat', // bank_cabang
-            '1234567890', // akun_bank
-            'John Doe', // atas_nama
-            '0001234567890', // jkn
-            '12345678901234567', // no_ketenagakerjaan
-            'Jakarta', // cabang
-            '', // nik_supervisor
-            '' // supervisor
-        ];
-        
+
         $instructionData = [
             'Format: Text (pastikan tidak scientific notation)', // nik
             'Nama panggilan', // nama_panggilan
@@ -412,17 +389,17 @@ class KaryawanController extends Controller
             'Kode pos', // kode_pos
             'Alamat lengkap gabungan', // alamat_lengkap
             'Tempat lahir', // tempat_lahir
-            'Format: YYYY-MM-DD', // tanggal_lahir
+            'Format: DD/MM/YYYY atau DD/MMM/YYYY atau YYYY-MM-DD', // tanggal_lahir
             'Format: Text nomor telepon', // no_hp
             'L atau P', // jenis_kelamin
             'Status perkawinan', // status_perkawinan
             'Agama', // agama
             'Divisi kerja', // divisi
             'Jabatan/pekerjaan', // pekerjaan
-            'Format: YYYY-MM-DD', // tanggal_masuk
-            'Format: YYYY-MM-DD (kosongkan jika masih aktif)', // tanggal_berhenti
-            'Format: YYYY-MM-DD', // tanggal_masuk_sebelumnya
-            'Format: YYYY-MM-DD', // tanggal_berhenti_sebelumnya
+            'Format: DD/MM/YYYY atau DD/MMM/YYYY atau YYYY-MM-DD', // tanggal_masuk
+            'Format: DD/MM/YYYY atau DD/MMM/YYYY (kosong jika aktif)', // tanggal_berhenti
+            'Format: DD/MM/YYYY atau DD/MMM/YYYY atau YYYY-MM-DD', // tanggal_masuk_sebelumnya
+            'Format: DD/MM/YYYY atau DD/MMM/YYYY atau YYYY-MM-DD', // tanggal_berhenti_sebelumnya
             'Catatan tambahan', // catatan
             'Status pajak (TK0/TK1/K0/K1/K2/K3/K/0/K/1)', // status_pajak
             'Nama bank', // nama_bank
@@ -438,45 +415,64 @@ class KaryawanController extends Controller
 
         // Create Excel-compatible CSV file
         $fileName = 'template_import_karyawan_excel.csv';
-        
-        $callback = function() use ($columns, $instructionData, $sampleData) {
+
+        $callback = function() use ($columns, $instructionData) {
             $out = fopen('php://output', 'w');
-            
+
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
-            
+
             // Write header manually with semicolon delimiter for Excel
             fwrite($out, implode(';', $columns) . "\r\n");
-            
-            // Write instruction row
+
+            // Write instruction row only (no sample data)
             $escapedInstructions = array_map(function($field) {
                 if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
                     return '"' . str_replace('"', '""', $field) . '"';
                 }
                 return $field;
             }, $instructionData);
-            
+
             fwrite($out, implode(';', $escapedInstructions) . "\r\n");
             
-            // Format sample data to prevent scientific notation in Excel
-            $formattedSampleData = [];
-            foreach ($sampleData as $i => $data) {
-                // Add leading apostrophe to numeric fields to force text format in Excel
-                if (in_array($columns[$i], ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($data)) {
-                    $formattedSampleData[] = "'" . $data;
-                } else {
-                    $formattedSampleData[] = $data;
-                }
-            }
+            // Add one empty row for user to start entering data
+            $emptyRow = array_fill(0, count($columns), '');
+            fwrite($out, implode(';', $emptyRow) . "\r\n");
             
-            $escapedData = array_map(function($field) {
-                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
-                    return '"' . str_replace('"', '""', $field) . '"';
-                }
-                return $field;
-            }, $formattedSampleData);
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
+    }
+
+    /**
+     * Download simple Excel template with headers only (no instructions)
+     */
+    public function downloadSimpleExcelTemplate()
+    {
+        $columns = [
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+        ];
+
+        // Create simple Excel-compatible CSV file with headers only
+        $fileName = 'template_simple_karyawan_excel.csv';
+
+        $callback = function() use ($columns) {
+            $out = fopen('php://output', 'w');
+
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Write header only with semicolon delimiter for Excel
+            fwrite($out, implode(';', $columns) . "\r\n");
             
-            fwrite($out, implode(';', $escapedData) . "\r\n");
+            // Add one empty row for user to start entering data
+            $emptyRow = array_fill(0, count($columns), '');
+            fwrite($out, implode(';', $emptyRow) . "\r\n");
+            
             fclose($out);
         };
 
@@ -673,7 +669,7 @@ class KaryawanController extends Controller
         $file = $request->file('csv_file');
         $extension = $file->getClientOriginalExtension();
         $path = $file->getRealPath();
-        
+
         // Handle Excel files by converting to CSV first
         if (in_array($extension, ['xlsx', 'xls'])) {
             $csvData = $this->convertExcelToCsv($path, $extension);
@@ -681,7 +677,7 @@ class KaryawanController extends Controller
                 return redirect()->route('master.karyawan.index')
                     ->with('error', 'Gagal membaca file Excel. Pastikan file tidak corrupt.');
             }
-            
+
             // Create temporary CSV file
             $tempPath = tempnam(sys_get_temp_dir(), 'excel_import_');
             file_put_contents($tempPath, $csvData);
@@ -773,36 +769,36 @@ class KaryawanController extends Controller
                     $failedRows[] = "Baris {$lineNumber}: Gagal parse data";
                     continue;
                 }
-                
+
                 // Function to normalize numeric fields that might be in scientific notation
                 $normalizeNumericField = function($value) {
                     if (empty($value)) return null;
-                    
+
                     $value = trim($value);
-                    
+
                     // Remove leading apostrophe if present (used to force text format in Excel)
                     if (substr($value, 0, 1) === "'") {
                         $value = substr($value, 1);
                     }
-                    
+
                     // Check if it's in scientific notation (like 1.23E+15)
                     if (preg_match('/^-?\d*\.?\d*[eE][+-]?\d+$/', $value)) {
                         // Convert scientific notation to regular number
                         $number = sprintf('%.0f', (float)$value);
                         return $number;
                     }
-                    
+
                     // For phone numbers, preserve leading zeros
                     if (preg_match('/^0\d+$/', $value)) {
                         return $value; // Keep as is for phone numbers starting with 0
                     }
-                    
+
                     // Remove any non-digit characters but preserve the cleaned number
                     $cleaned = preg_replace('/[^\d]/', '', $value);
-                    
+
                     return $cleaned ?: null;
                 };
-                
+
                 // Normalize numeric fields that are prone to scientific notation
                 $numericFields = ['nik', 'ktp', 'kk', 'no_hp'];
                 foreach ($numericFields as $field) {
@@ -810,7 +806,7 @@ class KaryawanController extends Controller
                         $data[$field] = $normalizeNumericField($data[$field]);
                     }
                 }
-                
+
                 // Use `nik` as unique key to create or update
                 $nik = trim($data['nik'] ?? '');
                 if (!$nik) {
@@ -834,12 +830,12 @@ class KaryawanController extends Controller
                         $val = is_null($val) ? null : trim($val);
                         // convert empty string to null so unique/DATE columns don't get ''
                         if ($val === '') $val = null;
-                        
+
                         // Convert to uppercase except for email field
                         if ($val !== null && $col !== 'email') {
                             $val = strtoupper($val);
                         }
-                        
+
                         $payload[$col] = $val;
                     }
                 }
@@ -851,8 +847,63 @@ class KaryawanController extends Controller
                 $normalizeDate = function($val) {
                     $val = trim((string)$val);
                     if ($val === '') return null;
+                    
                     // already ISO-like
                     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) return $val;
+
+                    // Handle dd/mm/yyyy format (17/02/2020)
+                    if (preg_match('/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/', $val, $matches)) {
+                        $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                        $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                        $year = $matches[3];
+                        return $year . '-' . $month . '-' . $day;
+                    }
+
+                    // Handle dd-mm-yyyy format (17-02-2020)
+                    if (preg_match('/^(\d{1,2})-(\d{1,2})-(\d{4})$/', $val, $matches)) {
+                        $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                        $month = str_pad($matches[2], 2, '0', STR_PAD_LEFT);
+                        $year = $matches[3];
+                        return $year . '-' . $month . '-' . $day;
+                    }
+
+                    // Handle dd/mmm/yyyy format (15/Jan/2024)
+                    if (preg_match('/^(\d{1,2})\/([A-Za-z]{3})\/(\d{4})$/', $val, $matches)) {
+                        $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                        $monthAbbr = strtolower($matches[2]);
+                        $year = $matches[3];
+                        
+                        // Map month abbreviations to numbers
+                        $monthMap = [
+                            'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
+                            'may' => '05', 'mei' => '05', 'jun' => '06', 'jul' => '07',
+                            'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
+                            'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
+                        ];
+                        
+                        if (isset($monthMap[$monthAbbr])) {
+                            return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
+                        }
+                    }
+
+                    // Handle dd-mmm-yyyy format (15-Jan-2024)
+                    if (preg_match('/^(\d{1,2})-([A-Za-z]{3})-(\d{4})$/', $val, $matches)) {
+                        $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
+                        $monthAbbr = strtolower($matches[2]);
+                        $year = $matches[3];
+                        
+                        // Map month abbreviations to numbers
+                        $monthMap = [
+                            'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
+                            'may' => '05', 'mei' => '05', 'jun' => '06', 'jul' => '07',
+                            'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
+                            'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
+                        ];
+                        
+                        if (isset($monthMap[$monthAbbr])) {
+                            return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
+                        }
+                    }
 
                     // replace common separators
                     $v = str_replace(['.', '/'], [' ', ' '], $val);
@@ -906,7 +957,7 @@ class KaryawanController extends Controller
                 try {
                     $existingKaryawan = Karyawan::where('nik', $nik)->first();
                     $karyawan = Karyawan::updateOrCreate(['nik' => $nik], $payload);
-                    
+
                     $namaLengkap = $payload['nama_lengkap'] ?? $nik;
                     if ($existingKaryawan) {
                         $successRows[] = "Baris {$lineNumber}: Data karyawan {$nik} - {$namaLengkap} berhasil diupdate";
@@ -917,7 +968,7 @@ class KaryawanController extends Controller
                 } catch (\Exception $e) {
                     $errorMessage = $e->getMessage();
                     $namaLengkap = $payload['nama_lengkap'] ?? $nik;
-                    
+
                     // Customize error messages for better user understanding
                     if (strpos($errorMessage, 'Duplicate entry') !== false) {
                         if (strpos($errorMessage, 'email') !== false) {
@@ -943,27 +994,27 @@ class KaryawanController extends Controller
         $messages = [];
         $hasErrors = count($failedRows) > 0;
         $hasSuccess = $processed > 0;
-        
+
         // Success message
         if ($hasSuccess) {
             $messages[] = "✅ {$processed} data karyawan berhasil diproses";
-            
+
             // Show preview of successful imports (first 3)
             if (count($successRows) > 0) {
                 $successPreview = array_slice($successRows, 0, 3);
-                $messages[] = "Data berhasil: " . implode('; ', $successPreview) . 
+                $messages[] = "Data berhasil: " . implode('; ', $successPreview) .
                     (count($successRows) > 3 ? "; dan " . (count($successRows) - 3) . " lainnya" : "");
             }
         }
-        
+
         // Error/Warning messages
         if ($hasErrors) {
             $totalFailed = count($failedRows);
             $messages[] = "⚠️ {$totalFailed} data gagal diproses";
-            
+
             // Show detailed error information (first 5)
             $failedPreview = array_slice($failedRows, 0, 5);
-            $messages[] = "Data gagal: " . implode('; ', $failedPreview) . 
+            $messages[] = "Data gagal: " . implode('; ', $failedPreview) .
                 ($totalFailed > 5 ? "; dan " . ($totalFailed - 5) . " error lainnya" : "");
         }
 
@@ -1088,7 +1139,7 @@ class KaryawanController extends Controller
             Log::error('Excel conversion error: ' . $e->getMessage());
             return false;
         }
-        
+
         return false;
     }
 
@@ -1131,30 +1182,30 @@ class KaryawanController extends Controller
         $worksheetDoc = new \DOMDocument();
         $worksheetDoc->loadXML($worksheetXml);
         $xpath = new \DOMXPath($worksheetDoc);
-        
+
         $rows = [];
         $rowNodes = $xpath->query('//row');
-        
+
         foreach ($rowNodes as $rowNode) {
             $rowData = [];
             $cellNodes = $xpath->query('.//c', $rowNode);
-            
+
             $maxCol = 0;
             $cells = [];
-            
+
             foreach ($cellNodes as $cellNode) {
                 /** @var \DOMElement $cellNode */
                 $cellRef = $cellNode->getAttribute('r');
                 preg_match('/([A-Z]+)(\d+)/', $cellRef, $matches);
                 $colIndex = $this->columnLettersToNumber($matches[1]) - 1;
                 $maxCol = max($maxCol, $colIndex);
-                
+
                 $cellType = $cellNode->getAttribute('t');
                 $valueNode = $xpath->query('.//v', $cellNode)->item(0);
-                
+
                 if ($valueNode) {
                     $value = $valueNode->nodeValue;
-                    
+
                     if ($cellType === 's' && isset($sharedStrings[$value])) {
                         // Shared string
                         $value = $sharedStrings[$value];
@@ -1166,18 +1217,18 @@ class KaryawanController extends Controller
                             $value = $excelEpoch->format('Y-m-d');
                         }
                     }
-                    
+
                     $cells[$colIndex] = $value;
                 } else {
                     $cells[$colIndex] = '';
                 }
             }
-            
+
             // Fill missing columns
             for ($i = 0; $i <= $maxCol; $i++) {
                 $rowData[] = isset($cells[$i]) ? $cells[$i] : '';
             }
-            
+
             $rows[] = $rowData;
         }
 
@@ -1209,11 +1260,11 @@ class KaryawanController extends Controller
     {
         $number = 0;
         $length = strlen($letters);
-        
+
         for ($i = 0; $i < $length; $i++) {
             $number = $number * 26 + (ord($letters[$i]) - ord('A') + 1);
         }
-        
+
         return $number;
     }
 }

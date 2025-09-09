@@ -440,6 +440,11 @@ Route::middleware(['auth'])->group(function () {
                     ->name('karyawan.excel-template')
                     ->middleware('can:master-karyawan');
 
+               // Download simple Excel template for import (headers only)
+               Route::get('karyawan/simple-excel-template', [KaryawanController::class, 'downloadSimpleExcelTemplate'])
+                    ->name('karyawan.simple-excel-template')
+                    ->middleware('can:master-karyawan');
+
                // Crew checklist for ABK employees
                Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
                     ->name('karyawan.crew-checklist')

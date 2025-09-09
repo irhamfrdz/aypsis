@@ -21,7 +21,7 @@
     </div>
 
     @php
-        $formatDate = function($value, $format = 'd/m/Y') {
+        $formatDate = function($value, $format = 'd/M/Y') {
             if (empty($value)) return '-';
             // If it's a Carbon/DateTime instance, format directly
             if ($value instanceof \Illuminate\Support\Carbon || $value instanceof \DateTimeInterface) {
@@ -292,7 +292,7 @@
     </div>
 
     <div class="mt-6 text-sm text-gray-500">
-    <p>Dibuat: {{ $karyawan->formatAsDate('created_at', 'd/m/Y H:i') ?? '-' }} | Terakhir diubah: {{ $karyawan->formatAsDate('updated_at', 'd/m/Y H:i') ?? '-' }}</p>
+    <p>Dibuat: {{ $karyawan->formatAsDate('created_at', 'd/M/Y H:i') ?? '-' }} | Terakhir diubah: {{ $karyawan->formatAsDate('updated_at', 'd/M/Y H:i') ?? '-' }}</p>
     </div>
 </div>
 @endsection
