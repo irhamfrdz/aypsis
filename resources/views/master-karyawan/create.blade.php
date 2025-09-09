@@ -197,9 +197,9 @@
                 </div>
 
                 <div>
-                    <label for="cabang" class="{{ $labelClasses }}">Cabang</label>
+                    <label for="cabang" class="{{ $labelClasses }}">Kantor Cabang AYP</label>
                     <select name="cabang" id="cabang" class="{{ $selectClasses }}">
-                        <option value="">-- Pilih Cabang --</option>
+                        <option value="">-- Pilih Kantor Cabang AYP --</option>
                         <option value="Jakarta">Jakarta</option>
                         <option value="Batam">Batam</option>
                         <option value="Pinang">Pinang</option>
