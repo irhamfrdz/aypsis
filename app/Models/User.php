@@ -37,6 +37,16 @@ class User extends Authenticatable
     ];
 
     /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'email_verified_at' => 'datetime',
+        'approved_at' => 'datetime',
+    ];
+
+    /**
      * The relationship with the Karyawan model.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
