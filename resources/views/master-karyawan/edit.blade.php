@@ -200,7 +200,7 @@
                     <input type="text" name="jkn" id="jkn" value="{{ old('jkn', $karyawan->jkn) }}" class="{{ $inputClasses }}">
                 </div>
                 <div>
-                    <label for="no_ketenagakerjaan" class="block text-sm font-medium text-gray-700 mb-1">No. Ketenagakerjaan</label>
+                    <label for="no_ketenagakerjaan" class="block text-sm font-medium text-gray-700 mb-1">BP Jamsostek</label>
                     <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" value="{{ old('no_ketenagakerjaan', $karyawan->no_ketenagakerjaan) }}" class="{{ $inputClasses }}">
                 </div>
                 <div>
