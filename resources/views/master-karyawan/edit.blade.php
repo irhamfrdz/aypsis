@@ -207,6 +207,10 @@
                     <input type="text" name="nama_bank" id="nama_bank" value="{{ old('nama_bank', $karyawan->nama_bank) }}" class="{{ $inputClasses }}">
                 </div>
                 <div>
+                    <label for="bank_cabang" class="block text-sm font-medium text-gray-700 mb-1">Cabang Bank</label>
+                    <input type="text" name="bank_cabang" id="bank_cabang" value="{{ old('bank_cabang', $karyawan->bank_cabang) }}" class="{{ $inputClasses }}">
+                </div>
+                <div>
                     <label for="akun_bank" class="block text-sm font-medium text-gray-700 mb-1">Akun Bank</label>
                     <input type="text" name="akun_bank" id="akun_bank" value="{{ old('akun_bank', $karyawan->akun_bank) }}" class="{{ $inputClasses }}">
                 </div>

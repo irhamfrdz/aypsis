@@ -60,7 +60,7 @@ class KaryawanController extends Controller
         $isTemplate = $request->query('template', false);
 
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
 
         $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_' . date('Ymd_His') . '.csv';
@@ -145,7 +145,7 @@ class KaryawanController extends Controller
     {
         // Generate template manually to ensure proper formatting
         $columns = [
-            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
         
         $sampleData = [
@@ -179,6 +179,7 @@ class KaryawanController extends Controller
             'Catatan contoh', // catatan
             'K1', // status_pajak
             'Bank BCA', // nama_bank
+            'Cabang Jakarta Pusat', // bank_cabang
             "'1234567890", // akun_bank - dengan apostrophe untuk memaksa format text
             'John Doe', // atas_nama
             "'0001234567890", // jkn - dengan apostrophe untuk memaksa format text
@@ -220,6 +221,7 @@ class KaryawanController extends Controller
             'Catatan tambahan', // catatan
             'Status pajak (TK0/TK1/K0/K1/K2/K3/K/0/K/1)', // status_pajak
             'Nama bank', // nama_bank
+            'Cabang bank', // bank_cabang
             'Format: Text (gunakan apostrophe)', // akun_bank
             'Atas nama rekening', // atas_nama
             'Format: Text (gunakan apostrophe)', // jkn
@@ -315,6 +317,7 @@ class KaryawanController extends Controller
             'catatan' => 'nullable|string|max:1000',
             'status_pajak' => 'nullable|string|max:255',
             'nama_bank' => 'nullable|string|max:255',
+            'bank_cabang' => 'nullable|string|max:255',
             'akun_bank' => 'nullable|string|max:255',
             'atas_nama' => 'nullable|string|max:255',
             'jkn' => 'nullable|string|max:255',
@@ -389,6 +392,7 @@ class KaryawanController extends Controller
             'catatan' => 'nullable|string|max:1000',
             'status_pajak' => 'nullable|string|max:255',
             'nama_bank' => 'nullable|string|max:255',
+            'bank_cabang' => 'nullable|string|max:255',
             'akun_bank' => 'nullable|string|max:255',
             'atas_nama' => 'nullable|string|max:255',
             'jkn' => 'nullable|string|max:255',

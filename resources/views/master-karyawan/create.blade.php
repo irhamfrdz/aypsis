@@ -294,6 +294,11 @@
                 </div>
 
                 <div>
+                    <label for="bank_cabang" class="{{ $labelClasses }}">Cabang Bank</label>
+                    <input type="text" name="bank_cabang" id="bank_cabang" class="{{ $inputClasses }}" placeholder="Contoh: Cabang Jakarta Pusat">
+                </div>
+
+                <div>
                     <label for="akun_bank" class="{{ $labelClasses }}">Nomor Rekening</label>
                     <input type="text" name="akun_bank" id="akun_bank" class="{{ $inputClasses }}" placeholder="Nomor rekening bank">
                 </div>

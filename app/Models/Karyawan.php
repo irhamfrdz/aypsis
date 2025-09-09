@@ -45,6 +45,7 @@ class Karyawan extends Model
         'catatan',
         'status_pajak',
         'nama_bank',
+        'bank_cabang',
         'akun_bank',
         'atas_nama',
         'jkn',
