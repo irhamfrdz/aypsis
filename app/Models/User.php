@@ -22,6 +22,8 @@ class User extends Authenticatable
         'karyawan_id',
         'status',
         'registration_reason',
+        'approved_by',
+        'approved_at',
     ];
 
     /**
@@ -42,6 +44,46 @@ class User extends Authenticatable
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
+
+    /**
+     * The relationship with the admin who approved this user.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     */
+    public function approvedBy()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Check if user is approved
+     *
+     * @return bool
+     */
+    public function isApproved(): bool
+    {
+        return $this->status === 'approved';
+    }
+
+    /**
+     * Check if user is pending approval
+     *
+     * @return bool
+     */
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    /**
+     * Check if user is rejected
+     *
+     * @return bool
+     */
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
     }
 
     /**

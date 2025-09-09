@@ -311,6 +311,25 @@
                     @endcanany
                     @endif
 
+                    {{-- User Approval Management (only for admins or users with manage-users permission) --}}
+                    @can('manage-users')
+                    @php
+                        $isUserApprovalRoute = Request::routeIs('admin.user-approval.*');
+                        $pendingUsersCount = \App\Models\User::where('status', 'pending')->count();
+                    @endphp
+                    <div class="mb-1">
+                        <a href="{{ route('admin.user-approval.index') }}" class="w-full flex items-center py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all duration-200 group {{ $isUserApprovalRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
+                            <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-3 {{ $isUserApprovalRoute ? 'bg-blue-100' : '' }}">
+                                <i class="fas fa-user-check text-gray-600 group-hover:text-gray-700 {{ $isUserApprovalRoute ? 'text-blue-600' : '' }}"></i>
+                            </div>
+                            <span class="font-medium">Persetujuan User</span>
+                            @if($pendingUsersCount > 0)
+                                <span class="ml-auto bg-red-500 text-white text-xs px-2 py-1 rounded-full">{{ $pendingUsersCount }}</span>
+                            @endif
+                        </a>
+                    </div>
+                    @endcan
+
                     {{-- Dropdown untuk Tagihan Kontainer Sewa (di luar master data) --}}
                     {{-- Tagihan Kontainer Sewa menu removed (refactored) --}}
 

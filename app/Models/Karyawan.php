@@ -104,6 +104,14 @@ class Karyawan extends Model
     }
 
     /**
+     * Relasi ke user account
+     */
+    public function user()
+    {
+        return $this->hasOne(User::class, 'karyawan_id', 'id');
+    }
+
+    /**
      * Relasi ke crew checklist
      */
     public function crewChecklists()

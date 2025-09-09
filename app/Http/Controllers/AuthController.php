@@ -28,6 +28,24 @@ class AuthController extends Controller
 
         // Custom query untuk autentikasi dengan username
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
+            $user = Auth::user();
+
+            // Check if user account is approved
+            if ($user->status === 'pending') {
+                Auth::logout();
+                return back()->withErrors(['username' => 'Akun Anda masih menunggu persetujuan administrator. Silakan hubungi admin untuk aktivasi akun.']);
+            }
+
+            if ($user->status === 'rejected') {
+                Auth::logout();
+                return back()->withErrors(['username' => 'Akun Anda telah ditolak oleh administrator. Silakan hubungi admin untuk informasi lebih lanjut.']);
+            }
+
+            if ($user->status !== 'approved') {
+                Auth::logout();
+                return back()->withErrors(['username' => 'Status akun Anda tidak valid. Silakan hubungi administrator.']);
+            }
+
             $request->session()->regenerate();
 
             $user = Auth::user();
@@ -138,16 +156,16 @@ class AuthController extends Controller
             return back()->withErrors(['karyawan_id' => 'Karyawan ini sudah memiliki akun user.']);
         }
 
-        // Simpan data user dengan status inactive
+        // Simpan data user dengan status pending untuk approval
         \App\Models\User::create([
             'name' => $request->name,
             'username' => $request->username,
             'password' => bcrypt($request->password),
             'karyawan_id' => $request->karyawan_id,
-            'status' => 'inactive', // Status inactive untuk review admin
+            'status' => 'pending', // Status pending untuk review admin
             'registration_reason' => $request->alasan_pendaftaran,
         ]);
 
-        return redirect()->route('login')->with('success', 'Registrasi user berhasil! Menunggu persetujuan administrator untuk aktivasi akun.');
+        return redirect()->route('login')->with('success', 'Registrasi user berhasil! Akun Anda menunggu persetujuan administrator untuk dapat digunakan.');
     }
 }
