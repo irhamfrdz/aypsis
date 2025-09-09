@@ -147,29 +147,29 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($karyawans as $karyawan)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->nik }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->nama_lengkap }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->nama_panggilan }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nik) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md
                                     {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' : 
                                        (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' : 
                                        (strtolower($karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' : 
                                        'bg-gray-100 text-gray-800')) }}">
-                                    {{ $karyawan->divisi }}
+                                    {{ strtoupper($karyawan->divisi) }}
                                 </span>
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->pekerjaan }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->jkn ?? '-' }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->no_ketenagakerjaan ?? '-' }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->no_hp }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->pekerjaan) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->jkn ?? '-') }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->no_ketenagakerjaan ?? '-') }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->email ?? '-' }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md
                                     {{ strtolower($karyawan->status_pajak ?? '') === 'pkp' ? 'bg-green-100 text-green-800' : 
                                        (strtolower($karyawan->status_pajak ?? '') === 'ptkp' ? 'bg-yellow-100 text-yellow-800' : 
                                        'bg-gray-100 text-gray-800') }}">
-                                    {{ $karyawan->status_pajak ?? '-' }}
+                                    {{ strtoupper($karyawan->status_pajak ?? '-') }}
                                 </span>
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
