@@ -425,6 +425,11 @@ Route::middleware(['auth'])->group(function () {
                     ->name('karyawan.export')
                     ->middleware('can:master-karyawan');
 
+               // Download CSV template for import
+               Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
+                    ->name('karyawan.template')
+                    ->middleware('can:master-karyawan');
+
                // Crew checklist for ABK employees
                Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
                     ->name('karyawan.crew-checklist')

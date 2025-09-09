@@ -18,11 +18,32 @@ class KaryawanController extends Controller
     /**
      * Menampilkan semua karyawan.
      */
-    public function index()
+    public function index(Request $request)
     {
+        // Query builder untuk karyawan
+        $query = Karyawan::query();
+
+        // Jika ada parameter search, lakukan pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nik', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_lengkap', 'LIKE', "%{$search}%")
+                  ->orWhere('nama_panggilan', 'LIKE', "%{$search}%")
+                  ->orWhere('divisi', 'LIKE', "%{$search}%")
+                  ->orWhere('pekerjaan', 'LIKE', "%{$search}%")
+                  ->orWhere('no_hp', 'LIKE', "%{$search}%")
+                  ->orWhere('email', 'LIKE', "%{$search}%")
+                  ->orWhere('jkn', 'LIKE', "%{$search}%")
+                  ->orWhere('no_ketenagakerjaan', 'LIKE', "%{$search}%")
+                  ->orWhere('status_pajak', 'LIKE', "%{$search}%");
+            });
+        }
+
         // Menggunakan paginate untuk efisiensi. Angka 15 bisa disesuaikan.
         // Ini akan memuat 15 karyawan per halaman.
-        $karyawans = Karyawan::paginate(15);
+        $karyawans = $query->paginate(15)->appends($request->query());
+
         return view('master-karyawan.index', compact('karyawans'));
     }
 
@@ -35,31 +56,79 @@ class KaryawanController extends Controller
         $sep = $request->query('sep', ',');
         $delimiter = $sep === ';' ? ';' : ',';
 
+        // Check if this is a template request
+        $isTemplate = $request->query('template', false);
+
         $columns = [
             'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
 
-        $fileName = 'karyawans_export_' . date('Ymd_His') . '.csv';
+        $fileName = $isTemplate ? 'template_import_karyawan.csv' : 'karyawans_export_' . date('Ymd_His') . '.csv';
 
-        $callback = function() use ($columns, $delimiter) {
+        $callback = function() use ($columns, $delimiter, $isTemplate) {
             $out = fopen('php://output', 'w');
             // write UTF-8 BOM so Excel recognizes UTF-8
             fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
             // header row
             fputcsv($out, $columns, $delimiter);
-            // stream rows
-            Karyawan::chunk(200, function($rows) use ($out, $columns, $delimiter) {
-                foreach ($rows as $r) {
-                    $line = [];
-                    foreach ($columns as $col) {
-                        $val = $r->{$col} ?? '';
-                        // format dates to Y-m-d for CSV
-                        if ($val instanceof \DateTimeInterface) $val = $val->format('Y-m-d');
-                        $line[] = $val;
+
+            if ($isTemplate) {
+                // Add sample data row for template
+                $sampleData = [
+                    '1234567890', // nik
+                    'John', // nama_panggilan
+                    'John Doe', // nama_lengkap
+                    'B 1234 ABC', // plat
+                    'john.doe@example.com', // email
+                    '1234567890123456', // ktp
+                    '1234567890123456', // kk
+                    'Jl. Contoh No. 123', // alamat
+                    '001/002', // rt_rw
+                    'Kelurahan Contoh', // kelurahan
+                    'Kecamatan Contoh', // kecamatan
+                    'Kabupaten Contoh', // kabupaten
+                    'Provinsi Contoh', // provinsi
+                    '12345', // kode_pos
+                    'Jl. Contoh No. 123, RT 001/RW 002, Kelurahan Contoh', // alamat_lengkap
+                    'Jakarta', // tempat_lahir
+                    '1990-01-01', // tanggal_lahir
+                    '081234567890', // no_hp
+                    'L', // jenis_kelamin
+                    'Belum Kawin', // status_perkawinan
+                    'Islam', // agama
+                    'IT', // divisi
+                    'Programmer', // pekerjaan
+                    '2024-01-01', // tanggal_masuk
+                    '', // tanggal_berhenti
+                    '', // tanggal_masuk_sebelumnya
+                    '', // tanggal_berhenti_sebelumnya
+                    'Catatan contoh', // catatan
+                    'PTKP', // status_pajak
+                    'Bank BCA', // nama_bank
+                    '1234567890', // akun_bank
+                    'John Doe', // atas_nama
+                    '0001234567890', // jkn
+                    '12345678901234567', // no_ketenagakerjaan
+                    'Jakarta', // cabang
+                    '', // nik_supervisor
+                    '' // supervisor
+                ];
+                fputcsv($out, $sampleData, $delimiter);
+            } else {
+                // stream rows for actual export
+                Karyawan::chunk(200, function($rows) use ($out, $columns, $delimiter) {
+                    foreach ($rows as $r) {
+                        $line = [];
+                        foreach ($columns as $col) {
+                            $val = $r->{$col} ?? '';
+                            // format dates to Y-m-d for CSV
+                            if ($val instanceof \DateTimeInterface) $val = $val->format('Y-m-d');
+                            $line[] = $val;
+                        }
+                        fputcsv($out, $line, $delimiter);
                     }
-                    fputcsv($out, $line, $delimiter);
-                }
-            });
+                });
+            }
             fclose($out);
         };
 
@@ -67,6 +136,16 @@ class KaryawanController extends Controller
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
         ]);
+    }
+
+    /**
+     * Download CSV template for import
+     */
+    public function downloadTemplate(\Illuminate\Http\Request $request)
+    {
+        // Force template mode
+        $request->merge(['template' => '1']);
+        return $this->export($request);
     }
 
     /**
