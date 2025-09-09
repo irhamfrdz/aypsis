@@ -193,9 +193,12 @@
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->email ?? '-' }}</td>
                             <td class="px-4 py-4 whitespace-nowrap">
                                 <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md
-                                    {{ strtolower($karyawan->status_pajak ?? '') === 'pkp' ? 'bg-green-100 text-green-800' : 
-                                       (strtolower($karyawan->status_pajak ?? '') === 'ptkp' ? 'bg-yellow-100 text-yellow-800' : 
-                                       'bg-gray-100 text-gray-800') }}">
+                                    {{ 
+                                        strtolower($karyawan->status_pajak ?? '') === 'pkp' ? 'bg-red-100 text-red-800' : 
+                                        (preg_match('/^(k|tk)/i', $karyawan->status_pajak ?? '') ? 'bg-blue-100 text-blue-800' : 
+                                        (strtolower($karyawan->status_pajak ?? '') === 'ptkp' ? 'bg-yellow-100 text-yellow-800' : 
+                                        'bg-gray-100 text-gray-800'))
+                                    }}">
                                     {{ strtoupper($karyawan->status_pajak ?? '-') }}
                                 </span>
                             </td>

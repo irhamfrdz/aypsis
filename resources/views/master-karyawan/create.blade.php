@@ -325,6 +325,13 @@
                         <option value="K0">K0 - Kawin</option>
                         <option value="K1">K1 - Kawin + 1 Tanggungan</option>
                         <option value="K2">K2 - Kawin + 2 Tanggungan</option>
+                        <option value="K3">K3 - Kawin + 3 Tanggungan</option>
+                        <option value="K/0">K/0 - Kawin Penghasilan Istri Digabung</option>
+                        <option value="K/1">K/1 - Kawin Penghasilan Istri Digabung + 1 Tanggungan</option>
+                        <option value="K/2">K/2 - Kawin Penghasilan Istri Digabung + 2 Tanggungan</option>
+                        <option value="K/3">K/3 - Kawin Penghasilan Istri Digabung + 3 Tanggungan</option>
+                        <option value="TK/">TK/ - Tidak Kawin Penghasilan Suami Istri Digabung</option>
+                        <option value="TK/0">TK/0 - Tidak Kawin Penghasilan Digabung</option>
                     </select>
                 </div>
 

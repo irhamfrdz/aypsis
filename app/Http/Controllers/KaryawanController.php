@@ -105,7 +105,7 @@ class KaryawanController extends Controller
                     '', // tanggal_masuk_sebelumnya
                     '', // tanggal_berhenti_sebelumnya
                     'Catatan contoh', // catatan
-                    'PTKP', // status_pajak
+                    'K1', // status_pajak
                     'Bank BCA', // nama_bank
                     '1234567890', // akun_bank
                     'John Doe', // atas_nama
@@ -177,7 +177,7 @@ class KaryawanController extends Controller
             '', // tanggal_masuk_sebelumnya
             '', // tanggal_berhenti_sebelumnya
             'Catatan contoh', // catatan
-            'PTKP', // status_pajak
+            'K1', // status_pajak
             'Bank BCA', // nama_bank
             "'1234567890", // akun_bank - dengan apostrophe untuk memaksa format text
             'John Doe', // atas_nama
@@ -218,7 +218,7 @@ class KaryawanController extends Controller
             'Format: YYYY-MM-DD', // tanggal_masuk_sebelumnya
             'Format: YYYY-MM-DD', // tanggal_berhenti_sebelumnya
             'Catatan tambahan', // catatan
-            'Status pajak', // status_pajak
+            'Status pajak (TK0/TK1/K0/K1/K2/K3/K/0/K/1)', // status_pajak
             'Nama bank', // nama_bank
             'Format: Text (gunakan apostrophe)', // akun_bank
             'Atas nama rekening', // atas_nama

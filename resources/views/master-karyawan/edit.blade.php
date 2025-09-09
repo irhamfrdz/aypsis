@@ -180,7 +180,27 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
                 <div>
                     <label for="status_pajak" class="block text-sm font-medium text-gray-700 mb-1">Status Pajak</label>
-                    <input type="text" name="status_pajak" id="status_pajak" value="{{ old('status_pajak', $karyawan->status_pajak) }}" class="{{ $inputClasses }}">
+                    <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
+                        <option value="">-- Pilih Status Pajak --</option>
+                        <option value="TK0" {{ old('status_pajak', $karyawan->status_pajak) == 'TK0' ? 'selected' : '' }}>TK0 - Tidak Kawin</option>
+                        <option value="TK1" {{ old('status_pajak', $karyawan->status_pajak) == 'TK1' ? 'selected' : '' }}>TK1 - Tidak Kawin + 1 Tanggungan</option>
+                        <option value="TK2" {{ old('status_pajak', $karyawan->status_pajak) == 'TK2' ? 'selected' : '' }}>TK2 - Tidak Kawin + 2 Tanggungan</option>
+                        <option value="TK3" {{ old('status_pajak', $karyawan->status_pajak) == 'TK3' ? 'selected' : '' }}>TK3 - Tidak Kawin + 3 Tanggungan</option>
+                        <option value="K0" {{ old('status_pajak', $karyawan->status_pajak) == 'K0' ? 'selected' : '' }}>K0 - Kawin</option>
+                        <option value="K1" {{ old('status_pajak', $karyawan->status_pajak) == 'K1' ? 'selected' : '' }}>K1 - Kawin + 1 Tanggungan</option>
+                        <option value="K2" {{ old('status_pajak', $karyawan->status_pajak) == 'K2' ? 'selected' : '' }}>K2 - Kawin + 2 Tanggungan</option>
+                        <option value="K3" {{ old('status_pajak', $karyawan->status_pajak) == 'K3' ? 'selected' : '' }}>K3 - Kawin + 3 Tanggungan</option>
+                        <option value="K/0" {{ old('status_pajak', $karyawan->status_pajak) == 'K/0' ? 'selected' : '' }}>K/0 - Kawin Penghasilan Istri Digabung</option>
+                        <option value="K/1" {{ old('status_pajak', $karyawan->status_pajak) == 'K/1' ? 'selected' : '' }}>K/1 - Kawin Penghasilan Istri Digabung + 1 Tanggungan</option>
+                        <option value="K/2" {{ old('status_pajak', $karyawan->status_pajak) == 'K/2' ? 'selected' : '' }}>K/2 - Kawin Penghasilan Istri Digabung + 2 Tanggungan</option>
+                        <option value="K/3" {{ old('status_pajak', $karyawan->status_pajak) == 'K/3' ? 'selected' : '' }}>K/3 - Kawin Penghasilan Istri Digabung + 3 Tanggungan</option>
+                        <option value="TK/" {{ old('status_pajak', $karyawan->status_pajak) == 'TK/' ? 'selected' : '' }}>TK/ - Tidak Kawin Penghasilan Suami Istri Digabung</option>
+                        <option value="TK/0" {{ old('status_pajak', $karyawan->status_pajak) == 'TK/0' ? 'selected' : '' }}>TK/0 - Tidak Kawin Penghasilan Digabung</option>
+                        <!-- Keep other values that might exist in data -->
+                        @if(!in_array(old('status_pajak', $karyawan->status_pajak), ['', 'TK0', 'TK1', 'TK2', 'TK3', 'K0', 'K1', 'K2', 'K3', 'K/0', 'K/1', 'K/2', 'K/3', 'TK/', 'TK/0']) && old('status_pajak', $karyawan->status_pajak))
+                            <option value="{{ old('status_pajak', $karyawan->status_pajak) }}" selected>{{ old('status_pajak', $karyawan->status_pajak) }}</option>
+                        @endif
+                    </select>
                 </div>
                 <div>
                     <label for="nama_bank" class="block text-sm font-medium text-gray-700 mb-1">Nama Bank</label>
