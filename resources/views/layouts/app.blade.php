@@ -94,11 +94,33 @@
                 <h1 class="text-xl sm:text-2xl font-semibold text-gray-900">@yield('page_title', 'Dashboard')</h1>
             </div>
             <div class="flex items-center space-x-4">
-                <span class="text-sm text-gray-600">Halo, <span class="font-medium">{{ Auth::user()->name }}</span>!</span>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="text-sm text-red-600 hover:text-red-700 font-medium">Logout</button>
-                </form>
+                <div class="relative">
+                    <button id="profileDropdownButton" class="flex items-center space-x-2 text-sm text-gray-600 hover:text-gray-900 font-medium focus:outline-none">
+                        <div class="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-user text-white text-sm"></i>
+                        </div>
+                        <span>{{ Auth::user()->name }}</span>
+                        <i class="fas fa-chevron-down text-xs"></i>
+                    </button>
+                    
+                    <div id="profileDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50">
+                        <div class="py-2">
+                            <a href="{{ route('profile.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-user mr-3"></i>Profil Saya
+                            </a>
+                            <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                <i class="fas fa-edit mr-3"></i>Edit Profil
+                            </a>
+                            <div class="border-t border-gray-200 my-2"></div>
+                            <form action="{{ route('logout') }}" method="POST">
+                                @csrf
+                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center">
+                                    <i class="fas fa-sign-out-alt mr-3"></i>Logout
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
@@ -526,6 +548,22 @@
                 });
             }
         }
+
+        // Profile dropdown functionality
+        const profileDropdownButton = document.getElementById('profileDropdownButton');
+        const profileDropdown = document.getElementById('profileDropdown');
+
+        profileDropdownButton.addEventListener('click', function(e) {
+            e.stopPropagation();
+            profileDropdown.classList.toggle('hidden');
+        });
+
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!profileDropdownButton.contains(e.target) && !profileDropdown.contains(e.target)) {
+                profileDropdown.classList.add('hidden');
+            }
+        });
 
         // Mobile menu functionality
         const mobileMenuButton = document.getElementById('mobile-menu-button');

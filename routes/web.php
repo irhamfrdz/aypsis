@@ -660,3 +660,15 @@ Route::middleware(['auth'])->group(function () {
      });
 
 });
+
+// Profile Management Routes (for all authenticated users)
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+        Route::get('/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/account', [\App\Http\Controllers\ProfileController::class, 'updateAccount'])->name('profile.update.account');
+        Route::put('/personal', [\App\Http\Controllers\ProfileController::class, 'updatePersonal'])->name('profile.update.personal');
+        Route::post('/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.update.avatar');
+        Route::delete('/delete', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+});
