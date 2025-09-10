@@ -4,32 +4,31 @@
 @section('page_title', 'Checklist Kelengkapan Crew')
 
 @section('content')
-<!-- Header Section -->
-<div class="bg-gradient-to-r from-blue-600 via-blue-700 to-indigo-800 shadow-xl rounded-xl p-4 md:p-8 mb-6 text-white">
-    <div class="flex flex-col lg:flex-row lg:justify-between lg:items-start space-y-4 lg:space-y-0">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-4 sm:space-y-0 sm:space-x-6">
-            <div class="bg-white/10 backdrop-blur-sm rounded-full p-3 md:p-4 mx-auto sm:mx-0">
-                <svg class="w-8 h-8 md:w-12 md:h-12 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<!-- Header Section with Simple Design -->
+<div class="bg-blue-600 shadow-lg rounded-lg p-6 mb-6 text-white">
+    <div class="flex flex-col lg:flex-row lg:justify-between lg:items-center space-y-4 lg:space-y-0">
+        <div class="flex items-center space-x-4">
+            <div class="bg-white/20 rounded-lg p-3">
+                <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                 </svg>
             </div>
-            <div class="text-center sm:text-left">
-                <h1 class="text-xl md:text-3xl font-bold mb-2">Checklist Kelengkapan Crew</h1>
-                <p class="text-blue-100 text-sm md:text-lg">Verifikasi Dokumen dan Sertifikat ABK</p>
+            <div>
+                <h1 class="text-2xl font-bold">Checklist Kelengkapan Crew</h1>
+                <p class="text-blue-100">Verifikasi Dokumen dan Sertifikat ABK</p>
             </div>
         </div>
-        <div class="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+        <div class="flex space-x-3">
             <a href="{{ route('master.karyawan.crew-checklist.print', $karyawan->id) }}" target="_blank"
-               class="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-semibold py-3 px-4 md:px-6 rounded-xl transition duration-300 flex items-center justify-center space-x-2 border border-white/20 text-sm md:text-base">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                 </svg>
-                <span class="hidden sm:inline">Cetak Dokumen</span>
-                <span class="sm:hidden">Cetak</span>
+                <span>Cetak</span>
             </a>
             <a href="{{ route('master.karyawan.index') }}"
-               class="bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white font-semibold py-3 px-4 md:px-6 rounded-xl transition duration-300 flex items-center justify-center space-x-2 border border-white/20 text-sm md:text-base">
-                <svg class="w-4 h-4 md:w-5 md:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+               class="bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 flex items-center space-x-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                 </svg>
                 <span>Kembali</span>
@@ -38,20 +37,21 @@
     </div>
 </div>
 
-<!-- Employee Info Card -->
-<div class="bg-white shadow-lg rounded-xl p-4 md:p-6 mb-6 border border-gray-100">
-    <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-3 sm:space-y-0 sm:space-x-4 mb-4">
-        <div class="bg-blue-100 rounded-full p-2 md:p-3 mx-auto sm:mx-0">
-            <svg class="w-6 h-6 md:w-8 md:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+<!-- Employee Info Card with Simple Design -->
+<div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+    <div class="flex items-center space-x-4 mb-6">
+        <div class="bg-blue-100 rounded-lg p-3">
+            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
             </svg>
         </div>
-        <div class="text-center sm:text-left">
-            <h3 class="text-lg md:text-xl font-bold text-gray-800">Informasi Karyawan</h3>
-            <p class="text-sm md:text-base text-gray-500">Data lengkap crew yang akan diverifikasi</p>
+        <div>
+            <h3 class="text-xl font-bold text-gray-800">Informasi Karyawan</h3>
+            <p class="text-gray-600">Data crew yang akan diverifikasi</p>
         </div>
     </div>
-    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-6">
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-blue-100 rounded-lg p-2">
@@ -65,6 +65,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-green-100 rounded-lg p-2">
@@ -78,6 +79,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-purple-100 rounded-lg p-2">
@@ -91,6 +93,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-orange-100 rounded-lg p-2">
@@ -104,6 +107,7 @@
                 </div>
             </div>
         </div>
+        
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-indigo-100 rounded-lg p-2">
@@ -113,27 +117,28 @@
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-500">No. HP</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ $karyawan->no_hp }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ $karyawan->no_hp ?: '-' }}</p>
                 </div>
             </div>
         </div>
+        
         <div class="bg-gray-50 rounded-lg p-4">
             <div class="flex items-center space-x-3">
                 <div class="bg-red-100 rounded-lg p-2">
                     <svg class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 4v10m6-10v10m-6 0h6m-6 0H6a2 2 0 01-2-2V9a2 2 0 012-2h1m11 0h1a2 2 0 012 2v10a2 2 0 01-2 2h-1"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                 </div>
                 <div>
                     <p class="text-sm font-medium text-gray-500">Tanggal Verifikasi</p>
-                    <p class="text-lg font-semibold text-gray-800">{{ now()->format('d-m-Y') }}</p>
+                    <p class="text-lg font-semibold text-gray-800">{{ now()->format('d/M/Y') }}</p>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Alert Messages -->
+<!-- Alert Messages with Simple Design -->
 @if (session('success'))
     <div class="bg-green-50 border-l-4 border-green-400 p-4 mb-6 rounded-r-lg">
         <div class="flex items-center">
@@ -164,18 +169,18 @@
     </div>
 @endif
 
-<!-- Main Form -->
-<div class="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100">
-    <div class="bg-gradient-to-r from-gray-50 to-gray-100 px-4 md:px-6 py-4 border-b border-gray-200">
-        <div class="flex flex-col sm:flex-row items-start sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+<!-- Main Form with Simple Design -->
+<div class="bg-white shadow-lg rounded-lg overflow-hidden border border-gray-200">
+    <div class="bg-gray-50 px-6 py-4 border-b border-gray-200">
+        <div class="flex items-center space-x-3">
             <div class="bg-blue-100 rounded-lg p-2">
-                <svg class="w-5 h-5 md:w-6 md:h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path>
                 </svg>
             </div>
             <div>
-                <h3 class="text-lg md:text-xl font-bold text-gray-800">Formulir Checklist Kelengkapan</h3>
-                <p class="text-sm md:text-base text-gray-600">Lengkapi status dokumen dan sertifikat crew ABK</p>
+                <h3 class="text-lg font-bold text-gray-800">Formulir Checklist Kelengkapan</h3>
+                <p class="text-sm text-gray-600">Lengkapi status dokumen dan sertifikat crew ABK</p>
             </div>
         </div>
     </div>
@@ -183,38 +188,24 @@
     <form action="{{ route('master.karyawan.crew-checklist.update', $karyawan->id) }}" method="POST" class="p-0">
         @csrf
 
-        <!-- Desktop Table View -->
+        <!-- Simple Desktop Table View -->
         <div class="hidden lg:block overflow-x-auto">
             <table class="min-w-full bg-white">
-                <thead class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white">
+                <thead class="bg-blue-600 text-white">
                     <tr>
-                        <th class="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider" style="min-width: 60px;">No</th>
-                        <th class="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider" style="min-width: 350px;">Kelengkapan Dokumen</th>
-                        <th class="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider" style="min-width: 100px;">
-                            <div class="flex flex-col items-center space-y-1">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                                </svg>
-                                <span>ADA</span>
-                            </div>
-                        </th>
-                        <th class="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider" style="min-width: 100px;">
-                            <div class="flex flex-col items-center space-y-1">
-                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                </svg>
-                                <span>TIDAK</span>
-                            </div>
-                        </th>
-                        <th class="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider" style="min-width: 220px;">Nomor Sertifikat</th>
-                        <th class="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider" style="min-width: 140px;">Tanggal Terbit</th>
-                        <th class="px-6 py-4 text-center text-sm font-bold uppercase tracking-wider" style="min-width: 140px;">Tanggal Expired</th>
-                        <th class="px-6 py-4 text-left text-sm font-bold uppercase tracking-wider" style="min-width: 180px;">Catatan</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">No</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">Kelengkapan Dokumen</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold">Ada</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold">Tidak</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">Nomor Sertifikat</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold">Tanggal Terbit</th>
+                        <th class="px-6 py-4 text-center text-sm font-semibold">Tanggal Expired</th>
+                        <th class="px-6 py-4 text-left text-sm font-semibold">Catatan</th>
                     </tr>
                 </thead>
-                <tbody class="bg-white">
+                <tbody class="bg-white divide-y divide-gray-200">
                     @foreach($checklistItems as $index => $item)
-                        <tr class="border-b border-gray-100 hover:bg-gray-50 transition-colors duration-200 {{ $item->is_expired ? 'bg-red-50' : ($item->is_expiring_soon ? 'bg-yellow-50' : '') }}">
+                        <tr class="hover:bg-gray-50 {{ $item->is_expired ? 'bg-red-50' : ($item->is_expiring_soon ? 'bg-yellow-50' : '') }}">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="bg-blue-100 text-blue-800 text-sm font-bold rounded-full w-8 h-8 flex items-center justify-center mx-auto">
                                     {{ $index + 1 }}
@@ -222,7 +213,7 @@
                             </td>
                             <td class="px-6 py-4">
                                 <div class="space-y-2">
-                                    <div class="font-semibold text-gray-900 text-base">{{ $item->item_name }}</div>
+                                    <div class="font-semibold text-gray-900">{{ $item->item_name }}</div>
                                     @if($item->item_name == 'BST (Basic Safety Training)')
                                         <div class="text-sm text-gray-600 bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
                                             <strong>BST:</strong> Sertifikat dasar keselamatan pelaut untuk menghadapi bahaya di atas kapal, wajib dimiliki semua tingkat jabatan.
@@ -286,18 +277,18 @@
                                 <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]"
                                        value="{{ $item->nomor_sertifikat }}"
                                        placeholder="Masukkan nomor sertifikat"
-                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200">
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                             </td>
                             <td class="px-6 py-4">
                                 <input type="date" name="checklist[{{ $item->id }}][issued_date]"
                                        value="{{ $item->issued_date ? $item->issued_date->format('Y-m-d') : '' }}"
-                                       class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200">
+                                       class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
                             </td>
                             <td class="px-6 py-4">
                                 <div class="space-y-2">
                                     <input type="date" name="checklist[{{ $item->id }}][expired_date]"
                                            value="{{ $item->expired_date ? $item->expired_date->format('Y-m-d') : '' }}"
-                                           class="block w-full px-4 py-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 text-sm transition-all duration-200 {{ $item->is_expired ? 'border-red-400 bg-red-50 focus:ring-red-500 focus:border-red-500' : ($item->is_expiring_soon ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-500 focus:border-yellow-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500') }}">
+                                           class="block w-full px-3 py-2 border rounded-lg shadow-sm focus:outline-none focus:ring-2 text-sm {{ $item->is_expired ? 'border-red-400 bg-red-50 focus:ring-red-500 focus:border-red-500' : ($item->is_expiring_soon ? 'border-yellow-400 bg-yellow-50 focus:ring-yellow-500 focus:border-yellow-500' : 'border-gray-300 focus:ring-blue-500 focus:border-blue-500') }}">
                                     @if($item->is_expired)
                                         <div class="flex items-center space-x-2 text-red-600">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -318,8 +309,8 @@
                             <td class="px-6 py-4">
                                 <textarea name="checklist[{{ $item->id }}][catatan]"
                                           placeholder="Tambahkan catatan jika diperlukan"
-                                          rows="3"
-                                          class="block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm transition-all duration-200 resize-none">{{ $item->catatan }}</textarea>
+                                          rows="2"
+                                          class="block w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm resize-none">{{ $item->catatan }}</textarea>
                             </td>
                         </tr>
                     @endforeach
@@ -468,7 +459,7 @@
             @endforeach
         </div>
 
-        <div class="bg-gray-50 px-4 md:px-6 py-6 border-t border-gray-200">
+        <div class="bg-gray-50 px-6 py-4 border-t border-gray-200">
             <div class="flex flex-col lg:flex-row justify-between items-center space-y-4 lg:space-y-0">
                 <div class="flex flex-wrap items-center justify-center lg:justify-start space-x-4 text-sm text-gray-600">
                     <div class="flex items-center space-x-2">
@@ -484,11 +475,11 @@
                         <span>Valid</span>
                     </div>
                 </div>
-                <button type="submit" class="w-full lg:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold py-4 px-8 rounded-xl transition duration-300 flex items-center justify-center space-x-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="submit" class="w-full lg:w-auto bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 flex items-center justify-center space-x-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                     </svg>
-                    <span class="text-lg">Simpan Checklist</span>
+                    <span>Simpan Checklist</span>
                 </button>
             </div>
         </div>
@@ -618,33 +609,56 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* Custom animations and transitions */
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-
-.fade-in {
-    animation: fadeIn 0.3s ease-out;
-}
-
-/* Hover effects for table rows */
-tbody tr:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-}
-
-/* Custom radio button styling */
-input[type="radio"]:checked + label {
-    transform: scale(1.05);
-}
-
-/* Smooth transitions for all interactive elements */
+/* Simple and Clean Styling */
 * {
     transition: all 0.2s ease;
 }
 
-/* Custom scrollbar for the table */
+/* Table hover effects */
+tbody tr:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+/* Radio button styling */
+input[type="radio"]:checked + label {
+    transform: scale(1.05);
+}
+
+/* Form input focus */
+input:focus,
+textarea:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button hover effects */
+button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile responsive */
+@media (max-width: 1023px) {
+    .mobile-status-ada,
+    .mobile-status-tidak {
+        min-height: 56px;
+        touch-action: manipulation;
+    }
+
+    input[type="text"],
+    input[type="date"],
+    textarea {
+        min-height: 44px;
+        font-size: 16px;
+    }
+
+    button {
+        min-height: 44px;
+        touch-action: manipulation;
+    }
+}
+
+/* Custom scrollbar */
 .overflow-x-auto::-webkit-scrollbar {
     height: 8px;
 }
@@ -663,95 +677,12 @@ input[type="radio"]:checked + label {
     background: #94a3b8;
 }
 
-/* Enhanced gradient backgrounds */
-.bg-gradient-to-r {
-    background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-to));
-}
-
-/* Card shadow effects */
-.shadow-xl {
-    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-}
-
-/* Button hover effects */
-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* Mobile-specific styles */
-@media (max-width: 1023px) {
-    /* Ensure mobile cards are touch-friendly */
-    .mobile-status-ada,
-    .mobile-status-tidak {
-        min-height: 60px;
-        touch-action: manipulation;
-    }
-
-    /* Improve spacing on mobile */
-    .space-y-4 > * + * {
-        margin-top: 1rem;
-    }
-
-    /* Make form inputs more touch-friendly */
-    input[type="text"],
-    input[type="date"],
-    textarea {
-        min-height: 48px;
-        font-size: 16px; /* Prevents zoom on iOS */
-    }
-
-    /* Improve button sizing on mobile */
-    button {
-        min-height: 48px;
-        touch-action: manipulation;
-    }
-}
-
-/* Very small screens */
-@media (max-width: 480px) {
-    .p-4 {
-        padding: 1rem;
-    }
-
-    .px-4 {
-        padding-left: 1rem;
-        padding-right: 1rem;
-    }
-
-    .text-3xl {
-        font-size: 1.5rem;
-    }
-
-    .text-xl {
-        font-size: 1.125rem;
-    }
-}
-
-/* Custom focus styles for better accessibility */
+/* Focus styles for accessibility */
 input:focus,
 textarea:focus,
 button:focus {
     outline: 2px solid #3b82f6;
     outline-offset: 2px;
-}
-
-/* Loading animation */
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-
-.animate-spin {
-    animation: spin 1s linear infinite;
-}
-
-/* Card hover effects on mobile */
-@media (hover: none) and (pointer: coarse) {
-    .bg-white.border.rounded-xl:active {
-        transform: scale(0.98);
-        transition: transform 0.1s ease;
-    }
 }
 </style>
 @endsection
