@@ -55,28 +55,6 @@
                 <p class="text-gray-800">{{ $karyawan->nama_panggilan ?? '-' }}</p>
             </div>
             <div>
-                <p class="font-semibold text-gray-600">Tempat Lahir</p>
-                <p class="text-gray-800">{{ $karyawan->tempat_lahir ?? '-' }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">Tanggal Lahir</p>
-                <p class="text-gray-800">{{ $karyawan->formatAsDate('tanggal_lahir') ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="font-semibold text-gray-600">Jenis Kelamin</p>
-                <p class="text-gray-800">{{ $karyawan->jenis_kelamin_label ?? ($karyawan->jenis_kelamin ?? '-') }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">No HP</p>
-                <p class="text-gray-800">{{ $karyawan->no_hp ?? '-' }}
-                    @if(!empty($karyawan->no_hp))
-                        <button onclick="navigator.clipboard.writeText('{{ $karyawan->no_hp }}')" class="ml-2 text-xs text-gray-500">Salin</button>
-                    @endif
-                </p>
-            </div>
-            <div>
                 <p class="font-semibold text-gray-600">Email</p>
                 <p class="text-gray-800">{{ $karyawan->email ?? '-' }}
                     @if(!empty($karyawan->email))
@@ -86,48 +64,43 @@
             </div>
 
             <div>
-                <p class="font-semibold text-gray-600">KTP</p>
+                <p class="font-semibold text-gray-600">Tanggal Lahir</p>
+                <p class="text-gray-800">{{ $karyawan->formatAsDate('tanggal_lahir') ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Tempat Lahir</p>
+                <p class="text-gray-800">{{ $karyawan->tempat_lahir ?? '-' }}</p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Jenis Kelamin</p>
+                <p class="text-gray-800">{{ $karyawan->jenis_kelamin_label ?? ($karyawan->jenis_kelamin ?? '-') }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Agama</p>
+                <p class="text-gray-800">{{ $karyawan->agama ?? '-' }}</p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Status Pernikahan</p>
+                <p class="text-gray-800">{{ $karyawan->status_perkawinan ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">No HP</p>
+                <p class="text-gray-800">{{ $karyawan->no_hp ?? '-' }}
+                    @if(!empty($karyawan->no_hp))
+                        <button onclick="navigator.clipboard.writeText('{{ $karyawan->no_hp }}')" class="ml-2 text-xs text-gray-500">Salin</button>
+                    @endif
+                </p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Nomor KTP</p>
                 <p class="text-gray-800">{{ $karyawan->ktp ?? '-' }}</p>
             </div>
             <div>
-                <p class="font-semibold text-gray-600">KK</p>
+                <p class="font-semibold text-gray-600">Nomor KK</p>
                 <p class="text-gray-800">{{ $karyawan->kk ?? '-' }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">Alamat</p>
-                <p class="text-gray-800">{{ $karyawan->alamat ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="font-semibold text-gray-600">RT / RW</p>
-                <p class="text-gray-800">{{ $karyawan->rt_rw ?? '-' }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">Kelurahan</p>
-                <p class="text-gray-800">{{ $karyawan->kelurahan ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="font-semibold text-gray-600">Kecamatan</p>
-                <p class="text-gray-800">{{ $karyawan->kecamatan ?? '-' }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">Kabupaten</p>
-                <p class="text-gray-800">{{ $karyawan->kabupaten ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="font-semibold text-gray-600">Provinsi</p>
-                <p class="text-gray-800">{{ $karyawan->provinsi ?? '-' }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">Kode Pos</p>
-                <p class="text-gray-800">{{ $karyawan->kode_pos ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="font-semibold text-gray-600">Alamat Lengkap</p>
-                <p class="text-gray-800">{{ $karyawan->alamat_lengkap ?? '-' }}</p>
             </div>
         </div>
     </details>
@@ -198,6 +171,47 @@
     </script>
 
     <details class="mb-4 border rounded">
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Alamat</summary>
+        <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+            <div>
+                <p class="font-semibold text-gray-600">Alamat</p>
+                <p class="text-gray-800">{{ $karyawan->alamat ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">RT / RW</p>
+                <p class="text-gray-800">{{ $karyawan->rt_rw ?? '-' }}</p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Kelurahan</p>
+                <p class="text-gray-800">{{ $karyawan->kelurahan ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Kecamatan</p>
+                <p class="text-gray-800">{{ $karyawan->kecamatan ?? '-' }}</p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Kabupaten</p>
+                <p class="text-gray-800">{{ $karyawan->kabupaten ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Provinsi</p>
+                <p class="text-gray-800">{{ $karyawan->provinsi ?? '-' }}</p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Kode Pos</p>
+                <p class="text-gray-800">{{ $karyawan->kode_pos ?? '-' }}</p>
+            </div>
+            <div class="col-span-2">
+                <p class="font-semibold text-gray-600">Alamat Lengkap</p>
+                <p class="text-gray-800">{{ $karyawan->alamat_lengkap ?? '-' }}</p>
+            </div>
+        </div>
+    </details>
+
+    <details class="mb-4 border rounded">
         <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Pekerjaan & Riwayat</summary>
         <div class="p-4 grid grid-cols-2 gap-6 text-sm">
             <div>
@@ -207,15 +221,6 @@
             <div>
                 <p class="font-semibold text-gray-600">Pekerjaan</p>
                 <p class="text-gray-800">{{ $karyawan->pekerjaan ?? '-' }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">Plat</p>
-                <p class="text-gray-800">{{ $karyawan->plat ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="font-semibold text-gray-600">Status Pajak</p>
-                <p class="text-gray-800">{{ $karyawan->status_pajak_label ?? ($karyawan->status_pajak ?? '-') }}</p>
             </div>
 
             <div>
@@ -244,24 +249,47 @@
                 <p class="font-semibold text-gray-600">Supervisor</p>
                 <p class="text-gray-800">{{ $karyawan->supervisor ?? '-' }}</p>
             </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Kantor Cabang AYP</p>
+                <p class="text-gray-800">{{ $karyawan->cabang ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Nomor Plat</p>
+                <p class="text-gray-800">{{ $karyawan->plat ?? '-' }}</p>
+            </div>
         </div>
     </details>
 
     <details class="mb-4 border rounded">
-        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Bank & Lainnya</summary>
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Bank</summary>
         <div class="p-4 grid grid-cols-2 gap-6 text-sm">
             <div>
                 <p class="font-semibold text-gray-600">Nama Bank</p>
                 <p class="text-gray-800">{{ $karyawan->nama_bank ?? '-' }}</p>
             </div>
             <div>
-                <p class="font-semibold text-gray-600">Akun Bank</p>
-                <p class="text-gray-800">{{ $karyawan->akun_bank ?? '-' }}</p>
+                <p class="font-semibold text-gray-600">Cabang Bank</p>
+                <p class="text-gray-800">{{ $karyawan->bank_cabang ?? '-' }}</p>
             </div>
 
             <div>
+                <p class="font-semibold text-gray-600">Nomor Rekening</p>
+                <p class="text-gray-800">{{ $karyawan->akun_bank ?? '-' }}</p>
+            </div>
+            <div>
                 <p class="font-semibold text-gray-600">Atas Nama</p>
                 <p class="text-gray-800">{{ $karyawan->atas_nama ?? '-' }}</p>
+            </div>
+        </div>
+    </details>
+
+    <details class="mb-4 border rounded">
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Pajak & JKN</summary>
+        <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+            <div>
+                <p class="font-semibold text-gray-600">Status Pajak</p>
+                <p class="text-gray-800">{{ $karyawan->status_pajak_label ?? ($karyawan->status_pajak ?? '-') }}</p>
             </div>
             <div>
                 <p class="font-semibold text-gray-600">JKN</p>
@@ -269,17 +297,8 @@
             </div>
 
             <div>
-                <p class="font-semibold text-gray-600">Cabang</p>
-                <p class="text-gray-800">{{ $karyawan->cabang ?? '-' }}</p>
-            </div>
-            <div>
-                <p class="font-semibold text-gray-600">Kode Pos</p>
-                <p class="text-gray-800">{{ $karyawan->kode_pos ?? '-' }}</p>
-            </div>
-
-            <div>
-                <p class="font-semibold text-gray-600">Alamat Lengkap</p>
-                <p class="text-gray-800">{{ $karyawan->alamat_lengkap ?? '-' }}</p>
+                <p class="font-semibold text-gray-600">BP Jamsostek</p>
+                <p class="text-gray-800">{{ $karyawan->no_ketenagakerjaan ?? '-' }}</p>
             </div>
         </div>
     </details>
