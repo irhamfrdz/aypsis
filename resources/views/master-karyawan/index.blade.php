@@ -40,28 +40,43 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap gap-2">
-                        <a href="{{ route('master.karyawan.create') }}" class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded transition duration-150">
-                            <i class="fas fa-plus mr-2"></i>Tambah Karyawan
+                        <a href="{{ route('master.karyawan.create') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                            </svg>
+                            Tambah Karyawan
                         </a>
 
                         <!-- Template Dropdown -->
                         <div class="relative group">
-                            <button class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition duration-150">
-                                <i class="fas fa-download mr-2"></i>Template
-                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            <button class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                Template
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
                             </button>
                             <!-- Dropdown Menu -->
-                            <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <div class="py-1">
-                                    <a href="{{ route('master.karyawan.template') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                        <i class="fas fa-file-csv mr-3 text-green-600"></i>
+                            <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                <div class="py-2">
+                                    <a href="{{ route('master.karyawan.template') }}" 
+                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
                                         <div>
                                             <div class="font-medium">Template CSV</div>
                                             <div class="text-xs text-gray-500">Format CSV standar</div>
                                         </div>
                                     </a>
-                                    <a href="{{ route('master.karyawan.simple-excel-template') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                        <i class="fas fa-file-excel mr-3 text-emerald-600"></i>
+                                    <a href="{{ route('master.karyawan.simple-excel-template') }}" 
+                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
+                                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
                                         <div>
                                             <div class="font-medium">Template Excel</div>
                                             <div class="text-xs text-gray-500">Kompatibel dengan Excel</div>
@@ -71,28 +86,44 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('master.karyawan.print') }}" target="_blank" class="inline-flex items-center px-3 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded transition duration-150">
-                            <i class="fas fa-print mr-2"></i>Cetak Semua
+                        <a href="{{ route('master.karyawan.print') }}" 
+                           target="_blank" 
+                           class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                            </svg>
+                            Cetak Semua
                         </a>
 
                         <!-- Export Dropdown -->
                         <div class="relative group">
-                            <button class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition duration-150">
-                                <i class="fas fa-download mr-2"></i>Export
-                                <i class="fas fa-chevron-down ml-1 text-xs"></i>
+                            <button class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
+                                </svg>
+                                Export
+                                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
                             </button>
                             <!-- Dropdown Menu -->
-                            <div class="absolute right-0 top-full mt-1 w-48 bg-white rounded-md shadow-lg border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
-                                <div class="py-1">
-                                    <a href="{{ route('master.karyawan.export') }}?sep=%3B" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                        <i class="fas fa-file-csv mr-3 text-purple-600"></i>
+                            <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                                <div class="py-2">
+                                    <a href="{{ route('master.karyawan.export') }}?sep=%3B" 
+                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                                        <svg class="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
                                         <div>
                                             <div class="font-medium">Export CSV</div>
                                             <div class="text-xs text-gray-500">Format CSV dengan separator ;</div>
                                         </div>
                                     </a>
-                                    <a href="{{ route('master.karyawan.export-excel') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors">
-                                        <i class="fas fa-file-excel mr-3 text-indigo-600"></i>
+                                    <a href="{{ route('master.karyawan.export-excel') }}" 
+                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                                        <svg class="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
                                         <div>
                                             <div class="font-medium">Export Excel</div>
                                             <div class="text-xs text-gray-500">Anti scientific notation</div>
@@ -102,8 +133,12 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('master.karyawan.import') }}" class="inline-flex items-center px-3 py-2 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-medium rounded transition duration-150">
-                            <i class="fas fa-upload mr-2"></i>Import Excel/CSV
+                        <a href="{{ route('master.karyawan.import') }}" 
+                           class="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
+                            </svg>
+                            Import Excel/CSV
                         </a>
                     </div>
                 </div>
@@ -424,31 +459,60 @@
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center space-x-1">
+                                <div class="flex items-center justify-center space-x-2">
                                     {{-- Show crew checklist button only for ABK division --}}
                                     @if(strtolower($karyawan->divisi) === 'abk')
-                                        <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}" class="inline-flex items-center justify-center w-8 h-8 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-md transition-colors border border-gray-300" title="Checklist Kelengkapan Crew">
-                                            <i class="fas fa-tasks text-xs"></i>
+                                        <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}" 
+                                           class="inline-flex items-center px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                           title="Checklist Kelengkapan Crew">
+                                            <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                            </svg>
+                                            <span class="hidden sm:inline">Checklist</span>
                                         </a>
                                     @endif
 
-                                    <a href="{{ route('master.karyawan.show', $karyawan->id) }}" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors border border-gray-300" title="Lihat">
-                                        <i class="fas fa-eye text-xs"></i>
+                                    <!-- View Button -->
+                                    <a href="{{ route('master.karyawan.show', $karyawan->id) }}" 
+                                       class="inline-flex items-center px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                       title="Lihat Detail">
+                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                        </svg>
+                                        <span class="hidden sm:inline">Lihat</span>
                                     </a>
 
-                                    <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}" target="_blank" class="inline-flex items-center justify-center w-8 h-8 text-gray-600 hover:text-gray-900 hover:bg-gray-50 rounded-md transition-colors border border-gray-300" title="Cetak">
-                                        <i class="fas fa-print text-xs"></i>
+                                    <!-- Print Button -->
+                                    <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}" 
+                                       target="_blank"
+                                       class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                       title="Cetak Data">
+                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                        </svg>
+                                        <span class="hidden sm:inline">Cetak</span>
                                     </a>
 
-                                    <a href="{{ route('master.karyawan.edit', $karyawan->id) }}" class="inline-flex items-center justify-center w-8 h-8 text-yellow-600 hover:text-yellow-900 hover:bg-yellow-50 rounded-md transition-colors border border-gray-300" title="Edit">
-                                        <i class="fas fa-edit text-xs"></i>
+                                    <!-- Edit Button -->
+                                    <a href="{{ route('master.karyawan.edit', $karyawan->id) }}" 
+                                       class="inline-flex items-center px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                       title="Edit Data">
+                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                        </svg>
+                                        <span class="hidden sm:inline">Edit</span>
                                     </a>
 
+                                    <!-- Delete Button -->
                                     <button type="button"
                                             onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')"
-                                            class="inline-flex items-center justify-center w-8 h-8 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors border border-gray-300"
-                                            title="Hapus">
-                                        <i class="fas fa-trash text-xs"></i>
+                                            class="inline-flex items-center px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                            title="Hapus Data">
+                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H9a1 1 0 00-1 1v1M4 7h16"/>
+                                        </svg>
+                                        <span class="hidden sm:inline">Hapus</span>
                                     </button>
                                 </div>
                             </td>
