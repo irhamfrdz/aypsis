@@ -32,11 +32,11 @@
             <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->kk ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>6. No. BPJS Kesehatan</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>6. JKN/BPJS Kesehatan</strong></td>
             <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->jkn ?? '-' }}</td>
         </tr>
         <tr>
-            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>7. No. Ketenagakerjaan</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>7. BP Jamsostek</strong></td>
             <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->no_ketenagakerjaan ?? $karyawan->no_bpjs_ketenagakerjaan ?? '-' }}</td>
         </tr>
         <tr>
@@ -94,6 +94,54 @@
         <tr>
             <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>21. Email</strong></td>
             <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->email ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>22. Divisi</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->divisi ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>23. Pekerjaan</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->pekerjaan ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>24. Supervisor</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->supervisor ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>25. Kantor Cabang</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->cabang ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>26. Nomor Plat</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->plat ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>27. Status Pajak</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->status_pajak ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>28. Nama Bank</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->nama_bank ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>29. Cabang Bank</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->bank_cabang ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>30. Nomor Rekening</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->akun_bank ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>31. Atas Nama Rekening</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->atas_nama ?? '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>32. Tanggal Berhenti</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->tanggal_berhenti ? Carbon::parse($karyawan->tanggal_berhenti)->format('d/M/Y') : '-' }}</td>
+        </tr>
+        <tr>
+            <td style="padding:6px;border:1px solid #ddd;background:#f7fafc;"><strong>33. Catatan</strong></td>
+            <td style="padding:6px;border:1px solid #ddd;">{{ $karyawan->catatan ?? '-' }}</td>
         </tr>
     </table>
 

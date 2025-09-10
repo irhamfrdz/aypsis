@@ -1,51 +1,124 @@
 @extends('layouts.print')
 
 @section('content')
-<div style="padding:12px;">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+<style>
+    @media print {
+        @page {
+            size: A4 landscape;
+            margin: 0.5in;
+        }
+        body {
+            font-size: 8px;
+        }
+        table {
+            page-break-inside: auto;
+        }
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+    }
+    .compact-table {
+        font-size: 8px;
+        width: 100%;
+        border-collapse: collapse;
+    }
+    .compact-table th,
+    .compact-table td {
+        border: 1px solid #ddd;
+        padding: 2px;
+        text-align: left;
+        vertical-align: top;
+    }
+    .compact-table th {
+        background: #f3f4f6;
+        font-weight: bold;
+    }
+</style>
+
+<div style="padding:8px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
         <div>
-            <h1 style="font-size:18px;margin:0;">Daftar Karyawan</h1>
-            <div style="font-size:12px;color:#555;">Total: {{ $karyawans->count() }}</div>
+            <h1 style="font-size:16px;margin:0;">Daftar Karyawan Lengkap</h1>
+            <div style="font-size:10px;color:#555;">Total: {{ $karyawans->count() }} | Semua Field</div>
         </div>
-        <div style="text-align:right;font-size:12px;color:#444;">Dicetak: {{ now()->format('Y-m-d H:i') }}</div>
+        <div style="text-align:right;font-size:10px;color:#444;">Dicetak: {{ now()->format('d/m/Y H:i') }}</div>
     </div>
 
     @php use Carbon\Carbon; @endphp
-    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+    <table class="compact-table">
         <thead>
             <tr>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">NIK</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">Nama Lengkap</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">Nama Panggilan</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">Divisi</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">Pekerjaan</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">No. HP</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">Email</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">Tanggal Masuk</th>
-                <th style="border:1px solid #ddd;padding:6px;background:#f3f4f6;text-align:left;">Tanggal Berhenti</th>
+                <th>NIK</th>
+                <th>Nama Lengkap</th>
+                <th>Panggilan</th>
+                <th>Email</th>
+                <th>No. HP</th>
+                <th>Tempat Lahir</th>
+                <th>Tgl Lahir</th>
+                <th>JK</th>
+                <th>Agama</th>
+                <th>Status</th>
+                <th>KTP</th>
+                <th>KK</th>
+                <th>Alamat</th>
+                <th>Divisi</th>
+                <th>Pekerjaan</th>
+                <th>Tgl Masuk</th>
+                <th>Tgl Berhenti</th>
+                <th>Supervisor</th>
+                <th>Cabang</th>
+                <th>Plat</th>
+                <th>Pajak</th>
+                <th>Bank</th>
+                <th>Rekening</th>
+                <th>A/N</th>
+                <th>JKN</th>
+                <th>Jamsostek</th>
             </tr>
         </thead>
         <tbody>
             @forelse($karyawans as $k)
                 <tr>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->nik ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->nama_lengkap ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->nama_panggilan ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->divisi ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->pekerjaan ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->no_hp ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->email ?? '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->tanggal_masuk ? Carbon::parse($k->tanggal_masuk)->format('d/M/Y') : '-' }}</td>
-                    <td style="border:1px solid #ddd;padding:6px;">{{ $k->tanggal_berhenti ? Carbon::parse($k->tanggal_berhenti)->format('d/M/Y') : '-' }}</td>
+                    <td>{{ $k->nik ?? '-' }}</td>
+                    <td>{{ $k->nama_lengkap ?? '-' }}</td>
+                    <td>{{ $k->nama_panggilan ?? '-' }}</td>
+                    <td>{{ $k->email ?? '-' }}</td>
+                    <td>{{ $k->no_hp ?? '-' }}</td>
+                    <td>{{ $k->tempat_lahir ?? '-' }}</td>
+                    <td>{{ $k->tanggal_lahir ? Carbon::parse($k->tanggal_lahir)->format('d/m/Y') : '-' }}</td>
+                    <td>{{ $k->jenis_kelamin == 'L' ? 'L' : ($k->jenis_kelamin == 'P' ? 'P' : '-') }}</td>
+                    <td>{{ $k->agama ?? '-' }}</td>
+                    <td>{{ $k->status_perkawinan ?? '-' }}</td>
+                    <td>{{ $k->ktp ?? '-' }}</td>
+                    <td>{{ $k->kk ?? '-' }}</td>
+                    <td>{{ Str::limit($k->alamat_lengkap ?? '-', 30) }}</td>
+                    <td>{{ $k->divisi ?? '-' }}</td>
+                    <td>{{ $k->pekerjaan ?? '-' }}</td>
+                    <td>{{ $k->tanggal_masuk ? Carbon::parse($k->tanggal_masuk)->format('d/m/Y') : '-' }}</td>
+                    <td>{{ $k->tanggal_berhenti ? Carbon::parse($k->tanggal_berhenti)->format('d/m/Y') : '-' }}</td>
+                    <td>{{ $k->supervisor ?? '-' }}</td>
+                    <td>{{ $k->cabang ?? '-' }}</td>
+                    <td>{{ $k->plat ?? '-' }}</td>
+                    <td>{{ $k->status_pajak ?? '-' }}</td>
+                    <td>{{ $k->nama_bank ?? '-' }}</td>
+                    <td>{{ $k->akun_bank ?? '-' }}</td>
+                    <td>{{ $k->atas_nama ?? '-' }}</td>
+                    <td>{{ $k->jkn ?? '-' }}</td>
+                    <td>{{ $k->no_ketenagakerjaan ?? '-' }}</td>
                 </tr>
             @empty
                 <tr>
-                    <td colspan="9" style="border:1px solid #ddd;padding:8px;text-align:center;color:#666;">Belum ada data karyawan.</td>
+                    <td colspan="26" style="text-align:center;color:#666;padding:8px;">Belum ada data karyawan.</td>
                 </tr>
             @endforelse
         </tbody>
     </table>
 
-    <div style="margin-top:12px;font-size:11px;color:#666;">Generated by {{ config('app.name') }}</div>
+    <div style="margin-top:8px;font-size:8px;color:#666;">
+        Generated by {{ config('app.name') }} | 
+        {{ now()->format('d/m/Y H:i:s') }} | 
+        Total Records: {{ $karyawans->count() }}
+    </div>
 </div>
 @endsection
