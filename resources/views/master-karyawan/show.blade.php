@@ -65,7 +65,7 @@
 
             <div>
                 <p class="font-semibold text-gray-600">Tanggal Lahir</p>
-                <p class="text-gray-800">{{ $karyawan->formatAsDate('tanggal_lahir') ?? '-' }}</p>
+                <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_lahir, 'd/M/Y') }}</p>
             </div>
             <div>
                 <p class="font-semibold text-gray-600">Tempat Lahir</p>
@@ -225,20 +225,20 @@
 
             <div>
                 <p class="font-semibold text-gray-600">Tanggal Masuk</p>
-                <p class="text-gray-800">{{ $karyawan->formatAsDate('tanggal_masuk') ?? '-' }}</p>
+                <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_masuk, 'd/M/Y') }}</p>
             </div>
             <div>
                 <p class="font-semibold text-gray-600">Tanggal Berhenti</p>
-                <p class="text-gray-800">{{ $karyawan->formatAsDate('tanggal_berhenti') ?? '-' }}</p>
+                <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_berhenti, 'd/M/Y') }}</p>
             </div>
 
             <div>
                 <p class="font-semibold text-gray-600">Tanggal Masuk (Sebelumnya)</p>
-                <p class="text-gray-800">{{ $karyawan->formatAsDate('tanggal_masuk_sebelumnya') ?? '-' }}</p>
+                <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_masuk_sebelumnya, 'd/M/Y') }}</p>
             </div>
             <div>
                 <p class="font-semibold text-gray-600">Tanggal Berhenti (Sebelumnya)</p>
-                <p class="text-gray-800">{{ $karyawan->formatAsDate('tanggal_berhenti_sebelumnya') ?? '-' }}</p>
+                <p class="text-gray-800">{{ $formatDate($karyawan->tanggal_berhenti_sebelumnya, 'd/M/Y') }}</p>
             </div>
 
             <div>
@@ -311,7 +311,7 @@
     </div>
 
     <div class="mt-6 text-sm text-gray-500">
-    <p>Dibuat: {{ $karyawan->formatAsDate('created_at', 'd/M/Y H:i') ?? '-' }} | Terakhir diubah: {{ $karyawan->formatAsDate('updated_at', 'd/M/Y H:i') ?? '-' }}</p>
+    <p>Dibuat: {{ $formatDate($karyawan->created_at, 'd/M/Y H:i') }} | Terakhir diubah: {{ $formatDate($karyawan->updated_at, 'd/M/Y H:i') }}</p>
     </div>
 </div>
 @endsection
