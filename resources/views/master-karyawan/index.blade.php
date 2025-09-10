@@ -288,12 +288,12 @@
                             <div class="flex items-center space-x-1">
                                 <span>JKN</span>
                                 <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'asc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'jkn' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan A-Z">
                                         <i class="fas fa-sort-up text-xs"></i>
                                     </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'desc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'desc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'jkn' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan Z-A">
                                         <i class="fas fa-sort-down text-xs"></i>
@@ -305,12 +305,12 @@
                             <div class="flex items-center space-x-1">
                                 <span>BP JAMSOSTEK</span>
                                 <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'asc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'no_ketenagakerjaan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan A-Z">
                                         <i class="fas fa-sort-up text-xs"></i>
                                     </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'desc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'desc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'no_ketenagakerjaan' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan Z-A">
                                         <i class="fas fa-sort-down text-xs"></i>
@@ -322,12 +322,12 @@
                             <div class="flex items-center space-x-1">
                                 <span>NO HP</span>
                                 <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'asc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'no_hp' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan A-Z">
                                         <i class="fas fa-sort-up text-xs"></i>
                                     </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'desc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'desc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'no_hp' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan Z-A">
                                         <i class="fas fa-sort-down text-xs"></i>
@@ -339,12 +339,12 @@
                             <div class="flex items-center space-x-1">
                                 <span>EMAIL</span>
                                 <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'asc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'email' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan A-Z">
                                         <i class="fas fa-sort-up text-xs"></i>
                                     </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'desc'])) }}" 
+                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'desc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'email' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
                                        title="Urutkan Z-A">
                                         <i class="fas fa-sort-down text-xs"></i>
@@ -444,13 +444,12 @@
                                         <i class="fas fa-edit text-xs"></i>
                                     </a>
 
-                                    <form action="{{ route('master.karyawan.destroy', $karyawan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus karyawan ini?');" class="inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="inline-flex items-center justify-center w-8 h-8 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors border border-gray-300" title="Hapus">
-                                            <i class="fas fa-trash text-xs"></i>
-                                        </button>
-                                    </form>
+                                    <button type="button"
+                                            onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')"
+                                            class="inline-flex items-center justify-center w-8 h-8 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-md transition-colors border border-gray-300"
+                                            title="Hapus">
+                                        <i class="fas fa-trash text-xs"></i>
+                                    </button>
                                 </div>
                             </td>
                         </tr>
@@ -480,7 +479,166 @@
     </div>
 </div>
 
-<script>
+<!-- Delete Confirmation Modal - Enhanced Version -->
+<div id="deleteModal" class="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm overflow-y-auto h-full w-full hidden z-50 transition-all duration-300">
+    <div class="relative top-20 mx-auto p-0 border-0 w-full max-w-md shadow-2xl rounded-xl bg-white transform transition-all duration-300">
+        <!-- Header with close button -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200">
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center justify-center h-10 w-10 rounded-full bg-red-100">
+                    <svg class="h-5 w-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-semibold text-gray-900">Konfirmasi Hapus</h3>
+            </div>
+            <button type="button" onclick="closeDeleteModal()" class="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg p-2 transition-colors">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Content -->
+        <div class="p-6 space-y-6">
+            <!-- Warning Message -->
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                    <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L4.082 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                    </svg>
+                </div>
+                <p class="text-lg font-medium text-gray-900 mb-2">Yakin ingin menghapus karyawan ini?</p>
+                <p class="text-sm text-gray-600">Tindakan ini tidak dapat dibatalkan</p>
+            </div>
+
+            <!-- Employee Info Card -->
+            <div class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 rounded-lg p-4">
+                <div class="flex items-center space-x-4">
+                    <div class="flex-shrink-0">
+                        <div class="h-12 w-12 rounded-full bg-red-500 flex items-center justify-center">
+                            <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                        </div>
+                    </div>
+                    <div class="flex-1 min-w-0">
+                        <div class="grid grid-cols-2 gap-y-2 text-sm">
+                            <div>
+                                <span class="font-medium text-red-700">NIK:</span>
+                            </div>
+                            <div>
+                                <span id="deleteModalNik" class="font-semibold text-red-900"></span>
+                            </div>
+                            <div>
+                                <span class="font-medium text-red-700">Nama:</span>
+                            </div>
+                            <div>
+                                <span id="deleteModalNama" class="font-semibold text-red-900"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Warning Notice -->
+            <div class="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div class="flex items-start space-x-3">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-amber-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="flex-1">
+                        <h4 class="text-sm font-medium text-amber-800">Peringatan Penting!</h4>
+                        <div class="mt-1 text-sm text-amber-700">
+                            <ul class="list-disc ml-4 space-y-1">
+                                <li>Data karyawan akan dihapus <strong>permanen</strong></li>
+                                <li>Semua riwayat dan dokumen terkait akan hilang</li>
+                                <li>Pastikan backup data sudah tersedia</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer Actions -->
+        <div class="bg-gray-50 px-6 py-4 rounded-b-xl flex justify-end space-x-3">
+            <button type="button"
+                    onclick="closeDeleteModal()"
+                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all duration-200">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+                Batal
+            </button>
+            <form id="deleteForm" method="POST" class="inline">
+                @csrf
+                @method('DELETE')
+                <button type="submit"
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H8a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Ya, Hapus Karyawan
+                </button>
+            </form>
+        </div>
+    </div>
+</div><script>
+// Enhanced Delete Modal Functions
+function openDeleteModal(karyawanId, nik, namaLengkap) {
+    // Set form action
+    const deleteForm = document.getElementById('deleteForm');
+    deleteForm.action = `/master/karyawan/${karyawanId}`;
+    
+    // Set modal content
+    document.getElementById('deleteModalNik').textContent = nik || '-';
+    document.getElementById('deleteModalNama').textContent = namaLengkap || '-';
+    
+    // Show modal with animation
+    const modal = document.getElementById('deleteModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+    
+    // Animate modal appearance
+    setTimeout(() => {
+        modal.querySelector('.relative').style.transform = 'scale(1)';
+        modal.querySelector('.relative').style.opacity = '1';
+    }, 10);
+}
+
+function closeDeleteModal() {
+    const modal = document.getElementById('deleteModal');
+    const modalContent = modal.querySelector('.relative');
+    
+    // Animate modal disappearance
+    modalContent.style.transform = 'scale(0.95)';
+    modalContent.style.opacity = '0';
+    
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        document.body.style.overflow = 'auto';
+        modalContent.style.transform = 'scale(1)';
+        modalContent.style.opacity = '1';
+    }, 200);
+}
+
+// Close modal when clicking outside
+document.getElementById('deleteModal').addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDeleteModal();
+    }
+});
+
+// Close modal with ESC key
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        closeDeleteModal();
+    }
+});
+
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('input[name="search"]');
     const searchForm = searchInput.closest('form');
@@ -565,7 +723,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Sticky Header Enhancement
     const tableContainer = document.querySelector('.table-container');
     const stickyHeader = document.querySelector('.sticky-table-header');
-    
+
     if (tableContainer && stickyHeader) {
         // Add scroll event listener for visual feedback
         tableContainer.addEventListener('scroll', function() {
@@ -575,14 +733,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 tableContainer.classList.remove('scrolled');
             }
         });
-        
+
         // Optional: Add smooth scroll to top button
         const scrollToTopBtn = document.createElement('button');
         scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
         scrollToTopBtn.className = 'fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 opacity-0 invisible z-50';
         scrollToTopBtn.title = 'Scroll ke atas';
         document.body.appendChild(scrollToTopBtn);
-        
+
         // Show/hide scroll to top button
         tableContainer.addEventListener('scroll', function() {
             if (tableContainer.scrollTop > 200) {
@@ -593,7 +751,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 scrollToTopBtn.classList.remove('opacity-100', 'visible');
             }
         });
-        
+
         // Scroll to top functionality
         scrollToTopBtn.addEventListener('click', function() {
             tableContainer.scrollTo({
