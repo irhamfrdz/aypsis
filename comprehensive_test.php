@@ -27,28 +27,28 @@ $testFiles = [
 foreach ($testFiles as $file => $desc) {
     if (file_exists($file)) {
         echo "✅ $file ($desc) - " . filesize($file) . " bytes\n";
-        
+
         // Test file reading
         if (pathinfo($file, PATHINFO_EXTENSION) === 'csv') {
             $handle = fopen($file, 'r');
-            
+
             // Skip BOM
             $firstBytes = fread($handle, 3);
             if ($firstBytes !== chr(0xEF) . chr(0xBB) . chr(0xBF)) {
                 rewind($handle);
             }
-            
+
             $headers = fgetcsv($handle, 0, ';');
             $rowCount = 0;
             while (fgetcsv($handle, 0, ';') !== false) {
                 $rowCount++;
             }
             fclose($handle);
-            
+
             echo "   📊 Headers: " . count($headers) . " columns\n";
             echo "   📊 Data rows: $rowCount\n";
         }
-        
+
         if (pathinfo($file, PATHINFO_EXTENSION) === 'xlsx') {
             if (class_exists('ZipArchive')) {
                 $zip = new ZipArchive();
@@ -76,7 +76,7 @@ $controller = new KaryawanController();
 // Test importForm method
 try {
     echo "✅ KaryawanController instantiated\n";
-    
+
     // Check if methods exist
     $methods = ['importForm', 'importStore', 'convertExcelToCsv'];
     foreach ($methods as $method) {
@@ -101,10 +101,10 @@ try {
     $sampleKaryawan = Karyawan::first();
     if ($sampleKaryawan) {
         echo "✅ Karyawan table accessible\n";
-        
+
         $requiredFields = ['nik', 'nama_lengkap', 'email', 'ktp', 'kk', 'no_hp', 'divisi'];
         $attributes = $sampleKaryawan->getAttributes();
-        
+
         foreach ($requiredFields as $field) {
             if (array_key_exists($field, $attributes)) {
                 echo "✅ Field '$field' exists\n";
@@ -112,7 +112,7 @@ try {
                 echo "❌ Field '$field' missing\n";
             }
         }
-        
+
         echo "📊 Total records: " . Karyawan::count() . "\n";
     } else {
         echo "⚠️  Karyawan table empty\n";
@@ -130,22 +130,22 @@ echo "----------------------------------------\n";
 // Test ZipArchive
 if (class_exists('ZipArchive')) {
     echo "✅ ZipArchive extension available\n";
-    
+
     $zip = new ZipArchive();
     $testResult = $zip->open('test_simple.xlsx');
     if ($testResult === TRUE) {
         echo "✅ Can open XLSX files\n";
-        
+
         // Test reading worksheet
         $worksheetXml = $zip->getFromName('xl/worksheets/sheet1.xml');
         if ($worksheetXml) {
             echo "✅ Can read worksheet XML\n";
-            
+
             // Test XML parsing
             $doc = new DOMDocument();
             if ($doc->loadXML($worksheetXml)) {
                 echo "✅ Can parse worksheet XML\n";
-                
+
                 $xpath = new DOMXPath($doc);
                 $rows = $xpath->query('//row');
                 echo "   📊 Found " . $rows->length . " rows in XLSX\n";
@@ -155,7 +155,7 @@ if (class_exists('ZipArchive')) {
         } else {
             echo "❌ Cannot read worksheet XML\n";
         }
-        
+
         $zip->close();
     } else {
         echo "❌ Cannot open XLSX files (error code: $testResult)\n";
@@ -179,45 +179,45 @@ echo "-------------------------\n";
 
 if (file_exists('test_karyawan_excel_import.csv')) {
     echo "✅ Testing CSV file processing\n";
-    
+
     $file = fopen('test_karyawan_excel_import.csv', 'r');
-    
+
     // Skip BOM
     $firstBytes = fread($file, 3);
     if ($firstBytes !== chr(0xEF) . chr(0xBB) . chr(0xBF)) {
         rewind($file);
     }
-    
+
     // Test different delimiters
     $delimiters = [';', ',', "\t"];
     $bestDelimiter = ';';
     $maxColumns = 0;
-    
+
     foreach ($delimiters as $delimiter) {
         rewind($file);
         if ($firstBytes === chr(0xEF) . chr(0xBB) . chr(0xBF)) {
             fseek($file, 3);
         }
-        
+
         $headers = fgetcsv($file, 0, $delimiter);
         if ($headers && count($headers) > $maxColumns) {
             $maxColumns = count($headers);
             $bestDelimiter = $delimiter;
         }
     }
-    
+
     echo "✅ Best delimiter detected: '$bestDelimiter' ($maxColumns columns)\n";
-    
+
     // Test data validation
     rewind($file);
     if ($firstBytes === chr(0xEF) . chr(0xBB) . chr(0xBF)) {
         fseek($file, 3);
     }
-    
+
     $headers = fgetcsv($file, 0, $bestDelimiter);
     $validRows = 0;
     $invalidRows = 0;
-    
+
     while (($row = fgetcsv($file, 0, $bestDelimiter)) !== false) {
         if (count($row) === count($headers)) {
             // Basic validation
@@ -230,9 +230,9 @@ if (file_exists('test_karyawan_excel_import.csv')) {
             $invalidRows++;
         }
     }
-    
+
     echo "✅ Data validation: $validRows valid rows, $invalidRows invalid rows\n";
-    
+
     fclose($file);
 } else {
     echo "❌ CSV test file not found\n";

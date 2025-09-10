@@ -15,21 +15,21 @@ try {
 
     echo "\n2. Testing AuthController method...\n";
     $controller = new App\Http\Controllers\AuthController();
-    
+
     echo "3. Testing Karyawan model and user relationship...\n";
     $karyawansWithoutUser = App\Models\Karyawan::whereDoesntHave('user')->get();
     echo "Karyawan without user account: " . $karyawansWithoutUser->count() . "\n";
-    
+
     if ($karyawansWithoutUser->count() > 0) {
         echo "First karyawan without user: " . $karyawansWithoutUser->first()->nama_lengkap . "\n";
     }
-    
+
     echo "\n4. Testing controller method directly...\n";
     $response = $controller->showUserRegisterForm();
     echo "Controller method executed successfully!\n";
-    
+
     echo "\n✅ ALL TESTS PASSED - Register User should work!\n";
-    
+
 } catch (Exception $e) {
     echo "\n❌ ERROR: " . $e->getMessage() . "\n";
     echo "File: " . $e->getFile() . "\n";

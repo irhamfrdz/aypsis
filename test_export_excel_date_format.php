@@ -14,7 +14,7 @@ $kernel->bootstrap();
 // Test date formatting untuk field tanggal
 $dateFields = [
     'tanggal_lahir',
-    'tanggal_masuk', 
+    'tanggal_masuk',
     'tanggal_berhenti',
     'tanggal_masuk_sebelumnya',
     'tanggal_berhenti_sebelumnya'
@@ -32,13 +32,13 @@ echo "=================================\n";
 
 foreach ($testDates as $dateStr) {
     echo "Input: $dateStr\n";
-    
+
     // Test DateTime object formatting
     $dateTime = new DateTime($dateStr);
     $formatted1 = $dateTime->format('d/M/Y');
     echo "✅ DateTime->format('d/M/Y'): $formatted1\n";
-    
-    // Test string parsing formatting  
+
+    // Test string parsing formatting
     $ts = strtotime($dateStr);
     $formatted2 = date('d/M/Y', $ts);
     echo "✅ strtotime + date('d/M/Y'): $formatted2\n\n";

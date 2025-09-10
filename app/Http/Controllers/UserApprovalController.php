@@ -17,13 +17,13 @@ class UserApprovalController extends Controller
             ->where('status', 'pending')
             ->orderBy('created_at', 'desc')
             ->get();
-            
+
         $approvedUsers = User::with(['karyawan', 'approvedBy'])
             ->where('status', 'approved')
             ->orderBy('approved_at', 'desc')
             ->limit(20)
             ->get();
-            
+
         $rejectedUsers = User::with(['karyawan', 'approvedBy'])
             ->where('status', 'rejected')
             ->orderBy('updated_at', 'desc')

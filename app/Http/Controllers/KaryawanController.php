@@ -59,9 +59,15 @@ class KaryawanController extends Controller
         // Apply sorting
         $query->orderBy($sortField, $sortDirection);
 
-        // Menggunakan paginate untuk efisiensi. Angka 15 bisa disesuaikan.
-        // Ini akan memuat 15 karyawan per halaman.
-        $karyawans = $query->paginate(15)->appends($request->query());
+        // Handle per_page parameter for pagination
+        $perPage = $request->get('per_page', 15); // Default 15 per halaman
+        $allowedPerPage = [15, 50, 100];
+        if (!in_array($perPage, $allowedPerPage)) {
+            $perPage = 15;
+        }
+
+        // Menggunakan paginate dengan per_page yang dinamis
+        $karyawans = $query->paginate($perPage)->appends($request->query());
 
         return view('master-karyawan.index', compact('karyawans'));
     }
@@ -452,11 +458,11 @@ class KaryawanController extends Controller
             }, $instructionData);
 
             fwrite($out, implode(';', $escapedInstructions) . "\r\n");
-            
+
             // Add one empty row for user to start entering data
             $emptyRow = array_fill(0, count($columns), '');
             fwrite($out, implode(';', $emptyRow) . "\r\n");
-            
+
             fclose($out);
         };
 
@@ -486,11 +492,11 @@ class KaryawanController extends Controller
 
             // Write header only with semicolon delimiter for Excel
             fwrite($out, implode(';', $columns) . "\r\n");
-            
+
             // Add one empty row for user to start entering data
             $emptyRow = array_fill(0, count($columns), '');
             fwrite($out, implode(';', $emptyRow) . "\r\n");
-            
+
             fclose($out);
         };
 
@@ -865,7 +871,7 @@ class KaryawanController extends Controller
                 $normalizeDate = function($val) {
                     $val = trim((string)$val);
                     if ($val === '') return null;
-                    
+
                     // already ISO-like
                     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) return $val;
 
@@ -890,7 +896,7 @@ class KaryawanController extends Controller
                         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                         $monthAbbr = strtolower($matches[2]);
                         $year = $matches[3];
-                        
+
                         // Map month abbreviations to numbers
                         $monthMap = [
                             'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
@@ -898,7 +904,7 @@ class KaryawanController extends Controller
                             'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
                             'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
                         ];
-                        
+
                         if (isset($monthMap[$monthAbbr])) {
                             return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
                         }
@@ -909,7 +915,7 @@ class KaryawanController extends Controller
                         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                         $monthAbbr = strtolower($matches[2]);
                         $year = $matches[3];
-                        
+
                         // Map month abbreviations to numbers
                         $monthMap = [
                             'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
@@ -917,7 +923,7 @@ class KaryawanController extends Controller
                             'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
                             'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
                         ];
-                        
+
                         if (isset($monthMap[$monthAbbr])) {
                             return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
                         }

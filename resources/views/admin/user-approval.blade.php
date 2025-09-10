@@ -28,7 +28,7 @@
     <div class="mb-6">
         <div class="flex space-x-1 bg-gray-100 p-1 rounded-lg">
             <button onclick="showTab('pending')" id="tab-pending" class="flex-1 py-2 px-4 text-sm font-medium text-center rounded-md transition-colors duration-200">
-                Menunggu Persetujuan 
+                Menunggu Persetujuan
                 @if($pendingUsers->count() > 0)
                     <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full ml-2">{{ $pendingUsers->count() }}</span>
                 @endif
@@ -263,15 +263,15 @@
             <h3 class="text-lg font-medium text-gray-900 mt-5">Tolak Registrasi User</h3>
             <div class="mt-2 px-7 py-3">
                 <p class="text-sm text-gray-500">
-                    Anda akan menolak registrasi user <span id="rejectUserName" class="font-semibold"></span>. 
+                    Anda akan menolak registrasi user <span id="rejectUserName" class="font-semibold"></span>.
                     Berikan alasan penolakan (opsional):
                 </p>
                 <form id="rejectForm" method="POST" action="" class="mt-4">
                     @csrf
-                    <textarea 
-                        name="rejection_reason" 
-                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500" 
-                        rows="3" 
+                    <textarea
+                        name="rejection_reason"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500"
+                        rows="3"
                         placeholder="Alasan penolakan (opsional)..."
                     ></textarea>
                     <div class="flex justify-end space-x-2 mt-4">
@@ -295,16 +295,16 @@ function showTab(tabName) {
     document.querySelectorAll('.tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
-    
+
     // Show selected tab
     document.getElementById(tabName + '-tab').classList.remove('hidden');
-    
+
     // Update tab buttons
     document.querySelectorAll('[id^="tab-"]').forEach(btn => {
         btn.classList.remove('bg-white', 'text-blue-600', 'shadow-sm');
         btn.classList.add('text-gray-500', 'hover:text-gray-700');
     });
-    
+
     document.getElementById('tab-' + tabName).classList.add('bg-white', 'text-blue-600', 'shadow-sm');
     document.getElementById('tab-' + tabName).classList.remove('text-gray-500', 'hover:text-gray-700');
 }

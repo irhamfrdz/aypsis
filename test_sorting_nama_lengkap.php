@@ -19,29 +19,29 @@ $view_file = 'resources/views/master-karyawan/index.blade.php';
 
 if (file_exists($view_file)) {
     $view_content = file_get_contents($view_file);
-    
+
     // Cek tombol sort up (A-Z)
     $has_sort_up = strpos($view_content, 'fa-sort-up') !== false;
     echo $has_sort_up ? "✅ Tombol Sort A-Z (up): ADA\n" : "❌ Tombol Sort A-Z (up): TIDAK ADA\n";
-    
+
     // Cek tombol sort down (Z-A)
     $has_sort_down = strpos($view_content, 'fa-sort-down') !== false;
     echo $has_sort_down ? "✅ Tombol Sort Z-A (down): ADA\n" : "❌ Tombol Sort Z-A (down): TIDAK ADA\n";
-    
+
     // Cek parameter sort dan direction
     $has_sort_param = strpos($view_content, "'sort' => 'nama_lengkap'") !== false;
     echo $has_sort_param ? "✅ Parameter sort nama_lengkap: ADA\n" : "❌ Parameter sort nama_lengkap: TIDAK ADA\n";
-    
+
     $has_direction_asc = strpos($view_content, "'direction' => 'asc'") !== false;
     echo $has_direction_asc ? "✅ Parameter direction asc: ADA\n" : "❌ Parameter direction asc: TIDAK ADA\n";
-    
+
     $has_direction_desc = strpos($view_content, "'direction' => 'desc'") !== false;
     echo $has_direction_desc ? "✅ Parameter direction desc: ADA\n" : "❌ Parameter direction desc: TIDAK ADA\n";
-    
+
     // Cek active state untuk visual feedback
     $has_active_state = strpos($view_content, 'text-blue-600') !== false;
     echo $has_active_state ? "✅ Active state styling: ADA\n" : "❌ Active state styling: TIDAK ADA\n";
-    
+
 } else {
     echo "❌ File view tidak ditemukan\n";
 }
@@ -54,31 +54,31 @@ $controller_file = 'app/Http/Controllers/KaryawanController.php';
 
 if (file_exists($controller_file)) {
     $controller_content = file_get_contents($controller_file);
-    
+
     // Cek handle sorting
     $has_sort_handling = strpos($controller_content, 'Handle sorting') !== false;
     echo $has_sort_handling ? "✅ Komentar Handle sorting: ADA\n" : "❌ Komentar Handle sorting: TIDAK ADA\n";
-    
+
     // Cek get sort parameter
     $has_sort_field = strpos($controller_content, "\$sortField = \$request->get('sort'") !== false;
     echo $has_sort_field ? "✅ Get sort parameter: ADA\n" : "❌ Get sort parameter: TIDAK ADA\n";
-    
+
     // Cek get direction parameter
     $has_sort_direction = strpos($controller_content, "\$sortDirection = \$request->get('direction'") !== false;
     echo $has_sort_direction ? "✅ Get direction parameter: ADA\n" : "❌ Get direction parameter: TIDAK ADA\n";
-    
+
     // Cek validation sort field
     $has_validation = strpos($controller_content, 'allowedSortFields') !== false;
     echo $has_validation ? "✅ Validasi sort field: ADA\n" : "❌ Validasi sort field: TIDAK ADA\n";
-    
+
     // Cek orderBy implementation
     $has_order_by = strpos($controller_content, 'orderBy($sortField, $sortDirection)') !== false;
     echo $has_order_by ? "✅ OrderBy implementation: ADA\n" : "❌ OrderBy implementation: TIDAK ADA\n";
-    
+
     // Cek default sorting
     $has_default_sort = strpos($controller_content, "'nama_lengkap'") !== false;
     echo $has_default_sort ? "✅ Default sort nama_lengkap: ADA\n" : "❌ Default sort nama_lengkap: TIDAK ADA\n";
-    
+
 } else {
     echo "❌ File controller tidak ditemukan\n";
 }
@@ -107,23 +107,23 @@ echo "🎨 4. CEK DESAIN VISUAL:\n";
 
 if (file_exists($view_file)) {
     $view_content = file_get_contents($view_file);
-    
+
     // Cek flex layout
     $has_flex_layout = strpos($view_content, 'flex items-center space-x-1') !== false;
     echo $has_flex_layout ? "✅ Flex layout untuk header: ADA\n" : "❌ Flex layout untuk header: TIDAK ADA\n";
-    
+
     // Cek icon positioning
     $has_icon_column = strpos($view_content, 'flex flex-col') !== false;
     echo $has_icon_column ? "✅ Icon column layout: ADA\n" : "❌ Icon column layout: TIDAK ADA\n";
-    
+
     // Cek hover effects
     $has_hover = strpos($view_content, 'hover:text-gray-600') !== false;
     echo $has_hover ? "✅ Hover effects: ADA\n" : "❌ Hover effects: TIDAK ADA\n";
-    
+
     // Cek tooltip
     $has_tooltip = strpos($view_content, 'title="Urutkan A-Z"') !== false;
     echo $has_tooltip ? "✅ Tooltip Urutkan A-Z: ADA\n" : "❌ Tooltip Urutkan A-Z: TIDAK ADA\n";
-    
+
     $has_tooltip_desc = strpos($view_content, 'title="Urutkan Z-A"') !== false;
     echo $has_tooltip_desc ? "✅ Tooltip Urutkan Z-A: ADA\n" : "❌ Tooltip Urutkan Z-A: TIDAK ADA\n";
 }
@@ -135,7 +135,7 @@ echo "🔒 5. CEK KEAMANAN:\n";
 
 if (file_exists($controller_file)) {
     $controller_content = file_get_contents($controller_file);
-    
+
     // Cek whitelist allowed fields
     $allowed_fields = ['nama_lengkap', 'nik', 'divisi', 'pekerjaan', 'tanggal_masuk'];
     $has_whitelist = true;
@@ -146,7 +146,7 @@ if (file_exists($controller_file)) {
         }
     }
     echo $has_whitelist ? "✅ Whitelist allowed sort fields: ADA\n" : "❌ Whitelist allowed sort fields: TIDAK LENGKAP\n";
-    
+
     // Cek direction validation
     $has_direction_validation = strpos($controller_content, "['asc', 'desc']") !== false;
     echo $has_direction_validation ? "✅ Direction validation: ADA\n" : "❌ Direction validation: TIDAK ADA\n";

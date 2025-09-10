@@ -14,7 +14,7 @@ $kernel->bootstrap();
 $normalizeDate = function($val) {
     $val = trim((string)$val);
     if ($val === '') return null;
-    
+
     // already ISO-like
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) return $val;
 
@@ -39,13 +39,13 @@ $normalizeDate = function($val) {
         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
         $monthStr = ucfirst(strtolower($matches[2]));
         $year = $matches[3];
-        
+
         $monthMap = [
             'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
             'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
             'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'
         ];
-        
+
         if (!isset($monthMap[$monthStr])) return null;
         return $year . '-' . $monthMap[$monthStr] . '-' . $day;
     }
@@ -55,13 +55,13 @@ $normalizeDate = function($val) {
         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
         $monthStr = ucfirst(strtolower($matches[2]));
         $year = $matches[3];
-        
+
         $monthMap = [
             'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
             'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
             'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'
         ];
-        
+
         if (!isset($monthMap[$monthStr])) return null;
         return $year . '-' . $monthMap[$monthStr] . '-' . $day;
     }
@@ -87,24 +87,24 @@ $testCases = [
     ['25/10/2021', '2021-10-25', 'dd/mm/yyyy (screenshot format)'],
     ['1/1/2024', '2024-01-01', 'dd/mm/yyyy single digit'],
     ['31/12/2023', '2023-12-31', 'dd/mm/yyyy end of year'],
-    
+
     // Format dengan dash
     ['17-02-2020', '2020-02-17', 'dd-mm-yyyy'],
     ['02-03-2020', '2020-03-02', 'dd-mm-yyyy'],
-    
+
     // Format original dengan nama bulan
     ['17/Feb/2020', '2020-02-17', 'dd/mmm/yyyy original'],
     ['17/JAN/2020', '2020-01-17', 'dd/mmm/yyyy uppercase'],
     ['17/feb/2020', '2020-02-17', 'dd/mmm/yyyy lowercase'],
-    
+
     // Format dengan dash dan nama bulan
     ['17-Feb-2020', '2020-02-17', 'dd-mmm-yyyy'],
     ['17-JAN-2020', '2020-01-17', 'dd-mmm-yyyy uppercase'],
-    
+
     // Format ISO
     ['2020-02-17', '2020-02-17', 'yyyy-mm-dd ISO'],
     ['2021-12-31', '2021-12-31', 'yyyy-mm-dd ISO'],
-    
+
     // Edge cases
     ['', null, 'empty string'],
     ['invalid', null, 'invalid date'],
@@ -118,7 +118,7 @@ $failed = 0;
 
 foreach ($testCases as [$input, $expected, $description]) {
     $result = $normalizeDate($input);
-    
+
     if ($result === $expected) {
         echo "✅ PASS: '$input' → '$result' ($description)\n";
         $passed++;
@@ -137,7 +137,7 @@ echo "📈 Success Rate: " . round(($passed / ($passed + $failed)) * 100, 1) . "
 if ($failed === 0) {
     echo "🎉 SEMUA TEST BERHASIL! Sistem mendukung semua format tanggal yang dibutuhkan.\n";
     echo "🔥 Format dd/mm/yyyy dari screenshot Anda sudah FULLY SUPPORTED!\n\n";
-    
+
     echo "💡 PETUNJUK PENGGUNAAN:\n";
     echo "1. Upload file Excel/CSV dengan format tanggal dd/mm/yyyy\n";
     echo "2. Sistem akan otomatis mendeteksi dan mengkonversi format\n";
@@ -155,7 +155,7 @@ echo "2. test_comprehensive_dates.csv - Test semua format (dibuat otomatis)\n";
 $comprehensiveData = [
     ['nik','nama_panggilan','nama_lengkap','tanggal_lahir','tanggal_masuk'],
     ['001', 'Test1', 'User Format 1', '17/02/2020', '17/02/2020'], // dd/mm/yyyy
-    ['002', 'Test2', 'User Format 2', '17-02-2020', '17-02-2020'], // dd-mm-yyyy  
+    ['002', 'Test2', 'User Format 2', '17-02-2020', '17-02-2020'], // dd-mm-yyyy
     ['003', 'Test3', 'User Format 3', '17/Feb/2020', '17/Feb/2020'], // dd/mmm/yyyy
     ['004', 'Test4', 'User Format 4', '2020-02-17', '2020-02-17'], // yyyy-mm-dd
     ['005', 'Test5', 'User Format 5', '1/1/2024', '1/1/2024'], // single digit

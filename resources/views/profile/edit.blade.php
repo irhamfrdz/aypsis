@@ -114,16 +114,16 @@
                             Edit Data Akun
                         </h4>
                     </div>
-                    
+
                     <form method="POST" action="{{ route('profile.update.account') }}" class="p-6">
                         @csrf
                         @method('PUT')
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label for="name" class="block text-sm font-semibold text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
-                                <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-300 @enderror" 
+                                <input type="text" id="name" name="name" value="{{ old('name', $user->name) }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('name') border-red-300 @enderror"
                                     required>
                                 @error('name')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -132,8 +132,8 @@
 
                             <div class="space-y-2">
                                 <label for="username" class="block text-sm font-semibold text-gray-700">Username <span class="text-red-500">*</span></label>
-                                <input type="text" id="username" name="username" value="{{ old('username', $user->username) }}" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('username') border-red-300 @enderror" 
+                                <input type="text" id="username" name="username" value="{{ old('username', $user->username) }}"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('username') border-red-300 @enderror"
                                     required>
                                 @error('username')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -159,11 +159,11 @@
                                 Edit Data Pribadi
                             </h4>
                         </div>
-                        
+
                         <form method="POST" action="{{ route('profile.update.personal') }}" class="p-6">
                             @csrf
                             @method('PUT')
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div class="space-y-2">
                                     <label for="nik" class="block text-sm font-semibold text-gray-700">NIK</label>
@@ -177,8 +177,8 @@
 
                                 <div class="space-y-2">
                                     <label for="nama_lengkap" class="block text-sm font-semibold text-gray-700">Nama Lengkap <span class="text-red-500">*</span></label>
-                                    <input type="text" id="nama_lengkap" name="nama_lengkap" value="{{ old('nama_lengkap', $user->karyawan->nama_lengkap) }}" 
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('nama_lengkap') border-red-300 @enderror" 
+                                    <input type="text" id="nama_lengkap" name="nama_lengkap" value="{{ old('nama_lengkap', $user->karyawan->nama_lengkap) }}"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('nama_lengkap') border-red-300 @enderror"
                                         required>
                                     @error('nama_lengkap')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -187,7 +187,7 @@
 
                                 <div class="space-y-2">
                                     <label for="nama_panggilan" class="block text-sm font-semibold text-gray-700">Nama Panggilan</label>
-                                    <input type="text" id="nama_panggilan" name="nama_panggilan" value="{{ old('nama_panggilan', $user->karyawan->nama_panggilan) }}" 
+                                    <input type="text" id="nama_panggilan" name="nama_panggilan" value="{{ old('nama_panggilan', $user->karyawan->nama_panggilan) }}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('nama_panggilan') border-red-300 @enderror">
                                     @error('nama_panggilan')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -196,7 +196,7 @@
 
                                 <div class="space-y-2">
                                     <label for="email" class="block text-sm font-semibold text-gray-700">Email</label>
-                                    <input type="email" id="email" name="email" value="{{ old('email', $user->karyawan->email) }}" 
+                                    <input type="email" id="email" name="email" value="{{ old('email', $user->karyawan->email) }}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('email') border-red-300 @enderror">
                                     @error('email')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -205,7 +205,7 @@
 
                                 <div class="space-y-2">
                                     <label for="no_hp" class="block text-sm font-semibold text-gray-700">No. HP</label>
-                                    <input type="tel" id="no_hp" name="no_hp" value="{{ old('no_hp', $user->karyawan->no_hp) }}" 
+                                    <input type="tel" id="no_hp" name="no_hp" value="{{ old('no_hp', $user->karyawan->no_hp) }}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('no_hp') border-red-300 @enderror">
                                     @error('no_hp')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -215,7 +215,7 @@
 
                                 <div class="space-y-2">
                                     <label for="tempat_lahir" class="block text-sm font-semibold text-gray-700">Tempat Lahir</label>
-                                    <input type="text" id="tempat_lahir" name="tempat_lahir" value="{{ old('tempat_lahir', $user->karyawan->tempat_lahir) }}" 
+                                    <input type="text" id="tempat_lahir" name="tempat_lahir" value="{{ old('tempat_lahir', $user->karyawan->tempat_lahir) }}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('tempat_lahir') border-red-300 @enderror">
                                     @error('tempat_lahir')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -224,7 +224,7 @@
 
                                 <div class="space-y-2">
                                     <label for="tanggal_lahir" class="block text-sm font-semibold text-gray-700">Tanggal Lahir</label>
-                                    <input type="date" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir', $user->karyawan->tanggal_lahir ? \Carbon\Carbon::parse($user->karyawan->tanggal_lahir)->format('Y-m-d') : '') }}" 
+                                    <input type="date" id="tanggal_lahir" name="tanggal_lahir" value="{{ old('tanggal_lahir', $user->karyawan->tanggal_lahir ? \Carbon\Carbon::parse($user->karyawan->tanggal_lahir)->format('Y-m-d') : '') }}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('tanggal_lahir') border-red-300 @enderror">
                                     @error('tanggal_lahir')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -233,7 +233,7 @@
 
                                 <div class="space-y-2">
                                     <label for="jenis_kelamin" class="block text-sm font-semibold text-gray-700">Jenis Kelamin</label>
-                                    <select id="jenis_kelamin" name="jenis_kelamin" 
+                                    <select id="jenis_kelamin" name="jenis_kelamin"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('jenis_kelamin') border-red-300 @enderror">
                                         <option value="">Pilih jenis kelamin...</option>
                                         <option value="L" {{ old('jenis_kelamin', $user->karyawan->jenis_kelamin) == 'L' ? 'selected' : '' }}>Laki-laki</option>
@@ -246,7 +246,7 @@
 
                                 <div class="space-y-2">
                                     <label for="agama" class="block text-sm font-semibold text-gray-700">Agama</label>
-                                    <select id="agama" name="agama" 
+                                    <select id="agama" name="agama"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('agama') border-red-300 @enderror">
                                         <option value="">Pilih agama...</option>
                                         <option value="Islam" {{ old('agama', $user->karyawan->agama) == 'Islam' ? 'selected' : '' }}>Islam</option>
@@ -263,7 +263,7 @@
 
                                 <div class="space-y-2">
                                     <label for="status_perkawinan" class="block text-sm font-semibold text-gray-700">Status Perkawinan</label>
-                                    <select id="status_perkawinan" name="status_perkawinan" 
+                                    <select id="status_perkawinan" name="status_perkawinan"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('status_perkawinan') border-red-300 @enderror">
                                         <option value="">Pilih status...</option>
                                         <option value="Belum Kawin" {{ old('status_perkawinan', $user->karyawan->status_perkawinan) == 'Belum Kawin' ? 'selected' : '' }}>Belum Kawin</option>
@@ -278,7 +278,7 @@
 
                                 <div class="space-y-2">
                                     <label for="divisi" class="block text-sm font-semibold text-gray-700">Divisi</label>
-                                    <select id="divisi" name="divisi" 
+                                    <select id="divisi" name="divisi"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('divisi') border-red-300 @enderror">
                                         <option value="">Pilih divisi...</option>
                                         <option value="IT" {{ old('divisi', $user->karyawan->divisi) == 'IT' ? 'selected' : '' }}>IT</option>
@@ -295,7 +295,7 @@
 
                                 <div class="space-y-2">
                                     <label for="pekerjaan" class="block text-sm font-semibold text-gray-700">Pekerjaan</label>
-                                    <select id="pekerjaan" name="pekerjaan" 
+                                    <select id="pekerjaan" name="pekerjaan"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('pekerjaan') border-red-300 @enderror">
                                         <option value="">Pilih pekerjaan...</option>
                                         <option value="Administrator" {{ old('pekerjaan', $user->karyawan->pekerjaan) == 'Administrator' ? 'selected' : '' }}>Administrator</option>
@@ -315,7 +315,7 @@
 
                                 <div class="space-y-2">
                                     <label for="tanggal_masuk" class="block text-sm font-semibold text-gray-700">Tanggal Masuk</label>
-                                    <input type="date" id="tanggal_masuk" name="tanggal_masuk" value="{{ old('tanggal_masuk', $user->karyawan->tanggal_masuk ? \Carbon\Carbon::parse($user->karyawan->tanggal_masuk)->format('Y-m-d') : '') }}" 
+                                    <input type="date" id="tanggal_masuk" name="tanggal_masuk" value="{{ old('tanggal_masuk', $user->karyawan->tanggal_masuk ? \Carbon\Carbon::parse($user->karyawan->tanggal_masuk)->format('Y-m-d') : '') }}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('tanggal_masuk') border-red-300 @enderror">
                                     @error('tanggal_masuk')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -324,7 +324,7 @@
 
                                 <div class="space-y-2">
                                     <label for="no_ketenagakerjaan" class="block text-sm font-semibold text-gray-700">No. Ketenagakerjaan</label>
-                                    <input type="text" id="no_ketenagakerjaan" name="no_ketenagakerjaan" value="{{ old('no_ketenagakerjaan', $user->karyawan->no_ketenagakerjaan) }}" 
+                                    <input type="text" id="no_ketenagakerjaan" name="no_ketenagakerjaan" value="{{ old('no_ketenagakerjaan', $user->karyawan->no_ketenagakerjaan) }}"
                                         class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('no_ketenagakerjaan') border-red-300 @enderror">
                                     @error('no_ketenagakerjaan')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -335,8 +335,8 @@
 
                             <div class="space-y-2 mb-6">
                                 <label for="alamat_lengkap" class="block text-sm font-semibold text-gray-700">Alamat Lengkap</label>
-                                <textarea id="alamat_lengkap" name="alamat_lengkap" rows="4" 
-                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none @error('alamat_lengkap') border-red-300 @enderror" 
+                                <textarea id="alamat_lengkap" name="alamat_lengkap" rows="4"
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none @error('alamat_lengkap') border-red-300 @enderror"
                                     placeholder="Masukkan alamat lengkap...">{{ old('alamat_lengkap', $user->karyawan->alamat_lengkap) }}</textarea>
                                 @error('alamat_lengkap')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -360,15 +360,15 @@
                             Ubah Password
                         </h4>
                     </div>
-                    
+
                     <form method="POST" action="{{ route('profile.update.account') }}" class="p-6">
                         @csrf
                         @method('PUT')
-                        
+
                         <div class="space-y-6">
                             <div class="space-y-2">
                                 <label for="current_password" class="block text-sm font-semibold text-gray-700">Password Saat Ini <span class="text-red-500">*</span></label>
-                                <input type="password" id="current_password" name="current_password" 
+                                <input type="password" id="current_password" name="current_password"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('current_password') border-red-300 @enderror">
                                 @error('current_password')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -377,7 +377,7 @@
 
                             <div class="space-y-2">
                                 <label for="new_password" class="block text-sm font-semibold text-gray-700">Password Baru <span class="text-red-500">*</span></label>
-                                <input type="password" id="new_password" name="new_password" 
+                                <input type="password" id="new_password" name="new_password"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent @error('new_password') border-red-300 @enderror">
                                 @error('new_password')
                                     <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
@@ -387,7 +387,7 @@
 
                             <div class="space-y-2">
                                 <label for="new_password_confirmation" class="block text-sm font-semibold text-gray-700">Konfirmasi Password Baru <span class="text-red-500">*</span></label>
-                                <input type="password" id="new_password_confirmation" name="new_password_confirmation" 
+                                <input type="password" id="new_password_confirmation" name="new_password_confirmation"
                                     class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent">
                             </div>
                         </div>
@@ -408,15 +408,15 @@
                             Zona Bahaya
                         </h4>
                     </div>
-                    
+
                     <div class="p-6">
                         <div class="bg-red-50 border border-red-200 rounded-lg p-6">
                             <h5 class="text-lg font-semibold text-red-900 mb-2">Hapus Akun</h5>
                             <p class="text-red-800 text-sm mb-4">
-                                Setelah akun Anda dihapus, semua data dan informasi akan dihapus secara permanen. 
+                                Setelah akun Anda dihapus, semua data dan informasi akan dihapus secara permanen.
                                 Tindakan ini tidak dapat dibatalkan.
                             </p>
-                            
+
                             <button onclick="showDeleteModal()" class="inline-flex items-center px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-medium rounded-lg transition-all duration-200 text-sm">
                                 <i class="fas fa-trash mr-2"></i>Hapus Akun
                             </button>
@@ -439,25 +439,25 @@
             <p class="text-gray-600 mb-6">
                 Apakah Anda yakin ingin menghapus akun? Semua data akan dihapus secara permanen.
             </p>
-            
+
             <form method="POST" action="{{ route('profile.destroy') }}" class="space-y-4">
                 @csrf
                 @method('DELETE')
-                
+
                 <div class="text-left">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Password Anda</label>
                     <input type="password" name="password" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         placeholder="Masukkan password untuk konfirmasi">
                 </div>
-                
+
                 <div class="text-left">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Ketik "DELETE" untuk konfirmasi</label>
                     <input type="text" name="confirmation" required
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent" 
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
                         placeholder="DELETE">
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 pt-4">
                     <button type="button" onclick="closeDeleteModal()" class="px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
                         Batal
@@ -478,16 +478,16 @@ function showEditTab(tabName) {
     document.querySelectorAll('.edit-tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
-    
+
     // Show selected tab
     document.getElementById(tabName + '-form').classList.remove('hidden');
-    
+
     // Update navigation buttons
     document.querySelectorAll('[id^="nav-"]').forEach(btn => {
         btn.classList.remove('bg-blue-100', 'text-blue-700');
         btn.classList.add('text-gray-700', 'hover:bg-gray-100');
     });
-    
+
     document.getElementById('nav-' + tabName).classList.add('bg-blue-100', 'text-blue-700');
     document.getElementById('nav-' + tabName).classList.remove('text-gray-700', 'hover:bg-gray-100');
 }

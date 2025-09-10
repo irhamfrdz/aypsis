@@ -14,7 +14,7 @@ foreach ($allowedSortFields as $field) {
 echo "\n--- Test Security Validation ---\n";
 $testInputs = [
     'nama_lengkap' => 'VALID',
-    'nik' => 'VALID', 
+    'nik' => 'VALID',
     'nama_panggilan' => 'VALID',
     'divisi' => 'VALID',
     'pekerjaan' => 'VALID',
@@ -29,7 +29,7 @@ $testInputs = [
 foreach ($testInputs as $input => $expected) {
     $isValid = in_array($input, $allowedSortFields);
     $actual = $isValid ? 'VALID' : 'BLOCKED';
-    
+
     if ($actual === $expected) {
         echo "✅ {$input}: {$actual} (Expected: {$expected})\n";
     } else {
@@ -50,16 +50,16 @@ $testParams = [
 foreach ($testParams as $params) {
     $sortField = $params['sort'];
     $direction = $params['direction'];
-    
+
     // Simulate controller validation logic
     if (!in_array($sortField, $allowedSortFields)) {
         $sortField = 'nama_lengkap'; // Fallback
     }
-    
+
     if (!in_array($direction, ['asc', 'desc'])) {
         $direction = 'asc'; // Fallback
     }
-    
+
     echo "Input: sort={$params['sort']}, direction={$params['direction']}\n";
     echo "Output: sort={$sortField}, direction={$direction}\n\n";
 }
@@ -68,7 +68,7 @@ echo "=== Test HTML Structure ===\n";
 // Verify that all sorting columns have proper HTML structure
 $sortableColumns = [
     'nik' => 'NIK',
-    'nama_lengkap' => 'NAMA LENGKAP', 
+    'nama_lengkap' => 'NAMA LENGKAP',
     'nama_panggilan' => 'NAMA PANGGILAN',
     'divisi' => 'DIVISI',
     'pekerjaan' => 'PEKERJAAN',

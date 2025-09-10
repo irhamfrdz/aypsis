@@ -25,7 +25,7 @@ echo "📊 Field tanggal yang terpengaruh:\n";
 echo "==================================\n";
 $dateFields = [
     'tanggal_lahir',
-    'tanggal_masuk', 
+    'tanggal_masuk',
     'tanggal_berhenti',
     'tanggal_masuk_sebelumnya',
     'tanggal_berhenti_sebelumnya'
@@ -40,7 +40,7 @@ echo "=============================\n";
 
 $testDates = [
     '2020-02-17' => '17/Feb/2020',
-    '2021-10-25' => '25/Oct/2021', 
+    '2021-10-25' => '25/Oct/2021',
     '2023-12-31' => '31/Dec/2023',
     '2024-01-01' => '01/Jan/2024',
     '1990-06-15' => '15/Jun/1990'
@@ -50,7 +50,7 @@ foreach ($testDates as $input => $expected) {
     // Test DateTime formatting
     $dateTime = new DateTime($input);
     $result = $dateTime->format('d/M/Y');
-    
+
     if ($result === $expected) {
         echo "✅ $input → $result\n";
     } else {

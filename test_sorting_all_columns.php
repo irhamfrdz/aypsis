@@ -26,22 +26,22 @@ $controller = new KaryawanController();
 
 foreach ($testCases as $column => $config) {
     echo "--- {$config['title']} ---\n";
-    
+
     // Create mock request
     $request = new Request([
         'sort' => $column,
         'direction' => $config['direction']
     ]);
-    
+
     try {
         // Test query langsung
         $query = Karyawan::query();
         $query->orderBy($column, $config['direction']);
         $karyawans = $query->limit(5)->get();
-        
+
         echo "✅ Query berhasil untuk kolom: {$column}\n";
         echo "Jumlah data: " . $karyawans->count() . "\n";
-        
+
         if ($karyawans->count() > 0) {
             echo "Sample data (top 3):\n";
             foreach ($karyawans->take(3) as $k) {
@@ -52,11 +52,11 @@ foreach ($testCases as $column => $config) {
                 echo "  - {$k->nama_lengkap}: {$value}\n";
             }
         }
-        
+
     } catch (Exception $e) {
         echo "❌ Error untuk kolom {$column}: " . $e->getMessage() . "\n";
     }
-    
+
     echo "\n";
 }
 
@@ -69,11 +69,11 @@ foreach ($invalidColumns as $invalidCol) {
         'sort' => $invalidCol,
         'direction' => 'asc'
     ]);
-    
+
     // Simulate controller logic
     $sortField = $request->get('sort', 'nama_lengkap');
     $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'status_pajak', 'tanggal_masuk'];
-    
+
     if (!in_array($sortField, $allowedSortFields)) {
         echo "✅ Security check passed: '{$invalidCol}' blocked, fallback to 'nama_lengkap'\n";
     } else {
@@ -93,12 +93,12 @@ foreach (array_keys($testCases) as $column) {
         'sort' => $column,
         'direction' => 'asc'
     ]));
-    
+
     $descUrl = $baseUrl . "?" . http_build_query(array_merge($currentParams, [
         'sort' => $column,
         'direction' => 'desc'
     ]));
-    
+
     echo "✅ {$column} ASC URL: {$ascUrl}\n";
     echo "✅ {$column} DESC URL: {$descUrl}\n\n";
 }

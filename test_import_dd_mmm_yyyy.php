@@ -18,7 +18,7 @@ echo "=============================================\n";
 $testNormalizeDate = function($val) {
     $val = trim((string)$val);
     if ($val === '') return null;
-    
+
     // already ISO-like
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) return $val;
 
@@ -43,7 +43,7 @@ $testNormalizeDate = function($val) {
         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
         $monthAbbr = strtolower($matches[2]);
         $year = $matches[3];
-        
+
         // Map month abbreviations to numbers
         $monthMap = [
             'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
@@ -51,7 +51,7 @@ $testNormalizeDate = function($val) {
             'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
             'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
         ];
-        
+
         if (isset($monthMap[$monthAbbr])) {
             return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
         }
@@ -62,7 +62,7 @@ $testNormalizeDate = function($val) {
         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
         $monthAbbr = strtolower($matches[2]);
         $year = $matches[3];
-        
+
         // Map month abbreviations to numbers
         $monthMap = [
             'jan' => '01', 'feb' => '02', 'mar' => '03', 'apr' => '04',
@@ -70,7 +70,7 @@ $testNormalizeDate = function($val) {
             'aug' => '08', 'agu' => '08', 'sep' => '09', 'oct' => '10',
             'okt' => '10', 'nov' => '11', 'dec' => '12', 'des' => '12'
         ];
-        
+
         if (isset($monthMap[$monthAbbr])) {
             return $year . '-' . $monthMap[$monthAbbr] . '-' . $day;
         }
@@ -85,16 +85,16 @@ echo "===================================\n";
 $testDates = [
     // Format yang sekarang di-export
     '17/Feb/2020' => 'dd/mmm/yyyy',
-    '01/Jan/1990' => 'dd/mmm/yyyy', 
+    '01/Jan/1990' => 'dd/mmm/yyyy',
     '25/Dec/2023' => 'dd/mmm/yyyy',
     '05/Aug/2024' => 'dd/mmm/yyyy',
-    
+
     // Format lain yang didukung
     '17/02/2020' => 'dd/mm/yyyy',
     '17-02-2020' => 'dd-mm-yyyy',
     '17-Feb-2020' => 'dd-mmm-yyyy',
     '2020-02-17' => 'yyyy-mm-dd',
-    
+
     // Edge cases
     '1/Jan/2024' => 'single digit day',
     '31/Dec/2023' => 'end of year',
@@ -106,7 +106,7 @@ $totalCount = count($testDates);
 
 foreach ($testDates as $input => $description) {
     $result = $testNormalizeDate($input);
-    
+
     if ($result !== null) {
         echo "✅ $input ($description) → $result\n";
         $supportedCount++;

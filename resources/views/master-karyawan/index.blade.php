@@ -155,6 +155,40 @@
                     </a>
                 </div>
             @endif
+
+            <!-- Rows Per Page Selection -->
+            <div class="mt-3 flex items-center justify-between text-sm text-gray-600">
+                <div class="flex items-center space-x-2">
+                    <span>Tampilkan</span>
+                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="inline">
+                        <!-- Preserve existing search and sort parameters -->
+                        @if(request('search'))
+                            <input type="hidden" name="search" value="{{ request('search') }}">
+                        @endif
+                        @if(request('sort'))
+                            <input type="hidden" name="sort" value="{{ request('sort') }}">
+                        @endif
+                        @if(request('direction'))
+                            <input type="hidden" name="direction" value="{{ request('direction') }}">
+                        @endif
+                        
+                        <select name="per_page" 
+                                onchange="this.form.submit()" 
+                                class="mx-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                            <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
+                            <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
+                        </select>
+                    </form>
+                    <span>baris per halaman</span>
+                </div>
+                
+                @if($karyawans->total() > 0)
+                    <div class="text-sm text-gray-500">
+                        Menampilkan {{ $karyawans->firstItem() }} - {{ $karyawans->lastItem() }} dari {{ $karyawans->total() }} total karyawan
+                    </div>
+                @endif
+            </div>
         </div>
 
         @if (session('success'))
@@ -234,6 +268,11 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">>
                     <tr>
+                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center">
+                                <span>NO.</span>
+                            </div>
+                        </th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>NIK</span>
@@ -427,6 +466,9 @@
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($karyawans as $karyawan)
                         <tr class="hover:bg-gray-50">
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900 font-medium">
+                                {{ ($karyawans->currentPage() - 1) * $karyawans->perPage() + $loop->iteration }}
+                            </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nik) }}</td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
@@ -519,7 +561,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="12" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="13" class="px-6 py-12 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
@@ -537,7 +579,14 @@
         <!-- Pagination -->
         @if($karyawans->hasPages())
             <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                {{ $karyawans->links() }}
+                <div class="flex items-center justify-between">
+                    <div class="text-sm text-gray-700">
+                        Halaman {{ $karyawans->currentPage() }} dari {{ $karyawans->lastPage() }}
+                    </div>
+                    <div>
+                        {{ $karyawans->appends(request()->query())->links() }}
+                    </div>
+                </div>
             </div>
         @endif
     </div>

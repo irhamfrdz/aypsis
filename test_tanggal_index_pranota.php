@@ -47,21 +47,21 @@ $filePath = 'resources/views/pranota-supir/index.blade.php';
 
 if (file_exists($filePath)) {
     $content = file_get_contents($filePath);
-    
+
     // Check for old format
     if (strpos($content, "format('d/m/Y')") !== false) {
         echo "⚠️  MASIH ADA: format('d/m/Y')\n";
     } else {
         echo "✅ TIDAK ADA LAGI: format('d/m/Y')\n";
     }
-    
+
     // Check for new format
     if (strpos($content, "format('d/M/Y')") !== false) {
         echo "✅ BERHASIL DITAMBAHKAN: format('d/M/Y')\n";
     } else {
         echo "❌ BELUM ADA: format('d/M/Y')\n";
     }
-    
+
 } else {
     echo "❌ File tidak ditemukan: $filePath\n";
 }

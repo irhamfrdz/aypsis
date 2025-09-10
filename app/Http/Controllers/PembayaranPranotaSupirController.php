@@ -52,7 +52,7 @@ class PembayaranPranotaSupirController extends Controller
         try {
             // Convert tanggal_kas from d/M/Y format to Y-m-d for database storage
             $tanggal_kas_db = \Carbon\Carbon::createFromFormat('d/M/Y', $validated['tanggal_kas'])->format('Y-m-d');
-            
+
             $pembayaran = PembayaranPranotaSupir::create([
                 'nomor_pembayaran' => $validated['nomor_pembayaran'],
                 'nomor_cetakan' => $validated['nomor_cetakan'],

@@ -40,28 +40,28 @@ $filePath = 'resources/views/pranota-supir/create.blade.php';
 
 if (file_exists($filePath)) {
     $content = file_get_contents($filePath);
-    
+
     // Check for old format
     if (strpos($content, 'type="date"') !== false && strpos($content, 'tanggal_pranota') !== false) {
         echo "⚠️  MASIH ADA: input type=\"date\" untuk tanggal_pranota\n";
     } else {
         echo "✅ TIDAK ADA LAGI: input type=\"date\" untuk tanggal_pranota\n";
     }
-    
+
     // Check for new format
     if (strpos($content, "now()->format('d/M/Y')") !== false) {
         echo "✅ BERHASIL DITAMBAHKAN: now()->format('d/M/Y')\n";
     } else {
         echo "❌ BELUM ADA: now()->format('d/M/Y')\n";
     }
-    
+
     // Check for text input
     if (strpos($content, 'type="text"') !== false && strpos($content, 'tanggal_pranota') !== false) {
         echo "✅ BERHASIL DIUBAH: input type=\"text\" untuk tanggal_pranota\n";
     } else {
         echo "❌ BELUM DIUBAH: input masih bukan type=\"text\"\n";
     }
-    
+
 } else {
     echo "❌ File tidak ditemukan: $filePath\n";
 }

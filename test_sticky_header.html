@@ -1,107 +1,169 @@
 <!DOCTYPE html>
 <html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Test Sticky Header - Master Karyawan</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <style>
-        /* Sticky Table Header Styles */
-        .sticky-table-header {
-            position: sticky;
-            top: 0;
-            z-index: 10;
-            background-color: rgb(249 250 251); /* bg-gray-50 */
-            box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
-        }
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Sticky Header - Master Karyawan</title>
+        <script src="https://cdn.tailwindcss.com"></script>
+        <link
+            rel="stylesheet"
+            href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+        />
+        <style>
+            /* Sticky Table Header Styles */
+            .sticky-table-header {
+                position: sticky;
+                top: 0;
+                z-index: 10;
+                background-color: rgb(249 250 251); /* bg-gray-50 */
+                box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1),
+                    0 1px 2px -1px rgb(0 0 0 / 0.1);
+            }
 
-        /* Enhanced table container for better scrolling */
-        .table-container {
-            max-height: calc(100vh - 200px);
-            overflow-y: auto;
-            border: 1px solid rgb(229 231 235);
-            border-radius: 0.5rem;
-        }
+            /* Enhanced table container for better scrolling */
+            .table-container {
+                max-height: calc(100vh - 200px);
+                overflow-y: auto;
+                border: 1px solid rgb(229 231 235);
+                border-radius: 0.5rem;
+            }
 
-        /* Smooth scrolling for better UX */
-        .table-container {
-            scroll-behavior: smooth;
-        }
+            /* Smooth scrolling for better UX */
+            .table-container {
+                scroll-behavior: smooth;
+            }
 
-        /* Table header cells need specific background to avoid transparency issues */
-        .sticky-table-header th {
-            background-color: rgb(249 250 251) !important;
-            border-bottom: 1px solid rgb(229 231 235);
-        }
+            /* Table header cells need specific background to avoid transparency issues */
+            .sticky-table-header th {
+                background-color: rgb(249 250 251) !important;
+                border-bottom: 1px solid rgb(229 231 235);
+            }
 
-        /* Optional: Add a subtle border when scrolling */
-        .table-container.scrolled .sticky-table-header {
-            border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
-        }
+            /* Optional: Add a subtle border when scrolling */
+            .table-container.scrolled .sticky-table-header {
+                border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+            }
 
-        /* Ensure dropdown menus appear above sticky header */
-        .relative.group .absolute {
-            z-index: 20;
-        }
-    </style>
-</head>
-<body class="bg-gray-100">
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">Test Sticky Header - Master Karyawan</h1>
-        
-        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-            <!-- Table Section with Sticky Header -->
-            <div class="table-container overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10">
-                        <tr>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center space-x-1">
-                                    <span>NIK</span>
-                                    <div class="flex flex-col">
-                                        <i class="fas fa-sort-up text-xs text-gray-400 hover:text-blue-600 cursor-pointer"></i>
-                                        <i class="fas fa-sort-down text-xs text-gray-400 hover:text-blue-600 cursor-pointer -mt-1"></i>
+            /* Ensure dropdown menus appear above sticky header */
+            .relative.group .absolute {
+                z-index: 20;
+            }
+        </style>
+    </head>
+    <body class="bg-gray-100">
+        <div class="container mx-auto p-4">
+            <h1 class="text-2xl font-bold mb-4">
+                Test Sticky Header - Master Karyawan
+            </h1>
+
+            <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                <!-- Table Section with Sticky Header -->
+                <div class="table-container overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead
+                            class="sticky-table-header bg-gray-50 sticky top-0 z-10"
+                        >
+                            <tr>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    <div class="flex items-center space-x-1">
+                                        <span>NIK</span>
+                                        <div class="flex flex-col">
+                                            <i
+                                                class="fas fa-sort-up text-xs text-gray-400 hover:text-blue-600 cursor-pointer"
+                                            ></i>
+                                            <i
+                                                class="fas fa-sort-down text-xs text-gray-400 hover:text-blue-600 cursor-pointer -mt-1"
+                                            ></i>
+                                        </div>
                                     </div>
-                                </div>
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center space-x-1">
-                                    <span>NAMA LENGKAP</span>
-                                    <div class="flex flex-col">
-                                        <i class="fas fa-sort-up text-xs text-gray-400 hover:text-blue-600 cursor-pointer"></i>
-                                        <i class="fas fa-sort-down text-xs text-gray-400 hover:text-blue-600 cursor-pointer -mt-1"></i>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    <div class="flex items-center space-x-1">
+                                        <span>NAMA LENGKAP</span>
+                                        <div class="flex flex-col">
+                                            <i
+                                                class="fas fa-sort-up text-xs text-gray-400 hover:text-blue-600 cursor-pointer"
+                                            ></i>
+                                            <i
+                                                class="fas fa-sort-down text-xs text-gray-400 hover:text-blue-600 cursor-pointer -mt-1"
+                                            ></i>
+                                        </div>
                                     </div>
-                                </div>
-                            </th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DIVISI</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">PEKERJAAN</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">JKN</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">NO HP</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">EMAIL</th>
-                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
-                        </tr>
-                    </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
-                        <!-- Generate 50 rows of dummy data for testing scroll -->
-                        <script>
-                            document.addEventListener('DOMContentLoaded', function() {
-                                const tbody = document.querySelector('tbody');
-                                
-                                for (let i = 1; i <= 50; i++) {
-                                    const row = document.createElement('tr');
-                                    row.className = 'hover:bg-gray-50';
-                                    row.innerHTML = `
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">NIK${i.toString().padStart(4, '0')}</td>
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    DIVISI
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    PEKERJAAN
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    JKN
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    NO HP
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    EMAIL
+                                </th>
+                                <th
+                                    class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider"
+                                >
+                                    AKSI
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            <!-- Generate 50 rows of dummy data for testing scroll -->
+                            <script>
+                                document.addEventListener(
+                                    "DOMContentLoaded",
+                                    function () {
+                                        const tbody =
+                                            document.querySelector("tbody");
+
+                                        for (let i = 1; i <= 50; i++) {
+                                            const row =
+                                                document.createElement("tr");
+                                            row.className = "hover:bg-gray-50";
+                                            row.innerHTML = `
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">NIK${i
+                                            .toString()
+                                            .padStart(4, "0")}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">Karyawan ${i}</td>
                                         <td class="px-4 py-4 whitespace-nowrap">
                                             <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md bg-blue-100 text-blue-800">
-                                                ${i % 3 === 0 ? 'IT' : i % 2 === 0 ? 'ABK' : 'SUPIR'}
+                                                ${
+                                                    i % 3 === 0
+                                                        ? "IT"
+                                                        : i % 2 === 0
+                                                        ? "ABK"
+                                                        : "SUPIR"
+                                                }
                                             </span>
                                         </td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${i % 2 === 0 ? 'DEVELOPER' : 'OPERATOR'}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">${
+                                            i % 2 === 0
+                                                ? "DEVELOPER"
+                                                : "OPERATOR"
+                                        }</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">JKN${i}</td>
-                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">08123456${i.toString().padStart(3, '0')}</td>
+                                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">08123456${i
+                                            .toString()
+                                            .padStart(3, "0")}</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">user${i}@company.com</td>
                                         <td class="px-4 py-4 whitespace-nowrap text-center">
                                             <div class="flex items-center justify-center space-x-1">
@@ -114,70 +176,118 @@
                                             </div>
                                         </td>
                                     `;
-                                    tbody.appendChild(row);
-                                }
-                                
-                                // Initialize sticky header functionality
-                                initStickyHeader();
-                            });
-                            
-                            function initStickyHeader() {
-                                const tableContainer = document.querySelector('.table-container');
-                                const stickyHeader = document.querySelector('.sticky-table-header');
-                                
-                                if (tableContainer && stickyHeader) {
-                                    // Add scroll event listener for visual feedback
-                                    tableContainer.addEventListener('scroll', function() {
-                                        if (tableContainer.scrollTop > 0) {
-                                            tableContainer.classList.add('scrolled');
-                                        } else {
-                                            tableContainer.classList.remove('scrolled');
+                                            tbody.appendChild(row);
                                         }
-                                    });
-                                    
-                                    // Add smooth scroll to top button
-                                    const scrollToTopBtn = document.createElement('button');
-                                    scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
-                                    scrollToTopBtn.className = 'fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 opacity-0 invisible z-50';
-                                    scrollToTopBtn.title = 'Scroll ke atas';
-                                    document.body.appendChild(scrollToTopBtn);
-                                    
-                                    // Show/hide scroll to top button
-                                    tableContainer.addEventListener('scroll', function() {
-                                        if (tableContainer.scrollTop > 200) {
-                                            scrollToTopBtn.classList.remove('opacity-0', 'invisible');
-                                            scrollToTopBtn.classList.add('opacity-100', 'visible');
-                                        } else {
-                                            scrollToTopBtn.classList.add('opacity-0', 'invisible');
-                                            scrollToTopBtn.classList.remove('opacity-100', 'visible');
-                                        }
-                                    });
-                                    
-                                    // Scroll to top functionality
-                                    scrollToTopBtn.addEventListener('click', function() {
-                                        tableContainer.scrollTo({
-                                            top: 0,
-                                            behavior: 'smooth'
-                                        });
-                                    });
+
+                                        // Initialize sticky header functionality
+                                        initStickyHeader();
+                                    }
+                                );
+
+                                function initStickyHeader() {
+                                    const tableContainer =
+                                        document.querySelector(
+                                            ".table-container"
+                                        );
+                                    const stickyHeader = document.querySelector(
+                                        ".sticky-table-header"
+                                    );
+
+                                    if (tableContainer && stickyHeader) {
+                                        // Add scroll event listener for visual feedback
+                                        tableContainer.addEventListener(
+                                            "scroll",
+                                            function () {
+                                                if (
+                                                    tableContainer.scrollTop > 0
+                                                ) {
+                                                    tableContainer.classList.add(
+                                                        "scrolled"
+                                                    );
+                                                } else {
+                                                    tableContainer.classList.remove(
+                                                        "scrolled"
+                                                    );
+                                                }
+                                            }
+                                        );
+
+                                        // Add smooth scroll to top button
+                                        const scrollToTopBtn =
+                                            document.createElement("button");
+                                        scrollToTopBtn.innerHTML =
+                                            '<i class="fas fa-arrow-up"></i>';
+                                        scrollToTopBtn.className =
+                                            "fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 opacity-0 invisible z-50";
+                                        scrollToTopBtn.title = "Scroll ke atas";
+                                        document.body.appendChild(
+                                            scrollToTopBtn
+                                        );
+
+                                        // Show/hide scroll to top button
+                                        tableContainer.addEventListener(
+                                            "scroll",
+                                            function () {
+                                                if (
+                                                    tableContainer.scrollTop >
+                                                    200
+                                                ) {
+                                                    scrollToTopBtn.classList.remove(
+                                                        "opacity-0",
+                                                        "invisible"
+                                                    );
+                                                    scrollToTopBtn.classList.add(
+                                                        "opacity-100",
+                                                        "visible"
+                                                    );
+                                                } else {
+                                                    scrollToTopBtn.classList.add(
+                                                        "opacity-0",
+                                                        "invisible"
+                                                    );
+                                                    scrollToTopBtn.classList.remove(
+                                                        "opacity-100",
+                                                        "visible"
+                                                    );
+                                                }
+                                            }
+                                        );
+
+                                        // Scroll to top functionality
+                                        scrollToTopBtn.addEventListener(
+                                            "click",
+                                            function () {
+                                                tableContainer.scrollTo({
+                                                    top: 0,
+                                                    behavior: "smooth",
+                                                });
+                                            }
+                                        );
+                                    }
                                 }
-                            }
-                        </script>
-                    </tbody>
-                </table>
+                            </script>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <h3 class="font-medium text-blue-900 mb-2">
+                    🧪 Test Instructions:
+                </h3>
+                <ul class="text-sm text-blue-800 space-y-1">
+                    <li>
+                        1. ✅ Scroll ke bawah dan lihat header tetap terlihat
+                    </li>
+                    <li>2. ✅ Perhatikan border biru muncul saat scroll</li>
+                    <li>
+                        3. ✅ Tombol scroll-to-top muncul setelah scroll cukup
+                        jauh
+                    </li>
+                    <li>4. ✅ Klik tombol untuk smooth scroll ke atas</li>
+                    <li>5. ✅ Test di mobile/tablet untuk responsiveness</li>
+                </ul>
             </div>
         </div>
-        
-        <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 class="font-medium text-blue-900 mb-2">🧪 Test Instructions:</h3>
-            <ul class="text-sm text-blue-800 space-y-1">
-                <li>1. ✅ Scroll ke bawah dan lihat header tetap terlihat</li>
-                <li>2. ✅ Perhatikan border biru muncul saat scroll</li>
-                <li>3. ✅ Tombol scroll-to-top muncul setelah scroll cukup jauh</li>
-                <li>4. ✅ Klik tombol untuk smooth scroll ke atas</li>
-                <li>5. ✅ Test di mobile/tablet untuk responsiveness</li>
-            </ul>
-        </div>
-    </div>
-</body>
+    </body>
 </html>

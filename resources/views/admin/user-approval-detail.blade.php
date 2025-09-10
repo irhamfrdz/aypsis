@@ -74,7 +74,7 @@
                             <div class="mb-6">
                                 <div class="w-20 h-20 rounded-full mx-auto flex items-center justify-center shadow-lg
                                     @if($user->status === 'pending') bg-gradient-to-br from-yellow-400 to-yellow-600
-                                    @elseif($user->status === 'approved') bg-gradient-to-br from-green-400 to-green-600  
+                                    @elseif($user->status === 'approved') bg-gradient-to-br from-green-400 to-green-600
                                     @elseif($user->status === 'rejected') bg-gradient-to-br from-red-400 to-red-600
                                     @endif">
                                     <i class="fas fa-user text-white text-2xl"></i>
@@ -164,7 +164,7 @@
                         </h4>
                         <p class="text-gray-600">Detail informasi akun pengguna yang mendaftar</p>
                     </div>
-                    
+
                     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                         <div class="space-y-2">
                             <label class="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
@@ -221,7 +221,7 @@
                         </h4>
                         <p class="text-gray-600">Informasi lengkap karyawan yang terhubung dengan akun</p>
                     </div>
-                    
+
                     @if($user->karyawan)
                         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                             <div class="space-y-2">
@@ -291,7 +291,7 @@
                         </h4>
                         <p class="text-gray-600">Timeline lengkap perubahan status akun user</p>
                     </div>
-                    
+
                     <div class="flow-root">
                         <ul role="list" class="space-y-6">
                             {{-- Registration Event --}}
@@ -322,7 +322,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                
+
                                 @if($user->approved_at && $user->approvedBy)
                                     <div class="absolute left-6 top-16 bottom-0 w-0.5 bg-gray-200"></div>
                                 @endif
@@ -347,7 +347,7 @@
                                             <div class="min-w-0 flex-1 pt-1.5 flex justify-between space-x-4">
                                                 <div>
                                                     <p class="text-sm text-gray-900">
-                                                        User {{ $user->status === 'approved' ? 'disetujui' : 'ditolak' }} oleh 
+                                                        User {{ $user->status === 'approved' ? 'disetujui' : 'ditolak' }} oleh
                                                         <span class="font-medium">{{ $user->approvedBy->name }}</span>
                                                     </p>
                                                 </div>
@@ -383,7 +383,7 @@
                                         </div>
                                         <div class="min-w-0 flex-1 pt-1.5">
                                             <p class="text-sm text-gray-900">
-                                                Status saat ini: 
+                                                Status saat ini:
                                                 <span class="font-medium">
                                                     @if($user->status === 'pending')
                                                         Menunggu persetujuan
@@ -415,22 +415,22 @@
             </div>
             <h3 class="text-xl font-bold text-gray-900 mb-2">Tolak Registrasi User</h3>
             <p class="text-gray-600 mb-6">
-                Anda akan menolak registrasi user <span id="rejectUserName" class="font-semibold text-red-600"></span>. 
+                Anda akan menolak registrasi user <span id="rejectUserName" class="font-semibold text-red-600"></span>.
                 Berikan alasan penolakan (opsional):
             </p>
-            
+
             <form id="rejectForm" method="POST" action="" class="space-y-4">
                 @csrf
                 <div class="text-left">
                     <label class="block text-sm font-semibold text-gray-700 mb-2">Alasan Penolakan</label>
-                    <textarea 
-                        name="rejection_reason" 
-                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none" 
-                        rows="4" 
+                    <textarea
+                        name="rejection_reason"
+                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+                        rows="4"
                         placeholder="Tuliskan alasan penolakan (opsional)..."
                     ></textarea>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 pt-4">
                     <button type="button" onclick="closeRejectModal()" class="px-6 py-2 bg-gray-200 text-gray-700 font-medium rounded-lg hover:bg-gray-300 transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500">
                         Batal
@@ -451,16 +451,16 @@ function showDetailTab(tabName) {
     document.querySelectorAll('.detail-tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
-    
+
     // Show selected tab
     document.getElementById(tabName + '-tab').classList.remove('hidden');
-    
+
     // Update tab buttons
     document.querySelectorAll('[id^="tab-"]').forEach(btn => {
         btn.classList.remove('border-blue-500', 'text-blue-600');
         btn.classList.add('border-transparent', 'text-gray-500');
     });
-    
+
     document.getElementById('tab-' + tabName).classList.add('border-blue-500', 'text-blue-600');
     document.getElementById('tab-' + tabName).classList.remove('border-transparent', 'text-gray-500');
 }

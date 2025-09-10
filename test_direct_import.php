@@ -124,7 +124,7 @@ $xlsxContent = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 if (class_exists('ZipArchive')) {
     $zip = new ZipArchive();
     $xlsxFile = 'test_simple.xlsx';
-    
+
     if ($zip->open($xlsxFile, ZipArchive::CREATE) === TRUE) {
         // Add required XLSX structure
         $zip->addFromString('[Content_Types].xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -134,26 +134,26 @@ if (class_exists('ZipArchive')) {
 <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
 <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
 </Types>');
-        
+
         $zip->addFromString('_rels/.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
 </Relationships>');
-        
+
         $zip->addFromString('xl/workbook.xml', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
 <sheets>
 <sheet name="Sheet1" sheetId="1" r:id="rId1" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"/>
 </sheets>
 </workbook>');
-        
+
         $zip->addFromString('xl/_rels/workbook.xml.rels', '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
 <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
 </Relationships>');
-        
+
         $zip->addFromString('xl/worksheets/sheet1.xml', $xlsxContent);
-        
+
         $zip->close();
         echo "✅ XLSX test file created: $xlsxFile\n";
     } else {

@@ -1,6 +1,6 @@
 <?php
 /**
- * Final comprehensive test untuk semua format tanggal 
+ * Final comprehensive test untuk semua format tanggal
  */
 
 echo "🎯 FINAL TEST - FORMAT DD/MMM/YYYY VALIDATION\n";
@@ -10,7 +10,7 @@ echo "============================================\n\n";
 $testDates = [
     // Proper case (recommended)
     '17/Feb/2020' => '2020-02-17',
-    '25/Jan/2021' => '2021-01-25', 
+    '25/Jan/2021' => '2021-01-25',
     '15/Mar/2022' => '2022-03-15',
     '30/Apr/2023' => '2023-04-30',
     '5/May/2024' => '2024-05-05',
@@ -21,24 +21,24 @@ $testDates = [
     '25/Oct/2016' => '2016-10-25',
     '30/Nov/2015' => '2015-11-30',
     '31/Dec/2014' => '2014-12-31',
-    
+
     // Uppercase variations
     '17/FEB/2020' => '2020-02-17',
     '25/JAN/2021' => '2021-01-25',
     '15/MAR/2022' => '2022-03-15',
     '30/DEC/2023' => '2023-12-30',
-    
+
     // Lowercase variations
     '17/feb/2020' => '2020-02-17',
     '25/jan/2021' => '2021-01-25',
     '15/mar/2022' => '2022-03-15',
     '30/dec/2023' => '2023-12-30',
-    
+
     // Mixed case variations
     '17/Feb/2020' => '2020-02-17',
     '25/jaN/2021' => '2021-01-25',
     '15/mAr/2022' => '2022-03-15',
-    
+
     // Single digit days
     '1/Jan/2024' => '2024-01-01',
     '2/Feb/2024' => '2024-02-02',
@@ -54,7 +54,7 @@ $kernel->bootstrap();
 $normalizeDate = function($val) {
     $val = trim((string)$val);
     if ($val === '') return null;
-    
+
     // already ISO-like
     if (preg_match('/^\d{4}-\d{2}-\d{2}$/', $val)) return $val;
 
@@ -79,13 +79,13 @@ $normalizeDate = function($val) {
         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
         $monthStr = ucfirst(strtolower($matches[2]));
         $year = $matches[3];
-        
+
         $monthMap = [
             'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
             'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
             'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'
         ];
-        
+
         if (!isset($monthMap[$monthStr])) return null;
         return $year . '-' . $monthMap[$monthStr] . '-' . $day;
     }
@@ -95,13 +95,13 @@ $normalizeDate = function($val) {
         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
         $monthStr = ucfirst(strtolower($matches[2]));
         $year = $matches[3];
-        
+
         $monthMap = [
             'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
             'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
             'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'
         ];
-        
+
         if (!isset($monthMap[$monthStr])) return null;
         return $year . '-' . $monthMap[$monthStr] . '-' . $day;
     }
@@ -120,7 +120,7 @@ echo "========================================\n";
 
 foreach ($testDates as $input => $expected) {
     $result = $normalizeDate($input);
-    
+
     if ($result === $expected) {
         echo "✅ '$input' → '$result'\n";
         $passed++;
@@ -139,7 +139,7 @@ echo "📈 Success Rate: " . round(($passed / ($passed + $failed)) * 100, 1) . "
 if ($failed === 0) {
     echo "🎉 FANTASTIC! Format DD/MMM/YYYY FULLY SUPPORTED!\n";
     echo "🔥 Semua variasi case berhasil ditest dan bekerja sempurna\n\n";
-    
+
     echo "✨ FORMATS YANG SEKARANG DIDUKUNG:\n";
     echo "==================================\n";
     echo "1. ✅ DD/MMM/YYYY - Proper case (17/Feb/2020) ← PERFECT!\n";
@@ -151,17 +151,17 @@ if ($failed === 0) {
     echo "7. ✅ DD-MM-YYYY - Dash numeric (17-02-2020) ← PERFECT!\n";
     echo "8. ✅ DD-MMM-YYYY - Dash alpha (17-Feb-2020) ← PERFECT!\n";
     echo "9. ✅ YYYY-MM-DD - ISO format (2020-02-17) ← PERFECT!\n\n";
-    
+
     echo "🚀 READY FOR PRODUCTION!\n";
     echo "========================\n";
     echo "📋 Templates tersedia:\n";
     echo "1. Template Excel/CSV biasa\n";
     echo "2. Template khusus DD/MMM/YYYY dengan contoh data\n";
     echo "3. Template simple Excel headers only\n\n";
-    
+
     echo "🎯 User dapat menggunakan format apapun yang mereka sukai!\n";
     echo "💪 System akan otomatis detect dan convert dengan benar!\n";
-    
+
 } else {
     echo "⚠️  Ada $failed test yang gagal. Perlu perbaikan.\n";
 }

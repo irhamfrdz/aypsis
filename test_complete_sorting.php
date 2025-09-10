@@ -15,7 +15,7 @@ echo "\n--- Test Security Validation (Updated) ---\n";
 $testInputs = [
     // Valid fields
     'nama_lengkap' => 'VALID',
-    'nik' => 'VALID', 
+    'nik' => 'VALID',
     'nama_panggilan' => 'VALID',
     'divisi' => 'VALID',
     'pekerjaan' => 'VALID',
@@ -35,7 +35,7 @@ $testInputs = [
 foreach ($testInputs as $input => $expected) {
     $isValid = in_array($input, $allowedSortFields);
     $actual = $isValid ? 'VALID' : 'BLOCKED';
-    
+
     if ($actual === $expected) {
         $status = $expected === 'VALID' ? '✅' : '🔒';
         echo "{$status} {$input}: {$actual} (Expected: {$expected})\n";
@@ -70,7 +70,7 @@ foreach ($newColumnTests as $column => $scenarios) {
     echo "--- Testing column: {$column} ---\n";
     foreach ($scenarios as $direction => $description) {
         echo "✅ {$direction}: {$description}\n";
-        
+
         // Simulate URL
         $params = ['sort' => $column, 'direction' => $direction, 'search' => 'test'];
         $url = "http://localhost/master/karyawan?" . http_build_query($params);
@@ -83,7 +83,7 @@ echo "\n--- Complete Column List ---\n";
 $columnMappings = [
     'nik' => 'NIK',
     'nama_lengkap' => 'NAMA LENGKAP',
-    'nama_panggilan' => 'NAMA PANGGILAN', 
+    'nama_panggilan' => 'NAMA PANGGILAN',
     'divisi' => 'DIVISI',
     'pekerjaan' => 'PEKERJAAN',
     'jkn' => 'JKN',                                 // ✨ NEW

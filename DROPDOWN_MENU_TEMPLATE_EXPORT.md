@@ -7,11 +7,13 @@ Mengubah tombol Template dan Export yang terpisah menjadi dropdown menu yang leb
 ### 🎯 **Perbandingan Sebelum dan Sesudah:**
 
 #### **❌ SEBELUM (6 tombol terpisah):**
+
 ```
 [+ Tambah] [📥 Template CSV] [📊 Template Excel] [🖨️ Cetak] [📄 Export CSV] [📊 Export Excel] [📤 Import]
 ```
 
 #### **✅ SESUDAH (5 tombol dengan dropdown):**
+
 ```
 [+ Tambah] [📥 Template ⬇️] [🖨️ Cetak] [📤 Export ⬇️] [📤 Import]
 ```
@@ -19,6 +21,7 @@ Mengubah tombol Template dan Export yang terpisah menjadi dropdown menu yang leb
 ### 🎨 **Implementasi Dropdown:**
 
 #### **1. Template Dropdown:**
+
 ```blade
 <div class="relative group">
     <button class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded transition duration-150">
@@ -47,6 +50,7 @@ Mengubah tombol Template dan Export yang terpisah menjadi dropdown menu yang leb
 ```
 
 #### **2. Export Dropdown:**
+
 ```blade
 <div class="relative group">
     <button class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded transition duration-150">
@@ -78,24 +82,24 @@ Mengubah tombol Template dan Export yang terpisah menjadi dropdown menu yang leb
 
 ```javascript
 // Dropdown functionality
-const dropdowns = document.querySelectorAll('.relative.group');
+const dropdowns = document.querySelectorAll(".relative.group");
 
-dropdowns.forEach(dropdown => {
-    const button = dropdown.querySelector('button');
-    const menu = dropdown.querySelector('.absolute');
-    
+dropdowns.forEach((dropdown) => {
+    const button = dropdown.querySelector("button");
+    const menu = dropdown.querySelector(".absolute");
+
     if (button && menu) {
         // Toggle dropdown on button click
-        button.addEventListener('click', function(e) {
+        button.addEventListener("click", function (e) {
             e.preventDefault();
             e.stopPropagation();
-            
+
             // Close other dropdowns
             // Toggle current dropdown
-            menu.classList.toggle('opacity-0');
-            menu.classList.toggle('opacity-100');
-            menu.classList.toggle('invisible');
-            menu.classList.toggle('visible');
+            menu.classList.toggle("opacity-0");
+            menu.classList.toggle("opacity-100");
+            menu.classList.toggle("invisible");
+            menu.classList.toggle("visible");
         });
     }
 });
@@ -106,23 +110,25 @@ dropdowns.forEach(dropdown => {
 
 ### 🎨 **Design Features:**
 
-| **Elemen** | **Styling** | **Fungsi** |
-|------------|-------------|------------|
-| **Button** | `bg-green-600`, `bg-purple-600` | Warna yang berbeda untuk Template vs Export |
-| **Chevron Icon** | `fa-chevron-down` | Indikator dropdown |
-| **Dropdown Menu** | `shadow-lg`, `border`, `rounded-md` | Visual yang clean dan modern |
-| **Menu Items** | `hover:bg-gray-100` | Feedback saat hover |
-| **Icons** | `fa-file-csv`, `fa-file-excel` | Visual identifier untuk type file |
-| **Descriptions** | `text-xs text-gray-500` | Informasi tambahan |
-| **Animation** | `transition-all duration-200` | Smooth open/close |
+| **Elemen**        | **Styling**                         | **Fungsi**                                  |
+| ----------------- | ----------------------------------- | ------------------------------------------- |
+| **Button**        | `bg-green-600`, `bg-purple-600`     | Warna yang berbeda untuk Template vs Export |
+| **Chevron Icon**  | `fa-chevron-down`                   | Indikator dropdown                          |
+| **Dropdown Menu** | `shadow-lg`, `border`, `rounded-md` | Visual yang clean dan modern                |
+| **Menu Items**    | `hover:bg-gray-100`                 | Feedback saat hover                         |
+| **Icons**         | `fa-file-csv`, `fa-file-excel`      | Visual identifier untuk type file           |
+| **Descriptions**  | `text-xs text-gray-500`             | Informasi tambahan                          |
+| **Animation**     | `transition-all duration-200`       | Smooth open/close                           |
 
 ### 🎮 **User Interaction:**
 
 #### **Cara Membuka Dropdown:**
+
 1. **Klik** tombol "Template" atau "Export"
 2. **Hover** pada tombol (alternatif)
 
 #### **Cara Menutup Dropdown:**
+
 1. **Klik di luar** area dropdown
 2. **Tekan ESC** pada keyboard
 3. **Klik tombol lain** (auto-close)
@@ -130,64 +136,71 @@ dropdowns.forEach(dropdown => {
 #### **Menu Options:**
 
 **📥 Template Dropdown:**
-- **Template CSV:** Format CSV standar
-- **Template Excel:** Kompatibel dengan Excel
+
+-   **Template CSV:** Format CSV standar
+-   **Template Excel:** Kompatibel dengan Excel
 
 **📤 Export Dropdown:**
-- **Export CSV:** Format CSV dengan separator ;
-- **Export Excel:** Anti scientific notation
+
+-   **Export CSV:** Format CSV dengan separator ;
+-   **Export Excel:** Anti scientific notation
 
 ### ✨ **Keuntungan Dropdown Menu:**
 
 #### **1. 🎛️ Interface yang Lebih Bersih:**
-- Mengurangi visual clutter
-- Lebih organized dan terstruktur
-- Space yang lebih efisien
+
+-   Mengurangi visual clutter
+-   Lebih organized dan terstruktur
+-   Space yang lebih efisien
 
 #### **2. 📱 Responsive Design:**
-- Lebih baik di layar kecil
-- Mobile-friendly interaction
-- Optimal space utilization
+
+-   Lebih baik di layar kecil
+-   Mobile-friendly interaction
+-   Optimal space utilization
 
 #### **3. 🖱️ User Experience Modern:**
-- Interaction pattern yang familiar
-- Smooth animations
-- Clear visual hierarchy
+
+-   Interaction pattern yang familiar
+-   Smooth animations
+-   Clear visual hierarchy
 
 #### **4. 🔍 Better Discoverability:**
-- Related options dikelompokkan
-- Icon dan deskripsi yang jelas
-- Contextual information
+
+-   Related options dikelompokkan
+-   Icon dan deskripsi yang jelas
+-   Contextual information
 
 #### **5. ⚡ Smooth Interaction:**
-- Click atau hover to open
-- Auto-close functionality
-- Keyboard navigation support
+
+-   Click atau hover to open
+-   Auto-close functionality
+-   Keyboard navigation support
 
 ### 📊 **Metrics Improvement:**
 
-| **Aspek** | **Sebelum** | **Sesudah** | **Improvement** |
-|-----------|-------------|-------------|-----------------|
-| **Jumlah Tombol** | 7 tombol | 5 tombol | -28% tombol |
-| **Horizontal Space** | ~700px | ~500px | -28% space |
-| **Visual Clutter** | Tinggi | Rendah | ✅ Cleaner |
-| **Mobile Experience** | Kurang optimal | Optimal | ✅ Better |
-| **Grouping Logic** | Tidak ada | Ada | ✅ Logical |
+| **Aspek**             | **Sebelum**    | **Sesudah** | **Improvement** |
+| --------------------- | -------------- | ----------- | --------------- |
+| **Jumlah Tombol**     | 7 tombol       | 5 tombol    | -28% tombol     |
+| **Horizontal Space**  | ~700px         | ~500px      | -28% space      |
+| **Visual Clutter**    | Tinggi         | Rendah      | ✅ Cleaner      |
+| **Mobile Experience** | Kurang optimal | Optimal     | ✅ Better       |
+| **Grouping Logic**    | Tidak ada      | Ada         | ✅ Logical      |
 
 ### 🎯 **Routes yang Digunakan:**
 
-| **Menu Item** | **Route** | **Function** |
-|---------------|-----------|--------------|
-| Template CSV | `master.karyawan.template` | Download CSV template |
+| **Menu Item**  | **Route**                               | **Function**            |
+| -------------- | --------------------------------------- | ----------------------- |
+| Template CSV   | `master.karyawan.template`              | Download CSV template   |
 | Template Excel | `master.karyawan.simple-excel-template` | Download Excel template |
-| Export CSV | `master.karyawan.export?sep=%3B` | Export data as CSV |
-| Export Excel | `master.karyawan.export-excel` | Export data as Excel |
+| Export CSV     | `master.karyawan.export?sep=%3B`        | Export data as CSV      |
+| Export Excel   | `master.karyawan.export-excel`          | Export data as Excel    |
 
 ### 🧪 **Testing Results:**
 
 ```
 ✅ Template dropdown: MENGGANTIKAN 2 tombol
-✅ Export dropdown: MENGGANTIKAN 2 tombol  
+✅ Export dropdown: MENGGANTIKAN 2 tombol
 ✅ JavaScript functionality: WORKING
 ✅ Click event listener: WORKING
 ✅ Close on outside click: WORKING

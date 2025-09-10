@@ -30,7 +30,7 @@ $filePath = 'resources/views/pranota-supir/show.blade.php';
 
 if (file_exists($filePath)) {
     $content = file_get_contents($filePath);
-    
+
     echo "📋 1. TANGGAL KAS:\n";
     echo "==================\n";
     // Check tanggal kas
@@ -39,13 +39,13 @@ if (file_exists($filePath)) {
     } else {
         echo "✅ TIDAK ADA LAGI: input type=\"date\" untuk tanggal_kas\n";
     }
-    
+
     if (strpos($content, "now()->format('d/M/Y')") !== false) {
         echo "✅ BERHASIL DITAMBAHKAN: now()->format('d/M/Y') untuk tanggal kas\n";
     } else {
         echo "❌ BELUM ADA: now()->format('d/M/Y') untuk tanggal kas\n";
     }
-    
+
     echo "\n📋 2. TANGGAL PRANOTA:\n";
     echo "======================\n";
     // Check tanggal pranota format
@@ -54,7 +54,7 @@ if (file_exists($filePath)) {
     } else {
         echo "❌ BELUM DIUBAH: tanggal_pranota format\n";
     }
-    
+
     echo "\n📋 3. TANGGAL MEMO:\n";
     echo "===================\n";
     // Check tanggal memo format
@@ -63,23 +63,23 @@ if (file_exists($filePath)) {
     } else {
         echo "❌ BELUM DIUBAH: tanggal_memo format\n";
     }
-    
+
     echo "\n📊 RINGKASAN PERUBAHAN:\n";
     echo "=======================\n";
-    
+
     // Count old formats
     $oldFormatCount = substr_count($content, "format('d/m/Y')");
     $newFormatCount = substr_count($content, "format('d/M/Y')");
-    
+
     echo "Format lama (d/m/Y): $oldFormatCount\n";
     echo "Format baru (d/M/Y): $newFormatCount\n";
-    
+
     if ($oldFormatCount == 0 && $newFormatCount >= 2) {
         echo "✅ SEMUA PERUBAHAN BERHASIL!\n";
     } else {
         echo "⚠️  MASIH ADA YANG PERLU DIPERBAIKI\n";
     }
-    
+
 } else {
     echo "❌ File tidak ditemukan: $filePath\n";
 }

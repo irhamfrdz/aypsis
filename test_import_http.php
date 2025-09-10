@@ -31,7 +31,7 @@ $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
 if ($httpCode === 200) {
     echo "   ✅ Import form accessible (HTTP $httpCode)\n";
-    
+
     // Extract CSRF token
     if (preg_match('/<input[^>]*name=["\']_token["\'][^>]*value=["\']([^"\']*)["\']/', $response, $matches)) {
         $csrfToken = $matches[1];
@@ -69,22 +69,22 @@ echo "   📊 File size: " . filesize($filename) . " bytes\n";
 
 if ($httpCode === 200 || $httpCode === 302) {
     echo "   ✅ File upload successful (HTTP $httpCode)\n";
-    
+
     // Check for success messages in response
     if (strpos($response, 'berhasil') !== false || strpos($response, 'success') !== false) {
         echo "   ✅ Success message detected in response\n";
     }
-    
+
     // Check for error messages
     if (strpos($response, 'error') !== false || strpos($response, 'gagal') !== false) {
         echo "   ⚠️  Error message detected in response\n";
     }
-    
+
     // Check for warning messages
     if (strpos($response, 'warning') !== false || strpos($response, 'peringatan') !== false) {
         echo "   ⚠️  Warning message detected in response\n";
     }
-    
+
 } else {
     echo "   ❌ File upload failed (HTTP $httpCode)\n";
     echo "   Response: " . substr($response, 0, 500) . "...\n";

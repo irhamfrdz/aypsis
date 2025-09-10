@@ -19,7 +19,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         $user = User::with('karyawan')->find($user->id);
-        
+
         return view('profile.show', compact('user'));
     }
 
@@ -30,7 +30,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         $user = User::with('karyawan')->find($user->id);
-        
+
         return view('profile.edit', compact('user'));
     }
 
@@ -40,7 +40,7 @@ class ProfileController extends Controller
     public function updateAccount(Request $request)
     {
         $user = Auth::user();
-        
+
         $request->validate([
             'name' => 'required|string|max:255',
             'username' => [
@@ -77,7 +77,7 @@ class ProfileController extends Controller
     {
         $user = Auth::user();
         $user = User::with('karyawan')->find($user->id);
-        
+
         if (!$user->karyawan) {
             return back()->withErrors(['error' => 'Data karyawan tidak ditemukan.']);
         }
@@ -102,7 +102,7 @@ class ProfileController extends Controller
 
         Karyawan::where('id', $user->karyawan->id)->update($request->only([
             'nik',
-            'nama_lengkap', 
+            'nama_lengkap',
             'nama_panggilan',
             'email',
             'no_hp',
@@ -145,13 +145,13 @@ class ProfileController extends Controller
         ]);
 
         $user = Auth::user();
-        
+
         // Logout user
         Auth::logout();
-        
+
         // Delete user account
         User::where('id', $user->id)->delete();
-        
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 

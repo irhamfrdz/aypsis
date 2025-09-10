@@ -131,7 +131,7 @@
                             </h4>
                             <p class="text-gray-600">Informasi dasar akun pengguna sistem</p>
                         </div>
-                        
+
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
@@ -191,7 +191,7 @@
                                 </h4>
                                 <p class="text-gray-600">Informasi pribadi karyawan terkait</p>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
                                 <div class="space-y-2">
                                     <label class="block text-sm font-semibold text-gray-700">NIK</label>
@@ -280,7 +280,7 @@
                             </h4>
                             <p class="text-gray-600">Pengaturan keamanan dan privasi akun</p>
                         </div>
-                        
+
                         <div class="space-y-6">
                             {{-- Password Section --}}
                             <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
@@ -328,16 +328,16 @@ function showProfileTab(tabName) {
     document.querySelectorAll('.profile-tab-content').forEach(tab => {
         tab.classList.add('hidden');
     });
-    
+
     // Show selected tab
     document.getElementById(tabName + '-tab').classList.remove('hidden');
-    
+
     // Update tab buttons
     document.querySelectorAll('[id^="tab-"]').forEach(btn => {
         btn.classList.remove('border-blue-500', 'text-blue-600');
         btn.classList.add('border-transparent', 'text-gray-500');
     });
-    
+
     document.getElementById('tab-' + tabName).classList.add('border-blue-500', 'text-blue-600');
     document.getElementById('tab-' + tabName).classList.remove('border-transparent', 'text-gray-500');
 }
