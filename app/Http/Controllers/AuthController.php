@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
+use App\Models\User;
+use App\Models\Karyawan;
 use App\Http\Controllers\KaryawanController;
 
 class AuthController extends Controller
@@ -26,37 +30,31 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+
         // Custom query untuk autentikasi dengan username
         if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
             $user = Auth::user();
 
-            // Check if user account is approved
-            if ($user->status === 'pending') {
-                Auth::logout();
-                return back()->withErrors(['username' => 'Akun Anda masih menunggu persetujuan administrator. Silakan hubungi admin untuk aktivasi akun.']);
-            }
-
+            // Handle user status cases.
+            // Rejected users are denied.
             if ($user->status === 'rejected') {
                 Auth::logout();
                 return back()->withErrors(['username' => 'Akun Anda telah ditolak oleh administrator. Silakan hubungi admin untuk informasi lebih lanjut.']);
             }
 
+            // Jika user belum punya karyawan, arahkan ke onboarding form lengkap
+            if (empty($user->karyawan)) {
+                $request->session()->regenerate();
+                return view('karyawan.onboarding-full');
+            }
+
+            // Any other non-approved status should be blocked.
             if ($user->status !== 'approved') {
                 Auth::logout();
-                return back()->withErrors(['username' => 'Status akun Anda tidak valid. Silakan hubungi administrator.']);
+                return back()->withErrors(['username' => 'Akun Anda masih menunggu persetujuan administrator. Silakan hubungi admin untuk aktivasi akun.']);
             }
 
             $request->session()->regenerate();
-
-            $user = Auth::user();
-
-            // If the user has no related karyawan record, show the "create karyawan" form
-            // so they can register their employee profile immediately.
-            if (empty($user->karyawan)) {
-                // Call the KaryawanController create method directly to render the form
-                $kc = app()->make(KaryawanController::class);
-                return $kc->create();
-            }
 
             // REVISI: Redirect based on pekerjaan
             if ($user->karyawan && $user->karyawan->pekerjaan === 'Supir Truck') {
@@ -99,31 +97,76 @@ class AuthController extends Controller
      */
     public function registerKaryawan(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
+            'nik' => 'required|string|max:255|unique:karyawans',
+            'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
-            'nama_panggilan' => 'required|string|max:100',
-            'nik' => 'required|string|max:20|unique:karyawans',
-            'no_ketenagakerjaan' => 'nullable|string|max:50',
-            'alamat' => 'required|string',
-            'no_telepon' => 'required|string|max:20',
-            'pekerjaan' => 'required|string',
-            'alasan_pendaftaran' => 'required|string|max:500',
+            'plat' => 'nullable|string|max:255',
+            'email' => 'nullable|string|email|max:255|unique:karyawans',
+            'ktp' => 'nullable|string|max:255|unique:karyawans',
+            'kk' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string|max:255',
+            'rt_rw' => 'nullable|string|max:255',
+            'kelurahan' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'kabupaten' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
+            'kode_pos' => 'nullable|string|max:255',
+            'alamat_lengkap' => 'nullable|string|max:255',
+            'tempat_lahir' => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'no_hp' => 'nullable|string|max:255',
+            'jenis_kelamin' => ['nullable', \Illuminate\Validation\Rule::in(['L', 'P'])],
+            'status_perkawinan' => 'nullable|string|max:255',
+            'agama' => 'nullable|string|max:255',
+            'divisi' => 'nullable|string|max:255',
+            'pekerjaan' => 'nullable|string|max:255',
+            'tanggal_masuk' => 'nullable|date',
+            'tanggal_berhenti' => 'nullable|date',
+            'tanggal_masuk_sebelumnya' => 'nullable|date',
+            'tanggal_berhenti_sebelumnya' => 'nullable|date',
+            'catatan' => 'nullable|string|max:1000',
+            'status_pajak' => 'nullable|string|max:255',
+            'nama_bank' => 'nullable|string|max:255',
+            'bank_cabang' => 'nullable|string|max:255',
+            'akun_bank' => 'nullable|string|max:255',
+            'atas_nama' => 'nullable|string|max:255',
+            'jkn' => 'nullable|string|max:255',
+            'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'cabang' => 'nullable|string|max:255',
+            'nik_supervisor' => 'nullable|string|max:255',
+            'supervisor' => 'nullable|string|max:255',
         ]);
 
-        // Simpan data karyawan dengan status pending
-        \App\Models\Karyawan::create([
-            'nama_lengkap' => $request->nama_lengkap,
-            'nama_panggilan' => $request->nama_panggilan,
-            'nik' => $request->nik,
-            'no_ketenagakerjaan' => $request->no_ketenagakerjaan,
-            'alamat' => $request->alamat,
-            'no_telepon' => $request->no_telepon,
-            'pekerjaan' => $request->pekerjaan,
-            'status' => 'pending', // Status pending untuk review admin
-            'keterangan' => 'Registrasi mandiri: ' . $request->alasan_pendaftaran,
-        ]);
+        try {
+            $user = \App\Models\User::find(Auth::id());
+            $validated['user_id'] = $user ? $user->id : null;
+            // Tambahkan status default dan catatan onboarding jika belum ada
+            if (empty($validated['status'])) {
+                $validated['status'] = 'pending';
+            }
+            if (!empty($request->alasan_pendaftaran)) {
+                $validated['catatan'] = ($validated['catatan'] ?? '') . ' Registrasi mandiri: ' . $request->alasan_pendaftaran;
+            }
+            $karyawan = \App\Models\Karyawan::create($validated);
+            // Link user to karyawan (pastikan instance Eloquent)
+            if ($user) {
+                $user->karyawan_id = $karyawan->id;
+                $user->save();
+            }
 
-        return redirect()->route('login')->with('success', 'Registrasi karyawan berhasil! Menunggu persetujuan administrator.');
+
+            // Jika ABK, redirect ke checklist crew (route khusus onboarding)
+            if (method_exists($karyawan, 'isAbk') && $karyawan->isAbk()) {
+                return redirect()->route('karyawan.onboarding-crew-checklist', $karyawan->id)
+                    ->with('success', 'Data karyawan berhasil ditambahkan. Silakan lengkapi checklist kelengkapan crew.');
+            }
+
+            return redirect()->route('dashboard')->with('success', 'Registrasi karyawan berhasil!');
+        } catch (\Exception $e) {
+            Log::error('registerKaryawan failed', ['error' => $e->getMessage(), 'input' => $request->all()]);
+            return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi administrator.');
+        }
     }
 
     /**

@@ -119,6 +119,61 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user has any permission whose name starts with the given prefix.
+     * Useful when permissions are scoped by resource (e.g. "tagihan-kontainer-sewa.*").
+     *
+     * @param string $prefix
+     * @return bool
+     */
+    public function hasPermissionLike(string $prefix): bool
+    {
+        return $this->permissions->contains(function ($perm) use ($prefix) {
+            return strpos($perm->name ?? '', $prefix) === 0;
+        });
+    }
+
+    /**
+     * Heuristic permission match: compare tokens of the requested ability and each permission
+     * and return true when there's a sufficient overlap. This helps when ability names and
+     * permission names use different prefixes but share core tokens (e.g. "master-pranota-tagihan-kontainer" vs "tagihan-kontainer-sewa.index").
+     *
+     * @param string $ability
+     * @return bool
+     */
+    public function hasPermissionMatch(string $ability): bool
+    {
+        $abilityTokens = array_filter(array_map('strtolower', preg_split('/[^a-z0-9]+/i', $ability)));
+        if (empty($abilityTokens)) {
+            return false;
+        }
+
+        foreach ($this->permissions as $perm) {
+            $pname = strtolower($perm->name ?? '');
+            if ($pname === '') {
+                continue;
+            }
+
+            // exact or substring matches already covered elsewhere, but keep quick checks
+            if ($pname === strtolower($ability) || strpos($pname, strtolower($ability)) !== false || strpos(strtolower($ability), $pname) !== false) {
+                return true;
+            }
+
+            $permTokens = array_filter(array_map('strtolower', preg_split('/[^a-z0-9]+/i', $pname)));
+            if (empty($permTokens)) {
+                continue;
+            }
+
+            $intersect = array_intersect($abilityTokens, $permTokens);
+            // require at least two token overlaps to reduce false positives
+            if (count($intersect) >= 2) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
      * The relationship with the Role model.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany

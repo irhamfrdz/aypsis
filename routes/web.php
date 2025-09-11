@@ -1,12 +1,78 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KontainerController;
 use App\Http\Controllers\PermissionController;
+
+// DEBUG ROUTE
+Route::get('/debug-gate', function () {
+    $user = Auth::user() ?? \App\Models\User::first();
+
+    if (!$user) {
+        return response()->json(['error' => 'No user found']);
+    }
+
+    // Test simple gate
+    \Illuminate\Support\Facades\Gate::define('debug-test', function () {
+        return true;
+    });
+
+    $results = [
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'permissions_count' => $user->permissions->count(),
+            'has_dashboard' => $user->hasPermissionTo('dashboard'),
+        ],
+        'tests' => [
+            'simple_gate' => \Illuminate\Support\Facades\Gate::check('debug-test', $user),
+            'dashboard_gate' => \Illuminate\Support\Facades\Gate::check('dashboard', $user),
+            'user_can_dashboard' => $user->can('dashboard'),
+            'gate_has_dashboard' => \Illuminate\Support\Facades\Gate::has('dashboard'),
+        ]
+    ];
+
+    return response()->json($results);
+});
+
+// DEBUG ROLES ROUTE
+Route::get('/debug-roles', function () {
+    $user = Auth::user() ?? \App\Models\User::first();
+
+    if (!$user) {
+        return response()->json(['error' => 'No user found']);
+    }
+
+    $results = [
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+        ],
+        'roles_test' => []
+    ];
+
+    try {
+        $roles = $user->roles;
+        $results['roles_test']['roles_loaded'] = true;
+        $results['roles_test']['roles_count'] = $roles->count();
+        $results['roles_test']['roles_names'] = $roles->pluck('name')->toArray();
+
+        // Test the exact query from AuthServiceProvider
+        $hasAdminRole = $user->roles()->where('name', 'admin')->exists();
+        $results['roles_test']['has_admin_role'] = $hasAdminRole;
+
+    } catch (Exception $e) {
+        $results['roles_test']['error'] = $e->getMessage();
+        $results['roles_test']['roles_loaded'] = false;
+    }
+
+    return response()->json($results);
+});
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\PermohonanController;
 use App\Http\Controllers\MasterKegiatanController;
@@ -39,11 +105,21 @@ Route::get('login', [AuthController::class, 'showLoginForm'])->name('login');
 Route::post('login', [AuthController::class, 'login']);
 Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 
-// Registration routes
-Route::get('register/karyawan', [AuthController::class, 'showKaryawanRegisterForm'])->name('register.karyawan');
-Route::post('register/karyawan', [AuthController::class, 'registerKaryawan'])->name('register.karyawan.store');
-Route::get('register/user', [AuthController::class, 'showUserRegisterForm'])->name('register.user');
-Route::post('register/user', [AuthController::class, 'registerUser'])->name('register.user.store');
+// Public onboarding routes for karyawan (first-time self-registration / onboarding)
+// Onboarding crew checklist khusus untuk karyawan baru (public, tanpa auth)
+Route::get('karyawan/{karyawan}/onboarding-crew-checklist', [App\Http\Controllers\KaryawanController::class, 'onboardingCrewChecklist'])
+    ->name('karyawan.onboarding-crew-checklist');
+// Diletakkan di atas agar tidak tertimpa oleh group admin/master
+Route::get('karyawan/create', [AuthController::class, 'showKaryawanRegisterForm'])->name('karyawan.create');
+Route::post('karyawan', [AuthController::class, 'registerKaryawan'])->name('karyawan.store');
+
+// Registration routes (admin only)
+Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
+    Route::get('register/karyawan', [AuthController::class, 'showKaryawanRegisterForm'])->name('register.karyawan');
+    Route::post('register/karyawan', [AuthController::class, 'registerKaryawan'])->name('register.karyawan.store');
+    Route::get('register/user', [AuthController::class, 'showUserRegisterForm'])->name('register.user');
+    Route::post('register/user', [AuthController::class, 'registerUser'])->name('register.user.store');
+});
 
 // TEST ROUTES (tanpa middleware auth)
 Route::get('/test', function () {
@@ -354,7 +430,7 @@ Route::get('/test-login', function () {
     // Login sebagai user pertama untuk test
     $user = \App\Models\User::first();
     if ($user) {
-        auth()->login($user);
+        Auth::login($user);
         return redirect('/pembayaran-pranota-kontainer/2/edit');
     }
     return 'No user found';
@@ -385,8 +461,26 @@ Route::get('/test-edit', function () {
     }
 });
 
-// Rute yang dilindungi middleware auth
-Route::middleware(['auth'])->group(function () {
+// Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
+Route::middleware([
+    'auth',
+    \App\Http\Middleware\EnsureKaryawanPresent::class,
+    \App\Http\Middleware\EnsureUserApproved::class,
+    \App\Http\Middleware\EnsureCrewChecklistComplete::class,
+])->group(function () {
+    // Onboarding routes for authenticated users who need to create their Karyawan record.
+    // These are intentionally named without the 'master.' prefix and do NOT use the
+    // 'can:master-karyawan' gate so that newly created users (pending) can submit
+    // their karyawan data on first login.
+    // Route create/store karyawan untuk master/admin hanya gunakan prefix master/karyawan agar tidak bentrok dengan onboarding
+    Route::get('master/karyawan/create', [\App\Http\Controllers\KaryawanController::class, 'create'])
+        ->name('master.karyawan.create')
+        ->middleware('auth');
+
+    Route::post('master/karyawan', [\App\Http\Controllers\KaryawanController::class, 'store'])
+        ->name('master.karyawan.store')
+        ->middleware('auth');
+
           // Tagihan Kontainer Sewa routes removed - controller/views refactored by request
           // The old routes and resource controller were deleted to allow a full rewrite.
           // If you want them restored later, use your backup or reintroduce new routes/controllers.
@@ -446,17 +540,18 @@ Route::middleware(['auth'])->group(function () {
                     ->middleware('can:master-karyawan');
 
                // Crew checklist for ABK employees
-               Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
-                    ->name('karyawan.crew-checklist')
-                    ->middleware('can:master-karyawan');
+        Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
+            ->name('karyawan.crew-checklist');
 
-               Route::post('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'updateCrewChecklist'])
-                    ->name('karyawan.crew-checklist.update')
-                    ->middleware('can:master-karyawan');
+            // NEW: Simplified crew checklist page
+            Route::get('karyawan/{karyawan}/crew-checklist-new', [KaryawanController::class, 'crewChecklistNew'])
+                ->name('karyawan.crew-checklist-new');
 
-               Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
-                    ->name('karyawan.crew-checklist.print')
-                    ->middleware('can:master-karyawan');
+            Route::post('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'updateCrewChecklist'])
+                ->name('karyawan.crew-checklist.update');
+
+            Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
+                ->name('karyawan.crew-checklist.print');
 
          Route::resource('karyawan', KaryawanController::class)
                   ->names('karyawan')
@@ -465,6 +560,24 @@ Route::middleware(['auth'])->group(function () {
         Route::resource('user', UserController::class)
              ->names('user')
              ->middleware('can:master-user');
+
+        // Additional user routes for permission management
+        Route::get('user/bulk-manage', [UserController::class, 'bulkManage'])
+             ->name('user.bulk-manage')
+             ->middleware('can:master-user');
+        Route::post('user/{user}/assign-template', [UserController::class, 'assignTemplate'])
+             ->name('user.assign-template')
+             ->middleware('can:master-user');
+        Route::post('user/bulk-assign-permissions', [UserController::class, 'bulkAssignPermissions'])
+             ->name('user.bulk-assign-permissions')
+             ->middleware('can:master-user');
+        Route::get('user/{user}/permissions', [UserController::class, 'getUserPermissions'])
+             ->name('user.permissions')
+             ->middleware('can:master-user');
+
+        // Route untuk copy permission (tanpa middleware agar bisa digunakan di form create)
+        Route::get('user/{user}/permissions-for-copy', [UserController::class, 'getUserPermissionsForCopy'])
+             ->name('user.permissions-for-copy');
 
         Route::resource('kontainer', KontainerController::class)
              ->names('kontainer')
@@ -529,33 +642,33 @@ Route::middleware(['auth'])->group(function () {
     // CSV export/import for permohonan (declare before resource to avoid routing conflict with parameterized routes)
     Route::get('permohonan/export', [PermohonanController::class, 'export'])
          ->name('permohonan.export')
-         ->middleware('can:master-permohonan');
+         ->middleware('can:permohonan');
 
     Route::post('permohonan/import', [PermohonanController::class, 'import'])
          ->name('permohonan.import')
-         ->middleware('can:master-permohonan');
+         ->middleware('can:permohonan');
 
     // Print single permohonan memo (declare before resource routes)
     Route::get('permohonan/{permohonan}/print', [PermohonanController::class, 'print'])
          ->name('permohonan.print')
-         ->middleware('can:master-permohonan');
+         ->middleware('can:permohonan');
 
     // Bulk delete permohonan (declare before resource routes)
     Route::delete('permohonan/bulk-delete', [PermohonanController::class, 'bulkDelete'])
          ->name('permohonan.bulk-delete')
-         ->middleware('can:master-permohonan');
+         ->middleware('can:permohonan');
 
     Route::resource('permohonan', PermohonanController::class)
-         ->middleware('can:master-permohonan');
+         ->middleware('can:permohonan');
 
      // --- Rute Pranota Supir ---
-    Route::get('/pranota-supir', [PranotaSupirController::class, 'index'])->name('pranota-supir.index')->middleware('can:master-pranota-supir');
-    Route::get('/pranota-supir/create', [PranotaSupirController::class, 'create'])->name('pranota-supir.create')->middleware('can:master-pranota-supir');
+    Route::get('/pranota-supir', [PranotaSupirController::class, 'index'])->name('pranota-supir.index')->middleware('permission-like:pranota-supir');
+    Route::get('/pranota-supir/create', [PranotaSupirController::class, 'create'])->name('pranota-supir.create')->middleware('permission-like:pranota-supir');
      // Explicit per-pranota print route must be declared before the parameterized show route
-     Route::get('/pranota-supir/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])->name('pranota-supir.print')->middleware('can:master-pranota-supir');
+     Route::get('/pranota-supir/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])->name('pranota-supir.print')->middleware('permission-like:pranota-supir');
 
-     Route::get('/pranota-supir/{pranotaSupir}', [PranotaSupirController::class, 'show'])->name('pranota-supir.show')->middleware('can:master-pranota-supir');
-    Route::post('/pranota-supir', [PranotaSupirController::class, 'store'])->name('pranota-supir.store')->middleware('can:master-pranota-supir');
+     Route::get('/pranota-supir/{pranotaSupir}', [PranotaSupirController::class, 'show'])->name('pranota-supir.show')->middleware('permission-like:pranota-supir');
+    Route::post('/pranota-supir', [PranotaSupirController::class, 'store'])->name('pranota-supir.store')->middleware('permission-like:pranota-supir');
 
           // --- Rute Pranota & Pembayaran Pranota Tagihan Kontainer ---
                     // Tagihan Kontainer Sewa feature removed - routes deleted to allow clean rebuild
@@ -564,8 +677,8 @@ Route::middleware(['auth'])->group(function () {
     Route::prefix('pembayaran-pranota-supir')->name('pembayaran-pranota-supir.')->group(function() {
      Route::get('/', [PembayaranPranotaSupirController::class, 'index'])->name('index');
      // Per-pembayaran print
-     Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])->name('print')->middleware('can:master-pembayaran-pranota-supir');
-     Route::get('/buat', [PembayaranPranotaSupirController::class, 'create'])->name('create')->middleware('can:master-pembayaran-pranota-supir'); // Menampilkan form konfirmasi
+     Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])->name('print')->middleware('permission-like:pembayaran-pranota-supir');
+     Route::get('/buat', [PembayaranPranotaSupirController::class, 'create'])->name('create')->middleware('permission-like:pembayaran-pranota-supir'); // Menampilkan form konfirmasi
      Route::post('/simpan', [PembayaranPranotaSupirController::class, 'store'])->name('store'); // Menyimpan pembayaran
     });
 
@@ -578,7 +691,7 @@ Route::middleware(['auth'])->group(function () {
 
     // --- Rute Penyelesaian Tugas ---
     // Menggunakan PenyelesaianController yang sudah kita kembangkan
-     Route::prefix('approval')->name('approval.')->group(function () {
+     Route::prefix('approval')->name('approval.')->middleware('can:permohonan')->group(function () {
           // Dashboard untuk melihat tugas yang perlu diselesaikan
           Route::get('/', [\App\Http\Controllers\PenyelesaianController::class, 'index'])->name('dashboard');
           // Riwayat approval yang sudah selesai

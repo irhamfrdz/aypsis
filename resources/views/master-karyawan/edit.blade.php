@@ -54,7 +54,7 @@
 
                 <div>
                     <label for="tanggal_lahir" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Lahir</label>
-                    <input type="date" name="tanggal_lahir" id="tanggal_lahir" value="{{ old('tanggal_lahir', optional($karyawan->tanggal_lahir)->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="date" name="tanggal_lahir" id="tanggal_lahir" value="{{ old('tanggal_lahir', $karyawan->formatAsDate('tanggal_lahir', 'Y-m-d') ?? '') }}" class="{{ $inputClasses }}">
                 </div>
 
                 <div>
@@ -148,20 +148,20 @@
 
                 <div>
                     <label for="tanggal_masuk" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Masuk</label>
-                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" value="{{ old('tanggal_masuk', optional($karyawan->tanggal_masuk)->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" value="{{ old('tanggal_masuk', $karyawan->formatAsDate('tanggal_masuk', 'Y-m-d') ?? '') }}" class="{{ $inputClasses }}">
                 </div>
                 <div>
                     <label for="tanggal_berhenti" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berhenti</label>
-                    <input type="date" name="tanggal_berhenti" id="tanggal_berhenti" value="{{ old('tanggal_berhenti', optional($karyawan->tanggal_berhenti)->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="date" name="tanggal_berhenti" id="tanggal_berhenti" value="{{ old('tanggal_berhenti', $karyawan->formatAsDate('tanggal_berhenti', 'Y-m-d') ?? '') }}" class="{{ $inputClasses }}">
                 </div>
 
                 <div>
                     <label for="tanggal_masuk_sebelumnya" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Masuk (Sebelumnya)</label>
-                    <input type="date" name="tanggal_masuk_sebelumnya" id="tanggal_masuk_sebelumnya" value="{{ old('tanggal_masuk_sebelumnya', optional($karyawan->tanggal_masuk_sebelumnya)->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="date" name="tanggal_masuk_sebelumnya" id="tanggal_masuk_sebelumnya" value="{{ old('tanggal_masuk_sebelumnya', $karyawan->formatAsDate('tanggal_masuk_sebelumnya', 'Y-m-d') ?? '') }}" class="{{ $inputClasses }}">
                 </div>
                 <div>
                     <label for="tanggal_berhenti_sebelumnya" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berhenti (Sebelumnya)</label>
-                    <input type="date" name="tanggal_berhenti_sebelumnya" id="tanggal_berhenti_sebelumnya" value="{{ old('tanggal_berhenti_sebelumnya', optional($karyawan->tanggal_berhenti_sebelumnya)->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="date" name="tanggal_berhenti_sebelumnya" id="tanggal_berhenti_sebelumnya" value="{{ old('tanggal_berhenti_sebelumnya', $karyawan->formatAsDate('tanggal_berhenti_sebelumnya', 'Y-m-d') ?? '') }}" class="{{ $inputClasses }}">
                 </div>
 
                 <div>

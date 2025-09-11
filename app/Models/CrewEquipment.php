@@ -7,27 +7,27 @@ use Illuminate\Database\Eloquent\Model;
 class CrewEquipment extends Model
 {
     protected $table = 'crew_checklists';
-    
+
     protected $fillable = [
         'karyawan_id',
-        'item_name', 
+        'item_name',
         'status',
         'nomor_sertifikat',
         'issued_date',
         'expired_date',
         'catatan'
     ];
-    
+
     protected $dates = [
         'issued_date',
         'expired_date'
     ];
-    
+
     public function karyawan()
     {
         return $this->belongsTo(Karyawan::class);
     }
-    
+
     public static function getDefaultItems()
     {
         return [
@@ -54,11 +54,11 @@ class CrewEquipment extends Model
             'MC (Medical Care)'
         ];
     }
-    
+
     public static function createDefaultChecklistForKaryawan($karyawanId)
     {
         $defaultItems = self::getDefaultItems();
-        
+
         foreach ($defaultItems as $item) {
             self::create([
                 'karyawan_id' => $karyawanId,

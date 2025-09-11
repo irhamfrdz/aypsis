@@ -8,9 +8,12 @@
     <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Pengguna</h2>
 
     <!-- Tombol Tambah Pengguna -->
-    <div class="mb-4">
+    <div class="mb-4 flex gap-4">
         <a href="{{ route('master.user.create') }}" class="inline-block bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors duration-200">
             + Tambah Pengguna
+        </a>
+        <a href="{{ route('master.user.bulk-manage') }}" class="inline-block bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors duration-200">
+            ⚙️ Kelola Izin Massal
         </a>
     </div>
 

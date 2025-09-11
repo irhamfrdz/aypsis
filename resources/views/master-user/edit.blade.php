@@ -6,19 +6,21 @@
 @section('content')
 
 @push('styles')
-    {{-- Tambahkan CSS untuk Choices.js --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <style>
-        .choices__inner {
-            background-color: #f3f4f6; /* bg-gray-100 */
-            border-radius: 0.375rem; /* rounded-md */
-            border: 1px solid #d1d5db; /* border-gray-300 */
-            font-size: 1rem; /* text-base */
-            padding: 0.5rem 0.75rem; /* p-2.5 equivalent */
-            min-height: 46px;
+        /* Permission Card Styles */
+        .permission-card {
+            transition: all 0.2s ease-in-out;
         }
-        .is-focused .choices__inner, .is-open .choices__inner {
-            border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5);
+        .permission-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        .permission-checkbox {
+            accent-color: #3b82f6;
+        }
+        .permission-checkbox:checked {
+            background-color: #3b82f6;
         }
     </style>
 @endpush
@@ -26,266 +28,281 @@
 <div class="bg-white shadow-md rounded-lg p-6">
     <h2 class="text-2xl font-bold text-gray-800 mb-6">Edit Pengguna: {{ $user->name }}</h2>
 
-    @if ($errors->any())
+    @if (isset($errors) && is_object($errors) && method_exists($errors, 'any') && $errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-6">
             <strong class="font-bold">Oops! Terjadi kesalahan:</strong>
-            <ul class="mt-2 list-disc list-inside">
-                @foreach ($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
         </div>
     @endif
 
-    <form action="{{route('master.user.update', $user->id)}}" method="POST" class="space-y-8">
+    <form action="{{ route('master.user.update', $user->id) }}" method="POST">
         @csrf
         @method('PUT')
-        @php
-            $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5";
-        @endphp
 
-        {{-- Informasi Pengguna --}}
-        <fieldset class="border p-4 rounded-md">
-            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pengguna</legend>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                <div class="md:col-span-2">
-                    <label for="karyawan_id" class="block text-sm font-medium text-gray-700 mb-1">Hubungkan dengan Karyawan (Opsional)</label>
-                    <select name="karyawan_id" id="karyawan_id">
-                        <option value="">-- Tidak dihubungkan --</option>
-                        @foreach ($karyawans as $karyawan)
-                            <option value="{{ $karyawan->id }}"
-                                    data-nama="{{ $karyawan->nama_lengkap }}"
-                                    {{ old('karyawan_id', $user->karyawan_id) == $karyawan->id ? 'selected' : '' }}>
-                                {{ $karyawan->nama_lengkap }}
-                                @if($karyawan->nik)
-                                    ({{ $karyawan->nik }})
-                                @endif
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
+                <input name="name" required value="{{ old('name', $user->name) }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Username</label>
+                <input name="username" required value="{{ old('username', $user->username) }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Password (kosongkan jika tidak ingin mengubah)</label>
+                <input type="password" name="password" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700">Konfirmasi Password</label>
+                <input type="password" name="password_confirmation" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
+            </div>
 
-                <div>
-                    <label for="name" class="block text-sm font-medium text-gray-700 mb-1">Nama Lengkap <span class="text-red-500">*</span></label>
-                    <input type="text" name="name" id="name" class="{{ $inputClasses }}" required value="{{ old('name', $user->name) }}">
-                </div>
+            <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-1">Hubungkan dengan Karyawan (Opsional)</label>
+                <select name="karyawan_id" id="karyawan_id">
+                    <option value="">-- Tidak dihubungkan --</option>
+                    @foreach ($karyawans as $karyawan)
+                        <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_lengkap }}" @if(old('karyawan_id', $user->karyawan_id) == $karyawan->id) selected @endif>{{ $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
+                    @endforeach
+                </select>
+            </div>
+        </div>
 
-                <div>
-                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username <span class="text-red-500">*</span></label>
-                    <input type="text" name="username" id="username" class="{{ $inputClasses }}" required value="{{ old('username', $user->username) }}">
-                </div>
-
-                <div>
-                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password Baru (Kosongkan jika tidak ingin mengubah)</label>
-                    <input type="password" name="password" id="password" class="{{ $inputClasses }}">
-                </div>
-
-                <div>
-                    <label for="password_confirmation" class="block text-sm font-medium text-gray-700 mb-1">Konfirmasi Password Baru</label>
-                    <input type="password" name="password_confirmation" id="password_confirmation" class="{{ $inputClasses }}">
+        <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-800">🎯 Izin Akses Sederhana</h3>
+                <div class="text-sm text-gray-600">
+                    Dipilih: <span id="permission_count" class="font-medium text-blue-600">0</span> / <span id="total_permissions">15</span>
                 </div>
             </div>
-        </fieldset>
-        {{-- Izin Akses --}}
-        <fieldset class="border p-4 rounded-md">
-            <legend class="text-lg font-semibold text-gray-800 px-2">Izin Akses Per User</legend>
-            <div class="space-y-4 pt-4">
 
-                {{-- Quick Actions --}}
-                <div class="bg-blue-50 p-3 rounded-lg border border-blue-200 mb-4">
-                    <div class="flex flex-wrap gap-2 mb-3">
-                        <button type="button" id="select_all" class="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700">
-                            ✅ Pilih Semua
-                        </button>
-                        <button type="button" id="deselect_all" class="px-3 py-1 bg-gray-600 text-white text-sm rounded hover:bg-gray-700">
-                            ❌ Hapus Semua
-                        </button>
-                        <button type="button" id="select_basic" class="px-3 py-1 bg-green-600 text-white text-sm rounded hover:bg-green-700">
-                            📝 Izin Dasar
-                        </button>
-                        <button type="button" id="select_admin" class="px-3 py-1 bg-red-600 text-white text-sm rounded hover:bg-red-700">
-                            👑 Izin Admin
-                        </button>
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
                     </div>
+                    <div class="ml-3">
+                        <h4 class="text-sm font-medium text-blue-800">Sistem Permission Sederhana</h4>
+                        <p class="text-sm text-blue-700 mt-1">
+                            Pilih izin akses sesuai dengan menu yang ingin diakses user. Nama permission sudah disesuaikan dengan nama menu untuk kemudahan.
+                        </p>
+                    </div>
+                </div>
+            </div>
 
-                    {{-- Copy Permissions from Another User --}}
-                    <div class="border-t pt-3">
-                        <label for="copy_from_user" class="block text-sm font-medium text-blue-800 mb-2">📋 Copy Izin dari User Lain:</label>
-                        <div class="flex gap-2">
-                            <select id="copy_from_user" class="flex-1 text-sm border border-blue-300 rounded px-3 py-1 bg-white">
-                                <option value="">-- Pilih user untuk copy izin --</option>
-                                @if(isset($users))
-                                    @foreach($users as $otherUser)
-                                        @if($otherUser->id != $user->id)
-                                            <option value="{{ $otherUser->id }}" data-permissions="{{ $otherUser->permissions->pluck('id')->toJson() }}">
-                                                {{ $otherUser->name }} ({{ $otherUser->username }})
-                                            </option>
-                                        @endif
-                                    @endforeach
-                                @endif
-                            </select>
-                            <button type="button" id="copy_permissions_btn" class="px-3 py-1 bg-purple-600 text-white text-sm rounded hover:bg-purple-700" disabled>
-                                📥 Copy Izin
-                            </button>
+            {{-- Copy Permission Feature --}}
+            <div class="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-start">
+                        <div class="flex-shrink-0">
+                            <svg class="w-5 h-5 text-indigo-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <path d="M8 3a1 1 0 011-1h2a1 1 0 110 2H9a1 1 0 01-1-1z"/>
+                                <path d="M6 3a2 2 0 00-2 2v11a2 2 0 002 2h8a2 2 0 002-2V5a2 2 0 00-2-2 3 3 0 01-3 3H9a3 3 0 01-3-3z"/>
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <h4 class="text-sm font-medium text-indigo-800">📋 Copy Permission dari User Lain</h4>
+                            <p class="text-sm text-indigo-700 mt-1">
+                                Pilih user yang sudah ada untuk menyalin semua permission-nya ke user ini. Permission yang ada akan diganti.
+                            </p>
                         </div>
                     </div>
+                    <div class="flex items-center space-x-2">
+                        <select id="copy_user_select" class="text-sm border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">-- Pilih User --</option>
+                            @foreach($users as $existingUser)
+                                <option value="{{ $existingUser->id }}">
+                                    {{ $existingUser->name }} ({{ $existingUser->username }})
+                                </option>
+                            @endforeach
+                        </select>
+                        <button type="button" id="copy_permissions_btn" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
+                            📋 Copy Permission
+                        </button>
+                    </div>
+                </div>
+            </div>
 
-                    <p class="text-xs text-blue-700 mt-2">Gunakan tombol di atas untuk memilih grup izin dengan cepat, atau copy dari user yang sudah ada</p>
+            {{-- Quick Actions --}}
+            <div class="flex flex-wrap gap-2 mb-4">
+                <button type="button" id="select_common" class="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
+                    ✅ Pilih Umum
+                </button>
+                <button type="button" id="select_admin" class="px-3 py-2 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700 transition-colors">
+                    👑 Pilih Admin
+                </button>
+                <button type="button" id="select_all" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                    📋 Pilih Semua
+                </button>
+                <button type="button" id="deselect_all" class="px-3 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700 transition-colors">
+                    ❌ Hapus Semua
+                </button>
+            </div>
+
+            {{-- Permission Cards --}}
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="permission_cards">
+                {{-- Menu Utama --}}
+                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start">
+                        <input id="perm-dashboard" name="simple_permissions[]" type="checkbox" value="dashboard" class="permission-checkbox mt-1" @if(in_array('dashboard', $userSimplePermissions ?? [])) checked @endif>
+                        <div class="ml-3 flex-1">
+                            <label for="perm-dashboard" class="font-medium text-gray-900 cursor-pointer">Dashboard</label>
+                            <p class="text-sm text-gray-600 mt-1">Akses halaman dashboard utama</p>
+                            <span class="inline-block mt-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Semua User</span>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Permission Counter --}}
-                <div class="bg-green-50 p-3 rounded-lg border border-green-200 mb-4">
-                    <p class="text-green-800">
-                        <span class="font-medium">Izin dipilih:</span>
-                        <span id="permission_count" class="font-bold">{{ count($userPermissions) }}</span> dari {{ $permissions->count() }} izin tersedia
-                    </p>
+                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start">
+                        <input id="perm-tagihan-kontainer" name="simple_permissions[]" type="checkbox" value="tagihan-kontainer" class="permission-checkbox mt-1" @if(in_array('tagihan-kontainer', $userSimplePermissions ?? [])) checked @endif>
+                        <div class="ml-3 flex-1">
+                            <label for="perm-tagihan-kontainer" class="font-medium text-gray-900 cursor-pointer">Tagihan Kontainer Sewa</label>
+                            <p class="text-sm text-gray-600 mt-1">Menu tagihan kontainer sewa</p>
+                            <span class="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Bisnis</span>
+                        </div>
+                    </div>
                 </div>
 
-                {{-- Individual Permissions --}}
-                @php
-                    $groupedPermissions = $permissions->groupBy(function($item) {
-                        // Kelompokkan berdasarkan kata kunci yang lebih spesifik
-                        $name = $item->name;
+                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start">
+                        <input id="perm-pranota-supir" name="simple_permissions[]" type="checkbox" value="pranota-supir" class="permission-checkbox mt-1" @if(in_array('pranota-supir', $userSimplePermissions ?? [])) checked @endif>
+                        <div class="ml-3 flex-1">
+                            <label for="perm-pranota-supir" class="font-medium text-gray-900 cursor-pointer">Pranota Supir</label>
+                            <p class="text-sm text-gray-600 mt-1">Menu pranota supir</p>
+                            <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Operasional</span>
+                        </div>
+                    </div>
+                </div>
 
-                        if (str_contains($name, 'master-pricelist') || str_contains($name, 'pricelist')) {
-                            return 'master';
-                        } else if (str_contains($name, 'master-')) {
-                            return 'master';
-                        } else if (str_contains($name, 'pranota')) {
-                            return 'pranota';
-                        } else if (str_contains($name, 'pembayaran')) {
-                            return 'pembayaran';
-                        } else if (str_contains($name, 'approval')) {
-                            return 'approval';
-                        } else if (str_contains($name, 'laporan')) {
-                            return 'laporan';
-                        } else {
-                            // Fallback ke grouping lama
-                            return explode('-', $name)[0];
-                        }
-                    });
-                @endphp
+                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start">
+                        <input id="perm-pembayaran-pranota-supir" name="simple_permissions[]" type="checkbox" value="pembayaran-pranota-supir" class="permission-checkbox mt-1" @if(in_array('pembayaran-pranota-supir', $userSimplePermissions ?? [])) checked @endif>
+                        <div class="ml-3 flex-1">
+                            <label for="perm-pembayaran-pranota-supir" class="font-medium text-gray-900 cursor-pointer">Pembayaran Pranota Supir</label>
+                            <p class="text-sm text-gray-600 mt-1">Menu pembayaran pranota supir</p>
+                            <span class="inline-block mt-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Keuangan</span>
+                        </div>
+                    </div>
+                </div>
 
-                <div class="space-y-4">
-                    @foreach ($groupedPermissions as $groupName => $groupPermissions)
-                        <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                            <div class="flex items-center justify-between mb-3 border-b pb-2">
-                                <h4 class="font-bold text-md text-gray-700">
-                                    @if($groupName == 'master')
-                                        🔧 Master Data
-                                    @elseif($groupName == 'pranota')
-                                        📋 Pranota
-                                    @elseif($groupName == 'pembayaran')
-                                        💰 Pembayaran
-                                    @elseif($groupName == 'laporan')
-                                        📊 Laporan
-                                    @elseif($groupName == 'approval')
-                                        ✅ Approval
-                                    @else
-                                        {{ ucfirst($groupName) }}
-                                    @endif
-                                </h4>
-                                <div class="flex gap-2">
-                                    <button type="button" class="group-select-all text-xs px-2 py-1 bg-indigo-100 text-indigo-700 rounded hover:bg-indigo-200" data-group="{{ $groupName }}">
-                                        Pilih Semua
-                                    </button>
-                                    <button type="button" class="group-deselect-all text-xs px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200" data-group="{{ $groupName }}">
-                                        Hapus Semua
-                                    </button>
+                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start">
+                        <input id="perm-permohonan" name="simple_permissions[]" type="checkbox" value="permohonan" class="permission-checkbox mt-1" @if(in_array('permohonan', $userSimplePermissions ?? [])) checked @endif>
+                        <div class="ml-3 flex-1">
+                            <label for="perm-permohonan" class="font-medium text-gray-900 cursor-pointer">Permohonan Memo</label>
+                            <p class="text-sm text-gray-600 mt-1">Menu permohonan memo</p>
+                            <span class="inline-block mt-2 px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded">Administrasi</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div class="flex items-start">
+                        <input id="perm-user-approval" name="simple_permissions[]" type="checkbox" value="user-approval" class="permission-checkbox mt-1" @if(in_array('user-approval', $userSimplePermissions ?? [])) checked @endif>
+                        <div class="ml-3 flex-1">
+                            <label for="perm-user-approval" class="font-medium text-gray-900 cursor-pointer">Persetujuan User</label>
+                            <p class="text-sm text-gray-600 mt-1">Menyetujui user baru</p>
+                            <span class="inline-block mt-2 px-2 py-1 bg-red-100 text-red-700 text-xs rounded">Admin</span>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Master Data Section --}}
+                <div class="md:col-span-2 lg:col-span-3">
+                    <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                        Master Data (Pilih Semua untuk Admin)
+                    </h4>
+
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-karyawan" name="simple_permissions[]" type="checkbox" value="master-karyawan" class="permission-checkbox mt-1" @if(in_array('master-karyawan', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-karyawan" class="text-sm font-medium text-gray-900 cursor-pointer">Karyawan</label>
                                 </div>
                             </div>
+                        </div>
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-3">
-                                @foreach ($groupPermissions as $permission)
-                                    <div class="relative flex items-start">
-                                        <div class="flex items-center h-5">
-                                            <input id="permission-{{ $permission->id }}"
-                                                   name="permissions[]"
-                                                   type="checkbox"
-                                                   value="{{ $permission->id }}"
-                                                   data-group="{{ $groupName }}"
-                                                   class="permission-checkbox focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300 rounded"
-                                                   @if(in_array($permission->id, $userPermissions)) checked @endif>
-                                        </div>
-                                        <div class="ml-3 text-sm">
-                                            <label for="permission-{{ $permission->id }}" class="font-medium text-gray-700 cursor-pointer hover:text-indigo-600">
-                                                @php
-                                                    // Buat deskripsi yang lebih mudah dipahami
-                                                    $readableName = $permission->description;
-
-                                                    if (!$readableName) {
-                                                        $name = $permission->name;
-
-                                                        // Mapping nama permission ke deskripsi yang mudah dipahami
-                                                        $permissionMap = [
-                                                            'master-user' => 'Kelola Data Pengguna',
-                                                            'master-kontainer' => 'Kelola Data Kontainer',
-                                                            'master-kegiatan' => 'Kelola Data Kegiatan',
-                                                            'master-tujuan' => 'Kelola Data Tujuan',
-                                                            'master-permission' => 'Kelola Izin Akses',
-                                                            'master-mobil' => 'Kelola Data Mobil',
-                                                            'master-pricelist-sewa-kontainer' => 'Kelola Harga Sewa Kontainer',
-                                                            'pranota-create' => 'Buat Pranota Baru',
-                                                            'pranota-edit' => 'Edit Pranota',
-                                                            'pranota-view' => 'Lihat Pranota',
-                                                            'pranota-delete' => 'Hapus Pranota',
-                                                            'pembayaran-view' => 'Lihat Pembayaran',
-                                                            'pembayaran-create' => 'Buat Pembayaran',
-                                                            'pembayaran-edit' => 'Edit Pembayaran',
-                                                            'laporan-view' => 'Lihat Laporan',
-                                                            'laporan-export' => 'Export Laporan',
-                                                            'approval-pranota' => 'Setujui Pranota',
-                                                            'approval-pembayaran' => 'Setujui Pembayaran'
-                                                        ];
-
-                                                        // Cari exact match dulu
-                                                        if (isset($permissionMap[$name])) {
-                                                            $readableName = $permissionMap[$name];
-                                                        }
-                                                        // Jika tidak ada exact match, coba deteksi pattern
-                                                        else if (str_contains($name, 'master-pricelist')) {
-                                                            $readableName = 'Kelola Harga Sewa Kontainer';
-                                                        }
-                                                        else if (str_contains($name, 'master-')) {
-                                                            $part = str_replace('master-', '', $name);
-                                                            $readableName = 'Kelola Data ' . ucwords(str_replace('-', ' ', $part));
-                                                        }
-                                                        else if (str_contains($name, 'pranota')) {
-                                                            if (str_contains($name, 'create')) $readableName = 'Buat Pranota';
-                                                            else if (str_contains($name, 'edit')) $readableName = 'Edit Pranota';
-                                                            else if (str_contains($name, 'view')) $readableName = 'Lihat Pranota';
-                                                            else if (str_contains($name, 'delete')) $readableName = 'Hapus Pranota';
-                                                            else $readableName = 'Kelola Pranota';
-                                                        }
-                                                        else if (str_contains($name, 'pembayaran')) {
-                                                            if (str_contains($name, 'create')) $readableName = 'Buat Pembayaran';
-                                                            else if (str_contains($name, 'edit')) $readableName = 'Edit Pembayaran';
-                                                            else if (str_contains($name, 'view')) $readableName = 'Lihat Pembayaran';
-                                                            else $readableName = 'Kelola Pembayaran';
-                                                        }
-                                                        else if (str_contains($name, 'approval')) {
-                                                            $readableName = 'Persetujuan ' . ucwords(str_replace(['approval-', '-'], ['', ' '], $name));
-                                                        }
-                                                        else {
-                                                            // Fallback: convert ke title case
-                                                            $readableName = ucwords(str_replace('-', ' ', $name));
-                                                        }
-                                                    }
-                                                @endphp
-                                                {{ $readableName }}
-                                            </label>
-                                            @if (!$permission->description)
-                                                <p class="text-xs text-gray-500">{{ $permission->name }}</p>
-                                            @endif
-                                        </div>
-                                    </div>
-                                @endforeach
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-user" name="simple_permissions[]" type="checkbox" value="master-user" class="permission-checkbox mt-1" @if(in_array('master-user', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-user" class="text-sm font-medium text-gray-900 cursor-pointer">User</label>
+                                </div>
                             </div>
                         </div>
-                    @endforeach
+
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-kontainer" name="simple_permissions[]" type="checkbox" value="master-kontainer" class="permission-checkbox mt-1" @if(in_array('master-kontainer', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-kontainer" class="text-sm font-medium text-gray-900 cursor-pointer">Kontainer</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-pricelist-sewa-kontainer" name="simple_permissions[]" type="checkbox" value="master-pricelist-sewa-kontainer" class="permission-checkbox mt-1" @if(in_array('master-pricelist-sewa-kontainer', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-pricelist-sewa-kontainer" class="text-sm font-medium text-gray-900 cursor-pointer">Pricelist Sewa</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-tujuan" name="simple_permissions[]" type="checkbox" value="master-tujuan" class="permission-checkbox mt-1" @if(in_array('master-tujuan', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-tujuan" class="text-sm font-medium text-gray-900 cursor-pointer">Tujuan</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-kegiatan" name="simple_permissions[]" type="checkbox" value="master-kegiatan" class="permission-checkbox mt-1" @if(in_array('master-kegiatan', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-kegiatan" class="text-sm font-medium text-gray-900 cursor-pointer">Kegiatan</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-permission" name="simple_permissions[]" type="checkbox" value="master-permission" class="permission-checkbox mt-1" @if(in_array('master-permission', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-permission" class="text-sm font-medium text-gray-900 cursor-pointer">Permission</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-mobil" name="simple_permissions[]" type="checkbox" value="master-mobil" class="permission-checkbox mt-1" @if(in_array('master-mobil', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-mobil" class="text-sm font-medium text-gray-900 cursor-pointer">Mobil</label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
+                            <div class="flex items-start">
+                                <input id="perm-master-data" name="simple_permissions[]" type="checkbox" value="master-data" class="permission-checkbox mt-1" @if(in_array('master-data', $userSimplePermissions ?? [])) checked @endif>
+                                <div class="ml-2 flex-1">
+                                    <label for="perm-master-data" class="text-sm font-medium text-gray-900 cursor-pointer">Master Data</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-        </fieldset>        <div class="flex justify-end space-x-4">
+        </div>
             <a href="{{ route('master.user.index') }}" class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Batal
             </a>
@@ -311,109 +328,178 @@
                 placeholderValue: 'Cari atau pilih karyawan...'
             });
 
-            // === PERMISSION SYSTEM ===
-            const allCheckboxes = document.querySelectorAll('.permission-checkbox');
-            const permissionCount = document.getElementById('permission_count');
-            const copyFromUser = document.getElementById('copy_from_user');
-            const copyPermissionsBtn = document.getElementById('copy_permissions_btn');
+            // Permission controls - Simplified version
+            const checkboxes = () => Array.from(document.querySelectorAll('.permission-checkbox'));
+            const countEl = document.getElementById('permission_count');
 
-            // Update counter
-            function updatePermissionCount() {
-                const checkedCount = document.querySelectorAll('.permission-checkbox:checked').length;
-                permissionCount.textContent = checkedCount;
+            function updateCount() {
+                const checked = checkboxes().filter(cb => cb.checked).length;
+                countEl.textContent = checked;
+                return checked;
             }
 
-            // Enable/disable copy button
-            copyFromUser.addEventListener('change', function() {
-                copyPermissionsBtn.disabled = !this.value;
-                if (this.value) {
-                    copyPermissionsBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                } else {
-                    copyPermissionsBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            // Quick Actions
+            document.getElementById('select_common').addEventListener('click', function(){
+                const commonPerms = ['dashboard', 'tagihan-kontainer', 'pranota-supir'];
+                checkboxes().forEach(cb => {
+                    cb.checked = commonPerms.includes(cb.value);
+                });
+                updateCount();
+                showToast('✅ Permission umum dipilih', 'success');
+            });
+
+            document.getElementById('select_admin').addEventListener('click', function(){
+                checkboxes().forEach(cb => cb.checked = true);
+                updateCount();
+                showToast('👑 Semua permission admin dipilih', 'success');
+            });
+
+            document.getElementById('select_all').addEventListener('click', function(){
+                checkboxes().forEach(cb => cb.checked = true);
+                updateCount();
+                showToast('📋 Semua permission dipilih', 'success');
+            });
+
+            document.getElementById('deselect_all').addEventListener('click', function(){
+                checkboxes().forEach(cb => cb.checked = false);
+                updateCount();
+                showToast('❌ Semua permission dihapus', 'warning');
+            });
+
+            // Master Data auto-select
+            document.getElementById('perm-master-data').addEventListener('change', function(){
+                const masterCheckboxes = [
+                    'perm-master-karyawan',
+                    'perm-master-user',
+                    'perm-master-kontainer',
+                    'perm-master-pricelist-sewa-kontainer',
+                    'perm-master-tujuan',
+                    'perm-master-kegiatan',
+                    'perm-master-permission',
+                    'perm-master-mobil'
+                ];
+                masterCheckboxes.forEach(id => {
+                    const checkbox = document.getElementById(id);
+                    if (checkbox) checkbox.checked = this.checked;
+                });
+                updateCount();
+            });
+
+            // Update count on any change
+            document.addEventListener('change', function(e){
+                if (e.target && e.target.classList && e.target.classList.contains('permission-checkbox')) {
+                    updateCount();
                 }
             });
 
-            // Copy permissions from selected user
-            copyPermissionsBtn.addEventListener('click', function() {
-                const selectedOption = copyFromUser.options[copyFromUser.selectedIndex];
-                if (selectedOption && selectedOption.value) {
-                    const permissionIds = JSON.parse(selectedOption.dataset.permissions || '[]');
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    warning: 'bg-yellow-500',
+                    info: 'bg-blue-500'
+                };
 
-                    // Clear all checkboxes first
-                    allCheckboxes.forEach(cb => cb.checked = false);
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
 
-                    // Check boxes that match the user's permissions
-                    permissionIds.forEach(permissionId => {
-                        const checkbox = document.querySelector(`input[value="${permissionId}"]`);
-                        if (checkbox) {
-                            checkbox.checked = true;
+                setTimeout(() => {
+                    toast.style.opacity = '0';
+                    setTimeout(() => document.body.removeChild(toast), 300);
+                }, 3000);
+            }
+
+            // Permission card hover effects
+            document.querySelectorAll('.permission-card').forEach(card => {
+                card.addEventListener('mouseenter', function(){
+                    this.classList.add('ring-2', 'ring-blue-300');
+                });
+                card.addEventListener('mouseleave', function(){
+                    this.classList.remove('ring-2', 'ring-blue-300');
+                });
+            });
+
+            // Copy Permission Feature
+            document.getElementById('copy_permissions_btn').addEventListener('click', function(){
+                const select = document.getElementById('copy_user_select');
+                const userId = select.value;
+
+                if (!userId) {
+                    showToast('⚠️ Pilih user terlebih dahulu', 'warning');
+                    return;
+                }
+
+                // Show loading state
+                this.disabled = true;
+                this.innerHTML = '⏳ Loading...';
+
+                // Fetch user permissions via AJAX
+                fetch(`/master/user/${userId}/permissions-for-copy`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            const permissions = data.permissions;
+                            const userName = data.user.name;
+
+                            // Uncheck all permissions first
+                            checkboxes().forEach(cb => cb.checked = false);
+
+                            // Check permissions that match
+                            let copiedCount = 0;
+                            checkboxes().forEach(cb => {
+                                if (permissions.includes(cb.value)) {
+                                    cb.checked = true;
+                                    copiedCount++;
+                                }
+                            });
+
+                            updateCount();
+
+                            if (copiedCount > 0) {
+                                showToast(`✅ Berhasil menyalin ${copiedCount} permission dari ${userName}`, 'success');
+                            } else {
+                                showToast(`⚠️ User ${userName} tidak memiliki permission yang bisa disalin`, 'warning');
+                            }
+                        } else {
+                            showToast('❌ Gagal mengambil data permission', 'error');
                         }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                        showToast('❌ Terjadi kesalahan saat mengambil data', 'error');
+                    })
+                    .finally(() => {
+                        // Reset button state
+                        this.disabled = false;
+                        this.innerHTML = '📋 Copy Permission';
                     });
+            });
 
-                    updatePermissionCount();
+            // Enable/disable copy button based on selection
+            document.getElementById('copy_user_select').addEventListener('change', function(){
+                const btn = document.getElementById('copy_permissions_btn');
+                btn.disabled = !this.value;
+            });
 
-                    // Show success message
-                    const userName = selectedOption.textContent;
-                    alert(`✅ Berhasil copy ${permissionIds.length} izin dari ${userName}`);
+            // Initialize copy button state
+            document.getElementById('copy_permissions_btn').disabled = true;
+
+            // Initialize count
+            updateCount();
+
+            // Form validation
+            document.querySelector('form').addEventListener('submit', function(e){
+                const checkedPermissions = checkboxes().filter(cb => cb.checked).length;
+                if (checkedPermissions === 0) {
+                    e.preventDefault();
+                    showToast('⚠️ Pilih minimal 1 permission untuk user', 'warning');
+                    return false;
                 }
+                showToast('🔄 Menyimpan perubahan user...', 'info');
             });
-
-            // Tombol Select All
-            document.getElementById('select_all').addEventListener('click', function() {
-                allCheckboxes.forEach(cb => cb.checked = true);
-                updatePermissionCount();
-            });
-
-            // Tombol Deselect All
-            document.getElementById('deselect_all').addEventListener('click', function() {
-                allCheckboxes.forEach(cb => cb.checked = false);
-                updatePermissionCount();
-            });
-
-            // Tombol Select Basic (izin dasar untuk staff)
-            document.getElementById('select_basic').addEventListener('click', function() {
-                allCheckboxes.forEach(cb => cb.checked = false);
-                // Select basic permissions
-                const basicPerms = ['view', 'create', 'edit']; // kata kunci untuk izin dasar
-                allCheckboxes.forEach(cb => {
-                    const label = cb.nextElementSibling.textContent.toLowerCase();
-                    if (basicPerms.some(perm => label.includes(perm))) {
-                        cb.checked = true;
-                    }
-                });
-                updatePermissionCount();
-            });
-
-            // Tombol Select Admin (semua izin)
-            document.getElementById('select_admin').addEventListener('click', function() {
-                allCheckboxes.forEach(cb => cb.checked = true);
-                updatePermissionCount();
-            });
-
-            // Group select/deselect buttons
-            document.querySelectorAll('.group-select-all').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const group = this.dataset.group;
-                    document.querySelectorAll(`[data-group="${group}"]`).forEach(cb => cb.checked = true);
-                    updatePermissionCount();
-                });
-            });
-
-            document.querySelectorAll('.group-deselect-all').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const group = this.dataset.group;
-                    document.querySelectorAll(`[data-group="${group}"]`).forEach(cb => cb.checked = false);
-                    updatePermissionCount();
-                });
-            });
-
-            // Update counter when individual checkboxes change
-            allCheckboxes.forEach(cb => {
-                cb.addEventListener('change', updatePermissionCount);
-            });
-
-            // Initialize counter on page load
-            updatePermissionCount();
         });
     </script>
 @endpush

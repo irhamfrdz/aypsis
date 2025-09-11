@@ -4,11 +4,11 @@
 <div class="container mx-auto p-4">
     <div class="flex items-center justify-between mb-4">
         <h1 class="text-2xl font-bold">Pranota Tagihan Kontainer</h1>
-        @can('master-pranota-tagihan-kontainer')
+        @if(auth()->check() && auth()->user()->can('master-pranota-tagihan-kontainer'))
             @if(Route::has('pembayaran-pranota-tagihan-kontainer.create'))
                 <a href="{{ route('pembayaran-pranota-tagihan-kontainer.create') }}" class="inline-block bg-indigo-600 text-white px-4 py-2 rounded shadow hover:bg-indigo-700">Buat Pembayaran</a>
             @endif
-        @endcan
+        @endif
     </div>
 
     <div class="bg-white shadow rounded overflow-hidden">

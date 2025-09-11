@@ -7,6 +7,7 @@ use App\Models\Permohonan;
 use App\Models\Karyawan;
 use App\Models\Kontainer;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -17,6 +18,16 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        $user = Auth::user();
+
+        // Check if user has any permissions
+        $hasPermissions = $user->permissions->count() > 0;
+
+        // If user has no permissions, show special dashboard
+        if (!$hasPermissions) {
+            return view('dashboard_no_permissions');
+        }
+
         // Menghitung total data dari masing-masing model
         $totalPermohonan = Permohonan::count();
         $totalKaryawan = Karyawan::count();

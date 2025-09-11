@@ -8,10 +8,41 @@ use App\Models\Karyawan;
 use App\Models\CrewEquipment;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+
+// ...existing code...
 
 class KaryawanController extends Controller
 {
+    /**
+     * Onboarding crew checklist khusus untuk karyawan baru (public)
+     */
+    public function onboardingCrewChecklist($id)
+    {
+        $karyawan = Karyawan::findOrFail($id);
+
+        // Hanya untuk divisi ABK (atau sesuaikan kebutuhan)
+        if (!$karyawan->isAbk()) {
+            return redirect()->route('login')->with('error', 'Checklist onboarding crew hanya untuk divisi ABK.');
+        }
+
+        // Ambil atau buat checklist default
+        $existingItems = $karyawan->crewChecklists()->pluck('item_name')->toArray();
+        $defaultItems = CrewEquipment::getDefaultItems();
+        foreach ($defaultItems as $item) {
+            if (!in_array($item, $existingItems)) {
+                $karyawan->crewChecklists()->create([
+                    'item_name' => $item,
+                    'status' => 'tidak'
+                ]);
+            }
+        }
+        $checklistItems = $karyawan->crewChecklists()->orderBy('item_name')->get();
+
+        // View khusus onboarding, jika belum ada bisa pakai view checklist-new
+        return view('master-karyawan.crew-checklist-new', compact('karyawan', 'checklistItems'));
+    }
     // Catatan: Constructor yang sebelumnya menyebabkan error telah dihapus.
     // Middleware untuk proteksi rute sekarang ditangani di file routes/web.php
     // dengan menambahkan ->middleware('can:master-karyawan') pada rute resource.
@@ -568,7 +599,11 @@ class KaryawanController extends Controller
         }
 
         //Simpan data dalam database
-        Karyawan::create($validated);
+        $karyawan = Karyawan::create($validated);
+        if ($karyawan->isAbk()) {
+            return redirect()->route('karyawan.crew-checklist-new', $karyawan->id)
+                ->with('success', 'Data karyawan berhasil ditambahkan. Silakan lengkapi checklist kelengkapan crew.');
+        }
         return redirect()->route('master.karyawan.index')->with('success','Data karyawan berhasil ditambahkan');
     }
 
@@ -1088,7 +1123,41 @@ class KaryawanController extends Controller
         // Reload the checklist items
         $checklistItems = $karyawan->crewChecklists()->orderBy('item_name')->get();
 
-        return view('master-karyawan.crew-checklist', compact('karyawan', 'checklistItems'));
+    // Return the simplified new view (old view file removed)
+    return view('master-karyawan.crew-checklist-new', compact('karyawan', 'checklistItems'));
+    }
+
+    /**
+     * NEW: Simplified crew checklist page
+     */
+    public function crewChecklistNew($id)
+    {
+        $karyawan = Karyawan::findOrFail($id);
+
+        // Only allow ABK division employees
+        if (!$karyawan->isAbk()) {
+            return redirect()->route('master.karyawan.index')
+                ->with('error', 'Checklist kelengkapan crew hanya untuk divisi ABK.');
+        }
+
+        // Get existing checklist items or create default ones
+        $existingItems = $karyawan->crewChecklists()->pluck('item_name')->toArray();
+        $defaultItems = CrewEquipment::getDefaultItems();
+
+        // Create missing default items
+        foreach ($defaultItems as $item) {
+            if (!in_array($item, $existingItems)) {
+                $karyawan->crewChecklists()->create([
+                    'item_name' => $item,
+                    'status' => 'tidak'
+                ]);
+            }
+        }
+
+        // Reload the checklist items
+        $checklistItems = $karyawan->crewChecklists()->orderBy('item_name')->get();
+
+        return view('master-karyawan.crew-checklist-new', compact('karyawan', 'checklistItems'));
     }
 
     /**
@@ -1103,30 +1172,89 @@ class KaryawanController extends Controller
                 ->with('error', 'Checklist kelengkapan crew hanya untuk divisi ABK.');
         }
 
-        $validated = $request->validate([
-            'checklist' => 'required|array',
-            'checklist.*.status' => 'required|in:ada,tidak',
-            'checklist.*.nomor_sertifikat' => 'nullable|string|max:255',
-            'checklist.*.issued_date' => 'nullable|date',
-            'checklist.*.expired_date' => 'nullable|date|after_or_equal:issued_date',
-            'checklist.*.catatan' => 'nullable|string|max:500'
-        ]);
+        // Use DB transaction and handle failures so user sees a warning on failure
+        try {
+            DB::beginTransaction();
 
-        foreach ($validated['checklist'] as $itemId => $data) {
-            $checklist = $karyawan->crewChecklists()->find($itemId);
-            if ($checklist) {
-                $checklist->update([
-                    'status' => $data['status'],
-                    'nomor_sertifikat' => $data['nomor_sertifikat'],
-                    'issued_date' => $data['issued_date'] ?: null,
-                    'expired_date' => $data['expired_date'] ?: null,
-                    'catatan' => $data['catatan']
-                ]);
+            // Debug: log incoming payload so we can inspect what the client actually sent
+            try {
+                Log::debug('updateCrewChecklist incoming request', $request->all());
+            } catch (\Throwable $e) {
+                // swallow logging errors to avoid breaking main flow
+                Log::debug('updateCrewChecklist logging failed: ' . $e->getMessage());
             }
-        }
 
-        return redirect()->route('master.karyawan.crew-checklist', $id)
-            ->with('success', 'Checklist kelengkapan crew berhasil diperbarui.');
+            // Validate that checklist exists and keep raw data so keys (item IDs) are preserved
+            $request->validate([
+                'checklist' => 'required|array'
+            ]);
+
+            $rawChecklist = $request->input('checklist', []);
+
+            // Debug: log raw payload for extra insight
+            Log::debug('updateCrewChecklist raw checklist payload', ['count' => count($rawChecklist)]);
+
+            // Server-side status rule: if nomor_sertifikat has 4 or more alphanumeric chars -> ada, else tidak
+            // (changed from exact-4 to at-least-4 to match new requirement)
+            $fourAlnumPattern = '/^[A-Za-z0-9]{4,}$/';
+
+            foreach ($rawChecklist as $itemId => $data) {
+                // Normalize empty strings to null so 'nullable' rules accept empty HTML inputs
+                $dataNormalized = array_map(function($v) {
+                    return $v === '' ? null : $v;
+                }, $data);
+
+                // Validate each row individually to avoid losing original keys
+                $rowValidated = \Illuminate\Support\Facades\Validator::make($dataNormalized, [
+                    'item_name' => 'nullable|string|max:255',
+                    'nomor_sertifikat' => 'nullable|string|max:255',
+                    'issued_date' => 'nullable|date',
+                    'expired_date' => 'nullable|date|after_or_equal:issued_date',
+                    'catatan' => 'nullable|string|max:500'
+                ])->validate();
+
+                $checklist = $karyawan->crewChecklists()->find($itemId);
+
+                // If checklist not found and item_name provided (new_x), create it
+                if (!$checklist && !empty($rowValidated['item_name'])) {
+                    $checklist = $karyawan->crewChecklists()->create([
+                        'item_name' => $rowValidated['item_name'],
+                        'status' => 'tidak',
+                    ]);
+                }
+
+                if ($checklist) {
+                    $nomor = isset($rowValidated['nomor_sertifikat']) ? trim($rowValidated['nomor_sertifikat']) : null;
+                    $status = ($nomor && preg_match($fourAlnumPattern, $nomor)) ? 'ada' : 'tidak';
+
+                    // If status is 'tidak', ensure dates are cleared server-side as well
+                    $issued = ($status === 'ada') ? ($rowValidated['issued_date'] ?? null) : null;
+                    $expired = ($status === 'ada') ? ($rowValidated['expired_date'] ?? null) : null;
+
+                    $checklist->update([
+                        'status' => $status,
+                        'nomor_sertifikat' => $nomor,
+                        'issued_date' => $issued ?: null,
+                        'expired_date' => $expired ?: null,
+                        'catatan' => $rowValidated['catatan'] ?? null
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            // Redirect to the new checklist page
+            return redirect()->route('master.karyawan.crew-checklist-new', $id)
+                ->with('success', 'Checklist kelengkapan crew berhasil diperbarui.');
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            Log::error('Gagal menyimpan crew checklist untuk karyawan ' . $id . ': ' . $e->getMessage());
+
+            return redirect()->route('master.karyawan.crew-checklist-new', $id)
+                ->with('error', 'Gagal menyimpan checklist. Silakan coba lagi atau hubungi admin.')
+                ->withInput();
+        }
     }
 
     /**

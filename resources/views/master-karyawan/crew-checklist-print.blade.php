@@ -220,9 +220,9 @@
                         </span>
                     </td>
                     <td class="sertifikat-col">{{ $item->nomor_sertifikat ?: '-' }}</td>
-                    <td class="date-col">{{ $item->issued_date ? $item->issued_date->format('d-m-Y') : '-' }}</td>
+                    <td class="date-col">{{ (isset($item->issued_date) && is_object($item->issued_date)) ? $item->issued_date->format('d-m-Y') : (is_string($item->issued_date) && trim($item->issued_date) !== '' ? \Carbon\Carbon::parse($item->issued_date)->format('d-m-Y') : '-') }}</td>
                     <td class="date-col">
-                        {{ $item->expired_date ? $item->expired_date->format('d-m-Y') : '-' }}
+                        {{ (isset($item->expired_date) && is_object($item->expired_date)) ? $item->expired_date->format('d-m-Y') : (is_string($item->expired_date) && trim($item->expired_date) !== '' ? \Carbon\Carbon::parse($item->expired_date)->format('d-m-Y') : '-') }}
                         @if($item->is_expired)
                             <br><small style="color: red;">EXPIRED</small>
                         @elseif($item->is_expiring_soon)

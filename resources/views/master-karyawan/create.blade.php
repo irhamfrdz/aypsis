@@ -31,7 +31,33 @@
         @endif
 
         <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
-            <form action="{{ route('master.karyawan.store') }}" method="POST" class="divide-y divide-gray-100">
+            @php
+                // Choose appropriate store route:
+                // - If the current user has no linked karyawan, prefer the onboarding route
+                //   so the middleware doesn't block the POST (karyawan.store).
+                // - Otherwise, if the user is admin and master store exists, use it.
+                $formAction = null;
+                try {
+                    $user = auth()->user();
+                    $hasKaryawan = $user && !empty($user->karyawan_id);
+
+                    if (!$hasKaryawan && \Illuminate\Support\Facades\Route::has('karyawan.store')) {
+                        $formAction = route('karyawan.store');
+                    } elseif ($user && method_exists($user, 'hasRole') && $user->hasRole('admin') && \Illuminate\Support\Facades\Route::has('master.karyawan.store')) {
+                        $formAction = route('master.karyawan.store');
+                    } elseif (\Illuminate\Support\Facades\Route::has('karyawan.store')) {
+                        $formAction = route('karyawan.store');
+                    } elseif (\Illuminate\Support\Facades\Route::has('master.karyawan.store')) {
+                        $formAction = route('master.karyawan.store');
+                    } else {
+                        $formAction = route('dashboard');
+                    }
+                } catch (\Exception $e) {
+                    $formAction = route('dashboard');
+                }
+            @endphp
+
+            <form action="{{ $formAction }}" method="POST" class="divide-y divide-gray-100">
             @csrf
 
         @php

@@ -23,12 +23,18 @@
                             <input type="text"
                                    name="search"
                                    value="{{ request('search') }}"
-                                   class="block w-full sm:w-80 pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                   class="block w-full sm:w-80 pl-10 pr-10 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
                                    placeholder="Cari nama, NIK, divisi, pekerjaan..."
                                    autocomplete="off">
+                            <!-- Tombol submit manual -->
+                            <button type="submit" class="absolute inset-y-0 right-8 flex items-center px-2 text-gray-400 hover:text-blue-600" title="Cari">
+                                <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                </svg>
+                            </button>
                             @if(request('search'))
                                 <div class="absolute inset-y-0 right-0 pr-3 flex items-center">
-                                    <a href="{{ route('master.karyawan.index') }}" class="text-gray-400 hover:text-gray-600">
+                                    <a href="{{ route('master.karyawan.index') }}" class="text-gray-400 hover:text-gray-600" title="Hapus filter">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                                         </svg>
@@ -40,7 +46,7 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-wrap gap-2">
-                        <a href="{{ route('master.karyawan.create') }}" 
+                        <a href="{{ route('master.karyawan.create') }}"
                            class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -62,7 +68,7 @@
                             <!-- Dropdown Menu -->
                             <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
                                 <div class="py-2">
-                                    <a href="{{ route('master.karyawan.template') }}" 
+                                    <a href="{{ route('master.karyawan.template') }}"
                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
                                         <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -72,7 +78,7 @@
                                             <div class="text-xs text-gray-500">Format CSV standar</div>
                                         </div>
                                     </a>
-                                    <a href="{{ route('master.karyawan.simple-excel-template') }}" 
+                                    <a href="{{ route('master.karyawan.simple-excel-template') }}"
                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-green-50 hover:text-green-700 transition-colors">
                                         <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -86,8 +92,8 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('master.karyawan.print') }}" 
-                           target="_blank" 
+                        <a href="{{ route('master.karyawan.print') }}"
+                           target="_blank"
                            class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
@@ -109,7 +115,7 @@
                             <!-- Dropdown Menu -->
                             <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
                                 <div class="py-2">
-                                    <a href="{{ route('master.karyawan.export') }}?sep=%3B" 
+                                    <a href="{{ route('master.karyawan.export') }}?sep=%3B"
                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
                                         <svg class="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -119,7 +125,7 @@
                                             <div class="text-xs text-gray-500">Format CSV dengan separator ;</div>
                                         </div>
                                     </a>
-                                    <a href="{{ route('master.karyawan.export-excel') }}" 
+                                    <a href="{{ route('master.karyawan.export-excel') }}"
                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
                                         <svg class="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -133,7 +139,7 @@
                             </div>
                         </div>
 
-                        <a href="{{ route('master.karyawan.import') }}" 
+                        <a href="{{ route('master.karyawan.import') }}"
                            class="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
@@ -171,9 +177,9 @@
                         @if(request('direction'))
                             <input type="hidden" name="direction" value="{{ request('direction') }}">
                         @endif
-                        
-                        <select name="per_page" 
-                                onchange="this.form.submit()" 
+
+                        <select name="per_page"
+                                onchange="this.form.submit()"
                                 class="mx-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
                             <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
                             <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
@@ -182,7 +188,7 @@
                     </form>
                     <span>baris per halaman</span>
                 </div>
-                
+
                 @if($karyawans->total() > 0)
                     <div class="text-sm text-gray-500">
                         Menampilkan {{ $karyawans->firstItem() }} - {{ $karyawans->lastItem() }} dari {{ $karyawans->total() }} total karyawan
@@ -266,7 +272,7 @@
         <!-- Table Section with Sticky Header -->
         <div class="table-container overflow-x-auto max-h-screen">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">>
+                <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
                         <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center">
@@ -504,19 +510,29 @@
                                 <div class="flex items-center justify-center space-x-2">
                                     {{-- Show crew checklist button only for ABK division --}}
                                     @if(strtolower($karyawan->divisi) === 'abk')
-                                        <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}" 
-                                           class="inline-flex items-center px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                        <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}"
+                                           class="inline-flex items-center px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                            title="Checklist Kelengkapan Crew">
                                             <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                             <span class="hidden sm:inline">Checklist</span>
                                         </a>
+
+                                        {{-- NEW: Simplified crew checklist --}}
+                                        <a href="{{ route('master.karyawan.crew-checklist-new', $karyawan->id) }}"
+                                           class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                           title="Checklist Baru (Simplified)">
+                                            <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+                                            </svg>
+                                            <span class="hidden sm:inline">New</span>
+                                        </a>
                                     @endif
 
                                     <!-- View Button -->
-                                    <a href="{{ route('master.karyawan.show', $karyawan->id) }}" 
-                                       class="inline-flex items-center px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                    <a href="{{ route('master.karyawan.show', $karyawan->id) }}"
+                                       class="inline-flex items-center px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                        title="Lihat Detail">
                                         <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
@@ -526,9 +542,9 @@
                                     </a>
 
                                     <!-- Print Button -->
-                                    <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}" 
+                                    <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}"
                                        target="_blank"
-                                       class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                       class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                        title="Cetak Data">
                                         <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
@@ -537,8 +553,8 @@
                                     </a>
 
                                     <!-- Edit Button -->
-                                    <a href="{{ route('master.karyawan.edit', $karyawan->id) }}" 
-                                       class="inline-flex items-center px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group" 
+                                    <a href="{{ route('master.karyawan.edit', $karyawan->id) }}"
+                                       class="inline-flex items-center px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                        title="Edit Data">
                                         <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
@@ -688,7 +704,7 @@
                     </svg>
                     Batal
                 </button>
-                
+
                 <!-- Delete Button -->
                 <form id="deleteForm" method="POST" class="w-full sm:w-auto">
                     @csrf
@@ -710,16 +726,16 @@ function openDeleteModal(karyawanId, nik, namaLengkap) {
     // Set form action
     const deleteForm = document.getElementById('deleteForm');
     deleteForm.action = `/master/karyawan/${karyawanId}`;
-    
+
     // Set modal content
     document.getElementById('deleteModalNik').textContent = nik || '-';
     document.getElementById('deleteModalNama').textContent = namaLengkap || '-';
-    
+
     // Show modal with animation
     const modal = document.getElementById('deleteModal');
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
-    
+
     // Animate modal appearance
     setTimeout(() => {
         modal.querySelector('.relative').style.transform = 'scale(1)';
@@ -730,11 +746,11 @@ function openDeleteModal(karyawanId, nik, namaLengkap) {
 function closeDeleteModal() {
     const modal = document.getElementById('deleteModal');
     const modalContent = modal.querySelector('.relative');
-    
+
     // Animate modal disappearance
     modalContent.style.transform = 'scale(0.95)';
     modalContent.style.opacity = '0';
-    
+
     setTimeout(() => {
         modal.classList.add('hidden');
         document.body.style.overflow = 'auto';
@@ -759,27 +775,30 @@ document.addEventListener('keydown', function(e) {
 
 document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.querySelector('input[name="search"]');
-    const searchForm = searchInput.closest('form');
     let searchTimeout;
 
     // Auto-submit form setelah user berhenti mengetik selama 500ms
-    searchInput.addEventListener('input', function() {
-        clearTimeout(searchTimeout);
-        searchTimeout = setTimeout(function() {
-            if (searchInput.value.length >= 2 || searchInput.value.length === 0) {
-                searchForm.submit();
-            }
-        }, 500);
-    });
+    if (searchInput) {
+        const searchForm = searchInput.closest('form');
 
-    // Submit langsung saat Enter ditekan
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
+        searchInput.addEventListener('input', function() {
             clearTimeout(searchTimeout);
-            searchForm.submit();
-        }
-    });
+            searchTimeout = setTimeout(function() {
+                if (searchInput.value.length >= 2 || searchInput.value.length === 0) {
+                    if (searchForm) searchForm.submit();
+                }
+            }, 500);
+        });
+
+        // Submit langsung saat Enter ditekan
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                clearTimeout(searchTimeout);
+                if (searchForm) searchForm.submit();
+            }
+        });
+    }
 
     // Dropdown functionality
     const dropdowns = document.querySelectorAll('.relative.group');
