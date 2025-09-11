@@ -55,7 +55,6 @@ class UserController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'name'=>'required|string|max:255',
             'username'=>'required|string|max:255|unique:users',
             'password'=>'required|string|min:8|confirmed',
             'karyawan_id' => 'nullable|exists:karyawans,id',
@@ -65,7 +64,6 @@ class UserController extends Controller
         ]);
 
         $user = User::create([
-            'name' => $request->name,
             'username' => $request->username,
             'password'=> Hash::make($request->password),
             'karyawan_id' => $request->karyawan_id,
@@ -114,7 +112,6 @@ class UserController extends Controller
     public function update(Request $request, User $user)
     {
         $request->validate([
-            'name' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:users,username,' . $user->id,
             'password' => 'nullable|string|min:8|confirmed',
             'karyawan_id' => 'nullable|exists:karyawans,id',
@@ -123,7 +120,6 @@ class UserController extends Controller
             'permissions.*' => 'exists:permissions,id',
         ]);
 
-        $user->name = $request->name;
         $user->username = $request->username;
         $user->karyawan_id = $request->karyawan_id;
 

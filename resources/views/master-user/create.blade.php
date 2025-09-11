@@ -36,10 +36,6 @@
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-                <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                <input name="name" required value="{{ old('name') }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
-            </div>
-            <div>
                 <label class="block text-sm font-medium text-gray-700">Username</label>
                 <input name="username" required value="{{ old('username') }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
             </div>

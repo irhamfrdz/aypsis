@@ -26,7 +26,7 @@
 @endpush
 
 <div class="bg-white shadow-md rounded-lg p-6">
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Edit Pengguna: {{ $user->name }}</h2>
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Edit Pengguna: {{ $user->username }}</h2>
 
     @if (isset($errors) && is_object($errors) && method_exists($errors, 'any') && $errors->any())
         <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-6">
@@ -39,10 +39,6 @@
         @method('PUT')
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-            <div>
-                <label class="block text-sm font-medium text-gray-700">Nama Lengkap</label>
-                <input name="name" required value="{{ old('name', $user->name) }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
-            </div>
             <div>
                 <label class="block text-sm font-medium text-gray-700">Username</label>
                 <input name="username" required value="{{ old('username', $user->username) }}" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 p-2.5" />
