@@ -104,10 +104,27 @@ class SyncUserSeeder extends Seeder
             ],
         ];
 
+        // Clean user data - remove non-existent columns and ensure only valid columns are inserted
+        $cleanUsers = [];
+        foreach ($users as $user) {
+            // Only include columns that actually exist in the users table
+            $cleanUsers[] = [
+                'id' => $user['id'],
+                'username' => $user['username'],
+                'password' => $user['password'],
+                'karyawan_id' => $user['karyawan_id'] ?? null,
+                'status' => $user['status'] ?? 'pending',
+                'approved_by' => $user['approved_by'] ?? null,
+                'approved_at' => $user['approved_at'] ?? null,
+                'created_at' => $user['created_at'] ?? now(),
+                'updated_at' => $user['updated_at'] ?? now(),
+            ];
+        }
+
         $existingIds = DB::table('users')->pluck('id')->toArray();
         $newUsers = [];
 
-        foreach ($users as $user) {
+        foreach ($cleanUsers as $user) {
             if (!in_array($user['id'], $existingIds)) {
                 $newUsers[] = $user;
             }

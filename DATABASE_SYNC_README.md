@@ -11,11 +11,13 @@ Seeder ini digunakan untuk menyamakan database server dengan database laptop yan
 ## 🚀 **Cara Menjalankan Seeder**
 
 ### Opsi 1: Jalankan Semua Seeder Sekaligus (Direkomendasikan)
+
 ```bash
 php artisan db:seed --class=DatabaseSyncSeeder
 ```
 
 ### Opsi 2: Jalankan Seeder Satu per Satu
+
 ```bash
 # 1. Bersihkan data lama
 php artisan db:seed --class=DatabaseCleanerSeeder
@@ -33,29 +35,34 @@ php artisan db:seed --class=SyncUserPermissionSeeder
 ## 📊 **Yang Akan Dilakukan Seeder**
 
 ### 1. DatabaseCleanerSeeder
-- ✅ Hapus permissions lama yang tidak ada di laptop
-- ✅ Hapus user_permissions yang tidak valid
-- ✅ Hapus users yang tidak ada di laptop database
+
+-   ✅ Hapus permissions lama yang tidak ada di laptop
+-   ✅ Hapus user_permissions yang tidak valid
+-   ✅ Hapus users yang tidak ada di laptop database
 
 ### 2. CompletePermissionSeeder
-- ✅ Tambahkan 381 permissions lengkap dari laptop
-- ✅ Permissions dengan format baru dan terstruktur
-- ✅ Semua permissions untuk master data, operational, dan system
+
+-   ✅ Tambahkan 381 permissions lengkap dari laptop
+-   ✅ Permissions dengan format baru dan terstruktur
+-   ✅ Semua permissions untuk master data, operational, dan system
 
 ### 3. SyncUserSeeder
-- ✅ Sync 7 users dari laptop database
-- ✅ User admin, staff, test, kiky123, dan users tambahan
-- ✅ Password sudah di-hash dengan bcrypt
+
+-   ✅ Sync 7 users dari laptop database
+-   ✅ User admin, staff, test, kiky123, dan users tambahan
+-   ✅ Password sudah di-hash dengan bcrypt
 
 ### 4. SyncUserPermissionSeeder
-- ✅ Bersihkan semua user_permissions lama
-- ✅ Tambahkan user_permissions sesuai laptop
-- ✅ User admin memiliki semua 381 permissions
-- ✅ User lain memiliki permissions sesuai role
+
+-   ✅ Bersihkan semua user_permissions lama
+-   ✅ Tambahkan user_permissions sesuai laptop
+-   ✅ User admin memiliki semua 381 permissions
+-   ✅ User lain memiliki permissions sesuai role
 
 ## 🔍 **Verifikasi Setelah Menjalankan**
 
 ### Cek Jumlah Data
+
 ```bash
 # Cek jumlah permissions
 php artisan tinker
@@ -65,6 +72,7 @@ php artisan tinker
 ```
 
 ### Cek Permissions User Admin
+
 ```bash
 php artisan tinker
 >>> $adminPermissions = DB::table('user_permissions')->where('user_id', 1)->count()
@@ -72,9 +80,10 @@ php artisan tinker
 ```
 
 ### Test Login
-- ✅ Login sebagai admin → harus memiliki semua akses
-- ✅ Login sebagai staff → harus memiliki akses terbatas
-- ✅ Login sebagai kiky123 → harus memiliki akses terbatas
+
+-   ✅ Login sebagai admin → harus memiliki semua akses
+-   ✅ Login sebagai staff → harus memiliki akses terbatas
+-   ✅ Login sebagai kiky123 → harus memiliki akses terbatas
 
 ## ⚠️ **Peringatan Penting**
 
@@ -86,6 +95,7 @@ php artisan tinker
 ## 🔧 **Troubleshooting**
 
 ### Jika Seeder Gagal
+
 ```bash
 # Cek error logs
 tail -f storage/logs/laravel.log
@@ -97,6 +107,7 @@ php artisan db:seed --class=DatabaseSyncSeeder
 ```
 
 ### Jika Permissions Tidak Muncul
+
 ```bash
 # Clear cache aplikasi
 php artisan config:clear
@@ -107,6 +118,7 @@ php artisan view:clear
 ## 📞 **Support**
 
 Jika ada masalah atau pertanyaan:
+
 1. Cek log file Laravel
 2. Pastikan database connection benar
 3. Verifikasi versi PHP dan Laravel
