@@ -27,8 +27,19 @@ git pull origin main
 echo "📦 5. Updating composer dependencies..."
 composer install --no-dev --optimize-autoloader
 
-# 6. Run database migrations jika ada
-echo "🗄️ 6. Running database migrations..."
+# 6. Check migration status first
+echo "🗄️ 6. Checking migration status..."
+php artisan migrate:status
+
+# 6b. If there are migration conflicts, run this command to mark the problematic migration as run:
+# php artisan migrate:status | grep "pembayaran_pranota_perbaikan_kontainers"
+# If it's showing as "Pending" but table exists, mark it as run:
+# php artisan schema:dump  # This creates a schema file
+# Then manually mark the migration as run in the database:
+# INSERT INTO migrations (migration, batch) VALUES ('2025_09_15_110650_create_pembayaran_pranota_perbaikan_kontainers_table', (SELECT MAX(batch) FROM migrations))
+
+# 6c. Run database migrations jika ada
+echo "🗄️ 6c. Running database migrations..."
 php artisan migrate --force
 
 # 7. Clear all caches
