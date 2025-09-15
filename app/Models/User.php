@@ -173,6 +173,23 @@ class User extends Authenticatable
     }
 
     /**
+     * Check if the user is a driver (supir) based on karyawan divisi
+     *
+     * @return bool
+     */
+    public function isSupir(): bool
+    {
+        // Check if user has karyawan relationship
+        if (!$this->karyawan) {
+            return false;
+        }
+
+        // Check if karyawan's divisi is 'supir' (case insensitive)
+        $divisi = strtolower($this->karyawan->divisi ?? '');
+        return $divisi === 'supir' || $divisi === 'driver';
+    }
+
+    /**
      * The relationship with the Role model.
      *
      * @return \Illuminate\Database\Eloquent\Relations\BelongsToMany

@@ -14,11 +14,16 @@ class DashboardController extends Controller
     /**
      * Menampilkan halaman dashboard dengan data ringkasan.
      *
-     * @return \Illuminate\View\View
+     * @return \Illuminate\View\View|\Illuminate\Http\RedirectResponse
      */
     public function index()
     {
         $user = Auth::user();
+
+        // Check if user is a driver (supir) - redirect to supir dashboard
+        if ($user->isSupir()) {
+            return redirect()->route('supir.dashboard');
+        }
 
         // Check if user has any permissions
         $hasPermissions = $user->permissions->count() > 0;
