@@ -1,0 +1,161 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class PerbaikanKontainer extends Model
+{
+    use HasFactory;
+
+    protected $table = 'perbaikan_kontainers';
+
+    protected $fillable = [
+        'nomor_memo_perbaikan',
+        'kontainer_id',
+        'tanggal_perbaikan',
+        'jenis_perbaikan',
+        'deskripsi_perbaikan',
+        'biaya_perbaikan',
+        'status_perbaikan',
+        'catatan',
+        'tanggal_selesai',
+        'created_by',
+        'updated_by',
+    ];
+
+    protected $dates = [
+        'tanggal_perbaikan',
+        'tanggal_selesai',
+    ];
+
+    protected $casts = [
+        'biaya_perbaikan' => 'decimal:2',
+    ];
+
+    // Relationships
+    public function kontainer()
+    {
+        return $this->belongsTo(Kontainer::class, 'kontainer_id');
+    }
+
+    public function creator()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updater()
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function pranotaPerbaikanKontainers()
+    {
+        return $this->hasMany(PranotaPerbaikanKontainer::class, 'perbaikan_kontainer_id');
+    }
+
+    // Scopes
+    public function scopeBelumMasukPranota($query)
+    {
+        return $query->where('status_perbaikan', 'belum_masuk_pranota');
+    }
+
+    public function scopeSudahMasukPranota($query)
+    {
+        return $query->where('status_perbaikan', 'sudah_masuk_pranota');
+    }
+
+    public function scopeSudahDibayar($query)
+    {
+        return $query->where('status_perbaikan', 'sudah_dibayar');
+    }
+
+    // Accessors & Mutators
+    public function getStatusColorAttribute()
+    {
+        return match($this->status_perbaikan) {
+            'belum_masuk_pranota' => 'bg-yellow-100 text-yellow-800',
+            'sudah_masuk_pranota' => 'bg-blue-100 text-blue-800',
+            'sudah_dibayar' => 'bg-green-100 text-green-800',
+            default => 'bg-gray-100 text-gray-800'
+        };
+    }
+
+    public function getStatusLabelAttribute()
+    {
+        return match($this->status_perbaikan) {
+            'belum_masuk_pranota' => 'Belum Masuk Pranota',
+            'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
+            'sudah_dibayar' => 'Sudah Dibayar',
+            default => 'Tidak Diketahui'
+        };
+    }
+
+    // Helper methods
+    public function isSudahDibayar()
+    {
+        return $this->status_perbaikan === 'sudah_dibayar';
+    }
+
+    public function isSudahMasukPranota()
+    {
+        return $this->status_perbaikan === 'sudah_masuk_pranota';
+    }
+
+    public function markAsSudahDibayar()
+    {
+        $this->update([
+            'status_perbaikan' => 'sudah_dibayar',
+            'tanggal_selesai' => now(),
+        ]);
+    }
+
+    public function getJenisPerbaikanOptions()
+    {
+        return [
+            'maintenance' => 'Maintenance Rutin',
+            'repair' => 'Perbaikan',
+            'inspection' => 'Inspeksi',
+            'replacement' => 'Penggantian Part',
+            'cleaning' => 'Pembersihan',
+            'other' => 'Lainnya'
+        ];
+    }
+
+    public function getStatusOptions()
+    {
+        return [
+            'belum_masuk_pranota' => 'Belum Masuk Pranota',
+            'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
+            'sudah_dibayar' => 'Sudah Dibayar'
+        ];
+    }
+
+    /**
+     * Generate nomor memo perbaikan
+     * Format: MP + [1 digit cetakan] + [2 digit tahun] + [2 digit bulan] + [7 digit running number]
+     * Example: MP12309240000001
+     */
+    public static function generateNomorMemoPerbaikan()
+    {
+        $year = date('y'); // 2 digit year
+        $month = date('m'); // 2 digit month
+        $cetakan = '1'; // Default cetakan number
+
+        // Get the last running number for current year and month
+        $lastRecord = self::where('nomor_memo_perbaikan', 'like', "MP{$cetakan}{$year}{$month}%")
+                         ->orderBy('nomor_memo_perbaikan', 'desc')
+                         ->first();
+
+        if ($lastRecord) {
+            // Extract the running number from the last record
+            $lastNumber = substr($lastRecord->nomor_memo_perbaikan, -7);
+            $runningNumber = str_pad((int)$lastNumber + 1, 7, '0', STR_PAD_LEFT);
+        } else {
+            $runningNumber = '0000001';
+        }
+
+        return "MP{$cetakan}{$year}{$month}{$runningNumber}";
+    }
+}

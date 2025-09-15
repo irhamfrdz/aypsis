@@ -448,6 +448,12 @@ class UserController extends Controller
                         $module = 'pembayaran-pranota-supir';
                     }
 
+                    // Special handling for perbaikan-kontainer-* permissions
+                    if ($module === 'perbaikan' && strpos($action, 'kontainer-') === 0) {
+                        $action = str_replace('kontainer-', '', $action);
+                        $module = 'perbaikan-kontainer';
+                    }
+
                     // Skip approve action for tagihan-kontainer since it's not implemented yet
                     if ($module === 'tagihan-kontainer' && $action === 'approve') {
                         continue; // Skip processing this permission
@@ -785,6 +791,27 @@ class UserController extends Controller
                                 $found = true;
                                 // NOTE: Removed automatic addition of 'store' permission when 'create' is found
                                 // to prevent unwanted duplication
+                            }
+                        }
+                    }
+
+                    // Special handling for perbaikan-kontainer module
+                    if ($module === 'perbaikan-kontainer') {
+                        // For perbaikan-kontainer, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = 'perbaikan-kontainer.' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
                             }
                         }
                     }

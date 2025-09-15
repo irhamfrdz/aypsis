@@ -41,8 +41,13 @@ class CheckpointController extends Controller
         if ($permohonan->kontainers->isEmpty()) {
             $rules['nomor_kontainer'] = ['required', 'array', 'size:' . $permohonan->jumlah_kontainer];
 
-            // Untuk vendor tertentu, supir menginput nomor kontainer sebagai string (nomor lengkap)
-            if (in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
+            // Check if this is a container repair activity
+            $kegiatanLower = strtolower($permohonan->kegiatan ?? '');
+            $isPerbaikanKontainer = (stripos($kegiatanLower, 'perbaikan') !== false && stripos($kegiatanLower, 'kontainer') !== false)
+                || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
+
+            // Untuk kegiatan perbaikan kontainer atau vendor tertentu, supir menginput nomor kontainer sebagai string (nomor lengkap)
+            if ($isPerbaikanKontainer || in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
                 // Accept free-text nomor kontainer (string) and ensure distinct
                 $rules['nomor_kontainer.*'] = ['required', 'string', 'distinct'];
             } else {
@@ -62,9 +67,11 @@ class CheckpointController extends Controller
                 // Determine if this permohonan is a return of sewa containers
                 $kegiatanLower = strtolower($permohonan->kegiatan ?? '');
                 $isReturnSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false) || ($kegiatanLower === 'pengambilan');
+                $isPerbaikanKontainer = (stripos($kegiatanLower, 'perbaikan') !== false && stripos($kegiatanLower, 'kontainer') !== false)
+                    || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
 
-                // Jika vendor menerima input nomor kontainer bebas, cari atau buat kontainer berdasarkan nomor_seri_gabungan
-                if (in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
+                // Jika kegiatan perbaikan kontainer atau vendor menerima input nomor kontainer bebas, cari atau buat kontainer berdasarkan nomor_seri_gabungan
+                if ($isPerbaikanKontainer || in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
                     foreach ($validated['nomor_kontainer'] as $nomor) {
                         // Preserve the raw input (trimmed) so what supir types is what we store/display.
                         $nomorRaw = trim($nomor);

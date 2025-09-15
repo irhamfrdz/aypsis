@@ -77,7 +77,7 @@
                                             {{-- send container data (size) along with the permohonan when processing mass approvals --}}
                                             @foreach($permohonan->kontainers as $k)
                                                 <input type="hidden" name="kontainers[{{ $permohonan->id }}][{{ $k->nomor_kontainer }}][nomor]" value="{{ $k->nomor_kontainer }}" />
-                                                <input type="hidden" name="kontainers[{{ $permohonan->id }}][{{ $k->nomor_kontainer }}][size]" value="{{ $k->size ?? '' }}" />
+                                                <input type="hidden" name="kontainers[{{ $permohonan->id }}][{{ $k->nomor_kontainer }}][size]" value="{{ $k->ukuran ?? '' }}" />
                                             @endforeach
                                         </div>
                                     @else

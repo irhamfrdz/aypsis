@@ -138,12 +138,17 @@
                                     $isTarikSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false)
                                         || (stripos($kegiatanLower, 'pengambilan') !== false)
                                         || ($kegiatanLower === 'pengambilan');
+                                    $isPerbaikanKontainer = (stripos($kegiatanLower, 'perbaikan') !== false && stripos($kegiatanLower, 'kontainer') !== false)
+                                        || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
                                 @endphp
 
                                 @for ($i = 0; $i < $permohonan->jumlah_kontainer; $i++)
                                     <div class="relative mt-1">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Kontainer #{{ $i + 1 }}</label>
-                                        @if(in_array($permohonan->vendor_perusahaan, ['ZONA','DPE','SOC']) && $isTarikSewa)
+                                        @if($isPerbaikanKontainer)
+                                            {{-- For perbaikan kontainer, allow free text input regardless of vendor --}}
+                                            <input type="text" name="nomor_kontainer[]" class="block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5" placeholder="Masukkan nomor kontainer #{{ $i + 1 }}" required>
+                                        @elseif(in_array($permohonan->vendor_perusahaan, ['ZONA','DPE','SOC']) && $isTarikSewa)
                                             {{-- For sewa pickup (tarik kontainer sewa), require selecting from approved/tagihan group kontainers --}}
                                             @if(isset($kontainerList) && $kontainerList->isNotEmpty())
                                                 <select name="nomor_kontainer[]" class="select-kontainer block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5 pr-10" required>
@@ -177,7 +182,13 @@
                                         @endif
                                     </div>
                                 @endfor
-                                <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer sesuai jumlah di memo.</p>
+                                <p class="text-xs text-gray-500 mt-1">
+                                    @if($isPerbaikanKontainer)
+                                        Masukkan nomor kontainer yang akan diperbaiki.
+                                    @else
+                                        Pilih nomor kontainer sesuai jumlah di memo.
+                                    @endif
+                                </p>
                             </div>
                         @endif
                         <div>

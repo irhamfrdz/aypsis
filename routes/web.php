@@ -580,3 +580,80 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/delete', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
     });
 });
+
+// Perbaikan Kontainer Routes (Independent from Master)
+Route::middleware(['auth'])->group(function() {
+    // Perbaikan Kontainer routes - granular permissions
+    Route::get('perbaikan-kontainer', [\App\Http\Controllers\PerbaikanKontainerController::class, 'index'])
+         ->name('perbaikan-kontainer.index')
+         ->middleware('can:perbaikan-kontainer.view');
+    Route::get('perbaikan-kontainer/create', [\App\Http\Controllers\PerbaikanKontainerController::class, 'create'])
+         ->name('perbaikan-kontainer.create')
+         ->middleware('can:perbaikan-kontainer.create');
+    Route::post('perbaikan-kontainer', [\App\Http\Controllers\PerbaikanKontainerController::class, 'store'])
+         ->name('perbaikan-kontainer.store')
+         ->middleware('can:perbaikan-kontainer.create');
+    Route::get('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'show'])
+         ->name('perbaikan-kontainer.show')
+         ->middleware('can:perbaikan-kontainer.view');
+    Route::get('perbaikan-kontainer/{perbaikanKontainer}/edit', [\App\Http\Controllers\PerbaikanKontainerController::class, 'edit'])
+         ->name('perbaikan-kontainer.edit')
+         ->middleware('can:perbaikan-kontainer.update');
+    Route::put('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'update'])
+         ->name('perbaikan-kontainer.update')
+         ->middleware('can:perbaikan-kontainer.update');
+    Route::delete('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'destroy'])
+         ->name('perbaikan-kontainer.destroy')
+         ->middleware('can:perbaikan-kontainer.delete');
+
+    // Additional perbaikan kontainer routes
+    Route::patch('perbaikan-kontainer/{perbaikanKontainer}/status', [\App\Http\Controllers\PerbaikanKontainerController::class, 'updateStatus'])
+         ->name('perbaikan-kontainer.update-status')
+         ->middleware('can:perbaikan-kontainer.update');
+
+    // Pranota Perbaikan Kontainer routes
+    Route::get('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'index'])
+         ->name('pranota-perbaikan-kontainer.index')
+         ->middleware('can:pranota-perbaikan-kontainer.view');
+    Route::get('pranota-perbaikan-kontainer/create', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'create'])
+         ->name('pranota-perbaikan-kontainer.create')
+         ->middleware('can:pranota-perbaikan-kontainer.create');
+    Route::post('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'store'])
+         ->name('pranota-perbaikan-kontainer.store')
+         ->middleware('can:pranota-perbaikan-kontainer.create');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'show'])
+         ->name('pranota-perbaikan-kontainer.show')
+         ->middleware('can:pranota-perbaikan-kontainer.view');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/edit', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'edit'])
+         ->name('pranota-perbaikan-kontainer.edit')
+         ->middleware('can:pranota-perbaikan-kontainer.update');
+    Route::put('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'update'])
+         ->name('pranota-perbaikan-kontainer.update')
+         ->middleware('can:pranota-perbaikan-kontainer.update');
+    Route::delete('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'destroy'])
+         ->name('pranota-perbaikan-kontainer.destroy')
+         ->middleware('can:pranota-perbaikan-kontainer.delete');
+
+    // Pembayaran Pranota Perbaikan Kontainer routes
+    Route::get('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'index'])
+         ->name('pembayaran-pranota-perbaikan-kontainer.index')
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.view');
+    Route::get('pembayaran-pranota-perbaikan-kontainer/create', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'create'])
+         ->name('pembayaran-pranota-perbaikan-kontainer.create')
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.create');
+    Route::post('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'store'])
+         ->name('pembayaran-pranota-perbaikan-kontainer.store')
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.create');
+    Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'show'])
+         ->name('pembayaran-pranota-perbaikan-kontainer.show')
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.view');
+    Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}/edit', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'edit'])
+         ->name('pembayaran-pranota-perbaikan-kontainer.edit')
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.update');
+    Route::put('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'update'])
+         ->name('pembayaran-pranota-perbaikan-kontainer.update')
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.update');
+    Route::delete('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'destroy'])
+         ->name('pembayaran-pranota-perbaikan-kontainer.destroy')
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.delete');
+});

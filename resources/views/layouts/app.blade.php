@@ -340,6 +340,56 @@
                     @endif
                     @endif
 
+                    {{-- Menu Perbaikan Kontainer --}}
+                    @php
+                        $hasPerbaikanKontainerPermission = $isAdmin ||
+                            auth()->user()->can('perbaikan-kontainer.view') ||
+                            auth()->user()->can('perbaikan-kontainer.create') ||
+                            auth()->user()->can('perbaikan-kontainer.update') ||
+                            auth()->user()->can('perbaikan-kontainer.delete');
+                        $isPerbaikanKontainerRoute = Request::routeIs('perbaikan-kontainer.*') ||
+                            Request::routeIs('pranota-perbaikan-kontainer.*') ||
+                            Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*');
+                    @endphp
+                    @if($hasPerbaikanKontainerPermission)
+                    <div class="mb-1">
+                        <button id="perbaikan-kontainer-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all duration-200 group {{ $isPerbaikanKontainerRoute ? 'bg-green-50 text-green-700 font-medium' : '' }}">
+                            <div class="flex items-center">
+                                <div class="flex items-center justify-center w-9 h-9 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-3 {{ $isPerbaikanKontainerRoute ? 'bg-green-100' : '' }}">
+                                    <svg class="w-5 h-5 text-gray-600 group-hover:text-gray-700 {{ $isPerbaikanKontainerRoute ? 'text-green-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    </svg>
+                                </div>
+                                <span class="font-medium">Perbaikan Kontainer</span>
+                            </div>
+                            <svg class="w-4 h-4 transition-transform duration-200 {{ $isPerbaikanKontainerRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                            </svg>
+                        </button>
+                        <div id="perbaikan-kontainer-menu-content" class="dropdown-content ml-12 space-y-1 mt-2" @if($isPerbaikanKontainerRoute) style="display: block;" @endif>
+                            @if($user && $user->can('perbaikan-kontainer.view'))
+                                <a href="{{ route('perbaikan-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
+                                    <div class="w-2 h-2 rounded-full mr-3 {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-green-500' : 'bg-gray-400' }}"></div>
+                                    Daftar Perbaikan Kontainer
+                                </a>
+                            @endif
+                            @if($user && $user->can('pranota-perbaikan-kontainer.view'))
+                                <a href="{{ route('pranota-perbaikan-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
+                                    <div class="w-2 h-2 rounded-full mr-3 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-green-500' : 'bg-gray-400' }}"></div>
+                                    Daftar Pranota Perbaikan Kontainer
+                                </a>
+                            @endif
+                            @if($user && $user->can('pembayaran-pranota-perbaikan-kontainer.view'))
+                                <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
+                                    <div class="w-2 h-2 rounded-full mr-3 {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-green-500' : 'bg-gray-400' }}"></div>
+                                    Pembayaran Pranota Tagihan Kontainer
+                                </a>
+                            @endif
+                        </div>
+                    </div>
+                    @endif
+
                     {{-- User Approval Management (only for admins or users with master-user or user-approval permission) --}}
                     @php
                         $hasUserApprovalAccess = $isAdmin ||
@@ -662,6 +712,7 @@
         setupDropdown('pranota-menu-toggle', 'pranota-menu-content');
         setupDropdown('pembayaran-pranota-menu-toggle', 'pembayaran-pranota-menu-content');
         setupDropdown('pranota-tagihan-kontainer-menu-toggle', 'pranota-tagihan-kontainer-menu-content');
+        setupDropdown('perbaikan-kontainer-menu-toggle', 'perbaikan-kontainer-menu-content');
     </script>
 </body>
 </html>

@@ -37,9 +37,11 @@ echo "  - master-karyawan: " . ($hasMainPermission ? '✅ ADA' : '❌ TIDAK ADA'
 echo "  - master-karyawan.view: " . ($hasViewPermission ? '✅ ADA' : '❌ TIDAK ADA') . "\n";
 
 echo "\n🎯 Kesimpulan:\n";
-if ($hasMainPermission) {
-    echo "✅ User test4 memiliki permission master-karyawan yang diperlukan untuk sidebar\n";
+if ($hasViewPermission) {
+    echo "✅ User test4 memiliki permission master-karyawan.view yang diperlukan untuk sidebar\n";
+    echo "💡 Menu Master Data SEHARUSNYA muncul di sidebar\n";
 } else {
-    echo "❌ User test4 TIDAK memiliki permission master-karyawan\n";
-    echo "💡 Sidebar membutuhkan permission 'master-karyawan' untuk menampilkan menu karyawan\n";
+    echo "❌ User test4 TIDAK memiliki permission master-karyawan.view\n";
+    echo "💡 Menu Master Data TIDAK akan muncul di sidebar\n";
+    echo "🔧 Jalankan: php add_master_permissions_fixed.php untuk menambahkan permission\n";
 }

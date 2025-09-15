@@ -11,6 +11,7 @@ use App\Models\Permohonan;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\MasterPricelistSewaKontainer;
@@ -132,8 +133,8 @@ class PenyelesaianController extends Controller
                 }
 
                 // determine size/ukuran to use for pricelist lookup and saved nilai
-                $sizeForLookup = $overrideSize ?? $kontainer->size ?? $kontainer->ukuran ?? null;
-                Log::debug('createOrUpdateTagihan: resolved size', ['permohonan_id' => $permohonan->id, 'nomor' => $nomor, 'override' => $overrideSize, 'model_size' => $kontainer->size ?? null, 'sizeForLookup' => $sizeForLookup]);
+                $sizeForLookup = $overrideSize ?? $kontainer->ukuran ?? null;
+                Log::debug('createOrUpdateTagihan: resolved size', ['permohonan_id' => $permohonan->id, 'nomor' => $nomor, 'override' => $overrideSize, 'model_ukuran' => $kontainer->ukuran ?? null, 'sizeForLookup' => $sizeForLookup]);
 
                 $tanggal_awal = $dateStr;
                 // Use kontainer's tanggal_selesai_sewa if set as tanggal_akhir
@@ -251,6 +252,92 @@ class PenyelesaianController extends Controller
     }
 
     /**
+     * Create PerbaikanKontainer record for perbaikan kegiatan when approval is completed.
+     * @param Permohonan $permohonan
+     * @param string $tanggalPerbaikan (Y-m-d)
+     */
+    protected function createPerbaikanKontainer(Permohonan $permohonan, $tanggalPerbaikan)
+    {
+        try {
+            // Check if this is a perbaikan kegiatan
+            $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
+                ->value('nama_kegiatan') ?? ($permohonan->kegiatan ?? '');
+            $kegiatanLower = strtolower($kegiatanName);
+
+            // Check for perbaikan-related kegiatan codes
+            $isPerbaikanKegiatan = (stripos($kegiatanLower, 'perbaikan') !== false)
+                || (stripos($kegiatanLower, 'repair') !== false)
+                || ($permohonan->kegiatan === 'PERBAIKAN')
+                || ($permohonan->kegiatan === 'PERBAIKAN KONTAINER')
+                || ($permohonan->kegiatan === 'REPAIR');
+
+            if (!$isPerbaikanKegiatan) {
+                Log::debug('createPerbaikanKontainer skipped: not a perbaikan kegiatan', [
+                    'permohonan_id' => $permohonan->id,
+                    'kegiatan' => $permohonan->kegiatan,
+                    'kegiatan_name' => $kegiatanName
+                ]);
+                return null;
+            }
+
+            // Create perbaikan kontainer records for each kontainer in the permohonan
+            $createdRecords = 0;
+            foreach ($permohonan->kontainers as $kontainer) {
+                // Check if perbaikan record already exists for this kontainer on this date
+                $existingRecord = \App\Models\PerbaikanKontainer::where('kontainer_id', $kontainer->id)
+                    ->whereDate('tanggal_perbaikan', $tanggalPerbaikan)
+                    ->first();
+
+                if ($existingRecord) {
+                    Log::debug('createPerbaikanKontainer skipped: record already exists', [
+                        'kontainer_id' => $kontainer->id,
+                        'tanggal_perbaikan' => $tanggalPerbaikan,
+                        'existing_id' => $existingRecord->id
+                    ]);
+                    continue;
+                }
+
+                // Create new perbaikan kontainer record
+                $perbaikanData = [
+                    'nomor_memo_perbaikan' => \App\Models\PerbaikanKontainer::generateNomorMemoPerbaikan(),
+                    'kontainer_id' => $kontainer->id,
+                    'tanggal_perbaikan' => $tanggalPerbaikan,
+                    'deskripsi_perbaikan' => 'Perbaikan kontainer berdasarkan permohonan ID: ' . $permohonan->id,
+                    'status_perbaikan' => 'belum_masuk_pranota',
+                    'created_by' => Auth::id() ?? 1, // Default to admin if no user logged in
+                ];
+
+                $perbaikanRecord = \App\Models\PerbaikanKontainer::create($perbaikanData);
+                $createdRecords++;
+
+                Log::debug('createPerbaikanKontainer: created record', [
+                    'perbaikan_id' => $perbaikanRecord->id,
+                    'kontainer_id' => $kontainer->id,
+                    'tanggal_perbaikan' => $tanggalPerbaikan,
+                    'permohonan_id' => $permohonan->id
+                ]);
+            }
+
+            if ($createdRecords > 0) {
+                Log::info('createPerbaikanKontainer: successfully created records', [
+                    'permohonan_id' => $permohonan->id,
+                    'created_records' => $createdRecords,
+                    'tanggal_perbaikan' => $tanggalPerbaikan
+                ]);
+            }
+
+            return $createdRecords;
+        } catch (\Exception $e) {
+            Log::error('createPerbaikanKontainer failed', [
+                'message' => $e->getMessage(),
+                'permohonan_id' => $permohonan->id ?? null,
+                'tanggal_perbaikan' => $tanggalPerbaikan ?? null
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
      * Proses masal permohonan yang dipilih pada dashboard approval.
      */
     public function massProcess(Request $request)
@@ -312,13 +399,16 @@ class PenyelesaianController extends Controller
                             // default behavior: make available
                             $kontainer->status = 'Tersedia';
                         }
-            $kontainer->save();
+                        $kontainer->save();
                     }
                 }
 
-        // Create or merge daftar tagihan entries for this permohonan.
-        // Use the same doneDate used for kontainer updates so grouping is consistent.
+                // Create or merge daftar tagihan entries for this permohonan.
+                // Use the same doneDate used for kontainer updates so grouping is consistent.
                 $this->createOrUpdateTagihan($permohonan, $doneDate, $kontainersPayload);
+
+                // Create perbaikan kontainer records if this is a perbaikan kegiatan
+                $this->createPerbaikanKontainer($permohonan, $doneDate);
 
                 $permohonan->save();
                 $processed++;
@@ -339,8 +429,41 @@ class PenyelesaianController extends Controller
      */
     public function create(Permohonan $permohonan)
     {
-        $permohonan->load('supir', 'kontainers', 'checkpoints');
-    return view('approval.checkpoint2-create', compact('permohonan'));
+        $permohonan->load(['supir', 'kontainers.perbaikanKontainers', 'checkpoints']);
+
+        // Check if there are any containers with repairs OR if kegiatan contains "PERBAIKAN"
+        $kontainerPerbaikan = $permohonan->kontainers->filter(function($kontainer) {
+            return $kontainer->perbaikanKontainers && $kontainer->perbaikanKontainers->count() > 0;
+        });
+
+        // Check if kegiatan contains "PERBAIKAN" (case insensitive)
+        $isPerbaikanKegiatan = stripos($permohonan->kegiatan, 'PERBAIKAN') !== false;
+
+        // If there are repair containers OR kegiatan is PERBAIKAN, use the specialized view
+        if ($kontainerPerbaikan->count() > 0 || $isPerbaikanKegiatan) {
+            $totalPerbaikan = $kontainerPerbaikan->sum(function($k) {
+                return $k->perbaikanKontainers->count();
+            });
+
+            $totalBiaya = $kontainerPerbaikan->sum(function($k) {
+                return $k->perbaikanKontainers->sum('biaya_perbaikan');
+            });
+
+            $totalSudahDibayar = $kontainerPerbaikan->sum(function($k) {
+                return $k->perbaikanKontainers->where('status_perbaikan', 'sudah_dibayar')->count();
+            });
+
+            return view('approval.checkpoint2-perbaikan', compact(
+                'permohonan',
+                'kontainerPerbaikan',
+                'totalPerbaikan',
+                'totalBiaya',
+                'totalSudahDibayar'
+            ));
+        }
+
+        // Use the regular view for non-repair containers
+        return view('approval.checkpoint2-create', compact('permohonan'));
     }
 
     /**
@@ -364,6 +487,9 @@ class PenyelesaianController extends Controller
             // Validasi untuk input sewa yang baru ditambahkan
             'tanggal_masuk_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date|after_or_equal:tanggal_masuk_sewa',
+            // Validasi untuk estimasi perbaikan dan total biaya
+            'estimasi_perbaikan' => 'nullable|string|max:1000',
+            'total_biaya_perbaikan' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
@@ -380,6 +506,17 @@ class PenyelesaianController extends Controller
             // Simpan catatan karyawan (mungkin di kolom 'catatan' atau kolom baru)
             if (array_key_exists('catatan_karyawan', $validated) && !empty($validated['catatan_karyawan'])) {
                 $permohonan->catatan = $permohonan->catatan . "\n\n[Catatan Penyelesaian]:\n" . $validated['catatan_karyawan'];
+            }
+
+            // Simpan estimasi perbaikan jika ada
+            if (array_key_exists('estimasi_perbaikan', $validated) && !empty($validated['estimasi_perbaikan'])) {
+                $permohonan->catatan = $permohonan->catatan . "\n\n[Estimasi Perbaikan]:\n" . $validated['estimasi_perbaikan'];
+            }
+
+            // Simpan total biaya perbaikan jika ada
+            if (array_key_exists('total_biaya_perbaikan', $validated) && !empty($validated['total_biaya_perbaikan'])) {
+                $biayaFormatted = 'Rp ' . number_format($validated['total_biaya_perbaikan'], 0, ',', '.');
+                $permohonan->catatan = $permohonan->catatan . "\n\n[Total Biaya Perbaikan]: " . $biayaFormatted;
             }
 
                 // Logika untuk sewa dan status kontainer
@@ -431,12 +568,34 @@ class PenyelesaianController extends Controller
                 $dateForTagihan = $startCheckpoint ? Carbon::parse($startCheckpoint)->toDateString() : now()->toDateString();
                 $this->createOrUpdateTagihan($permohonan, $dateForTagihan, $request->input('kontainers'));
 
+                // Create perbaikan kontainer records if this is a perbaikan kegiatan
+                $createdPerbaikanCount = $this->createPerbaikanKontainer($permohonan, $dateForTagihan);
+
             }
 
             $permohonan->save();
 
             DB::commit();
-            return redirect()->route('approval.dashboard')->with('success', 'Permohonan berhasil diselesaikan!');
+
+            // Prepare success message with perbaikan info if any were created
+            $successMessage = 'Permohonan berhasil diselesaikan!';
+            if (isset($createdPerbaikanCount) && $createdPerbaikanCount > 0) {
+                $successMessage .= " {$createdPerbaikanCount} record perbaikan kontainer telah dibuat dengan nomor memo otomatis.";
+
+                // Get the latest perbaikan records to show memo numbers
+                $latestPerbaikans = \App\Models\PerbaikanKontainer::where('created_by', Auth::id() ?? 1)
+                    ->whereDate('created_at', today())
+                    ->orderBy('created_at', 'desc')
+                    ->take($createdPerbaikanCount)
+                    ->pluck('nomor_memo_perbaikan')
+                    ->toArray();
+
+                if (!empty($latestPerbaikans)) {
+                    $successMessage .= " Nomor memo: " . implode(', ', $latestPerbaikans);
+                }
+            }
+
+            return redirect()->route('approval.dashboard')->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Test Debug Uang Jalan Perbaikan Kontainer - Fixed</title>
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+            }
+            select,
+            input {
+                padding: 8px;
+                width: 200px;
+            }
+            .result {
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #f0f0f0;
+                border-radius: 5px;
+            }
+            .highlight {
+                background-color: #ffff99;
+                padding: 2px 4px;
+                border-radius: 3px;
+            }
+            .debug {
+                margin-top: 20px;
+                padding: 10px;
+                background-color: #e8f4f8;
+                border-radius: 5px;
+                font-family: monospace;
+            }
+            .success {
+                background-color: #d4edda;
+                border: 1px solid #c3e6cb;
+                color: #155724;
+            }
+            .error {
+                background-color: #f8d7da;
+                border: 1px solid #f5c6cb;
+                color: #721c24;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Test Debug Uang Jalan Perbaikan Kontainer - Fixed</h1>
+
+        <div class="form-group">
+            <label for="kegiatan">Kegiatan:</label>
+            <select id="kegiatan">
+                <option value="">Pilih Kegiatan</option>
+                <option value="pengiriman">Pengiriman Kontainer</option>
+                <option value="pengambilan">Pengambilan Kontainer</option>
+                <option value="perbaikan kontainer">Perbaikan Kontainer</option>
+                <option value="perbaikan">Perbaikan</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="jumlah">Jumlah Kontainer:</label>
+            <input type="number" id="jumlah" value="1" min="1" />
+        </div>
+
+        <div class="form-group">
+            <label for="ukuran">Ukuran Kontainer:</label>
+            <select id="ukuran">
+                <option value="">Pilih Ukuran</option>
+                <option value="10">10 ft</option>
+                <option value="20">20 ft</option>
+                <option value="40">40 ft</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="antar_sewa">Antar Sewa:</label>
+            <input type="checkbox" id="antar_sewa" />
+        </div>
+
+        <div class="result" id="result">
+            <strong>Hasil Perhitungan Uang Jalan:</strong><br />
+            <span id="uang_jalan_result"
+                >Pilih kegiatan untuk melihat hasil</span
+            >
+        </div>
+
+        <div class="debug" id="debug">
+            <strong>Debug Info:</strong><br />
+            <span id="debug_info">Belum ada aktivitas</span>
+        </div>
+
+        <script>
+            // Variabel global yang akan digunakan di luar DOMContentLoaded
+            let kegiatanSelect, updateUangJalan;
+
+            document.addEventListener("DOMContentLoaded", function () {
+                // Inisialisasi elemen
+                kegiatanSelect = document.getElementById("kegiatan");
+                const jumlahInput = document.getElementById("jumlah");
+                const ukuranSelect = document.getElementById("ukuran");
+                const antarSewaCheckbox = document.getElementById("antar_sewa");
+
+                // Fungsi updateUangJalan sebagai global function
+                updateUangJalan = function () {
+                    const selectedKegiatan = kegiatanSelect.value.toLowerCase();
+                    const kegiatanText =
+                        kegiatanSelect.options[
+                            kegiatanSelect.selectedIndex
+                        ]?.text.toLowerCase() || "";
+                    const isPerbaikanKontainer =
+                        selectedKegiatan.includes("perbaikan") ||
+                        kegiatanText.includes("perbaikan kontainer") ||
+                        kegiatanText.includes("perbaikan");
+
+                    // Debug info
+                    debugInfo.innerHTML = `
+                    selectedKegiatan: "${selectedKegiatan}"<br>
+                    kegiatanText: "${kegiatanText}"<br>
+                    isPerbaikanKontainer: ${isPerbaikanKontainer}<br>
+                    Deteksi: ${selectedKegiatan.includes(
+                        "perbaikan"
+                    )} || ${kegiatanText.includes(
+                        "perbaikan kontainer"
+                    )} || ${kegiatanText.includes("perbaikan")}
+                `;
+
+                    // Khusus untuk perbaikan kontainer, uang jalan selalu 75.000
+                    if (isPerbaikanKontainer) {
+                        uangJalanResult.innerHTML = `<span class="highlight">Rp 75.000</span> (Khusus Perbaikan Kontainer)`;
+                        result.className = "result success";
+                        return;
+                    }
+
+                    // Logika normal untuk kegiatan lainnya
+                    const isAntar = antarSewaCheckbox.checked;
+                    const jumlah = parseInt(jumlahInput.value, 10) || 0;
+                    const ukuran = ukuranSelect.value;
+                    const effectiveUkuran = jumlah === 2 ? "40" : ukuran;
+
+                    // Simulasi fallback default (karena tidak ada data tujuan di test ini)
+                    let uangJalan = 0;
+                    if (isAntar) {
+                        uangJalan =
+                            effectiveUkuran === "20" || effectiveUkuran === "10"
+                                ? 50000
+                                : 100000;
+                    } else {
+                        uangJalan =
+                            effectiveUkuran === "20" || effectiveUkuran === "10"
+                                ? 200000
+                                : 300000;
+                    }
+
+                    const mode = isAntar ? "Antar Sewa" : "Normal";
+                    uangJalanResult.innerHTML = `Rp ${uangJalan.toLocaleString()} (${mode})`;
+                    result.className = "result";
+                };
+
+                // Event listeners
+                kegiatanSelect.addEventListener("change", updateUangJalan);
+                jumlahInput.addEventListener("input", updateUangJalan);
+                ukuranSelect.addEventListener("change", updateUangJalan);
+                antarSewaCheckbox.addEventListener("change", updateUangJalan);
+
+                // Inisialisasi
+                updateUangJalan();
+            });
+
+            // Fungsi toggleTujuanDisplay yang menggunakan variabel global
+            function toggleTujuanDisplay() {
+                const selectedKegiatan = kegiatanSelect.value.toLowerCase();
+
+                if (
+                    selectedKegiatan.includes("perbaikan kontainer") ||
+                    selectedKegiatan.includes("perbaikan")
+                ) {
+                    console.log(
+                        "Perbaikan kontainer detected - updating uang jalan"
+                    );
+                    // Update perhitungan uang jalan
+                    if (updateUangJalan) {
+                        updateUangJalan();
+                    }
+                }
+            }
+
+            // Panggil fungsi saat halaman dimuat untuk mengatur tampilan awal
+            setTimeout(() => {
+                toggleTujuanDisplay();
+            }, 100);
+        </script>
+    </body>
+</html>

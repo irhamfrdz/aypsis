@@ -54,6 +54,12 @@ class Kontainer extends Model
         return $this->belongsToMany(Permohonan::class, 'permohonan_kontainers');
     }
 
+    // Relasi ke perbaikan kontainer
+    public function perbaikanKontainers()
+    {
+        return $this->hasMany(PerbaikanKontainer::class, 'kontainer_id');
+    }
+
     // Accessor untuk nomor kontainer gabungan
     public function getNomorKontainerAttribute()
     {

@@ -74,6 +74,7 @@ User akan terdeteksi sebagai supir jika:
 ## 🚀 Testing
 
 ### Test Case 1: User Supir
+
 ```php
 $user = User::whereHas('karyawan', function($q) {
     $q->where('divisi', 'supir');
@@ -85,6 +86,7 @@ if ($user) {
 ```
 
 ### Test Case 2: User Admin
+
 ```php
 $user = User::where('username', 'admin')->first();
 echo $user->isSupir() ? '✅ Is Supir' : '❌ Not Supir';
@@ -92,26 +94,28 @@ echo $user->isSupir() ? '✅ Is Supir' : '❌ Not Supir';
 
 ## 📁 File yang Dimodifikasi
 
-- `app/Models/User.php` - Menambah method `isSupir()`
-- `app/Http/Controllers/DashboardController.php` - Menambah logika redirect
+-   `app/Models/User.php` - Menambah method `isSupir()`
+-   `app/Http/Controllers/DashboardController.php` - Menambah logika redirect
 
 ## 🎨 Dashboard Supir
 
 Dashboard supir menampilkan:
-- ✅ Daftar tugas aktif (permohonan)
-- ✅ Status checkpoint kontainer
-- ✅ Informasi kegiatan dan tujuan
-- ✅ Interface yang user-friendly untuk supir
+
+-   ✅ Daftar tugas aktif (permohonan)
+-   ✅ Status checkpoint kontainer
+-   ✅ Informasi kegiatan dan tujuan
+-   ✅ Interface yang user-friendly untuk supir
 
 ## 🔐 Keamanan
 
-- ✅ Pengecekan dilakukan di level aplikasi (bukan database)
-- ✅ Tidak mempengaruhi permission system yang ada
-- ✅ Compatible dengan middleware authentication
+-   ✅ Pengecekan dilakukan di level aplikasi (bukan database)
+-   ✅ Tidak mempengaruhi permission system yang ada
+-   ✅ Compatible dengan middleware authentication
 
 ## 🚨 Troubleshooting
 
 ### Error: Method 'isSupir' not found
+
 ```bash
 # Clear cache dan reload autoload
 php artisan config:clear
@@ -120,16 +124,17 @@ composer dump-autoload
 ```
 
 ### User tidak redirect ke dashboard supir
-- Cek divisi karyawan: `SELECT divisi FROM karyawans WHERE id = ?`
-- Cek relasi user-karyawan: `SELECT karyawan_id FROM users WHERE id = ?`
-- Pastikan data karyawan lengkap
+
+-   Cek divisi karyawan: `SELECT divisi FROM karyawans WHERE id = ?`
+-   Cek relasi user-karyawan: `SELECT karyawan_id FROM users WHERE id = ?`
+-   Pastikan data karyawan lengkap
 
 ## 📈 Manfaat
 
 ✅ **User Experience** - Supir langsung mendapat dashboard yang relevan  
 ✅ **Efisiensi** - Tidak perlu navigasi manual ke dashboard supir  
 ✅ **Keamanan** - Tetap menggunakan permission system yang ada  
-✅ **Fleksibilitas** - Mudah dikustomisasi berdasarkan divisi lain  
+✅ **Fleksibilitas** - Mudah dikustomisasi berdasarkan divisi lain
 
 ---
 

@@ -10,6 +10,7 @@ use App\Models\MasterKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\Auth;
 
 class PermohonanController extends Controller
 {
@@ -55,9 +56,9 @@ class PermohonanController extends Controller
      */
     public function store(Request $request)
     {
+        // Validasi dasar
         $validatedData = $request->validate([
             'nomor_memo' => 'required|string|unique:permohonans',
-            // Accept either kode_kegiatan or nama_kegiatan; we'll resolve to kode below
             'kegiatan' => 'required|string',
             'vendor_perusahaan' => 'required|in:AYP,ZONA,SOC,DPE',
             'supir_id' => 'required|exists:karyawans,id',
@@ -65,16 +66,40 @@ class PermohonanController extends Controller
             'plat_nomor' => 'required|string|max:255',
             'no_chasis' => 'nullable|string|max:255',
             'ukuran' => 'required|in:10,20,40',
-            'tujuan_id' => 'required|exists:tujuans,id',
-            'antar_sewa' => 'nullable|in:1',
             'tanggal_memo' => 'required|date',
             'jumlah_kontainer' => 'required|integer|min:1',
             'jumlah_uang_jalan' => 'required|numeric|min:0',
-            'adjustment' => 'nullable|numeric', // Diubah menjadi nullable
+            'adjustment' => 'nullable|numeric',
             'alasan_adjustment' => 'nullable|string',
             'catatan' => 'nullable|string',
             'lampiran' => 'nullable|file|mimes:pdf,jpg,jpeg,png|max:2048',
         ]);
+
+        // Validasi kondisional berdasarkan kegiatan
+        $kegiatanInput = $validatedData['kegiatan'];
+        $mk = MasterKegiatan::where('kode_kegiatan', $kegiatanInput)
+            ->orWhere('nama_kegiatan', $kegiatanInput)
+            ->first();
+
+        if (!$mk) {
+            return back()->withInput()->with('error', "Kegiatan '{$kegiatanInput}' tidak ditemukan. Gunakan kode atau nama kegiatan yang valid.");
+        }
+
+        $isPerbaikanKontainer = strtolower($mk->nama_kegiatan) === 'perbaikan kontainer' ||
+                               str_contains(strtolower($mk->nama_kegiatan), 'perbaikan');
+
+        if ($isPerbaikanKontainer) {
+            // Validasi untuk perbaikan kontainer
+            $request->validate([
+                'dari' => 'required|string|max:255',
+                'ke' => 'required|string|max:255',
+            ]);
+        } else {
+            // Validasi untuk kegiatan normal
+            $request->validate([
+                'tujuan_id' => 'required|exists:tujuans,id',
+            ]);
+        }
 
         DB::beginTransaction();
         try {
@@ -82,42 +107,48 @@ class PermohonanController extends Controller
             $totalSetelahAdj = (float)$validatedData['jumlah_uang_jalan'] + (float)$validatedData['adjustment'];
             $lampiranPath = $request->hasFile('lampiran') ? $request->file('lampiran')->store('public/permohonan_lampiran') : null;
 
-            // compute jumlah_uang_jalan from master tujuan if possible
-            $tujuanModel = Tujuan::find($validatedData['tujuan_id']);
-            $isAntar = $request->has('antar_sewa');
-            $ukuran = $validatedData['ukuran'];
-            $jumlah = (int)$validatedData['jumlah_kontainer'];
+            // Tentukan tujuan berdasarkan jenis kegiatan
+            $tujuanString = null;
+            $jumlahUangJalan = (float)$validatedData['jumlah_uang_jalan'];
 
-            // choose effective ukuran if jumlah == 2 -> treat as 40
-            $effectiveUkuran = $jumlah === 2 ? '40' : $ukuran;
+            if ($isPerbaikanKontainer) {
+                // Untuk perbaikan kontainer, gabungkan dari dan ke
+                $tujuanString = $request->input('dari') . ' - ' . $request->input('ke');
 
-            // determine base uang_jalan from tujuan model, fallback to submitted jumlah_uang_jalan
-            $computedUangJalan = null;
-            if ($tujuanModel) {
-                if ($isAntar) {
-                    $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->antar_20 : $tujuanModel->antar_40;
-                } else {
-                    $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->uang_jalan_20 : $tujuanModel->uang_jalan_40;
+                // Untuk perbaikan kontainer, uang jalan mungkin perlu dihitung berbeda
+                // atau gunakan nilai yang diinput user
+                $jumlahUangJalan = (float)$validatedData['jumlah_uang_jalan'];
+            } else {
+                // Untuk kegiatan normal, ambil dari master tujuan
+                $tujuanModel = Tujuan::find($request->input('tujuan_id'));
+                if ($tujuanModel) {
+                    $tujuanString = trim((($tujuanModel->wilayah ?? '') ? $tujuanModel->wilayah : '') . ' ' . (($tujuanModel->rute ?? '') ? '- '.$tujuanModel->rute : ''));
+
+                    // Hitung uang jalan dari master tujuan
+                    $isAntar = $request->has('antar_sewa');
+                    $ukuran = $validatedData['ukuran'];
+                    $jumlah = (int)$validatedData['jumlah_kontainer'];
+                    $effectiveUkuran = $jumlah === 2 ? '40' : $ukuran;
+
+                    if ($isAntar) {
+                        $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->antar_20 : $tujuanModel->antar_40;
+                    } else {
+                        $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->uang_jalan_20 : $tujuanModel->uang_jalan_40;
+                    }
+
+                    if ($computedUangJalan !== null) {
+                        $jumlahUangJalan = (float)$computedUangJalan;
+                    }
                 }
             }
 
-            $jumlahUangJalan = $computedUangJalan !== null ? (float)$computedUangJalan : (float)$validatedData['jumlah_uang_jalan'];
-
             $totalSetelahAdj = $jumlahUangJalan + (float)($validatedData['adjustment'] ?? 0);
 
-            // resolve kegiatan input (allow kode or nama)
-            $kegiatanInput = $validatedData['kegiatan'];
-            $mk = MasterKegiatan::where('kode_kegiatan', $kegiatanInput)
-                ->orWhere('nama_kegiatan', $kegiatanInput)
-                ->first();
-            if (!$mk) {
-                return back()->withInput()->with('error', "Kegiatan '{$kegiatanInput}' tidak ditemukan. Gunakan kode atau nama kegiatan yang valid.");
-            }
             $kegiatanCode = $mk->kode_kegiatan;
 
             $permohonan = Permohonan::create([
                 'nomor_memo' => $validatedData['nomor_memo'],
-                'status' => 'draft', // Set default status
+                'status' => 'draft',
                 'tanggal_memo' => $validatedData['tanggal_memo'],
                 'kegiatan' => $kegiatanCode,
                 'vendor_perusahaan' => $validatedData['vendor_perusahaan'],
@@ -126,7 +157,7 @@ class PermohonanController extends Controller
                 'plat_nomor' => $validatedData['plat_nomor'],
                 'no_chasis' => $validatedData['no_chasis'],
                 'ukuran' => $validatedData['ukuran'],
-                    'tujuan' => $tujuanModel ? trim((($tujuanModel->wilayah ?? '') ? $tujuanModel->wilayah : '') . ' ' . (($tujuanModel->rute ?? '') ? '- '.$tujuanModel->rute : '')) : null,
+                'tujuan' => $tujuanString,
                 'jumlah_kontainer' => $validatedData['jumlah_kontainer'],
                 'jumlah_uang_jalan' => $jumlahUangJalan,
                 'adjustment' => $validatedData['adjustment'],
@@ -137,7 +168,23 @@ class PermohonanController extends Controller
             ]);
 
             DB::commit();
-            return redirect()->route('permohonan.index')->with('success', 'Permohonan berhasil ditambahkan!');
+
+            // Cek apakah kegiatan memerlukan checkpoint otomatis
+            $kegiatanLower = strtolower($mk->nama_kegiatan);
+            $requiresCheckpoint = in_array($kegiatanLower, [
+                'antar kontainer sewa',
+                'perbaikan kontainer'
+            ]);
+
+            if ($requiresCheckpoint && Auth::check() && Auth::user()->karyawan?->id === $permohonan->supir_id) {
+                // Redirect ke checkpoint hanya jika user yang login adalah supir yang ditugaskan
+                return redirect()->route('supir.checkpoint.create', $permohonan)
+                    ->with('success', 'Permohonan berhasil ditambahkan! Silakan lengkapi checkpoint.');
+            } else {
+                // Redirect normal ke index untuk kegiatan lainnya atau jika bukan supir yang ditugaskan
+                return redirect()->route('permohonan.index')
+                    ->with('success', 'Permohonan berhasil ditambahkan!');
+            }
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -176,58 +223,91 @@ class PermohonanController extends Controller
      */
     public function update(Request $request, Permohonan $permohonan)
     {
+        // Validasi dasar
         $validatedData = $request->validate([
-            // accept kode or nama, resolve below
             'kegiatan' => 'required|string',
             'vendor_perusahaan' => 'required|in:AYP,ZONA,SOC,DPE',
             'supir_id' => 'required|exists:karyawans,id',
             'krani_id' => 'nullable|exists:karyawans,id',
-            'plat_nomor' => 'required|string|max:255', // tambahkan validasi plat_nomor
+            'plat_nomor' => 'required|string|max:255',
             'no_chasis' => 'nullable|string|max:255',
             'ukuran' => 'required|in:10,20,40',
-            'tujuan_id' => 'required|exists:tujuans,id',
-            'antar_sewa' => 'nullable|in:1',
             'tanggal_memo' => 'required|date',
             'jumlah_kontainer' => 'required|integer|min:1',
             'nomor_kontainer' => 'nullable|array',
             'nomor_kontainer.*' => 'nullable|string|exists:kontainers,nomor_seri_gabungan',
+            'jumlah_uang_jalan' => 'required|numeric|min:0',
             'adjustment' => 'nullable|numeric',
             'alasan_adjustment' => 'nullable|string',
             'catatan' => 'nullable|string',
         ]);
 
+        // Validasi kondisional berdasarkan kegiatan
+        $kegiatanInput = $validatedData['kegiatan'];
+        $mk = MasterKegiatan::where('kode_kegiatan', $kegiatanInput)
+            ->orWhere('nama_kegiatan', $kegiatanInput)
+            ->first();
+
+        if (!$mk) {
+            return back()->withInput()->with('error', "Kegiatan '{$kegiatanInput}' tidak ditemukan. Gunakan kode atau nama kegiatan yang valid.");
+        }
+
+        $isPerbaikanKontainer = strtolower($mk->nama_kegiatan) === 'perbaikan kontainer' ||
+                               str_contains(strtolower($mk->nama_kegiatan), 'perbaikan');
+
+        if ($isPerbaikanKontainer) {
+            // Validasi untuk perbaikan kontainer
+            $request->validate([
+                'dari' => 'required|string|max:255',
+                'ke' => 'required|string|max:255',
+            ]);
+        } else {
+            // Validasi untuk kegiatan normal
+            $request->validate([
+                'tujuan_id' => 'required|exists:tujuans,id',
+            ]);
+        }
+
         DB::beginTransaction();
         try {
             $supir = Karyawan::findOrFail($validatedData['supir_id']);
 
-            // compute jumlah_uang_jalan based on tujuan and ukuran
-            $tujuanModel = Tujuan::find($validatedData['tujuan_id']);
-            $isAntar = $request->has('antar_sewa');
-            $ukuran = $validatedData['ukuran'];
-            $jumlah = (int)$validatedData['jumlah_kontainer'];
-            $effectiveUkuran = $jumlah === 2 ? '40' : $ukuran;
+            // Tentukan tujuan berdasarkan jenis kegiatan
+            $tujuanString = null;
+            $jumlahUangJalan = (float)$validatedData['jumlah_uang_jalan'];
 
-            $computedUangJalan = null;
-            if ($tujuanModel) {
-                if ($isAntar) {
-                    $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->antar_20 : $tujuanModel->antar_40;
-                } else {
-                    $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->uang_jalan_20 : $tujuanModel->uang_jalan_40;
+            if ($isPerbaikanKontainer) {
+                // Untuk perbaikan kontainer, gabungkan dari dan ke
+                $tujuanString = $request->input('dari') . ' - ' . $request->input('ke');
+                // Gunakan nilai yang diinput user untuk perbaikan kontainer
+                $jumlahUangJalan = (float)$validatedData['jumlah_uang_jalan'];
+            } else {
+                // Untuk kegiatan normal, ambil dari master tujuan
+                $tujuanModel = Tujuan::find($request->input('tujuan_id'));
+                if ($tujuanModel) {
+                    $tujuanString = trim((($tujuanModel->wilayah ?? '') ? $tujuanModel->wilayah : '') . ' ' . (($tujuanModel->rute ?? '') ? '- '.$tujuanModel->rute : ''));
+
+                    // Hitung uang jalan dari master tujuan
+                    $isAntar = $request->has('antar_sewa');
+                    $ukuran = $validatedData['ukuran'];
+                    $jumlah = (int)$validatedData['jumlah_kontainer'];
+                    $effectiveUkuran = $jumlah === 2 ? '40' : $ukuran;
+
+                    if ($isAntar) {
+                        $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->antar_20 : $tujuanModel->antar_40;
+                    } else {
+                        $computedUangJalan = $effectiveUkuran === '20' || $effectiveUkuran === '10' ? $tujuanModel->uang_jalan_20 : $tujuanModel->uang_jalan_40;
+                    }
+
+                    if ($computedUangJalan !== null) {
+                        $jumlahUangJalan = (float)$computedUangJalan;
+                    }
                 }
             }
 
-            $jumlahUangJalan = $computedUangJalan !== null ? (float)$computedUangJalan : ($permohonan->jumlah_uang_jalan ?? 0);
             $adjustment = isset($validatedData['adjustment']) ? (float)$validatedData['adjustment'] : 0;
             $totalSetelahAdj = $jumlahUangJalan + $adjustment;
 
-            // resolve kegiatan input
-            $kegiatanInput = $validatedData['kegiatan'];
-            $mk = MasterKegiatan::where('kode_kegiatan', $kegiatanInput)
-                ->orWhere('nama_kegiatan', $kegiatanInput)
-                ->first();
-            if (!$mk) {
-                return back()->withInput()->with('error', "Kegiatan '{$kegiatanInput}' tidak ditemukan. Gunakan kode atau nama kegiatan yang valid.");
-            }
             $kegiatanCode = $mk->kode_kegiatan;
 
             $permohonan->update([
@@ -236,10 +316,10 @@ class PermohonanController extends Controller
                 'vendor_perusahaan' => $validatedData['vendor_perusahaan'],
                 'supir_id' => $supir->id,
                 'krani_id' => $validatedData['krani_id'],
-                'plat_nomor' => $validatedData['plat_nomor'], // ambil dari input user
+                'plat_nomor' => $validatedData['plat_nomor'],
                 'no_chasis' => $validatedData['no_chasis'],
                 'ukuran' => $validatedData['ukuran'],
-                'tujuan' => $tujuanModel ? trim((($tujuanModel->wilayah ?? '') ? $tujuanModel->wilayah : '') . ' ' . (($tujuanModel->rute ?? '') ? '- '.$tujuanModel->rute : '')) : $permohonan->tujuan,
+                'tujuan' => $tujuanString,
                 'jumlah_kontainer' => $validatedData['jumlah_kontainer'],
                 'jumlah_uang_jalan' => $jumlahUangJalan,
                 'adjustment' => $adjustment,
