@@ -5,7 +5,7 @@
     <div class="bg-white rounded-lg shadow-sm border border-gray-200">
         <!-- Header -->
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
-            <h1 class="text-2xl font-semibold text-gray-900">Daftar Pranota</h1>
+            <h1 class="text-2xl font-semibold text-gray-900">Daftar Pranota Kontainer</h1>
             <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}"
                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">

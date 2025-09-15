@@ -1,0 +1,2382 @@
+[
+    {
+        "id": 1,
+        "name": "master-karyawan",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 2,
+        "name": "master-user",
+        "users": [
+            1,
+            4
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 3,
+        "name": "master-kontainer",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 4,
+        "name": "master-permohonan",
+        "users": [
+            1,
+            2
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 5,
+        "name": "permohonan-create",
+        "users": [
+            1,
+            2
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 6,
+        "name": "permohonan-view",
+        "users": [
+            1,
+            2
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 7,
+        "name": "permohonan-edit",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 8,
+        "name": "permohonan-delete",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 9,
+        "name": "master-tujuan",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 10,
+        "name": "master-kegiatan",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 11,
+        "name": "master-permission",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 12,
+        "name": "master-mobil",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 13,
+        "name": "master-pricelist-sewa-kontainer",
+        "users": [
+            1
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 14,
+        "name": "master-pranota-supir",
+        "users": [
+            1,
+            2
+        ],
+        "created_at": null,
+        "updated_at": null
+    },
+    {
+        "id": 15,
+        "name": "master-pembayaran-pranota-supir",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 16,
+        "name": "login",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 17,
+        "name": "logout",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 18,
+        "name": "tagihan-kontainer-sewa.group.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 19,
+        "name": "tagihan-kontainer-sewa.adjust_price",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 20,
+        "name": "tagihan-kontainer-sewa.search_by_kontainer",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 21,
+        "name": "tagihan-kontainer-sewa.group.adjust_price",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 22,
+        "name": "tagihan-kontainer-sewa.history",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 23,
+        "name": "tagihan-kontainer-sewa.rollover",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 24,
+        "name": "tagihan-kontainer-sewa.export",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 25,
+        "name": "tagihan-kontainer-sewa.template",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 26,
+        "name": "tagihan-kontainer-sewa.import",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 27,
+        "name": "tagihan-kontainer-sewa.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 28,
+        "name": "tagihan-kontainer-sewa.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 29,
+        "name": "tagihan-kontainer-sewa.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 30,
+        "name": "tagihan-kontainer-sewa.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 31,
+        "name": "tagihan-kontainer-sewa.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 32,
+        "name": "tagihan-kontainer-sewa.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 33,
+        "name": "tagihan-kontainer-sewa.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 34,
+        "name": "dashboard",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 35,
+        "name": "master.karyawan.print",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 36,
+        "name": "master.karyawan.print.single",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 37,
+        "name": "master.karyawan.import",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 38,
+        "name": "master.karyawan.import.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 39,
+        "name": "master.karyawan.export",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 40,
+        "name": "master.karyawan.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 41,
+        "name": "master.karyawan.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 42,
+        "name": "master.karyawan.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 43,
+        "name": "master.karyawan.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 44,
+        "name": "master.karyawan.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 45,
+        "name": "master.karyawan.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 46,
+        "name": "master.karyawan.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 47,
+        "name": "master.user.index",
+        "users": [
+            1,
+            5
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 48,
+        "name": "master.user.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 49,
+        "name": "master.user.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 50,
+        "name": "master.user.show",
+        "users": [
+            1,
+            5
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 51,
+        "name": "master.user.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 52,
+        "name": "master.user.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 53,
+        "name": "master.user.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 54,
+        "name": "master.kontainer.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 55,
+        "name": "master.kontainer.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 56,
+        "name": "master.kontainer.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 57,
+        "name": "master.kontainer.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 58,
+        "name": "master.kontainer.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 59,
+        "name": "master.kontainer.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 60,
+        "name": "master.kontainer.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 61,
+        "name": "master.tujuan.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 62,
+        "name": "master.tujuan.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 63,
+        "name": "master.tujuan.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 64,
+        "name": "master.tujuan.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 65,
+        "name": "master.tujuan.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 66,
+        "name": "master.tujuan.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 67,
+        "name": "master.tujuan.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 68,
+        "name": "master.kegiatan.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 69,
+        "name": "master.kegiatan.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 70,
+        "name": "master.kegiatan.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 71,
+        "name": "master.kegiatan.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 72,
+        "name": "master.kegiatan.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 73,
+        "name": "master.kegiatan.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 74,
+        "name": "master.kegiatan.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 75,
+        "name": "master.kegiatan.template",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 76,
+        "name": "master.kegiatan.import",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 77,
+        "name": "master.permission.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 78,
+        "name": "master.permission.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 79,
+        "name": "master.permission.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 80,
+        "name": "master.permission.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 81,
+        "name": "master.permission.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 82,
+        "name": "master.permission.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 83,
+        "name": "master.permission.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 84,
+        "name": "master.mobil.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 85,
+        "name": "master.mobil.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 86,
+        "name": "master.mobil.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 87,
+        "name": "master.mobil.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 88,
+        "name": "master.mobil.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 89,
+        "name": "master.mobil.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 90,
+        "name": "master.mobil.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 91,
+        "name": "master.pricelist-sewa-kontainer.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 92,
+        "name": "master.pricelist-sewa-kontainer.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 93,
+        "name": "master.pricelist-sewa-kontainer.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 94,
+        "name": "master.pricelist-sewa-kontainer.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 95,
+        "name": "master.pricelist-sewa-kontainer.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 96,
+        "name": "master.pricelist-sewa-kontainer.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 97,
+        "name": "master.pricelist-sewa-kontainer.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 98,
+        "name": "permohonan.export",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 99,
+        "name": "permohonan.import",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 100,
+        "name": "permohonan.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 101,
+        "name": "permohonan.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 102,
+        "name": "permohonan.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 103,
+        "name": "permohonan.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 104,
+        "name": "permohonan.edit",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 105,
+        "name": "permohonan.update",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 106,
+        "name": "permohonan.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 107,
+        "name": "pranota-supir.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 108,
+        "name": "pranota-supir.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 109,
+        "name": "pranota-supir.print",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 110,
+        "name": "pranota-supir.show",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 111,
+        "name": "pranota-supir.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 112,
+        "name": "pranota-tagihan-kontainer.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 113,
+        "name": "pranota-tagihan-kontainer.destroy",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 114,
+        "name": "pembayaran-pranota-tagihan-kontainer.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 115,
+        "name": "pembayaran-pranota-tagihan-kontainer.export",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 116,
+        "name": "pembayaran-pranota-tagihan-kontainer.import",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 117,
+        "name": "pembayaran-pranota-tagihan-kontainer.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 118,
+        "name": "pembayaran-pranota-tagihan-kontainer.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 119,
+        "name": "pembayaran-pranota-tagihan-kontainer.history",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 120,
+        "name": "pembayaran-pranota-supir.index",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 121,
+        "name": "pembayaran-pranota-supir.print",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 122,
+        "name": "pembayaran-pranota-supir.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 123,
+        "name": "pembayaran-pranota-supir.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 124,
+        "name": "supir.dashboard",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 125,
+        "name": "supir.checkpoint.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 126,
+        "name": "supir.checkpoint.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 127,
+        "name": "approval.dashboard",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 128,
+        "name": "approval.mass_process",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 129,
+        "name": "approval.create",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 130,
+        "name": "approval.store",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 131,
+        "name": "admin.features",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 132,
+        "name": "storage.local",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:23.000000Z",
+        "updated_at": "2025-08-27T23:55:23.000000Z"
+    },
+    {
+        "id": 133,
+        "name": "master-pranota-tagihan-kontainer",
+        "users": [
+            1,
+            10
+        ],
+        "created_at": "2025-08-27T23:55:24.000000Z",
+        "updated_at": "2025-08-27T23:55:24.000000Z"
+    },
+    {
+        "id": 134,
+        "name": "admin.debug.perms",
+        "users": [
+            1
+        ],
+        "created_at": "2025-08-27T23:55:24.000000Z",
+        "updated_at": "2025-08-27T23:55:24.000000Z"
+    },
+    {
+        "id": 135,
+        "name": "master-pranota",
+        "users": [
+            1
+        ],
+        "created_at": "2025-09-02T02:40:24.000000Z",
+        "updated_at": "2025-09-02T02:40:24.000000Z"
+    },
+    {
+        "id": 136,
+        "name": "master.karyawan.export-excel",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 137,
+        "name": "master.karyawan.template",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 138,
+        "name": "master.karyawan.excel-template",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 139,
+        "name": "master.karyawan.simple-excel-template",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 140,
+        "name": "master.karyawan.crew-checklist",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 141,
+        "name": "master.karyawan.crew-checklist-new",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 142,
+        "name": "master.karyawan.crew-checklist.update",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 143,
+        "name": "master.karyawan.crew-checklist.print",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 144,
+        "name": "master.permission.sync",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 145,
+        "name": "master.permission.bulk-delete",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 146,
+        "name": "master.permission.assign-users",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 147,
+        "name": "master.permission.users",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 148,
+        "name": "permohonan.print",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 149,
+        "name": "permohonan.bulk-delete",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 150,
+        "name": "approval.riwayat",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 151,
+        "name": "daftar-tagihan-kontainer-sewa.template.csv",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 152,
+        "name": "daftar-tagihan-kontainer-sewa.import",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 153,
+        "name": "daftar-tagihan-kontainer-sewa.import.grouped",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 154,
+        "name": "daftar-tagihan-kontainer-sewa.adjustment.update",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 155,
+        "name": "daftar-tagihan-kontainer-sewa.index",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 156,
+        "name": "daftar-tagihan-kontainer-sewa.create",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 157,
+        "name": "daftar-tagihan-kontainer-sewa.store",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 158,
+        "name": "daftar-tagihan-kontainer-sewa.show",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 159,
+        "name": "daftar-tagihan-kontainer-sewa.edit",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 160,
+        "name": "daftar-tagihan-kontainer-sewa.update",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 161,
+        "name": "daftar-tagihan-kontainer-sewa.destroy",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 162,
+        "name": "pranota.index",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 163,
+        "name": "pranota.print",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 164,
+        "name": "pranota.show",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 165,
+        "name": "pranota.store",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 166,
+        "name": "pranota.bulk.store",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 167,
+        "name": "pranota.update.status",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 168,
+        "name": "pranota.destroy",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 169,
+        "name": "pembayaran-pranota-kontainer.index",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 170,
+        "name": "pembayaran-pranota-kontainer.create",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 171,
+        "name": "pembayaran-pranota-kontainer.payment-form",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 172,
+        "name": "pembayaran-pranota-kontainer.store",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 173,
+        "name": "pembayaran-pranota-kontainer.show",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 174,
+        "name": "pembayaran-pranota-kontainer.edit",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 175,
+        "name": "pembayaran-pranota-kontainer.update",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 176,
+        "name": "pembayaran-pranota-kontainer.destroy",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 177,
+        "name": "pembayaran-pranota-kontainer.remove-pranota",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 178,
+        "name": "pembayaran-pranota-kontainer.print",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 179,
+        "name": "admin.user-approval.index",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 180,
+        "name": "admin.user-approval.show",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 181,
+        "name": "admin.user-approval.approve",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 182,
+        "name": "admin.user-approval.reject",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 183,
+        "name": "profile.show",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 184,
+        "name": "profile.edit",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 185,
+        "name": "profile.update.account",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 186,
+        "name": "profile.update.personal",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 187,
+        "name": "profile.update.avatar",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 188,
+        "name": "profile.destroy",
+        "users": [],
+        "created_at": "2025-09-11T07:13:56.000000Z",
+        "updated_at": "2025-09-11T07:13:56.000000Z"
+    },
+    {
+        "id": 189,
+        "name": "tagihan-kontainer",
+        "users": [],
+        "created_at": "2025-09-11T07:39:41.000000Z",
+        "updated_at": "2025-09-11T07:39:41.000000Z"
+    },
+    {
+        "id": 190,
+        "name": "pranota-supir",
+        "users": [
+            8
+        ],
+        "created_at": "2025-09-11T07:39:41.000000Z",
+        "updated_at": "2025-09-11T07:39:41.000000Z"
+    },
+    {
+        "id": 191,
+        "name": "pembayaran-pranota-supir",
+        "users": [],
+        "created_at": "2025-09-11T07:39:41.000000Z",
+        "updated_at": "2025-09-11T07:39:41.000000Z"
+    },
+    {
+        "id": 192,
+        "name": "permohonan",
+        "users": [],
+        "created_at": "2025-09-11T07:43:46.000000Z",
+        "updated_at": "2025-09-11T07:43:46.000000Z"
+    },
+    {
+        "id": 193,
+        "name": "user-approval",
+        "users": [],
+        "created_at": "2025-09-11T07:43:46.000000Z",
+        "updated_at": "2025-09-11T07:43:46.000000Z"
+    },
+    {
+        "id": 194,
+        "name": "master-data",
+        "users": [],
+        "created_at": "2025-09-11T07:43:46.000000Z",
+        "updated_at": "2025-09-11T07:43:46.000000Z"
+    },
+    {
+        "id": 195,
+        "name": "dashboard-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 196,
+        "name": "dashboard-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 197,
+        "name": "dashboard-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 198,
+        "name": "dashboard-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 199,
+        "name": "dashboard-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 200,
+        "name": "dashboard-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 201,
+        "name": "dashboard-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 202,
+        "name": "master-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 203,
+        "name": "master-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 204,
+        "name": "master-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 205,
+        "name": "master-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 206,
+        "name": "master-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 207,
+        "name": "master-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 208,
+        "name": "master-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 209,
+        "name": "master-karyawan-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 210,
+        "name": "master-karyawan-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 211,
+        "name": "master-karyawan-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 212,
+        "name": "master-karyawan-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 213,
+        "name": "master-karyawan-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 214,
+        "name": "master-karyawan-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 215,
+        "name": "master-karyawan-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 216,
+        "name": "master-user-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 217,
+        "name": "master-user-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 218,
+        "name": "master-user-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 219,
+        "name": "master-user-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 220,
+        "name": "master-user-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 221,
+        "name": "master-user-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 222,
+        "name": "master-user-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 223,
+        "name": "master-kontainer-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 224,
+        "name": "master-kontainer-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 225,
+        "name": "master-kontainer-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 226,
+        "name": "master-kontainer-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 227,
+        "name": "master-kontainer-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 228,
+        "name": "master-kontainer-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 229,
+        "name": "master-kontainer-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 230,
+        "name": "master-tujuan-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 231,
+        "name": "master-tujuan-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 232,
+        "name": "master-tujuan-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 233,
+        "name": "master-tujuan-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 234,
+        "name": "master-tujuan-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 235,
+        "name": "master-tujuan-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 236,
+        "name": "master-tujuan-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 237,
+        "name": "master-kegiatan-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 238,
+        "name": "master-kegiatan-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 239,
+        "name": "master-kegiatan-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 240,
+        "name": "master-kegiatan-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 241,
+        "name": "master-kegiatan-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 242,
+        "name": "master-kegiatan-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 243,
+        "name": "master-kegiatan-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 244,
+        "name": "master-permission-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 245,
+        "name": "master-permission-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 246,
+        "name": "master-permission-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 247,
+        "name": "master-permission-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 248,
+        "name": "master-permission-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 249,
+        "name": "master-permission-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 250,
+        "name": "master-permission-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 251,
+        "name": "master-mobil-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 252,
+        "name": "master-mobil-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 253,
+        "name": "master-mobil-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 254,
+        "name": "master-mobil-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 255,
+        "name": "master-mobil-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 256,
+        "name": "master-mobil-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 257,
+        "name": "master-mobil-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 258,
+        "name": "master-pricelist-sewa-kontainer-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 259,
+        "name": "master-pricelist-sewa-kontainer-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 260,
+        "name": "master-pricelist-sewa-kontainer-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 261,
+        "name": "master-pricelist-sewa-kontainer-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 262,
+        "name": "master-pricelist-sewa-kontainer-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 263,
+        "name": "master-pricelist-sewa-kontainer-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 264,
+        "name": "master-pricelist-sewa-kontainer-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 265,
+        "name": "tagihan-kontainer-view",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 266,
+        "name": "tagihan-kontainer-create",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 267,
+        "name": "tagihan-kontainer-update",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 268,
+        "name": "tagihan-kontainer-delete",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 269,
+        "name": "tagihan-kontainer-approve",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 270,
+        "name": "tagihan-kontainer-print",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 271,
+        "name": "tagihan-kontainer-export",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 272,
+        "name": "pranota-supir-view",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 273,
+        "name": "pranota-supir-create",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 274,
+        "name": "pranota-supir-update",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 275,
+        "name": "pranota-supir-delete",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 276,
+        "name": "pranota-supir-approve",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 277,
+        "name": "pranota-supir-print",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 278,
+        "name": "pranota-supir-export",
+        "users": [
+            10
+        ],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 279,
+        "name": "pembayaran-pranota-supir-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 280,
+        "name": "pembayaran-pranota-supir-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 281,
+        "name": "pembayaran-pranota-supir-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 282,
+        "name": "pembayaran-pranota-supir-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 283,
+        "name": "pembayaran-pranota-supir-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 284,
+        "name": "pembayaran-pranota-supir-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 285,
+        "name": "pembayaran-pranota-supir-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 286,
+        "name": "permohonan-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 287,
+        "name": "permohonan-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 288,
+        "name": "permohonan-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 289,
+        "name": "permohonan-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 290,
+        "name": "user-approval-view",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 291,
+        "name": "user-approval-create",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 292,
+        "name": "user-approval-update",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 293,
+        "name": "user-approval-delete",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 294,
+        "name": "user-approval-approve",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 295,
+        "name": "user-approval-print",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    },
+    {
+        "id": 296,
+        "name": "user-approval-export",
+        "users": [],
+        "created_at": "2025-09-12T01:56:16.000000Z",
+        "updated_at": "2025-09-12T01:56:16.000000Z"
+    }
+]

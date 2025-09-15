@@ -30,7 +30,6 @@
             <thead class="bg-gray-200 text-gray-600">
                 <tr>
                     <th class="py-3 px-6 text-left">No</th>
-                    <th class="py-3 px-6 text-left">Nama</th>
                     <th class="py-3 px-6 text-left">Username</th>
                     <th class="py-3 px-6 text-left">Karyawan Terkait</th>
                     <th class="py-3 px-6 text-center">Aksi</th>
@@ -40,10 +39,28 @@
                 @forelse ($users as $index => $user)
                     <tr class="border-b border-gray-200 hover:bg-gray-50">
                         <td class="py-3 px-6">{{ $index + 1 }}</td>
-                        <td class="py-3 px-6">{{ $user->name }}</td>
                         <td class="py-3 px-6">{{ $user->username }}</td>
                         <td class="py-3 px-6">
-                            {{ optional($user->karyawan)->nama_lengkap ?? 'Tidak Terkait' }}
+                            @if($user->karyawan)
+                                <div class="text-sm">
+                                    <div class="font-medium text-gray-900">{{ $user->karyawan->nama_lengkap }}</div>
+                                    @if($user->karyawan->nik)
+                                        <div class="text-gray-600">NIK: {{ $user->karyawan->nik }}</div>
+                                    @endif
+                                    @if($user->karyawan->divisi || $user->karyawan->pekerjaan)
+                                        <div class="text-gray-600">
+                                            {{ $user->karyawan->divisi ? 'Divisi: ' . $user->karyawan->divisi : '' }}
+                                            {{ $user->karyawan->divisi && $user->karyawan->pekerjaan ? ' | ' : '' }}
+                                            {{ $user->karyawan->pekerjaan ? 'Pekerjaan: ' . $user->karyawan->pekerjaan : '' }}
+                                        </div>
+                                    @endif
+                                    @if($user->karyawan->no_hp)
+                                        <div class="text-gray-600">HP: {{ $user->karyawan->no_hp }}</div>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-gray-500 italic">Tidak Terkait</span>
+                            @endif
                         </td>
                         <td class="py-3 px-6 text-center">
                             <div class="flex item-center justify-center space-x-2">
@@ -64,7 +81,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="5" class="py-4 px-6 text-center text-gray-500">
+                        <td colspan="4" class="py-4 px-6 text-center text-gray-500">
                             Tidak ada data pengguna yang ditemukan.
                         </td>
                     </tr>

@@ -109,7 +109,7 @@
                     class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5"></textarea>
             </div>
 
-            {{-- Daftar Pranota --}}
+            {{-- Daftar Pranota Kontainer --}}
             <div>
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Pilih Pranota Supir</h3>
                 <div class="overflow-x-auto rounded-xl border shadow-sm">

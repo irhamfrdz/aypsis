@@ -16,7 +16,7 @@ echo "1. Daftar User dan Permission:\n";
 $users = User::with('permissions')->get();
 
 foreach ($users as $user) {
-    echo "   👤 {$user->name} (@{$user->username})\n";
+    echo "   👤 {$user->username}\n";
     echo "      Total permissions: " . $user->permissions->count() . "\n";
 
     if ($user->permissions->count() > 0) {
@@ -69,13 +69,12 @@ $limitedUser = User::firstOrCreate([
 
 // Berikan hanya permission view
 $viewPermissions = Permission::whereIn('name', [
-    'master.user.index',
-    'master.user.show'
+    'master.user.index'
 ])->get();
 
 $limitedUser->permissions()->sync($viewPermissions->pluck('id'));
 
-echo "   User: {$limitedUser->name}\n";
+echo "   User: {$limitedUser->username}\n";
 echo "   Permissions yang diberikan:\n";
 foreach ($limitedUser->permissions as $perm) {
     echo "     - {$perm->name}\n";

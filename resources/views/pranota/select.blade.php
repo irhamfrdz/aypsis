@@ -88,7 +88,7 @@
         <p class="text-gray-600 mb-6">Semua pranota sudah lunas atau tidak ada pranota yang tersedia.</p>
         <a href="{{ route('pranota.index') }}"
            class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition-colors">
-            Kembali ke Daftar Pranota
+            Kembali ke Daftar Pranota Kontainer
         </a>
     </div>
     @endif

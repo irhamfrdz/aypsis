@@ -45,6 +45,8 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
     // ...existing code...
     'role' => \App\Http\Middleware\EnsureRole::class,
+    'permission' => \App\Http\Middleware\EnsurePermission::class,
+    'permission.like' => \App\Http\Middleware\EnsurePermissionLike::class,
     'ensure.karyawan' => \App\Http\Middleware\EnsureKaryawanPresent::class,
     'ensure.approved' => \App\Http\Middleware\EnsureUserApproved::class,
     'ensure.crew_checklist' => \App\Http\Middleware\EnsureCrewChecklistComplete::class,

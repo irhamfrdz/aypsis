@@ -81,12 +81,14 @@
         <div class="flex flex-wrap items-center justify-between gap-4">
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Primary Actions -->
+                @can('tagihan-kontainer-create')
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
                     Tambah Tagihan
                 </a>
+                @endcan
 
                 <!-- Template Download -->
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.template.csv') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
@@ -195,12 +197,14 @@
                 </div>
                 <span id="selection-info" class="text-sm text-green-600">Pilih item untuk membuat pranota</span>
             </div>
+            @can('pranota.create')
             <button type="button" id="bulk-pranota-btn" onclick="buatPranotaTerpilih()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 Buat Pranota Terpilih (<span id="selected-count">0</span>)
             </button>
+            @endcan
         </div>
     </div>
 
@@ -888,6 +892,7 @@
                                     </svg>
                                     Edit
                                 </a>
+                                @can('pranota.create')
                                 <button type="button" onclick="buatPranota({{ $tagihan->id }})" class="btn-animated inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors">
                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clip-rule="evenodd"></path>
@@ -895,6 +900,7 @@
                                     </svg>
                                     Pranota
                                 </button>
+                                @endcan
                                 <form action="{{ route('daftar-tagihan-kontainer-sewa.destroy', $tagihan->id) }}" method="POST" onsubmit="return confirm('Hapus tagihan kontainer ini? Tindakan ini tidak dapat dibatalkan.')" class="inline">
                                     @csrf
                                     @method('DELETE')
@@ -1055,6 +1061,19 @@ window.testPranota = function() {
 window.buatPranotaTerpilih = function() {
     console.log('buatPranotaTerpilih called'); // Debug log
 
+    // Check permission for creating pranota
+    @if(!auth()->user()->hasPermissionTo('pranota.create'))
+        // Show warning if user doesn't have permission
+        const result = confirm('⚠️ PERINGATAN: Anda tidak memiliki izin untuk membuat pranota.\n\n' +
+                              'Untuk dapat menggunakan fitur ini, Anda memerlukan izin "Input" pada modul Pranota.\n\n' +
+                              'Silakan hubungi administrator untuk mendapatkan izin yang diperlukan.\n\n' +
+                              'Apakah Anda ingin melanjutkan? (Fitur mungkin tidak akan berfungsi dengan baik)');
+
+        if (!result) {
+            return; // User cancelled
+        }
+    @endif
+
     const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
     const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
 
@@ -1121,6 +1140,19 @@ window.buatPranotaTerpilih = function() {
 // Function for single pranota creation
 window.buatPranota = function(id) {
     console.log('buatPranota called for ID:', id); // Debug log
+
+    // Check permission for creating pranota
+    @if(!auth()->user()->hasPermissionTo('pranota.create'))
+        // Show warning if user doesn't have permission
+        const result = confirm('⚠️ PERINGATAN: Anda tidak memiliki izin untuk membuat pranota.\n\n' +
+                              'Untuk dapat menggunakan fitur ini, Anda memerlukan izin "Input" pada modul Pranota.\n\n' +
+                              'Silakan hubungi administrator untuk mendapatkan izin yang diperlukan.\n\n' +
+                              'Apakah Anda ingin melanjutkan? (Fitur mungkin tidak akan berfungsi dengan baik)');
+
+        if (!result) {
+            return; // User cancelled
+        }
+    @endif
 
     // Find the row for this ID
     const checkbox = document.querySelector(`input[type="checkbox"][value="${id}"]`);

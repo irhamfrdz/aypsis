@@ -9,70 +9,6 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\KontainerController;
 use App\Http\Controllers\PermissionController;
 
-// DEBUG ROUTE
-Route::get('/debug-gate', function () {
-    $user = Auth::user() ?? \App\Models\User::first();
-
-    if (!$user) {
-        return response()->json(['error' => 'No user found']);
-    }
-
-    // Test simple gate
-    \Illuminate\Support\Facades\Gate::define('debug-test', function () {
-        return true;
-    });
-
-    $results = [
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'permissions_count' => $user->permissions->count(),
-            'has_dashboard' => $user->hasPermissionTo('dashboard'),
-        ],
-        'tests' => [
-            'simple_gate' => \Illuminate\Support\Facades\Gate::check('debug-test', $user),
-            'dashboard_gate' => \Illuminate\Support\Facades\Gate::check('dashboard', $user),
-            'user_can_dashboard' => $user->can('dashboard'),
-            'gate_has_dashboard' => \Illuminate\Support\Facades\Gate::has('dashboard'),
-        ]
-    ];
-
-    return response()->json($results);
-});
-
-// DEBUG ROLES ROUTE
-Route::get('/debug-roles', function () {
-    $user = Auth::user() ?? \App\Models\User::first();
-
-    if (!$user) {
-        return response()->json(['error' => 'No user found']);
-    }
-
-    $results = [
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-        ],
-        'roles_test' => []
-    ];
-
-    try {
-        $roles = $user->roles;
-        $results['roles_test']['roles_loaded'] = true;
-        $results['roles_test']['roles_count'] = $roles->count();
-        $results['roles_test']['roles_names'] = $roles->pluck('name')->toArray();
-
-        // Test the exact query from AuthServiceProvider
-        $hasAdminRole = $user->roles()->where('name', 'admin')->exists();
-        $results['roles_test']['has_admin_role'] = $hasAdminRole;
-
-    } catch (Exception $e) {
-        $results['roles_test']['error'] = $e->getMessage();
-        $results['roles_test']['roles_loaded'] = false;
-    }
-
-    return response()->json($results);
-});
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\PermohonanController;
 use App\Http\Controllers\MasterKegiatanController;
@@ -121,345 +57,10 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
     Route::post('register/user', [AuthController::class, 'registerUser'])->name('register.user.store');
 });
 
-// TEST ROUTES (tanpa middleware auth)
-Route::get('/test', function () {
-    return '<h1>TEST ROUTE WORKING!</h1><p>Server is running properly</p>';
-});
-
 // Test Edit Payment Functionality
-Route::get('/test-edit-payment', function () {
-    try {
-        echo "<h1>🧪 Test Edit Payment Functionality</h1>";
-        echo "<style>
-                body { font-family: Arial, sans-serif; margin: 40px; background: #f8f9fa; }
-                .test-section { background: white; padding: 20px; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-                .success { color: #28a745; }
-                .error { color: #dc3545; }
-                .info { color: #17a2b8; }
-                .warning { color: #ffc107; }
-                h2 { border-bottom: 2px solid #007bff; padding-bottom: 10px; }
-                h3 { color: #007bff; }
-                .data-table { border-collapse: collapse; width: 100%; margin: 10px 0; }
-                .data-table th, .data-table td { border: 1px solid #ddd; padding: 8px; text-align: left; }
-                .data-table th { background-color: #f2f2f2; }
-                .test-result { padding: 10px; margin: 10px 0; border-radius: 4px; }
-                .test-result.success { background-color: #d4edda; border: 1px solid #c3e6cb; }
-                .test-result.error { background-color: #f8d7da; border: 1px solid #f5c6cb; }
-                .test-result.info { background-color: #d1ecf1; border: 1px solid #bee5eb; }
-                .test-result.warning { background-color: #fff3cd; border: 1px solid #ffeaa7; }
-              </style>";
-
-        // Test 1: Check if payment exists
-        echo "<div class='test-section'>";
-        echo "<h2>📋 Test 1: Database Connection & Data Availability</h2>";
-
-        $payment = \App\Models\PembayaranPranotaKontainer::first();
-
-        if (!$payment) {
-            echo "<div class='test-result error'>";
-            echo "<strong>❌ FAILED:</strong> No payment data found in database. Please create some test data first.";
-            echo "</div>";
-            echo "</div>";
-            return;
-        }
-
-        echo "<div class='test-result success'>";
-        echo "<strong>✅ SUCCESS:</strong> Payment data found with ID: {$payment->id}";
-        echo "</div>";
-
-        echo "<h3>Current Payment Data:</h3>";
-        echo "<table class='data-table'>";
-        echo "<tr><th>Field</th><th>Value</th></tr>";
-        echo "<tr><td>ID</td><td>{$payment->id}</td></tr>";
-        echo "<tr><td>Nomor Pembayaran</td><td>{$payment->nomor_pembayaran}</td></tr>";
-        echo "<tr><td>Bank</td><td>{$payment->bank}</td></tr>";
-        echo "<tr><td>Total Pembayaran</td><td>Rp " . number_format((float)($payment->total_pembayaran ?? 0), 0, ',', '.') . "</td></tr>";
-        echo "<tr><td>Jenis Transaksi</td><td>{$payment->jenis_transaksi}</td></tr>";
-        echo "<tr><td>Tanggal Pembayaran</td><td>{$payment->tanggal_pembayaran}</td></tr>";
-        echo "<tr><td>Keterangan</td><td>" . ($payment->keterangan ?? 'Tidak ada') . "</td></tr>";
-        echo "</table>";
-        echo "</div>";
-
-        // Test 2: Test edit form access
-        echo "<div class='test-section'>";
-        echo "<h2>🖼️ Test 2: Edit Form Accessibility</h2>";
-
-        try {
-            $editUrl = route('pembayaran-pranota-kontainer.edit', $payment->id);
-            echo "<div class='test-result success'>";
-            echo "<strong>✅ SUCCESS:</strong> Edit route generated successfully";
-            echo "<br><strong>URL:</strong> <a href='{$editUrl}' target='_blank'>{$editUrl}</a>";
-            echo "</div>";
-        } catch (Exception $e) {
-            echo "<div class='test-result error'>";
-            echo "<strong>❌ FAILED:</strong> Could not generate edit route: " . $e->getMessage();
-            echo "</div>";
-        }
-        echo "</div>";
-
-        // Test 3: Test validation rules
-        echo "<div class='test-section'>";
-        echo "<h2>✅ Test 3: Transaction Type Validation</h2>";
-
-        // Test valid transaction types
-        $validTypes = ['Debit', 'Kredit'];
-        $invalidTypes = ['Transfer', 'Cash', 'InvalidType'];
-
-        echo "<h3>Valid Transaction Types (should be accepted):</h3>";
-        foreach ($validTypes as $type) {
-            echo "<div class='test-result success'>";
-            echo "<strong>✅ VALID:</strong> '{$type}' should be accepted";
-            echo "</div>";
-        }
-
-        echo "<h3>Invalid Transaction Types (should be rejected):</h3>";
-        foreach ($invalidTypes as $type) {
-            echo "<div class='test-result warning'>";
-            echo "<strong>❌ INVALID:</strong> '{$type}' should be rejected by form validation";
-            echo "</div>";
-        }
-        echo "</div>";
-
-        // Test 4: Test currency formatting
-        echo "<div class='test-section'>";
-        echo "<h2>💰 Test 4: Currency Formatting</h2>";
-
-        $currencyTests = [
-            1000000 => 'Rp 1.000.000',
-            2500000 => 'Rp 2.500.000',
-            500000 => 'Rp 500.000',
-            0 => 'Rp 0',
-            -100000 => 'Rp -100.000'
-        ];
-
-        echo "<table class='data-table'>";
-        echo "<tr><th>Input Value</th><th>Formatted Output</th><th>Expected</th><th>Status</th></tr>";
-
-        foreach ($currencyTests as $value => $expected) {
-            $formatted = 'Rp ' . number_format($value, 0, ',', '.');
-            $status = ($formatted === $expected) ? "✅ PASS" : "❌ FAIL";
-
-            echo "<tr>";
-            echo "<td>" . number_format($value) . "</td>";
-            echo "<td>{$formatted}</td>";
-            echo "<td>{$expected}</td>";
-            echo "<td>{$status}</td>";
-            echo "</tr>";
-        }
-        echo "</table>";
-        echo "</div>";
-
-        // Test 5: Test relationship loading
-        echo "<div class='test-section'>";
-        echo "<h2>🔗 Test 5: Relationship Loading (Pranota Items)</h2>";
-
-        $paymentWithItems = \App\Models\PembayaranPranotaKontainer::with('items.pranota')->find($payment->id);
-
-        if ($paymentWithItems->items && $paymentWithItems->items->count() > 0) {
-            echo "<div class='test-result success'>";
-            echo "<strong>✅ SUCCESS:</strong> Payment has {$paymentWithItems->items->count()} related pranota items";
-            echo "</div>";
-
-            echo "<h3>Related Pranota Items:</h3>";
-            echo "<table class='data-table'>";
-            echo "<tr><th>#</th><th>Pranota Number</th><th>Amount</th><th>Status</th></tr>";
-
-            foreach ($paymentWithItems->items as $index => $item) {
-                $pranotaNo = $item->pranota->no_invoice ?? 'N/A';
-                $amount = 'Rp ' . number_format((float)($item->amount ?? 0), 0, ',', '.');
-
-                echo "<tr>";
-                echo "<td>" . ($index + 1) . "</td>";
-                echo "<td>{$pranotaNo}</td>";
-                echo "<td>{$amount}</td>";
-                echo "<td>✅ Loaded</td>";
-                echo "</tr>";
-            }
-            echo "</table>";
-
-            $totalPranota = $paymentWithItems->items->sum('amount');
-            echo "<div class='test-result info'>";
-            echo "<strong>📊 Total Pranota Amount:</strong> Rp " . number_format((float)($totalPranota ?? 0), 0, ',', '.');
-            echo "</div>";
-
-        } else {
-            echo "<div class='test-result warning'>";
-            echo "<strong>⚠️ WARNING:</strong> Payment has no related pranota items (this is normal if no pranota has been linked)";
-            echo "</div>";
-        }
-        echo "</div>";
-
-        // Test 6: Simulate form submission
-        echo "<div class='test-section'>";
-        echo "<h2>📝 Test 6: Form Update Simulation</h2>";
-
-        // Backup original data
-        $originalData = [
-            'nomor_pembayaran' => $payment->nomor_pembayaran,
-            'bank' => $payment->bank,
-            'total_pembayaran' => $payment->total_pembayaran,
-            'jenis_transaksi' => $payment->jenis_transaksi,
-            'tanggal_pembayaran' => $payment->tanggal_pembayaran,
-            'keterangan' => $payment->keterangan,
-        ];
-
-        // Test data
-        $testData = [
-            'nomor_pembayaran' => 'TEST-PAY-' . date('YmdHis'),
-            'bank' => 'BCA',
-            'total_pembayaran' => 2500000,
-            'jenis_transaksi' => 'Debit',
-            'tanggal_pembayaran' => now()->format('Y-m-d'),
-            'tanggal_kas' => now()->format('Y-m-d'),
-            'keterangan' => 'Test update payment - ' . now()->format('Y-m-d H:i:s'),
-            'total_tagihan_penyesuaian' => 100000,
-        ];
-
-        // Calculate total after adjustment
-        $totalSetelahPenyesuaian = $testData['total_pembayaran'] + $testData['total_tagihan_penyesuaian'];
-        $testData['total_tagihan_setelah_penyesuaian'] = $totalSetelahPenyesuaian;
-
-        try {
-            // Simulate update
-            $updateResult = $payment->update($testData);
-
-            if ($updateResult) {
-                echo "<div class='test-result success'>";
-                echo "<strong>✅ SUCCESS:</strong> Payment updated successfully";
-                echo "</div>";
-
-                // Show updated data
-                $payment->refresh();
-                echo "<h3>Updated Data Verification:</h3>";
-                echo "<table class='data-table'>";
-                echo "<tr><th>Field</th><th>Old Value</th><th>New Value</th><th>Status</th></tr>";
-
-                $fieldsToCheck = ['nomor_pembayaran', 'bank', 'total_pembayaran', 'jenis_transaksi', 'tanggal_pembayaran', 'keterangan'];
-
-                foreach ($fieldsToCheck as $field) {
-                    if (isset($originalData[$field]) && isset($testData[$field])) {
-                        $oldValue = $originalData[$field] ?? 'NULL';
-                        $newValue = $testData[$field];
-                        $currentValue = $payment->$field ?? 'NULL';
-                        $status = ($currentValue == $newValue) ? "✅ Updated" : "❌ Failed";
-
-                        echo "<tr>";
-                        echo "<td>{$field}</td>";
-                        echo "<td>{$oldValue}</td>";
-                        echo "<td>{$currentValue}</td>";
-                        echo "<td>{$status}</td>";
-                        echo "</tr>";
-                    }
-                }
-                echo "</table>";
-
-                // Show calculation verification
-                echo "<h3>Calculation Verification:</h3>";
-                echo "<table class='data-table'>";
-                echo "<tr><th>Component</th><th>Value</th></tr>";
-                echo "<tr><td>Total Pembayaran</td><td>Rp " . number_format((float)$payment->total_pembayaran, 0, ',', '.') . "</td></tr>";
-                echo "<tr><td>Penyesuaian</td><td>Rp " . number_format((float)$payment->total_tagihan_penyesuaian, 0, ',', '.') . "</td></tr>";
-                echo "<tr><td>Total Setelah Penyesuaian</td><td>Rp " . number_format((float)$payment->total_tagihan_setelah_penyesuaian, 0, ',', '.') . "</td></tr>";
-                echo "</table>";
-
-                // Restore original data
-                $restoreResult = $payment->update($originalData);
-
-                if ($restoreResult) {
-                    echo "<div class='test-result success'>";
-                    echo "<strong>✅ SUCCESS:</strong> Original data restored successfully";
-                    echo "</div>";
-                } else {
-                    echo "<div class='test-result error'>";
-                    echo "<strong>❌ WARNING:</strong> Failed to restore original data";
-                    echo "</div>";
-                }
-
-            } else {
-                echo "<div class='test-result error'>";
-                echo "<strong>❌ FAILED:</strong> Payment update failed";
-                echo "</div>";
-            }
-
-        } catch (Exception $e) {
-            echo "<div class='test-result error'>";
-            echo "<strong>❌ FAILED:</strong> Exception during update: " . $e->getMessage();
-            echo "</div>";
-        }
-        echo "</div>";
-
-        // Test Summary
-        echo "<div class='test-section'>";
-        echo "<h2>📊 Test Summary</h2>";
-        echo "<div class='test-result success'>";
-        echo "<strong>🎉 ALL TESTS COMPLETED!</strong>";
-        echo "<br><br>";
-        echo "✅ Database Connection: Working<br>";
-        echo "✅ Payment Model: Working<br>";
-        echo "✅ Edit Form Route: Working<br>";
-        echo "✅ Validation Rules: Configured<br>";
-        echo "✅ Currency Formatting: Working<br>";
-        echo "✅ Relationship Loading: Working<br>";
-        echo "✅ Update Functionality: Working<br>";
-        echo "✅ Data Restoration: Working<br>";
-        echo "<br>";
-        echo "<strong>Conclusion:</strong> The edit payment functionality is working correctly and ready for use!";
-        echo "</div>";
-
-        if (isset($payment)) {
-            echo "<div class='test-result info'>";
-            echo "<strong>🔗 Next Steps:</strong>";
-            echo "<br>• Visit the <a href='" . route('pembayaran-pranota-kontainer.edit', $payment->id) . "' target='_blank'>actual edit form</a>";
-            echo "<br>• Test manual form submission with different values";
-            echo "<br>• Verify pranota deletion functionality";
-            echo "<br>• Test currency formatting in real form inputs";
-            echo "<br>• Test all validation rules by submitting invalid data";
-            echo "</div>";
-        }
-        echo "</div>";
-
-    } catch (Exception $e) {
-        echo "<div class='test-result error'>";
-        echo "<strong>❌ CRITICAL ERROR:</strong> " . $e->getMessage();
-        echo "<br><strong>Stack Trace:</strong><br><pre>" . htmlspecialchars($e->getTraceAsString()) . "</pre>";
-        echo "</div>";
-    }
-});
-
-Route::get('/test-login', function () {
-    // Login sebagai user pertama untuk test
-    $user = \App\Models\User::first();
-    if ($user) {
-        Auth::login($user);
-        return redirect('/pembayaran-pranota-kontainer/2/edit');
-    }
-    return 'No user found';
-});
-
-Route::get('/test-pembayaran', function () {
-    $pembayaran = \App\Models\PembayaranPranotaKontainer::first();
-    return response()->json([
-        'pembayaran_exists' => $pembayaran ? true : false,
-        'data' => $pembayaran
-    ]);
-});
-
-Route::get('/test-edit', function () {
-    try {
-        $pembayaran = \App\Models\PembayaranPranotaKontainer::with([
-            'items.pranota',
-            'pembuatPembayaran',
-            'penyetujuPembayaran'
-        ])->findOrFail(2);
-
-        return view('pembayaran-pranota-kontainer.edit', compact('pembayaran'));
-    } catch (\Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'trace' => $e->getTraceAsString()
-        ]);
-    }
-});
+// Route untuk copy permission (di luar middleware auth agar bisa digunakan di form create)
+Route::get('master/user/{user}/permissions-for-copy', [UserController::class, 'getUserPermissionsForCopy'])
+     ->name('master.user.permissions-for-copy');
 
 // Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
 Route::middleware([
@@ -475,11 +76,11 @@ Route::middleware([
     // Route create/store karyawan untuk master/admin hanya gunakan prefix master/karyawan agar tidak bentrok dengan onboarding
     Route::get('master/karyawan/create', [\App\Http\Controllers\KaryawanController::class, 'create'])
         ->name('master.karyawan.create')
-        ->middleware('auth');
+        ->middleware(['auth', 'permission:master-karyawan.create']);
 
     Route::post('master/karyawan', [\App\Http\Controllers\KaryawanController::class, 'store'])
         ->name('master.karyawan.store')
-        ->middleware('auth');
+        ->middleware(['auth', 'permission:master-karyawan.create']);
 
           // Tagihan Kontainer Sewa routes removed - controller/views refactored by request
           // The old routes and resource controller were deleted to allow a full rewrite.
@@ -498,46 +99,43 @@ Route::middleware([
           // Print all karyawan (print-friendly)
           Route::get('karyawan/print', [KaryawanController::class, 'print'])
                ->name('karyawan.print')
-               ->middleware('auth');
+               ->middleware('permission:master-karyawan.print');
 
           // Print single karyawan (form layout)
           Route::get('karyawan/{karyawan}/print', [KaryawanController::class, 'printSingle'])
                ->name('karyawan.print.single')
-               ->middleware('auth');
+               ->middleware('permission:master-karyawan.print');
 
                // Import karyawan from CSV (simple uploader)
                Route::get('karyawan/import', [KaryawanController::class, 'importForm'])
                     ->name('karyawan.import')
-                    ->middleware('auth');
+                    ->middleware(['auth', 'permission:master-karyawan.create']);
 
                Route::post('karyawan/import', [KaryawanController::class, 'importStore'])
                     ->name('karyawan.import.store')
-                    ->middleware('auth');
+                    ->middleware(['auth', 'permission:master-karyawan.create']);
 
                // Export/download CSV of all karyawan
                Route::get('karyawan/export', [KaryawanController::class, 'export'])
                     ->name('karyawan.export')
-                    ->middleware('can:master-karyawan');
+                    ->middleware('permission:master-karyawan.export');
 
                // Export Excel-formatted CSV to prevent scientific notation
                Route::get('karyawan/export-excel', [KaryawanController::class, 'exportExcel'])
                     ->name('karyawan.export-excel')
-                    ->middleware('can:master-karyawan');
+                    ->middleware('permission:master-karyawan.export');
 
                // Download CSV template for import
                Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
-                    ->name('karyawan.template')
-                    ->middleware('can:master-karyawan');
+                    ->name('karyawan.template');
 
                // Download Excel template for import
                Route::get('karyawan/excel-template', [KaryawanController::class, 'downloadExcelTemplate'])
-                    ->name('karyawan.excel-template')
-                    ->middleware('can:master-karyawan');
+                    ->name('karyawan.excel-template');
 
                // Download simple Excel template for import (headers only)
                Route::get('karyawan/simple-excel-template', [KaryawanController::class, 'downloadSimpleExcelTemplate'])
-                    ->name('karyawan.simple-excel-template')
-                    ->middleware('can:master-karyawan');
+                    ->name('karyawan.simple-excel-template');
 
                // Crew checklist for ABK employees
         Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
@@ -553,89 +151,230 @@ Route::middleware([
             Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
                 ->name('karyawan.crew-checklist.print');
 
-         Route::resource('karyawan', KaryawanController::class)
-                  ->names('karyawan')
-                  ->middleware('can:master-karyawan');
+         // Individual routes for karyawan with specific permissions
+         Route::get('karyawan', [KaryawanController::class, 'index'])
+              ->name('karyawan.index')
+              ->middleware('permission:master-karyawan.view');
+         Route::get('karyawan/create', [KaryawanController::class, 'create'])
+              ->name('karyawan.create')
+              ->middleware('permission:master-karyawan.create');
+         Route::post('karyawan', [KaryawanController::class, 'store'])
+              ->name('karyawan.store')
+              ->middleware('permission:master-karyawan.create');
+         Route::get('karyawan/{karyawan}', [KaryawanController::class, 'show'])
+              ->name('karyawan.show')
+              ->middleware('permission:master-karyawan.view');
+         Route::get('karyawan/{karyawan}/edit', [KaryawanController::class, 'edit'])
+              ->name('karyawan.edit')
+              ->middleware('permission:master-karyawan.update');
+         Route::put('karyawan/{karyawan}', [KaryawanController::class, 'update'])
+              ->name('karyawan.update')
+              ->middleware('permission:master-karyawan.update');
+         Route::delete('karyawan/{karyawan}', [KaryawanController::class, 'destroy'])
+              ->name('karyawan.destroy')
+              ->middleware('permission:master-karyawan.delete');
 
-        Route::resource('user', UserController::class)
-             ->names('user')
-             ->middleware('can:master-user');
+        // Master user routes (with master prefix) - granular permissions
+        Route::get('user', [UserController::class, 'index'])
+             ->name('user.index')
+             ->middleware('can:master-user.view');
+        Route::get('user/create', [UserController::class, 'create'])
+             ->name('user.create')
+             ->middleware('can:master-user.create');
+        Route::post('user', [UserController::class, 'store'])
+             ->name('user.store')
+             ->middleware('can:master-user.create');
+        Route::get('user/{user}', [UserController::class, 'show'])
+             ->name('user.show')
+             ->middleware('can:master-user.view');
+        Route::get('user/{user}/edit', [UserController::class, 'edit'])
+             ->name('user.edit')
+             ->middleware('can:master-user.update');
+        Route::put('user/{user}', [UserController::class, 'update'])
+             ->name('user.update')
+             ->middleware('can:master-user.update');
+        Route::delete('user/{user}', [UserController::class, 'destroy'])
+             ->name('user.destroy')
+             ->middleware('can:master-user.delete');
 
-        // Additional user routes for permission management
+        // Additional master user routes for permission management
         Route::get('user/bulk-manage', [UserController::class, 'bulkManage'])
              ->name('user.bulk-manage')
-             ->middleware('can:master-user');
+             ->middleware('can:master-user.view');
         Route::post('user/{user}/assign-template', [UserController::class, 'assignTemplate'])
              ->name('user.assign-template')
-             ->middleware('can:master-user');
+             ->middleware('can:master-user.view');
         Route::post('user/bulk-assign-permissions', [UserController::class, 'bulkAssignPermissions'])
              ->name('user.bulk-assign-permissions')
-             ->middleware('can:master-user');
+             ->middleware('can:master-user.view');
         Route::get('user/{user}/permissions', [UserController::class, 'getUserPermissions'])
              ->name('user.permissions')
-             ->middleware('can:master-user');
+             ->middleware('can:master-user.view');
 
-        // Route untuk copy permission (tanpa middleware agar bisa digunakan di form create)
-        Route::get('user/{user}/permissions-for-copy', [UserController::class, 'getUserPermissionsForCopy'])
-             ->name('user.permissions-for-copy');
+        // Master kontainer routes (with master prefix) - granular permissions
+        Route::get('kontainer', [KontainerController::class, 'index'])
+             ->name('kontainer.index')
+             ->middleware('can:master-kontainer.view');
+        Route::get('kontainer/create', [KontainerController::class, 'create'])
+             ->name('kontainer.create')
+             ->middleware('can:master-kontainer.create');
+        Route::post('kontainer', [KontainerController::class, 'store'])
+             ->name('kontainer.store')
+             ->middleware('can:master-kontainer.create');
+        Route::get('kontainer/{kontainer}', [KontainerController::class, 'show'])
+             ->name('kontainer.show')
+             ->middleware('can:master-kontainer.view');
+        Route::get('kontainer/{kontainer}/edit', [KontainerController::class, 'edit'])
+             ->name('kontainer.edit')
+             ->middleware('can:master-kontainer.update');
+        Route::put('kontainer/{kontainer}', [KontainerController::class, 'update'])
+             ->name('kontainer.update')
+             ->middleware('can:master-kontainer.update');
+        Route::delete('kontainer/{kontainer}', [KontainerController::class, 'destroy'])
+             ->name('kontainer.destroy')
+             ->middleware('can:master-kontainer.delete');
 
-        Route::resource('kontainer', KontainerController::class)
-             ->names('kontainer')
-             ->middleware('can:master-kontainer');
+        // Master tujuan routes (with master prefix) - granular permissions
+        Route::get('tujuan', [TujuanController::class, 'index'])
+             ->name('tujuan.index')
+             ->middleware('can:master-tujuan.view');
+        Route::get('tujuan/create', [TujuanController::class, 'create'])
+             ->name('tujuan.create')
+             ->middleware('can:master-tujuan.create');
+        Route::post('tujuan', [TujuanController::class, 'store'])
+             ->name('tujuan.store')
+             ->middleware('can:master-tujuan.create');
+        Route::get('tujuan/{tujuan}', [TujuanController::class, 'show'])
+             ->name('tujuan.show')
+             ->middleware('can:master-tujuan.view');
+        Route::get('tujuan/{tujuan}/edit', [TujuanController::class, 'edit'])
+             ->name('tujuan.edit')
+             ->middleware('can:master-tujuan.update');
+        Route::put('tujuan/{tujuan}', [TujuanController::class, 'update'])
+             ->name('tujuan.update')
+             ->middleware('can:master-tujuan.update');
+        Route::delete('tujuan/{tujuan}', [TujuanController::class, 'destroy'])
+             ->name('tujuan.destroy')
+             ->middleware('can:master-tujuan.delete');
 
-        Route::resource('tujuan', TujuanController::class)
-             ->names('tujuan')
-             ->middleware('can:master-tujuan');
-
-        Route::resource('kegiatan', MasterKegiatanController::class)
-             ->names('kegiatan')
-             ->middleware('can:master-kegiatan'); // Jangan lupa membuat Gate 'master-kegiatan'
+        // Master kegiatan routes (with master prefix) - granular permissions
+        Route::get('kegiatan', [MasterKegiatanController::class, 'index'])
+             ->name('kegiatan.index')
+             ->middleware('can:master-kegiatan.view');
+        Route::get('kegiatan/create', [MasterKegiatanController::class, 'create'])
+             ->name('kegiatan.create')
+             ->middleware('can:master-kegiatan.create');
+        Route::post('kegiatan', [MasterKegiatanController::class, 'store'])
+             ->name('kegiatan.store')
+             ->middleware('can:master-kegiatan.create');
+        Route::get('kegiatan/{kegiatan}', [MasterKegiatanController::class, 'show'])
+             ->name('kegiatan.show')
+             ->middleware('can:master-kegiatan.view');
+        Route::get('kegiatan/{kegiatan}/edit', [MasterKegiatanController::class, 'edit'])
+             ->name('kegiatan.edit')
+             ->middleware('can:master-kegiatan.update');
+        Route::put('kegiatan/{kegiatan}', [MasterKegiatanController::class, 'update'])
+             ->name('kegiatan.update')
+             ->middleware('can:master-kegiatan.update');
+        Route::delete('kegiatan/{kegiatan}', [MasterKegiatanController::class, 'destroy'])
+             ->name('kegiatan.destroy')
+             ->middleware('can:master-kegiatan.delete');
         // CSV import/export helpers for Master Kegiatan
         Route::get('kegiatan/template/csv', [MasterKegiatanController::class, 'downloadTemplate'])
              ->name('kegiatan.template')
-             ->middleware('can:master-kegiatan');
+             ->middleware('can:master-kegiatan.view');
 
         Route::post('kegiatan/import/csv', [MasterKegiatanController::class, 'importCsv'])
              ->name('kegiatan.import')
-             ->middleware('can:master-kegiatan');
+             ->middleware('can:master-kegiatan.view');
 
-        Route::resource('permission', PermissionController::class)
-             ->names([
-                 'index' => 'permission.index',
-                 'create' => 'permission.create',
-                 'store' => 'permission.store',
-                 'show' => 'permission.show',
-                 'edit' => 'permission.edit',
-                 'update' => 'permission.update',
-                 'destroy' => 'permission.destroy'
-             ])
-             ->middleware('can:master-permission');
+        // Master permission routes (with master prefix) - granular permissions
+        Route::get('permission', [PermissionController::class, 'index'])
+             ->name('permission.index')
+             ->middleware('can:master-permission.view');
+        Route::get('permission/create', [PermissionController::class, 'create'])
+             ->name('permission.create')
+             ->middleware('can:master-permission.create');
+        Route::post('permission', [PermissionController::class, 'store'])
+             ->name('permission.store')
+             ->middleware('can:master-permission.create');
+        Route::get('permission/{permission}', [PermissionController::class, 'show'])
+             ->name('permission.show')
+             ->middleware('can:master-permission.view');
+        Route::get('permission/{permission}/edit', [PermissionController::class, 'edit'])
+             ->name('permission.edit')
+             ->middleware('can:master-permission.update');
+        Route::put('permission/{permission}', [PermissionController::class, 'update'])
+             ->name('permission.update')
+             ->middleware('can:master-permission.update');
+        Route::delete('permission/{permission}', [PermissionController::class, 'destroy'])
+             ->name('permission.destroy')
+             ->middleware('can:master-permission.delete');
 
         // Additional permission routes
         Route::post('permission/sync', [PermissionController::class, 'sync'])
              ->name('permission.sync')
-             ->middleware('can:master-permission');
+             ->middleware('can:master-permission.view');
 
         Route::post('permission/bulk-delete', [PermissionController::class, 'bulkDelete'])
              ->name('permission.bulk-delete')
-             ->middleware('can:master-permission');
+             ->middleware('can:master-permission.view');
 
         Route::post('permission/{permission}/assign-users', [PermissionController::class, 'assignUsers'])
              ->name('permission.assign-users')
-             ->middleware('can:master-permission');
+             ->middleware('can:master-permission.view');
 
         Route::get('permission/{permission}/users', [PermissionController::class, 'getUsers'])
              ->name('permission.users')
-             ->middleware('can:master-permission');
+             ->middleware('can:master-permission.view');
 
-        Route::resource('mobil', MobilController::class)
-             ->names('mobil')
-             ->middleware('can:master-mobil');
+        // Master mobil routes (with master prefix) - granular permissions
+        Route::get('mobil', [MobilController::class, 'index'])
+             ->name('mobil.index')
+             ->middleware('can:master-mobil.view');
+        Route::get('mobil/create', [MobilController::class, 'create'])
+             ->name('mobil.create')
+             ->middleware('can:master-mobil.create');
+        Route::post('mobil', [MobilController::class, 'store'])
+             ->name('mobil.store')
+             ->middleware('can:master-mobil.create');
+        Route::get('mobil/{mobil}', [MobilController::class, 'show'])
+             ->name('mobil.show')
+             ->middleware('can:master-mobil.view');
+        Route::get('mobil/{mobil}/edit', [MobilController::class, 'edit'])
+             ->name('mobil.edit')
+             ->middleware('can:master-mobil.update');
+        Route::put('mobil/{mobil}', [MobilController::class, 'update'])
+             ->name('mobil.update')
+             ->middleware('can:master-mobil.update');
+        Route::delete('mobil/{mobil}', [MobilController::class, 'destroy'])
+             ->name('mobil.destroy')
+             ->middleware('can:master-mobil.delete');
 
      // Route kontainer-sewa dipindahkan ke luar prefix master
 
-     Route::resource('pricelist-sewa-kontainer', \App\Http\Controllers\MasterPricelistSewaKontainerController::class)
-          ->middleware('can:master-pricelist-sewa-kontainer');
+        // Master pricelist sewa kontainer routes (with master prefix) - granular permissions
+        Route::get('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'index'])
+             ->name('pricelist-sewa-kontainer.index')
+             ->middleware('can:master-pricelist-sewa-kontainer.view');
+        Route::get('pricelist-sewa-kontainer/create', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'create'])
+             ->name('pricelist-sewa-kontainer.create')
+             ->middleware('can:master-pricelist-sewa-kontainer.create');
+        Route::post('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'store'])
+             ->name('pricelist-sewa-kontainer.store')
+             ->middleware('can:master-pricelist-sewa-kontainer.create');
+        Route::get('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'show'])
+             ->name('pricelist-sewa-kontainer.show')
+             ->middleware('can:master-pricelist-sewa-kontainer.view');
+        Route::get('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}/edit', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'edit'])
+             ->name('pricelist-sewa-kontainer.edit')
+             ->middleware('can:master-pricelist-sewa-kontainer.update');
+        Route::put('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'update'])
+             ->name('pricelist-sewa-kontainer.update')
+             ->middleware('can:master-pricelist-sewa-kontainer.update');
+        Route::delete('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'destroy'])
+             ->name('pricelist-sewa-kontainer.destroy')
+             ->middleware('can:master-pricelist-sewa-kontainer.delete');
     });
 
     // --- Rute Permohonan ---
@@ -658,28 +397,48 @@ Route::middleware([
          ->name('permohonan.bulk-delete')
          ->middleware('can:permohonan');
 
-    Route::resource('permohonan', PermohonanController::class)
-         ->middleware('can:permohonan');
+    // Individual routes for permohonan with specific permissions
+    Route::get('permohonan', [PermohonanController::class, 'index'])
+         ->name('permohonan.index')
+         ->middleware('can:permohonan.index');
+    Route::get('permohonan/create', [PermohonanController::class, 'create'])
+         ->name('permohonan.create')
+         ->middleware('can:permohonan.create');
+    Route::post('permohonan', [PermohonanController::class, 'store'])
+         ->name('permohonan.store')
+         ->middleware('can:permohonan.create');
+    Route::get('permohonan/{permohonan}', [PermohonanController::class, 'show'])
+         ->name('permohonan.show')
+         ->middleware('can:permohonan.index');
+    Route::get('permohonan/{permohonan}/edit', [PermohonanController::class, 'edit'])
+         ->name('permohonan.edit')
+         ->middleware('can:permohonan.edit');
+    Route::put('permohonan/{permohonan}', [PermohonanController::class, 'update'])
+         ->name('permohonan.update')
+         ->middleware('can:permohonan.edit');
+    Route::delete('permohonan/{permohonan}', [PermohonanController::class, 'destroy'])
+         ->name('permohonan.destroy')
+         ->middleware('can:permohonan.delete');
 
      // --- Rute Pranota Supir ---
-    Route::get('/pranota-supir', [PranotaSupirController::class, 'index'])->name('pranota-supir.index')->middleware('permission-like:pranota-supir');
-    Route::get('/pranota-supir/create', [PranotaSupirController::class, 'create'])->name('pranota-supir.create')->middleware('permission-like:pranota-supir');
+    Route::get('/pranota-supir', [PranotaSupirController::class, 'index'])->name('pranota-supir.index')->middleware('permission:pranota-supir-view');
+    Route::get('/pranota-supir/create', [PranotaSupirController::class, 'create'])->name('pranota-supir.create')->middleware('permission:pranota-supir-create');
      // Explicit per-pranota print route must be declared before the parameterized show route
-     Route::get('/pranota-supir/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])->name('pranota-supir.print')->middleware('permission-like:pranota-supir');
+     Route::get('/pranota-supir/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])->name('pranota-supir.print')->middleware('permission:pranota-supir-print');
 
-     Route::get('/pranota-supir/{pranotaSupir}', [PranotaSupirController::class, 'show'])->name('pranota-supir.show')->middleware('permission-like:pranota-supir');
-    Route::post('/pranota-supir', [PranotaSupirController::class, 'store'])->name('pranota-supir.store')->middleware('permission-like:pranota-supir');
+     Route::get('/pranota-supir/{pranotaSupir}', [PranotaSupirController::class, 'show'])->name('pranota-supir.show')->middleware('permission:pranota-supir-view');
+    Route::post('/pranota-supir', [PranotaSupirController::class, 'store'])->name('pranota-supir.store')->middleware('permission:pranota-supir-create');
 
           // --- Rute Pranota & Pembayaran Pranota Tagihan Kontainer ---
                     // Tagihan Kontainer Sewa feature removed - routes deleted to allow clean rebuild
 
     // --- Rute Pembayaran Pranota Supir ---
     Route::prefix('pembayaran-pranota-supir')->name('pembayaran-pranota-supir.')->group(function() {
-     Route::get('/', [PembayaranPranotaSupirController::class, 'index'])->name('index');
+     Route::get('/', [PembayaranPranotaSupirController::class, 'index'])->name('index')->middleware('permission:pembayaran-pranota-supir-view');
      // Per-pembayaran print
-     Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])->name('print')->middleware('permission-like:pembayaran-pranota-supir');
-     Route::get('/buat', [PembayaranPranotaSupirController::class, 'create'])->name('create')->middleware('permission-like:pembayaran-pranota-supir'); // Menampilkan form konfirmasi
-     Route::post('/simpan', [PembayaranPranotaSupirController::class, 'store'])->name('store'); // Menyimpan pembayaran
+     Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])->name('print')->middleware('permission:pembayaran-pranota-supir-print');
+     Route::get('/buat', [PembayaranPranotaSupirController::class, 'create'])->name('create')->middleware('permission:pembayaran-pranota-supir-create'); // Menampilkan form konfirmasi
+     Route::post('/simpan', [PembayaranPranotaSupirController::class, 'store'])->name('store')->middleware('permission:pembayaran-pranota-supir-create'); // Menyimpan pembayaran
     });
 
     // --- Rute Khusus untuk Supir ---
@@ -709,32 +468,58 @@ Route::middleware([
                // Download CSV template for daftar tagihan
                Route::get('daftar-tagihan-kontainer-sewa/template/csv', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'downloadTemplateCsv'])
                     ->name('daftar-tagihan-kontainer-sewa.template.csv')
-                    ->middleware('can:master-pranota-tagihan-kontainer');
+                    ->middleware('can:tagihan-kontainer-view');
 
                // Import CSV upload endpoint
                Route::post('daftar-tagihan-kontainer-sewa/import', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'importCsv'])
                     ->name('daftar-tagihan-kontainer-sewa.import')
-                    ->middleware('can:master-pranota-tagihan-kontainer');
+                    ->middleware('can:tagihan-kontainer-create');
 
                // Import CSV with automatic grouping
                Route::post('daftar-tagihan-kontainer-sewa/import-grouped', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'importWithGrouping'])
                     ->name('daftar-tagihan-kontainer-sewa.import.grouped')
-                    ->middleware('can:master-pranota-tagihan-kontainer');
+                    ->middleware('can:tagihan-kontainer-create');
 
                // Update adjustment endpoint
                Route::patch('daftar-tagihan-kontainer-sewa/{id}/adjustment', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateAdjustment'])
                     ->name('daftar-tagihan-kontainer-sewa.adjustment.update')
-                    ->middleware('can:master-pranota-tagihan-kontainer');
+                    ->middleware('can:tagihan-kontainer-update');
 
-               Route::resource('daftar-tagihan-kontainer-sewa', \App\Http\Controllers\DaftarTagihanKontainerSewaController::class)
-                     ->names('daftar-tagihan-kontainer-sewa')
-                     ->middleware('can:master-pranota-tagihan-kontainer');
+               // Individual routes with specific middleware instead of resource
+               Route::get('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'index'])
+                    ->name('daftar-tagihan-kontainer-sewa.index')
+                    ->middleware('can:tagihan-kontainer-view');
+
+               Route::get('daftar-tagihan-kontainer-sewa/create', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'create'])
+                    ->name('daftar-tagihan-kontainer-sewa.create')
+                    ->middleware('can:tagihan-kontainer-create');
+
+               Route::post('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'store'])
+                    ->name('daftar-tagihan-kontainer-sewa.store')
+                    ->middleware('can:tagihan-kontainer-create');
+
+               Route::get('daftar-tagihan-kontainer-sewa/{tagihan}', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'show'])
+                    ->name('daftar-tagihan-kontainer-sewa.show')
+                    ->middleware('can:tagihan-kontainer-view');
+
+               Route::get('daftar-tagihan-kontainer-sewa/{tagihan}/edit', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'edit'])
+                    ->name('daftar-tagihan-kontainer-sewa.edit')
+                    ->middleware('can:tagihan-kontainer-update');
+
+               Route::put('daftar-tagihan-kontainer-sewa/{tagihan}', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'update'])
+                    ->name('daftar-tagihan-kontainer-sewa.update')
+                    ->middleware('can:tagihan-kontainer-update');
+
+               Route::delete('daftar-tagihan-kontainer-sewa/{tagihan}', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'destroy'])
+                    ->name('daftar-tagihan-kontainer-sewa.destroy')
+                    ->middleware('can:tagihan-kontainer-delete');
 
                // Pranota routes
                Route::prefix('pranota')->name('pranota.')->group(function () {
                     Route::get('/', [\App\Http\Controllers\PranotaController::class, 'index'])->name('index');
                     // Print route must be declared before the parameterized show route
-                    Route::get('/{id}/print', [\App\Http\Controllers\PranotaController::class, 'print'])->name('print');
+                    Route::get('/{id}/print', [\App\Http\Controllers\PranotaController::class, 'print'])->name('print')
+                         ->middleware('permission:pranota.print');
                     Route::get('/{id}', [\App\Http\Controllers\PranotaController::class, 'show'])->name('show');
                     Route::post('/', [\App\Http\Controllers\PranotaController::class, 'store'])->name('store');
                     Route::post('/bulk', [\App\Http\Controllers\PranotaController::class, 'bulkStore'])->name('bulk.store');
@@ -744,16 +529,26 @@ Route::middleware([
 
                // Pembayaran Pranota Kontainer routes
                Route::prefix('pembayaran-pranota-kontainer')->name('pembayaran-pranota-kontainer.')->group(function () {
-                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'index'])->name('index');
-                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'create'])->name('create');
-                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'showPaymentForm'])->name('payment-form');
-                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'store'])->name('store');
-                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'show'])->name('show');
-                    Route::get('/{id}/edit', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'edit'])->name('edit');
-                    Route::put('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'update'])->name('update');
-                    Route::delete('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'destroy'])->name('destroy');
-                    Route::delete('/{pembayaranId}/pranota/{pranotaId}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'removePranota'])->name('remove-pranota');
-                    Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print');
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'index'])->name('index')
+                         ->middleware('permission:pembayaran-pranota-kontainer.view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'create'])->name('create')
+                         ->middleware('permission:pembayaran-pranota-kontainer.create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('permission:pembayaran-pranota-kontainer.view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'store'])->name('store')
+                         ->middleware('permission:pembayaran-pranota-kontainer.create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'show'])->name('show')
+                         ->middleware('permission:pembayaran-pranota-kontainer.view');
+                    Route::get('/{id}/edit', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'edit'])->name('edit')
+                         ->middleware('permission:pembayaran-pranota-kontainer.update');
+                    Route::put('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'update'])->name('update')
+                         ->middleware('permission:pembayaran-pranota-kontainer.update');
+                    Route::delete('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'destroy'])->name('destroy')
+                         ->middleware('permission:pembayaran-pranota-kontainer.delete');
+                    Route::delete('/{pembayaranId}/pranota/{pranotaId}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'removePranota'])->name('remove-pranota')
+                         ->middleware('permission:pembayaran-pranota-kontainer.update');
+                    Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print')
+                         ->middleware('permission:pembayaran-pranota-kontainer.print');
                });
 
      // Admin: daftar semua fitur (permissions + routes)
@@ -765,7 +560,7 @@ Route::middleware([
                      ->middleware(['auth', 'role:admin']);
 
      // User Approval System Routes
-     Route::prefix('admin/user-approval')->middleware(['auth', 'permission:master-user'])->group(function () {
+     Route::prefix('admin/user-approval')->middleware(['auth'])->group(function () {
          Route::get('/', [\App\Http\Controllers\UserApprovalController::class, 'index'])->name('admin.user-approval.index');
          Route::get('/{user}', [\App\Http\Controllers\UserApprovalController::class, 'show'])->name('admin.user-approval.show');
          Route::post('/{user}/approve', [\App\Http\Controllers\UserApprovalController::class, 'approve'])->name('admin.user-approval.approve');

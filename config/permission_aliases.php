@@ -12,5 +12,7 @@ return [
     'master-pranota-tagihan-kontainer' => ['tagihan-kontainer-sewa'],
     'pembayaran-pranota-tagihan-kontainer' => ['tagihan-kontainer-sewa'],
     'master-user' => ['master-user'],
+    'permohonan' => ['permohonan'],
+    'approval' => ['approval'],
     // Add more mappings below as needed
 ];

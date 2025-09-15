@@ -85,11 +85,11 @@
 
                 <div class="user-list" id="user_list">
                     @foreach($users as $user)
-                        <div class="user-item" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}" data-name="{{ $user->name }}">
+                        <div class="user-item" data-user-id="{{ $user->id }}" data-username="{{ $user->username }}">
                             <input type="checkbox" class="user-checkbox" value="{{ $user->id }}" id="user_{{ $user->id }}">
                             <label for="user_{{ $user->id }}" class="flex-1 cursor-pointer">
-                                <div class="font-medium">{{ $user->name }}</div>
-                                <div class="text-sm text-gray-500">{{ $user->username }}</div>
+                                <div class="font-medium">{{ $user->username }}</div>
+                                <div class="text-sm text-gray-500">ID: {{ $user->id }}</div>
                             </label>
                             <div class="text-xs text-gray-400">{{ $user->permissions->count() }} izin</div>
                         </div>

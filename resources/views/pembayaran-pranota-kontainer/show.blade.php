@@ -146,7 +146,7 @@
             <!-- Pranota List -->
             <div class="bg-white border border-gray-200 rounded-lg">
                 <div class="px-4 py-3 border-b border-gray-200 bg-gray-50">
-                    <h3 class="text-lg font-medium text-gray-900">Daftar Pranota ({{ $pembayaran->items->count() }})</h3>
+                    <h3 class="text-lg font-medium text-gray-900">Daftar Pranota Kontainer ({{ $pembayaran->items->count() }})</h3>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200">

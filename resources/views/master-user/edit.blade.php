@@ -8,19 +8,109 @@
 @push('styles')
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <style>
-        /* Permission Card Styles */
-        .permission-card {
-            transition: all 0.2s ease-in-out;
+        /* Permission Matrix Styles */
+        .permission-matrix {
+            border-collapse: collapse;
+            width: 100%;
         }
-        .permission-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+
+        .permission-matrix th,
+        .permission-matrix td {
+            padding: 8px 12px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
         }
+
+        .permission-matrix th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .module-header {
+            text-align: left !important;
+            font-weight: 600;
+            background-color: #f3f4f6;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .module-header:hover {
+            background-color: #e5e7eb;
+        }
+
+        .submodule {
+            text-align: left !important;
+            padding-left: 40px !important;
+            background-color: #fafafa;
+        }
+
         .permission-checkbox {
             accent-color: #3b82f6;
+            transform: scale(1.1);
         }
-        .permission-checkbox:checked {
-            background-color: #3b82f6;
+
+        .expand-icon {
+            display: inline-block;
+            width: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+
+        .module-row.expanded .module-header {
+            background-color: #dbeafe;
+        }
+
+        .submodule-row {
+            transition: all 0.2s ease;
+        }
+
+        .submodule-row.visible {
+            background-color: #fefefe;
+        }
+
+        /* Copy Permission Feature Styles */
+        .copy-permission-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .permission-matrix {
+                font-size: 12px;
+            }
+
+            .permission-matrix th,
+            .permission-matrix td {
+                padding: 6px 8px;
+            }
+
+            .submodule {
+                padding-left: 30px !important;
+            }
+        }
+
+        /* Toast Styles */
+        .toast-notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+            padding: 12px 16px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 500;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+        }
+
+        .toast-notification.show {
+            transform: translateX(0);
         }
     </style>
 @endpush
@@ -64,26 +154,370 @@
         </div>
 
         <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
-            <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-semibold text-gray-800">🎯 Izin Akses Sederhana</h3>
-                <div class="text-sm text-gray-600">
-                    Dipilih: <span id="permission_count" class="font-medium text-blue-600">0</span> / <span id="total_permissions">15</span>
-                </div>
+            <div class="flex items-center justify-between mb-6">
+                <h3 class="text-lg font-semibold text-gray-800">🔐 Sistem Izin Akses (Accurate Style)</h3>
             </div>
 
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-                <div class="flex items-start">
-                    <div class="flex-shrink-0">
-                        <svg class="w-5 h-5 text-blue-600 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                        </svg>
+            {{-- Permission Matrix --}}
+            <div class="permission-section">
+                <div class="permission-section-header">
+                    <div class="permission-section-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">📊</div>
+                    <div>
+                        <h4 class="permission-section-title">Matriks Izin Akses Detail</h4>
+                        <p class="text-sm text-gray-600 mt-1">Atur izin akses untuk setiap modul dan sub-modul</p>
                     </div>
-                    <div class="ml-3">
-                        <h4 class="text-sm font-medium text-blue-800">Sistem Permission Sederhana</h4>
-                        <p class="text-sm text-blue-700 mt-1">
-                            Pilih izin akses sesuai dengan menu yang ingin diakses user. Nama permission sudah disesuaikan dengan nama menu untuk kemudahan.
-                        </p>
+                </div>
+
+                <div class="overflow-x-auto bg-white rounded-lg border border-gray-200">
+                    <div class="p-4 bg-gray-50 border-b border-gray-200 flex justify-between items-center">
+                        <div class="text-sm text-gray-600">
+                            <strong>Tip:</strong> Gunakan tombol "Centang Semua" untuk memberikan semua izin akses, atau centang secara manual untuk kontrol lebih detail.
+                        </div>
+                        <button type="button" id="check_all_permissions" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
+                            ✅ Centang Semua
+                        </button>
                     </div>
+                    <table class="permission-matrix">
+                        <thead>
+                            <tr>
+                                <th class="module-header" style="min-width: 200px;">Modul / Sub-Modul</th>
+                                <th style="min-width: 80px;">Lihat<br><small class="text-xs text-gray-500">(View)</small></th>
+                                <th style="min-width: 80px;">Input<br><small class="text-xs text-gray-500">(Create)</small></th>
+                                <th style="min-width: 80px;">Edit<br><small class="text-xs text-gray-500">(Update)</small></th>
+                                <th style="min-width: 80px;">Hapus<br><small class="text-xs text-gray-500">(Delete)</small></th>
+                                <th style="min-width: 80px;">Setuju<br><small class="text-xs text-gray-500">(Approve)</small></th>
+                                <th style="min-width: 80px;">Cetak<br><small class="text-xs text-gray-500">(Print)</small></th>
+                                <th style="min-width: 80px;">Export<br><small class="text-xs text-gray-500">(Export)</small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {{-- Dashboard --}}
+                            <tr class="module-row" data-module="dashboard">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <span class="text-lg mr-2">📊</span>
+                                        <div>
+                                            <div class="font-semibold">Dashboard</div>
+                                            <div class="text-xs text-gray-500">Halaman utama sistem</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[dashboard][view]" value="1" class="permission-checkbox" checked></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            {{-- Master Data --}}
+                            <tr class="module-row" data-module="master">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <span class="text-lg mr-2">📁</span>
+                                        <div>
+                                            <div class="font-semibold">Master Data</div>
+                                            <div class="text-xs text-gray-500">Data master sistem</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td colspan="7" class="text-center text-gray-500 text-sm py-3">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Header menu - izin ditentukan oleh sub-menu
+                                </td>
+                            </tr>
+
+                            {{-- Master Data Sub-modules --}}
+                            {{-- Hidden checkbox for master-karyawan main permission --}}
+                            <input type="hidden" name="permissions[master-karyawan][main]" value="0" id="master-karyawan-main">
+                            <input type="checkbox" name="permissions[master-karyawan][main]" value="1" id="master-karyawan-main-checkbox" class="hidden" @if(isset($userMatrixPermissions['master-karyawan']['main']) && $userMatrixPermissions['master-karyawan']['main']) checked @endif>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 👥</span>
+                                        <span>Data Karyawan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][view]" value="1" class="permission-checkbox karyawan-permission" @if(isset($userMatrixPermissions['master-karyawan']['view']) && $userMatrixPermissions['master-karyawan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][create]" value="1" class="permission-checkbox karyawan-permission" @if(isset($userMatrixPermissions['master-karyawan']['create']) && $userMatrixPermissions['master-karyawan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][update]" value="1" class="permission-checkbox karyawan-permission" @if(isset($userMatrixPermissions['master-karyawan']['update']) && $userMatrixPermissions['master-karyawan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][delete]" value="1" class="permission-checkbox karyawan-permission" @if(isset($userMatrixPermissions['master-karyawan']['delete']) && $userMatrixPermissions['master-karyawan']['delete']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 👤</span>
+                                        <span>Data User</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-user][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-user']['view']) && $userMatrixPermissions['master-user']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-user][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-user']['create']) && $userMatrixPermissions['master-user']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-user][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-user']['update']) && $userMatrixPermissions['master-user']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-user][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-user']['delete']) && $userMatrixPermissions['master-user']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 📦</span>
+                                        <span>Data Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kontainer']['view']) && $userMatrixPermissions['master-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kontainer']['create']) && $userMatrixPermissions['master-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kontainer']['update']) && $userMatrixPermissions['master-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kontainer']['delete']) && $userMatrixPermissions['master-kontainer']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 🎯</span>
+                                        <span>Data Tujuan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan']['view']) && $userMatrixPermissions['master-tujuan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan']['create']) && $userMatrixPermissions['master-tujuan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan']['update']) && $userMatrixPermissions['master-tujuan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan']['delete']) && $userMatrixPermissions['master-tujuan']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 📋</span>
+                                        <span>Data Kegiatan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kegiatan']['view']) && $userMatrixPermissions['master-kegiatan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kegiatan']['create']) && $userMatrixPermissions['master-kegiatan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kegiatan']['update']) && $userMatrixPermissions['master-kegiatan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kegiatan']['delete']) && $userMatrixPermissions['master-kegiatan']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 🔐</span>
+                                        <span>Data Permission</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-permission][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-permission']['view']) && $userMatrixPermissions['master-permission']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-permission][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-permission']['create']) && $userMatrixPermissions['master-permission']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-permission][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-permission']['update']) && $userMatrixPermissions['master-permission']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-permission][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-permission']['delete']) && $userMatrixPermissions['master-permission']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 🚗</span>
+                                        <span>Data Mobil</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-mobil][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['view']) && $userMatrixPermissions['master-mobil']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['create']) && $userMatrixPermissions['master-mobil']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['update']) && $userMatrixPermissions['master-mobil']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-mobil']['delete']) && $userMatrixPermissions['master-mobil']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 💰</span>
+                                        <span>Data Pricelist Sewa Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['view']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['create']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['update']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['delete']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            {{-- Tagihan Kontainer Sewa --}}
+                            <tr class="module-row" data-module="tagihan-kontainer">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <span class="text-lg mr-2">💰</span>
+                                        <div>
+                                            <div class="font-semibold">Tagihan Kontainer Sewa & Pranota</div>
+                                            <div class="text-xs text-gray-500">Modul tagihan, pembayaran kontainer, pranota dan permohonan</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td colspan="7" class="text-center text-gray-500 text-sm py-3">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Header menu - izin ditentukan oleh sub-menu
+                                </td>
+                            </tr>
+
+                            {{-- Tagihan Kontainer Sewa Sub-modules --}}
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 📋</span>
+                                        <span>Daftar Tagihan Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tagihan-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-kontainer']['view']) && $userMatrixPermissions['tagihan-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-kontainer']['create']) && $userMatrixPermissions['tagihan-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-kontainer']['update']) && $userMatrixPermissions['tagihan-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-kontainer']['delete']) && $userMatrixPermissions['tagihan-kontainer']['delete']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[tagihan-kontainer][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-kontainer']['print']) && $userMatrixPermissions['tagihan-kontainer']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[tagihan-kontainer][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-kontainer']['export']) && $userMatrixPermissions['tagihan-kontainer']['export']) checked @endif></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 📄</span>
+                                        <span>Daftar Pranota Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota']['view']) && $userMatrixPermissions['pranota']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota']['create']) && $userMatrixPermissions['pranota']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota']['update']) && $userMatrixPermissions['pranota']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota']['delete']) && $userMatrixPermissions['pranota']['delete']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pranota][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota']['print']) && $userMatrixPermissions['pranota']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota']['export']) && $userMatrixPermissions['pranota']['export']) checked @endif></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 💳</span>
+                                        <span>Pembayaran Pranota Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-kontainer']['view']) && $userMatrixPermissions['pembayaran-pranota-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-kontainer']['create']) && $userMatrixPermissions['pembayaran-pranota-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-kontainer']['update']) && $userMatrixPermissions['pembayaran-pranota-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-kontainer']['delete']) && $userMatrixPermissions['pembayaran-pranota-kontainer']['delete']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-kontainer']['print']) && $userMatrixPermissions['pembayaran-pranota-kontainer']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-kontainer']['export']) && $userMatrixPermissions['pembayaran-pranota-kontainer']['export']) checked @endif></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 🚛</span>
+                                        <span>Pranota Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-supir][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['view']) && $userMatrixPermissions['pranota-supir']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-supir][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['create']) && $userMatrixPermissions['pranota-supir']['create']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pranota-supir][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-supir']['print']) && $userMatrixPermissions['pranota-supir']['print']) checked @endif></td>
+                                <td class="text-center text-gray-400">-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 💰</span>
+                                        <span>Pembayaran Pranota Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['view']) && $userMatrixPermissions['pembayaran-pranota-supir']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['create']) && $userMatrixPermissions['pembayaran-pranota-supir']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['update']) && $userMatrixPermissions['pembayaran-pranota-supir']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['delete']) && $userMatrixPermissions['pembayaran-pranota-supir']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['approve']) && $userMatrixPermissions['pembayaran-pranota-supir']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['print']) && $userMatrixPermissions['pembayaran-pranota-supir']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-supir']['export']) && $userMatrixPermissions['pembayaran-pranota-supir']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Permohonan Memo Sub-modules (moved to tagihan-kontainer) --}}
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 📝</span>
+                                        <span>Permohonan Memo</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[permohonan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan']['view']) && $userMatrixPermissions['permohonan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan']['create']) && $userMatrixPermissions['permohonan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan']['update']) && $userMatrixPermissions['permohonan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan']['delete']) && $userMatrixPermissions['permohonan']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan']['approve']) && $userMatrixPermissions['permohonan']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan']['print']) && $userMatrixPermissions['permohonan']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[permohonan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['permohonan']['export']) && $userMatrixPermissions['permohonan']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Approval Tugas Sub-modules (moved to tagihan-kontainer) --}}
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 📋</span>
+                                        <span>Approval Tugas</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['view']) && $userMatrixPermissions['approval']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['create']) && $userMatrixPermissions['approval']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['update']) && $userMatrixPermissions['approval']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['delete']) && $userMatrixPermissions['approval']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['approve']) && $userMatrixPermissions['approval']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['print']) && $userMatrixPermissions['approval']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['export']) && $userMatrixPermissions['approval']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- User Approval --}}
+                            <tr class="module-row" data-module="user-approval">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <span class="text-lg mr-2">✅</span>
+                                        <div>
+                                            <div class="font-semibold">Persetujuan User</div>
+                                            <div class="text-xs text-gray-500">Modul approval user baru</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[user-approval][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['view']) && $userMatrixPermissions['user-approval']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[user-approval][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['create']) && $userMatrixPermissions['user-approval']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[user-approval][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['update']) && $userMatrixPermissions['user-approval']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[user-approval][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['delete']) && $userMatrixPermissions['user-approval']['delete']) checked @endif></td>
+                                <td>-</td>
+                                <td><input type="checkbox" name="permissions[user-approval][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['print']) && $userMatrixPermissions['user-approval']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[user-approval][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['user-approval']['export']) && $userMatrixPermissions['user-approval']['export']) checked @endif></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
 
@@ -100,7 +534,7 @@
                         <div class="ml-3">
                             <h4 class="text-sm font-medium text-indigo-800">📋 Copy Permission dari User Lain</h4>
                             <p class="text-sm text-indigo-700 mt-1">
-                                Pilih user yang sudah ada untuk menyalin semua permission-nya ke user ini. Permission yang ada akan diganti.
+                                Pilih user yang sudah ada untuk menyalin semua izin aksesnya ke user ini.
                             </p>
                         </div>
                     </div>
@@ -109,192 +543,13 @@
                             <option value="">-- Pilih User --</option>
                             @foreach($users as $existingUser)
                                 <option value="{{ $existingUser->id }}">
-                                    {{ $existingUser->name }} ({{ $existingUser->username }})
+                                    {{ $existingUser->username }}
                                 </option>
                             @endforeach
                         </select>
                         <button type="button" id="copy_permissions_btn" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
                             📋 Copy Permission
                         </button>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Quick Actions --}}
-            <div class="flex flex-wrap gap-2 mb-4">
-                <button type="button" id="select_common" class="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 transition-colors">
-                    ✅ Pilih Umum
-                </button>
-                <button type="button" id="select_admin" class="px-3 py-2 bg-purple-600 text-white text-sm rounded-md hover:bg-purple-700 transition-colors">
-                    👑 Pilih Admin
-                </button>
-                <button type="button" id="select_all" class="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
-                    📋 Pilih Semua
-                </button>
-                <button type="button" id="deselect_all" class="px-3 py-2 bg-gray-600 text-white text-sm rounded-md hover:bg-gray-700 transition-colors">
-                    ❌ Hapus Semua
-                </button>
-            </div>
-
-            {{-- Permission Cards --}}
-            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="permission_cards">
-                {{-- Menu Utama --}}
-                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-start">
-                        <input id="perm-dashboard" name="simple_permissions[]" type="checkbox" value="dashboard" class="permission-checkbox mt-1" @if(in_array('dashboard', $userSimplePermissions ?? [])) checked @endif>
-                        <div class="ml-3 flex-1">
-                            <label for="perm-dashboard" class="font-medium text-gray-900 cursor-pointer">Dashboard</label>
-                            <p class="text-sm text-gray-600 mt-1">Akses halaman dashboard utama</p>
-                            <span class="inline-block mt-2 px-2 py-1 bg-gray-100 text-gray-700 text-xs rounded">Semua User</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-start">
-                        <input id="perm-tagihan-kontainer" name="simple_permissions[]" type="checkbox" value="tagihan-kontainer" class="permission-checkbox mt-1" @if(in_array('tagihan-kontainer', $userSimplePermissions ?? [])) checked @endif>
-                        <div class="ml-3 flex-1">
-                            <label for="perm-tagihan-kontainer" class="font-medium text-gray-900 cursor-pointer">Tagihan Kontainer Sewa</label>
-                            <p class="text-sm text-gray-600 mt-1">Menu tagihan kontainer sewa</p>
-                            <span class="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs rounded">Bisnis</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-start">
-                        <input id="perm-pranota-supir" name="simple_permissions[]" type="checkbox" value="pranota-supir" class="permission-checkbox mt-1" @if(in_array('pranota-supir', $userSimplePermissions ?? [])) checked @endif>
-                        <div class="ml-3 flex-1">
-                            <label for="perm-pranota-supir" class="font-medium text-gray-900 cursor-pointer">Pranota Supir</label>
-                            <p class="text-sm text-gray-600 mt-1">Menu pranota supir</p>
-                            <span class="inline-block mt-2 px-2 py-1 bg-green-100 text-green-700 text-xs rounded">Operasional</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-start">
-                        <input id="perm-pembayaran-pranota-supir" name="simple_permissions[]" type="checkbox" value="pembayaran-pranota-supir" class="permission-checkbox mt-1" @if(in_array('pembayaran-pranota-supir', $userSimplePermissions ?? [])) checked @endif>
-                        <div class="ml-3 flex-1">
-                            <label for="perm-pembayaran-pranota-supir" class="font-medium text-gray-900 cursor-pointer">Pembayaran Pranota Supir</label>
-                            <p class="text-sm text-gray-600 mt-1">Menu pembayaran pranota supir</p>
-                            <span class="inline-block mt-2 px-2 py-1 bg-yellow-100 text-yellow-700 text-xs rounded">Keuangan</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-start">
-                        <input id="perm-permohonan" name="simple_permissions[]" type="checkbox" value="permohonan" class="permission-checkbox mt-1" @if(in_array('permohonan', $userSimplePermissions ?? [])) checked @endif>
-                        <div class="ml-3 flex-1">
-                            <label for="perm-permohonan" class="font-medium text-gray-900 cursor-pointer">Permohonan Memo</label>
-                            <p class="text-sm text-gray-600 mt-1">Menu permohonan memo</p>
-                            <span class="inline-block mt-2 px-2 py-1 bg-indigo-100 text-indigo-700 text-xs rounded">Administrasi</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="permission-card bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div class="flex items-start">
-                        <input id="perm-user-approval" name="simple_permissions[]" type="checkbox" value="user-approval" class="permission-checkbox mt-1" @if(in_array('user-approval', $userSimplePermissions ?? [])) checked @endif>
-                        <div class="ml-3 flex-1">
-                            <label for="perm-user-approval" class="font-medium text-gray-900 cursor-pointer">Persetujuan User</label>
-                            <p class="text-sm text-gray-600 mt-1">Menyetujui user baru</p>
-                            <span class="inline-block mt-2 px-2 py-1 bg-red-100 text-red-700 text-xs rounded">Admin</span>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Master Data Section --}}
-                <div class="md:col-span-2 lg:col-span-3">
-                    <h4 class="font-semibold text-gray-800 mb-3 flex items-center">
-                        <svg class="w-5 h-5 mr-2 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
-                        </svg>
-                        Master Data (Pilih Semua untuk Admin)
-                    </h4>
-
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-karyawan" name="simple_permissions[]" type="checkbox" value="master-karyawan" class="permission-checkbox mt-1" @if(in_array('master-karyawan', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-karyawan" class="text-sm font-medium text-gray-900 cursor-pointer">Karyawan</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-user" name="simple_permissions[]" type="checkbox" value="master-user" class="permission-checkbox mt-1" @if(in_array('master-user', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-user" class="text-sm font-medium text-gray-900 cursor-pointer">User</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-kontainer" name="simple_permissions[]" type="checkbox" value="master-kontainer" class="permission-checkbox mt-1" @if(in_array('master-kontainer', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-kontainer" class="text-sm font-medium text-gray-900 cursor-pointer">Kontainer</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-pricelist-sewa-kontainer" name="simple_permissions[]" type="checkbox" value="master-pricelist-sewa-kontainer" class="permission-checkbox mt-1" @if(in_array('master-pricelist-sewa-kontainer', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-pricelist-sewa-kontainer" class="text-sm font-medium text-gray-900 cursor-pointer">Pricelist Sewa</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-tujuan" name="simple_permissions[]" type="checkbox" value="master-tujuan" class="permission-checkbox mt-1" @if(in_array('master-tujuan', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-tujuan" class="text-sm font-medium text-gray-900 cursor-pointer">Tujuan</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-kegiatan" name="simple_permissions[]" type="checkbox" value="master-kegiatan" class="permission-checkbox mt-1" @if(in_array('master-kegiatan', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-kegiatan" class="text-sm font-medium text-gray-900 cursor-pointer">Kegiatan</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-permission" name="simple_permissions[]" type="checkbox" value="master-permission" class="permission-checkbox mt-1" @if(in_array('master-permission', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-permission" class="text-sm font-medium text-gray-900 cursor-pointer">Permission</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-mobil" name="simple_permissions[]" type="checkbox" value="master-mobil" class="permission-checkbox mt-1" @if(in_array('master-mobil', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-mobil" class="text-sm font-medium text-gray-900 cursor-pointer">Mobil</label>
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="permission-card bg-white border border-gray-200 rounded-lg p-3 hover:shadow-sm transition-shadow">
-                            <div class="flex items-start">
-                                <input id="perm-master-data" name="simple_permissions[]" type="checkbox" value="master-data" class="permission-checkbox mt-1" @if(in_array('master-data', $userSimplePermissions ?? [])) checked @endif>
-                                <div class="ml-2 flex-1">
-                                    <label for="perm-master-data" class="text-sm font-medium text-gray-900 cursor-pointer">Master Data</label>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -314,109 +569,84 @@
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Inisialisasi Choices.js untuk Karyawan
+            // Choices for karyawan select
             const karyawanElement = document.getElementById('karyawan_id');
-            const karyawanChoices = new Choices(karyawanElement, {
-                searchEnabled: true,
-                itemSelectText: 'Tekan untuk memilih',
-                shouldSort: false,
-                placeholder: true,
-                placeholderValue: 'Cari atau pilih karyawan...'
-            });
-
-            // Permission controls - Simplified version
-            const checkboxes = () => Array.from(document.querySelectorAll('.permission-checkbox'));
-            const countEl = document.getElementById('permission_count');
-
-            function updateCount() {
-                const checked = checkboxes().filter(cb => cb.checked).length;
-                countEl.textContent = checked;
-                return checked;
+            if (karyawanElement) {
+                new Choices(karyawanElement, {
+                    searchEnabled: true,
+                    shouldSort: false,
+                    placeholder: true,
+                    placeholderValue: 'Cari atau pilih karyawan...'
+                });
             }
 
-            // Quick Actions
-            document.getElementById('select_common').addEventListener('click', function(){
-                const commonPerms = ['dashboard', 'tagihan-kontainer', 'pranota-supir'];
-                checkboxes().forEach(cb => {
-                    cb.checked = commonPerms.includes(cb.value);
+            // Module Expand/Collapse Functionality
+            // Add click event listeners to module rows
+            document.querySelectorAll('.module-row').forEach(function(row) {
+                row.addEventListener('click', function(e) {
+                    // Don't trigger if clicking on a checkbox
+                    if (e.target.type === 'checkbox') {
+                        return;
+                    }
+
+                    const module = this.dataset.module;
+                    const icon = this.querySelector('.expand-icon');
+                    const isExpanded = icon.classList.contains('expanded');
+
+                    if (isExpanded) {
+                        // Collapse
+                        collapseModule(module);
+                    } else {
+                        // Expand
+                        expandModule(module);
+                    }
                 });
-                updateCount();
-                showToast('✅ Permission umum dipilih', 'success');
             });
 
-            document.getElementById('select_admin').addEventListener('click', function(){
-                checkboxes().forEach(cb => cb.checked = true);
-                updateCount();
-                showToast('👑 Semua permission admin dipilih', 'success');
+            // Initially hide all sub-modules
+            document.querySelectorAll('.submodule-row').forEach(function(row) {
+                row.style.display = 'none';
             });
 
-            document.getElementById('select_all').addEventListener('click', function(){
-                checkboxes().forEach(cb => cb.checked = true);
-                updateCount();
-                showToast('📋 Semua permission dipilih', 'success');
-            });
+            // Expand Module Function
+            function expandModule(moduleName) {
+                const moduleRow = document.querySelector(`[data-module="${moduleName}"]`);
+                const icon = moduleRow.querySelector('.expand-icon');
+                const submodules = document.querySelectorAll(`[data-parent="${moduleName}"]`);
 
-            document.getElementById('deselect_all').addEventListener('click', function(){
-                checkboxes().forEach(cb => cb.checked = false);
-                updateCount();
-                showToast('❌ Semua permission dihapus', 'warning');
-            });
+                // Update icon
+                icon.classList.add('expanded');
+                icon.textContent = '▼';
 
-            // Master Data auto-select
-            document.getElementById('perm-master-data').addEventListener('change', function(){
-                const masterCheckboxes = [
-                    'perm-master-karyawan',
-                    'perm-master-user',
-                    'perm-master-kontainer',
-                    'perm-master-pricelist-sewa-kontainer',
-                    'perm-master-tujuan',
-                    'perm-master-kegiatan',
-                    'perm-master-permission',
-                    'perm-master-mobil'
-                ];
-                masterCheckboxes.forEach(id => {
-                    const checkbox = document.getElementById(id);
-                    if (checkbox) checkbox.checked = this.checked;
+                // Show sub-modules
+                submodules.forEach(function(submodule) {
+                    submodule.style.display = 'table-row';
+                    submodule.classList.add('visible');
                 });
-                updateCount();
-            });
 
-            // Update count on any change
-            document.addEventListener('change', function(e){
-                if (e.target && e.target.classList && e.target.classList.contains('permission-checkbox')) {
-                    updateCount();
-                }
-            });
-
-            // Toast notification function
-            function showToast(message, type = 'info') {
-                const colors = {
-                    success: 'bg-green-500',
-                    error: 'bg-red-500',
-                    warning: 'bg-yellow-500',
-                    info: 'bg-blue-500'
-                };
-
-                const toast = document.createElement('div');
-                toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300`;
-                toast.textContent = message;
-                document.body.appendChild(toast);
-
-                setTimeout(() => {
-                    toast.style.opacity = '0';
-                    setTimeout(() => document.body.removeChild(toast), 300);
-                }, 3000);
+                // Update row styling
+                moduleRow.classList.add('expanded');
             }
 
-            // Permission card hover effects
-            document.querySelectorAll('.permission-card').forEach(card => {
-                card.addEventListener('mouseenter', function(){
-                    this.classList.add('ring-2', 'ring-blue-300');
+            // Collapse Module Function
+            function collapseModule(moduleName) {
+                const moduleRow = document.querySelector(`[data-module="${moduleName}"]`);
+                const icon = moduleRow.querySelector('.expand-icon');
+                const submodules = document.querySelectorAll(`[data-parent="${moduleName}"]`);
+
+                // Update icon
+                icon.classList.remove('expanded');
+                icon.textContent = '▶';
+
+                // Hide sub-modules
+                submodules.forEach(function(submodule) {
+                    submodule.style.display = 'none';
+                    submodule.classList.remove('visible');
                 });
-                card.addEventListener('mouseleave', function(){
-                    this.classList.remove('ring-2', 'ring-blue-300');
-                });
-            });
+
+                // Update row styling
+                moduleRow.classList.remove('expanded');
+            }
 
             // Copy Permission Feature
             document.getElementById('copy_permissions_btn').addEventListener('click', function(){
@@ -438,27 +668,24 @@
                     .then(data => {
                         if (data.success) {
                             const permissions = data.permissions;
-                            const userName = data.user.name;
+                            const userName = data.user.username;
 
                             // Uncheck all permissions first
-                            checkboxes().forEach(cb => cb.checked = false);
+                            document.querySelectorAll('.permission-checkbox').forEach(cb => cb.checked = false);
 
-                            // Check permissions that match
-                            let copiedCount = 0;
-                            checkboxes().forEach(cb => {
-                                if (permissions.includes(cb.value)) {
-                                    cb.checked = true;
-                                    copiedCount++;
+                            // Apply permissions from the copied user
+                            Object.keys(permissions).forEach(module => {
+                                if (permissions[module] && typeof permissions[module] === 'object') {
+                                    Object.keys(permissions[module]).forEach(action => {
+                                        const checkbox = document.querySelector(`input[name="permissions[${module}][${action}]"]`);
+                                        if (checkbox) {
+                                            checkbox.checked = true;
+                                        }
+                                    });
                                 }
                             });
 
-                            updateCount();
-
-                            if (copiedCount > 0) {
-                                showToast(`✅ Berhasil menyalin ${copiedCount} permission dari ${userName}`, 'success');
-                            } else {
-                                showToast(`⚠️ User ${userName} tidak memiliki permission yang bisa disalin`, 'warning');
-                            }
+                            showToast(`✅ Berhasil menyalin permission dari ${userName}`, 'success');
                         } else {
                             showToast('❌ Gagal mengambil data permission', 'error');
                         }
@@ -483,19 +710,92 @@
             // Initialize copy button state
             document.getElementById('copy_permissions_btn').disabled = true;
 
-            // Initialize count
-            updateCount();
+            // Check All Permissions Button
+            document.getElementById('check_all_permissions').addEventListener('click', function() {
+                const checkboxes = document.querySelectorAll('.permission-checkbox');
+                const isAllChecked = Array.from(checkboxes).every(cb => cb.checked);
 
-            // Form validation
-            document.querySelector('form').addEventListener('submit', function(e){
-                const checkedPermissions = checkboxes().filter(cb => cb.checked).length;
-                if (checkedPermissions === 0) {
-                    e.preventDefault();
-                    showToast('⚠️ Pilih minimal 1 permission untuk user', 'warning');
-                    return false;
+                if (isAllChecked) {
+                    // If all are checked, uncheck them
+                    checkboxes.forEach(cb => cb.checked = false);
+                    this.innerHTML = '✅ Centang Semua';
+                    this.classList.remove('bg-red-600', 'hover:bg-red-700');
+                    this.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                    showToast('❌ Semua izin telah dihapus', 'warning');
+                } else {
+                    // If not all checked, check them all
+                    checkboxes.forEach(cb => cb.checked = true);
+                    this.innerHTML = '❌ Hapus Semua';
+                    this.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                    this.classList.add('bg-red-600', 'hover:bg-red-700');
+                    showToast('✅ Semua izin telah dicentang', 'success');
                 }
-                showToast('🔄 Menyimpan perubahan user...', 'info');
             });
+
+            // Master Karyawan Permission Logic
+            // When any karyawan permission is checked, also check the main permission
+            function updateKaryawanMainPermission() {
+                const mainCheckbox = document.getElementById('master-karyawan-main-checkbox');
+                const karyawanCheckboxes = document.querySelectorAll('.karyawan-permission');
+
+                if (!mainCheckbox) {
+                    console.warn('Master karyawan main checkbox not found');
+                    return;
+                }
+
+                // Check if any karyawan permission is checked
+                const anyChecked = Array.from(karyawanCheckboxes).some(cb => cb.checked);
+
+                // Set main permission accordingly
+                mainCheckbox.checked = anyChecked;
+
+                // Update hidden input value
+                const hiddenInput = document.getElementById('master-karyawan-main');
+                if (hiddenInput) {
+                    hiddenInput.value = anyChecked ? '0' : '0'; // Hidden input is always 0, checkbox handles the value
+                }
+
+                console.log('Karyawan main permission updated:', anyChecked);
+            }
+
+            // Add event listeners to karyawan permission checkboxes
+            document.querySelectorAll('.karyawan-permission').forEach(function(checkbox) {
+                checkbox.addEventListener('change', function() {
+                    updateKaryawanMainPermission();
+
+                    const karyawanCheckboxes = document.querySelectorAll('.karyawan-permission');
+                    const anyChecked = Array.from(karyawanCheckboxes).some(cb => cb.checked);
+
+                    if (anyChecked) {
+                        showToast('✅ Permission menu Master Karyawan telah diaktifkan', 'success');
+                    } else {
+                        showToast('⚠️ Permission menu Master Karyawan telah dinonaktifkan', 'warning');
+                    }
+                });
+            });
+
+            // Initialize main permission on page load
+            updateKaryawanMainPermission();
+
+            // Toast notification function
+            function showToast(message, type = 'info') {
+                const colors = {
+                    success: 'bg-green-500',
+                    error: 'bg-red-500',
+                    warning: 'bg-yellow-500',
+                    info: 'bg-blue-500'
+                };
+
+                const toast = document.createElement('div');
+                toast.className = `fixed top-4 right-4 ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg z-50 transition-all duration-300`;
+                toast.textContent = message;
+                document.body.appendChild(toast);
+
+                // Auto remove after 3 seconds
+                setTimeout(() => {
+                    toast.remove();
+                }, 3000);
+            }
         });
     </script>
 @endpush
