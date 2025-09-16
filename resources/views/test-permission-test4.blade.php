@@ -33,7 +33,7 @@
                     </div>
 
                     <div class="mt-4">
-                        <a href="{{ route('karyawan.index') }}" class="btn btn-primary">
+                        <a href="{{ route('master.karyawan.index') }}" class="btn btn-primary">
                             Test Akses Karyawan Page
                         </a>
                         <a href="{{ route('karyawan.create') }}" class="btn btn-warning">

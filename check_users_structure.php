@@ -1,36 +1,43 @@
 <?php
 
-require_once 'vendor/autoload.php';
+$host = '127.0.0.1';
+$dbname = 'aypsis';
+$username = 'root';
+$password = '';
 
-use Illuminate\Foundation\Application;
-use Illuminate\Contracts\Console\Kernel;
-use Illuminate\Support\Facades\Schema;
-use App\Models\User;
+try {
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Kernel::class);
-$kernel->bootstrap();
+    echo "=== Users Table Structure ===\n";
+    $stmt = $pdo->query("DESCRIBE users");
+    $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-echo "🔍 Cek Struktur Tabel Users\n";
-echo "===========================\n\n";
-
-$columns = Schema::getColumnListing('users');
-echo "Kolom yang tersedia di tabel users:\n";
-foreach ($columns as $column) {
-    echo "   - {$column}\n";
-}
-echo "\n";
-
-// Cek data user test4
-$userTest4 = User::where('username', 'test4')->first();
-if ($userTest4) {
-    echo "👤 Data user test4:\n";
-    foreach ($columns as $column) {
-        $value = $userTest4->$column;
-        echo "   {$column}: " . (is_null($value) ? 'NULL' : $value) . "\n";
+    foreach($columns as $col) {
+        echo $col['Field'] . ' (' . $col['Type'] . ")\n";
     }
-} else {
-    echo "❌ User test4 tidak ditemukan\n";
-}
 
-echo "\n🔍 Pengecekan selesai!\n";
+    echo "\n=== Finding User test4 ===\n";
+    // Try different column names
+    $possibleColumns = ['name', 'username', 'email'];
+
+    foreach($possibleColumns as $col) {
+        try {
+            $stmt = $pdo->prepare("SELECT id, $col FROM users WHERE $col = ?");
+            $stmt->execute(['test4']);
+            $user = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            if($user) {
+                echo "Found user with $col = test4:\n";
+                echo "ID: " . $user['id'] . "\n";
+                echo "$col: " . $user[$col] . "\n";
+                break;
+            }
+        } catch(PDOException $e) {
+            // Column doesn't exist, continue
+        }
+    }
+
+} catch(PDOException $e) {
+    echo "Database Error: " . $e->getMessage() . "\n";
+}

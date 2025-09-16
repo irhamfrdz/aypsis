@@ -209,4 +209,33 @@ class User extends Authenticatable
     {
         return $this->roles->contains('name', $roleName);
     }
+
+    /**
+     * Check if the user can perform a specific action (alias for hasPermissionTo).
+     * This method is used by the sidebar layout and other parts of the application.
+     *
+     * @param string|array $abilities
+     * @param array $arguments
+     * @return bool
+     */
+    public function can($abilities, $arguments = []): bool
+    {
+        // Handle string ability (most common case in this app)
+        if (is_string($abilities)) {
+            return $this->hasPermissionTo($abilities);
+        }
+
+        // Handle array of abilities
+        if (is_array($abilities)) {
+            foreach ($abilities as $ability) {
+                if (is_string($ability) && $this->hasPermissionTo($ability)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // For other cases, fall back to parent implementation
+        return parent::can($abilities, $arguments);
+    }
 }

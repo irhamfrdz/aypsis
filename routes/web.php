@@ -151,10 +151,7 @@ Route::middleware([
             Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
                 ->name('karyawan.crew-checklist.print');
 
-         // Individual routes for karyawan with specific permissions
-         Route::get('karyawan', [KaryawanController::class, 'index'])
-              ->name('karyawan.index')
-              ->middleware('permission:master-karyawan.view');
+         // Individual routes for karyawan with specific permissions (except index which is defined outside master group)
          Route::get('karyawan/create', [KaryawanController::class, 'create'])
               ->name('karyawan.create')
               ->middleware('permission:master-karyawan.create');
@@ -376,6 +373,11 @@ Route::middleware([
              ->name('pricelist-sewa-kontainer.destroy')
              ->middleware('can:master-pricelist-sewa-kontainer.delete');
     });
+
+    // Route master.karyawan.index di luar group master untuk konsistensi dengan view
+    Route::get('master/karyawan', [KaryawanController::class, 'index'])
+         ->name('master.karyawan.index')
+         ->middleware('permission:master-karyawan.view');
 
     // --- Rute Permohonan ---
     // CSV export/import for permohonan (declare before resource to avoid routing conflict with parameterized routes)

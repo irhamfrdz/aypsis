@@ -7,7 +7,43 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 use App\Models\User;
 use App\Http\Controllers\UserController;
 
-// Get user admin
+echo "🔍 Testing end-to-end permission system\n";
+echo "========================================\n\n";
+
+// Create test user
+$user = User::create([
+    'username' => 'test_permission_' . time(),
+    'password' => bcrypt('password')
+]);
+
+echo "Created user: {$user->username} (ID: {$user->id})\n\n";
+
+// Test convertMatrixPermissionsToIds
+$controller = new UserController();
+$permissionIds = $controller->testConvertMatrixPermissionsToIds(['master-karyawan' => ['view' => '1']]);
+
+echo "Permission IDs from matrix conversion:\n";
+foreach ($permissionIds as $id) {
+    $perm = \App\Models\Permission::find($id);
+    echo "  - {$id}: {$perm->name}\n";
+}
+echo "\n";
+
+// Sync permissions to user
+$user->permissions()->sync($permissionIds);
+
+echo "User permissions after sync:\n";
+foreach ($user->permissions as $perm) {
+    echo "  - {$perm->name} (ID: {$perm->id})\n";
+}
+echo "\n";
+
+// Test permission checks
+echo "Permission checks:\n";
+echo "Can master-karyawan.view: " . ($user->can('master-karyawan.view') ? 'YES' : 'NO') . "\n";
+echo "Can master.karyawan.show: " . ($user->can('master.karyawan.show') ? 'YES' : 'NO') . "\n";
+
+echo "\n✅ Test completed!\n";
 $user = User::find(1);
 
 if (!$user) {

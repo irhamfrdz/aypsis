@@ -668,24 +668,161 @@ class UserController extends Controller
                             $baseModule = $moduleParts[0]; // master
                             $subModule = $moduleParts[1]; // karyawan
 
-                            // Try master.submodule.action pattern - PRIORITY for master modules
-                            foreach ($possibleActions as $dbAction) {
-                                $permissionName = $baseModule . '.' . $subModule . '.' . $dbAction;
-                                $permission = Permission::where('name', $permissionName)->first();
+                            // DIRECT FIX: Handle master-karyawan permissions explicitly
+                            if ($module === 'master-karyawan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-karyawan.view',
+                                    'create' => 'master-karyawan.create',
+                                    'update' => 'master-karyawan.update',
+                                    'delete' => 'master-karyawan.delete',
+                                    'print' => 'master-karyawan.print',
+                                    'export' => 'master-karyawan.export'
+                                ];
 
-                                if ($permission) {
-                                    $permissionIds[] = $permission->id;
-                                    $found = true;
-                                    break; // Stop after finding the first matching permission for this action
-                                }
-                                // Also try dash variant if present (module-action)
-                                $permissionDash = Permission::where('name', $baseModule . '-' . $subModule . '-' . $dbAction)->first();
-                                if ($permissionDash) {
-                                    $permissionIds[] = $permissionDash->id;
-                                    $found = true;
-                                    break; // Stop after finding the first matching permission
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
                                 }
                             }
+
+                            // DIRECT FIX: Handle master-kontainer permissions explicitly
+                            if ($module === 'master-kontainer' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-kontainer.view',
+                                    'create' => 'master-kontainer.create',
+                                    'update' => 'master-kontainer.update',
+                                    'delete' => 'master-kontainer.delete',
+                                    'print' => 'master-kontainer.print',
+                                    'export' => 'master-kontainer.export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-tujuan permissions explicitly
+                            if ($module === 'master-tujuan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-tujuan.view',
+                                    'create' => 'master-tujuan.create',
+                                    'update' => 'master-tujuan.update',
+                                    'delete' => 'master-tujuan.delete',
+                                    'print' => 'master-tujuan.print',
+                                    'export' => 'master-tujuan.export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-kegiatan permissions explicitly
+                            if ($module === 'master-kegiatan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-kegiatan.view',
+                                    'create' => 'master-kegiatan.create',
+                                    'update' => 'master-kegiatan.update',
+                                    'delete' => 'master-kegiatan.delete',
+                                    'print' => 'master-kegiatan.print',
+                                    'export' => 'master-kegiatan.export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-permission permissions explicitly
+                            if ($module === 'master-permission' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-permission.view',
+                                    'create' => 'master-permission.create',
+                                    'update' => 'master-permission.update',
+                                    'delete' => 'master-permission.delete',
+                                    'print' => 'master-permission.print',
+                                    'export' => 'master-permission.export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-mobil permissions explicitly
+                            if ($module === 'master-mobil' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-mobil.view',
+                                    'create' => 'master-mobil.create',
+                                    'update' => 'master-mobil.update',
+                                    'delete' => 'master-mobil.delete',
+                                    'print' => 'master-mobil.print',
+                                    'export' => 'master-mobil.export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+                                foreach ($possibleActions as $dbAction) {
+                                    // 1. Cek master-karyawan.view (format yang benar untuk database)
+                                    $permissionDash = Permission::where('name', $module . '.' . $dbAction)->first();
+                                    if ($permissionDash) {
+                                        $permissionIds[] = $permissionDash->id;
+                                        $found = true;
+                                        error_log("PATCH SUCCESS: Found {$module}.{$dbAction} with ID {$permissionDash->id}");
+                                        break;
+                                    }
+                                    // 2. Fallback ke master.karyawan.view (legacy format)
+                                    $permissionDot = Permission::where('name', $baseModule . '.' . $subModule . '.' . $dbAction)->first();
+                                    if ($permissionDot) {
+                                        $permissionIds[] = $permissionDot->id;
+                                        $found = true;
+                                        error_log("PATCH FALLBACK: Found {$baseModule}.{$subModule}.{$dbAction} with ID {$permissionDot->id}");
+                                        break;
+                                    }
+                                }
 
                             // Special handling for pricelist (different pattern)
                             if (!$found && $subModule === 'pricelist' && isset($moduleParts[2])) {
