@@ -69,23 +69,6 @@
                     <p class="mt-1 text-xs text-gray-500">Kode akan otomatis dikonversi ke huruf besar</p>
                 </div>
 
-                <!-- Deskripsi -->
-                <div>
-                    <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-2">
-                        Deskripsi
-                    </label>
-                    <textarea name="deskripsi"
-                              id="deskripsi"
-                              rows="4"
-                              maxlength="500"
-                              class="w-full px-3 py-2 border-2 border-gray-400 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
-                              placeholder="Masukkan deskripsi divisi (opsional)">{{ old('deskripsi') }}</textarea>
-                    @error('deskripsi')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    <p class="mt-1 text-xs text-gray-500">Maksimal 500 karakter</p>
-                </div>
-
                 <!-- Divisi -->
                 <div>
                     <label for="divisi" class="block text-sm font-medium text-gray-700 mb-2">
@@ -157,24 +140,6 @@ document.addEventListener('DOMContentLoaded', function() {
         kodePekerjaanInput.addEventListener('input', function() {
             this.value = this.value.toUpperCase();
         });
-    }
-
-    // Character counter untuk deskripsi
-    const deskripsiTextarea = document.getElementById('deskripsi');
-    if (deskripsiTextarea) {
-        const maxLength = 500;
-        const counter = document.createElement('div');
-        counter.className = 'text-xs text-gray-500 mt-1 text-right';
-        deskripsiTextarea.parentNode.appendChild(counter);
-
-        function updateCounter() {
-            const remaining = maxLength - deskripsiTextarea.value.length;
-            counter.textContent = `${deskripsiTextarea.value.length}/${maxLength} karakter`;
-            counter.className = `text-xs mt-1 text-right ${remaining < 50 ? 'text-orange-600' : 'text-gray-500'}`;
-        }
-
-        deskripsiTextarea.addEventListener('input', updateCounter);
-        updateCounter(); // Initial count
     }
 });
 </script>

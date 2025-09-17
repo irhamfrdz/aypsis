@@ -49,7 +49,6 @@ class PekerjaanController extends Controller
         $request->validate([
             'nama_pekerjaan' => 'required|string|max:100|unique:pekerjaans,nama_pekerjaan',
             'kode_pekerjaan' => 'required|string|max:20|unique:pekerjaans,kode_pekerjaan',
-            'deskripsi' => 'nullable|string|max:500',
             'divisi' => 'required|string|max:100',
             'is_active' => 'boolean'
         ]);
@@ -58,7 +57,6 @@ class PekerjaanController extends Controller
             Pekerjaan::create([
                 'nama_pekerjaan' => $request->nama_pekerjaan,
                 'kode_pekerjaan' => strtoupper($request->kode_pekerjaan),
-                'deskripsi' => $request->deskripsi,
                 'divisi' => $request->divisi,
                 'is_active' => $request->has('is_active')
             ]);
@@ -100,7 +98,6 @@ class PekerjaanController extends Controller
         $request->validate([
             'nama_pekerjaan' => ['required', 'string', 'max:100', Rule::unique('pekerjaans')->ignore($pekerjaan->id)],
             'kode_pekerjaan' => ['required', 'string', 'max:20', Rule::unique('pekerjaans')->ignore($pekerjaan->id)],
-            'deskripsi' => 'nullable|string|max:500',
             'divisi' => 'required|string|max:100',
             'is_active' => 'boolean'
         ]);
@@ -109,7 +106,6 @@ class PekerjaanController extends Controller
             $pekerjaan->update([
                 'nama_pekerjaan' => $request->nama_pekerjaan,
                 'kode_pekerjaan' => strtoupper($request->kode_pekerjaan),
-                'deskripsi' => $request->deskripsi,
                 'divisi' => $request->divisi,
                 'is_active' => $request->has('is_active')
             ]);

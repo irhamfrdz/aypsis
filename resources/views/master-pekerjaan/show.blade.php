@@ -101,13 +101,6 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
-                            <p class="text-gray-900 bg-gray-50 rounded-lg p-4 {{ $pekerjaan->deskripsi ? '' : 'text-gray-500 italic' }}">
-                                {{ $pekerjaan->deskripsi ?: 'Tidak ada deskripsi' }}
-                            </p>
-                        </div>
-
-                        <div>
                             <label class="block text-sm font-medium text-gray-700 mb-2">ID Pekerjaan</label>
                             <span class="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded">{{ $pekerjaan->id }}</span>
                         </div>
