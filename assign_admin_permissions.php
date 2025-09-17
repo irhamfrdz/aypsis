@@ -12,6 +12,7 @@ $response = $kernel->handle(
 
 use App\Models\User;
 use App\Models\Permission;
+use Illuminate\Support\Facades\DB;
 
 // Get admin user (assuming user ID 1 is admin)
 $admin = User::find(1);
@@ -19,20 +20,36 @@ $admin = User::find(1);
 if ($admin) {
     echo "Admin user: " . $admin->name . "\n";
 
-    // Give master-pranota permission
-    $permission = Permission::where('name', 'master-pranota')->first();
-    if ($permission) {
-        if (!$admin->hasPermissionTo('master-pranota')) {
-            $admin->givePermissionTo('master-pranota');
-            echo "Gave 'master-pranota' permission to admin\n";
+    // Get all permissions
+    $allPermissions = Permission::all();
+    $grantedCount = 0;
+
+    foreach ($allPermissions as $permission) {
+        // Check if admin already has this permission
+        $existing = DB::table('user_permissions')
+            ->where('user_id', $admin->id)
+            ->where('permission_id', $permission->id)
+            ->first();
+
+        if (!$existing) {
+            DB::table('user_permissions')->insert([
+                'user_id' => $admin->id,
+                'permission_id' => $permission->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            echo "✅ Granted: {$permission->name}\n";
+            $grantedCount++;
         } else {
-            echo "Admin already has 'master-pranota' permission\n";
+            echo "⚠️  Already has: {$permission->name}\n";
         }
     }
 
+    echo "\n📊 Summary: Granted {$grantedCount} new permissions\n";
+
     // Check all admin permissions
     echo "\nAdmin permissions:\n";
-    foreach ($admin->getAllPermissions() as $permission) {
+    foreach ($admin->permissions as $permission) {
         echo "- " . $permission->name . "\n";
     }
 } else {

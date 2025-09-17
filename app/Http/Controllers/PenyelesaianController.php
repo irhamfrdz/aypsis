@@ -256,8 +256,15 @@ class PenyelesaianController extends Controller
      * @param Permohonan $permohonan
      * @param string $tanggalPerbaikan (Y-m-d)
      */
-    protected function createPerbaikanKontainer(Permohonan $permohonan, $tanggalPerbaikan)
+    protected function createPerbaikanKontainer(Permohonan $permohonan, $tanggalPerbaikan, Request $request = null)
     {
+        Log::debug('createPerbaikanKontainer: method called', [
+            'permohonan_id' => $permohonan->id,
+            'tanggal_perbaikan' => $tanggalPerbaikan,
+            'has_request' => $request !== null,
+            'request_data' => $request ? $request->all() : null
+        ]);
+
         try {
             // Check if this is a perbaikan kegiatan
             $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
@@ -299,13 +306,49 @@ class PenyelesaianController extends Controller
 
                 // Create new perbaikan kontainer record
                 $perbaikanData = [
-                    'nomor_memo_perbaikan' => \App\Models\PerbaikanKontainer::generateNomorMemoPerbaikan(),
+                    'nomor_tagihan' => \App\Models\PerbaikanKontainer::generateNomorTagihan(),
                     'kontainer_id' => $kontainer->id,
                     'tanggal_perbaikan' => $tanggalPerbaikan,
                     'deskripsi_perbaikan' => 'Perbaikan kontainer berdasarkan permohonan ID: ' . $permohonan->id,
                     'status_perbaikan' => 'belum_masuk_pranota',
                     'created_by' => Auth::id() ?? 1, // Default to admin if no user logged in
                 ];
+
+                // Add vendor_bengkel if provided in request
+                if ($request && $request->has('vendor_bengkel') && !empty($request->vendor_bengkel)) {
+                    $perbaikanData['vendor_bengkel'] = $request->vendor_bengkel;
+                    Log::debug('PenyelesaianController: vendor_bengkel set', [
+                        'vendor_bengkel_value' => $request->vendor_bengkel
+                    ]);
+                }
+
+                // Add estimasi biaya perbaikan if provided in request
+                if ($request && $request->has('estimasi_perbaikan') && !empty($request->estimasi_perbaikan)) {
+                    $perbaikanData['catatan'] = $request->estimasi_perbaikan;
+                }
+
+                // Add estimasi perbaikan (description) to estimasi_kerusakan_kontainer if provided
+                if ($request && $request->has('estimasi_perbaikan') && !empty($request->estimasi_perbaikan)) {
+                    $perbaikanData['estimasi_kerusakan_kontainer'] = $request->estimasi_perbaikan;
+                    Log::debug('PenyelesaianController: estimasi_kerusakan_kontainer set with description', [
+                        'estimasi_perbaikan_value' => $request->estimasi_perbaikan
+                    ]);
+                }
+
+                // Add total biaya perbaikan as estimasi_biaya_perbaikan if provided
+                if ($request && $request->has('total_biaya_perbaikan') && !empty($request->total_biaya_perbaikan)) {
+                    // Remove thousand separators and convert to numeric
+                    $biayaClean = str_replace(['.', ','], ['', '.'], $request->total_biaya_perbaikan);
+                    $biayaNumeric = (float) $biayaClean;
+                    if ($biayaNumeric > 0) {
+                        $perbaikanData['estimasi_biaya_perbaikan'] = $biayaNumeric;
+                        Log::debug('PenyelesaianController: estimasi_biaya_perbaikan set with amount', [
+                            'original_value' => $request->total_biaya_perbaikan,
+                            'cleaned_value' => $biayaClean,
+                            'numeric_value' => $biayaNumeric
+                        ]);
+                    }
+                }
 
                 $perbaikanRecord = \App\Models\PerbaikanKontainer::create($perbaikanData);
                 $createdRecords++;
@@ -490,6 +533,8 @@ class PenyelesaianController extends Controller
             // Validasi untuk estimasi perbaikan dan total biaya
             'estimasi_perbaikan' => 'nullable|string|max:1000',
             'total_biaya_perbaikan' => 'nullable|numeric|min:0',
+            // Validasi untuk vendor/bengkel
+            'vendor_bengkel' => 'required|string|max:255',
         ]);
 
         DB::beginTransaction();
@@ -569,7 +614,7 @@ class PenyelesaianController extends Controller
                 $this->createOrUpdateTagihan($permohonan, $dateForTagihan, $request->input('kontainers'));
 
                 // Create perbaikan kontainer records if this is a perbaikan kegiatan
-                $createdPerbaikanCount = $this->createPerbaikanKontainer($permohonan, $dateForTagihan);
+                $createdPerbaikanCount = $this->createPerbaikanKontainer($permohonan, $dateForTagihan, $request);
 
             }
 
@@ -580,18 +625,18 @@ class PenyelesaianController extends Controller
             // Prepare success message with perbaikan info if any were created
             $successMessage = 'Permohonan berhasil diselesaikan!';
             if (isset($createdPerbaikanCount) && $createdPerbaikanCount > 0) {
-                $successMessage .= " {$createdPerbaikanCount} record perbaikan kontainer telah dibuat dengan nomor memo otomatis.";
+                $successMessage .= " {$createdPerbaikanCount} record perbaikan kontainer telah dibuat dengan nomor tagihan otomatis.";
 
-                // Get the latest perbaikan records to show memo numbers
+                // Get the latest perbaikan records to show tagihan numbers
                 $latestPerbaikans = \App\Models\PerbaikanKontainer::where('created_by', Auth::id() ?? 1)
                     ->whereDate('created_at', today())
                     ->orderBy('created_at', 'desc')
                     ->take($createdPerbaikanCount)
-                    ->pluck('nomor_memo_perbaikan')
+                    ->pluck('nomor_tagihan')
                     ->toArray();
 
                 if (!empty($latestPerbaikans)) {
-                    $successMessage .= " Nomor memo: " . implode(', ', $latestPerbaikans);
+                    $successMessage .= " Nomor tagihan: " . implode(', ', $latestPerbaikans);
                 }
             }
 

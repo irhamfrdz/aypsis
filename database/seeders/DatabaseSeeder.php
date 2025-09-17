@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             UserPermissionSeeder::class, // Seeder untuk user permissions
             KontainerSeeder::class,
             TujuanSeeder::class,
+            DivisiSeeder::class, // Seeder untuk master divisi
         ]);
     }
 }

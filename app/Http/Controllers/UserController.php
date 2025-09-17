@@ -21,9 +21,26 @@ class UserController extends Controller
      * @return \Illuminate\View\View
      */
 
-    public function index()
+    public function index(Request $request)
     {
-        $users = User::with('karyawan')->get();
+        $query = User::with('karyawan');
+
+        // Handle search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('username', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhereHas('karyawan', function ($karyawanQuery) use ($searchTerm) {
+                      $karyawanQuery->where('nama_lengkap', 'LIKE', '%' . $searchTerm . '%')
+                                   ->orWhere('nik', 'LIKE', '%' . $searchTerm . '%')
+                                   ->orWhere('divisi', 'LIKE', '%' . $searchTerm . '%')
+                                   ->orWhere('pekerjaan', 'LIKE', '%' . $searchTerm . '%');
+                  });
+            });
+        }
+
+        $users = $query->paginate(15); // 15 users per page for better performance
+
         return view('master-user.index', compact('users'));
     }
 
@@ -793,6 +810,29 @@ class UserController extends Controller
                                     'delete' => 'master-mobil.delete',
                                     'print' => 'master-mobil.print',
                                     'export' => 'master-mobil.export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-divisi permissions explicitly
+                            if ($module === 'master-divisi' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-divisi.view',
+                                    'create' => 'master-divisi.create',
+                                    'update' => 'master-divisi.update',
+                                    'delete' => 'master-divisi.delete',
+                                    'print' => 'master-divisi.print',
+                                    'export' => 'master-divisi.export'
                                 ];
 
                                 if (isset($actionMap[$action])) {

@@ -50,16 +50,8 @@
                             <p class="text-sm text-gray-900">{{ $perbaikanKontainer->kontainer->nomor_kontainer ?? 'N/A' }}</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600">Nomor Memo Perbaikan</label>
-                            <p class="text-sm text-gray-900 font-mono">{{ $perbaikanKontainer->nomor_memo_perbaikan ?? 'N/A' }}</p>
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-gray-600">Ukuran</label>
                             <p class="text-sm text-gray-900">{{ $perbaikanKontainer->kontainer->ukuran ?? 'N/A' }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">Tipe</label>
-                            <p class="text-sm text-gray-900">{{ $perbaikanKontainer->kontainer->tipe ?? 'N/A' }}</p>
                         </div>
                     </div>
                 </div>
@@ -69,15 +61,23 @@
                     <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Perbaikan</h3>
                     <div class="space-y-3">
                         <div>
-                            <label class="block text-sm font-medium text-gray-600">Tanggal Mulai</label>
+                            <label class="block text-sm font-medium text-gray-600">Tanggal Perbaikan</label>
                             <p class="text-sm text-gray-900">
-                                {{ $perbaikanKontainer->tanggal_mulai ? \Carbon\Carbon::parse($perbaikanKontainer->tanggal_mulai)->format('d F Y') : '-' }}
+                                {{ $perbaikanKontainer->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikanKontainer->tanggal_perbaikan)->format('d F Y') : '-' }}
                             </p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-600">Estimasi Selesai</label>
+                            <label class="block text-sm font-medium text-gray-600">Tanggal Selesai</label>
                             <p class="text-sm text-gray-900">
-                                {{ $perbaikanKontainer->estimasi_selesai ? \Carbon\Carbon::parse($perbaikanKontainer->estimasi_selesai)->format('d F Y') : '-' }}
+                                {{ $perbaikanKontainer->tanggal_selesai ? \Carbon\Carbon::parse($perbaikanKontainer->tanggal_selesai)->format('d F Y') : '-' }}
+                            </p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">Status</label>
+                            <p class="text-sm text-gray-900">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $perbaikanKontainer->status_color }}">
+                                    {{ $perbaikanKontainer->status_label }}
+                                </span>
                             </p>
                         </div>
                     </div>
@@ -89,13 +89,19 @@
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Detail Kerusakan</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-2">Jenis Kerusakan</label>
-                        <p class="text-sm text-gray-900 bg-white p-3 rounded border">{{ $perbaikanKontainer->jenis_kerusakan }}</p>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Estimasi Kerusakan Kontainer</label>
+                        <p class="text-sm text-gray-900 bg-white p-3 rounded border">{{ $perbaikanKontainer->estimasi_kerusakan_kontainer }}</p>
                     </div>
-                    @if($perbaikanKontainer->deskripsi_kerusakan)
+                    @if($perbaikanKontainer->deskripsi_perbaikan)
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-2">Deskripsi Kerusakan</label>
-                        <p class="text-sm text-gray-900 bg-white p-3 rounded border">{{ $perbaikanKontainer->deskripsi_kerusakan }}</p>
+                        <p class="text-sm text-gray-900 bg-white p-3 rounded border">{{ $perbaikanKontainer->deskripsi_perbaikan }}</p>
+                    </div>
+                    @endif
+                    @if($perbaikanKontainer->realisasi_kerusakan)
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-2">Realisasi Kerusakan Kontainer</label>
+                        <p class="text-sm text-gray-900 bg-white p-3 rounded border">{{ $perbaikanKontainer->realisasi_kerusakan }}</p>
                     </div>
                     @endif
                 </div>
@@ -104,23 +110,17 @@
             <!-- Biaya Information -->
             <div class="mt-6 bg-gray-50 rounded-lg p-4">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Biaya</h3>
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-600">Biaya Perbaikan</label>
+                        <label class="block text-sm font-medium text-gray-600">Estimasi Biaya Perbaikan</label>
                         <p class="text-lg font-semibold text-green-600">
-                            Rp {{ number_format($perbaikanKontainer->biaya_perbaikan ?? 0, 0, ',', '.') }}
+                            Rp {{ number_format($perbaikanKontainer->estimasi_biaya_perbaikan ?? 0, 0, ',', '.') }}
                         </p>
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-600">Biaya Sparepart</label>
+                        <label class="block text-sm font-medium text-gray-600">Realisasi Biaya Perbaikan</label>
                         <p class="text-lg font-semibold text-blue-600">
-                            Rp {{ number_format($perbaikanKontainer->biaya_sparepart ?? 0, 0, ',', '.') }}
-                        </p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">Total Biaya</label>
-                        <p class="text-lg font-semibold text-purple-600">
-                            Rp {{ number_format(($perbaikanKontainer->biaya_perbaikan ?? 0) + ($perbaikanKontainer->biaya_sparepart ?? 0), 0, ',', '.') }}
+                            Rp {{ number_format($perbaikanKontainer->realisasi_biaya_perbaikan ?? 0, 0, ',', '.') }}
                         </p>
                     </div>
                 </div>
@@ -133,27 +133,6 @@
                 <p class="text-sm text-gray-900 bg-white p-3 rounded border">{{ $perbaikanKontainer->catatan }}</p>
             </div>
             @endif
-
-            <!-- Audit Information -->
-            <div class="mt-6 bg-gray-50 rounded-lg p-4">
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Informasi Audit</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">Dibuat Oleh</label>
-                        <p class="text-sm text-gray-900">{{ $perbaikanKontainer->creator->name ?? 'N/A' }}</p>
-                        <p class="text-xs text-gray-500">
-                            {{ $perbaikanKontainer->created_at ? \Carbon\Carbon::parse($perbaikanKontainer->created_at)->format('d F Y H:i') : '-' }}
-                        </p>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-medium text-gray-600">Terakhir Diupdate</label>
-                        <p class="text-sm text-gray-900">{{ $perbaikanKontainer->updater->name ?? 'N/A' }}</p>
-                        <p class="text-xs text-gray-500">
-                            {{ $perbaikanKontainer->updated_at ? \Carbon\Carbon::parse($perbaikanKontainer->updated_at)->format('d F Y H:i') : '-' }}
-                        </p>
-                    </div>
-                </div>
-            </div>
 
             <!-- Status Update Form (for quick status changes) -->
             @can('master-perbaikan-kontainer.update')

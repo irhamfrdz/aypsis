@@ -7,7 +7,8 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KontainerController;
-use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\PekerjaanController;
 
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\PermohonanController;
@@ -96,68 +97,68 @@ Route::middleware([
 
     // --- Grup Rute Master Data ---
     Route::prefix('master')->name('master.')->group(function() {
-          // Print all karyawan (print-friendly)
-          Route::get('karyawan/print', [KaryawanController::class, 'print'])
-               ->name('karyawan.print')
-               ->middleware('permission:master-karyawan.print');
+        // Print all karyawan (print-friendly)
+        Route::get('karyawan/print', [KaryawanController::class, 'print'])
+             ->name('karyawan.print')
+             ->middleware('permission:master-karyawan.print');
 
-          // Print single karyawan (form layout)
-          Route::get('karyawan/{karyawan}/print', [KaryawanController::class, 'printSingle'])
-               ->name('karyawan.print.single')
-               ->middleware('permission:master-karyawan.print');
+        // Print single karyawan (form layout)
+        Route::get('karyawan/{karyawan}/print', [KaryawanController::class, 'printSingle'])
+             ->name('karyawan.print.single')
+             ->middleware('permission:master-karyawan.print');
 
-               // Import karyawan from CSV (simple uploader)
-               Route::get('karyawan/import', [KaryawanController::class, 'importForm'])
-                    ->name('karyawan.import')
-                    ->middleware(['auth', 'permission:master-karyawan.create']);
+        // Import karyawan from CSV (simple uploader)
+        Route::get('karyawan/import', [KaryawanController::class, 'importForm'])
+             ->name('karyawan.import')
+             ->middleware(['auth', 'permission:master-karyawan.create']);
 
-               Route::post('karyawan/import', [KaryawanController::class, 'importStore'])
-                    ->name('karyawan.import.store')
-                    ->middleware(['auth', 'permission:master-karyawan.create']);
+        Route::post('karyawan/import', [KaryawanController::class, 'importStore'])
+             ->name('karyawan.import.store')
+             ->middleware(['auth', 'permission:master-karyawan.create']);
 
-               // Export/download CSV of all karyawan
-               Route::get('karyawan/export', [KaryawanController::class, 'export'])
-                    ->name('karyawan.export')
-                    ->middleware('permission:master-karyawan.export');
+        // Export/download CSV of all karyawan
+        Route::get('karyawan/export', [KaryawanController::class, 'export'])
+             ->name('karyawan.export')
+             ->middleware('permission:master-karyawan.export');
 
-               // Export Excel-formatted CSV to prevent scientific notation
-               Route::get('karyawan/export-excel', [KaryawanController::class, 'exportExcel'])
-                    ->name('karyawan.export-excel')
-                    ->middleware('permission:master-karyawan.export');
+        // Export Excel-formatted CSV to prevent scientific notation
+        Route::get('karyawan/export-excel', [KaryawanController::class, 'exportExcel'])
+             ->name('karyawan.export-excel')
+             ->middleware('permission:master-karyawan.export');
 
-               // Download CSV template for import
-               Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
-                    ->name('karyawan.template');
+        // Download CSV template for import
+        Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
+             ->name('karyawan.template');
 
-               // Download Excel template for import
-               Route::get('karyawan/excel-template', [KaryawanController::class, 'downloadExcelTemplate'])
-                    ->name('karyawan.excel-template');
+        // Download Excel template for import
+        Route::get('karyawan/excel-template', [KaryawanController::class, 'downloadExcelTemplate'])
+             ->name('karyawan.excel-template');
 
-               // Download simple Excel template for import (headers only)
-               Route::get('karyawan/simple-excel-template', [KaryawanController::class, 'downloadSimpleExcelTemplate'])
-                    ->name('karyawan.simple-excel-template');
+        // Download simple Excel template for import (headers only)
+        Route::get('karyawan/simple-excel-template', [KaryawanController::class, 'downloadSimpleExcelTemplate'])
+             ->name('karyawan.simple-excel-template');
 
-               // Crew checklist for ABK employees
+        // Crew checklist for ABK employees
         Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
             ->name('karyawan.crew-checklist');
 
-            // NEW: Simplified crew checklist page
-            Route::get('karyawan/{karyawan}/crew-checklist-new', [KaryawanController::class, 'crewChecklistNew'])
-                ->name('karyawan.crew-checklist-new');
+        // NEW: Simplified crew checklist page
+        Route::get('karyawan/{karyawan}/crew-checklist-new', [KaryawanController::class, 'crewChecklistNew'])
+            ->name('karyawan.crew-checklist-new');
 
-            Route::post('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'updateCrewChecklist'])
-                ->name('karyawan.crew-checklist.update');
+        Route::post('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'updateCrewChecklist'])
+            ->name('karyawan.crew-checklist.update');
 
-            Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
-                ->name('karyawan.crew-checklist.print');
+        Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
+            ->name('karyawan.crew-checklist.print');
 
-         // Individual routes for karyawan with specific permissions (except index which is defined outside master group)
-         Route::get('karyawan/create', [KaryawanController::class, 'create'])
-              ->name('karyawan.create')
-              ->middleware('permission:master-karyawan.create');
-         Route::post('karyawan', [KaryawanController::class, 'store'])
-              ->name('karyawan.store')
-              ->middleware('permission:master-karyawan.create');
+        // Individual routes for karyawan with specific permissions (except index which is defined outside master group)
+        Route::get('karyawan/create', [KaryawanController::class, 'create'])
+             ->name('karyawan.create')
+             ->middleware('permission:master-karyawan.create');
+        Route::post('karyawan', [KaryawanController::class, 'store'])
+             ->name('karyawan.store')
+             ->middleware('permission:master-karyawan.create');
          Route::get('karyawan/{karyawan}', [KaryawanController::class, 'show'])
               ->name('karyawan.show')
               ->middleware('permission:master-karyawan.view');
@@ -348,8 +349,6 @@ Route::middleware([
              ->name('mobil.destroy')
              ->middleware('can:master-mobil.delete');
 
-     // Route kontainer-sewa dipindahkan ke luar prefix master
-
         // Master pricelist sewa kontainer routes (with master prefix) - granular permissions
         Route::get('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'index'])
              ->name('pricelist-sewa-kontainer.index')
@@ -373,6 +372,52 @@ Route::middleware([
              ->name('pricelist-sewa-kontainer.destroy')
              ->middleware('can:master-pricelist-sewa-kontainer.delete');
     });
+
+    // TEMPORARY: Master divisi routes moved outside master group for testing
+    Route::get('master/divisi', [DivisiController::class, 'index'])
+         ->name('master.divisi.index')
+         ->middleware('can:master-divisi.view');
+    Route::get('master/divisi/create', [DivisiController::class, 'create'])
+         ->name('master.divisi.create')
+         ->middleware('can:master-divisi.create');
+    Route::post('master/divisi', [DivisiController::class, 'store'])
+         ->name('master.divisi.store')
+         ->middleware('can:master-divisi.create');
+    Route::get('master/divisi/{divisi}', [DivisiController::class, 'show'])
+         ->name('master.divisi.show')
+         ->middleware('can:master-divisi.view');
+    Route::get('master/divisi/{divisi}/edit', [DivisiController::class, 'edit'])
+         ->name('master.divisi.edit')
+         ->middleware('can:master-divisi.update');
+    Route::put('master/divisi/{divisi}', [DivisiController::class, 'update'])
+         ->name('master.divisi.update')
+         ->middleware('can:master-divisi.update');
+    Route::delete('master/divisi/{divisi}', [DivisiController::class, 'destroy'])
+         ->name('master.divisi.destroy')
+         ->middleware('can:master-divisi.delete');
+
+    // Master pekerjaan routes
+    Route::get('master/pekerjaan', [PekerjaanController::class, 'index'])
+         ->name('master.pekerjaan.index')
+         ->middleware('can:master-pekerjaan.view');
+    Route::get('master/pekerjaan/create', [PekerjaanController::class, 'create'])
+         ->name('master.pekerjaan.create')
+         ->middleware('can:master-pekerjaan.create');
+    Route::post('master/pekerjaan', [PekerjaanController::class, 'store'])
+         ->name('master.pekerjaan.store')
+         ->middleware('can:master-pekerjaan.create');
+    Route::get('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'show'])
+         ->name('master.pekerjaan.show')
+         ->middleware('can:master-pekerjaan.view');
+    Route::get('master/pekerjaan/{pekerjaan}/edit', [PekerjaanController::class, 'edit'])
+         ->name('master.pekerjaan.edit')
+         ->middleware('can:master-pekerjaan.update');
+    Route::put('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'update'])
+         ->name('master.pekerjaan.update')
+         ->middleware('can:master-pekerjaan.update');
+    Route::delete('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'destroy'])
+         ->name('master.pekerjaan.destroy')
+         ->middleware('can:master-pekerjaan.delete');
 
     // Route master.karyawan.index di luar group master untuk konsistensi dengan view
     Route::get('master/karyawan', [KaryawanController::class, 'index'])
@@ -613,6 +658,17 @@ Route::middleware(['auth'])->group(function() {
          ->name('perbaikan-kontainer.update-status')
          ->middleware('can:perbaikan-kontainer.update');
 
+    // Bulk operations for perbaikan kontainer
+    Route::delete('perbaikan-kontainer/bulk-delete', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkDelete'])
+         ->name('perbaikan-kontainer.bulk-delete')
+         ->middleware('can:perbaikan-kontainer.delete');
+    Route::patch('perbaikan-kontainer/bulk-update-status', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkUpdateStatus'])
+         ->name('perbaikan-kontainer.bulk-update-status')
+         ->middleware('can:perbaikan-kontainer.update');
+    Route::patch('perbaikan-kontainer/bulk-pranota', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkPranota'])
+         ->name('perbaikan-kontainer.bulk-pranota')
+         ->middleware('can:perbaikan-kontainer.update');
+
     // Pranota Perbaikan Kontainer routes
     Route::get('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'index'])
          ->name('pranota-perbaikan-kontainer.index')
@@ -646,16 +702,16 @@ Route::middleware(['auth'])->group(function() {
     Route::post('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'store'])
          ->name('pembayaran-pranota-perbaikan-kontainer.store')
          ->middleware('can:pembayaran-pranota-perbaikan-kontainer.create');
-    Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'show'])
+    Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'show'])
          ->name('pembayaran-pranota-perbaikan-kontainer.show')
          ->middleware('can:pembayaran-pranota-perbaikan-kontainer.view');
-    Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}/edit', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'edit'])
+    Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaran}/edit', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'edit'])
          ->name('pembayaran-pranota-perbaikan-kontainer.edit')
          ->middleware('can:pembayaran-pranota-perbaikan-kontainer.update');
-    Route::put('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'update'])
+    Route::put('pembayaran-pranota-perbaikan-kontainer/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'update'])
          ->name('pembayaran-pranota-perbaikan-kontainer.update')
          ->middleware('can:pembayaran-pranota-perbaikan-kontainer.update');
-    Route::delete('pembayaran-pranota-perbaikan-kontainer/{pembayaranPranotaPerbaikanKontainer}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'destroy'])
+    Route::delete('pembayaran-pranota-perbaikan-kontainer/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'destroy'])
          ->name('pembayaran-pranota-perbaikan-kontainer.destroy')
          ->middleware('can:pembayaran-pranota-perbaikan-kontainer.delete');
 });

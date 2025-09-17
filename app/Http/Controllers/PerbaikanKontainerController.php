@@ -30,14 +30,15 @@ class PerbaikanKontainerController extends Controller
             $query->where('tanggal_perbaikan', '<=', $request->tanggal_sampai);
         }
 
-        // Search by kontainer number or description
+        // Search by kontainer number, description, or nomor_tagihan
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
                 $q->whereHas('kontainer', function($kontainer) use ($search) {
                     $kontainer->where('nomor_kontainer', 'like', "%{$search}%");
                 })
-                ->orWhere('deskripsi_perbaikan', 'like', "%{$search}%");
+                ->orWhere('deskripsi_perbaikan', 'like', "%{$search}%")
+                ->orWhere('nomor_tagihan', 'like', "%{$search}%");
             });
         }
 
@@ -72,9 +73,12 @@ class PerbaikanKontainerController extends Controller
         $validated = $request->validate([
             'nomor_kontainer' => 'required|string|max:255',
             'tanggal_perbaikan' => 'required|date',
-            'jenis_perbaikan' => 'required|string',
+            'estimasi_kerusakan_kontainer' => 'required|string',
             'deskripsi_perbaikan' => 'required|string',
-            'biaya_perbaikan' => 'nullable|numeric|min:0',
+            'realisasi_kerusakan' => 'nullable|string',
+            'estimasi_biaya_perbaikan' => 'nullable|numeric|min:0',
+            'realisasi_biaya_perbaikan' => 'nullable|numeric|min:0',
+            'tanggal_selesai' => 'nullable|date',
             'catatan' => 'nullable|string',
         ]);
 
@@ -89,7 +93,6 @@ class PerbaikanKontainerController extends Controller
 
         $validated['created_by'] = Auth::id();
         $validated['status_perbaikan'] = 'belum_masuk_pranota';
-        $validated['nomor_memo_perbaikan'] = PerbaikanKontainer::generateNomorMemoPerbaikan();
 
         PerbaikanKontainer::create($validated);
 
@@ -122,13 +125,17 @@ class PerbaikanKontainerController extends Controller
     {
         $validated = $request->validate([
             'nomor_kontainer' => 'required|string|max:255',
+            'nomor_tagihan' => 'nullable|string|max:255',
+            'vendor_bengkel' => 'required|string|max:255',
             'tanggal_perbaikan' => 'required|date',
-            'jenis_perbaikan' => 'required|string',
+            'estimasi_kerusakan_kontainer' => 'required|string',
             'deskripsi_perbaikan' => 'required|string',
-            'biaya_perbaikan' => 'nullable|numeric|min:0',
+            'realisasi_kerusakan' => 'nullable|string',
+            'estimasi_biaya_perbaikan' => 'nullable|numeric|min:0',
+            'realisasi_biaya_perbaikan' => 'nullable|numeric|min:0',
+            'tanggal_selesai' => 'nullable|date',
             'status_perbaikan' => 'required|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar',
             'catatan' => 'nullable|string',
-            'tanggal_selesai' => 'nullable|date',
         ]);
 
         // Find or create container based on nomor_kontainer
@@ -191,5 +198,57 @@ class PerbaikanKontainerController extends Controller
 
         return redirect()->back()
                         ->with('success', 'Status perbaikan berhasil diperbarui.');
+    }
+
+    /**
+     * Bulk delete selected items
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:perbaikan_kontainers,id'
+        ]);
+
+        $count = PerbaikanKontainer::whereIn('id', $request->ids)->delete();
+
+        return redirect()->back()
+                        ->with('success', "{$count} data perbaikan berhasil dihapus.");
+    }
+
+    /**
+     * Bulk update status for selected items
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:perbaikan_kontainers,id',
+            'status' => 'required|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar'
+        ]);
+
+        $count = PerbaikanKontainer::whereIn('id', $request->ids)
+                                  ->update(['status_perbaikan' => $request->status]);
+
+        return redirect()->back()
+                        ->with('success', "Status {$count} data perbaikan berhasil diperbarui.");
+    }
+
+    /**
+     * Bulk update status to "sudah_masuk_pranota" for selected items
+     */
+    public function bulkPranota(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:perbaikan_kontainers,id'
+        ]);
+
+        $count = PerbaikanKontainer::whereIn('id', $request->ids)
+                                  ->where('status_perbaikan', 'belum_masuk_pranota')
+                                  ->update(['status_perbaikan' => 'sudah_masuk_pranota']);
+
+        return redirect()->back()
+                        ->with('success', "{$count} data perbaikan berhasil dimasukkan ke pranota.");
     }
 }

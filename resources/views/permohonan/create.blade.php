@@ -90,6 +90,12 @@
                         <label for="nomor_memo" class="block text-sm font-medium text-gray-700 mb-1">Nomor Memo (Otomatis)</label>
                         <input type="text" name="nomor_memo" id="nomor_memo" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-300 shadow-sm text-base p-2.5" readonly>
                         <input type="hidden" id="kode_cetak" value="1">
+                        <p class="mt-1 text-xs text-gray-500">
+                            <span id="memo_format_info">
+                                Format: MS (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)<br>
+                                <span class="font-mono text-blue-600"></span>
+                            </span>
+                        </p>
                     </div>
                     <div>
                         <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-1">Kegiatan</label>
@@ -340,6 +346,7 @@
             kegiatanSelect.addEventListener('change', () => {
                 updateFormBasedOnJumlah();
                 toggleTujuanDisplay();
+                generateMemoNumber(); // Update nomor memo saat kegiatan berubah
             });
 
             // Logika untuk Uang Jalan dan Total Biaya Otomatis
@@ -416,8 +423,19 @@
             // Fungsi untuk generate Nomor Memo
             function generateMemoNumber() {
                 const memoInput = document.getElementById('nomor_memo');
-                const kodeCetak = document.getElementById('kode_cetak').value;
-                const prefix = 'MS';
+                const selectedKegiatan = kegiatanSelect.value.toLowerCase();
+                const isPerbaikanKontainer = selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan');
+
+                let prefix = 'MS'; // Default untuk Memo Supir
+                let kodeCetak = document.getElementById('kode_cetak').value;
+                let formatInfo = 'Format: MS (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)';
+
+                // Jika kegiatan perbaikan kontainer, gunakan prefix MP dan kode cetak 1
+                if (isPerbaikanKontainer) {
+                    prefix = 'MP';
+                    kodeCetak = '1'; // Selalu 1 untuk perbaikan kontainer
+                    formatInfo = 'Format: MP (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)';
+                }
 
                 const now = new Date();
                 const year = now.getFullYear().toString().slice(-2);
@@ -425,7 +443,16 @@
 
                 const runningNumber = Date.now().toString().slice(-7);
 
-                memoInput.value = `${prefix}${kodeCetak}${year}${month}${runningNumber}`;
+                const nomorMemo = `${prefix}${kodeCetak}${year}${month}${runningNumber}`;
+                memoInput.value = nomorMemo;
+
+                // Update informasi format dan preview
+                const formatInfoElement = document.getElementById('memo_format_info');
+                const previewElement = document.getElementById('memo_format_preview');
+
+                if (formatInfoElement) {
+                    formatInfoElement.innerHTML = `${formatInfo}<br><span class="font-mono text-blue-600">${nomorMemo}</span>`;
+                }
             }
 
             generateMemoNumber();

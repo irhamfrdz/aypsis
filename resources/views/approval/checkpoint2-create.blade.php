@@ -72,7 +72,7 @@
                     @foreach($kontainer->perbaikanKontainers as $perbaikan)
                     <div class="mt-2 p-2 bg-orange-50 rounded border-l-4 border-orange-400">
                         <div class="text-xs font-medium text-orange-800">Perbaikan Kontainer</div>
-                        <div class="text-xs text-orange-700">Memo: {{ $perbaikan->nomor_memo_perbaikan ?? 'N/A' }}</div>
+                        <div class="text-xs text-orange-700">Tagihan: {{ $perbaikan->nomor_tagihan ?? 'N/A' }}</div>
                         <div class="text-xs text-orange-600">Status: {{ $perbaikan->status_label }}</div>
                         <div class="text-xs text-orange-600">Biaya: Rp {{ number_format($perbaikan->biaya_perbaikan ?? 0, 0, ',', '.') }}</div>
                     </div>

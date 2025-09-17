@@ -28,6 +28,8 @@ $requiredPermissions = [
     'master-kegiatan' => 'Manajemen kegiatan',
     'master-permission' => 'Manajemen permission',
     'master-mobil' => 'Manajemen mobil',
+    'master-divisi' => 'Manajemen divisi',
+    'master-pekerjaan' => 'Manajemen pekerjaan',
 ];
 
 echo "📋 Mengecek permission yang diperlukan:\n";

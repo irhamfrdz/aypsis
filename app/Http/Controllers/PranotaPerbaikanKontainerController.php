@@ -46,7 +46,15 @@ class PranotaPerbaikanKontainerController extends Controller
             ->paginate(15)
             ->appends($request->query());
 
-        return view('pranota-perbaikan-kontainer.index', compact('pranotaPerbaikanKontainers'));
+        // Get stats for dashboard cards
+        $stats = [
+            'total' => PranotaPerbaikanKontainer::count(),
+            'pending' => PranotaPerbaikanKontainer::where('status', 'pending')->count(),
+            'approved' => PranotaPerbaikanKontainer::where('status', 'approved')->count(),
+            'completed' => PranotaPerbaikanKontainer::where('status', 'completed')->count(),
+        ];
+
+        return view('pranota-perbaikan-kontainer.index', compact('pranotaPerbaikanKontainers', 'stats'));
     }
 
     /**
@@ -67,6 +75,52 @@ class PranotaPerbaikanKontainerController extends Controller
      */
     public function store(Request $request)
     {
+        // Check if this is a bulk submission from modal
+        if ($request->has('perbaikan_ids')) {
+            $request->validate([
+                'perbaikan_ids' => 'required|string', // JSON string of IDs
+                'nomor_pranota' => 'required|string',
+                'tanggal_pranota' => 'required|date',
+                'supplier' => 'nullable|string',
+                'estimasi_biaya_total' => 'nullable|numeric|min:0',
+                'catatan' => 'nullable|string',
+            ]);
+
+            $perbaikanIds = json_decode($request->perbaikan_ids, true);
+
+            if (!is_array($perbaikanIds) || empty($perbaikanIds)) {
+                return redirect()->back()->with('error', 'Tidak ada item perbaikan yang dipilih.');
+            }
+
+            // Create pranota for each selected perbaikan
+            $createdCount = 0;
+            foreach ($perbaikanIds as $perbaikanId) {
+                // Get perbaikan data
+                $perbaikan = PerbaikanKontainer::find($perbaikanId);
+                if ($perbaikan) {
+                    PranotaPerbaikanKontainer::create([
+                        'perbaikan_kontainer_id' => $perbaikanId,
+                        'tanggal_pranota' => $request->tanggal_pranota,
+                        'deskripsi_pekerjaan' => $perbaikan->estimasi_kerusakan_kontainer ?? 'Perbaikan kontainer',
+                        'nama_teknisi' => $request->supplier ?? 'Supplier',
+                        'estimasi_biaya' => $perbaikan->estimasi_biaya_perbaikan ?? 0,
+                        'estimasi_waktu' => 'TBD',
+                        'catatan' => $request->catatan,
+                        'status' => 'pending',
+                        'created_by' => Auth::id(),
+                    ]);
+
+                    // Update status perbaikan to "sudah_masuk_pranota"
+                    $perbaikan->update(['status_perbaikan' => 'sudah_masuk_pranota']);
+                    $createdCount++;
+                }
+            }
+
+            return redirect()->route('perbaikan-kontainer.index')
+                ->with('success', "{$createdCount} item berhasil dimasukkan ke pranota.");
+        }
+
+        // Original single pranota creation
         $request->validate([
             'perbaikan_kontainer_id' => 'required|exists:perbaikan_kontainers,id',
             'tanggal_pranota' => 'required|date',

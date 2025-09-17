@@ -12,12 +12,15 @@ class PerbaikanKontainer extends Model
     protected $table = 'perbaikan_kontainers';
 
     protected $fillable = [
-        'nomor_memo_perbaikan',
+        'nomor_tagihan',
         'kontainer_id',
         'tanggal_perbaikan',
-        'jenis_perbaikan',
+        'estimasi_kerusakan_kontainer',
         'deskripsi_perbaikan',
-        'biaya_perbaikan',
+        'realisasi_kerusakan',
+        'estimasi_biaya_perbaikan',
+        'realisasi_biaya_perbaikan',
+        'vendor_bengkel',
         'status_perbaikan',
         'catatan',
         'tanggal_selesai',
@@ -31,7 +34,8 @@ class PerbaikanKontainer extends Model
     ];
 
     protected $casts = [
-        'biaya_perbaikan' => 'decimal:2',
+        'estimasi_biaya_perbaikan' => 'decimal:2',
+        'realisasi_biaya_perbaikan' => 'decimal:2',
     ];
 
     // Relationships
@@ -111,7 +115,7 @@ class PerbaikanKontainer extends Model
         ]);
     }
 
-    public function getJenisPerbaikanOptions()
+    public function getEstimasiKerusakanKontainerOptions()
     {
         return [
             'maintenance' => 'Maintenance Rutin',
@@ -133,29 +137,29 @@ class PerbaikanKontainer extends Model
     }
 
     /**
-     * Generate nomor memo perbaikan
-     * Format: MP + [1 digit cetakan] + [2 digit tahun] + [2 digit bulan] + [7 digit running number]
-     * Example: MP12309240000001
+     * Generate nomor tagihan
+     * Format: TP + [1 digit cetakan] + [2 digit tahun] + [2 digit bulan] + [7 digit running number]
+     * Example: TP12509240000001
      */
-    public static function generateNomorMemoPerbaikan()
+    public static function generateNomorTagihan()
     {
         $year = date('y'); // 2 digit year
         $month = date('m'); // 2 digit month
         $cetakan = '1'; // Default cetakan number
 
         // Get the last running number for current year and month
-        $lastRecord = self::where('nomor_memo_perbaikan', 'like', "MP{$cetakan}{$year}{$month}%")
-                         ->orderBy('nomor_memo_perbaikan', 'desc')
+        $lastRecord = self::where('nomor_tagihan', 'like', "TP{$cetakan}{$year}{$month}%")
+                         ->orderBy('nomor_tagihan', 'desc')
                          ->first();
 
         if ($lastRecord) {
             // Extract the running number from the last record
-            $lastNumber = substr($lastRecord->nomor_memo_perbaikan, -7);
+            $lastNumber = substr($lastRecord->nomor_tagihan, -7);
             $runningNumber = str_pad((int)$lastNumber + 1, 7, '0', STR_PAD_LEFT);
         } else {
             $runningNumber = '0000001';
         }
 
-        return "MP{$cetakan}{$year}{$month}{$runningNumber}";
+        return "TP{$cetakan}{$year}{$month}{$runningNumber}";
     }
 }

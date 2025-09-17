@@ -41,33 +41,33 @@
                     @enderror
                 </div>
 
-                <!-- Nomor Memo Perbaikan -->
+                <!-- Nomor Tagihan -->
                 <div>
-                    <label for="nomor_memo_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Memo Perbaikan
+                    <label for="nomor_tagihan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Tagihan
                     </label>
-                    <input type="text" id="nomor_memo_perbaikan" name="nomor_memo_perbaikan"
-                           value="{{ old('nomor_memo_perbaikan', $perbaikanKontainer->nomor_memo_perbaikan ?? '') }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
-                           placeholder="Otomatis diisi sistem..."
-                           readonly>
-                    <p class="mt-1 text-sm text-gray-500">Format: MP + cetakan + tahun + bulan + running number</p>
-                    @error('nomor_memo_perbaikan')
+                    <input type="text" id="nomor_tagihan" name="nomor_tagihan"
+                           value="{{ old('nomor_tagihan', $perbaikanKontainer->nomor_tagihan ?? '') }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Masukkan nomor tagihan...">
+                    <p class="mt-1 text-sm text-gray-500">Nomor tagihan untuk perbaikan kontainer</p>
+                    @error('nomor_tagihan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Jenis Kerusakan -->
+                <!-- Vendor/Bengkel -->
                 <div>
-                    <label for="jenis_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Jenis Perbaikan <span class="text-red-500">*</span>
+                    <label for="vendor_bengkel" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor/Bengkel <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" id="jenis_perbaikan" name="jenis_perbaikan"
-                           value="{{ old('jenis_perbaikan', $perbaikanKontainer->jenis_perbaikan) }}"
+                    <input type="text" id="vendor_bengkel" name="vendor_bengkel"
+                           value="{{ old('vendor_bengkel', $perbaikanKontainer->vendor_bengkel ?? '') }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Jenis perbaikan..."
+                           placeholder="Masukkan nama vendor atau bengkel..."
                            required>
-                    @error('jenis_perbaikan')
+                    <p class="mt-1 text-sm text-gray-500">Contoh: PT. Container Repair Indonesia, Bengkel ABC, dll.</p>
+                    @error('vendor_bengkel')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -83,6 +83,51 @@
                     @error('deskripsi_perbaikan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- Realisasi Kerusakan Kontainer -->
+                <div>
+                    <label for="realisasi_kerusakan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Realisasi Kerusakan Kontainer
+                    </label>
+                    <textarea id="realisasi_kerusakan" name="realisasi_kerusakan" rows="4"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Deskripsikan realisasi kerusakan yang ditemukan saat perbaikan...">{{ old('realisasi_kerusakan', $perbaikanKontainer->realisasi_kerusakan) }}</textarea>
+                    <p class="mt-1 text-sm text-gray-500">Isi dengan kondisi kerusakan yang sebenarnya ditemukan saat proses perbaikan</p>
+                    @error('realisasi_kerusakan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Biaya Perbaikan -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="estimasi_biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Estimasi Biaya Perbaikan
+                        </label>
+                        <input type="number" id="estimasi_biaya_perbaikan" name="estimasi_biaya_perbaikan"
+                               value="{{ old('estimasi_biaya_perbaikan', $perbaikanKontainer->estimasi_biaya_perbaikan) }}" step="0.01" min="0"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="0.00">
+                        <p class="mt-1 text-sm text-gray-500">Estimasi biaya yang diperlukan untuk perbaikan</p>
+                        @error('estimasi_biaya_perbaikan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="realisasi_biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Realisasi Biaya Perbaikan
+                        </label>
+                        <input type="number" id="realisasi_biaya_perbaikan" name="realisasi_biaya_perbaikan"
+                               value="{{ old('realisasi_biaya_perbaikan', $perbaikanKontainer->realisasi_biaya_perbaikan) }}" step="0.01" min="0"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="0.00">
+                        <p class="mt-1 text-sm text-gray-500">Biaya aktual yang dikeluarkan untuk perbaikan</p>
+                        @error('realisasi_biaya_perbaikan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Status -->
@@ -129,20 +174,6 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
-
-                <!-- Biaya -->
-                <div>
-                    <label for="biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Biaya Perbaikan
-                    </label>
-                    <input type="number" id="biaya_perbaikan" name="biaya_perbaikan"
-                           value="{{ old('biaya_perbaikan', $perbaikanKontainer->biaya_perbaikan) }}" step="0.01" min="0"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="0.00">
-                    @error('biaya_perbaikan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Teknisi dan Catatan -->

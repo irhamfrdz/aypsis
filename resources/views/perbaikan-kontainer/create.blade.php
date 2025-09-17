@@ -40,33 +40,17 @@
                     @enderror
                 </div>
 
-                <!-- Nomor Memo Perbaikan -->
+                <!-- Estimasi Kerusakan Kontainer -->
                 <div>
-                    <label for="nomor_memo_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Memo Perbaikan
+                    <label for="estimasi_kerusakan_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
+                        Estimasi Kerusakan Kontainer <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" id="nomor_memo_perbaikan" name="nomor_memo_perbaikan"
-                           value="{{ old('nomor_memo_perbaikan', $perbaikan->nomor_memo_perbaikan ?? '') }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
-                           placeholder="Otomatis diisi sistem..."
-                           readonly>
-                    <p class="mt-1 text-sm text-gray-500">Format: MP + cetakan + tahun + bulan + running number</p>
-                    @error('nomor_memo_perbaikan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Jenis Kerusakan -->
-                <div>
-                    <label for="jenis_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Jenis Perbaikan <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" id="jenis_perbaikan" name="jenis_perbaikan"
-                           value="{{ old('jenis_perbaikan') }}"
+                    <input type="text" id="estimasi_kerusakan_kontainer" name="estimasi_kerusakan_kontainer"
+                           value="{{ old('estimasi_kerusakan_kontainer') }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Jenis perbaikan..."
+                           placeholder="Estimasi kerusakan kontainer..."
                            required>
-                    @error('jenis_perbaikan')
+                    @error('estimasi_kerusakan_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -83,6 +67,51 @@
                     @error('deskripsi_perbaikan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                </div>
+
+                <!-- Realisasi Kerusakan Kontainer -->
+                <div>
+                    <label for="realisasi_kerusakan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Realisasi Kerusakan Kontainer
+                    </label>
+                    <textarea id="realisasi_kerusakan" name="realisasi_kerusakan" rows="4"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Deskripsikan realisasi kerusakan yang ditemukan saat perbaikan...">{{ old('realisasi_kerusakan') }}</textarea>
+                    <p class="mt-1 text-sm text-gray-500">Isi dengan kondisi kerusakan yang sebenarnya ditemukan saat proses perbaikan</p>
+                    @error('realisasi_kerusakan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Biaya Perbaikan -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="estimasi_biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Estimasi Biaya Perbaikan
+                        </label>
+                        <input type="number" id="estimasi_biaya_perbaikan" name="estimasi_biaya_perbaikan"
+                               value="{{ old('estimasi_biaya_perbaikan') }}" step="0.01" min="0"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="0.00">
+                        <p class="mt-1 text-sm text-gray-500">Estimasi biaya yang diperlukan untuk perbaikan</p>
+                        @error('estimasi_biaya_perbaikan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="realisasi_biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Realisasi Biaya Perbaikan
+                        </label>
+                        <input type="number" id="realisasi_biaya_perbaikan" name="realisasi_biaya_perbaikan"
+                               value="{{ old('realisasi_biaya_perbaikan') }}" step="0.01" min="0"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="0.00">
+                        <p class="mt-1 text-sm text-gray-500">Biaya aktual yang dikeluarkan untuk perbaikan</p>
+                        @error('realisasi_biaya_perbaikan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Tanggal -->
@@ -106,35 +135,6 @@
                         <input type="date" id="tanggal_selesai" name="tanggal_selesai" value="{{ old('tanggal_selesai') }}"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         @error('tanggal_selesai')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-
-                <!-- Biaya -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <label for="biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
-                            Biaya Perbaikan
-                        </label>
-                        <input type="number" id="biaya_perbaikan" name="biaya_perbaikan"
-                               value="{{ old('biaya_perbaikan') }}" step="0.01" min="0"
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="0.00">
-                        @error('biaya_perbaikan')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <div>
-                        <label for="biaya_sparepart" class="block text-sm font-medium text-gray-700 mb-2">
-                            Biaya Sparepart
-                        </label>
-                        <input type="number" id="biaya_sparepart" name="biaya_sparepart"
-                               value="{{ old('biaya_sparepart') }}" step="0.01" min="0"
-                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="0.00">
-                        @error('biaya_sparepart')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -169,26 +169,4 @@
     </div>
 </div>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Generate nomor memo perbaikan when form loads
-    generateNomorMemo();
-
-    function generateNomorMemo() {
-        const now = new Date();
-        const year = now.getFullYear().toString().slice(-2); // Last 2 digits of year
-        const month = (now.getMonth() + 1).toString().padStart(2, '0'); // Month with leading zero
-        const cetakan = '1'; // Default cetakan number
-
-        // For demo purposes, we'll use a simple running number
-        // In production, this should be fetched from the server
-        const runningNumber = Math.floor(Math.random() * 9999999) + 1;
-        const formattedRunningNumber = runningNumber.toString().padStart(7, '0');
-
-        const nomorMemo = `MP${cetakan}${year}${month}${formattedRunningNumber}`;
-
-        document.getElementById('nomor_memo_perbaikan').value = nomorMemo;
-    }
-});
-</script>
 @endsection
