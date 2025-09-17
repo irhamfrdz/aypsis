@@ -283,6 +283,18 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'PORT',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'SATPAM GARASI',
+                'kode_pekerjaan' => 'SAT001',
+                'divisi' => 'SATPAM',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'SATPAM PELABUHAN',
+                'kode_pekerjaan' => 'SAT002',
+                'divisi' => 'SATPAM',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
