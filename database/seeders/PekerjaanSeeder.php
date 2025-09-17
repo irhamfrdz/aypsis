@@ -247,6 +247,42 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'MEKANIK',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'MANAJER',
+                'kode_pekerjaan' => 'POR001',
+                'divisi' => 'PORT',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'PENGAWAS KENDARAAN',
+                'kode_pekerjaan' => 'POR002',
+                'divisi' => 'PORT',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'SHIPPING',
+                'kode_pekerjaan' => 'POR003',
+                'divisi' => 'PORT',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'TALLY',
+                'kode_pekerjaan' => 'POR004',
+                'divisi' => 'PORT',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'PORT CAPTAIN',
+                'kode_pekerjaan' => 'POR005',
+                'divisi' => 'PORT',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'PORT ENGINEER',
+                'kode_pekerjaan' => 'POR006',
+                'divisi' => 'PORT',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
