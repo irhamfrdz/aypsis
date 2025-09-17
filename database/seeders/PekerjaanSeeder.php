@@ -223,6 +223,30 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'LAPANGAN',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'MONTIR',
+                'kode_pekerjaan' => 'MEK001',
+                'divisi' => 'MEKANIK',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'TAMBAL BAN',
+                'kode_pekerjaan' => 'MEK002',
+                'divisi' => 'MEKANIK',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'TUKANG LAS',
+                'kode_pekerjaan' => 'MEK003',
+                'divisi' => 'MEKANIK',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'TEKNISI',
+                'kode_pekerjaan' => 'MEK004',
+                'divisi' => 'MEKANIK',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
