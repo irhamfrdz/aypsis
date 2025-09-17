@@ -62,6 +62,19 @@ class DivisiSeeder extends Seeder
                 'deskripsi' => null,
                 'is_active' => true,
             ],
+            [
+                'nama_divisi' => 'SATPAM',
+                'kode_divisi' => 'STP',
+                'deskripsi' => null,
+                'is_active' => true,
+            ],
+            [
+                'nama_divisi' => 'SUPIR',
+                'kode_divisi' => 'SPR',
+                'deskripsi' => null,
+                'is_active' => true,
+            ],
+            
         ];
 
         $this->command->info('Seeding master divisi data...');
