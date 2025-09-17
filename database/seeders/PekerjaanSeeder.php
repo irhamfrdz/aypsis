@@ -109,6 +109,72 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'ABK',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'AKUNTING',
+                'kode_pekerjaan' => 'ADM001',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'HRD',
+                'kode_pekerjaan' => 'ADM002',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'KASIR',
+                'kode_pekerjaan' => 'ADM003',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'KEUANGAN',
+                'kode_pekerjaan' => 'ADM004',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'KONTAINER',
+                'kode_pekerjaan' => 'ADM005',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'MARKETING',
+                'kode_pekerjaan' => 'ADM006',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'PAJAK',
+                'kode_pekerjaan' => 'ADM007',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'PENAGIHAN',
+                'kode_pekerjaan' => 'ADM008',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'IT',
+                'kode_pekerjaan' => 'ADM009',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'SEKRETARIS',
+                'kode_pekerjaan' => 'ADM010',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'TRUCKING',
+                'kode_pekerjaan' => 'ADM011',
+                'divisi' => 'ADMINISTRASI',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
