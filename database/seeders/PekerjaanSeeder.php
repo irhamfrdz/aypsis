@@ -175,6 +175,24 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'ADMINISTRASI',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'DIREKSI UTAMA',
+                'kode_pekerjaan' => 'DIR001',
+                'divisi' => 'DIREKSI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'DIREKTUR',
+                'kode_pekerjaan' => 'DIR002',
+                'divisi' => 'DIREKSI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'PEMBELIAN',
+                'kode_pekerjaan' => 'DIR003',
+                'divisi' => 'DIREKSI',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
