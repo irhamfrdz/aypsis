@@ -295,6 +295,36 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'SATPAM',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'OPERATOR CRANE / ALAT BERAT',
+                'kode_pekerjaan' => 'SUP001',
+                'divisi' => 'SUPIR',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'OPERATOR FORKLIFT',
+                'kode_pekerjaan' => 'SUP002',
+                'divisi' => 'SUPIR',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'SUPIR PENUMPANG',
+                'kode_pekerjaan' => 'SUP003',
+                'divisi' => 'SUPIR',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'SUPIR TRAILER',
+                'kode_pekerjaan' => 'SUP004',
+                'divisi' => 'SUPIR',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'SUPIR TRUCK',
+                'kode_pekerjaan' => 'SUP005',
+                'divisi' => 'SUPIR',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
