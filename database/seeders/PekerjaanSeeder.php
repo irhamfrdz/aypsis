@@ -193,6 +193,24 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'DIREKSI',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'KENEK ALAT BERAT',
+                'kode_pekerjaan' => 'KRN001',
+                'divisi' => 'KRANI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'KENEK SUPIR',
+                'kode_pekerjaan' => 'KRN002',
+                'divisi' => 'KRANI',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'KRANI',
+                'kode_pekerjaan' => 'KRN003',
+                'divisi' => 'KRANI',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
