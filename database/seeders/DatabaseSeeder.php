@@ -17,11 +17,14 @@ class DatabaseSeeder extends Seeder
             RoleAndPermissionSeeder::class, // Seeder yang sudah dikonsolidasi
             PermissionsFromRoutesSeeder::class,
             AllPermissionsSeeder::class, // Ensures explicit + route-derived permissions exist
+            MasterDivisiPermissionSeeder::class, // Permission untuk master divisi
+            MasterPekerjaanPermissionSeeder::class, // Permission untuk master pekerjaan
             UserSeeder::class, // Pastikan user dibuat sebelum relasi permission
             UserPermissionSeeder::class, // Seeder untuk user permissions
             KontainerSeeder::class,
             TujuanSeeder::class,
             DivisiSeeder::class, // Seeder untuk master divisi
+            PekerjaanSeeder::class, // Seeder untuk master pekerjaan
         ]);
     }
 }

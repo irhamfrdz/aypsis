@@ -18,6 +18,7 @@ use App\Http\Controllers\PembayaranPranotaSupirController;
 use App\Http\Controllers\SupirDashboardController;
 use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\MobilController;
+use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PricelistSewaKontainerController;
 use App\Http\Controllers\PranotaController;
 use App\Http\Controllers\PembayaranPranotaKontainerController;

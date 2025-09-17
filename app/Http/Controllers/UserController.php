@@ -373,6 +373,10 @@ class UserController extends Controller
                         if ($action === 'group' && isset($parts[2])) {
                             $action = 'group_' . $parts[2];
                         }
+                    } elseif ($module === 'perbaikan-kontainer') {
+                        // Handle perbaikan-kontainer permissions
+                        // Map actions directly (view, create, update, delete)
+                        // Action remains as is
                     }
 
                     // Initialize module array if not exists
@@ -845,6 +849,50 @@ class UserController extends Controller
                                     }
                                 }
                             }
+
+                            // DIRECT FIX: Handle master-user permissions explicitly
+                            if ($module === 'master-user' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-user.view',
+                                    'create' => 'master-user.create',
+                                    'update' => 'master-user.update',
+                                    'delete' => 'master-user.delete',
+                                    'print' => 'master-user.print',
+                                    'export' => 'master-user.export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                    }
+
+                                    // Also include legacy dot notation permissions for backward compatibility
+                                    $legacyActionMap = [
+                                        'view' => 'master.user.index',
+                                        'create' => 'master.user.create',
+                                        'update' => 'master.user.edit',
+                                        'delete' => 'master.user.destroy',
+                                        'print' => 'master.user.print',
+                                        'export' => 'master.user.export'
+                                    ];
+
+                                    if (isset($legacyActionMap[$action])) {
+                                        $legacyPermissionName = $legacyActionMap[$action];
+                                        $legacyPermission = Permission::where('name', $legacyPermissionName)->first();
+                                        if ($legacyPermission) {
+                                            $permissionIds[] = $legacyPermission->id;
+                                        }
+                                    }
+
+                                    if ($found) {
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
                                 foreach ($possibleActions as $dbAction) {
                                     // 1. Cek master-karyawan.view (format yang benar untuk database)
                                     $permissionDash = Permission::where('name', $module . '.' . $dbAction)->first();
@@ -895,6 +943,28 @@ class UserController extends Controller
                             // If we collected any master module permissions, continue to next action
                             // but avoid skipping module-level inclusion below (do not use continue here).
                             // (no-op)
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pekerjaan permissions explicitly
+                    if ($module === 'master-pekerjaan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pekerjaan.view',
+                            'create' => 'master-pekerjaan.create',
+                            'update' => 'master-pekerjaan.update',
+                            'delete' => 'master-pekerjaan.delete',
+                            'print' => 'master-pekerjaan.print',
+                            'export' => 'master-pekerjaan.export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
                         }
                     }
 
@@ -984,6 +1054,75 @@ class UserController extends Controller
 
                         if (isset($directActionMap[$action])) {
                             $permissionName = 'perbaikan-kontainer.' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pranota-perbaikan-kontainer module
+                    if ($module === 'pranota-perbaikan-kontainer') {
+                        // For pranota-perbaikan-kontainer, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = 'pranota-perbaikan-kontainer.' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-pranota-perbaikan-kontainer module
+                    if ($module === 'pembayaran-pranota-perbaikan-kontainer') {
+                        // For pembayaran-pranota-perbaikan-kontainer, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = 'pembayaran-pranota-perbaikan-kontainer.' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for permohonan-memo module
+                    if ($module === 'permohonan-memo') {
+                        // For permohonan-memo, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = 'permohonan-memo.' . $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
