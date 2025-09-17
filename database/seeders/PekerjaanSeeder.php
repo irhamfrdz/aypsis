@@ -211,6 +211,18 @@ class PekerjaanSeeder extends Seeder
                 'divisi' => 'KRANI',
                 'is_active' => true,
             ],
+            [
+                'nama_pekerjaan' => 'DINAS LUAR',
+                'kode_pekerjaan' => 'LAP001',
+                'divisi' => 'LAPANGAN',
+                'is_active' => true,
+            ],
+            [
+                'nama_pekerjaan' => 'UMUM',
+                'kode_pekerjaan' => 'LAP002',
+                'divisi' => 'LAPANGAN',
+                'is_active' => true,
+            ],
         ];
 
         foreach ($pekerjaans as $pekerjaan) {
