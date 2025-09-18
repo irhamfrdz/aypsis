@@ -6,6 +6,7 @@ use App\Models\PranotaPerbaikanKontainer;
 use App\Models\PerbaikanKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class PranotaPerbaikanKontainerController extends Controller
 {
@@ -14,7 +15,7 @@ class PranotaPerbaikanKontainerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PranotaPerbaikanKontainer::with(['perbaikanKontainer.kontainer', 'creator']);
+        $query = PranotaPerbaikanKontainer::with(['perbaikanKontainers.kontainer', 'creator']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -34,11 +35,13 @@ class PranotaPerbaikanKontainerController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->whereHas('perbaikanKontainer.kontainer', function($kontainer) use ($search) {
-                    $kontainer->where('nomor_kontainer', 'like', "%{$search}%");
-                })
-                ->orWhere('deskripsi_pekerjaan', 'like', "%{$search}%")
-                ->orWhere('nama_teknisi', 'like', "%{$search}%");
+                $q->where('nomor_pranota', 'like', "%{$search}%")
+                  ->orWhereHas('perbaikanKontainers', function($perbaikan) use ($search) {
+                      $perbaikan->where('nomor_kontainer', 'like', "%{$search}%")
+                               ->orWhere('nomor_tagihan', 'like', "%{$search}%");
+                  })
+                  ->orWhere('deskripsi_pekerjaan', 'like', "%{$search}%")
+                  ->orWhere('nama_teknisi', 'like', "%{$search}%");
             });
         }
 
@@ -49,7 +52,7 @@ class PranotaPerbaikanKontainerController extends Controller
         // Get stats for dashboard cards
         $stats = [
             'total' => PranotaPerbaikanKontainer::count(),
-            'pending' => PranotaPerbaikanKontainer::where('status', 'pending')->count(),
+            'draft' => PranotaPerbaikanKontainer::where('status', 'draft')->count(),
             'approved' => PranotaPerbaikanKontainer::where('status', 'approved')->count(),
             'completed' => PranotaPerbaikanKontainer::where('status', 'completed')->count(),
         ];
@@ -82,7 +85,6 @@ class PranotaPerbaikanKontainerController extends Controller
                 'nomor_pranota' => 'required|string',
                 'tanggal_pranota' => 'required|date',
                 'supplier' => 'nullable|string',
-                'estimasi_biaya_total' => 'nullable|numeric|min:0',
                 'catatan' => 'nullable|string',
             ]);
 
@@ -92,52 +94,42 @@ class PranotaPerbaikanKontainerController extends Controller
                 return redirect()->back()->with('error', 'Tidak ada item perbaikan yang dipilih.');
             }
 
-            // Create pranota for each selected perbaikan
-            $createdCount = 0;
-            foreach ($perbaikanIds as $perbaikanId) {
-                // Get perbaikan data
-                $perbaikan = PerbaikanKontainer::find($perbaikanId);
-                if ($perbaikan) {
-                    PranotaPerbaikanKontainer::create([
-                        'perbaikan_kontainer_id' => $perbaikanId,
-                        'tanggal_pranota' => $request->tanggal_pranota,
-                        'deskripsi_pekerjaan' => $perbaikan->estimasi_kerusakan_kontainer ?? 'Perbaikan kontainer',
-                        'nama_teknisi' => $request->supplier ?? 'Supplier',
-                        'estimasi_biaya' => $perbaikan->estimasi_biaya_perbaikan ?? 0,
-                        'estimasi_waktu' => 'TBD',
-                        'catatan' => $request->catatan,
-                        'status' => 'pending',
-                        'created_by' => Auth::id(),
-                    ]);
+            // Get all perbaikan data
+            $perbaikans = PerbaikanKontainer::whereIn('id', $perbaikanIds)->get();
 
-                    // Update status perbaikan to "sudah_masuk_pranota"
-                    $perbaikan->update(['status_perbaikan' => 'sudah_masuk_pranota']);
-                    $createdCount++;
-                }
+            if ($perbaikans->isEmpty()) {
+                return redirect()->back()->with('error', 'Data perbaikan tidak ditemukan.');
             }
 
-            return redirect()->route('perbaikan-kontainer.index')
-                ->with('success', "{$createdCount} item berhasil dimasukkan ke pranota.");
+            // Calculate total biaya from all perbaikan items
+            $totalBiaya = $perbaikans->sum('realisasi_biaya_perbaikan');
+
+            // Create single pranota
+            $pranota = PranotaPerbaikanKontainer::create([
+                'nomor_pranota' => $request->nomor_pranota,
+                'tanggal_pranota' => $request->tanggal_pranota,
+                'deskripsi_pekerjaan' => 'Perbaikan kontainer bulk - ' . $perbaikans->count() . ' item',
+                'nama_teknisi' => $request->supplier ?? 'Supplier',
+                'total_biaya' => $totalBiaya,
+                'catatan' => $request->catatan,
+                'status' => 'draft',
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ]);
+
+            // Attach all perbaikan to the pranota
+            $pranota->perbaikanKontainers()->attach($perbaikanIds);
+
+            // Update status perbaikan to "sudah_masuk_pranota"
+            PerbaikanKontainer::whereIn('id', $perbaikanIds)
+                ->update(['status_perbaikan' => 'sudah_masuk_pranota']);
+
+            return redirect()->route('pranota-perbaikan-kontainer.index')
+                ->with('success', 'Pranota berhasil dibuat dengan ' . count($perbaikanIds) . ' item perbaikan.');
         }
 
-        // Original single pranota creation
-        $request->validate([
-            'perbaikan_kontainer_id' => 'required|exists:perbaikan_kontainers,id',
-            'tanggal_pranota' => 'required|date',
-            'deskripsi_pekerjaan' => 'required|string',
-            'nama_teknisi' => 'required|string',
-            'estimasi_biaya' => 'required|numeric|min:0',
-            'estimasi_waktu' => 'nullable|string',
-            'catatan' => 'nullable|string',
-        ]);
-
-        $data = $request->all();
-        $data['created_by'] = Auth::id();
-
-        PranotaPerbaikanKontainer::create($data);
-
-        return redirect()->route('pranota-perbaikan-kontainer.index')
-            ->with('success', 'Pranota perbaikan kontainer berhasil dibuat.');
+        // Handle single pranota creation (if needed for backward compatibility)
+        return redirect()->back()->with('error', 'Gunakan fitur bulk pranota untuk membuat pranota baru.');
     }
 
     /**
@@ -145,7 +137,11 @@ class PranotaPerbaikanKontainerController extends Controller
      */
     public function show(PranotaPerbaikanKontainer $pranotaPerbaikanKontainer)
     {
-        $pranotaPerbaikanKontainer->load(['perbaikanKontainer.kontainer', 'creator']);
+        if (!Gate::allows('pranota-perbaikan-kontainer-view')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk melihat detail pranota.');
+        }
+
+        $pranotaPerbaikanKontainer->load(['perbaikanKontainers.kontainer', 'creator']);
 
         return view('pranota-perbaikan-kontainer.show', compact('pranotaPerbaikanKontainer'));
     }
@@ -173,8 +169,7 @@ class PranotaPerbaikanKontainerController extends Controller
             'tanggal_pranota' => 'required|date',
             'deskripsi_pekerjaan' => 'required|string',
             'nama_teknisi' => 'required|string',
-            'estimasi_biaya' => 'required|numeric|min:0',
-            'estimasi_waktu' => 'nullable|string',
+            'total_biaya' => 'required|numeric|min:0',
             'catatan' => 'nullable|string',
             'status' => 'required|in:draft,approved,rejected,completed',
         ]);
@@ -193,6 +188,10 @@ class PranotaPerbaikanKontainerController extends Controller
      */
     public function destroy(PranotaPerbaikanKontainer $pranotaPerbaikanKontainer)
     {
+        if (!Gate::allows('pranota-perbaikan-kontainer-delete')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk menghapus pranota.');
+        }
+
         $pranotaPerbaikanKontainer->delete();
 
         return redirect()->route('pranota-perbaikan-kontainer.index')

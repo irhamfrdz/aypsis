@@ -32,7 +32,7 @@
                         Nomor Kontainer <span class="text-red-500">*</span>
                     </label>
                     <input type="text" id="nomor_kontainer" name="nomor_kontainer"
-                           value="{{ old('nomor_kontainer', $perbaikanKontainer->kontainer->nomor_kontainer ?? '') }}"
+                           value="{{ old('nomor_kontainer', $perbaikanKontainer->nomor_kontainer ?? '') }}"
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                            placeholder="Masukkan nomor kontainer..."
                            required>
@@ -85,6 +85,21 @@
                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                               placeholder="Deskripsi detail perbaikan...">{{ old('deskripsi_perbaikan', $perbaikanKontainer->deskripsi_perbaikan) }}</textarea>
                     @error('deskripsi_perbaikan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Estimasi Kerusakan Kontainer -->
+                <div>
+                    <label for="estimasi_kerusakan_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
+                        Estimasi Kerusakan Kontainer <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text" id="estimasi_kerusakan_kontainer" name="estimasi_kerusakan_kontainer"
+                           value="{{ old('estimasi_kerusakan_kontainer', $perbaikanKontainer->estimasi_kerusakan_kontainer ?? '') }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Estimasi kerusakan kontainer..."
+                           required>
+                    @error('estimasi_kerusakan_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

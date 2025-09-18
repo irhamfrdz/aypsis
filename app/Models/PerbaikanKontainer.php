@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PerbaikanKontainer extends Model
 {
@@ -13,14 +14,13 @@ class PerbaikanKontainer extends Model
 
     protected $fillable = [
         'nomor_tagihan',
-        'kontainer_id',
+        'nomor_kontainer',
         'tanggal_perbaikan',
         'estimasi_kerusakan_kontainer',
         'deskripsi_perbaikan',
         'realisasi_kerusakan',
         'estimasi_biaya_perbaikan',
         'realisasi_biaya_perbaikan',
-        'vendor_bengkel',
         'vendor_bengkel_id',
         'status_perbaikan',
         'catatan',
@@ -40,11 +40,6 @@ class PerbaikanKontainer extends Model
     ];
 
     // Relationships
-    public function kontainer()
-    {
-        return $this->belongsTo(Kontainer::class, 'kontainer_id');
-    }
-
     public function creator()
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -60,9 +55,16 @@ class PerbaikanKontainer extends Model
         return $this->belongsTo(VendorBengkel::class, 'vendor_bengkel_id');
     }
 
-    public function pranotaPerbaikanKontainers()
+    public function kontainer()
     {
-        return $this->hasMany(PranotaPerbaikanKontainer::class, 'perbaikan_kontainer_id');
+        return $this->belongsTo(Kontainer::class, 'nomor_kontainer', 'nomor_seri_gabungan');
+    }
+
+    public function pranotaPerbaikanKontainers(): BelongsToMany
+    {
+        return $this->belongsToMany(PranotaPerbaikanKontainer::class, 'pranota_perbaikan_kontainer_items')
+                    ->withPivot('biaya_item', 'catatan_item')
+                    ->withTimestamps();
     }
 
     // Scopes

@@ -75,16 +75,16 @@
 
                 <!-- Status -->
                 <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                    <label for="status_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
                         Status
                     </label>
-                    <select id="status" name="status"
+                    <select id="status_perbaikan" name="status_perbaikan"
                             class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="belum_masuk_pranota" {{ old('status') == 'belum_masuk_pranota' ? 'selected' : '' }}>Belum Masuk Pranota</option>
-                        <option value="sudah_masuk_pranota" {{ old('status') == 'sudah_masuk_pranota' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
-                        <option value="sudah_dibayar" {{ old('status') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
+                        <option value="belum_masuk_pranota" {{ old('status_perbaikan') == 'belum_masuk_pranota' ? 'selected' : '' }}>Belum Masuk Pranota</option>
+                        <option value="sudah_masuk_pranota" {{ old('status_perbaikan') == 'sudah_masuk_pranota' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
+                        <option value="sudah_dibayar" {{ old('status_perbaikan') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
                     </select>
-                    @error('status')
+                    @error('status_perbaikan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -100,6 +100,20 @@
                            placeholder="Estimasi kerusakan kontainer..."
                            required>
                     @error('estimasi_kerusakan_kontainer')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Deskripsi Perbaikan -->
+                <div>
+                    <label for="deskripsi_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Deskripsi Perbaikan <span class="text-red-500">*</span>
+                    </label>
+                    <textarea id="deskripsi_perbaikan" name="deskripsi_perbaikan" rows="4"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Jelaskan detail perbaikan yang akan dilakukan..."
+                              required>{{ old('deskripsi_perbaikan') }}</textarea>
+                    @error('deskripsi_perbaikan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

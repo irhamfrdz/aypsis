@@ -14,7 +14,7 @@ class PerbaikanKontainerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PerbaikanKontainer::with(['kontainer', 'creator', 'vendorBengkel']);
+        $query = PerbaikanKontainer::with(['creator', 'vendorBengkel']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -30,15 +30,20 @@ class PerbaikanKontainerController extends Controller
             $query->where('tanggal_perbaikan', '<=', $request->tanggal_sampai);
         }
 
-        // Search by kontainer number, description, or nomor_tagihan
+        // Search across all relevant fields
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->whereHas('kontainer', function($kontainer) use ($search) {
-                    $kontainer->where('nomor_kontainer', 'like', "%{$search}%");
-                })
-                ->orWhere('deskripsi_perbaikan', 'like', "%{$search}%")
-                ->orWhere('nomor_tagihan', 'like', "%{$search}%");
+                $q->where('nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('deskripsi_perbaikan', 'like', "%{$search}%")
+                  ->orWhere('nomor_tagihan', 'like', "%{$search}%")
+                  ->orWhere('estimasi_kerusakan_kontainer', 'like', "%{$search}%")
+                  ->orWhere('realisasi_kerusakan', 'like', "%{$search}%")
+                  ->orWhere('catatan', 'like', "%{$search}%")
+                  ->orWhere('status_perbaikan', 'like', "%{$search}%")
+                  ->orWhereHas('vendorBengkel', function($vendorQuery) use ($search) {
+                      $vendorQuery->where('nama_bengkel', 'like', "%{$search}%");
+                  });
             });
         }
 
@@ -94,17 +99,11 @@ class PerbaikanKontainerController extends Controller
         unset($validated['estimasi_biaya_perbaikan_raw']);
         unset($validated['realisasi_biaya_perbaikan_raw']);
 
-        // Find or create container based on nomor_kontainer
-        $kontainer = Kontainer::firstOrCreate(
-            ['nomor_kontainer' => $validated['nomor_kontainer']],
-            ['ukuran' => '20ft', 'status_kontainer' => 'baik'] // Default values for new containers
-        );
-
-        $validated['kontainer_id'] = $kontainer->id;
-        unset($validated['nomor_kontainer']); // Remove nomor_kontainer from validated data
-
-        $validated['created_by'] = Auth::id();
+        // Set default status if not provided
         $validated['status_perbaikan'] = $validated['status_perbaikan'] ?? 'belum_masuk_pranota';
+
+        // Set created_by
+        $validated['created_by'] = Auth::id();
 
         PerbaikanKontainer::create($validated);
 
@@ -117,7 +116,7 @@ class PerbaikanKontainerController extends Controller
      */
     public function show(PerbaikanKontainer $perbaikanKontainer)
     {
-        $perbaikanKontainer->load(['kontainer', 'creator', 'updater', 'vendorBengkel']);
+        $perbaikanKontainer->load(['creator', 'updater', 'vendorBengkel']);
 
         return view('perbaikan-kontainer.show', compact('perbaikanKontainer'));
     }
@@ -159,15 +158,6 @@ class PerbaikanKontainerController extends Controller
         // Remove raw fields from validated data
         unset($validated['estimasi_biaya_perbaikan_raw']);
         unset($validated['realisasi_biaya_perbaikan_raw']);
-
-        // Find or create container based on nomor_kontainer
-        $kontainer = Kontainer::firstOrCreate(
-            ['nomor_kontainer' => $validated['nomor_kontainer']],
-            ['ukuran' => '20ft', 'status_kontainer' => 'baik'] // Default values for new containers
-        );
-
-        $validated['kontainer_id'] = $kontainer->id;
-        unset($validated['nomor_kontainer']); // Remove nomor_kontainer from validated data
 
         $validated['updated_by'] = Auth::id();
 

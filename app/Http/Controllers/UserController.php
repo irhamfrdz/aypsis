@@ -1244,7 +1244,7 @@ class UserController extends Controller
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'pranota-perbaikan-kontainer-' . $directActionMap[$action];
+                            $permissionName = 'pranota-perbaikan-kontainer.' . $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -1267,7 +1267,7 @@ class UserController extends Controller
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-perbaikan-kontainer-' . $directActionMap[$action];
+                            $permissionName = 'pembayaran-pranota-perbaikan-kontainer.' . $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {

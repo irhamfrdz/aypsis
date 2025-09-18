@@ -47,11 +47,7 @@
                     <div class="space-y-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Nomor Kontainer</label>
-                            <p class="text-sm text-gray-900">{{ $perbaikanKontainer->kontainer->nomor_kontainer ?? 'N/A' }}</p>
-                        </div>
-                        <div>
-                            <label class="block text-sm font-medium text-gray-600">Ukuran</label>
-                            <p class="text-sm text-gray-900">{{ $perbaikanKontainer->kontainer->ukuran ?? 'N/A' }}</p>
+                            <p class="text-sm text-gray-900">{{ $perbaikanKontainer->nomor_kontainer ?? 'N/A' }}</p>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Vendor/Bengkel</label>

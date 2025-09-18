@@ -57,9 +57,9 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Cari Kontainer</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Pencarian</label>
                     <input type="text" name="search" value="{{ request('search') }}"
-                           placeholder="Nomor kontainer..."
+                           placeholder="Pencarian..."
                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                 </div>
                 <div class="flex items-end space-x-2">
@@ -139,18 +139,12 @@
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
-                                {{ $perbaikan->kontainer->nomor_kontainer ?? 'N/A' }}
-                            </div>
-                            <div class="text-sm text-gray-500">
-                                {{ $perbaikan->kontainer->ukuran ?? '' }}
+                                {{ $perbaikan->nomor_kontainer ?? 'N/A' }}
                             </div>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
                                 {{ $perbaikan->vendorBengkel->nama_bengkel ?? $perbaikan->vendor_bengkel ?? '-' }}
-                            </div>
-                            <div class="text-sm text-gray-500">
-                                Vendor/Bengkel
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -266,10 +260,10 @@
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Supplier/Bengkel *</label>
-                            <input type="text" name="supplier" id="supplier" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   placeholder="Masukkan nama supplier/bengkel">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vendor/Bengkel *</label>
+                            <input type="text" name="supplier" id="supplier" required readonly
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Vendor akan terisi otomatis berdasarkan item yang dipilih">
                         </div>
 
                         <div>
@@ -536,30 +530,51 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Get selected items data
+        // Get selected items data and validate vendors
         const selectedItems = [];
         const ids = [];
+        const vendors = new Set();
 
         checkedBoxes.forEach(checkbox => {
             const row = checkbox.closest('tr');
             const nomorTagihan = row.querySelector('td:nth-child(3)').textContent.trim();
             const nomorKontainer = row.querySelector('td:nth-child(4) div:first-child').textContent.trim();
+            const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
             const id = checkbox.value;
 
             selectedItems.push({
                 nomorTagihan: nomorTagihan || 'N/A',
-                nomorKontainer: nomorKontainer
+                nomorKontainer: nomorKontainer,
+                vendor: vendorName
             });
             ids.push(id);
+
+            // Collect unique vendors
+            if (vendorName && vendorName !== '-') {
+                vendors.add(vendorName);
+            }
         });
+
+        // Validate vendor consistency
+        if (vendors.size > 1) {
+            const vendorList = Array.from(vendors).join(', ');
+            alert(`Error: Item yang dipilih memiliki vendor/bengkel yang berbeda:\n${vendorList}\n\nSilakan pilih item dengan vendor yang sama untuk membuat pranota bersama.`);
+            return;
+        }
+
+        // Get the vendor name (should be only one since we validated)
+        const vendorName = vendors.size > 0 ? Array.from(vendors)[0] : '';
 
         // Populate modal with selected items
         selectedItemsList.innerHTML = selectedItems.map(item =>
-            `<div>• Tagihan: ${item.nomorTagihan} - Kontainer: ${item.nomorKontainer}</div>`
+            `<div>• Tagihan: ${item.nomorTagihan} - Kontainer: ${item.nomorKontainer} - Vendor: ${item.vendor}</div>`
         ).join('');
 
         // Set hidden input with selected IDs
         perbaikanIdsInput.value = JSON.stringify(ids);
+
+        // Auto-populate vendor field
+        document.getElementById('supplier').value = vendorName;
 
         // Calculate total estimasi biaya
         let totalEstimasi = 0;
@@ -729,8 +744,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         if (!supplier) {
-            alert('Supplier/Bengkel harus diisi!');
-            document.getElementById('supplier').focus();
+            alert('Vendor/Bengkel belum terisi. Pastikan item yang dipilih memiliki vendor yang valid.');
             return;
         }
 

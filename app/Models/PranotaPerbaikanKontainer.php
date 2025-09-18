@@ -5,18 +5,18 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class PranotaPerbaikanKontainer extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'perbaikan_kontainer_id',
+        'nomor_pranota',
         'tanggal_pranota',
         'deskripsi_pekerjaan',
         'nama_teknisi',
-        'estimasi_biaya',
-        'estimasi_waktu',
+        'total_biaya',
         'catatan',
         'status',
         'created_by',
@@ -25,15 +25,17 @@ class PranotaPerbaikanKontainer extends Model
 
     protected $casts = [
         'tanggal_pranota' => 'date',
-        'estimasi_biaya' => 'decimal:2',
+        'total_biaya' => 'decimal:2',
     ];
 
     /**
-     * Get the perbaikan kontainer that owns the pranota.
+     * Get the perbaikan kontainers associated with this pranota.
      */
-    public function perbaikanKontainer(): BelongsTo
+    public function perbaikanKontainers(): BelongsToMany
     {
-        return $this->belongsTo(PerbaikanKontainer::class);
+        return $this->belongsToMany(PerbaikanKontainer::class, 'pranota_perbaikan_kontainer_items')
+                    ->withPivot('biaya_item', 'catatan_item')
+                    ->withTimestamps();
     }
 
     /**
