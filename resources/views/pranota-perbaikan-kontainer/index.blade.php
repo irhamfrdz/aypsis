@@ -128,6 +128,10 @@
                             <div class="flex space-x-2">
                                 <a href="{{ route('pranota-perbaikan-kontainer.show', $pranota) }}"
                                    class="text-blue-600 hover:text-blue-900">Lihat</a>
+                                @can('pranota-perbaikan-kontainer-print')
+                                <a href="{{ route('pranota-perbaikan-kontainer.print', $pranota) }}"
+                                   class="text-green-600 hover:text-green-900" target="_blank">Print</a>
+                                @endcan
                                 @can('pranota-perbaikan-kontainer.edit')
                                 <a href="{{ route('pranota-perbaikan-kontainer.edit', $pranota) }}"
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>

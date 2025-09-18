@@ -29,6 +29,15 @@
                         Edit
                     </a>
                     @endcan
+                    @can('pranota-perbaikan-kontainer-print')
+                    <a href="{{ route('pranota-perbaikan-kontainer.print', $pranotaPerbaikanKontainer) }}" target="_blank"
+                       class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                        </svg>
+                        Print
+                    </a>
+                    @endcan
                 </div>
             </div>
         </div>
@@ -125,12 +134,10 @@
                             <tr>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Tagihan</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Perbaikan</th>
                                 <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi Perbaikan</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Estimasi Biaya</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya Item</th>
-                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -143,12 +150,7 @@
                                     {{ $perbaikan->nomor_tagihan ?? '-' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <div>
-                                        <div class="font-medium">{{ $perbaikan->nomor_kontainer ?? '-' }}</div>
-                                        @if($perbaikan->kontainer)
-                                        <div class="text-xs text-gray-500">{{ $perbaikan->kontainer->ukuran ?? '-' }}</div>
-                                        @endif
-                                    </div>
+                                    {{ $perbaikan->nomor_kontainer ?? '-' }}
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                     {{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/m/Y') : '-' }}
@@ -158,52 +160,19 @@
                                         {{ $perbaikan->deskripsi_perbaikan ?? '-' }}
                                     </div>
                                 </td>
-                                <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $perbaikan->estimasi_biaya_perbaikan ? 'Rp ' . number_format($perbaikan->estimasi_biaya_perbaikan, 0, ',', '.') : '-' }}
-                                </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm font-medium text-green-600">
-                                    {{ $perbaikan->pivot->biaya_item ? 'Rp ' . number_format($perbaikan->pivot->biaya_item, 0, ',', '.') : '-' }}
-                                </td>
-                                <td class="px-4 py-4 whitespace-nowrap">
-                                    @if($perbaikan->status_perbaikan == 'belum_masuk_pranota')
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                                            Belum Masuk Pranota
-                                        </span>
-                                    @elseif($perbaikan->status_perbaikan == 'sudah_masuk_pranota')
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                            Sudah Masuk Pranota
-                                        </span>
-                                    @elseif($perbaikan->status_perbaikan == 'sudah_dibayar')
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                            Sudah Dibayar
-                                        </span>
-                                    @else
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                            {{ ucfirst(str_replace('_', ' ', $perbaikan->status_perbaikan ?? 'unknown')) }}
-                                        </span>
-                                    @endif
+                                    {{ $perbaikan->realisasi_biaya_perbaikan ? 'Rp ' . number_format($perbaikan->realisasi_biaya_perbaikan, 0, ',', '.') : '-' }}
                                 </td>
                             </tr>
                             @if($perbaikan->pivot->catatan_item)
                             <tr class="bg-gray-50">
-                                <td colspan="8" class="px-4 py-2 text-sm text-gray-600">
+                                <td colspan="6" class="px-4 py-2 text-sm text-gray-600">
                                     <strong>Catatan Item:</strong> {{ $perbaikan->pivot->catatan_item }}
                                 </td>
                             </tr>
                             @endif
                             @endforeach
                         </tbody>
-                        <tfoot class="bg-gray-50">
-                            <tr>
-                                <td colspan="6" class="px-4 py-3 text-sm font-medium text-gray-900 text-right">
-                                    Total Biaya Item:
-                                </td>
-                                <td class="px-4 py-3 text-sm font-bold text-green-600">
-                                    Rp {{ number_format($pranotaPerbaikanKontainer->perbaikanKontainers->sum('pivot.biaya_item'), 0, ',', '.') }}
-                                </td>
-                                <td></td>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             @else

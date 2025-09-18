@@ -197,4 +197,18 @@ class PranotaPerbaikanKontainerController extends Controller
         return redirect()->route('pranota-perbaikan-kontainer.index')
             ->with('success', 'Pranota perbaikan kontainer berhasil dihapus.');
     }
+
+    /**
+     * Print the specified pranota.
+     */
+    public function print(PranotaPerbaikanKontainer $pranotaPerbaikanKontainer)
+    {
+        if (!Gate::allows('pranota-perbaikan-kontainer-print')) {
+            abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk mencetak pranota.');
+        }
+
+        $pranotaPerbaikanKontainer->load(['perbaikanKontainers.kontainer', 'creator']);
+
+        return view('pranota-perbaikan-kontainer.print', compact('pranotaPerbaikanKontainer'));
+    }
 }

@@ -850,6 +850,9 @@ Route::middleware(['auth'])->group(function() {
     Route::delete('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'destroy'])
          ->name('pranota-perbaikan-kontainer.destroy')
          ->middleware('can:pranota-perbaikan-kontainer-delete');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/print', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'print'])
+         ->name('pranota-perbaikan-kontainer.print')
+         ->middleware('can:pranota-perbaikan-kontainer-print');
 
     // Pembayaran Pranota Perbaikan Kontainer routes
     Route::get('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'index'])

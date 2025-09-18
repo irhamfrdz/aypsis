@@ -5,7 +5,7 @@ require_once 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $app->boot();
 
-use Spatie\Permission\Models\Permission;
+use App\Models\Permission;
 use App\Models\User;
 
 echo "=== Available Permissions ===\n";
