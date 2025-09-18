@@ -55,7 +55,7 @@ try {
 
     if ($existingPermission) {
         echo "⚠️ User test4 has master-karyawan permission that is no longer needed.\n";
-        echo "Removing master-karyawan permission since sidebar now uses master-karyawan.view only...\n\n";
+        echo "Removing master-karyawan permission since sidebar now uses master-karyawan-view only...\n\n";
 
         // Remove the master-karyawan permission
         $stmt = $pdo->prepare("DELETE FROM user_permissions WHERE user_id = ? AND permission_id = (SELECT id FROM permissions WHERE name = ?)");
@@ -103,19 +103,19 @@ try {
     }
 
     // Check sidebar visibility
-    $hasMasterKaryawanView = in_array('master-karyawan.view', array_column($finalPermissions, 'name'));
+    $hasMasterKaryawanView = in_array('master-karyawan-view', array_column($finalPermissions, 'name'));
     $hasMasterKaryawan = in_array('master-karyawan', array_column($finalPermissions, 'name'));
 
     echo "\n=== SIDEBAR VISIBILITY CHECK ===\n";
-    echo "Has master-karyawan.view: " . ($hasMasterKaryawanView ? "✅ YES" : "❌ NO") . "\n";
+    echo "Has master-karyawan-view: " . ($hasMasterKaryawanView ? "✅ YES" : "❌ NO") . "\n";
     echo "Has master-karyawan: " . ($hasMasterKaryawan ? "⚠️ YES (no longer needed)" : "✅ NO (correct)") . "\n";
 
     if ($hasMasterKaryawanView) {
-        echo "\n🎉 SUCCESS: User test4 has master-karyawan.view permission.\n";
+        echo "\n🎉 SUCCESS: User test4 has master-karyawan-view permission.\n";
         echo "   The Karyawan menu SHOULD appear in the sidebar.\n";
-        echo "   Sidebar logic updated to use: @if(\$user && \$user->can('master-karyawan.view'))\n";
+        echo "   Sidebar logic updated to use: @if(\$user && \$user->can('master-karyawan-view'))\n";
     } else {
-        echo "\n❌ ISSUE: User test4 is missing master-karyawan.view permission.\n";
+        echo "\n❌ ISSUE: User test4 is missing master-karyawan-view permission.\n";
         echo "   The Karyawan menu will NOT appear in the sidebar.\n";
     }
 

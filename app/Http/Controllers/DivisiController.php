@@ -154,4 +154,152 @@ class DivisiController extends Controller
             return back()->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Download template CSV for divisi import.
+     */
+    public function downloadTemplate()
+    {
+        $filename = 'template_import_divisi.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0',
+        ];
+
+        $templateData = [
+            ['nama_divisi', 'deskripsi', 'is_active'],
+        ];
+
+        $callback = function() use ($templateData) {
+            $file = fopen('php://output', 'w');
+
+            // Add UTF-8 BOM for proper Excel recognition
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            foreach ($templateData as $row) {
+                fputcsv($file, $row, ';'); // Use semicolon as delimiter for better Excel compatibility
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Generate Excel XML content for template.
+     */
+    private function generateExcelXML()
+    {
+        $templateData = [
+            ['nama_divisi', 'kode_divisi', 'deskripsi', 'is_active'],
+        ];
+
+        $xml = '     */
+
+    /**
+     * Import divisi data from CSV file.
+     */';
+
+        return $xml;
+    }
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt,xlsx,xls|max:5120'
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $extension = $file->getClientOriginalExtension();
+
+            if (in_array($extension, ['xlsx', 'xls'])) {
+                // For Excel files, we'll treat them as CSV for now
+                // In a real implementation, you'd use PhpSpreadsheet or similar
+                return back()->withErrors(['file' => 'Format Excel belum didukung untuk import. Gunakan format CSV dengan delimiter titik koma (;).']);
+            }
+
+            $path = $file->getRealPath();
+
+            // Read file content
+            $content = file_get_contents($path);
+
+            // Detect delimiter (prefer semicolon for Excel compatibility)
+            $delimiter = ';';
+            if (strpos($content, ',') !== false && strpos($content, ';') === false) {
+                $delimiter = ',';
+            }
+
+            // Parse CSV with detected delimiter
+            $data = array_map(function($line) use ($delimiter) {
+                return str_getcsv($line, $delimiter);
+            }, file($path));
+
+            // Remove header row if exists
+            $header = array_shift($data);
+
+            $imported = 0;
+            $errors = [];
+
+            DB::beginTransaction();
+
+            foreach ($data as $rowIndex => $row) {
+                try {
+                    // Skip empty rows
+                    if (empty(array_filter($row))) {
+                        continue;
+                    }
+
+                    // Expected format: nama_divisi, deskripsi, is_active
+                    $namaDivisi = trim($row[0] ?? '');
+                    $deskripsi = trim($row[1] ?? '');
+                    $isActive = trim($row[2] ?? '1');
+
+                    if (empty($namaDivisi)) {
+                        $errors[] = "Baris " . ($rowIndex + 2) . ": Nama divisi wajib diisi";
+                        continue;
+                    }
+
+                    // Check for duplicates (only by nama_divisi)
+                    $existing = Divisi::where('nama_divisi', $namaDivisi)->first();
+
+                    if ($existing) {
+                        $errors[] = "Baris " . ($rowIndex + 2) . ": Divisi '{$namaDivisi}' sudah ada";
+                        continue;
+                    }
+
+                    Divisi::create([
+                        'nama_divisi' => $namaDivisi,
+                        'deskripsi' => $deskripsi,
+                        'is_active' => filter_var($isActive, FILTER_VALIDATE_BOOLEAN, FILTER_NULL_ON_FAILURE) ?? true
+                    ]);
+
+                    $imported++;
+
+                } catch (\Exception $e) {
+                    $errors[] = "Baris " . ($rowIndex + 2) . ": " . $e->getMessage();
+                }
+            }
+
+            if ($imported > 0) {
+                DB::commit();
+                $message = "Berhasil mengimport {$imported} divisi!";
+                if (!empty($errors)) {
+                    $message .= " Namun ada " . count($errors) . " error(s).";
+                }
+                return redirect()->route('master.divisi.index')->with('success', $message);
+            } else {
+                DB::rollBack();
+                return back()->with('error', 'Tidak ada data yang berhasil diimport. Errors: ' . implode(', ', $errors));
+            }
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return back()->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
+    }
 }

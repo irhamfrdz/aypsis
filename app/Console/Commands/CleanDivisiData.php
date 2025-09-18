@@ -26,19 +26,19 @@ class CleanDivisiData extends Command
     public function handle()
     {
         $count = \App\Models\Divisi::count();
-        
+
         if ($count === 0) {
             $this->info('Tidak ada data divisi yang perlu dibersihkan.');
             return;
         }
-        
+
         $this->warn("Akan menghapus {$count} data divisi dari database.");
-        
+
         if (!$this->confirm('Apakah Anda yakin ingin melanjutkan?')) {
             $this->info('Operasi dibatalkan.');
             return;
         }
-        
+
         try {
             \App\Models\Divisi::truncate();
             $this->info("Berhasil menghapus {$count} data divisi.");

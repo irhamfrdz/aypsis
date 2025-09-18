@@ -172,16 +172,9 @@
                     <label for="divisi" class="{{ $labelClasses }}">Divisi</label>
                     <select name="divisi" id="divisi" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Divisi --</option>
-                        <option value="Direksi">Direksi</option>
-                        <option value="Administrasi">Administrasi</option>
-                        <option value="ABK">ABK</option>
-                        <option value="Krani">Krani</option>
-                        <option value="Lapangan">Lapangan</option>
-                        <option value="Mekanik">Mekanik</option>
-                        <option value="Port">Port</option>
-                        <option value="Satpam">Satpam</option>
-                        <option value="Supir">Supir</option>
-                        <option value="Non Karyawan">Non Karyawan</option>
+                        @foreach($divisis as $divisi)
+                        <option value="{{ $divisi->nama_divisi }}">{{ $divisi->nama_divisi }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -226,9 +219,9 @@
                     <label for="cabang" class="{{ $labelClasses }}">Kantor Cabang AYP</label>
                     <select name="cabang" id="cabang" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Kantor Cabang AYP --</option>
-                        <option value="Jakarta">Jakarta</option>
-                        <option value="Batam">Batam</option>
-                        <option value="Pinang">Pinang</option>
+                        @foreach($cabangs as $cabang)
+                        <option value="{{ $cabang->nama_cabang }}">{{ $cabang->nama_cabang }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -349,20 +342,9 @@
                     <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
                     <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Status Pajak --</option>
-                        <option value="TK0">TK0 - Tidak Kawin</option>
-                        <option value="TK1">TK1 - Tidak Kawin + 1 Tanggungan</option>
-                        <option value="TK2">TK2 - Tidak Kawin + 2 Tanggungan</option>
-                        <option value="TK3">TK3 - Tidak Kawin + 3 Tanggungan</option>
-                        <option value="K0">K0 - Kawin</option>
-                        <option value="K1">K1 - Kawin + 1 Tanggungan</option>
-                        <option value="K2">K2 - Kawin + 2 Tanggungan</option>
-                        <option value="K3">K3 - Kawin + 3 Tanggungan</option>
-                        <option value="K/0">K/0 - Kawin Penghasilan Istri Digabung</option>
-                        <option value="K/1">K/1 - Kawin Penghasilan Istri Digabung + 1 Tanggungan</option>
-                        <option value="K/2">K/2 - Kawin Penghasilan Istri Digabung + 2 Tanggungan</option>
-                        <option value="K/3">K/3 - Kawin Penghasilan Istri Digabung + 3 Tanggungan</option>
-                        <option value="TK/">TK/ - Tidak Kawin Penghasilan Suami Istri Digabung</option>
-                        <option value="TK/0">TK/0 - Tidak Kawin Penghasilan Digabung</option>
+                        @foreach($pajaks as $pajak)
+                        <option value="{{ $pajak->nama_status }}">{{ $pajak->nama_status }} - {{ $pajak->keterangan }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -421,19 +403,8 @@
 
             const alamatLengkapTextarea = document.getElementById('alamat_lengkap')
 
-            //Mapping divisi ke pekerjaan
-            const pekerjaanOptions = {
-                'Direksi' : ['Direksi'],
-                'Administrasi' : ['Administrasi'],
-                'ABK' : ['ABK'],
-                'Krani' : ['Kenek Alat Berat', 'Kenek Supir', 'Krani'],
-                'Lapangan' : ['Dinas Luar', 'Umum'],
-                'Mekanik' : ['Montir', 'Tambal Ban', 'Tukang Las', 'Teknisi'],
-                'Port' : ['Manajer', 'Pengawasan Kendaraan', 'Shipping', 'Tally', 'Port Captain', 'Port Engineer'],
-                'Satpam' : ['Satpam'],
-                'Supir' : ['Operator Crane', 'Operator Forklift', 'Supir Penumpang', 'Supir Trailer', 'Supir Truck'],
-                'Non Karyawan' : ['Buruh Lepas', 'Magang', 'PBM', 'Cat Kontainer']
-            }
+            // Data pekerjaan dari database
+            const pekerjaanByDivisi = @json($pekerjaanByDivisi);
 
             // Fungsi Untuk Memperbarui Opsi Pekerjaan
             function updatePekerjaanOptions(){
@@ -441,8 +412,8 @@
                 pekerjaanSelect.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>'
 
                 const selectedDivisi = divisiSelect.value
-                if(selectedDivisi && pekerjaanOptions[selectedDivisi]){
-                    pekerjaanOptions[selectedDivisi].forEach(function(pekerjaan){
+                if(selectedDivisi && pekerjaanByDivisi[selectedDivisi]){
+                    pekerjaanByDivisi[selectedDivisi].forEach(function(pekerjaan){
                         const option = document.createElement('option')
                         option.value = pekerjaan
                         option.textContent = pekerjaan

@@ -179,7 +179,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.permission.*') || Request::routeIs('master.mobil.*');
+                    $isMasterRoute = Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.permission.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master-bank-*') || Request::routeIs('master-coa-*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('penyelesaian.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*');
@@ -202,7 +202,7 @@
                     </button>
 
                     <div id="master-menu-content" class="dropdown-content ml-12 space-y-1 mt-2" @if($isMasterRoute) style="display: block;" @endif>
-                        @if($user && $user->can('master-karyawan.view'))
+                        @if($user && $user->can('master-karyawan-view'))
                             <a href="{{ route('master.karyawan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.karyawan.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                 <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.karyawan.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
@@ -211,7 +211,7 @@
                             </a>
                         @endif
 
-                            @if($user && $user->can('master-user.view'))
+                            @if($user && $user->can('master-user-view'))
                                 <a href="{{ route('master.user.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.user.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.user.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -220,7 +220,7 @@
                                 </a>
                             @endif
 
-                                @if($user && $user->can('master-kontainer.view'))
+                                @if($user && $user->can('master-kontainer-view'))
                                     <a href="{{ route('master.kontainer.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.kontainer.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                         <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
@@ -228,7 +228,7 @@
                                         Kontainer
                                     </a>
                                 @endif
-                            @if($user && $user->can('master-pricelist-sewa-kontainer.view'))
+                            @if($user && $user->can('master-pricelist-sewa-kontainer-view'))
                                 <a href="{{ route('master.pricelist-sewa-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.pricelist-sewa-kontainer.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
@@ -236,7 +236,7 @@
                                     Master Pricelist Sewa Kontainer
                                 </a>
                             @endif
-                            @if($user && $user->can('master-tujuan.view'))
+                            @if($user && $user->can('master-tujuan-view'))
                                 <a href="{{ route('master.tujuan.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.tujuan.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -245,7 +245,7 @@
                                     Master Tujuan
                                 </a>
                             @endif
-                            @if($user && $user->can('master-kegiatan.view'))
+                            @if($user && $user->can('master-kegiatan-view'))
                                 <a href="{{ route('master.kegiatan.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.kegiatan.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -253,7 +253,7 @@
                                     Master Kegiatan
                                 </a>
                             @endif
-                            @if($user && $user->can('master-permission.view'))
+                            @if($user && $user->can('master-permission-view'))
                                 <a href="{{ route('master.permission.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.permission.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
@@ -261,7 +261,7 @@
                                     Master Izin
                                 </a>
                             @endif
-                            @if($user && $user->can('master-mobil.view'))
+                            @if($user && $user->can('master-mobil-view'))
                                 <a href="{{ route('master.mobil.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.mobil.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a2 2 0 100-4 2 2 0 000 4zm0 0v10m0-10a2 2 0 002-2V2"/>
@@ -269,7 +269,7 @@
                                     Master Mobil
                                 </a>
                             @endif
-                            @if($user && $user->can('master-divisi.view'))
+                            @if($user && $user->can('master-divisi-view'))
                                 <a href="{{ route('master.divisi.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.divisi.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -277,7 +277,15 @@
                                     Master Divisi
                                 </a>
                             @endif
-                            @if($user && $user->can('master-pekerjaan.view'))
+                            @if($user && $user->can('master-cabang-view'))
+                                <a href="{{ route('master.cabang.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.cabang.*')) bg-blue-50 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.cabang.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                    Master Cabang
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-pekerjaan-view'))
                                 <a href="{{ route('master.pekerjaan.index') }}" class="flex items-center py-2 px-3 rounded-md text-sm text-gray-600 hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 @if(Request::routeIs('master.pekerjaan.*')) bg-indigo-50 text-indigo-600 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8m0 0V4"/>
@@ -285,10 +293,26 @@
                                     Master Pekerjaan
                                 </a>
                             @endif
+                            @if($user && $user->can('master-pajak-view'))
+                                <a href="{{ route('master.pajak.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.pajak.*')) bg-blue-50 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                    Pajak
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-bank-view'))
+                                <a href="{{ route('master-bank-index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master-bank-*')) bg-blue-50 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    Bank
+                                </a>
+                            @endif
                         </div>
                     </div>
                     @else
-                    @if($user && ($user->can('master-karyawan.view') || $user->can('master-user.view') || $user->can('master-kontainer.view') || $user->can('master-tujuan.view') || $user->can('master-kegiatan.view') || $user->can('master-permission.view') || $user->can('master-mobil.view') || $user->can('master-divisi.view') || $user->can('master-pricelist-sewa-kontainer.view')))
+                    @if($user && ($user->can('master-karyawan-view') || $user->can('master-user-view') || $user->can('master-kontainer-view') || $user->can('master-tujuan-view') || $user->can('master-kegiatan-view') || $user->can('master-permission-view') || $user->can('master-mobil-view') || $user->can('master-divisi-view') || $user->can('master-pajak-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-bank-view') || $user->can('master-coa-view')))
                     <div class="mb-1">
                         <button id="master-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all duration-200 group {{ $isMasterRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
                             <div class="flex items-center">
@@ -304,7 +328,7 @@
                             </svg>
                         </button>
                         <div id="master-menu-content" class="dropdown-content ml-12 space-y-1 mt-2" @if($isMasterRoute) style="display: block;" @endif>
-                            @if($user && $user->can('master-karyawan.view'))
+                            @if($user && $user->can('master-karyawan-view'))
                                 <a href="{{ route('master.karyawan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.karyawan.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.karyawan.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -312,7 +336,7 @@
                                     Karyawan
                                 </a>
                             @endif
-                            @if($user && $user->can('master-user.view'))
+                            @if($user && $user->can('master-user-view'))
                                 <a href="{{ route('master.user.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.user.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.user.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
@@ -320,7 +344,7 @@
                                     User
                                 </a>
                             @endif
-                            @if($user && $user->can('master-kontainer.view'))
+                            @if($user && $user->can('master-kontainer-view'))
                                 <a href="{{ route('master.kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.kontainer.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.kontainer.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
@@ -328,7 +352,7 @@
                                     Kontainer
                                 </a>
                             @endif
-                            @if($user && $user->can('master-pricelist-sewa-kontainer.view'))
+                            @if($user && $user->can('master-pricelist-sewa-kontainer-view'))
                                 <a href="{{ route('master.pricelist-sewa-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.pricelist-sewa-kontainer.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.pricelist-sewa-kontainer.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
@@ -336,7 +360,7 @@
                                     Pricelist Sewa Kontainer
                                 </a>
                             @endif
-                            @if($user && $user->can('master-tujuan.view'))
+                            @if($user && $user->can('master-tujuan-view'))
                                 <a href="{{ route('master.tujuan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.tujuan.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.tujuan.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
@@ -345,7 +369,7 @@
                                     Tujuan
                                 </a>
                             @endif
-                            @if($user && $user->can('master-kegiatan.view'))
+                            @if($user && $user->can('master-kegiatan-view'))
                                 <a href="{{ route('master.kegiatan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.kegiatan.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.kegiatan.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
@@ -353,7 +377,7 @@
                                     Kegiatan
                                 </a>
                             @endif
-                            @if($user && $user->can('master-permission.view'))
+                            @if($user && $user->can('master-permission-view'))
                                 <a href="{{ route('master.permission.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.permission.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.permission.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
@@ -361,7 +385,7 @@
                                     Izin
                                 </a>
                             @endif
-                            @if($user && $user->can('master-mobil.view'))
+                            @if($user && $user->can('master-mobil-view'))
                                 <a href="{{ route('master.mobil.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.mobil.*')) bg-blue-50 text-blue-700 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.mobil.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a2 2 0 100-4 2 2 0 000 4zm0 0v10m0-10a2 2 0 002-2V2"/>
@@ -369,7 +393,7 @@
                                     Mobil
                                 </a>
                             @endif
-                            @if($user && $user->can('master-divisi.view'))
+                            @if($user && $user->can('master-divisi-view'))
                                 <a href="{{ route('master.divisi.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.divisi.*')) bg-blue-50 font-medium @endif">
                                     <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -377,12 +401,44 @@
                                     Divisi
                                 </a>
                             @endif
-                            @if($user && $user->can('master-pekerjaan.view'))
-                                <a href="{{ route('master.pekerjaan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.pekerjaan.*')) bg-blue-50 font-medium @endif">
-                                    <svg class="w-4 h-4 mr-2 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            @if($user && $user->can('master-cabang-view'))
+                                <a href="{{ route('master.cabang.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.cabang.*')) bg-blue-50 text-blue-700 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.cabang.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                                    </svg>
+                                    Cabang
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-pekerjaan-view'))
+                                <a href="{{ route('master.pekerjaan.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.pekerjaan.*')) bg-blue-50 text-blue-700 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master.pekerjaan.*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8m0 0V4"/>
                                     </svg>
                                     Pekerjaan
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-pajak-view'))
+                                <a href="{{ route('master.pajak.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master.pajak.*')) bg-blue-50 text-blue-700 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 @if(Request::routeIs('master.pajak.*')) text-blue-600 @else text-gray-400 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                    Pajak
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-bank-view'))
+                                <a href="{{ route('master-bank-index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master-bank-*')) bg-blue-50 text-blue-700 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master-bank-*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"/>
+                                    </svg>
+                                    Bank
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-coa-view'))
+                                <a href="{{ route('master-coa-index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 @if(Request::routeIs('master-coa-*')) bg-blue-50 text-blue-700 font-medium @endif">
+                                    <svg class="w-4 h-4 mr-2 text-gray-400 @if(Request::routeIs('master-coa-*')) text-blue-500 @endif" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                    COA
                                 </a>
                             @endif
                             {{-- Hapus menu dari master data --}}
@@ -394,7 +450,7 @@
                     {{-- Menu Perbaikan Kontainer --}}
                     @php
                         $hasPerbaikanKontainerPermission = $isAdmin ||
-                            auth()->user()->can('perbaikan-kontainer.view') ||
+                            auth()->user()->can('perbaikan-kontainer-view') ||
                             auth()->user()->can('perbaikan-kontainer.create') ||
                             auth()->user()->can('perbaikan-kontainer.update') ||
                             auth()->user()->can('perbaikan-kontainer.delete');
@@ -419,19 +475,19 @@
                             </svg>
                         </button>
                         <div id="perbaikan-kontainer-menu-content" class="dropdown-content ml-12 space-y-1 mt-2" @if($isPerbaikanKontainerRoute) style="display: block;" @endif>
-                            @if($user && $user->can('perbaikan-kontainer.view'))
+                            @if($user && $user->can('perbaikan-kontainer-view'))
                                 <a href="{{ route('perbaikan-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
                                     <div class="w-2 h-2 rounded-full mr-3 {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-green-500' : 'bg-gray-400' }}"></div>
                                     Daftar Perbaikan Kontainer
                                 </a>
                             @endif
-                            @if($user && $user->can('pranota-perbaikan-kontainer.view'))
+                            @if($user && $user->can('pranota-perbaikan-kontainer-view'))
                                 <a href="{{ route('pranota-perbaikan-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
                                     <div class="w-2 h-2 rounded-full mr-3 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-green-500' : 'bg-gray-400' }}"></div>
                                     Daftar Pranota Perbaikan Kontainer
                                 </a>
                             @endif
-                            @if($user && $user->can('pembayaran-pranota-perbaikan-kontainer.view'))
+                            @if($user && $user->can('pembayaran-pranota-perbaikan-kontainer-view'))
                                 <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
                                     <div class="w-2 h-2 rounded-full mr-3 {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-green-500' : 'bg-gray-400' }}"></div>
                                     Pembayaran Pranota Tagihan Kontainer

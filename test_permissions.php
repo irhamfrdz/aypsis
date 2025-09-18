@@ -14,7 +14,7 @@ echo "Testing Permission Database\n";
 echo "==========================\n";
 
 // Test basic permission lookup
-$testNames = ['dashboard-view', 'master-karyawan', 'master.karyawan.index', 'master-user-view'];
+$testNames = ['master-karyawan', 'master-kontainer', 'master-tujuan', 'master-kegiatan', 'master-permission', 'master-mobil', 'master-divisi', 'master-pajak', 'master-pekerjaan'];
 
 echo "Looking for permissions: " . implode(', ', $testNames) . "\n\n";
 
@@ -25,6 +25,12 @@ foreach ($testNames as $name) {
     } else {
         echo "✗ Not found: $name\n";
     }
+}
+
+echo "\nChecking karyawan permissions:\n";
+$karyawanPerms = Permission::where('name', 'like', '%karyawan%')->get();
+foreach ($karyawanPerms as $perm) {
+    echo "  {$perm->id}: {$perm->name}\n";
 }
 
 echo "\nTotal permissions in database: " . Permission::count() . "\n";

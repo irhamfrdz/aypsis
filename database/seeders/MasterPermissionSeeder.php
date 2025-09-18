@@ -187,15 +187,47 @@ class MasterPermissionSeeder extends Seeder
             ['name' => 'master.divisi.destroy', 'description' => 'Destroy master divisi'],
             ['name' => 'master.divisi', 'description' => 'Basic master divisi access'],
 
+            // Cabang permissions
+            ['name' => 'master-cabang-view', 'description' => 'Index master cabang'],
+            ['name' => 'master-cabang-create', 'description' => 'Create master cabang'],
+            ['name' => 'master-cabang-store', 'description' => 'Store master cabang'],
+            ['name' => 'master-cabang-show', 'description' => 'Show master cabang'],
+            ['name' => 'master-cabang-edit', 'description' => 'Edit master cabang'],
+            ['name' => 'master-cabang-update', 'description' => 'Update master cabang'],
+            ['name' => 'master-cabang-delete', 'description' => 'Destroy master cabang'],
+            ['name' => 'master-cabang', 'description' => 'Basic master cabang access'],
+
             // Pekerjaan permissions
-            ['name' => 'master.pekerjaan.index', 'description' => 'Index master pekerjaan'],
-            ['name' => 'master.pekerjaan.create', 'description' => 'Create master pekerjaan'],
-            ['name' => 'master.pekerjaan.store', 'description' => 'Store master pekerjaan'],
-            ['name' => 'master.pekerjaan.show', 'description' => 'Show master pekerjaan'],
-            ['name' => 'master.pekerjaan.edit', 'description' => 'Edit master pekerjaan'],
-            ['name' => 'master.pekerjaan.update', 'description' => 'Update master pekerjaan'],
-            ['name' => 'master.pekerjaan.destroy', 'description' => 'Destroy master pekerjaan'],
-            ['name' => 'master.pekerjaan', 'description' => 'Basic master pekerjaan access'],
+            ['name' => 'master-pekerjaan-view', 'description' => 'Index master pekerjaan'],
+            ['name' => 'master-pekerjaan-create', 'description' => 'Create master pekerjaan'],
+            ['name' => 'master-pekerjaan-store', 'description' => 'Store master pekerjaan'],
+            ['name' => 'master-pekerjaan-show', 'description' => 'Show master pekerjaan'],
+            ['name' => 'master-pekerjaan-edit', 'description' => 'Edit master pekerjaan'],
+            ['name' => 'master-pekerjaan-update', 'description' => 'Update master pekerjaan'],
+            ['name' => 'master-pekerjaan-destroy', 'description' => 'Destroy master pekerjaan'],
+            ['name' => 'master-pekerjaan-print', 'description' => 'Print master pekerjaan'],
+            ['name' => 'master-pekerjaan-export', 'description' => 'Export master pekerjaan'],
+            ['name' => 'master-pekerjaan', 'description' => 'Basic master pekerjaan access'],
+
+            // Bank permissions
+            ['name' => 'master-bank-index', 'description' => 'Index master bank'],
+            ['name' => 'master-bank-create', 'description' => 'Create master bank'],
+            ['name' => 'master-bank-store', 'description' => 'Store master bank'],
+            ['name' => 'master-bank-show', 'description' => 'Show master bank'],
+            ['name' => 'master-bank-edit', 'description' => 'Edit master bank'],
+            ['name' => 'master-bank-update', 'description' => 'Update master bank'],
+            ['name' => 'master-bank-destroy', 'description' => 'Destroy master bank'],
+            ['name' => 'master-bank', 'description' => 'Basic master bank access'],
+
+            // Pajak permissions
+            ['name' => 'master-pajak-view', 'description' => 'Index master pajak'],
+            ['name' => 'master-pajak-create', 'description' => 'Create master pajak'],
+            ['name' => 'master-pajak-store', 'description' => 'Store master pajak'],
+            ['name' => 'master-pajak-show', 'description' => 'Show master pajak'],
+            ['name' => 'master-pajak-edit', 'description' => 'Edit master pajak'],
+            ['name' => 'master-pajak-update', 'description' => 'Update master pajak'],
+            ['name' => 'master-pajak-destroy', 'description' => 'Destroy master pajak'],
+            ['name' => 'master-pajak', 'description' => 'Basic master pajak access'],
 
             // Auth permissions
             ['name' => 'auth.login', 'description' => 'Auth login'],

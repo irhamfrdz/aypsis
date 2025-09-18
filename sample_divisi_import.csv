@@ -1,0 +1,5 @@
+nama_divisi,kode_divisi,deskripsi,is_active
+Divisi IT,IT,Divisi Teknologi Informasi,1
+Divisi HR,HR,Divisi Human Resources,1
+Divisi Finance,FIN,Divisi Keuangan,1
+Divisi Marketing,MKT,Divisi Pemasaran,0

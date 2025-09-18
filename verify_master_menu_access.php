@@ -25,7 +25,7 @@ echo "👤 User: {$user->username} (ID: {$user->id})\n\n";
 
 // Check key master data permissions that the sidebar looks for
 $masterPermissions = [
-    'master-karyawan.view',
+    'master-karyawan-view',
     'master-user.view',
     'master-kontainer.view',
     'master-tujuan.view',
@@ -58,8 +58,8 @@ if ($allCorrect) {
 }
 
 echo "\n🔗 Sidebar Menu Logic:\n";
-echo "   The sidebar checks: \$user->can('master-karyawan.view')\n";
+echo "   The sidebar checks: \$user->can('master-karyawan-view')\n";
 echo "   If this returns true, the Master Data menu will be displayed.\n";
 
-$canAccessMaster = $user->hasPermissionTo('master-karyawan.view');
+$canAccessMaster = $user->hasPermissionTo('master-karyawan-view');
 echo "\n📊 Current Status: " . ($canAccessMaster ? '✅ ACCESSIBLE' : '❌ NOT ACCESSIBLE') . "\n";

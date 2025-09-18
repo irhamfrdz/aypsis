@@ -1,16 +1,16 @@
 @extends('layouts.app')
 
-@section('title', 'Pendaftaran Karyawan Baru')
-@section('page_title','Pendaftaran Karyawan Baru')
+@section('title', isset($karyawan) ? 'Edit Data Karyawan - ' . $karyawan->nama_lengkap : 'Pendaftaran Karyawan Baru')
+@section('page_title', isset($karyawan) ? 'Edit Data Karyawan' : 'Pendaftaran Karyawan Baru')
 
 @section('content')
 <div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-4 px-4 sm:px-6 lg:px-8">
     <div class="max-w-4xl mx-auto">
         <div class="text-center mb-6 lg:text-left">
             <h2 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                Formulir Pendaftaran Karyawan Baru
+                {{ isset($karyawan) ? 'Formulir Edit Data Karyawan' : 'Formulir Pendaftaran Karyawan Baru' }}
             </h2>
-            <p class="text-gray-600 text-sm lg:text-base">Lengkapi formulir di bawah untuk mendaftarkan diri sebagai karyawan.</p>
+            <p class="text-gray-600 text-sm lg:text-base">{{ isset($karyawan) ? 'Perbarui data karyawan Anda di bawah ini.' : 'Lengkapi formulir di bawah untuk mendaftarkan diri sebagai karyawan.' }}</p>
         </div>
 
         @if (session('error'))
@@ -41,8 +41,11 @@
         @endif
 
         <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
-            <form action="{{ route('karyawan.store') }}" method="POST" class="divide-y divide-gray-100">
+            <form action="{{ isset($karyawan) ? route('karyawan.onboarding-update', $karyawan->id) : route('karyawan.store') }}" method="POST" class="divide-y divide-gray-100">
             @csrf
+            @if(isset($karyawan))
+                @method('PUT')
+            @endif
             @php
                 $inputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
                 $readonlyInputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-100 shadow-sm text-base p-3 lg:p-4 min-h-[48px]";
@@ -62,27 +65,27 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK<span class="text-red-500 ml-1">*</span></label>
-                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK">
+                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK" value="{{ old('nik', $karyawan->nik ?? '') }}">
                     </div>
                     <div>
                         <label for="nama_lengkap" class="{{ $labelClasses }}">Nama Lengkap <span class="text-red-500 ml-1">*</span></label>
-                        <input type="text" name="nama_lengkap" id="nama_lengkap" class="{{ $inputClasses }}" required placeholder="Masukkan nama lengkap">
+                        <input type="text" name="nama_lengkap" id="nama_lengkap" class="{{ $inputClasses }}" required placeholder="Masukkan nama lengkap" value="{{ old('nama_lengkap', $karyawan->nama_lengkap ?? '') }}">
                     </div>
                     <div>
                         <label for="nama_panggilan" class="{{ $labelClasses }}">Nama Panggilan<span class="text-red-500 ml-1">*</span></label>
-                        <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }}" required placeholder="Masukkan nama panggilan">
+                        <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }}" required placeholder="Masukkan nama panggilan" value="{{ old('nama_panggilan', $karyawan->nama_panggilan ?? '') }}">
                     </div>
                     <div>
                         <label for="email" class="{{ $labelClasses }}">Email</label>
-                        <input type="email" name="email" id="email" class="{{ $inputClasses }}" placeholder="contoh@email.com">
+                        <input type="email" name="email" id="email" class="{{ $inputClasses }}" placeholder="contoh@email.com" value="{{ old('email', $karyawan->email ?? '') }}">
                     </div>
                     <div>
                         <label for="tanggal_lahir" class="{{ $labelClasses }}">Tanggal Lahir</label>
-                        <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="{{ $inputClasses }}">
+                        <input type="date" name="tanggal_lahir" id="tanggal_lahir" class="{{ $inputClasses }}" value="{{ old('tanggal_lahir', $karyawan->tanggal_lahir ?? '') }}">
                     </div>
                     <div>
                         <label for="tempat_lahir" class="{{ $labelClasses }}">Tempat Lahir</label>
-                        <input type="text" name="tempat_lahir" id="tempat_lahir" class="{{ $inputClasses }}" placeholder="Kota tempat lahir">
+                        <input type="text" name="tempat_lahir" id="tempat_lahir" class="{{ $inputClasses }}" placeholder="Kota tempat lahir" value="{{ old('tempat_lahir', $karyawan->tempat_lahir ?? '') }}">
                     </div>
                     <div>
                         <label for="jenis_kelamin" class="{{ $labelClasses }}">Jenis Kelamin</label>
@@ -143,22 +146,18 @@
                         <label for="divisi" class="{{ $labelClasses }}">Divisi</label>
                         <select name="divisi" id="divisi" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Divisi --</option>
-                            <option value="Direksi">Direksi</option>
-                            <option value="Administrasi">Administrasi</option>
-                            <option value="ABK">ABK</option>
-                            <option value="Krani">Krani</option>
-                            <option value="Lapangan">Lapangan</option>
-                            <option value="Mekanik">Mekanik</option>
-                            <option value="Port">Port</option>
-                            <option value="Satpam">Satpam</option>
-                            <option value="Supir">Supir</option>
-                            <option value="Non Karyawan">Non Karyawan</option>
+                            @foreach($divisis as $divisi)
+                            <option value="{{ $divisi->nama_divisi }}" {{ old('divisi', $karyawan->divisi ?? '') == $divisi->nama_divisi ? 'selected' : '' }}>{{ $divisi->nama_divisi }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
                         <label for="pekerjaan" class="{{ $labelClasses }}">Pekerjaan</label>
                         <select name="pekerjaan" id="pekerjaan" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Pekerjaan --</option>
+                            @foreach($pekerjaans as $pekerjaan)
+                            <option value="{{ $pekerjaan->nama_pekerjaan }}" {{ old('pekerjaan', $karyawan->pekerjaan ?? '') == $pekerjaan->nama_pekerjaan ? 'selected' : '' }}>{{ $pekerjaan->nama_pekerjaan }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -189,14 +188,14 @@
                         <label for="cabang" class="{{ $labelClasses }}">Kantor Cabang AYP</label>
                         <select name="cabang" id="cabang" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Kantor Cabang AYP --</option>
-                            <option value="Jakarta">Jakarta</option>
-                            <option value="Batam">Batam</option>
-                            <option value="Pinang">Pinang</option>
+                            @foreach($cabangs as $cabang)
+                            <option value="{{ $cabang->nama_cabang }}" {{ old('cabang', $karyawan->cabang ?? '') == $cabang->nama_cabang ? 'selected' : '' }}>{{ $cabang->nama_cabang }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
                         <label for="plat" class="{{ $labelClasses }}">Nomor Plat</label>
-                        <input type="text" name="plat" id="plat" class="{{ $inputClasses }}" placeholder="Nomor plat kendaraan">
+                        <input type="text" name="plat" id="plat" class="{{ $inputClasses }}" placeholder="Nomor plat kendaraan" value="{{ old('plat', $karyawan->plat ?? '') }}">
                     </div>
                 </div>
             </fieldset>
@@ -301,29 +300,18 @@
                         <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
                         <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Status Pajak --</option>
-                            <option value="TK0">TK0 - Tidak Kawin</option>
-                            <option value="TK1">TK1 - Tidak Kawin + 1 Tanggungan</option>
-                            <option value="TK2">TK2 - Tidak Kawin + 2 Tanggungan</option>
-                            <option value="TK3">TK3 - Tidak Kawin + 3 Tanggungan</option>
-                            <option value="K0">K0 - Kawin</option>
-                            <option value="K1">K1 - Kawin + 1 Tanggungan</option>
-                            <option value="K2">K2 - Kawin + 2 Tanggungan</option>
-                            <option value="K3">K3 - Kawin + 3 Tanggungan</option>
-                            <option value="K/0">K/0 - Kawin Penghasilan Istri Digabung</option>
-                            <option value="K/1">K/1 - Kawin Penghasilan Istri Digabung + 1 Tanggungan</option>
-                            <option value="K/2">K/2 - Kawin Penghasilan Istri Digabung + 2 Tanggungan</option>
-                            <option value="K/3">K/3 - Kawin Penghasilan Istri Digabung + 3 Tanggungan</option>
-                            <option value="TK/">TK/ - Tidak Kawin Penghasilan Suami Istri Digabung</option>
-                            <option value="TK/0">TK/0 - Tidak Kawin Penghasilan Digabung</option>
+                            @foreach($pajaks as $pajak)
+                            <option value="{{ $pajak->nama_status }}" {{ old('status_pajak', $karyawan->status_pajak ?? '') == $pajak->nama_status ? 'selected' : '' }}>{{ $pajak->nama_status }} - {{ $pajak->keterangan }}</option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
                         <label for="jkn" class="{{ $labelClasses }}">JKN</label>
-                        <input type="text" name="jkn" id="jkn" class="{{ $inputClasses }}" placeholder="Nomor JKN/BPJS">
+                        <input type="text" name="jkn" id="jkn" class="{{ $inputClasses }}" placeholder="Nomor JKN/BPJS" value="{{ old('jkn', $karyawan->jkn ?? '') }}">
                     </div>
                     <div>
                         <label for="no_ketenagakerjaan" class="{{ $labelClasses }}">BP Jamsostek</label>
-                        <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek">
+                        <input type="text" name="no_ketenagakerjaan" id="no_ketenagakerjaan" class="{{ $inputClasses }}" placeholder="Nomor BP Jamsostek" value="{{ old('no_ketenagakerjaan', $karyawan->no_ketenagakerjaan ?? '') }}">
                     </div>
                 </div>
             </fieldset>
@@ -334,7 +322,7 @@
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
-                        Simpan Data Karyawan
+                        {{ isset($karyawan) ? 'Update Data Karyawan' : 'Simpan Data Karyawan' }}
                     </button>
                 </div>
             </div>
@@ -349,18 +337,8 @@
     document.addEventListener('DOMContentLoaded', function() {
         const divisiSelect = document.getElementById('divisi');
         const pekerjaanSelect = document.getElementById('pekerjaan');
-        const pekerjaanOptions = {
-            'Direksi' : ['Direksi'],
-            'Administrasi' : ['Administrasi'],
-            'ABK' : ['ABK'],
-            'Krani' : ['Kenek Alat Berat', 'Kenek Supir', 'Krani'],
-            'Lapangan' : ['Dinas Luar', 'Umum'],
-            'Mekanik' : ['Montir', 'Tambal Ban', 'Tukang Las', 'Teknisi'],
-            'Port' : ['Manajer', 'Pengawasan Kendaraan', 'Shipping', 'Tally', 'Port Captain', 'Port Engineer'],
-            'Satpam' : ['Satpam'],
-            'Supir' : ['Operator Crane', 'Operator Forklift', 'Supir Penumpang', 'Supir Trailer', 'Supir Truck'],
-            'Non Karyawan' : ['Buruh Lepas', 'Magang', 'PBM', 'Cat Kontainer']
-        };
+        // Data pekerjaan dari database
+        const pekerjaanOptions = @json($pekerjaanByDivisi);
         function updatePekerjaanOptions() {
             pekerjaanSelect.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
             const selectedDivisi = divisiSelect.value;

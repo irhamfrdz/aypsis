@@ -26,7 +26,7 @@ echo "👤 User: {$user->username} (ID: {$user->id})\n\n";
 
 // Define the missing permissions that need to be assigned
 $missingPermissions = [
-    'master-karyawan.view',
+    'master-karyawan-view',
     'master-kontainer.view',
     'master-tujuan.view',
     'master-kegiatan.view',
@@ -75,5 +75,5 @@ foreach ($missingPermissions as $permName) {
     echo "  - {$permName}: {$status}\n";
 }
 
-$masterKaryawanView = $user->can('master-karyawan.view');
+$masterKaryawanView = $user->can('master-karyawan-view');
 echo "\n📊 Sidebar Access: " . ($masterKaryawanView ? '✅ ACCESSIBLE' : '❌ NOT ACCESSIBLE') . "\n";

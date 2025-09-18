@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Karyawan;
+use App\Models\Divisi;
+use App\Models\Pekerjaan;
 use App\Http\Controllers\KaryawanController;
 
 class AuthController extends Controller
@@ -45,7 +47,24 @@ class AuthController extends Controller
             // Jika user belum punya karyawan, arahkan ke onboarding form lengkap
             if (empty($user->karyawan)) {
                 $request->session()->regenerate();
-                return view('karyawan.onboarding-full');
+
+                // Ambil data divisis dan pekerjaans untuk dropdown
+                $divisis = Divisi::active()->orderBy('nama_divisi')->get();
+                $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
+                $cabangs = \App\Models\Cabang::orderBy('nama_cabang')->get();
+                $pajaks = \App\Models\Pajak::orderBy('nama_status')->get();
+
+                // Group pekerjaan by divisi for JavaScript
+                $pekerjaanByDivisi = [];
+                foreach ($pekerjaans as $pekerjaan) {
+                    $divisi = $pekerjaan->divisi ?? '';
+                    if (!isset($pekerjaanByDivisi[$divisi])) {
+                        $pekerjaanByDivisi[$divisi] = [];
+                    }
+                    $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
+                }
+
+                return view('karyawan.onboarding-full', compact('divisis', 'pekerjaans', 'cabangs', 'pajaks', 'pekerjaanByDivisi'));
             }
 
             // Any other non-approved status should be blocked.

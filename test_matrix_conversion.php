@@ -42,8 +42,8 @@ $matrixPermissions = $controller->testConvertMatrixPermissionsToIds(['master-kar
 echo "\n";
 
 // Check what permissions user currently has
-echo "User has permission for master-karyawan.view: " . ($user->can('master-karyawan.view') ? 'YES' : 'NO') . "\n";
-echo "User has permission for master.karyawan.show: " . ($user->can('master.karyawan.show') ? 'YES' : 'NO') . "\n";
+echo "User has permission for master-karyawan-view: " . ($user->can('master-karyawan-view') ? 'YES' : 'NO') . "\n";
+echo "User has permission for master-karyawan-show: " . ($user->can('master-karyawan-show') ? 'YES' : 'NO') . "\n";
 
 echo "\n🔍 Test completed!\n";
 

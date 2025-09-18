@@ -8,7 +8,10 @@ use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KontainerController;
 use App\Http\Controllers\DivisiController;
+use App\Http\Controllers\PajakController;
+use App\Http\Controllers\CabangController;
 use App\Http\Controllers\PekerjaanController;
+use App\Http\Controllers\MasterBankController;
 
 use App\Http\Controllers\TujuanController;
 use App\Http\Controllers\PermohonanController;
@@ -47,6 +50,12 @@ Route::post('logout', [AuthController::class, 'logout'])->name('logout');
 // Onboarding crew checklist khusus untuk karyawan baru (public, tanpa auth)
 Route::get('karyawan/{karyawan}/onboarding-crew-checklist', [App\Http\Controllers\KaryawanController::class, 'onboardingCrewChecklist'])
     ->name('karyawan.onboarding-crew-checklist');
+// Route edit khusus untuk onboarding (public, tanpa middleware permission)
+Route::get('karyawan/{karyawan}/onboarding-edit', [App\Http\Controllers\KaryawanController::class, 'onboardingEdit'])
+    ->name('karyawan.onboarding-edit');
+// Route update khusus untuk onboarding (public, tanpa middleware permission)
+Route::put('karyawan/{karyawan}/onboarding-update', [App\Http\Controllers\KaryawanController::class, 'onboardingUpdate'])
+    ->name('karyawan.onboarding-update');
 // Diletakkan di atas agar tidak tertimpa oleh group admin/master
 Route::get('karyawan/create', [AuthController::class, 'showKaryawanRegisterForm'])->name('karyawan.create');
 Route::post('karyawan', [AuthController::class, 'registerKaryawan'])->name('karyawan.store');
@@ -78,11 +87,11 @@ Route::middleware([
     // Route create/store karyawan untuk master/admin hanya gunakan prefix master/karyawan agar tidak bentrok dengan onboarding
     Route::get('master/karyawan/create', [\App\Http\Controllers\KaryawanController::class, 'create'])
         ->name('master.karyawan.create')
-        ->middleware(['auth', 'permission:master-karyawan.create']);
+        ->middleware(['auth', 'can:master-karyawan-create']);
 
     Route::post('master/karyawan', [\App\Http\Controllers\KaryawanController::class, 'store'])
         ->name('master.karyawan.store')
-        ->middleware(['auth', 'permission:master-karyawan.create']);
+        ->middleware(['auth', 'can:master-karyawan-create']);
 
           // Tagihan Kontainer Sewa routes removed - controller/views refactored by request
           // The old routes and resource controller were deleted to allow a full rewrite.
@@ -101,31 +110,31 @@ Route::middleware([
         // Print all karyawan (print-friendly)
         Route::get('karyawan/print', [KaryawanController::class, 'print'])
              ->name('karyawan.print')
-             ->middleware('permission:master-karyawan.print');
+             ->middleware('can:master-karyawan-print');
 
         // Print single karyawan (form layout)
         Route::get('karyawan/{karyawan}/print', [KaryawanController::class, 'printSingle'])
              ->name('karyawan.print.single')
-             ->middleware('permission:master-karyawan.print');
+             ->middleware('can:master-karyawan-print');
 
         // Import karyawan from CSV (simple uploader)
         Route::get('karyawan/import', [KaryawanController::class, 'importForm'])
              ->name('karyawan.import')
-             ->middleware(['auth', 'permission:master-karyawan.create']);
+             ->middleware(['auth', 'can:master-karyawan-create']);
 
         Route::post('karyawan/import', [KaryawanController::class, 'importStore'])
              ->name('karyawan.import.store')
-             ->middleware(['auth', 'permission:master-karyawan.create']);
+             ->middleware(['auth', 'can:master-karyawan-create']);
 
         // Export/download CSV of all karyawan
         Route::get('karyawan/export', [KaryawanController::class, 'export'])
              ->name('karyawan.export')
-             ->middleware('permission:master-karyawan.export');
+             ->middleware('can:master-karyawan-export');
 
         // Export Excel-formatted CSV to prevent scientific notation
         Route::get('karyawan/export-excel', [KaryawanController::class, 'exportExcel'])
              ->name('karyawan.export-excel')
-             ->middleware('permission:master-karyawan.export');
+             ->middleware('can:master-karyawan-export');
 
         // Download CSV template for import
         Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
@@ -156,199 +165,199 @@ Route::middleware([
         // Individual routes for karyawan with specific permissions (except index which is defined outside master group)
         Route::get('karyawan/create', [KaryawanController::class, 'create'])
              ->name('karyawan.create')
-             ->middleware('permission:master-karyawan.create');
+             ->middleware('can:master-karyawan-create');
         Route::post('karyawan', [KaryawanController::class, 'store'])
              ->name('karyawan.store')
-             ->middleware('permission:master-karyawan.create');
+             ->middleware('can:master-karyawan-create');
          Route::get('karyawan/{karyawan}', [KaryawanController::class, 'show'])
               ->name('karyawan.show')
-              ->middleware('permission:master-karyawan.view');
+              ->middleware('can:master-karyawan-view');
          Route::get('karyawan/{karyawan}/edit', [KaryawanController::class, 'edit'])
               ->name('karyawan.edit')
-              ->middleware('permission:master-karyawan.update');
+              ->middleware('can:master-karyawan-update');
          Route::put('karyawan/{karyawan}', [KaryawanController::class, 'update'])
               ->name('karyawan.update')
-              ->middleware('permission:master-karyawan.update');
+              ->middleware('can:master-karyawan-update');
          Route::delete('karyawan/{karyawan}', [KaryawanController::class, 'destroy'])
               ->name('karyawan.destroy')
-              ->middleware('permission:master-karyawan.delete');
+              ->middleware('can:master-karyawan-delete');
 
         // Master user routes (with master prefix) - granular permissions
         Route::get('user', [UserController::class, 'index'])
              ->name('user.index')
-             ->middleware('can:master-user.view');
+             ->middleware('can:master-user-view');
         Route::get('user/create', [UserController::class, 'create'])
              ->name('user.create')
-             ->middleware('can:master-user.create');
+             ->middleware('can:master-user-create');
         Route::post('user', [UserController::class, 'store'])
              ->name('user.store')
-             ->middleware('can:master-user.create');
+             ->middleware('can:master-user-create');
         Route::get('user/{user}', [UserController::class, 'show'])
              ->name('user.show')
-             ->middleware('can:master-user.view');
+             ->middleware('can:master-user-view');
         Route::get('user/{user}/edit', [UserController::class, 'edit'])
              ->name('user.edit')
-             ->middleware('can:master-user.update');
+             ->middleware('can:master-user-update');
         Route::put('user/{user}', [UserController::class, 'update'])
              ->name('user.update')
-             ->middleware('can:master-user.update');
+             ->middleware('can:master-user-update');
         Route::delete('user/{user}', [UserController::class, 'destroy'])
              ->name('user.destroy')
-             ->middleware('can:master-user.delete');
+             ->middleware('can:master-user-delete');
 
         // Additional master user routes for permission management
         Route::get('user/bulk-manage', [UserController::class, 'bulkManage'])
              ->name('user.bulk-manage')
-             ->middleware('can:master-user.view');
+             ->middleware('can:master-user-view');
         Route::post('user/{user}/assign-template', [UserController::class, 'assignTemplate'])
              ->name('user.assign-template')
-             ->middleware('can:master-user.view');
+             ->middleware('can:master-user-view');
         Route::post('user/bulk-assign-permissions', [UserController::class, 'bulkAssignPermissions'])
              ->name('user.bulk-assign-permissions')
-             ->middleware('can:master-user.view');
+             ->middleware('can:master-user-view');
         Route::get('user/{user}/permissions', [UserController::class, 'getUserPermissions'])
              ->name('user.permissions')
-             ->middleware('can:master-user.view');
+             ->middleware('can:master-user-view');
 
         // Master kontainer routes (with master prefix) - granular permissions
         Route::get('kontainer', [KontainerController::class, 'index'])
              ->name('kontainer.index')
-             ->middleware('can:master-kontainer.view');
+             ->middleware('can:master-kontainer-view');
         Route::get('kontainer/create', [KontainerController::class, 'create'])
              ->name('kontainer.create')
-             ->middleware('can:master-kontainer.create');
+             ->middleware('can:master-kontainer-create');
         Route::post('kontainer', [KontainerController::class, 'store'])
              ->name('kontainer.store')
-             ->middleware('can:master-kontainer.create');
+             ->middleware('can:master-kontainer-create');
         Route::get('kontainer/{kontainer}', [KontainerController::class, 'show'])
              ->name('kontainer.show')
-             ->middleware('can:master-kontainer.view');
+             ->middleware('can:master-kontainer-view');
         Route::get('kontainer/{kontainer}/edit', [KontainerController::class, 'edit'])
              ->name('kontainer.edit')
-             ->middleware('can:master-kontainer.update');
+             ->middleware('can:master-kontainer-update');
         Route::put('kontainer/{kontainer}', [KontainerController::class, 'update'])
              ->name('kontainer.update')
-             ->middleware('can:master-kontainer.update');
+             ->middleware('can:master-kontainer-update');
         Route::delete('kontainer/{kontainer}', [KontainerController::class, 'destroy'])
              ->name('kontainer.destroy')
-             ->middleware('can:master-kontainer.delete');
+             ->middleware('can:master-kontainer-delete');
 
         // Master tujuan routes (with master prefix) - granular permissions
         Route::get('tujuan', [TujuanController::class, 'index'])
              ->name('tujuan.index')
-             ->middleware('can:master-tujuan.view');
+             ->middleware('can:master-tujuan-view');
         Route::get('tujuan/create', [TujuanController::class, 'create'])
              ->name('tujuan.create')
-             ->middleware('can:master-tujuan.create');
+             ->middleware('can:master-tujuan-create');
         Route::post('tujuan', [TujuanController::class, 'store'])
              ->name('tujuan.store')
-             ->middleware('can:master-tujuan.create');
+             ->middleware('can:master-tujuan-create');
         Route::get('tujuan/{tujuan}', [TujuanController::class, 'show'])
              ->name('tujuan.show')
-             ->middleware('can:master-tujuan.view');
+             ->middleware('can:master-tujuan-view');
         Route::get('tujuan/{tujuan}/edit', [TujuanController::class, 'edit'])
              ->name('tujuan.edit')
-             ->middleware('can:master-tujuan.update');
+             ->middleware('can:master-tujuan-update');
         Route::put('tujuan/{tujuan}', [TujuanController::class, 'update'])
              ->name('tujuan.update')
-             ->middleware('can:master-tujuan.update');
+             ->middleware('can:master-tujuan-update');
         Route::delete('tujuan/{tujuan}', [TujuanController::class, 'destroy'])
              ->name('tujuan.destroy')
-             ->middleware('can:master-tujuan.delete');
+             ->middleware('can:master-tujuan-delete');
 
         // Master kegiatan routes (with master prefix) - granular permissions
         Route::get('kegiatan', [MasterKegiatanController::class, 'index'])
              ->name('kegiatan.index')
-             ->middleware('can:master-kegiatan.view');
+             ->middleware('can:master-kegiatan-view');
         Route::get('kegiatan/create', [MasterKegiatanController::class, 'create'])
              ->name('kegiatan.create')
-             ->middleware('can:master-kegiatan.create');
+             ->middleware('can:master-kegiatan-create');
         Route::post('kegiatan', [MasterKegiatanController::class, 'store'])
              ->name('kegiatan.store')
-             ->middleware('can:master-kegiatan.create');
+             ->middleware('can:master-kegiatan-create');
         Route::get('kegiatan/{kegiatan}', [MasterKegiatanController::class, 'show'])
              ->name('kegiatan.show')
-             ->middleware('can:master-kegiatan.view');
+             ->middleware('can:master-kegiatan-view');
         Route::get('kegiatan/{kegiatan}/edit', [MasterKegiatanController::class, 'edit'])
              ->name('kegiatan.edit')
-             ->middleware('can:master-kegiatan.update');
+             ->middleware('can:master-kegiatan-update');
         Route::put('kegiatan/{kegiatan}', [MasterKegiatanController::class, 'update'])
              ->name('kegiatan.update')
-             ->middleware('can:master-kegiatan.update');
+             ->middleware('can:master-kegiatan-update');
         Route::delete('kegiatan/{kegiatan}', [MasterKegiatanController::class, 'destroy'])
              ->name('kegiatan.destroy')
-             ->middleware('can:master-kegiatan.delete');
+             ->middleware('can:master-kegiatan-delete');
         // CSV import/export helpers for Master Kegiatan
         Route::get('kegiatan/template/csv', [MasterKegiatanController::class, 'downloadTemplate'])
              ->name('kegiatan.template')
-             ->middleware('can:master-kegiatan.view');
+             ->middleware('can:master-kegiatan-view');
 
         Route::post('kegiatan/import/csv', [MasterKegiatanController::class, 'importCsv'])
              ->name('kegiatan.import')
-             ->middleware('can:master-kegiatan.view');
+             ->middleware('can:master-kegiatan-view');
 
         // Master permission routes (with master prefix) - granular permissions
         Route::get('permission', [PermissionController::class, 'index'])
              ->name('permission.index')
-             ->middleware('can:master-permission.view');
+             ->middleware('can:master-permission-view');
         Route::get('permission/create', [PermissionController::class, 'create'])
              ->name('permission.create')
-             ->middleware('can:master-permission.create');
+             ->middleware('can:master-permission-create');
         Route::post('permission', [PermissionController::class, 'store'])
              ->name('permission.store')
-             ->middleware('can:master-permission.create');
+             ->middleware('can:master-permission-create');
         Route::get('permission/{permission}', [PermissionController::class, 'show'])
              ->name('permission.show')
-             ->middleware('can:master-permission.view');
+             ->middleware('can:master-permission-view');
         Route::get('permission/{permission}/edit', [PermissionController::class, 'edit'])
              ->name('permission.edit')
-             ->middleware('can:master-permission.update');
+             ->middleware('can:master-permission-update');
         Route::put('permission/{permission}', [PermissionController::class, 'update'])
              ->name('permission.update')
-             ->middleware('can:master-permission.update');
+             ->middleware('can:master-permission-update');
         Route::delete('permission/{permission}', [PermissionController::class, 'destroy'])
              ->name('permission.destroy')
-             ->middleware('can:master-permission.delete');
+             ->middleware('can:master-permission-delete');
 
         // Additional permission routes
         Route::post('permission/sync', [PermissionController::class, 'sync'])
              ->name('permission.sync')
-             ->middleware('can:master-permission.view');
+             ->middleware('can:master-permission-view');
 
         Route::post('permission/bulk-delete', [PermissionController::class, 'bulkDelete'])
              ->name('permission.bulk-delete')
-             ->middleware('can:master-permission.view');
+             ->middleware('can:master-permission-view');
 
         Route::post('permission/{permission}/assign-users', [PermissionController::class, 'assignUsers'])
              ->name('permission.assign-users')
-             ->middleware('can:master-permission.view');
+             ->middleware('can:master-permission-view');
 
         Route::get('permission/{permission}/users', [PermissionController::class, 'getUsers'])
              ->name('permission.users')
-             ->middleware('can:master-permission.view');
+             ->middleware('can:master-permission-view');
 
         // Master mobil routes (with master prefix) - granular permissions
         Route::get('mobil', [MobilController::class, 'index'])
              ->name('mobil.index')
-             ->middleware('can:master-mobil.view');
+             ->middleware('can:master-mobil-view');
         Route::get('mobil/create', [MobilController::class, 'create'])
              ->name('mobil.create')
-             ->middleware('can:master-mobil.create');
+             ->middleware('can:master-mobil-create');
         Route::post('mobil', [MobilController::class, 'store'])
              ->name('mobil.store')
-             ->middleware('can:master-mobil.create');
+             ->middleware('can:master-mobil-create');
         Route::get('mobil/{mobil}', [MobilController::class, 'show'])
              ->name('mobil.show')
-             ->middleware('can:master-mobil.view');
+             ->middleware('can:master-mobil-view');
         Route::get('mobil/{mobil}/edit', [MobilController::class, 'edit'])
              ->name('mobil.edit')
-             ->middleware('can:master-mobil.update');
+             ->middleware('can:master-mobil-update');
         Route::put('mobil/{mobil}', [MobilController::class, 'update'])
              ->name('mobil.update')
-             ->middleware('can:master-mobil.update');
+             ->middleware('can:master-mobil-update');
         Route::delete('mobil/{mobil}', [MobilController::class, 'destroy'])
              ->name('mobil.destroy')
-             ->middleware('can:master-mobil.delete');
+             ->middleware('can:master-mobil-delete');
 
         // Master pricelist sewa kontainer routes (with master prefix) - granular permissions
         Route::get('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'index'])
@@ -372,58 +381,183 @@ Route::middleware([
         Route::delete('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'destroy'])
              ->name('pricelist-sewa-kontainer.destroy')
              ->middleware('can:master-pricelist-sewa-kontainer.delete');
+
+        // Download template for divisi import
+        Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
+             ->name('divisi.download-template');
+
+        // Download template for pajak import
+        Route::get('pajak/download-template', [PajakController::class, 'downloadTemplate'])
+             ->name('pajak.download-template')
+             ->middleware(['auth', 'can:master-pajak-view']);
+
+        // Download template for bank import
+        Route::get('bank/download-template', [\App\Http\Controllers\MasterBankController::class, 'downloadTemplate'])
+             ->name('bank.download-template');
+
+        // Download template for coa import
+        Route::get('coa/download-template', [\App\Http\Controllers\MasterCoaController::class, 'downloadTemplate'])
+             ->name('coa.download-template');
     });
+
+    // Master bank routes (moved outside master group to use dash format)
+    Route::get('master/bank', [\App\Http\Controllers\MasterBankController::class, 'index'])
+         ->name('master-bank-index')
+         ->middleware('can:master-bank-view');
+    Route::get('master/bank/create', [\App\Http\Controllers\MasterBankController::class, 'create'])
+         ->name('master-bank-create')
+         ->middleware('can:master-bank-create');
+    Route::post('master/bank', [\App\Http\Controllers\MasterBankController::class, 'store'])
+         ->name('master-bank-store')
+         ->middleware('can:master-bank-create');
+    Route::get('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'show'])
+         ->name('master-bank-show')
+         ->middleware('can:master-bank-view');
+    Route::get('master/bank/{bank}/edit', [\App\Http\Controllers\MasterBankController::class, 'edit'])
+         ->name('master-bank-edit')
+         ->middleware('can:master-bank-update');
+    Route::put('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'update'])
+         ->name('master-bank-update')
+         ->middleware('can:master-bank-update');
+    Route::delete('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'destroy'])
+         ->name('master-bank-destroy')
+         ->middleware('can:master-bank-delete');
+    Route::post('master/bank/import', [\App\Http\Controllers\MasterBankController::class, 'import'])
+         ->name('master-bank-import')
+         ->middleware(['auth', 'can:master-bank-create']);
 
     // TEMPORARY: Master divisi routes moved outside master group for testing
     Route::get('master/divisi', [DivisiController::class, 'index'])
          ->name('master.divisi.index')
-         ->middleware('can:master-divisi.view');
+         ->middleware('can:master-divisi-view');
     Route::get('master/divisi/create', [DivisiController::class, 'create'])
          ->name('master.divisi.create')
-         ->middleware('can:master-divisi.create');
+         ->middleware('can:master-divisi-create');
     Route::post('master/divisi', [DivisiController::class, 'store'])
          ->name('master.divisi.store')
-         ->middleware('can:master-divisi.create');
+         ->middleware('can:master-divisi-create');
     Route::get('master/divisi/{divisi}', [DivisiController::class, 'show'])
          ->name('master.divisi.show')
-         ->middleware('can:master-divisi.view');
+         ->middleware('can:master-divisi-view');
     Route::get('master/divisi/{divisi}/edit', [DivisiController::class, 'edit'])
          ->name('master.divisi.edit')
-         ->middleware('can:master-divisi.update');
+         ->middleware('can:master-divisi-update');
     Route::put('master/divisi/{divisi}', [DivisiController::class, 'update'])
          ->name('master.divisi.update')
-         ->middleware('can:master-divisi.update');
+         ->middleware('can:master-divisi-update');
     Route::delete('master/divisi/{divisi}', [DivisiController::class, 'destroy'])
          ->name('master.divisi.destroy')
-         ->middleware('can:master-divisi.delete');
+         ->middleware('can:master-divisi-delete');
+    Route::post('master/divisi/import', [DivisiController::class, 'import'])
+         ->name('master.divisi.import')
+         ->middleware('can:master-divisi-create');
+
+    // Master pajak routes
+    Route::get('master/pajak', [PajakController::class, 'index'])
+         ->name('master.pajak.index')
+         ->middleware(['auth', 'can:master-pajak-view']);
+    Route::get('master/pajak/create', [PajakController::class, 'create'])
+         ->name('master.pajak.create')
+         ->middleware(['auth', 'can:master-pajak-create']);
+    Route::post('master/pajak', [PajakController::class, 'store'])
+         ->name('master.pajak.store')
+         ->middleware(['auth', 'can:master-pajak-create']);
+    Route::get('master/pajak/{pajak}', [PajakController::class, 'show'])
+         ->name('master.pajak.show')
+         ->middleware(['auth', 'can:master-pajak-view']);
+    Route::get('master/pajak/{pajak}/edit', [PajakController::class, 'edit'])
+         ->name('master.pajak.edit')
+         ->middleware(['auth', 'can:master-pajak-update']);
+    Route::put('master/pajak/{pajak}', [PajakController::class, 'update'])
+         ->name('master.pajak.update')
+         ->middleware(['auth', 'can:master-pajak-update']);
+    Route::delete('master/pajak/{pajak}', [PajakController::class, 'destroy'])
+         ->name('master.pajak.destroy')
+         ->middleware(['auth', 'can:master-pajak-delete']);
+    Route::post('master/pajak/import', [PajakController::class, 'import'])
+         ->name('master.pajak.import')
+         ->middleware(['auth', 'can:master-pajak-create']);
+
+    // Master cabang routes
+    Route::get('master/cabang', [CabangController::class, 'index'])
+         ->name('master.cabang.index')
+         ->middleware(['auth', 'can:master-cabang-view']);
+    Route::get('master/cabang/create', [CabangController::class, 'create'])
+         ->name('master.cabang.create')
+         ->middleware(['auth', 'can:master-cabang-create']);
+    Route::post('master/cabang', [CabangController::class, 'store'])
+         ->name('master.cabang.store')
+         ->middleware(['auth', 'can:master-cabang-create']);
+    Route::get('master/cabang/{cabang}', [CabangController::class, 'show'])
+         ->name('master.cabang.show')
+         ->middleware(['auth', 'can:master-cabang-view']);
+    Route::get('master/cabang/{cabang}/edit', [CabangController::class, 'edit'])
+         ->name('master.cabang.edit')
+         ->middleware(['auth', 'can:master-cabang-update']);
+    Route::put('master/cabang/{cabang}', [CabangController::class, 'update'])
+         ->name('master.cabang.update')
+         ->middleware(['auth', 'can:master-cabang-update']);
+    Route::delete('master/cabang/{cabang}', [CabangController::class, 'destroy'])
+         ->name('master.cabang.destroy')
+         ->middleware(['auth', 'can:master-cabang-delete']);
+
+    // Master COA routes
+    Route::get('master/coa', [\App\Http\Controllers\MasterCoaController::class, 'index'])
+         ->name('master-coa-index')
+         ->middleware(['auth', 'can:master-coa-view']);
+    Route::get('master/coa/create', [\App\Http\Controllers\MasterCoaController::class, 'create'])
+         ->name('master-coa-create')
+         ->middleware(['auth', 'can:master-coa-create']);
+    Route::post('master/coa', [\App\Http\Controllers\MasterCoaController::class, 'store'])
+         ->name('master-coa-store')
+         ->middleware(['auth', 'can:master-coa-create']);
+    Route::get('master/coa/{coa}', [\App\Http\Controllers\MasterCoaController::class, 'show'])
+         ->name('master-coa-show')
+         ->middleware(['auth', 'can:master-coa-view'])
+         ->where('coa', '[0-9]+');
+    Route::get('master/coa/{coa}/edit', [\App\Http\Controllers\MasterCoaController::class, 'edit'])
+         ->name('master-coa-edit')
+         ->middleware(['auth', 'can:master-coa-update'])
+         ->where('coa', '[0-9]+');
+    Route::put('master/coa/{coa}', [\App\Http\Controllers\MasterCoaController::class, 'update'])
+         ->name('master-coa-update')
+         ->middleware(['auth', 'can:master-coa-update'])
+         ->where('coa', '[0-9]+');
+    Route::delete('master/coa/{coa}', [\App\Http\Controllers\MasterCoaController::class, 'destroy'])
+         ->name('master-coa-destroy')
+         ->middleware(['auth', 'can:master-coa-delete'])
+         ->where('coa', '[0-9]+');
+    Route::post('master/coa/import', [\App\Http\Controllers\MasterCoaController::class, 'import'])
+         ->name('master-coa-import')
+         ->middleware(['auth', 'can:master-coa-create']);
 
     // Master pekerjaan routes
     Route::get('master/pekerjaan', [PekerjaanController::class, 'index'])
          ->name('master.pekerjaan.index')
-         ->middleware('can:master-pekerjaan.view');
+         ->middleware('can:master-pekerjaan-view');
     Route::get('master/pekerjaan/create', [PekerjaanController::class, 'create'])
          ->name('master.pekerjaan.create')
-         ->middleware('can:master-pekerjaan.create');
+         ->middleware('can:master-pekerjaan-create');
     Route::post('master/pekerjaan', [PekerjaanController::class, 'store'])
          ->name('master.pekerjaan.store')
-         ->middleware('can:master-pekerjaan.create');
+         ->middleware('can:master-pekerjaan-create');
     Route::get('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'show'])
          ->name('master.pekerjaan.show')
-         ->middleware('can:master-pekerjaan.view');
+         ->middleware('can:master-pekerjaan-view');
     Route::get('master/pekerjaan/{pekerjaan}/edit', [PekerjaanController::class, 'edit'])
          ->name('master.pekerjaan.edit')
-         ->middleware('can:master-pekerjaan.update');
+         ->middleware('can:master-pekerjaan-update');
     Route::put('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'update'])
          ->name('master.pekerjaan.update')
-         ->middleware('can:master-pekerjaan.update');
+         ->middleware('can:master-pekerjaan-update');
     Route::delete('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'destroy'])
          ->name('master.pekerjaan.destroy')
-         ->middleware('can:master-pekerjaan.delete');
+         ->middleware('can:master-pekerjaan-delete');
 
     // Route master.karyawan.index di luar group master untuk konsistensi dengan view
     Route::get('master/karyawan', [KaryawanController::class, 'index'])
          ->name('master.karyawan.index')
-         ->middleware('permission:master-karyawan.view');
+         ->middleware('can:master-karyawan-view');
 
     // --- Rute Permohonan ---
     // CSV export/import for permohonan (declare before resource to avoid routing conflict with parameterized routes)
@@ -469,24 +603,24 @@ Route::middleware([
          ->middleware('can:permohonan.delete');
 
      // --- Rute Pranota Supir ---
-    Route::get('/pranota-supir', [PranotaSupirController::class, 'index'])->name('pranota-supir.index')->middleware('permission:pranota-supir-view');
-    Route::get('/pranota-supir/create', [PranotaSupirController::class, 'create'])->name('pranota-supir.create')->middleware('permission:pranota-supir-create');
+    Route::get('/pranota-supir', [PranotaSupirController::class, 'index'])->name('pranota-supir.index')->middleware('can:pranota-supir-view');
+    Route::get('/pranota-supir/create', [PranotaSupirController::class, 'create'])->name('pranota-supir.create')->middleware('can:pranota-supir-create');
      // Explicit per-pranota print route must be declared before the parameterized show route
-     Route::get('/pranota-supir/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])->name('pranota-supir.print')->middleware('permission:pranota-supir-print');
+     Route::get('/pranota-supir/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])->name('pranota-supir.print')->middleware('can:pranota-supir-print');
 
-     Route::get('/pranota-supir/{pranotaSupir}', [PranotaSupirController::class, 'show'])->name('pranota-supir.show')->middleware('permission:pranota-supir-view');
-    Route::post('/pranota-supir', [PranotaSupirController::class, 'store'])->name('pranota-supir.store')->middleware('permission:pranota-supir-create');
+     Route::get('/pranota-supir/{pranotaSupir}', [PranotaSupirController::class, 'show'])->name('pranota-supir.show')->middleware('can:pranota-supir-view');
+    Route::post('/pranota-supir', [PranotaSupirController::class, 'store'])->name('pranota-supir.store')->middleware('can:pranota-supir-create');
 
           // --- Rute Pranota & Pembayaran Pranota Tagihan Kontainer ---
                     // Tagihan Kontainer Sewa feature removed - routes deleted to allow clean rebuild
 
     // --- Rute Pembayaran Pranota Supir ---
     Route::prefix('pembayaran-pranota-supir')->name('pembayaran-pranota-supir.')->group(function() {
-     Route::get('/', [PembayaranPranotaSupirController::class, 'index'])->name('index')->middleware('permission:pembayaran-pranota-supir-view');
+     Route::get('/', [PembayaranPranotaSupirController::class, 'index'])->name('index')->middleware('can:pembayaran-pranota-supir-view');
      // Per-pembayaran print
-     Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])->name('print')->middleware('permission:pembayaran-pranota-supir-print');
-     Route::get('/buat', [PembayaranPranotaSupirController::class, 'create'])->name('create')->middleware('permission:pembayaran-pranota-supir-create'); // Menampilkan form konfirmasi
-     Route::post('/simpan', [PembayaranPranotaSupirController::class, 'store'])->name('store')->middleware('permission:pembayaran-pranota-supir-create'); // Menyimpan pembayaran
+     Route::get('/{pembayaran}/print', [PembayaranPranotaSupirController::class, 'print'])->name('print')->middleware('can:pembayaran-pranota-supir-print');
+     Route::get('/buat', [PembayaranPranotaSupirController::class, 'create'])->name('create')->middleware('can:pembayaran-pranota-supir-create'); // Menampilkan form konfirmasi
+     Route::post('/simpan', [PembayaranPranotaSupirController::class, 'store'])->name('store')->middleware('can:pembayaran-pranota-supir-create'); // Menyimpan pembayaran
     });
 
     // --- Rute Khusus untuk Supir ---
@@ -567,7 +701,7 @@ Route::middleware([
                     Route::get('/', [\App\Http\Controllers\PranotaController::class, 'index'])->name('index');
                     // Print route must be declared before the parameterized show route
                     Route::get('/{id}/print', [\App\Http\Controllers\PranotaController::class, 'print'])->name('print')
-                         ->middleware('permission:pranota.print');
+                         ->middleware('can:pranota-print');
                     Route::get('/{id}', [\App\Http\Controllers\PranotaController::class, 'show'])->name('show');
                     Route::post('/', [\App\Http\Controllers\PranotaController::class, 'store'])->name('store');
                     Route::post('/bulk', [\App\Http\Controllers\PranotaController::class, 'bulkStore'])->name('bulk.store');
@@ -578,25 +712,25 @@ Route::middleware([
                // Pembayaran Pranota Kontainer routes
                Route::prefix('pembayaran-pranota-kontainer')->name('pembayaran-pranota-kontainer.')->group(function () {
                     Route::get('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'index'])->name('index')
-                         ->middleware('permission:pembayaran-pranota-kontainer.view');
+                         ->middleware('can:pembayaran-pranota-kontainer-view');
                     Route::get('/create', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'create'])->name('create')
-                         ->middleware('permission:pembayaran-pranota-kontainer.create');
+                         ->middleware('can:pembayaran-pranota-kontainer-create');
                     Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'showPaymentForm'])->name('payment-form')
-                         ->middleware('permission:pembayaran-pranota-kontainer.view');
+                         ->middleware('can:pembayaran-pranota-kontainer-view');
                     Route::post('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'store'])->name('store')
-                         ->middleware('permission:pembayaran-pranota-kontainer.create');
+                         ->middleware('can:pembayaran-pranota-kontainer-create');
                     Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'show'])->name('show')
-                         ->middleware('permission:pembayaran-pranota-kontainer.view');
+                         ->middleware('can:pembayaran-pranota-kontainer-view');
                     Route::get('/{id}/edit', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'edit'])->name('edit')
-                         ->middleware('permission:pembayaran-pranota-kontainer.update');
+                         ->middleware('can:pembayaran-pranota-kontainer-update');
                     Route::put('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'update'])->name('update')
-                         ->middleware('permission:pembayaran-pranota-kontainer.update');
+                         ->middleware('can:pembayaran-pranota-kontainer-update');
                     Route::delete('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'destroy'])->name('destroy')
-                         ->middleware('permission:pembayaran-pranota-kontainer.delete');
+                         ->middleware('can:pembayaran-pranota-kontainer-delete');
                     Route::delete('/{pembayaranId}/pranota/{pranotaId}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'removePranota'])->name('remove-pranota')
-                         ->middleware('permission:pembayaran-pranota-kontainer.update');
+                         ->middleware('can:pembayaran-pranota-kontainer-update');
                     Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print')
-                         ->middleware('permission:pembayaran-pranota-kontainer.print');
+                         ->middleware('can:pembayaran-pranota-kontainer-print');
                });
 
      // Admin: daftar semua fitur (permissions + routes)
@@ -634,85 +768,85 @@ Route::middleware(['auth'])->group(function() {
     // Perbaikan Kontainer routes - granular permissions
     Route::get('perbaikan-kontainer', [\App\Http\Controllers\PerbaikanKontainerController::class, 'index'])
          ->name('perbaikan-kontainer.index')
-         ->middleware('can:perbaikan-kontainer.view');
+         ->middleware('can:perbaikan-kontainer-view');
     Route::get('perbaikan-kontainer/create', [\App\Http\Controllers\PerbaikanKontainerController::class, 'create'])
          ->name('perbaikan-kontainer.create')
-         ->middleware('can:perbaikan-kontainer.create');
+         ->middleware('can:perbaikan-kontainer-create');
     Route::post('perbaikan-kontainer', [\App\Http\Controllers\PerbaikanKontainerController::class, 'store'])
          ->name('perbaikan-kontainer.store')
-         ->middleware('can:perbaikan-kontainer.create');
+         ->middleware('can:perbaikan-kontainer-create');
     Route::get('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'show'])
          ->name('perbaikan-kontainer.show')
-         ->middleware('can:perbaikan-kontainer.view');
+         ->middleware('can:perbaikan-kontainer-view');
     Route::get('perbaikan-kontainer/{perbaikanKontainer}/edit', [\App\Http\Controllers\PerbaikanKontainerController::class, 'edit'])
          ->name('perbaikan-kontainer.edit')
-         ->middleware('can:perbaikan-kontainer.update');
+         ->middleware('can:perbaikan-kontainer-update');
     Route::put('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'update'])
          ->name('perbaikan-kontainer.update')
-         ->middleware('can:perbaikan-kontainer.update');
+         ->middleware('can:perbaikan-kontainer-update');
     Route::delete('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'destroy'])
          ->name('perbaikan-kontainer.destroy')
-         ->middleware('can:perbaikan-kontainer.delete');
+         ->middleware('can:perbaikan-kontainer-delete');
 
     // Additional perbaikan kontainer routes
     Route::patch('perbaikan-kontainer/{perbaikanKontainer}/status', [\App\Http\Controllers\PerbaikanKontainerController::class, 'updateStatus'])
          ->name('perbaikan-kontainer.update-status')
-         ->middleware('can:perbaikan-kontainer.update');
+         ->middleware('can:perbaikan-kontainer-update');
 
     // Bulk operations for perbaikan kontainer
     Route::delete('perbaikan-kontainer/bulk-delete', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkDelete'])
          ->name('perbaikan-kontainer.bulk-delete')
-         ->middleware('can:perbaikan-kontainer.delete');
+         ->middleware('can:perbaikan-kontainer-delete');
     Route::patch('perbaikan-kontainer/bulk-update-status', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkUpdateStatus'])
          ->name('perbaikan-kontainer.bulk-update-status')
-         ->middleware('can:perbaikan-kontainer.update');
+         ->middleware('can:perbaikan-kontainer-update');
     Route::patch('perbaikan-kontainer/bulk-pranota', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkPranota'])
          ->name('perbaikan-kontainer.bulk-pranota')
-         ->middleware('can:perbaikan-kontainer.update');
+         ->middleware('can:perbaikan-kontainer-update');
 
     // Pranota Perbaikan Kontainer routes
     Route::get('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'index'])
          ->name('pranota-perbaikan-kontainer.index')
-         ->middleware('can:pranota-perbaikan-kontainer.view');
+         ->middleware('can:pranota-perbaikan-kontainer-view');
     Route::get('pranota-perbaikan-kontainer/create', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'create'])
          ->name('pranota-perbaikan-kontainer.create')
-         ->middleware('can:pranota-perbaikan-kontainer.create');
+         ->middleware('can:pranota-perbaikan-kontainer-create');
     Route::post('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'store'])
          ->name('pranota-perbaikan-kontainer.store')
-         ->middleware('can:pranota-perbaikan-kontainer.create');
+         ->middleware('can:pranota-perbaikan-kontainer-create');
     Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'show'])
          ->name('pranota-perbaikan-kontainer.show')
-         ->middleware('can:pranota-perbaikan-kontainer.view');
+         ->middleware('can:pranota-perbaikan-kontainer-view');
     Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/edit', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'edit'])
          ->name('pranota-perbaikan-kontainer.edit')
-         ->middleware('can:pranota-perbaikan-kontainer.update');
+         ->middleware('can:pranota-perbaikan-kontainer-update');
     Route::put('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'update'])
          ->name('pranota-perbaikan-kontainer.update')
-         ->middleware('can:pranota-perbaikan-kontainer.update');
+         ->middleware('can:pranota-perbaikan-kontainer-update');
     Route::delete('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'destroy'])
          ->name('pranota-perbaikan-kontainer.destroy')
-         ->middleware('can:pranota-perbaikan-kontainer.delete');
+         ->middleware('can:pranota-perbaikan-kontainer-delete');
 
     // Pembayaran Pranota Perbaikan Kontainer routes
     Route::get('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'index'])
          ->name('pembayaran-pranota-perbaikan-kontainer.index')
-         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.view');
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer-view');
     Route::get('pembayaran-pranota-perbaikan-kontainer/create', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'create'])
          ->name('pembayaran-pranota-perbaikan-kontainer.create')
-         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.create');
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer-create');
     Route::post('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'store'])
          ->name('pembayaran-pranota-perbaikan-kontainer.store')
-         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.create');
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer-create');
     Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'show'])
          ->name('pembayaran-pranota-perbaikan-kontainer.show')
-         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.view');
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer-view');
     Route::get('pembayaran-pranota-perbaikan-kontainer/{pembayaran}/edit', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'edit'])
          ->name('pembayaran-pranota-perbaikan-kontainer.edit')
-         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.update');
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer-update');
     Route::put('pembayaran-pranota-perbaikan-kontainer/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'update'])
          ->name('pembayaran-pranota-perbaikan-kontainer.update')
-         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.update');
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer-update');
     Route::delete('pembayaran-pranota-perbaikan-kontainer/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'destroy'])
          ->name('pembayaran-pranota-perbaikan-kontainer.destroy')
-         ->middleware('can:pembayaran-pranota-perbaikan-kontainer.delete');
+         ->middleware('can:pembayaran-pranota-perbaikan-kontainer-delete');
 });

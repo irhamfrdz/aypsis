@@ -26,19 +26,19 @@ class CleanPekerjaanData extends Command
     public function handle()
     {
         $count = \App\Models\Pekerjaan::count();
-        
+
         if ($count === 0) {
             $this->info('Tidak ada data pekerjaan yang perlu dibersihkan.');
             return;
         }
-        
+
         $this->warn("Akan menghapus {$count} data pekerjaan dari database.");
-        
+
         if (!$this->confirm('Apakah Anda yakin ingin melanjutkan?')) {
             $this->info('Operasi dibatalkan.');
             return;
         }
-        
+
         try {
             \App\Models\Pekerjaan::truncate();
             $this->info("Berhasil menghapus {$count} data pekerjaan.");

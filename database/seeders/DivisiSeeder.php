@@ -74,7 +74,7 @@ class DivisiSeeder extends Seeder
                 'deskripsi' => null,
                 'is_active' => true,
             ],
-            
+
         ];
 
         $this->command->info('Seeding master divisi data...');

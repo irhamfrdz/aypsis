@@ -38,8 +38,8 @@ if ($user) {
 
     // Test permission checks
     echo "Permission checks:\n";
-    echo "Can master-karyawan.view: " . ($user->can('master-karyawan.view') ? 'YES' : 'NO') . "\n";
-    echo "Can master.karyawan.show: " . ($user->can('master.karyawan.show') ? 'YES' : 'NO') . "\n";
+    echo "Can master-karyawan-view: " . ($user->can('master-karyawan-view') ? 'YES' : 'NO') . "\n";
+    echo "Can master-karyawan-show: " . ($user->can('master-karyawan-show') ? 'YES' : 'NO') . "\n";
 
     echo "\n✅ User test4 updated successfully!\n";
 } else {

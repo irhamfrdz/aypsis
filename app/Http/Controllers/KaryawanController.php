@@ -6,6 +6,10 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Karyawan;
 use App\Models\CrewEquipment;
+use App\Models\Divisi;
+use App\Models\Pekerjaan;
+use App\Models\Pajak;
+use App\Models\Cabang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -542,7 +546,22 @@ class KaryawanController extends Controller
      */
     public function create()
     {
-        return view('master-karyawan.create');
+        $divisis = Divisi::active()->orderBy('nama_divisi')->get();
+        $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
+        $pajaks = Pajak::orderBy('nama_status')->get();
+        $cabangs = Cabang::orderBy('nama_cabang')->get();
+
+        // Group pekerjaan by divisi for JavaScript
+        $pekerjaanByDivisi = [];
+        foreach ($pekerjaans as $pekerjaan) {
+            $divisi = $pekerjaan->divisi ?? '';
+            if (!isset($pekerjaanByDivisi[$divisi])) {
+                $pekerjaanByDivisi[$divisi] = [];
+            }
+            $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
+        }
+
+        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'pekerjaanByDivisi'));
     }
 
     /**
@@ -620,7 +639,52 @@ class KaryawanController extends Controller
      */
     public function edit(Karyawan $karyawan)
     {
+        // Jika ada parameter onboarding, gunakan view onboarding-full
+        if (request()->has('onboarding') && request()->onboarding == '1') {
+            // Ambil data divisis dan pekerjaans untuk dropdown
+            $divisis = \App\Models\Divisi::active()->orderBy('nama_divisi')->get();
+            $pekerjaans = \App\Models\Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
+            $cabangs = \App\Models\Cabang::orderBy('nama_cabang')->get();
+            $pajaks = \App\Models\Pajak::orderBy('nama_status')->get();
+
+            // Group pekerjaan by divisi for JavaScript
+            $pekerjaanByDivisi = [];
+            foreach ($pekerjaans as $pekerjaan) {
+                $divisi = $pekerjaan->divisi ?? '';
+                if (!isset($pekerjaanByDivisi[$divisi])) {
+                    $pekerjaanByDivisi[$divisi] = [];
+                }
+                $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
+            }
+
+            return view('karyawan.onboarding-full', compact('karyawan', 'divisis', 'pekerjaans', 'cabangs', 'pajaks', 'pekerjaanByDivisi'));
+        }
+
         return view('master-karyawan.edit', compact('karyawan'));
+    }
+
+    /**
+     * Menampilkan form edit khusus untuk onboarding karyawan baru (public)
+     */
+    public function onboardingEdit(Karyawan $karyawan)
+    {
+        // Ambil data divisis dan pekerjaans untuk dropdown
+        $divisis = \App\Models\Divisi::active()->orderBy('nama_divisi')->get();
+        $pekerjaans = \App\Models\Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
+        $cabangs = \App\Models\Cabang::orderBy('nama_cabang')->get();
+        $pajaks = \App\Models\Pajak::orderBy('nama_status')->get();
+
+        // Group pekerjaan by divisi for JavaScript
+        $pekerjaanByDivisi = [];
+        foreach ($pekerjaans as $pekerjaan) {
+            $divisi = $pekerjaan->divisi ?? '';
+            if (!isset($pekerjaanByDivisi[$divisi])) {
+                $pekerjaanByDivisi[$divisi] = [];
+            }
+            $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
+        }
+
+        return view('karyawan.onboarding-full', compact('karyawan', 'divisis', 'pekerjaans', 'cabangs', 'pajaks', 'pekerjaanByDivisi'));
     }
 
     /**
@@ -679,7 +743,81 @@ class KaryawanController extends Controller
 
         $karyawan->update($validated);
 
+        // Jika akses dari onboarding, redirect ke crew checklist
+        if (request()->has('onboarding') && request()->onboarding == '1') {
+            if ($karyawan->isAbk()) {
+                return redirect()->route('karyawan.onboarding-crew-checklist', $karyawan->id)
+                    ->with('success', 'Data karyawan berhasil diperbarui. Silakan lengkapi checklist crew.');
+            } else {
+                return redirect()->route('dashboard')->with('success', 'Data karyawan berhasil diperbarui.');
+            }
+        }
+
         return redirect()->route('master.karyawan.index')->with('success', 'Data karyawan berhasil diperbarui.');
+    }
+
+    /**
+     * Update data karyawan khusus untuk onboarding (public)
+     */
+    public function onboardingUpdate(Request $request, Karyawan $karyawan)
+    {
+        $validated = $request->validate([
+            'nik' => ['required', 'string', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'nama_panggilan' => 'required|string|max:255',
+            'nama_lengkap' => 'required|string|max:255',
+            'plat' => 'nullable|string|max:255',
+            'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'ktp' => ['nullable', 'string', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'kk' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string|max:255',
+            'rt_rw' => 'nullable|string|max:255',
+            'kelurahan' => 'nullable|string|max:255',
+            'kecamatan' => 'nullable|string|max:255',
+            'kabupaten' => 'nullable|string|max:255',
+            'provinsi' => 'nullable|string|max:255',
+            'kode_pos' => 'nullable|string|max:255',
+            'alamat_lengkap' => 'nullable|string|max:255',
+            'tempat_lahir' => 'nullable|string|max:255',
+            'tanggal_lahir' => 'nullable|date',
+            'no_hp' => 'nullable|string|max:255',
+            'jenis_kelamin' => ['nullable', Rule::in(['L', 'P'])],
+            'status_perkawinan' => 'nullable|string|max:255',
+            'agama' => 'nullable|string|max:255',
+            'divisi' => 'nullable|string|max:255',
+            'pekerjaan' => 'nullable|string|max:255',
+            'tanggal_masuk' => 'nullable|date',
+            'tanggal_berhenti' => 'nullable|date',
+            'tanggal_masuk_sebelumnya' => 'nullable|date',
+            'tanggal_berhenti_sebelumnya' => 'nullable|date',
+            'catatan' => 'nullable|string|max:1000',
+            'status_pajak' => 'nullable|string|max:255',
+            'nama_bank' => 'nullable|string|max:255',
+            'bank_cabang' => 'nullable|string|max:255',
+            'akun_bank' => 'nullable|string|max:255',
+            'atas_nama' => 'nullable|string|max:255',
+            'jkn' => 'nullable|string|max:255',
+            'no_ketenagakerjaan' => 'nullable|string|max:255',
+            'cabang' => 'nullable|string|max:255',
+            'nik_supervisor' => 'nullable|string|max:255',
+            'supervisor' => 'nullable|string|max:255',
+        ]);
+
+        // Convert data to uppercase except email
+        foreach ($validated as $key => $value) {
+            if ($value !== null && $key !== 'email') {
+                $validated[$key] = strtoupper($value);
+            }
+        }
+
+        $karyawan->update($validated);
+
+        // Untuk onboarding, selalu redirect ke crew checklist jika ABK
+        if ($karyawan->isAbk()) {
+            return redirect()->route('karyawan.onboarding-crew-checklist', $karyawan->id)
+                ->with('success', 'Data karyawan berhasil diperbarui. Silakan lengkapi checklist crew.');
+        } else {
+            return redirect()->route('dashboard')->with('success', 'Data karyawan berhasil diperbarui.');
+        }
     }
 
     /**

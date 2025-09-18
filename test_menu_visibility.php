@@ -1,30 +1,81 @@
-<?php
+<?php<?php<?php
 
-require_once 'vendor/autoload.php';
 
-// Load Laravel environment
-$app = require_once 'bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Request;
-use App\Models\User;
+require 'vendor/autoload.php';
 
-echo "=== Testing User Approval Menu Visibility ===\n\n";
 
-// Test with user test4
-$user = User::where('username', 'test4')->first();
-if (!$user) {
-    echo "User test4 not found!\n";
-    exit(1);
+
+$app = require_once 'bootstrap/app.php';require 'vendor/autoload.php';require_once 'vendor/autoload.php';
+
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);
+
+$kernel->bootstrap();
+
+
+
+echo "Testing COA Menu Visibility:\n";$app = require_once 'bootstrap/app.php';// Load Laravel environment
+
+echo "===========================\n";
+
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);$app = require_once 'bootstrap/app.php';
+
+$user = App\Models\User::where('username', 'test')->first();
+
+if ($user) {$kernel->bootstrap();$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+
+    echo "User 'test' found\n";
+
+    echo "Can access master.coa.index: " . ($user->can('master.coa.index') ? 'YES' : 'NO') . "\n";
+
+
+
+    $permissions = $user->permissions()->where('name', 'like', '%coa%')->get();echo "Testing COA Menu Visibility:\n";use Illuminate\Support\Facades\Auth;
+
+    echo "\nCOA permissions for user 'test':\n";
+
+    foreach($permissions as $permission) {echo "===========================\n";use Illuminate\Support\Facades\Request;
+
+        echo "- " . $permission->name . "\n";
+
+    }use App\Models\User;
+
+} else {
+
+    echo "User 'test' not found\n";$user = App\Models\User::where('username', 'test')->first();
+
 }
 
-echo "User: {$user->username} (ID: {$user->id})\n";
-echo "Email: {$user->email}\n";
-echo "Status: {$user->status}\n\n";
+if ($user) {echo "=== Testing User Approval Menu Visibility ===\n\n";
+
+echo "\nDone.\n";
+    echo "User 'test' found\n";
+
+    echo "Can access master.coa.index: " . ($user->can('master.coa.index') ? 'YES' : 'NO') . "\n";// Test with user test4
+
+    echo "Can access master-coa.view: " . ($user->can('master-coa.view') ? 'YES' : 'NO') . "\n";$user = User::where('username', 'test4')->first();
+
+if (!$user) {
+
+    $permissions = $user->permissions()->where('name', 'like', '%coa%')->get();    echo "User test4 not found!\n";
+
+    echo "\nCOA permissions for user 'test':\n";    exit(1);
+
+    foreach($permissions as $permission) {}
+
+        echo "- " . $permission->name . "\n";
+
+    }echo "User: {$user->username} (ID: {$user->id})\n";
+
+} else {echo "Email: {$user->email}\n";
+
+    echo "User 'test' not found\n";echo "Status: {$user->status}\n\n";
+
+}
 
 // Check permissions
-echo "=== Permission Check ===\n";
+
+echo "\nDone.\n";echo "=== Permission Check ===\n";
 $permissions = [
     'master-user',
     'user-approval',
