@@ -110,10 +110,11 @@
                         <label for="estimasi_biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
                             Estimasi Biaya Perbaikan
                         </label>
-                        <input type="number" id="estimasi_biaya_perbaikan" name="estimasi_biaya_perbaikan"
-                               value="{{ old('estimasi_biaya_perbaikan') }}" step="0.01" min="0"
+                        <input type="text" id="estimasi_biaya_perbaikan" name="estimasi_biaya_perbaikan"
+                               value="{{ old('estimasi_biaya_perbaikan') ? number_format(old('estimasi_biaya_perbaikan'), 0, ',', '.') : '' }}"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="0.00">
+                               placeholder="0">
+                        <input type="hidden" id="estimasi_biaya_perbaikan_raw" name="estimasi_biaya_perbaikan_raw" value="{{ old('estimasi_biaya_perbaikan') }}">
                         <p class="mt-1 text-sm text-gray-500">Estimasi biaya yang diperlukan untuk perbaikan</p>
                         @error('estimasi_biaya_perbaikan')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -124,10 +125,11 @@
                         <label for="realisasi_biaya_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
                             Realisasi Biaya Perbaikan
                         </label>
-                        <input type="number" id="realisasi_biaya_perbaikan" name="realisasi_biaya_perbaikan"
-                               value="{{ old('realisasi_biaya_perbaikan') }}" step="0.01" min="0"
+                        <input type="text" id="realisasi_biaya_perbaikan" name="realisasi_biaya_perbaikan"
+                               value="{{ old('realisasi_biaya_perbaikan') ? number_format(old('realisasi_biaya_perbaikan'), 0, ',', '.') : '' }}"
                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="0.00">
+                               placeholder="0">
+                        <input type="hidden" id="realisasi_biaya_perbaikan_raw" name="realisasi_biaya_perbaikan_raw" value="{{ old('realisasi_biaya_perbaikan') }}">
                         <p class="mt-1 text-sm text-gray-500">Biaya aktual yang dikeluarkan untuk perbaikan</p>
                         @error('realisasi_biaya_perbaikan')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -177,4 +179,67 @@
     </div>
 </div>
 
+@endsection
+
+@section('scripts')
+<script>
+// Function to format number with dots as thousand separator
+function formatNumber(num) {
+    if (!num) return '';
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+
+// Function to remove dots and get raw number
+function unformatNumber(str) {
+    if (!str) return '';
+    return str.toString().replace(/\./g, '');
+}
+
+// Function to handle input formatting
+function handleNumberInput(inputId, hiddenId) {
+    const input = document.getElementById(inputId);
+    const hidden = document.getElementById(hiddenId);
+
+    input.addEventListener('input', function(e) {
+        let value = e.target.value;
+
+        // Remove any non-numeric characters except dots
+        value = value.replace(/[^\d.]/g, '');
+
+        // Remove existing dots to get clean number
+        let cleanValue = unformatNumber(value);
+
+        // Format the number with dots
+        let formattedValue = formatNumber(cleanValue);
+
+        // Update the display input
+        e.target.value = formattedValue;
+
+        // Update the hidden input with raw value
+        hidden.value = cleanValue;
+    });
+
+    input.addEventListener('blur', function(e) {
+        let value = e.target.value;
+        let cleanValue = unformatNumber(value);
+        let formattedValue = formatNumber(cleanValue);
+
+        e.target.value = formattedValue;
+        hidden.value = cleanValue;
+    });
+
+    // Initialize on page load
+    if (input.value) {
+        let cleanValue = unformatNumber(input.value);
+        input.value = formatNumber(cleanValue);
+        hidden.value = cleanValue;
+    }
+}
+
+// Initialize formatting for both inputs
+document.addEventListener('DOMContentLoaded', function() {
+    handleNumberInput('estimasi_biaya_perbaikan', 'estimasi_biaya_perbaikan_raw');
+    handleNumberInput('realisasi_biaya_perbaikan', 'realisasi_biaya_perbaikan_raw');
+});
+</script>
 @endsection

@@ -78,13 +78,21 @@ class PerbaikanKontainerController extends Controller
             'estimasi_kerusakan_kontainer' => 'required|string',
             'deskripsi_perbaikan' => 'required|string',
             'realisasi_kerusakan' => 'nullable|string',
-            'estimasi_biaya_perbaikan' => 'nullable|numeric|min:0',
-            'realisasi_biaya_perbaikan' => 'nullable|numeric|min:0',
+            'estimasi_biaya_perbaikan_raw' => 'nullable|numeric|min:0',
+            'realisasi_biaya_perbaikan_raw' => 'nullable|numeric|min:0',
             'vendor_bengkel_id' => 'nullable|exists:vendor_bengkel,id',
             'status_perbaikan' => 'nullable|string|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar',
             'tanggal_selesai' => 'nullable|date',
             'catatan' => 'nullable|string',
         ]);
+
+        // Use raw values for biaya fields
+        $validated['estimasi_biaya_perbaikan'] = $validated['estimasi_biaya_perbaikan_raw'] ?? null;
+        $validated['realisasi_biaya_perbaikan'] = $validated['realisasi_biaya_perbaikan_raw'] ?? null;
+
+        // Remove raw fields from validated data
+        unset($validated['estimasi_biaya_perbaikan_raw']);
+        unset($validated['realisasi_biaya_perbaikan_raw']);
 
         // Find or create container based on nomor_kontainer
         $kontainer = Kontainer::firstOrCreate(
@@ -137,12 +145,20 @@ class PerbaikanKontainerController extends Controller
             'estimasi_kerusakan_kontainer' => 'required|string',
             'deskripsi_perbaikan' => 'required|string',
             'realisasi_kerusakan' => 'nullable|string',
-            'estimasi_biaya_perbaikan' => 'nullable|numeric|min:0',
-            'realisasi_biaya_perbaikan' => 'nullable|numeric|min:0',
+            'estimasi_biaya_perbaikan_raw' => 'nullable|numeric|min:0',
+            'realisasi_biaya_perbaikan_raw' => 'nullable|numeric|min:0',
             'tanggal_selesai' => 'nullable|date',
             'status_perbaikan' => 'required|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar',
             'catatan' => 'nullable|string',
         ]);
+
+        // Use raw values for biaya fields
+        $validated['estimasi_biaya_perbaikan'] = $validated['estimasi_biaya_perbaikan_raw'] ?? null;
+        $validated['realisasi_biaya_perbaikan'] = $validated['realisasi_biaya_perbaikan_raw'] ?? null;
+
+        // Remove raw fields from validated data
+        unset($validated['estimasi_biaya_perbaikan_raw']);
+        unset($validated['realisasi_biaya_perbaikan_raw']);
 
         // Find or create container based on nomor_kontainer
         $kontainer = Kontainer::firstOrCreate(
