@@ -165,6 +165,27 @@
                 @php
                     $user = Auth::user();
                     $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+
+                    // Check if user has any master data permissions
+                    $hasMasterPermissions = $user && (
+                        $user->can('master-karyawan-view') ||
+                        $user->can('master-user-view') ||
+                        $user->can('master-kontainer-view') ||
+                        $user->can('master-pricelist-sewa-kontainer-view') ||
+                        $user->can('master-tujuan-view') ||
+                        $user->can('master-kegiatan-view') ||
+                        $user->can('master-permission-view') ||
+                        $user->can('master-mobil-view') ||
+                        $user->can('master-divisi-view') ||
+                        $user->can('master-cabang-view') ||
+                        $user->can('master-pekerjaan-view') ||
+                        $user->can('master-pajak-view') ||
+                        $user->can('master-bank-view') ||
+                        $user->can('master-coa-view')
+                    );
+
+                    // Show master section if user is admin OR has any master permissions
+                    $showMasterSection = $isAdmin || $hasMasterPermissions;
                 @endphp
 
                 <!-- Dashboard -->
@@ -185,7 +206,7 @@
                     $isPranotaRoute = Request::routeIs('pranota-supir.*');
                 @endphp
 
-                @if($isAdmin)
+                @if($showMasterSection)
                 <div class="mb-1">
                     <button id="master-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all duration-200 group {{ $isMasterRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
                         <div class="flex items-center">
