@@ -25,6 +25,7 @@ use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PricelistSewaKontainerController;
 use App\Http\Controllers\PranotaController;
 use App\Http\Controllers\PembayaranPranotaKontainerController;
+use App\Http\Controllers\VendorBengkelController;
 
 /*
 |--------------------------------------------------------------------------
@@ -553,6 +554,29 @@ Route::middleware([
     Route::delete('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'destroy'])
          ->name('master.pekerjaan.destroy')
          ->middleware('can:master-pekerjaan-delete');
+
+    // Master vendor/bengkel routes
+    Route::get('master/vendor-bengkel', [VendorBengkelController::class, 'index'])
+         ->name('master.vendor-bengkel.index')
+         ->middleware('can:master-vendor-bengkel.view');
+    Route::get('master/vendor-bengkel/create', [VendorBengkelController::class, 'create'])
+         ->name('master.vendor-bengkel.create')
+         ->middleware('can:master-vendor-bengkel.create');
+    Route::post('master/vendor-bengkel', [VendorBengkelController::class, 'store'])
+         ->name('master.vendor-bengkel.store')
+         ->middleware('can:master-vendor-bengkel.create');
+    Route::get('master/vendor-bengkel/{vendorBengkel}', [VendorBengkelController::class, 'show'])
+         ->name('master.vendor-bengkel.show')
+         ->middleware('can:master-vendor-bengkel.view');
+    Route::get('master/vendor-bengkel/{vendorBengkel}/edit', [VendorBengkelController::class, 'edit'])
+         ->name('master.vendor-bengkel.edit')
+         ->middleware('can:master-vendor-bengkel.update');
+    Route::put('master/vendor-bengkel/{vendorBengkel}', [VendorBengkelController::class, 'update'])
+         ->name('master.vendor-bengkel.update')
+         ->middleware('can:master-vendor-bengkel.update');
+    Route::delete('master/vendor-bengkel/{vendorBengkel}', [VendorBengkelController::class, 'destroy'])
+         ->name('master.vendor-bengkel.destroy')
+         ->middleware('can:master-vendor-bengkel.delete');
 
     // Route master.karyawan.index di luar group master untuk konsistensi dengan view
     Route::get('master/karyawan', [KaryawanController::class, 'index'])

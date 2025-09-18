@@ -33,7 +33,7 @@
                 <h1 class="text-2xl font-bold text-gray-800">Perbaikan Kontainer</h1>
                 <p class="text-gray-600 mt-1">Kelola data perbaikan kontainer</p>
             </div>
-            @can('perbaikan-kontainer.create')
+            @can('perbaikan-kontainer-create')
             <a href="{{ route('perbaikan-kontainer.create') }}"
                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -147,10 +147,10 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
-                                {{ $perbaikan->vendor_bengkel ?? $perbaikan->supplier ?? '-' }}
+                                {{ $perbaikan->vendorBengkel->nama_bengkel ?? $perbaikan->vendor_bengkel ?? '-' }}
                             </div>
                             <div class="text-sm text-gray-500">
-                                Bengkel/Supplier
+                                Vendor/Bengkel
                             </div>
                         </td>
                         <td class="px-6 py-4">
@@ -177,15 +177,15 @@
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
-                                @can('perbaikan-kontainer.view')
+                                @can('perbaikan-kontainer-view')
                                 <a href="{{ route('perbaikan-kontainer.show', $perbaikan) }}"
                                    class="text-blue-600 hover:text-blue-900">Lihat</a>
                                 @endcan
-                                @can('perbaikan-kontainer.update')
+                                @can('perbaikan-kontainer-update')
                                 <a href="{{ route('perbaikan-kontainer.edit', $perbaikan) }}"
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                 @endcan
-                                @can('perbaikan-kontainer.delete')
+                                @can('perbaikan-kontainer-delete')
                                 <form method="POST" action="{{ route('perbaikan-kontainer.destroy', $perbaikan) }}"
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus data perbaikan ini?')"
                                       class="inline">

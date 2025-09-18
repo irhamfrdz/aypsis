@@ -14,7 +14,7 @@ class PerbaikanKontainerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PerbaikanKontainer::with(['kontainer', 'creator']);
+        $query = PerbaikanKontainer::with(['kontainer', 'creator', 'vendorBengkel']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -61,8 +61,9 @@ class PerbaikanKontainerController extends Controller
     public function create()
     {
         $perbaikan = new PerbaikanKontainer();
+        $vendorBengkels = \App\Models\VendorBengkel::select('id', 'nama_bengkel')->orderBy('nama_bengkel')->get();
 
-        return view('perbaikan-kontainer.create', compact('perbaikan'));
+        return view('perbaikan-kontainer.create', compact('perbaikan', 'vendorBengkels'));
     }
 
     /**
@@ -71,6 +72,7 @@ class PerbaikanKontainerController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            'nomor_tagihan' => 'nullable|string|max:255',
             'nomor_kontainer' => 'required|string|max:255',
             'tanggal_perbaikan' => 'required|date',
             'estimasi_kerusakan_kontainer' => 'required|string',
@@ -78,6 +80,8 @@ class PerbaikanKontainerController extends Controller
             'realisasi_kerusakan' => 'nullable|string',
             'estimasi_biaya_perbaikan' => 'nullable|numeric|min:0',
             'realisasi_biaya_perbaikan' => 'nullable|numeric|min:0',
+            'vendor_bengkel_id' => 'nullable|exists:vendor_bengkel,id',
+            'status_perbaikan' => 'nullable|string|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar',
             'tanggal_selesai' => 'nullable|date',
             'catatan' => 'nullable|string',
         ]);
@@ -92,7 +96,7 @@ class PerbaikanKontainerController extends Controller
         unset($validated['nomor_kontainer']); // Remove nomor_kontainer from validated data
 
         $validated['created_by'] = Auth::id();
-        $validated['status_perbaikan'] = 'belum_masuk_pranota';
+        $validated['status_perbaikan'] = $validated['status_perbaikan'] ?? 'belum_masuk_pranota';
 
         PerbaikanKontainer::create($validated);
 
@@ -105,7 +109,7 @@ class PerbaikanKontainerController extends Controller
      */
     public function show(PerbaikanKontainer $perbaikanKontainer)
     {
-        $perbaikanKontainer->load(['kontainer', 'creator', 'updater']);
+        $perbaikanKontainer->load(['kontainer', 'creator', 'updater', 'vendorBengkel']);
 
         return view('perbaikan-kontainer.show', compact('perbaikanKontainer'));
     }
@@ -115,7 +119,9 @@ class PerbaikanKontainerController extends Controller
      */
     public function edit(PerbaikanKontainer $perbaikanKontainer)
     {
-        return view('perbaikan-kontainer.edit', compact('perbaikanKontainer'));
+        $vendorBengkels = \App\Models\VendorBengkel::select('id', 'nama_bengkel')->orderBy('nama_bengkel')->get();
+
+        return view('perbaikan-kontainer.edit', compact('perbaikanKontainer', 'vendorBengkels'));
     }
 
     /**
@@ -126,7 +132,7 @@ class PerbaikanKontainerController extends Controller
         $validated = $request->validate([
             'nomor_kontainer' => 'required|string|max:255',
             'nomor_tagihan' => 'nullable|string|max:255',
-            'vendor_bengkel' => 'required|string|max:255',
+            'vendor_bengkel_id' => 'nullable|exists:vendor_bengkel,id',
             'tanggal_perbaikan' => 'required|date',
             'estimasi_kerusakan_kontainer' => 'required|string',
             'deskripsi_perbaikan' => 'required|string',

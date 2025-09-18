@@ -13,7 +13,7 @@
                     <p class="text-gray-600 mt-1">Informasi lengkap perbaikan kontainer</p>
                 </div>
                 <div class="flex space-x-2">
-                    @can('perbaikan-kontainer.update')
+                    @can('perbaikan-kontainer-update')
                     <a href="{{ route('perbaikan-kontainer.edit', $perbaikanKontainer) }}"
                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,6 +52,10 @@
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Ukuran</label>
                             <p class="text-sm text-gray-900">{{ $perbaikanKontainer->kontainer->ukuran ?? 'N/A' }}</p>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-600">Vendor/Bengkel</label>
+                            <p class="text-sm text-gray-900">{{ $perbaikanKontainer->vendorBengkel->nama_bengkel ?? $perbaikanKontainer->vendor_bengkel ?? 'N/A' }}</p>
                         </div>
                     </div>
                 </div>
@@ -157,7 +161,7 @@
             @endcan
 
             <!-- Delete Button -->
-            @can('perbaikan-kontainer.delete')
+            @can('perbaikan-kontainer-delete')
             <div class="mt-6 pt-6 border-t">
                 <div class="flex justify-end">
                     <form method="POST" action="{{ route('perbaikan-kontainer.destroy', $perbaikanKontainer) }}"

@@ -8,22 +8,24 @@ Seeder khusus untuk membuat user `user_admin` dengan semua permission yang terse
 
 ## Fitur
 
-- ✅ Membuat user `user_admin` dengan semua permission
-- ✅ Verifikasi otomatis jumlah permission yang di-assign
-- ✅ Login credentials yang jelas dan mudah diingat
-- ✅ Script runner untuk Linux/Mac dan Windows
-- ✅ Integrasi dengan DatabaseSeeder utama
+-   ✅ Membuat user `user_admin` dengan semua permission
+-   ✅ Verifikasi otomatis jumlah permission yang di-assign
+-   ✅ Login credentials yang jelas dan mudah diingat
+-   ✅ Script runner untuk Linux/Mac dan Windows
+-   ✅ Integrasi dengan DatabaseSeeder utama
 
 ## Cara Penggunaan
 
 ### 1. Menggunakan Script Runner (Direkomendasikan)
 
 #### Linux/Mac:
+
 ```bash
 ./run_user_admin_seeder.sh
 ```
 
 #### Windows:
+
 ```batch
 run_user_admin_seeder.bat
 ```
@@ -46,9 +48,9 @@ php artisan db:seed
 
 Setelah seeder berhasil dijalankan, Anda dapat login dengan:
 
-- **Username:** `user_admin`
-- **Password:** `admin123`
-- **Status:** `approved` (auto-approved)
+-   **Username:** `user_admin`
+-   **Password:** `admin123`
+-   **Status:** `approved` (auto-approved)
 
 > ⚠️ **PENTING:** Segera ubah password default setelah login pertama kali untuk alasan keamanan!
 
@@ -80,26 +82,31 @@ php artisan db:seed --class=ComprehensivePermissionsSeeder
 ## Troubleshooting
 
 ### Error: "No permissions found!"
+
 **Solusi:** Jalankan `ComprehensivePermissionsSeeder` terlebih dahulu:
+
 ```bash
 php artisan db:seed --class=ComprehensivePermissionsSeeder
 ```
 
 ### Error: "Class UserAdminSeeder not found"
+
 **Solusi:** Pastikan file `database/seeders/UserAdminSeeder.php` ada dan Composer autoload sudah di-regenerate:
+
 ```bash
 composer dump-autoload
 ```
 
 ### Permission tidak ter-assign dengan benar
+
 **Solusi:** Periksa apakah model `User` dan `Permission` memiliki relasi `belongsToMany` yang benar, dan tabel pivot `user_permissions` ada.
 
 ## Keamanan
 
-- Password default adalah `admin123`
-- **WAJIB** mengubah password setelah login pertama
-- User ini memiliki akses penuh ke semua modul sistem
-- Pertimbangkan untuk membuat user admin terpisah untuk development dan production
+-   Password default adalah `admin123`
+-   **WAJIB** mengubah password setelah login pertama
+-   User ini memiliki akses penuh ke semua modul sistem
+-   Pertimbangkan untuk membuat user admin terpisah untuk development dan production
 
 ## File yang Dibuat
 
@@ -111,10 +118,11 @@ composer dump-autoload
 ## Integrasi dengan Sistem
 
 UserAdminSeeder terintegrasi dengan:
-- `DatabaseSeeder` utama
-- Model `User` dan `Permission`
-- Sistem permission matrix yang ada
-- Script runner lainnya
+
+-   `DatabaseSeeder` utama
+-   Model `User` dan `Permission`
+-   Sistem permission matrix yang ada
+-   Script runner lainnya
 
 ## Lisensi
 

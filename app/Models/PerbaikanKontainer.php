@@ -21,6 +21,7 @@ class PerbaikanKontainer extends Model
         'estimasi_biaya_perbaikan',
         'realisasi_biaya_perbaikan',
         'vendor_bengkel',
+        'vendor_bengkel_id',
         'status_perbaikan',
         'catatan',
         'tanggal_selesai',
@@ -52,6 +53,11 @@ class PerbaikanKontainer extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function vendorBengkel()
+    {
+        return $this->belongsTo(VendorBengkel::class, 'vendor_bengkel_id');
     }
 
     public function pranotaPerbaikanKontainers()

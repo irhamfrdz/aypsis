@@ -606,6 +606,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Vendor/Bengkel --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Vendor/Bengkel</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-vendor-bengkel][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-bengkel']['view']) && $userMatrixPermissions['master-vendor-bengkel']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-bengkel][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-bengkel']['create']) && $userMatrixPermissions['master-vendor-bengkel']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-bengkel][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-bengkel']['update']) && $userMatrixPermissions['master-vendor-bengkel']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-vendor-bengkel][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-bengkel']['delete']) && $userMatrixPermissions['master-vendor-bengkel']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
 
 

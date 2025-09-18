@@ -25,6 +25,20 @@
             <form action="{{ route('perbaikan-kontainer.store') }}" method="POST" class="space-y-6">
                 @csrf
 
+                <!-- Nomor Tagihan -->
+                <div>
+                    <label for="nomor_tagihan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nomor Tagihan
+                    </label>
+                    <input type="text" id="nomor_tagihan" name="nomor_tagihan"
+                           value="{{ old('nomor_tagihan') }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Masukkan nomor tagihan...">
+                    @error('nomor_tagihan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Kontainer Selection -->
                 <div>
                     <label for="nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
@@ -40,6 +54,41 @@
                     @enderror
                 </div>
 
+                <!-- Vendor/Bengkel -->
+                <div>
+                    <label for="vendor_bengkel_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor/Bengkel
+                    </label>
+                    <select id="vendor_bengkel_id" name="vendor_bengkel_id"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Vendor/Bengkel...</option>
+                        @foreach($vendorBengkels as $vendor)
+                            <option value="{{ $vendor->id }}" {{ old('vendor_bengkel_id') == $vendor->id ? 'selected' : '' }}>
+                                {{ $vendor->nama_bengkel }}
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('vendor_bengkel_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Status -->
+                <div>
+                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                        Status
+                    </label>
+                    <select id="status" name="status"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="belum_masuk_pranota" {{ old('status') == 'belum_masuk_pranota' ? 'selected' : '' }}>Belum Masuk Pranota</option>
+                        <option value="sudah_masuk_pranota" {{ old('status') == 'sudah_masuk_pranota' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
+                        <option value="sudah_dibayar" {{ old('status') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
+                    </select>
+                    @error('status')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Estimasi Kerusakan Kontainer -->
                 <div>
                     <label for="estimasi_kerusakan_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
@@ -51,34 +100,6 @@
                            placeholder="Estimasi kerusakan kontainer..."
                            required>
                     @error('estimasi_kerusakan_kontainer')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Deskripsi Kerusakan -->
-                <div>
-                    <label for="deskripsi_perbaikan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Deskripsi Perbaikan <span class="text-red-500">*</span>
-                    </label>
-                    <textarea id="deskripsi_perbaikan" name="deskripsi_perbaikan" rows="4"
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Deskripsi detail perbaikan..."
-                              required>{{ old('deskripsi_perbaikan') }}</textarea>
-                    @error('deskripsi_perbaikan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Realisasi Kerusakan Kontainer -->
-                <div>
-                    <label for="realisasi_kerusakan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Realisasi Kerusakan Kontainer
-                    </label>
-                    <textarea id="realisasi_kerusakan" name="realisasi_kerusakan" rows="4"
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Deskripsikan realisasi kerusakan yang ditemukan saat perbaikan...">{{ old('realisasi_kerusakan') }}</textarea>
-                    <p class="mt-1 text-sm text-gray-500">Isi dengan kondisi kerusakan yang sebenarnya ditemukan saat proses perbaikan</p>
-                    @error('realisasi_kerusakan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -138,19 +159,6 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-                </div>
-
-                <!-- Teknisi dan Catatan -->
-                <div>
-                    <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Catatan
-                    </label>
-                    <textarea id="catatan" name="catatan" rows="3"
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Catatan tambahan...">{{ old('catatan') }}</textarea>
-                    @error('catatan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <!-- Submit Buttons -->

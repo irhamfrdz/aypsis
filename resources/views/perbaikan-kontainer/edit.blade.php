@@ -58,16 +58,20 @@
 
                 <!-- Vendor/Bengkel -->
                 <div>
-                    <label for="vendor_bengkel" class="block text-sm font-medium text-gray-700 mb-2">
-                        Vendor/Bengkel <span class="text-red-500">*</span>
+                    <label for="vendor_bengkel_id" class="block text-sm font-medium text-gray-700 mb-2">
+                        Vendor/Bengkel
                     </label>
-                    <input type="text" id="vendor_bengkel" name="vendor_bengkel"
-                           value="{{ old('vendor_bengkel', $perbaikanKontainer->vendor_bengkel ?? '') }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Masukkan nama vendor atau bengkel..."
-                           required>
-                    <p class="mt-1 text-sm text-gray-500">Contoh: PT. Container Repair Indonesia, Bengkel ABC, dll.</p>
-                    @error('vendor_bengkel')
+                    <select id="vendor_bengkel_id" name="vendor_bengkel_id"
+                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                        <option value="">Pilih Vendor/Bengkel...</option>
+                        @foreach($vendorBengkels as $vendor)
+                            <option value="{{ $vendor->id }}" {{ old('vendor_bengkel_id', $perbaikanKontainer->vendor_bengkel_id) == $vendor->id ? 'selected' : '' }}>
+                                {{ $vendor->nama_bengkel }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-sm text-gray-500">Pilih vendor atau bengkel yang akan melakukan perbaikan</p>
+                    @error('vendor_bengkel_id')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

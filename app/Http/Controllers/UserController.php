@@ -325,6 +325,29 @@ class UserController extends Controller
                     $matrixPermissions[$module][$mappedAction] = true;
                     continue; // Skip other patterns
                 } elseif (count($parts) >= 2) {
+                    // Special handling for master-vendor-bengkel permissions
+                    if ($parts[0] === 'master-vendor-bengkel') {
+                        $module = 'master-vendor-bengkel';
+                        $action = $parts[1]; // view, create, update, delete
+
+                        // Initialize module array if not exists
+                        if (!isset($matrixPermissions[$module])) {
+                            $matrixPermissions[$module] = [];
+                        }
+
+                        // Map database actions to matrix actions
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete'
+                        ];
+
+                        $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                        $matrixPermissions[$module][$mappedAction] = true;
+                        continue; // Skip other patterns
+                    }
+
                     // Handle other dot notation patterns
                     $module = $parts[0];
                     $action = $parts[1];
@@ -1076,6 +1099,26 @@ class UserController extends Controller
                             'create' => 'master-cabang-create',
                             'update' => 'master-cabang-update',
                             'delete' => 'master-cabang-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-vendor-bengkel permissions explicitly
+                    if ($module === 'master-vendor-bengkel' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-vendor-bengkel.view',
+                            'create' => 'master-vendor-bengkel.create',
+                            'update' => 'master-vendor-bengkel.update',
+                            'delete' => 'master-vendor-bengkel.delete'
                         ];
 
                         if (isset($actionMap[$action])) {
