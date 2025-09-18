@@ -181,65 +181,95 @@
 
 @endsection
 
-@section('scripts')
+@push('scripts')
 <script>
-// Function to format number with dots as thousand separator
+// Simple and robust number formatting
 function formatNumber(num) {
-    if (!num) return '';
+    if (!num || num === '0') return '';
+    // Convert to string and add dots as thousand separator
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
 }
 
-// Function to remove dots and get raw number
 function unformatNumber(str) {
     if (!str) return '';
+    // Remove all dots
     return str.toString().replace(/\./g, '');
 }
 
-// Function to handle input formatting
-function handleNumberInput(inputId, hiddenId) {
-    const input = document.getElementById(inputId);
-    const hidden = document.getElementById(hiddenId);
+// Initialize number formatting for inputs
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('Initializing number formatting...');
 
+    // Get input elements
+    const estimasiInput = document.getElementById('estimasi_biaya_perbaikan');
+    const estimasiHidden = document.getElementById('estimasi_biaya_perbaikan_raw');
+    const realisasiInput = document.getElementById('realisasi_biaya_perbaikan');
+    const realisasiHidden = document.getElementById('realisasi_biaya_perbaikan_raw');
+
+    console.log('Elements found:', {
+        estimasiInput: !!estimasiInput,
+        estimasiHidden: !!estimasiHidden,
+        realisasiInput: !!realisasiInput,
+        realisasiHidden: !!realisasiHidden
+    });
+
+    if (estimasiInput && estimasiHidden) {
+        setupNumberInput(estimasiInput, estimasiHidden, 'estimasi');
+    }
+
+    if (realisasiInput && realisasiHidden) {
+        setupNumberInput(realisasiInput, realisasiHidden, 'realisasi');
+    }
+});
+
+function setupNumberInput(input, hidden, name) {
+    console.log('Setting up', name, 'input');
+
+    // Handle input event
     input.addEventListener('input', function(e) {
+        console.log(name + ' input event:', e.target.value);
+
         let value = e.target.value;
 
-        // Remove any non-numeric characters except dots
+        // Remove non-numeric characters except dots
         value = value.replace(/[^\d.]/g, '');
+        console.log(name + ' cleaned value:', value);
 
-        // Remove existing dots to get clean number
+        // Remove existing dots
         let cleanValue = unformatNumber(value);
+        console.log(name + ' clean value:', cleanValue);
 
-        // Format the number with dots
+        // Format with dots
         let formattedValue = formatNumber(cleanValue);
+        console.log(name + ' formatted value:', formattedValue);
 
-        // Update the display input
-        e.target.value = formattedValue;
+        // Update display (without triggering input event)
+        input.value = formattedValue;
 
-        // Update the hidden input with raw value
+        // Update hidden field
         hidden.value = cleanValue;
+
+        console.log(name + ' final values - display:', formattedValue, 'hidden:', cleanValue);
     });
 
+    // Handle focus/blur for final formatting
     input.addEventListener('blur', function(e) {
+        console.log(name + ' blur event');
         let value = e.target.value;
         let cleanValue = unformatNumber(value);
         let formattedValue = formatNumber(cleanValue);
 
-        e.target.value = formattedValue;
+        input.value = formattedValue;
         hidden.value = cleanValue;
     });
 
-    // Initialize on page load
+    // Initialize if there's a value
     if (input.value) {
+        console.log(name + ' has initial value:', input.value);
         let cleanValue = unformatNumber(input.value);
         input.value = formatNumber(cleanValue);
         hidden.value = cleanValue;
     }
 }
-
-// Initialize formatting for both inputs
-document.addEventListener('DOMContentLoaded', function() {
-    handleNumberInput('estimasi_biaya_perbaikan', 'estimasi_biaya_perbaikan_raw');
-    handleNumberInput('realisasi_biaya_perbaikan', 'realisasi_biaya_perbaikan_raw');
-});
 </script>
-@endsection
+@endpush
