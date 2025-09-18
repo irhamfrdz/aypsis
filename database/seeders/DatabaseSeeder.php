@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             MasterPekerjaanPermissionSeeder::class, // Permission untuk master pekerjaan
             UserSeeder::class, // Pastikan user dibuat sebelum relasi permission
             UserPermissionSeeder::class, // Seeder untuk user permissions
+            UserAdminSeeder::class, // Seeder untuk user_admin dengan semua permission
             KontainerSeeder::class,
             TujuanSeeder::class,
             DivisiSeeder::class, // Seeder untuk master divisi
