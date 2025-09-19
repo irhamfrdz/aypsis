@@ -19,9 +19,8 @@ class KodeNomorController extends Controller
         // Handle search functionality
         if ($request->has('search') && !empty($request->search)) {
             $query->where('kode', 'like', '%' . $request->search . '%')
-                  ->orWhere('nomor_akun', 'like', '%' . $request->search . '%')
-                  ->orWhere('nama_akun', 'like', '%' . $request->search . '%')
-                  ->orWhere('catatan', 'like', '%' . $request->search . '%');
+                  ->orWhere('nama', 'like', '%' . $request->search . '%')
+                  ->orWhere('deskripsi', 'like', '%' . $request->search . '%');
         }
 
         $kodeNomors = $query->orderBy('kode')->paginate(15);
@@ -45,11 +44,8 @@ class KodeNomorController extends Controller
     {
         $request->validate([
             'kode' => 'required|string|max:50|unique:kode_nomor,kode',
-            'nomor_akun' => 'nullable|string|max:50',
-            'nama_akun' => 'nullable|string|max:255',
-            'tipe_akun' => 'nullable|string|max:100',
-            'saldo' => 'nullable|numeric|min:0',
-            'catatan' => 'nullable|string|max:1000'
+            'nama' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string|max:1000'
         ]);
 
         KodeNomor::create($request->all());
@@ -82,11 +78,8 @@ class KodeNomorController extends Controller
     {
         $request->validate([
             'kode' => ['required', 'string', 'max:50', Rule::unique('kode_nomor')->ignore($kodeNomor->id)],
-            'nomor_akun' => 'nullable|string|max:50',
-            'nama_akun' => 'nullable|string|max:255',
-            'tipe_akun' => 'nullable|string|max:100',
-            'saldo' => 'nullable|numeric|min:0',
-            'catatan' => 'nullable|string|max:1000'
+            'nama' => 'required|string|max:255',
+            'deskripsi' => 'nullable|string|max:1000'
         ]);
 
         $kodeNomor->update($request->all());

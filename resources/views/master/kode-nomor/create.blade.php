@@ -37,57 +37,20 @@
                     @enderror
                 </div>
 
-                <!-- Nomor Akun Field -->
+                <!-- Nama Field -->
                 <div class="mb-6">
-                    <label for="nomor_akun" class="block text-sm font-medium text-gray-700 mb-2">Nomor Akun</label>
-                    <input type="text" name="nomor_akun" id="nomor_akun" value="{{ old('nomor_akun') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_akun') border-red-500 @enderror" placeholder="Masukkan nomor akun">
-                    @error('nomor_akun')
+                    <label for="nama" class="block text-sm font-medium text-gray-700 mb-2">Nama <span class="text-red-500">*</span></label>
+                    <input type="text" name="nama" id="nama" value="{{ old('nama') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('nama') border-red-500 @enderror" placeholder="Masukkan nama" required>
+                    @error('nama')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
 
-                <!-- Nama Akun Field -->
+                <!-- Deskripsi Field -->
                 <div class="mb-6">
-                    <label for="nama_akun" class="block text-sm font-medium text-gray-700 mb-2">Nama Akun</label>
-                    <input type="text" name="nama_akun" id="nama_akun" value="{{ old('nama_akun') }}" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('nama_akun') border-red-500 @enderror" placeholder="Masukkan nama akun">
-                    @error('nama_akun')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Tipe Akun Field -->
-                <div class="mb-6">
-                    <label for="tipe_akun" class="block text-sm font-medium text-gray-700 mb-2">Tipe Akun</label>
-                    <select name="tipe_akun" id="tipe_akun" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('tipe_akun') border-red-500 @enderror">
-                        <option value="">Pilih tipe akun</option>
-                        @foreach($tipeAkuns as $tipeAkun)
-                            <option value="{{ $tipeAkun->tipe_akun }}" {{ old('tipe_akun') == $tipeAkun->tipe_akun ? 'selected' : '' }}>
-                                {{ $tipeAkun->tipe_akun }}
-                                @if($tipeAkun->catatan)
-                                    - {{ $tipeAkun->catatan }}
-                                @endif
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('tipe_akun')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Saldo Field -->
-                <div class="mb-6">
-                    <label for="saldo" class="block text-sm font-medium text-gray-700 mb-2">Saldo</label>
-                    <input type="number" name="saldo" id="saldo" value="{{ old('saldo', 0) }}" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('saldo') border-red-500 @enderror" placeholder="0.00">
-                    @error('saldo')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Catatan Field -->
-                <div class="mb-6">
-                    <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
-                    <textarea name="catatan" id="catatan" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('catatan') border-red-500 @enderror" placeholder="Masukkan catatan (opsional)">{{ old('catatan') }}</textarea>
-                    @error('catatan')
+                    <label for="deskripsi" class="block text-sm font-medium text-gray-700 mb-2">Deskripsi</label>
+                    <textarea name="deskripsi" id="deskripsi" rows="4" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('deskripsi') border-red-500 @enderror" placeholder="Masukkan deskripsi">{{ old('deskripsi') }}</textarea>
+                    @error('deskripsi')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
