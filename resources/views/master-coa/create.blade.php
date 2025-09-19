@@ -50,6 +50,33 @@
                     <p class="mt-1 text-sm text-gray-500">Nomor akun harus unik dan maksimal 20 karakter</p>
                 </div>
 
+                <!-- Kode Nomor Field -->
+                <div class="mb-6">
+                    <label for="kode_nomor" class="block text-sm font-medium text-gray-700 mb-2">
+                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
+                        </svg>
+                        Kode Nomor
+                    </label>
+                    <select name="kode_nomor"
+                            id="kode_nomor"
+                            class="w-full px-3 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 border-gray-300 @error('kode_nomor') border-red-300 @enderror">
+                        <option value="">Pilih Kode Nomor (Opsional)</option>
+                        @foreach($kodeNomors as $kodeNomor)
+                            <option value="{{ $kodeNomor->kode }}" {{ old('kode_nomor') == $kodeNomor->kode ? 'selected' : '' }}>
+                                {{ $kodeNomor->kode }}
+                                @if($kodeNomor->catatan)
+                                    - {{ $kodeNomor->catatan }}
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
+                    @error('kode_nomor')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-sm text-gray-500">Pilih kode nomor dari daftar yang tersedia (opsional)</p>
+                </div>
+
                 <!-- Account Name Field -->
                 <div class="mb-6">
                     <label for="nama_akun" class="block text-sm font-medium text-gray-700 mb-2">
@@ -79,18 +106,24 @@
                         </svg>
                         Tipe Akun <span class="text-red-500">*</span>
                     </label>
-                    <input type="text"
-                           name="tipe_akun"
-                           id="tipe_akun"
-                           value="{{ old('tipe_akun') }}"
-                           class="w-full px-3 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 border-gray-300 @error('tipe_akun') border-red-300 @enderror"
-                           placeholder="Masukkan tipe akun (contoh: Aset, Kewajiban, Ekuitas, dll.)"
-                           maxlength="50"
-                           required>
+                    <select name="tipe_akun"
+                            id="tipe_akun"
+                            class="w-full px-3 py-3 border rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200 border-gray-300 @error('tipe_akun') border-red-300 @enderror"
+                            required>
+                        <option value="">Pilih Tipe Akun</option>
+                        @foreach($tipeAkuns as $tipeAkun)
+                            <option value="{{ $tipeAkun->tipe_akun }}" {{ old('tipe_akun') == $tipeAkun->tipe_akun ? 'selected' : '' }}>
+                                {{ $tipeAkun->tipe_akun }}
+                                @if($tipeAkun->catatan)
+                                    - {{ $tipeAkun->catatan }}
+                                @endif
+                            </option>
+                        @endforeach
+                    </select>
                     @error('tipe_akun')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="mt-1 text-sm text-gray-500">Tipe akun dapat diisi bebas sesuai kebutuhan</p>
+                    <p class="mt-1 text-sm text-gray-500">Pilih tipe akun dari daftar yang tersedia</p>
                 </div>
 
                 <!-- Balance Field -->

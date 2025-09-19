@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PembayaranPranotaSupir;
 use App\Models\PranotaSupir;
+use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -24,7 +25,11 @@ class PembayaranPranotaSupirController extends Controller
     // Ambil semua pranota yang belum dibayar, user akan memilih di form
     $pranotas = PranotaSupir::whereDoesntHave('pembayarans')->get();
     $total_tagihan = 0;
-    return view('pembayaran-pranota-supir.create', compact('pranotas', 'total_tagihan'));
+
+    // Ambil data akun COA untuk dropdown bank
+    $akunCoa = Coa::orderBy('nama_akun')->get();
+
+    return view('pembayaran-pranota-supir.create', compact('pranotas', 'total_tagihan', 'akunCoa'));
     }
 
     // Simpan pembayaran ke banyak pranota

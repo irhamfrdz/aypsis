@@ -38,7 +38,7 @@
                         <div>
                             <label for="nomor_pembayaran" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Pembayaran</label>
                             <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
-                                value="{{ $nomorPembayaran }}"
+                                value="{{ '000-1-' . now()->format('y') . '-' . now()->format('m') . '-000001' }}"
                                 class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" readonly>
                         </div>
                         <div>
@@ -60,13 +60,11 @@
                         <select name="bank" id="bank"
                             class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" required>
                             <option value="">-- Pilih Bank --</option>
-                            <option value="BCA">BCA</option>
-                            <option value="Mandiri">Mandiri</option>
-                            <option value="BRI">BRI</option>
-                            <option value="BNI">BNI</option>
-                            <option value="CIMB">CIMB</option>
-                            <option value="Danamon">Danamon</option>
-                            <option value="Permata">Permata</option>
+                            @foreach($akunCoa as $akun)
+                                <option value="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor ?? '000' }}" {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}>
+                                    {{ $akun->nama_akun }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div>
@@ -198,6 +196,40 @@
 </div>
 
 <script>
+document.addEventListener('DOMContentLoaded', function () {
+    const nomorCetakanInput = document.getElementById('nomor_cetakan');
+    const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
+    const bankSelect = document.getElementById('bank');
+
+    // Function to get kode_nomor from selected bank option
+    function getBankCode() {
+        const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+        if (selectedOption && selectedOption.value) {
+            return selectedOption.getAttribute('data-kode') || '000';
+        }
+        return '000';
+    }
+
+    // Function to update nomor pembayaran
+    function updateNomorPembayaran() {
+        const cetakan = nomorCetakanInput.value || 1;
+        const bankCode = getBankCode();
+        const now = new Date();
+        const tahun = String(now.getFullYear()).slice(-2);
+        const bulan = String(now.getMonth() + 1).padStart(2, '0');
+        const running = nomorPembayaranInput.value.split('-').pop() || '000001';
+
+        nomorPembayaranInput.value = `${bankCode}-${cetakan}-${tahun}-${bulan}-${running}`;
+    }
+
+    // Event listeners
+    nomorCetakanInput.addEventListener('input', updateNomorPembayaran);
+    bankSelect.addEventListener('change', updateNomorPembayaran);
+
+    // Initial update
+    updateNomorPembayaran();
+});
+
 function updateTotal() {
     const subtotal = {{ $totalPembayaran }};
     const penyesuaian = parseFloat(document.getElementById('penyesuaian').value) || 0;

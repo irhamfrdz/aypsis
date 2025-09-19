@@ -105,4 +105,104 @@ class VendorBengkelController extends Controller
         return redirect()->route('master.vendor-bengkel.index')
             ->with('success', 'Vendor/Bengkel berhasil dihapus.');
     }
+
+    /**
+     * Export CSV template for vendor-bengkel.
+     */
+    public function exportTemplate()
+    {
+        $filename = 'template_vendor_bengkel_' . date('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+
+            // Header row with semicolon delimiter
+            fputcsv($file, [
+                'nama_bengkel',
+                'keterangan'
+            ], ';');
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Import vendor-bengkel from CSV file.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt|max:2048'
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->getRealPath();
+
+        $data = array_map(function($line) {
+            return str_getcsv($line, ';'); // Use semicolon as delimiter
+        }, file($path));
+
+        $header = array_shift($data); // Remove header row
+
+        $successCount = 0;
+        $errors = [];
+        $rowNumber = 2; // Start from row 2 (after header)
+
+        foreach ($data as $row) {
+            try {
+                if (count($row) < 1) { // Minimum required fields
+                    $errors[] = "Baris {$rowNumber}: Data tidak lengkap";
+                    $rowNumber++;
+                    continue;
+                }
+
+                $vendorData = [
+                    'nama_bengkel' => trim($row[0] ?? ''),
+                    'keterangan' => trim($row[1] ?? ''),
+                ];
+
+                // Validate required fields
+                if (empty($vendorData['nama_bengkel'])) {
+                    $errors[] = "Baris {$rowNumber}: Nama bengkel wajib diisi";
+                    $rowNumber++;
+                    continue;
+                }
+
+                // Check for duplicates
+                $existing = VendorBengkel::where('nama_bengkel', $vendorData['nama_bengkel'])->first();
+
+                if ($existing) {
+                    $errors[] = "Baris {$rowNumber}: Vendor/Bengkel dengan nama '{$vendorData['nama_bengkel']}' sudah ada";
+                    $rowNumber++;
+                    continue;
+                }
+
+                VendorBengkel::create($vendorData);
+                $successCount++;
+                $rowNumber++;
+
+            } catch (\Exception $e) {
+                $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                $rowNumber++;
+            }
+        }
+
+        $message = "Import selesai. {$successCount} data berhasil diimpor.";
+        if (!empty($errors)) {
+            $message .= " Terdapat " . count($errors) . " error(s).";
+            session()->flash('import_errors', $errors);
+        }
+
+        return redirect()->route('master.vendor-bengkel.index')->with('success', $message);
+    }
 }

@@ -19,9 +19,6 @@
                     </div>
                     <p class="text-gray-600 text-sm sm:text-base">Kelola informasi profil dan pengaturan akun Anda</p>
                 </div>
-                <a href="{{ route('profile.edit') }}" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md">
-                    <i class="fas fa-edit mr-2"></i>Edit Profil
-                </a>
             </div>
         </div>
 
@@ -292,9 +289,6 @@
                                         </h5>
                                         <p class="text-gray-600 text-sm">Terakhir diubah: {{ $user->updated_at ? $user->updated_at->format('d/m/Y') : '-' }}</p>
                                     </div>
-                                    <a href="{{ route('profile.edit') }}#password" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-all duration-200 text-sm">
-                                        <i class="fas fa-edit mr-2"></i>Ubah Password
-                                    </a>
                                 </div>
                                 <div class="text-sm text-purple-800">
                                     Pastikan kata sandi Anda kuat dan unik untuk menjaga keamanan akun.

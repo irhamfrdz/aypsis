@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Coa;
+use App\Models\KodeNomor;
 use App\Exports\MasterCoaTemplateExport;
 use App\Imports\MasterCoaImport;
 use Illuminate\Http\Request;
@@ -25,7 +26,9 @@ class MasterCoaController extends Controller
      */
     public function create()
     {
-        return view('master-coa.create');
+        $tipeAkuns = \App\Models\TipeAkun::orderBy('tipe_akun')->get();
+        $kodeNomors = KodeNomor::orderBy('kode')->get();
+        return view('master-coa.create', compact('tipeAkuns', 'kodeNomors'));
     }
 
     /**
@@ -35,6 +38,7 @@ class MasterCoaController extends Controller
     {
         $request->validate([
             'nomor_akun' => 'required|string|max:20|unique:akun_coa,nomor_akun',
+            'kode_nomor' => 'nullable|string|max:50',
             'nama_akun' => 'required|string|max:255',
             'tipe_akun' => 'required|string|max:50',
             'saldo' => 'nullable|numeric|min:0',
@@ -42,6 +46,7 @@ class MasterCoaController extends Controller
 
         Coa::create([
             'nomor_akun' => $request->nomor_akun,
+            'kode_nomor' => $request->kode_nomor,
             'nama_akun' => $request->nama_akun,
             'tipe_akun' => $request->tipe_akun,
             'saldo' => $request->saldo ?? 0,
@@ -64,7 +69,9 @@ class MasterCoaController extends Controller
      */
     public function edit(Coa $coa)
     {
-        return view('master-coa.edit', compact('coa'));
+        $tipeAkuns = \App\Models\TipeAkun::orderBy('tipe_akun')->get();
+        $kodeNomors = KodeNomor::orderBy('kode')->get();
+        return view('master-coa.edit', compact('coa', 'tipeAkuns', 'kodeNomors'));
     }
 
     /**
@@ -74,6 +81,7 @@ class MasterCoaController extends Controller
     {
         $request->validate([
             'nomor_akun' => ['required', 'string', 'max:20', Rule::unique('akun_coa')->ignore($coa->id)],
+            'kode_nomor' => 'nullable|string|max:50',
             'nama_akun' => 'required|string|max:255',
             'tipe_akun' => 'required|string|max:50',
             'saldo' => 'nullable|numeric|min:0',
@@ -81,6 +89,7 @@ class MasterCoaController extends Controller
 
         $coa->update([
             'nomor_akun' => $request->nomor_akun,
+            'kode_nomor' => $request->kode_nomor,
             'nama_akun' => $request->nama_akun,
             'tipe_akun' => $request->tipe_akun,
             'saldo' => $request->saldo ?? 0,

@@ -116,9 +116,6 @@
                             <a href="{{ route('profile.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 <i class="fas fa-user mr-3"></i>Profil Saya
                             </a>
-                            <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-edit mr-3"></i>Edit Profil
-                            </a>
                             <div class="border-t border-gray-200 my-2"></div>
                             <form action="{{ route('logout') }}" method="POST">
                                 @csrf

@@ -371,6 +371,16 @@ Route::middleware([
         Route::post('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'store'])
              ->name('master.pricelist-sewa-kontainer.store')
              ->middleware('can:master-pricelist-sewa-kontainer-create');
+
+        // Import/Export routes for pricelist sewa kontainer (must come before parameterized routes)
+        Route::get('pricelist-sewa-kontainer/export-template', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'exportTemplate'])
+             ->name('master.pricelist-sewa-kontainer.export-template')
+             ->middleware('can:master-pricelist-sewa-kontainer-view');
+        Route::post('pricelist-sewa-kontainer/import', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'import'])
+             ->name('master.pricelist-sewa-kontainer.import')
+             ->middleware('can:master-pricelist-sewa-kontainer-create');
+
+        // Parameterized routes (must come after specific routes)
         Route::get('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'show'])
              ->name('master.pricelist-sewa-kontainer.show')
              ->middleware('can:master-pricelist-sewa-kontainer-view');
@@ -543,6 +553,16 @@ Route::middleware([
     Route::post('master/pekerjaan', [PekerjaanController::class, 'store'])
          ->name('master.pekerjaan.store')
          ->middleware('can:master-pekerjaan-create');
+
+    // Import/Export routes for pekerjaan (must come before parameterized routes)
+    Route::get('master/pekerjaan/export-template', [PekerjaanController::class, 'exportTemplate'])
+         ->name('master.pekerjaan.export-template')
+         ->middleware('can:master-pekerjaan-view');
+    Route::post('master/pekerjaan/import', [PekerjaanController::class, 'import'])
+         ->name('master.pekerjaan.import')
+         ->middleware('can:master-pekerjaan-create');
+
+    // Parameterized routes (must come after specific routes)
     Route::get('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'show'])
          ->name('master.pekerjaan.show')
          ->middleware('can:master-pekerjaan-view');
@@ -566,6 +586,16 @@ Route::middleware([
     Route::post('master/vendor-bengkel', [VendorBengkelController::class, 'store'])
          ->name('master.vendor-bengkel.store')
          ->middleware('can:master-vendor-bengkel.create');
+
+    // Import/Export routes for vendor-bengkel (must come before parameterized routes)
+    Route::get('master/vendor-bengkel/export-template', [VendorBengkelController::class, 'exportTemplate'])
+         ->name('master.vendor-bengkel.export-template')
+         ->middleware('can:master-vendor-bengkel.view');
+    Route::post('master/vendor-bengkel/import', [VendorBengkelController::class, 'import'])
+         ->name('master.vendor-bengkel.import')
+         ->middleware('can:master-vendor-bengkel.create');
+
+    // Parameterized routes (must come after specific routes)
     Route::get('master/vendor-bengkel/{vendorBengkel}', [VendorBengkelController::class, 'show'])
          ->name('master.vendor-bengkel.show')
          ->middleware('can:master-vendor-bengkel.view');

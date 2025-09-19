@@ -70,10 +70,110 @@ class MasterPricelistSewaKontainerController extends Controller
     return redirect()->route('master.pricelist-sewa-kontainer.index')->with('success', 'Data berhasil diupdate');
     }
 
-    public function destroy($id)
+    public function exportTemplate()
     {
-        $pricelist = MasterPricelistSewaKontainer::findOrFail($id);
-        $pricelist->delete();
-    return redirect()->route('master.pricelist-sewa-kontainer.index')->with('success', 'Data berhasil dihapus');
+        $filename = 'template_pricelist_sewa_kontainer_' . date('Y-m-d') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'no-cache, no-store, must-revalidate',
+            'Pragma' => 'no-cache',
+            'Expires' => '0'
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+
+            // Header row with semicolon delimiter
+            fputcsv($file, [
+                'vendor',
+                'tarif',
+                'ukuran_kontainer',
+                'harga',
+                'tanggal_harga_awal',
+                'tanggal_harga_akhir',
+                'keterangan'
+            ], ';');
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:csv,txt|max:2048'
+        ]);
+
+        $file = $request->file('file');
+        $path = $file->getRealPath();
+
+        $data = array_map(function($line) {
+            return str_getcsv($line, ';'); // Use semicolon as delimiter
+        }, file($path));
+        $header = array_shift($data); // Remove header row
+
+        $successCount = 0;
+        $errors = [];
+
+        foreach ($data as $rowIndex => $row) {
+            try {
+                if (count($row) < 4) { // Minimum required fields
+                    $errors[] = "Baris " . ($rowIndex + 2) . ": Data tidak lengkap";
+                    continue;
+                }
+
+                $pricelistData = [
+                    'vendor' => trim($row[0] ?? ''),
+                    'tarif' => trim($row[1] ?? ''),
+                    'ukuran_kontainer' => trim($row[2] ?? ''),
+                    'harga' => trim($row[3] ?? ''),
+                    'tanggal_harga_awal' => trim($row[4] ?? ''),
+                    'tanggal_harga_akhir' => trim($row[5] ?? ''),
+                    'keterangan' => trim($row[6] ?? ''),
+                ];
+
+                // Validate required fields
+                if (empty($pricelistData['vendor']) || empty($pricelistData['tarif']) ||
+                    empty($pricelistData['ukuran_kontainer']) || empty($pricelistData['harga'])) {
+                    $errors[] = "Baris " . ($rowIndex + 2) . ": Field wajib (vendor, tarif, ukuran_kontainer, harga) tidak boleh kosong";
+                    continue;
+                }
+
+                // Validate numeric fields
+                if (!is_numeric($pricelistData['harga'])) {
+                    $errors[] = "Baris " . ($rowIndex + 2) . ": Harga harus berupa angka";
+                    continue;
+                }
+
+                // Validate dates
+                if (!empty($pricelistData['tanggal_harga_awal'])) {
+                    $pricelistData['tanggal_harga_awal'] = date('Y-m-d', strtotime($pricelistData['tanggal_harga_awal']));
+                }
+
+                if (!empty($pricelistData['tanggal_harga_akhir'])) {
+                    $pricelistData['tanggal_harga_akhir'] = date('Y-m-d', strtotime($pricelistData['tanggal_harga_akhir']));
+                }
+
+                MasterPricelistSewaKontainer::create($pricelistData);
+                $successCount++;
+
+            } catch (\Exception $e) {
+                $errors[] = "Baris " . ($rowIndex + 2) . ": " . $e->getMessage();
+            }
+        }
+
+        $message = "Import selesai. {$successCount} data berhasil diimpor.";
+        if (!empty($errors)) {
+            $message .= " Error: " . implode('; ', array_slice($errors, 0, 5)); // Show first 5 errors
+            if (count($errors) > 5) {
+                $message .= " (dan " . (count($errors) - 5) . " error lainnya)";
+            }
+        }
+
+        return redirect()->route('master.pricelist-sewa-kontainer.index')->with('success', $message);
     }
 }

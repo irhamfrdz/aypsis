@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PembayaranPranotaKontainer;
 use App\Models\PembayaranPranotaKontainerItem;
 use App\Models\Pranota;
+use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -38,7 +39,10 @@ class PembayaranPranotaKontainerController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        return view('pembayaran-pranota-kontainer.create', compact('pranotaList'));
+        // Get akun_coa data for bank selection
+        $akunCoa = Coa::orderBy('nama_akun')->get();
+
+        return view('pembayaran-pranota-kontainer.create', compact('pranotaList', 'akunCoa'));
     }
 
     /**
@@ -65,7 +69,10 @@ class PembayaranPranotaKontainerController extends Controller
         $nomorPembayaran = PembayaranPranotaKontainer::generateNomorPembayaran();
         $totalPembayaran = $pranotaList->sum('total_amount');
 
-        return view('pembayaran-pranota-kontainer.payment-form', compact('pranotaList', 'nomorPembayaran', 'totalPembayaran'));
+        // Get akun_coa data for bank selection
+        $akunCoa = Coa::orderBy('nama_akun')->get();
+
+        return view('pembayaran-pranota-kontainer.payment-form', compact('pranotaList', 'nomorPembayaran', 'totalPembayaran', 'akunCoa'));
     }
 
     /**

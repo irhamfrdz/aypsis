@@ -13,6 +13,7 @@ class KodeNomor extends Model
 
     protected $fillable = [
         'kode',
-        'catatan',
+        'nama',
+        'deskripsi',
     ];
 }
