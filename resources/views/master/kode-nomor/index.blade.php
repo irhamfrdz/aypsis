@@ -46,7 +46,7 @@
             <form method="GET" action="{{ route('master.kode-nomor.index') }}" class="flex flex-col sm:flex-row gap-4">
                 <div class="flex-1">
                     <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari Kode Nomor</label>
-                    <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan kode, nomor akun, nama akun, atau catatan..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan kode atau catatan..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div class="flex items-end">
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
@@ -71,8 +71,7 @@
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Nomor</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Deskripsi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -81,8 +80,7 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $kodeNomors->firstItem() + $index }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $kodeNomor->kode }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $kodeNomor->nama ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900">{{ $kodeNomor->deskripsi ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900">{{ $kodeNomor->catatan ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('master.kode-nomor.show', $kodeNomor) }}" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
@@ -97,7 +95,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data kode nomor ditemukan.</td>
+                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data kode nomor ditemukan.</td>
                             </tr>
                         @endforelse
                     </tbody>
