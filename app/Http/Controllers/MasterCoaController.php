@@ -47,7 +47,7 @@ class MasterCoaController extends Controller
             'saldo' => $request->saldo ?? 0,
         ]);
 
-        return redirect()->route('master.coa.index')
+        return redirect()->route('master-coa-index')
             ->with('success', 'COA berhasil ditambahkan.');
     }
 
@@ -86,7 +86,7 @@ class MasterCoaController extends Controller
             'saldo' => $request->saldo ?? 0,
         ]);
 
-        return redirect()->route('master.coa.index')
+        return redirect()->route('master-coa-index')
             ->with('success', 'COA berhasil diperbarui.');
     }
 
@@ -97,7 +97,7 @@ class MasterCoaController extends Controller
     {
         $coa->delete();
 
-        return redirect()->route('master.coa.index')
+        return redirect()->route('master-coa-index')
             ->with('success', 'COA berhasil dihapus.');
     }
 
@@ -128,12 +128,12 @@ class MasterCoaController extends Controller
                 if (!empty($result['errors'])) {
                     $message .= ". Namun ada " . count($result['errors']) . " error: " . implode('; ', $result['errors']);
                 }
-                return redirect()->route('master.coa.index')->with('success', $message);
+                return redirect()->route('master-coa-index')->with('success', $message);
             } else {
-                return redirect()->route('master.coa.index')->with('error', 'Gagal mengimport data: ' . implode('; ', $result['errors']));
+                return redirect()->route('master-coa-index')->with('error', 'Gagal mengimport data: ' . implode('; ', $result['errors']));
             }
         } catch (\Exception $e) {
-            return redirect()->route('master.coa.index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
+            return redirect()->route('master-coa-index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
 }

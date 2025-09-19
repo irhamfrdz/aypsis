@@ -290,6 +290,7 @@
                     <div class="lg:col-span-2">
                         <label for="atas_nama" class="{{ $labelClasses }}">Atas Nama</label>
                         <input type="text" name="atas_nama" id="atas_nama" class="{{ $inputClasses }}" placeholder="Nama pemilik rekening">
+                        <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Auto-fill:</strong> Field ini akan terisi otomatis saat Anda mengetik "Nama Lengkap" di atas. Jika nama rekening berbeda, Anda bisa mengubahnya manual.</p>
                     </div>
                 </div>
             </fieldset>
@@ -361,6 +362,61 @@
         updatePekerjaanOptions();
         divisiSelect.addEventListener('change', updatePekerjaanOptions);
 
+        // Simple auto-fill implementation for atas nama
+        function setupAutoFill() {
+            const namaLengkapInput = document.getElementById('nama_lengkap')
+            const atasNamaInput = document.getElementById('atas_nama')
+
+            if (!namaLengkapInput || !atasNamaInput) {
+                console.error('Auto-fill elements not found')
+                return
+            }
+
+            console.log('Setting up auto-fill for onboarding form...')
+
+            // Simple auto-fill on input
+            namaLengkapInput.addEventListener('input', function() {
+                const currentValue = this.value.trim()
+                console.log('Onboarding - Nama lengkap:', currentValue)
+
+                // Always update atas nama with current nama lengkap value
+                atasNamaInput.value = currentValue
+                console.log('Onboarding - Auto-filled atas nama with:', currentValue)
+            })
+        }
+
+        // Setup auto-fill after DOM is ready
+        setupAutoFill()
+
+        // Auto-combine address fields
+        const alamatFields = [
+            document.getElementById('alamat'),
+            document.getElementById('rt_rw'),
+            document.getElementById('kelurahan'),
+            document.getElementById('kecamatan'),
+            document.getElementById('kabupaten'),
+            document.getElementById('provinsi'),
+            document.getElementById('kode_pos'),
+        ].filter(field => field !== null) // Filter out null elements
+
+        const alamatLengkapTextarea = document.getElementById('alamat_lengkap')
+
+        if (alamatLengkapTextarea) {
+            function updateAlamatLengkap() {
+                const alamatParts = alamatFields.map(field => field.value.trim()).filter(part => part !== '')
+                const combinedAddress = alamatParts.join(', ')
+                alamatLengkapTextarea.value = combinedAddress
+            }
+
+            // Initial update
+            updateAlamatLengkap()
+
+            // Add event listeners to all address fields
+            alamatFields.forEach(field => {
+                field.addEventListener('input', updateAlamatLengkap)
+            })
+        }
+
         // Real-time validation for 16-digit fields
         const sixteenDigitFields = ['nik', 'ktp', 'kk'];
         sixteenDigitFields.forEach(fieldId => {
@@ -407,6 +463,47 @@
                 });
             }
         });
+
+        // Add loading state on form submission
+        const form = document.querySelector('form');
+        const submitButton = form.querySelector('button[type="submit"]');
+
+        form.addEventListener('submit', function() {
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Menyimpan...
+            `;
+        });
+
+        // Auto-resize textarea
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                this.style.height = 'auto';
+                this.style.height = this.scrollHeight + 'px';
+            });
+        });
     });
 </script>
+
+<style>
+    /* Loading spinner animation */
+    @keyframes spin {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    .animate-spin {
+        animation: spin 1s linear infinite;
+    }
+
+    /* Smooth transitions */
+    * {
+        transition: all 0.2s ease;
+    }
+</style>
 @endpush

@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AllPermissionsSeeder::class, // Ensures explicit + route-derived permissions exist
             MasterDivisiPermissionSeeder::class, // Permission untuk master divisi
             MasterPekerjaanPermissionSeeder::class, // Permission untuk master pekerjaan
+            KodeNomorPermissionSeeder::class, // Permission untuk master kode nomor
             UserSeeder::class, // Pastikan user dibuat sebelum relasi permission
             UserPermissionSeeder::class, // Seeder untuk user permissions
             UserAdminSeeder::class, // Seeder untuk user_admin dengan semua permission

@@ -368,6 +368,22 @@
                                 <td>-</td>
                             </tr>
 
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─ 📊</span>
+                                        <span>Data Tipe Akun</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
                             {{-- Tagihan Kontainer Sewa --}}
                             <tr class="module-row" data-module="tagihan-kontainer">
                                 <td class="module-header">

@@ -1,75 +1,52 @@
 <?php
 
 require_once 'vendor/autoload.php';
+
 $app = require_once 'bootstrap/app.php';
-$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-use App\Models\User;
 use Illuminate\Support\Facades\Gate;
+use App\Models\User;
 
-echo "=== DEBUGGING GATE SYSTEM ===\n";
-
-// Get first user
-$user = User::first();
+// Get admin user
+$user = User::where('username', 'admin')->first();
 if (!$user) {
-    echo "❌ No users found in database\n";
+    echo "Admin user not found!\n";
     exit;
 }
 
-echo "Testing with user: {$user->name} (ID: {$user->id})\n\n";
+echo "=== CHECKING GATE REGISTRATION ===\n";
 
-// First, let's test if Gate::before is causing issues
-echo "=== TESTING Gate::before ===\n";
+// Check if Gate is defined for kode nomor permission
+$gateDefined = Gate::has('master-kode-nomor-view');
+echo "Gate 'master-kode-nomor-view' defined: " . ($gateDefined ? 'YES' : 'NO') . "\n";
 
-// Temporarily remove Gate::before to see if that's the issue
-$originalBefore = null;
-try {
-    // We can't directly access Gate::before, but let's test with a gate that bypasses it
-    Gate::define('bypass-test', function (User $testUser) {
-        // This should always return true
-        return true;
-    });
+// Test Gate directly
+if ($gateDefined) {
+    $gateResult = Gate::allows('master-kode-nomor-view', [$user]);
+    echo "Gate::allows('master-kode-nomor-view', \$user): " . ($gateResult ? 'TRUE' : 'FALSE') . "\n";
 
-    $bypassResult = Gate::check('bypass-test', $user);
-    echo "Bypass test result: " . ($bypassResult ? '✅ ALLOWED' : '❌ DENIED') . "\n";
+    $gateResult2 = Gate::check('master-kode-nomor-view', $user);
+    echo "Gate::check('master-kode-nomor-view', \$user): " . ($gateResult2 ? 'TRUE' : 'FALSE') . "\n";
 
-} catch (Exception $e) {
-    echo "Exception in bypass test: " . $e->getMessage() . "\n";
+    $gateResult3 = $user->can('master-kode-nomor-view');
+    echo "\$user->can('master-kode-nomor-view'): " . ($gateResult3 ? 'TRUE' : 'FALSE') . "\n";
 }
 
-// Test with a gate that doesn't take parameters
-echo "\n=== TESTING PARAMETERLESS GATE ===\n";
+// Check all gates related to kode nomor
+echo "\n=== ALL GATES WITH 'kode-nomor' ===\n";
+$allGates = array_keys(Gate::abilities());
+foreach ($allGates as $gate) {
+    if (strpos($gate, 'kode-nomor') !== false) {
+        echo "- $gate\n";
+    }
+}
 
-Gate::define('no-params', function () {
-    return true;
-});
-
-$noParamsResult = Gate::check('no-params');
-echo "No params gate result: " . ($noParamsResult ? '✅ ALLOWED' : '❌ DENIED') . "\n";
-
-// Test with a gate that takes user but ignores it
-echo "\n=== TESTING USER IGNORING GATE ===\n";
-
-Gate::define('ignore-user', function (User $ignoredUser) {
-    return true;
-});
-
-$ignoreUserResult = Gate::check('ignore-user', $user);
-echo "Ignore user gate result: " . ($ignoreUserResult ? '✅ ALLOWED' : '❌ DENIED') . "\n";
-
-// Now test the actual dashboard gate
-echo "\n=== TESTING DASHBOARD GATE ===\n";
-
-$dashboardResult = Gate::check('dashboard', $user);
-echo "Dashboard gate result: " . ($dashboardResult ? '✅ ALLOWED' : '❌ DENIED') . "\n";
-
-// Test user->can which works
-$userCanResult = $user->can('dashboard');
-echo "User can dashboard: " . ($userCanResult ? '✅ ALLOWED' : '❌ DENIED') . "\n";
-
-// Let's check if the issue is with the user object itself
-echo "\n=== TESTING USER OBJECT ===\n";
-echo "User ID: " . $user->id . "\n";
-echo "User name: " . $user->name . "\n";
-echo "User permissions count: " . $user->permissions->count() . "\n";
-echo "Has dashboard permission: " . ($user->hasPermissionTo('dashboard') ? '✅ YES' : '❌ NO') . "\n";
+echo "\n=== CONCLUSION ===\n";
+if ($gateDefined && $gateResult) {
+    echo "✅ Gate is properly registered and working\n";
+    echo "The issue might be elsewhere in the sidebar logic\n";
+} else {
+    echo "❌ Gate is not working properly\n";
+    echo "This could be why the menu doesn't show in sidebar\n";
+}

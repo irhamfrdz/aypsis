@@ -191,7 +191,9 @@
                         $user->can('master-pajak-view') ||
                         $user->can('master-bank-view') ||
                         $user->can('master-coa-view') ||
-                        $user->can('master-vendor-bengkel.view')
+                        $user->can('master-vendor-bengkel-view') ||
+                        $user->can('master-kode-nomor-view') ||
+                        $user->can('master-tipe-akun-view')
                     );
 
                     // Show master section if user is admin OR has any master permissions
@@ -210,7 +212,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.permission.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master-bank-*') || Request::routeIs('master-coa-*') || Request::routeIs('master.vendor-bengkel.*');
+                    $isMasterRoute = Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.permission.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master-bank-*') || Request::routeIs('master-coa-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('penyelesaian.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -230,7 +232,8 @@
                             <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isMasterRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                             </svg>
-                        </button>                    <div id="master-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isMasterRoute) style="display: block;" @endif>
+                        </button>
+                         <div id="master-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isMasterRoute) style="display: block;" @endif>
                         @if($user && $user->can('master-karyawan-view'))
                             <a href="{{ route('master.karyawan.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.karyawan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
                                 <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -262,7 +265,7 @@
                                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                     </svg>
-                                    Master Pricelist Sewa Kontainer
+                                    Pricelist Kontainer Sewa
                                 </a>
                             @endif
                             @if($user && $user->can('master-tujuan-view'))
@@ -271,7 +274,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
                                     </svg>
-                                    Master Tujuan
+                                    Tujuan
                                 </a>
                             @endif
                             @if($user && $user->can('master-kegiatan-view'))
@@ -279,7 +282,7 @@
                                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                     </svg>
-                                    Master Kegiatan
+                                    Kegiatan
                                 </a>
                             @endif
                             @if($user && $user->can('master-permission-view'))
@@ -287,7 +290,7 @@
                                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
                                     </svg>
-                                    Master Izin
+                                     Izin
                                 </a>
                             @endif
                             @if($user && $user->can('master-mobil-view'))
@@ -295,7 +298,7 @@
                                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a2 2 0 100-4 2 2 0 000 4zm0 0v10m0-10a2 2 0 002-2V2"/>
                                     </svg>
-                                    Master Mobil
+                                     Mobil
                                 </a>
                             @endif
                             @if($user && $user->can('master-divisi-view'))
@@ -303,7 +306,7 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
-                                    Master Divisi
+                                     Divisi
                                 </a>
                             @endif
                             @if($user && $user->can('master-cabang-view'))
@@ -311,7 +314,7 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
-                                    Master Cabang
+                                     Cabang
                                 </a>
                             @endif
                             @if($user && $user->can('master-pekerjaan-view'))
@@ -319,7 +322,7 @@
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m8 0V8a2 2 0 01-2 2H8a2 2 0 01-2-2V6m8 0H8m0 0V4"/>
                                     </svg>
-                                    Master Pekerjaan
+                                     Pekerjaan
                                 </a>
                             @endif
                             @if($user && $user->can('master-pajak-view'))
@@ -338,6 +341,14 @@
                                     Bank
                                 </a>
                             @endif
+                            @if($user && $user->can('master-coa-view'))
+                                <a href="{{ route('master-coa-index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master-coa-*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                                    </svg>
+                                    COA
+                                </a>
+                            @endif
                             @if($user && $user->can('master-vendor-bengkel.view'))
                                 <a href="{{ route('master.vendor-bengkel.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.vendor-bengkel.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
                                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -346,10 +357,26 @@
                                     Vendor/Bengkel
                                 </a>
                             @endif
+                               @if($user && $user->can('master-kode-nomor-view'))
+                                <a href="{{ route('master.kode-nomor.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.kode-nomor.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                    </svg>
+                                    Kode Nomor
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-tipe-akun-view'))
+                                <a href="{{ route('master.tipe-akun.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.tipe-akun.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                    Tipe Akun
+                                </a>
+                            @endif
                         </div>
                     </div>
                     @else
-                    @if($user && ($user->can('master-karyawan-view') || $user->can('master-user-view') || $user->can('master-kontainer-view') || $user->can('master-tujuan-view') || $user->can('master-kegiatan-view') || $user->can('master-permission-view') || $user->can('master-mobil-view') || $user->can('master-divisi-view') || $user->can('master-pajak-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-bank-view') || $user->can('master-coa-view') || $user->can('master-vendor-bengkel-view')))
+                    @if($user && ($user->can('master-karyawan-view') || $user->can('master-user-view') || $user->can('master-kontainer-view') || $user->can('master-tujuan-view') || $user->can('master-kegiatan-view') || $user->can('master-permission-view') || $user->can('master-mobil-view') || $user->can('master-divisi-view') || $user->can('master-pajak-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-bank-view') || $user->can('master-coa-view') || $user->can('master-vendor-bengkel-view') || $user->can('master-kode-nomor-view') || $user->can('master-tipe-akun-view')))
                     <div class="mt-4 mb-4">
                         <button id="master-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all duration-200 group {{ $isMasterRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
                             <div class="flex items-center">
@@ -394,7 +421,7 @@
                                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                     </svg>
-                                    Pricelist Sewa Kontainer
+                                    Pricelist Kontainer Sewa
                                 </a>
                             @endif
                             @if($user && $user->can('master-tujuan-view'))
@@ -484,6 +511,22 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
                                     Vendor/Bengkel
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-kode-nomor-view'))
+                                <a href="{{ route('master.kode-nomor.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.kode-nomor.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
+                                    </svg>
+                                    Kode Nomor
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-tipe-akun-view'))
+                                <a href="{{ route('master.tipe-akun.index') }}" class="flex items-center py-2 px-3 rounded-lg text-sm hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.tipe-akun.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                    Tipe Akun
                                 </a>
                             @endif
                             {{-- Hapus menu dari master data --}}

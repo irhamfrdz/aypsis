@@ -480,8 +480,14 @@ class UserController extends Controller
 
                     // Special handling for master-* permissions
                     if ($module === 'master' && strpos($action, '-') !== false) {
+                        // Special handling for master-kode-nomor permissions
+                        if (strpos($action, 'kode-nomor-') === 0) {
+                            // For master-kode-nomor-view, extract the action
+                            $action = str_replace('kode-nomor-', '', $action);
+                            $module = 'master-kode-nomor';
+                        }
                         // Special handling for master-pricelist-sewa-kontainer permissions
-                        if (strpos($action, 'pricelist-sewa-kontainer-') === 0) {
+                        elseif (strpos($action, 'pricelist-sewa-kontainer-') === 0) {
                             // For master-pricelist-sewa-kontainer-view, extract the action
                             $action = str_replace('pricelist-sewa-kontainer-', '', $action);
                             $module = 'master-pricelist-sewa-kontainer';
@@ -897,6 +903,29 @@ class UserController extends Controller
                                 }
                             }
 
+                            // DIRECT FIX: Handle master-kode-nomor permissions explicitly
+                            if ($module === 'master-kode-nomor' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-kode-nomor-view',
+                                    'create' => 'master-kode-nomor-create',
+                                    'update' => 'master-kode-nomor-update',
+                                    'delete' => 'master-kode-nomor-delete',
+                                    'print' => 'master-kode-nomor-print',
+                                    'export' => 'master-kode-nomor-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
                             // DIRECT FIX: Handle master-divisi permissions explicitly
                             if ($module === 'master-divisi' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
                                 // Map action to correct permission name
@@ -1085,7 +1114,7 @@ class UserController extends Controller
                             'view' => 'master-coa-view',
                             'create' => 'master-coa-create',
                             'update' => 'master-coa-update',
-                            'delete' => 'master-coa-destroy'
+                            'delete' => 'master-coa-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

@@ -589,6 +589,25 @@
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Data Tipe Akun --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Tipe Akun</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tipe-akun']['view']) && $userMatrixPermissions['master-tipe-akun']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tipe-akun']['create']) && $userMatrixPermissions['master-tipe-akun']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tipe-akun']['update']) && $userMatrixPermissions['master-tipe-akun']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-tipe-akun][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tipe-akun']['delete']) && $userMatrixPermissions['master-tipe-akun']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Cabang --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
@@ -635,6 +654,23 @@
                                 <td><input type="checkbox" name="permissions[master-vendor-bengkel][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-bengkel']['create']) && $userMatrixPermissions['master-vendor-bengkel']['create']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-vendor-bengkel][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-bengkel']['update']) && $userMatrixPermissions['master-vendor-bengkel']['update']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[master-vendor-bengkel][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-vendor-bengkel']['delete']) && $userMatrixPermissions['master-vendor-bengkel']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Data Kode Nomor --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Kode Nomor</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kode-nomor']['view']) && $userMatrixPermissions['master-kode-nomor']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kode-nomor']['create']) && $userMatrixPermissions['master-kode-nomor']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kode-nomor']['update']) && $userMatrixPermissions['master-kode-nomor']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kode-nomor']['delete']) && $userMatrixPermissions['master-kode-nomor']['delete']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

@@ -26,6 +26,7 @@ use App\Http\Controllers\PricelistSewaKontainerController;
 use App\Http\Controllers\PranotaController;
 use App\Http\Controllers\PembayaranPranotaKontainerController;
 use App\Http\Controllers\VendorBengkelController;
+use App\Http\Controllers\TipeAkunController;
 
 /*
 |--------------------------------------------------------------------------
@@ -577,6 +578,52 @@ Route::middleware([
     Route::delete('master/vendor-bengkel/{vendorBengkel}', [VendorBengkelController::class, 'destroy'])
          ->name('master.vendor-bengkel.destroy')
          ->middleware('can:master-vendor-bengkel.delete');
+
+    // Master kode nomor routes
+    Route::get('master/kode-nomor', [\App\Http\Controllers\KodeNomorController::class, 'index'])
+         ->name('master.kode-nomor.index')
+         ->middleware('can:master-kode-nomor-view');
+    Route::get('master/kode-nomor/create', [\App\Http\Controllers\KodeNomorController::class, 'create'])
+         ->name('master.kode-nomor.create')
+         ->middleware('can:master-kode-nomor-create');
+    Route::post('master/kode-nomor', [\App\Http\Controllers\KodeNomorController::class, 'store'])
+         ->name('master.kode-nomor.store')
+         ->middleware('can:master-kode-nomor-create');
+    Route::get('master/kode-nomor/{kodeNomor}', [\App\Http\Controllers\KodeNomorController::class, 'show'])
+         ->name('master.kode-nomor.show')
+         ->middleware('can:master-kode-nomor-view');
+    Route::get('master/kode-nomor/{kodeNomor}/edit', [\App\Http\Controllers\KodeNomorController::class, 'edit'])
+         ->name('master.kode-nomor.edit')
+         ->middleware('can:master-kode-nomor-update');
+    Route::put('master/kode-nomor/{kodeNomor}', [\App\Http\Controllers\KodeNomorController::class, 'update'])
+         ->name('master.kode-nomor.update')
+         ->middleware('can:master-kode-nomor-update');
+    Route::delete('master/kode-nomor/{kodeNomor}', [\App\Http\Controllers\KodeNomorController::class, 'destroy'])
+         ->name('master.kode-nomor.destroy')
+         ->middleware('can:master-kode-nomor-delete');
+
+    // Master tipe akun routes
+    Route::get('master/tipe-akun', [TipeAkunController::class, 'index'])
+         ->name('master.tipe-akun.index')
+         ->middleware('can:master-tipe-akun-view');
+    Route::get('master/tipe-akun/create', [TipeAkunController::class, 'create'])
+         ->name('master.tipe-akun.create')
+         ->middleware('can:master-tipe-akun-create');
+    Route::post('master/tipe-akun', [TipeAkunController::class, 'store'])
+         ->name('master.tipe-akun.store')
+         ->middleware('can:master-tipe-akun-create');
+    Route::get('master/tipe-akun/{tipeAkun}', [TipeAkunController::class, 'show'])
+         ->name('master.tipe-akun.show')
+         ->middleware('can:master-tipe-akun-view');
+    Route::get('master/tipe-akun/{tipeAkun}/edit', [TipeAkunController::class, 'edit'])
+         ->name('master.tipe-akun.edit')
+         ->middleware('can:master-tipe-akun-update');
+    Route::put('master/tipe-akun/{tipeAkun}', [TipeAkunController::class, 'update'])
+         ->name('master.tipe-akun.update')
+         ->middleware('can:master-tipe-akun-update');
+    Route::delete('master/tipe-akun/{tipeAkun}', [TipeAkunController::class, 'destroy'])
+         ->name('master.tipe-akun.destroy')
+         ->middleware('can:master-tipe-akun-delete');
 
     // Route master.karyawan.index di luar group master untuk konsistensi dengan view
     Route::get('master/karyawan', [KaryawanController::class, 'index'])

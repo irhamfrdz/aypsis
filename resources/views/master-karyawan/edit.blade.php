@@ -323,6 +323,7 @@
                 <div class="lg:col-span-2">
                     <label for="atas_nama" class="{{ $labelClasses }}">Atas Nama</label>
                     <input type="text" name="atas_nama" id="atas_nama" class="{{ $inputClasses }}" placeholder="Nama pemilik rekening" value="{{ old('atas_nama', $karyawan->atas_nama) }}">
+                    <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Auto-fill:</strong> Field ini akan terisi otomatis saat Anda mengetik "Nama Lengkap" di atas</p>
                 </div>
             </div>
         </fieldset>
@@ -464,6 +465,51 @@
             alamatFields.forEach(field =>{
                 field.addEventListener('input', updateAlamatLengkap)
             })
+
+            // Auto-fill "Atas Nama" dari "Nama Lengkap"
+            const namaLengkapField = document.getElementById('nama_lengkap');
+            const atasNamaField = document.getElementById('atas_nama');
+
+            if (namaLengkapField && atasNamaField) {
+                // Auto-fill saat nama lengkap berubah
+                namaLengkapField.addEventListener('input', function() {
+                    const namaLengkap = this.value.trim();
+                    const atasNama = atasNamaField.value.trim();
+
+                    // Jika atas nama masih kosong atau sama dengan nilai sebelumnya, update otomatis
+                    if (atasNama === '' || atasNama === namaLengkapField.dataset.previousValue) {
+                        atasNamaField.value = namaLengkap;
+                        atasNamaField.dataset.previousValue = namaLengkap;
+                    }
+
+                    // Update previous value untuk tracking
+                    namaLengkapField.dataset.previousValue = namaLengkap;
+                });
+
+                // Set initial previous value
+                namaLengkapField.dataset.previousValue = namaLengkapField.value;
+                atasNamaField.dataset.previousValue = atasNamaField.value;
+
+                // Tambahkan visual feedback untuk field atas nama
+                atasNamaField.addEventListener('input', function() {
+                    const namaLengkap = namaLengkapField.value.trim();
+                    const atasNama = this.value.trim();
+
+                    // Jika atas nama sama dengan nama lengkap, beri indikasi auto-filled
+                    if (atasNama === namaLengkap && atasNama !== '') {
+                        this.classList.add('bg-blue-50', 'border-blue-300');
+                        this.classList.remove('bg-red-50', 'border-red-300');
+                    } else if (atasNama !== namaLengkap && atasNama !== '') {
+                        this.classList.add('bg-green-50', 'border-green-300');
+                        this.classList.remove('bg-blue-50', 'border-blue-300', 'bg-red-50', 'border-red-300');
+                    } else {
+                        this.classList.remove('bg-blue-50', 'border-blue-300', 'bg-green-50', 'border-green-300');
+                    }
+                });
+
+                // Trigger initial check
+                atasNamaField.dispatchEvent(new Event('input'));
+            }
 
             // Mobile-friendly enhancements
             const form = document.querySelector('form');

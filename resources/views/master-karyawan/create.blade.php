@@ -335,6 +335,7 @@
                 <div class="lg:col-span-2">
                     <label for="atas_nama" class="{{ $labelClasses }}">Atas Nama</label>
                     <input type="text" name="atas_nama" id="atas_nama" class="{{ $inputClasses }}" placeholder="Nama pemilik rekening">
+                    <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Auto-fill:</strong> Field ini akan terisi otomatis saat Anda mengetik "Nama Lengkap" di atas. Jika nama rekening berbeda, Anda bisa mengubahnya manual.</p>
                 </div>
             </div>
         </fieldset>
@@ -398,7 +399,9 @@
 
 @push('scripts')
     <script>
+        console.log('Script loaded, starting DOMContentLoaded...')
         document.addEventListener('DOMContentLoaded',function(){
+            console.log('DOMContentLoaded fired, setting up form functionality...')
             const divisiSelect = document.getElementById('divisi');
             const pekerjaanSelect = document.getElementById('pekerjaan')
             const alamatFields = [
@@ -450,6 +453,47 @@
             alamatFields.forEach(field =>{
                 field.addEventListener('input', updateAlamatLengkap)
             })
+
+            // Simple auto-fill implementation
+            function setupSimpleAutoFill() {
+                console.log('setupSimpleAutoFill function called')
+
+                const namaLengkapInput = document.getElementById('nama_lengkap')
+                const atasNamaInput = document.getElementById('atas_nama')
+
+                console.log('namaLengkapInput element:', namaLengkapInput)
+                console.log('atasNamaInput element:', atasNamaInput)
+
+                if (!namaLengkapInput || !atasNamaInput) {
+                    console.error('Auto-fill elements not found')
+                    console.error('namaLengkapInput exists:', !!namaLengkapInput)
+                    console.error('atasNamaInput exists:', !!atasNamaInput)
+                    return
+                }
+
+                console.log('Setting up simple auto-fill...')
+
+                // Simple and reliable auto-fill using input event only
+                namaLengkapInput.addEventListener('input', function() {
+                    const currentValue = this.value.trim()
+                    console.log('Input event - Nama lengkap:', currentValue)
+                    console.log('Input event - Current atas nama:', atasNamaInput.value)
+
+                    // Always update atas nama with current nama lengkap value
+                    // This ensures we get the complete text as user types
+                    atasNamaInput.value = currentValue
+                    console.log('Auto-filled atas nama with:', currentValue)
+                })
+
+                console.log('Simple auto-fill setup complete')
+            }
+
+            // Setup auto-fill after a short delay to ensure DOM is ready
+            console.log('About to setup auto-fill with setTimeout...')
+            setTimeout(function() {
+                console.log('setTimeout fired, calling setupSimpleAutoFill...')
+                setupSimpleAutoFill()
+            }, 200)
 
             // Mobile-friendly enhancements
             const form = document.querySelector('form');
