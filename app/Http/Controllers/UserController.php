@@ -491,6 +491,12 @@ class UserController extends Controller
                             // For master-pricelist-sewa-kontainer-view, extract the action
                             $action = str_replace('pricelist-sewa-kontainer-', '', $action);
                             $module = 'master-pricelist-sewa-kontainer';
+                        }
+                        // Special handling for master-tipe-akun permissions
+                        elseif (strpos($action, 'tipe-akun-') === 0) {
+                            // For master-tipe-akun-view, extract the action
+                            $action = str_replace('tipe-akun-', '', $action);
+                            $module = 'master-tipe-akun';
                         } else {
                             // For master-karyawan-view, split further
                             $subParts = explode('-', $action, 2);

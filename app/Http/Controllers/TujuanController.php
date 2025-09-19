@@ -2,6 +2,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Tujuan;
+use App\Models\Cabang;
 use Illuminate\Http\Request;
 
 class TujuanController extends Controller
@@ -28,7 +29,8 @@ class TujuanController extends Controller
      */
     public function create()
     {
-    return view('master-tujuan.create');
+        $cabangs = Cabang::orderBy('nama_cabang')->get();
+        return view('master-tujuan.create', compact('cabangs'));
     }
 
     /**
@@ -55,7 +57,7 @@ class TujuanController extends Controller
 
         // ensure defaults for numeric fields
         $numericDefaults = [
-            'uang_jalan_20','ongkos_truk_20','uang_jalan_40','ongkos_truk_40','antar_20','antar_40'
+            'uang_jalan','uang_jalan_20','ongkos_truk_20','uang_jalan_40','ongkos_truk_40','antar_20','antar_40'
         ];
         foreach ($numericDefaults as $nf) {
             if (!isset($validated[$nf])) {
@@ -76,7 +78,8 @@ class TujuanController extends Controller
      */
     public function edit(Tujuan $tujuan)
     {
-    return view('master-tujuan.edit', compact('tujuan'));
+        $cabangs = Cabang::orderBy('nama_cabang')->get();
+        return view('master-tujuan.edit', compact('tujuan', 'cabangs'));
     }
 
     /**
@@ -103,7 +106,7 @@ class TujuanController extends Controller
         ]);
 
         $numericDefaults = [
-            'uang_jalan_20','ongkos_truk_20','uang_jalan_40','ongkos_truk_40','antar_20','antar_40'
+            'uang_jalan','uang_jalan_20','ongkos_truk_20','uang_jalan_40','ongkos_truk_40','antar_20','antar_40'
         ];
         foreach ($numericDefaults as $nf) {
             if (!isset($validated[$nf])) {

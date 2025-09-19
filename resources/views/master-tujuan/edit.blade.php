@@ -17,9 +17,11 @@
                 <label for="cabang" class="block text-sm font-medium text-gray-700">Cabang</label>
                 <select name="cabang" id="cabang" class="mt-1 block w-full bg-white rounded-md border border-gray-200 p-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
                     <option value="">-- Pilih Cabang --</option>
-                    <option value="JKT" {{ old('cabang', $tujuan->cabang) == 'JKT' ? 'selected' : '' }}>JKT</option>
-                    <option value="BTM" {{ old('cabang', $tujuan->cabang) == 'BTM' ? 'selected' : '' }}>BTM</option>
-                    <option value="PNG" {{ old('cabang', $tujuan->cabang) == 'PNG' ? 'selected' : '' }}>PNG</option>
+                    @foreach($cabangs as $cabang)
+                        <option value="{{ $cabang->nama_cabang }}" {{ old('cabang', $tujuan->cabang) == $cabang->nama_cabang ? 'selected' : '' }}>
+                            {{ $cabang->nama_cabang }}
+                        </option>
+                    @endforeach
                 </select>
             </div>
 
@@ -34,7 +36,15 @@
             <input type="text" name="rute" id="rute" value="{{ old('rute', $tujuan->rute) }}" class="mt-1 block w-full bg-gray-100 rounded-md border border-gray-200 p-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
         </div>
 
-    <!-- Uang Jalan (general) removed per request -->
+        <div class="mb-4">
+            <label for="uang_jalan_formatted" class="block text-sm font-medium text-gray-700">Uang Jalan</label>
+            <div class="mt-1 flex rounded-md shadow-sm">
+                <span class="inline-flex items-center px-3 rounded-l-md border border-r-0 border-gray-200 bg-gray-50 text-gray-700">Rp</span>
+                <input type="text" id="uang_jalan_formatted" value="{{ old('uang_jalan', $tujuan->uang_jalan) !== null ? number_format(old('uang_jalan', $tujuan->uang_jalan), 0, ',', '.') : '' }}" class="flex-1 block w-full bg-gray-100 rounded-r-md border border-gray-200 p-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="0">
+            </div>
+            <!-- Hidden numeric input submitted -->
+            <input type="hidden" name="uang_jalan" id="uang_jalan" value="{{ old('uang_jalan', $tujuan->uang_jalan) ?? 0 }}">
+        </div>
 
         <div class="grid grid-cols-2 gap-4">
             <div class="mb-4">
@@ -138,7 +148,8 @@
         if (form) form.addEventListener('submit', updateHidden);
     }
 
-    // general uang_jalan removed
+    // general uang_jalan
+    wire('uang_jalan_formatted','uang_jalan');
     wire('uang_jalan_20_formatted','uang_jalan_20');
     wire('uang_jalan_40_formatted','uang_jalan_40');
     wire('ongkos_truk_20_formatted','ongkos_truk_20');

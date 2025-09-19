@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\KodeNomor;
+use App\Models\TipeAkun;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
 
@@ -33,7 +34,8 @@ class KodeNomorController extends Controller
      */
     public function create()
     {
-        return view('master.kode-nomor.create');
+        $tipeAkuns = TipeAkun::orderBy('tipe_akun')->get();
+        return view('master.kode-nomor.create', compact('tipeAkuns'));
     }
 
     /**
@@ -69,7 +71,8 @@ class KodeNomorController extends Controller
      */
     public function edit(KodeNomor $kodeNomor)
     {
-        return view('master.kode-nomor.edit', compact('kodeNomor'));
+        $tipeAkuns = TipeAkun::orderBy('tipe_akun')->get();
+        return view('master.kode-nomor.edit', compact('kodeNomor', 'tipeAkuns'));
     }
 
     /**

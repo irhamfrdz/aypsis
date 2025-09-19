@@ -305,18 +305,19 @@
                 const jumlah = parseInt(jumlahKontainerInput.value, 10) || 0;
                 const currentValue = ukuranKontainerSelect.value;
                 const selectedKegiatan = kegiatanSelect.value.toLowerCase();
-                const isPerbaikanKontainer = selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan');
+                const isTarikAntarPerbaikan = (selectedKegiatan.includes('tarik') || selectedKegiatan.includes('antar')) && selectedKegiatan.includes('perbaikan');
+                const isPerbaikanKontainer = (selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan')) && !isTarikAntarPerbaikan;
 
                 while (ukuranKontainerSelect.options.length > 0) {
                     ukuranKontainerSelect.remove(0);
                 }
 
                 if (isPerbaikanKontainer) {
-                    // Untuk perbaikan kontainer, hanya tampilkan 20ft
+                    // Untuk perbaikan kontainer (kecuali tarik/antar perbaikan), hanya tampilkan 20ft
                     ukuranKontainerSelect.add(new Option('20 ft', '20'));
                     ukuranKontainerSelect.value = '20';
                 } else {
-                    // Untuk kegiatan normal, tampilkan semua ukuran dengan logika jumlah
+                    // Untuk kegiatan normal atau tarik/antar perbaikan, tampilkan semua ukuran dengan logika jumlah
                     if (jumlah > 1) {
                         originalOptions.forEach(option => {
                             if (option.value === '10' || option.value === '20' || option.value === '') {
@@ -374,14 +375,16 @@
                 const ukuran = ukuranKontainerSelect.value;
                 const jumlah = parseInt(jumlahKontainerInput.value, 10) || 0;
                 const selectedKegiatan = kegiatanSelect.value.toLowerCase();
-                const isPerbaikanKontainer = selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan');
+                const isTarikAntarPerbaikan = (selectedKegiatan.includes('tarik') || selectedKegiatan.includes('antar')) && selectedKegiatan.includes('perbaikan');
+                const isPerbaikanKontainer = (selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan')) && !isTarikAntarPerbaikan;
 
                 let uangJalan = 0;
 
-                // Khusus untuk perbaikan kontainer, uang jalan selalu 75.000
+                // Khusus untuk perbaikan kontainer (kecuali tarik/antar perbaikan), uang jalan selalu 75.000
                 if (isPerbaikanKontainer) {
                     uangJalan = 75000;
                 } else {
+                    // Untuk kegiatan normal atau tarik/antar perbaikan, gunakan logika normal berdasarkan tujuan
                     // Tentukan ukuran efektif untuk perhitungan harga.
                     const effectiveUkuran = jumlah === 2 ? '40' : ukuran;
 
@@ -424,16 +427,17 @@
             function generateMemoNumber() {
                 const memoInput = document.getElementById('nomor_memo');
                 const selectedKegiatan = kegiatanSelect.value.toLowerCase();
-                const isPerbaikanKontainer = selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan');
+                const isTarikAntarPerbaikan = (selectedKegiatan.includes('tarik') || selectedKegiatan.includes('antar')) && selectedKegiatan.includes('perbaikan');
+                const isPerbaikanKontainer = (selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan')) && !isTarikAntarPerbaikan;
 
                 let prefix = 'MS'; // Default untuk Memo Supir
                 let kodeCetak = document.getElementById('kode_cetak').value;
                 let formatInfo = 'Format: MS (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)';
 
-                // Jika kegiatan perbaikan kontainer, gunakan prefix MP dan kode cetak 1
-                if (isPerbaikanKontainer) {
+                // Jika kegiatan perbaikan kontainer (termasuk tarik/antar perbaikan), gunakan prefix MP dan kode cetak 1
+                if (isPerbaikanKontainer || isTarikAntarPerbaikan) {
                     prefix = 'MP';
-                    kodeCetak = '1'; // Selalu 1 untuk perbaikan kontainer
+                    kodeCetak = '1'; // Selalu 1 untuk semua jenis perbaikan kontainer
                     formatInfo = 'Format: MP (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)';
                 }
 
@@ -468,7 +472,11 @@
         function toggleTujuanDisplay() {
             const selectedKegiatan = kegiatanSelect.value.toLowerCase();
 
-            if (selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan')) {
+            // Jangan sembunyikan dropdown tujuan untuk kegiatan tarik/antar yang berkaitan dengan perbaikan
+            const isTarikAntarPerbaikan = (selectedKegiatan.includes('tarik') || selectedKegiatan.includes('antar')) && selectedKegiatan.includes('perbaikan');
+            const isPerbaikanKontainer = (selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan')) && !isTarikAntarPerbaikan;
+
+            if (isPerbaikanKontainer) {
                 // Tampilkan input rute perbaikan, sembunyikan dropdown tujuan
                 tujuanContainer.style.display = 'none';
                 ruteContainer.style.display = 'block';
@@ -481,6 +489,16 @@
 
                 // Reset nilai dropdown tujuan
                 tujuanSelect.value = '';
+            } else if (isTarikAntarPerbaikan) {
+                // Untuk tarik/antar kontainer perbaikan, tampilkan kedua: dropdown tujuan DAN input rute
+                tujuanContainer.style.display = 'block';
+                ruteContainer.style.display = 'block';
+                antarLokasiContainer.style.display = 'flex'; // Tampilkan checkbox antar lokasi
+
+                // Kedua field wajib diisi
+                tujuanSelect.setAttribute('required', 'required');
+                dariInput.setAttribute('required', 'required');
+                keInput.setAttribute('required', 'required');
             } else {
                 // Tampilkan dropdown tujuan, sembunyikan input rute perbaikan
                 tujuanContainer.style.display = 'block';

@@ -61,11 +61,14 @@
                     <label for="tipe_akun" class="block text-sm font-medium text-gray-700 mb-2">Tipe Akun</label>
                     <select name="tipe_akun" id="tipe_akun" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('tipe_akun') border-red-500 @enderror">
                         <option value="">Pilih tipe akun</option>
-                        <option value="Aktiva" {{ old('tipe_akun', $kodeNomor->tipe_akun) == 'Aktiva' ? 'selected' : '' }}>Aktiva</option>
-                        <option value="Pasiva" {{ old('tipe_akun', $kodeNomor->tipe_akun) == 'Pasiva' ? 'selected' : '' }}>Pasiva</option>
-                        <option value="Ekuitas" {{ old('tipe_akun', $kodeNomor->tipe_akun) == 'Ekuitas' ? 'selected' : '' }}>Ekuitas</option>
-                        <option value="Pendapatan" {{ old('tipe_akun', $kodeNomor->tipe_akun) == 'Pendapatan' ? 'selected' : '' }}>Pendapatan</option>
-                        <option value="Beban" {{ old('tipe_akun', $kodeNomor->tipe_akun) == 'Beban' ? 'selected' : '' }}>Beban</option>
+                        @foreach($tipeAkuns as $tipeAkun)
+                            <option value="{{ $tipeAkun->tipe_akun }}" {{ old('tipe_akun', $kodeNomor->tipe_akun) == $tipeAkun->tipe_akun ? 'selected' : '' }}>
+                                {{ $tipeAkun->tipe_akun }}
+                                @if($tipeAkun->catatan)
+                                    - {{ $tipeAkun->catatan }}
+                                @endif
+                            </option>
+                        @endforeach
                     </select>
                     @error('tipe_akun')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>

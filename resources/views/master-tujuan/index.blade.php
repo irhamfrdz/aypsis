@@ -29,6 +29,10 @@
                             <th class="py-3 px-4">Cabang</th>
                             <th class="py-3 px-4">Wilayah</th>
                             <th class="py-3 px-4">Rute</th>
+                            <th class="py-3 px-4">Uang Jalan 20ft</th>
+                            <th class="py-3 px-4">Uang Jalan 40ft</th>
+                            <th class="py-3 px-4">Antarlokasi 20ft</th>
+                            <th class="py-3 px-4">Antarlokasi 40ft</th>
                             <th class="py-3 px-4">Aksi</th>
                         </tr>
                     </thead>
@@ -39,6 +43,10 @@
                                 <td class="py-3 px-4">{{ $tujuan->cabang }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->wilayah }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->rute }}</td>
+                                <td class="py-3 px-4">Rp {{ number_format($tujuan->uang_jalan_20 ?? 0, 0, ',', '.') }}</td>
+                                <td class="py-3 px-4">Rp {{ number_format($tujuan->uang_jalan_40 ?? 0, 0, ',', '.') }}</td>
+                                <td class="py-3 px-4">Rp {{ number_format($tujuan->antar_20 ?? 0, 0, ',', '.') }}</td>
+                                <td class="py-3 px-4">Rp {{ number_format($tujuan->antar_40 ?? 0, 0, ',', '.') }}</td>
 
                                 <td class="py-3 px-4 space-x-2">
                                     <a href="{{ route('master.tujuan.edit', $tujuan) }}" class="text-blue-500 hover:underline">Edit</a>
