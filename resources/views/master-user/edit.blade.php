@@ -766,12 +766,12 @@
                             </tr>
 
                             {{-- Perbaikan Kontainer Sub-modules --}}
-                            {{-- Daftar Perbaikan Kontainer --}}
+                            {{-- Daftar Tagihan Perbaikan Kontainer --}}
                             <tr class="submodule-row" data-parent="perbaikan-kontainer">
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
-                                        <span>Daftar Perbaikan Kontainer</span>
+                                        <span>Daftar Tagihan Perbaikan Kontainer</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[perbaikan-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['perbaikan-kontainer']['view']) && $userMatrixPermissions['perbaikan-kontainer']['view']) checked @endif></td>
