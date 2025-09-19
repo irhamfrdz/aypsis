@@ -480,11 +480,18 @@ class UserController extends Controller
 
                     // Special handling for master-* permissions
                     if ($module === 'master' && strpos($action, '-') !== false) {
-                        // For master-karyawan-view, split further
-                        $subParts = explode('-', $action, 2);
-                        if (count($subParts) == 2) {
-                            $module = $module . '-' . $subParts[0]; // master-karyawan
-                            $action = $subParts[1]; // view
+                        // Special handling for master-pricelist-sewa-kontainer permissions
+                        if (strpos($action, 'pricelist-sewa-kontainer-') === 0) {
+                            // For master-pricelist-sewa-kontainer-view, extract the action
+                            $action = str_replace('pricelist-sewa-kontainer-', '', $action);
+                            $module = 'master-pricelist-sewa-kontainer';
+                        } else {
+                            // For master-karyawan-view, split further
+                            $subParts = explode('-', $action, 2);
+                            if (count($subParts) == 2) {
+                                $module = $module . '-' . $subParts[0]; // master-karyawan
+                                $action = $subParts[1]; // view
+                            }
                         }
                     }
 
@@ -1119,6 +1126,26 @@ class UserController extends Controller
                             'create' => 'master-vendor-bengkel.create',
                             'update' => 'master-vendor-bengkel.update',
                             'delete' => 'master-vendor-bengkel.delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-pricelist-sewa-kontainer permissions explicitly
+                    if ($module === 'master-pricelist-sewa-kontainer' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-sewa-kontainer-view',
+                            'create' => 'master-pricelist-sewa-kontainer-create',
+                            'update' => 'master-pricelist-sewa-kontainer-update',
+                            'delete' => 'master-pricelist-sewa-kontainer-delete'
                         ];
 
                         if (isset($actionMap[$action])) {

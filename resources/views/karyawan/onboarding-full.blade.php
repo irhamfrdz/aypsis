@@ -47,9 +47,9 @@
                 @method('PUT')
             @endif
             @php
-                $inputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
+                $inputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-gray-400 focus:ring-0 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
                 $readonlyInputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-100 shadow-sm text-base p-3 lg:p-4 min-h-[48px]";
-                $selectClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
+                $selectClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-gray-400 focus:ring-0 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
                 $labelClasses = "block text-sm font-semibold text-gray-700 mb-2";
                 $fieldsetClasses = "p-6 lg:p-8 space-y-6";
                 $legendClasses = "text-lg lg:text-xl font-bold text-gray-800 mb-6 flex items-center";
@@ -270,7 +270,14 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                     <div>
                         <label for="nama_bank" class="{{ $labelClasses }}">Nama Bank</label>
-                        <input type="text" name="nama_bank" id="nama_bank" class="{{ $inputClasses }}" placeholder="Contoh: Bank BCA">
+                        <select name="nama_bank" id="nama_bank" class="{{ $selectClasses }}">
+                            <option value="">-- Pilih Bank --</option>
+                            @if(isset($banks))
+                                @foreach($banks as $bank)
+                                <option value="{{ $bank->name }}" {{ old('nama_bank', $karyawan->nama_bank ?? '') == $bank->name ? 'selected' : '' }}>{{ $bank->name }} @if($bank->code) ({{ $bank->code }}) @endif</option>
+                                @endforeach
+                            @endif
+                        </select>
                     </div>
                     <div>
                         <label for="bank_cabang" class="{{ $labelClasses }}">Cabang Bank</label>
@@ -353,6 +360,53 @@
         }
         updatePekerjaanOptions();
         divisiSelect.addEventListener('change', updatePekerjaanOptions);
+
+        // Real-time validation for 16-digit fields
+        const sixteenDigitFields = ['nik', 'ktp', 'kk'];
+        sixteenDigitFields.forEach(fieldId => {
+            const field = document.getElementById(fieldId);
+            if (field) {
+                const helperText = field.parentElement.querySelector('.text-xs') || field.parentElement.querySelector('p');
+
+                field.addEventListener('input', function() {
+                    const value = this.value.replace(/\D/g, ''); // Remove non-digits
+                    this.value = value; // Update field value
+
+                    if (value.length === 0) {
+                        this.classList.remove('border-red-500', 'border-green-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-gray-500 mt-1';
+                            helperText.textContent = `${fieldId.toUpperCase()} harus berupa 16 digit angka`;
+                        }
+                    } else if (value.length === 16) {
+                        this.classList.remove('border-red-500');
+                        this.classList.add('border-green-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-green-600 mt-1';
+                            helperText.textContent = '✓ Format valid';
+                        }
+                    } else {
+                        this.classList.remove('border-green-500');
+                        this.classList.add('border-red-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-red-600 mt-1';
+                            helperText.textContent = `${fieldId.toUpperCase()} harus 16 digit (saat ini: ${value.length} digit)`;
+                        }
+                    }
+                });
+
+                field.addEventListener('blur', function() {
+                    const value = this.value;
+                    if (value.length > 0 && value.length !== 16) {
+                        this.classList.add('border-red-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-red-600 mt-1';
+                            helperText.textContent = `${fieldId.toUpperCase()} harus tepat 16 digit angka`;
+                        }
+                    }
+                });
+            }
+        });
     });
 </script>
 @endpush

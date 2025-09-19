@@ -362,26 +362,26 @@ Route::middleware([
 
         // Master pricelist sewa kontainer routes (with master prefix) - granular permissions
         Route::get('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'index'])
-             ->name('pricelist-sewa-kontainer.index')
-             ->middleware('can:master-pricelist-sewa-kontainer.view');
+             ->name('master.pricelist-sewa-kontainer.index')
+             ->middleware('can:master-pricelist-sewa-kontainer-view');
         Route::get('pricelist-sewa-kontainer/create', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'create'])
-             ->name('pricelist-sewa-kontainer.create')
-             ->middleware('can:master-pricelist-sewa-kontainer.create');
+             ->name('master.pricelist-sewa-kontainer.create')
+             ->middleware('can:master-pricelist-sewa-kontainer-create');
         Route::post('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'store'])
-             ->name('pricelist-sewa-kontainer.store')
-             ->middleware('can:master-pricelist-sewa-kontainer.create');
+             ->name('master.pricelist-sewa-kontainer.store')
+             ->middleware('can:master-pricelist-sewa-kontainer-create');
         Route::get('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'show'])
-             ->name('pricelist-sewa-kontainer.show')
-             ->middleware('can:master-pricelist-sewa-kontainer.view');
+             ->name('master.pricelist-sewa-kontainer.show')
+             ->middleware('can:master-pricelist-sewa-kontainer-view');
         Route::get('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}/edit', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'edit'])
-             ->name('pricelist-sewa-kontainer.edit')
-             ->middleware('can:master-pricelist-sewa-kontainer.update');
+             ->name('master.pricelist-sewa-kontainer.edit')
+             ->middleware('can:master-pricelist-sewa-kontainer-update');
         Route::put('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'update'])
-             ->name('pricelist-sewa-kontainer.update')
-             ->middleware('can:master-pricelist-sewa-kontainer.update');
+             ->name('master.pricelist-sewa-kontainer.update')
+             ->middleware('can:master-pricelist-sewa-kontainer-update');
         Route::delete('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'destroy'])
-             ->name('pricelist-sewa-kontainer.destroy')
-             ->middleware('can:master-pricelist-sewa-kontainer.delete');
+             ->name('master.pricelist-sewa-kontainer.destroy')
+             ->middleware('can:master-pricelist-sewa-kontainer-delete');
 
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
@@ -606,25 +606,25 @@ Route::middleware([
     // Individual routes for permohonan with specific permissions
     Route::get('permohonan', [PermohonanController::class, 'index'])
          ->name('permohonan.index')
-         ->middleware('can:permohonan.index');
+         ->middleware('can:permohonan-memo-view');
     Route::get('permohonan/create', [PermohonanController::class, 'create'])
          ->name('permohonan.create')
-         ->middleware('can:permohonan.create');
+         ->middleware('can:permohonan-memo-create');
     Route::post('permohonan', [PermohonanController::class, 'store'])
          ->name('permohonan.store')
-         ->middleware('can:permohonan.create');
+         ->middleware('can:permohonan-memo-create');
     Route::get('permohonan/{permohonan}', [PermohonanController::class, 'show'])
          ->name('permohonan.show')
-         ->middleware('can:permohonan.index');
+         ->middleware('can:permohonan-memo-view');
     Route::get('permohonan/{permohonan}/edit', [PermohonanController::class, 'edit'])
          ->name('permohonan.edit')
-         ->middleware('can:permohonan.edit');
+         ->middleware('can:permohonan-memo-update');
     Route::put('permohonan/{permohonan}', [PermohonanController::class, 'update'])
          ->name('permohonan.update')
-         ->middleware('can:permohonan.edit');
+         ->middleware('can:permohonan-memo-update');
     Route::delete('permohonan/{permohonan}', [PermohonanController::class, 'destroy'])
          ->name('permohonan.destroy')
-         ->middleware('can:permohonan.delete');
+         ->middleware('can:permohonan-memo-delete');
 
      // --- Rute Pranota Supir ---
     Route::get('/pranota-supir', [PranotaSupirController::class, 'index'])->name('pranota-supir.index')->middleware('can:pranota-supir-view');

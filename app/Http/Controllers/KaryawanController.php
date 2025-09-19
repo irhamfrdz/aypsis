@@ -9,6 +9,7 @@ use App\Models\CrewEquipment;
 use App\Models\Divisi;
 use App\Models\Pekerjaan;
 use App\Models\Pajak;
+use App\Models\Bank;
 use App\Models\Cabang;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
@@ -550,6 +551,7 @@ class KaryawanController extends Controller
         $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
         $pajaks = Pajak::orderBy('nama_status')->get();
         $cabangs = Cabang::orderBy('nama_cabang')->get();
+        $banks = Bank::orderBy('name')->get();
 
         // Group pekerjaan by divisi for JavaScript
         $pekerjaanByDivisi = [];
@@ -561,7 +563,7 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
         }
 
-        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'pekerjaanByDivisi'));
+        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi'));
     }
 
     /**
@@ -570,13 +572,13 @@ class KaryawanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nik' => 'required|string|max:255|unique:karyawans',
+            'nik' => 'required|string|regex:/^[0-9]{16}$/|unique:karyawans',
             'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:karyawans',
-            'ktp' => 'nullable|string|max:255|unique:karyawans',
-            'kk' => 'nullable|string|max:255',
+            'ktp' => 'nullable|string|regex:/^[0-9]{16}$/',
+            'kk' => 'nullable|string|regex:/^[0-9]{16}$/',
             'alamat' => 'nullable|string|max:255',
             'rt_rw' => 'nullable|string|max:255',
             'kelurahan' => 'nullable|string|max:255',
@@ -608,6 +610,13 @@ class KaryawanController extends Controller
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
+        ], [
+            'nik.regex' => 'NIK harus berupa 16 digit angka.',
+            'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
+            'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
+            'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
+            'email.unique' => 'Email sudah terdaftar dalam sistem.',
+            'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
         ]);
 
         // Convert data to uppercase except email
@@ -646,6 +655,7 @@ class KaryawanController extends Controller
             $pekerjaans = \App\Models\Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
             $cabangs = \App\Models\Cabang::orderBy('nama_cabang')->get();
             $pajaks = \App\Models\Pajak::orderBy('nama_status')->get();
+            $banks = \App\Models\Bank::orderBy('name')->get();
 
             // Group pekerjaan by divisi for JavaScript
             $pekerjaanByDivisi = [];
@@ -657,10 +667,27 @@ class KaryawanController extends Controller
                 $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
             }
 
-            return view('karyawan.onboarding-full', compact('karyawan', 'divisis', 'pekerjaans', 'cabangs', 'pajaks', 'pekerjaanByDivisi'));
+            return view('karyawan.onboarding-full', compact('karyawan', 'divisis', 'pekerjaans', 'cabangs', 'pajaks', 'banks', 'pekerjaanByDivisi'));
         }
 
-        return view('master-karyawan.edit', compact('karyawan'));
+        // Ambil data untuk dropdown di form edit
+        $divisis = Divisi::active()->orderBy('nama_divisi')->get();
+        $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
+        $pajaks = Pajak::orderBy('nama_status')->get();
+        $cabangs = Cabang::orderBy('nama_cabang')->get();
+        $banks = Bank::orderBy('name')->get();
+
+        // Group pekerjaan by divisi for JavaScript
+        $pekerjaanByDivisi = [];
+        foreach ($pekerjaans as $pekerjaan) {
+            $divisi = $pekerjaan->divisi ?? '';
+            if (!isset($pekerjaanByDivisi[$divisi])) {
+                $pekerjaanByDivisi[$divisi] = [];
+            }
+            $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
+        }
+
+        return view('master-karyawan.edit', compact('karyawan', 'divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi'));
     }
 
     /**
@@ -673,6 +700,7 @@ class KaryawanController extends Controller
         $pekerjaans = \App\Models\Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
         $cabangs = \App\Models\Cabang::orderBy('nama_cabang')->get();
         $pajaks = \App\Models\Pajak::orderBy('nama_status')->get();
+        $banks = \App\Models\Bank::orderBy('name')->get();
 
         // Group pekerjaan by divisi for JavaScript
         $pekerjaanByDivisi = [];
@@ -684,7 +712,7 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
         }
 
-        return view('karyawan.onboarding-full', compact('karyawan', 'divisis', 'pekerjaans', 'cabangs', 'pajaks', 'pekerjaanByDivisi'));
+        return view('karyawan.onboarding-full', compact('karyawan', 'divisis', 'pekerjaans', 'cabangs', 'pajaks', 'banks', 'pekerjaanByDivisi'));
     }
 
     /**
@@ -694,13 +722,13 @@ class KaryawanController extends Controller
     {
         // Anda perlu menambahkan logika validasi di sini, mirip dengan metode store()
         $validated = $request->validate([
-            'nik' => ['required', 'string', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'nik' => ['required', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
-            'ktp' => ['nullable', 'string', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
-            'kk' => 'nullable|string|max:255',
+            'ktp' => ['nullable', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'kk' => ['nullable', 'string', 'regex:/^[0-9]{16}$/'],
             'alamat' => 'nullable|string|max:255',
             'rt_rw' => 'nullable|string|max:255',
             'kelurahan' => 'nullable|string|max:255',
@@ -732,6 +760,13 @@ class KaryawanController extends Controller
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
+        ], [
+            'nik.regex' => 'NIK harus berupa 16 digit angka.',
+            'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
+            'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
+            'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
+            'email.unique' => 'Email sudah terdaftar dalam sistem.',
+            'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
         ]);
 
         // Convert data to uppercase except email
@@ -762,13 +797,13 @@ class KaryawanController extends Controller
     public function onboardingUpdate(Request $request, Karyawan $karyawan)
     {
         $validated = $request->validate([
-            'nik' => ['required', 'string', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'nik' => ['required', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
-            'ktp' => ['nullable', 'string', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
-            'kk' => 'nullable|string|max:255',
+            'ktp' => ['nullable', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'kk' => 'nullable|string|regex:/^[0-9]{16}$/',
             'alamat' => 'nullable|string|max:255',
             'rt_rw' => 'nullable|string|max:255',
             'kelurahan' => 'nullable|string|max:255',
@@ -800,6 +835,13 @@ class KaryawanController extends Controller
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
+        ], [
+            'nik.regex' => 'NIK harus berupa 16 digit angka.',
+            'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
+            'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
+            'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
+            'email.unique' => 'Email sudah terdaftar dalam sistem.',
+            'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
         ]);
 
         // Convert data to uppercase except email

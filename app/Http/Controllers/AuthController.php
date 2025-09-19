@@ -117,13 +117,13 @@ class AuthController extends Controller
     public function registerKaryawan(Request $request)
     {
         $validated = $request->validate([
-            'nik' => 'required|string|max:255|unique:karyawans',
+            'nik' => 'required|string|regex:/^[0-9]{16}$/|unique:karyawans',
             'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:karyawans',
-            'ktp' => 'nullable|string|max:255|unique:karyawans',
-            'kk' => 'nullable|string|max:255',
+            'ktp' => 'nullable|string|regex:/^[0-9]{16}$/',
+            'kk' => 'nullable|string|regex:/^[0-9]{16}$/',
             'alamat' => 'nullable|string|max:255',
             'rt_rw' => 'nullable|string|max:255',
             'kelurahan' => 'nullable|string|max:255',
@@ -155,6 +155,12 @@ class AuthController extends Controller
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
+        ], [
+            'nik.regex' => 'NIK harus berupa 16 digit angka.',
+            'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
+            'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
+            'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
+            'email.unique' => 'Email sudah terdaftar dalam sistem.',
         ]);
 
         try {

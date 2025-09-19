@@ -7,7 +7,7 @@
 <div class="bg-white p-6 rounded-lg shadow-md">
     <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Pricelist Sewa Kontainer</h2>
     <div class="mb-4">
-    <a href="{{ route('master.pricelist-sewa-kontainer.create') }}" class="inline-block bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors duration-200">
+    <a href="{{ route('master.master.pricelist-sewa-kontainer.create') }}" class="inline-block bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors duration-200">
             + Tambah Pricelist
         </a>
     </div>
@@ -44,8 +44,8 @@
                         <td class="py-2 px-3">{{ $pricelist->keterangan ?? '-' }}</td>
                         <td class="py-2 px-3 text-center">
                             <div class="flex items-center justify-center space-x-2">
-                                <a href="{{ route('master.pricelist-sewa-kontainer.edit', $pricelist->id) }}" class="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200 text-xs">Edit</a>
-                                <form action="{{ route('master.pricelist-sewa-kontainer.destroy', $pricelist->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                <a href="{{ route('master.master.pricelist-sewa-kontainer.edit', $pricelist->id) }}" class="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200 text-xs">Edit</a>
+                                <form action="{{ route('master.master.pricelist-sewa-kontainer.destroy', $pricelist->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors duration-200 text-xs">Hapus</button>

@@ -258,7 +258,7 @@
                                     </a>
                                 @endif
                             @if($user && $user->can('master-pricelist-sewa-kontainer-view'))
-                                <a href="{{ route('master.pricelist-sewa-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 {{ Request::routeIs('master.pricelist-sewa-kontainer.*') ? 'bg-indigo-50 font-medium text-indigo-600' : 'text-gray-600' }}">
+                                <a href="{{ route('master.master.pricelist-sewa-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 {{ Request::routeIs('master.master.pricelist-sewa-kontainer.*') ? 'bg-indigo-50 font-medium text-indigo-600' : 'text-gray-600' }}">
                                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                     </svg>
@@ -390,7 +390,7 @@
                                 </a>
                             @endif
                             @if($user && $user->can('master-pricelist-sewa-kontainer-view'))
-                                <a href="{{ route('master.pricelist-sewa-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.pricelist-sewa-kontainer.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                <a href="{{ route('master.master.pricelist-sewa-kontainer.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.master.pricelist-sewa-kontainer.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
                                     <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                     </svg>
@@ -524,7 +524,7 @@
                     @endif
 
                     {{-- Dropdown untuk Permohonan Memo --}}
-                    @if($isAdmin || auth()->user()->can('permohonan'))
+                    @if($isAdmin || auth()->user()->can('permohonan-memo-view'))
                     <div class="mt-4 mb-4">
                         <button id="permohonan-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-lg mt-4 mb-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isPermohonanRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
                             <div class="flex items-center">

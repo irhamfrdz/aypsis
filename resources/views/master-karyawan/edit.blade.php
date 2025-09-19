@@ -42,9 +42,9 @@
 
         @php
             // Definisikan kelas Tailwind untuk input yang responsif dan mobile-friendly
-            $inputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
+            $inputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-gray-400 focus:ring-0 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
             $readonlyInputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-100 shadow-sm text-base p-3 lg:p-4 min-h-[48px]";
-            $selectClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-blue-500 focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
+            $selectClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-gray-400 focus:ring-0 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
             $labelClasses = "block text-sm font-semibold text-gray-700 mb-2";
             $fieldsetClasses = "p-6 lg:p-8 space-y-6";
             $legendClasses = "text-lg lg:text-xl font-bold text-gray-800 mb-6 flex items-center";
@@ -60,7 +60,8 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div>
                     <label for="nik" class="{{ $labelClasses }}">NIK<span class="text-red-500 ml-1">*</span></label>
-                    <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK" value="{{ old('nik', $karyawan->nik) }}">
+                    <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan 16 digit NIK" maxlength="16" pattern="[0-9]{16}" value="{{ old('nik', $karyawan->nik) }}">
+                    <p class="text-xs text-gray-500 mt-1">NIK harus berupa 16 digit angka</p>
                 </div>
 
                 <div>
@@ -129,12 +130,14 @@
 
                 <div>
                     <label for="ktp" class="{{ $labelClasses }}">Nomor KTP</label>
-                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="16 digit nomor KTP" value="{{ old('ktp', $karyawan->ktp) }}">
+                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan 16 digit nomor KTP" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
+                    <p class="text-xs text-gray-500 mt-1">Nomor KTP harus berupa 16 digit angka</p>
                 </div>
 
                 <div>
                     <label for="kk" class="{{ $labelClasses }}">Nomor KK</label>
-                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="16 digit nomor KK" value="{{ old('kk', $karyawan->kk) }}">
+                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan 16 digit nomor KK" maxlength="16" pattern="[0-9]{16}" value="{{ old('kk', $karyawan->kk) }}">
+                    <p class="text-xs text-gray-500 mt-1">Nomor KK harus berupa 16 digit angka</p>
                 </div>
             </div>
         </fieldset>
@@ -299,7 +302,12 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                 <div>
                     <label for="nama_bank" class="{{ $labelClasses }}">Nama Bank</label>
-                    <input type="text" name="nama_bank" id="nama_bank" class="{{ $inputClasses }}" placeholder="Contoh: Bank BCA" value="{{ old('nama_bank', $karyawan->nama_bank) }}">
+                    <select name="nama_bank" id="nama_bank" class="{{ $selectClasses }}">
+                        <option value="">-- Pilih Bank --</option>
+                        @foreach($banks as $bank)
+                        <option value="{{ $bank->name }}" {{ old('nama_bank', $karyawan->nama_bank) == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
+                        @endforeach
+                    </select>
                 </div>
 
                 <div>
@@ -477,11 +485,13 @@
             const inputs = document.querySelectorAll('input, select, textarea');
             inputs.forEach(input => {
                 input.addEventListener('focus', function() {
-                    this.closest('div')?.classList.add('ring-2', 'ring-blue-200');
+                    // Remove blue ring effect
+                    // this.closest('div')?.classList.add('ring-2', 'ring-blue-200');
                 });
 
                 input.addEventListener('blur', function() {
-                    this.closest('div')?.classList.remove('ring-2', 'ring-blue-200');
+                    // Remove blue ring effect
+                    // this.closest('div')?.classList.remove('ring-2', 'ring-blue-200');
                 });
             });
 
@@ -498,6 +508,51 @@
                 textarea.addEventListener('input', function() {
                     this.style.height = 'auto';
                     this.style.height = this.scrollHeight + 'px';
+                });
+            });
+
+            // Real-time validation for 16-digit fields
+            const sixteenDigitFields = ['nik', 'ktp', 'kk'];
+            sixteenDigitFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                const helperText = field.parentElement.querySelector('.text-xs');
+
+                field.addEventListener('input', function() {
+                    const value = this.value.replace(/\D/g, ''); // Remove non-digits
+                    this.value = value; // Update field value
+
+                    if (value.length === 0) {
+                        this.classList.remove('border-red-500', 'border-green-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-gray-500 mt-1';
+                            helperText.textContent = `${fieldId.toUpperCase()} harus berupa 16 digit angka`;
+                        }
+                    } else if (value.length === 16) {
+                        this.classList.remove('border-red-500');
+                        this.classList.add('border-green-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-green-600 mt-1';
+                            helperText.textContent = '✓ Format valid';
+                        }
+                    } else {
+                        this.classList.remove('border-green-500');
+                        this.classList.add('border-red-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-red-600 mt-1';
+                            helperText.textContent = `${fieldId.toUpperCase()} harus 16 digit (saat ini: ${value.length} digit)`;
+                        }
+                    }
+                });
+
+                field.addEventListener('blur', function() {
+                    const value = this.value;
+                    if (value.length > 0 && value.length !== 16) {
+                        this.classList.add('border-red-500');
+                        if (helperText) {
+                            helperText.className = 'text-xs text-red-600 mt-1';
+                            helperText.textContent = `${fieldId.toUpperCase()} harus tepat 16 digit angka`;
+                        }
+                    }
                 });
             });
         })
@@ -531,8 +586,9 @@
 
         /* Enhanced focus states */
         input:focus, select:focus, textarea:focus {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+            /* Remove blue shadow effect */
+            /* transform: translateY(-1px); */
+            /* box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); */
         }
 
         /* Loading spinner animation */

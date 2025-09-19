@@ -606,6 +606,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Pricelist Sewa Kontainer --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist Sewa Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['view']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['create']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['update']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-sewa-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-sewa-kontainer']['delete']) && $userMatrixPermissions['master-pricelist-sewa-kontainer']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Vendor/Bengkel --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

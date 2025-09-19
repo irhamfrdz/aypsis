@@ -73,11 +73,11 @@
                         <div class="space-y-3">
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600 text-sm">Bergabung</span>
-                                <span class="font-medium text-sm">{{ $user->created_at->format('d/m/Y') }}</span>
+                                <span class="font-medium text-sm">{{ $user->created_at ? $user->created_at->format('d/m/Y') : '-' }}</span>
                             </div>
                             <div class="flex justify-between items-center">
                                 <span class="text-gray-600 text-sm">Terakhir Update</span>
-                                <span class="font-medium text-sm">{{ $user->updated_at->format('d/m/Y') }}</span>
+                                <span class="font-medium text-sm">{{ $user->updated_at ? $user->updated_at->format('d/m/Y') : '-' }}</span>
                             </div>
                             @if($user->karyawan)
                                 <div class="flex justify-between items-center">
@@ -162,8 +162,8 @@
                             <div class="space-y-2">
                                 <label class="block text-sm font-semibold text-gray-700">Tanggal Bergabung</label>
                                 <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <div class="font-medium">{{ $user->created_at->format('d/m/Y H:i:s') }}</div>
-                                    <div class="text-sm text-gray-500 mt-1">{{ $user->created_at->diffForHumans() }}</div>
+                                    <div class="font-medium">{{ $user->created_at ? $user->created_at->format('d/m/Y H:i:s') : '-' }}</div>
+                                    <div class="text-sm text-gray-500 mt-1">{{ $user->created_at ? $user->created_at->diffForHumans() : '-' }}</div>
                                 </div>
                             </div>
                         </div>
@@ -290,7 +290,7 @@
                                             <i class="fas fa-key mr-2 text-purple-600"></i>
                                             Kata Sandi
                                         </h5>
-                                        <p class="text-gray-600 text-sm">Terakhir diubah: {{ $user->updated_at->format('d/m/Y') }}</p>
+                                        <p class="text-gray-600 text-sm">Terakhir diubah: {{ $user->updated_at ? $user->updated_at->format('d/m/Y') : '-' }}</p>
                                     </div>
                                     <a href="{{ route('profile.edit') }}#password" class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white font-medium rounded-lg transition-all duration-200 text-sm">
                                         <i class="fas fa-edit mr-2"></i>Ubah Password

@@ -26,6 +26,7 @@ class DatabaseSeeder extends Seeder
             TujuanSeeder::class,
             DivisiSeeder::class, // Seeder untuk master divisi
             PekerjaanSeeder::class, // Seeder untuk master pekerjaan
+            BankSeeder::class, // Seeder untuk master bank
         ]);
     }
 }
