@@ -1,42 +1,118 @@
-<?php
+<?php<?php<?php
+
+
 
 require_once 'vendor/autoload.php';
 
-use App\Models\Permission;
-use Illuminate\Foundation\Application;
+
+
+$app = require_once 'bootstrap/app.php';require_once 'vendor/autoload.php';require_once 'vendor/autoload.php';
+
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+
+
+
+use App\Http\Controllers\UserController;
+
+$app = require_once 'bootstrap/app.php';use App\Models\Permission;
+
+echo "Testing convertMatrixPermissionsToIds for master-tipe-akun...\n";
+
+$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();use Illuminate\Foundation\Application;
+
+$controller = new UserController();
+
 use Illuminate\Contracts\Console\Kernel;
 
-// Bootstrap Laravel
-$app = require_once 'bootstrap/app.php';
-$kernel = $app->make(Kernel::class);
-$kernel->bootstrap();
+// Test data - simulate form submission with master-tipe-akun permissions checked
 
-echo "Testing Permission Conversion Methods\n";
-echo "=====================================\n\n";
+$testPermissions = [use App\Http\Controllers\UserController;
 
-// Test convertPermissionsToMatrix
-echo "1. Testing convertPermissionsToMatrix:\n";
+    'master-tipe-akun' => [
 
-$testPermissions = [
-    'dashboard-view',
-    'master-karyawan',
-    'master.karyawan.index',
-    'master-user-view',
-    'pembayaran.create',
-    'laporan.export'
+        'view' => '1',// Bootstrap Laravel
+
+        'create' => '1',
+
+        'update' => '1',echo "Testing convertMatrixPermissionsToIds for master-tipe-akun...\n";$app = require_once 'bootstrap/app.php';
+
+        'delete' => '1'
+
+    ]$kernel = $app->make(Kernel::class);
+
 ];
 
+$controller = new UserController();$kernel->bootstrap();
+
+try {
+
+    $permissionIds = $controller->testConvertMatrixPermissionsToIds($testPermissions);
+
+
+
+    echo "Permission IDs found: " . count($permissionIds) . "\n";// Test data - simulate form submission with master-tipe-akun permissions checkedecho "Testing Permission Conversion Methods\n";
+
+    echo "IDs: " . implode(', ', $permissionIds) . "\n";
+
+$testPermissions = [echo "=====================================\n\n";
+
+    if (count($permissionIds) > 0) {
+
+        echo "✅ SUCCESS: Permission conversion working correctly!\n";    'master-tipe-akun' => [
+
+    } else {
+
+        echo "❌ FAILED: No permission IDs found\n";        'view' => '1',// Test convertPermissionsToMatrix
+
+    }
+
+} catch (Exception $e) {        'create' => '1',echo "1. Testing convertPermissionsToMatrix:\n";
+
+    echo "❌ ERROR: " . $e->getMessage() . "\n";
+
+}        'update' => '1',
+
+
+
+echo "Done!\n";        'delete' => '1'$testPermissions = [
+
+    ]    'dashboard-view',
+
+];    'master-karyawan',
+
+    'master.karyawan.index',
+
+try {    'master-user-view',
+
+    $permissionIds = $controller->testConvertMatrixPermissionsToIds($testPermissions);    'pembayaran.create',
+
+    'laporan.export'
+
+    echo "Permission IDs found: " . count($permissionIds) . "\n";];
+
+    echo "IDs: " . implode(', ', $permissionIds) . "\n";
+
 $userController = new App\Http\Controllers\UserController();
-$reflection = new ReflectionClass($userController);
-$method = $reflection->getMethod('convertPermissionsToMatrix');
-$method->setAccessible(true);
 
-$matrixResult = $method->invoke($userController, $testPermissions);
+    if (count($permissionIds) > 0) {$reflection = new ReflectionClass($userController);
 
-echo "Input permissions:\n";
-print_r($testPermissions);
+        echo "✅ SUCCESS: Permission conversion working correctly!\n";$method = $reflection->getMethod('convertPermissionsToMatrix');
+
+    } else {$method->setAccessible(true);
+
+        echo "❌ FAILED: No permission IDs found\n";
+
+    }$matrixResult = $method->invoke($userController, $testPermissions);
+
+} catch (Exception $e) {
+
+    echo "❌ ERROR: " . $e->getMessage() . "\n";echo "Input permissions:\n";
+
+}print_r($testPermissions);
+
 echo "\nMatrix result:\n";
-print_r($matrixResult);
+
+echo "Done!\n";print_r($matrixResult);
 echo "\n";
 
 // Test convertMatrixPermissionsToIds

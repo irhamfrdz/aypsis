@@ -1127,6 +1127,26 @@ class UserController extends Controller
                         }
                     }
 
+                    // DIRECT FIX: Handle master-tipe-akun permissions explicitly
+                    if ($module === 'master-tipe-akun' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-tipe-akun-view',
+                            'create' => 'master-tipe-akun-create',
+                            'update' => 'master-tipe-akun-update',
+                            'delete' => 'master-tipe-akun-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // DIRECT FIX: Handle master-cabang permissions explicitly
                     if ($module === 'master-cabang' && in_array($action, ['view', 'create', 'update', 'delete'])) {
                         // Map action to correct permission name
