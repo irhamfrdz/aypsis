@@ -45,18 +45,18 @@
                     </form>
 
                     <!-- Action Buttons -->
-                    <div class="flex flex-wrap gap-2">
+                    <div class="flex flex-nowrap gap-2 items-center">
                         <a href="{{ route('master.karyawan.create') }}"
-                           class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                           class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
                             </svg>
-                            Tambah Karyawan
+                            Tambah
                         </a>
 
                         <!-- Template Dropdown -->
                         <div class="relative group">
-                            <button class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                            <button class="inline-flex items-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
@@ -94,16 +94,16 @@
 
                         <a href="{{ route('master.karyawan.print') }}"
                            target="_blank"
-                           class="inline-flex items-center px-4 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                           class="inline-flex items-center px-3 py-2 bg-gray-600 hover:bg-gray-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                             </svg>
-                            Cetak Semua
+                            Cetak
                         </a>
 
                         <!-- Export Dropdown -->
                         <div class="relative group">
-                            <button class="inline-flex items-center px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                            <button class="inline-flex items-center px-3 py-2 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
                                 </svg>
@@ -140,11 +140,11 @@
                         </div>
 
                         <a href="{{ route('master.karyawan.import') }}"
-                           class="inline-flex items-center px-4 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
+                           class="inline-flex items-center px-3 py-2 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/>
                             </svg>
-                            Import Excel/CSV
+                            Import
                         </a>
                     </div>
                 </div>
@@ -162,39 +162,13 @@
                 </div>
             @endif
 
-            <!-- Rows Per Page Selection -->
-            <div class="mt-3 flex items-center justify-between text-sm text-gray-600">
-                <div class="flex items-center space-x-2">
-                    <span>Tampilkan</span>
-                    <form method="GET" action="{{ route('master.karyawan.index') }}" class="inline">
-                        <!-- Preserve existing search and sort parameters -->
-                        @if(request('search'))
-                            <input type="hidden" name="search" value="{{ request('search') }}">
-                        @endif
-                        @if(request('sort'))
-                            <input type="hidden" name="sort" value="{{ request('sort') }}">
-                        @endif
-                        @if(request('direction'))
-                            <input type="hidden" name="direction" value="{{ request('direction') }}">
-                        @endif
-
-                        <select name="per_page"
-                                onchange="this.form.submit()"
-                                class="mx-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
-                            <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
-                            <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
-                            <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
-                        </select>
-                    </form>
-                    <span>baris per halaman</span>
-                </div>
-
-                @if($karyawans->total() > 0)
-                    <div class="text-sm text-gray-500">
-                        Menampilkan {{ $karyawans->firstItem() }} - {{ $karyawans->lastItem() }} dari {{ $karyawans->total() }} total karyawan
-                    </div>
-                @endif
-            </div>
+            {{-- Rows Per Page Selection --}}
+            @include('components.rows-per-page', [
+                'routeName' => 'master.karyawan.index',
+                'paginator' => $karyawans,
+                'entityName' => 'karyawan',
+                'entityNamePlural' => 'karyawan'
+            ])
         </div>
 
         @if (session('success'))
@@ -274,12 +248,12 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center">
                                 <span>NO.</span>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>NIK</span>
                                 <div class="flex flex-col">
@@ -296,7 +270,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>NAMA LENGKAP</span>
                                 <div class="flex flex-col">
@@ -313,7 +287,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>NAMA PANGGILAN</span>
                                 <div class="flex flex-col">
@@ -330,7 +304,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>DIVISI</span>
                                 <div class="flex flex-col">
@@ -347,7 +321,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>PEKERJAAN</span>
                                 <div class="flex flex-col">
@@ -364,41 +338,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
-                                <span>JKN</span>
-                                <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'asc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'jkn' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan A-Z">
-                                        <i class="fas fa-sort-up text-xs"></i>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'jkn', 'direction' => 'desc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'jkn' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan Z-A">
-                                        <i class="fas fa-sort-down text-xs"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
-                                <span>BP JAMSOSTEK</span>
-                                <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'asc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'no_ketenagakerjaan' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan A-Z">
-                                        <i class="fas fa-sort-up text-xs"></i>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_ketenagakerjaan', 'direction' => 'desc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'no_ketenagakerjaan' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan Z-A">
-                                        <i class="fas fa-sort-down text-xs"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>NO HP</span>
                                 <div class="flex flex-col">
@@ -415,41 +355,7 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
-                                <span>EMAIL</span>
-                                <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'asc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'email' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan A-Z">
-                                        <i class="fas fa-sort-up text-xs"></i>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'email', 'direction' => 'desc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'email' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan Z-A">
-                                        <i class="fas fa-sort-down text-xs"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
-                                <span>STATUS PAJAK</span>
-                                <div class="flex flex-col">
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'status_pajak', 'direction' => 'asc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'status_pajak' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan A-Z">
-                                        <i class="fas fa-sort-up text-xs"></i>
-                                    </a>
-                                    <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'status_pajak', 'direction' => 'desc'])) }}"
-                                       class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'status_pajak' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
-                                       title="Urutkan Z-A">
-                                        <i class="fas fa-sort-down text-xs"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center space-x-1">
                                 <span>TANGGAL MASUK</span>
                                 <div class="flex flex-col">
@@ -466,20 +372,20 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
+                        <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($karyawans as $karyawan)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 whitespace-nowrap text-center text-sm text-gray-900 font-medium">
+                            <td class="px-4 py-4 whitespace-nowrap text-center text-[10px] text-gray-900 font-medium">
                                 {{ ($karyawans->currentPage() - 1) * $karyawans->perPage() + $loop->iteration }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nik) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md
+                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->nik) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">
+                                <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
                                     {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
                                        (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
                                        (strtolower($karyawan->divisi) === 'supir' ? 'bg-gray-100 text-gray-800' :
@@ -487,23 +393,9 @@
                                     {{ strtoupper($karyawan->divisi) }}
                                 </span>
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->pekerjaan) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->jkn ?? '-') }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->no_ketenagakerjaan ?? '-') }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">{{ $karyawan->email ?? '-' }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap">
-                                <span class="inline-flex px-2 py-1 text-xs font-medium rounded-md
-                                    {{
-                                        strtolower($karyawan->status_pajak ?? '') === 'pkp' ? 'bg-red-100 text-red-800' :
-                                        (preg_match('/^(k|tk)/i', $karyawan->status_pajak ?? '') ? 'bg-blue-100 text-blue-800' :
-                                        (strtolower($karyawan->status_pajak ?? '') === 'ptkp' ? 'bg-yellow-100 text-yellow-800' :
-                                        'bg-gray-100 text-gray-800'))
-                                    }}">
-                                    {{ strtoupper($karyawan->status_pajak ?? '-') }}
-                                </span>
-                            </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->pekerjaan) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
+                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-center">
@@ -513,7 +405,7 @@
                                         <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}"
                                            class="inline-flex items-center px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                            title="Checklist Kelengkapan Crew">
-                                            <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                                             </svg>
                                             <span class="hidden sm:inline">Checklist</span>
@@ -523,7 +415,7 @@
                                         <a href="{{ route('master.karyawan.crew-checklist-new', $karyawan->id) }}"
                                            class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                            title="Checklist Baru (Simplified)">
-                                            <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
                                             </svg>
                                             <span class="hidden sm:inline">New</span>
@@ -532,9 +424,9 @@
 
                                     <!-- View Button -->
                                     <a href="{{ route('master.karyawan.show', $karyawan->id) }}"
-                                       class="inline-flex items-center px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                       class="inline-flex items-center px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                        title="Lihat Detail">
-                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                         </svg>
@@ -544,9 +436,9 @@
                                     <!-- Print Button -->
                                     <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}"
                                        target="_blank"
-                                       class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                       class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                        title="Cetak Data">
-                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
                                         </svg>
                                         <span class="hidden sm:inline">Cetak</span>
@@ -554,9 +446,9 @@
 
                                     <!-- Edit Button -->
                                     <a href="{{ route('master.karyawan.edit', $karyawan->id) }}"
-                                       class="inline-flex items-center px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                       class="inline-flex items-center px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                        title="Edit Data">
-                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                         </svg>
                                         <span class="hidden sm:inline">Edit</span>
@@ -565,7 +457,7 @@
                                     <!-- Delete Button -->
                                     <button type="button"
                                             onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')"
-                                            class="inline-flex items-center px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                            class="inline-flex items-center px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
                                             title="Hapus Data">
                                         <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H9a1 1 0 00-1 1v1M4 7h16"/>
@@ -577,13 +469,13 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="13" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                                     </svg>
-                                    <p class="text-lg font-medium">Belum ada data karyawan</p>
-                                    <p class="text-sm mt-1">Tambah karyawan baru untuk memulai</p>
+                                    <p class="text-xs font-medium">Belum ada data karyawan</p>
+                                    <p class="text-xs mt-1">Tambah karyawan baru untuk memulai</p>
                                 </div>
                             </td>
                         </tr>
@@ -592,19 +484,8 @@
             </table>
         </div>
 
-        <!-- Pagination -->
-        @if($karyawans->hasPages())
-            <div class="px-6 py-4 border-t border-gray-200 bg-gray-50">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm text-gray-700">
-                        Halaman {{ $karyawans->currentPage() }} dari {{ $karyawans->lastPage() }}
-                    </div>
-                    <div>
-                        {{ $karyawans->appends(request()->query())->links() }}
-                    </div>
-                </div>
-            </div>
-        @endif
+        <!-- Modern Pagination Design -->
+        @include('components.modern-pagination', ['paginator' => $karyawans, 'routeName' => 'master.karyawan.index'])
     </div>
 </div>
 
@@ -937,6 +818,31 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Ensure dropdown menus appear above sticky header */
 .relative.group .absolute {
     z-index: 20;
+}
+
+/* Enhanced Pagination Styles */
+.pagination-links .page-link {
+    @apply inline-flex items-center px-2.5 py-1.5 text-sm font-medium transition-colors duration-200 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900;
+}
+
+.pagination-links .page-link.active {
+    @apply bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700;
+}
+
+.pagination-links .page-link.disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+.pagination-links .page-item:first-child .page-link {
+    @apply rounded-l-md;
+}
+
+.pagination-links .page-item:last-child .page-link {
+    @apply rounded-r-md;
+}
+
+.pagination-links .page-item:not(:first-child):not(:last-child) .page-link {
+    @apply border-l-0;
 }
 </style>
 @endsection

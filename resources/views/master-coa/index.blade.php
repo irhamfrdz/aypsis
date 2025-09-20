@@ -67,16 +67,16 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                         @forelse($coas as $coa)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-[10px] font-medium text-gray-900">
                                     {{ $coa->nomor_akun }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-[10px] text-gray-900">
                                     {{ $coa->kode_nomor ?? '-' }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-[10px] text-gray-900">
                                     {{ $coa->nama_akun }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -90,10 +90,10 @@
                                         {{ $coa->tipe_akun }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-[10px] text-gray-900">
                                     Rp {{ number_format($coa->saldo, 2, ',', '.') }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-[10px] font-medium">
                                     <div class="flex items-center space-x-2">
                                         <a href="{{ route('master-coa-show', $coa) }}" class="text-indigo-600 hover:text-indigo-900">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

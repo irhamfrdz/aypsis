@@ -158,6 +158,14 @@
             @endif
         </div>
 
+        {{-- Rows Per Page Selection --}}
+        @include('components.rows-per-page', [
+            'routeName' => 'master.pekerjaan.index',
+            'paginator' => $pekerjaans,
+            'entityName' => 'pekerjaan',
+            'entityNamePlural' => 'pekerjaan'
+        ])
+
         <!-- Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
@@ -165,9 +173,9 @@
                 <p class="mt-1 text-sm text-gray-600">Kelola dan pantau semua pekerjaan dalam sistem</p>
             </div>
 
-            <div class="overflow-x-auto">
+            <div class="overflow-auto max-h-96">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center">
@@ -232,7 +240,6 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm font-medium text-gray-900">{{ $pekerjaan->nama_pekerjaan }}</div>
-                                    <div class="text-sm text-gray-500">ID: {{ $pekerjaan->id }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -327,16 +334,7 @@
         </div>
 
         <!-- Pagination -->
-        @if($pekerjaans->hasPages())
-            <div class="mt-6 flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Menampilkan <span class="font-medium">{{ $pekerjaans->firstItem() }}</span> sampai <span class="font-medium">{{ $pekerjaans->lastItem() }}</span> dari <span class="font-medium">{{ $pekerjaans->total() }}</span> hasil
-                </div>
-                <div class="flex-1 flex justify-center">
-                    {{ $pekerjaans->appends(request()->query())->links() }}
-                </div>
-            </div>
-        @endif
+        @include('components.modern-pagination', ['paginator' => $pekerjaans, 'routeName' => 'master.pekerjaan.index'])
 
     </div>
 </div>

@@ -177,23 +177,22 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                         @forelse ($banks as $index => $bank)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-[10px] font-medium text-gray-900">
                                     {{ $banks->firstItem() + $index }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $bank->name }}</div>
-                                    <div class="text-sm text-gray-500">ID: {{ $bank->id }}</div>
+                                    <div class="text-[10px] font-medium text-gray-900">{{ $bank->name }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-medium bg-blue-100 text-blue-800">
                                         {{ $bank->code }}
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $bank->keterangan ?: '-' }}">
+                                    <div class="text-[10px] text-gray-900 max-w-xs truncate" title="{{ $bank->keterangan ?: '-' }}">
                                         {{ $bank->keterangan ?: '-' }}
                                     </div>
                                 </td>

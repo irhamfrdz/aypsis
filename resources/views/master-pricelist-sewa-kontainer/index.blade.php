@@ -7,13 +7,13 @@
 <div class="bg-white p-6 rounded-lg shadow-md">
     <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Pricelist Sewa Kontainer</h2>
     <div class="mb-4 flex flex-wrap gap-2">
-        <a href="{{ route('master.master.pricelist-sewa-kontainer.create') }}" class="inline-block bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors duration-200">
+        <a href="{{ route('master.master.pricelist-sewa-kontainer.create') }}" class="inline-block bg-indigo-600 text-white py-1 px-2 rounded text-xs font-medium hover:bg-indigo-700 transition-colors duration-200">
             + Tambah Pricelist
         </a>
-        <a href="{{ route('master.master.pricelist-sewa-kontainer.export-template') }}" class="inline-block bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition-colors duration-200">
+        <a href="{{ route('master.master.pricelist-sewa-kontainer.export-template') }}" class="inline-block bg-green-600 text-white py-1 px-2 rounded text-xs font-medium hover:bg-green-700 transition-colors duration-200">
             📥 Download Template CSV
         </a>
-        <button onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-block bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 transition-colors duration-200">
+        <button onclick="document.getElementById('importModal').classList.remove('hidden')" class="inline-block bg-blue-600 text-white py-1 px-2 rounded text-xs font-medium hover:bg-blue-700 transition-colors duration-200">
             📤 Import CSV
         </button>
     </div>
@@ -23,45 +23,56 @@
         </div>
     @endif
     <div class="overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="min-w-full bg-white divide-y divide-gray-200 text-sm">
+    <table class="min-w-full bg-white divide-y divide-gray-200 text-xs table-fixed" style="table-layout: fixed;">
+            <colgroup>
+                <col style="width: 2.5rem;"> <!-- No -->
+                <col style="width: 8rem;">  <!-- Vendor -->
+                <col style="width: 6rem;">  <!-- Tarif -->
+                <col style="width: 4rem;">  <!-- Ukuran -->
+                <col style="width: 8rem;">  <!-- Harga -->
+                <col style="width: 7rem;">  <!-- Tanggal Awal -->
+                <col style="width: 7rem;">  <!-- Tanggal Akhir -->
+                <col style="width: 10rem;"> <!-- Keterangan -->
+                <col style="width: 6rem;">  <!-- Aksi -->
+            </colgroup>
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="py-2 px-3 text-center font-semibold text-gray-600 w-10">No</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-32">Vendor</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-24">Tarif</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-16 text-center">Ukuran</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-32 text-right">Harga</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-28 text-center">Tanggal Awal</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-28 text-center">Tanggal Akhir</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-40">Keterangan</th>
-                    <th class="py-2 px-3 text-center font-semibold text-gray-600 w-24">Aksi</th>
+                    <th class="py-2 px-3 text-center font-semibold text-gray-600 w-10 align-top" style="height: 48px; vertical-align: top;">No</th>
+                    <th class="py-2 px-3 font-semibold text-gray-600 w-32 align-top" style="height: 48px; vertical-align: top;">Vendor</th>
+                    <th class="py-2 px-3 font-semibold text-gray-600 w-24 align-top" style="height: 48px; vertical-align: top;">Tarif</th>
+                    <th class="py-2 px-3 font-semibold text-gray-600 w-16 text-center align-top" style="height: 48px; vertical-align: top;">Ukuran</th>
+                    <th class="py-2 px-3 font-semibold text-gray-600 w-32 text-center align-top" style="height: 48px; vertical-align: top;">Harga</th>
+                    <th class="py-2 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 48px; vertical-align: top;">Tanggal Awal</th>
+                    <th class="py-2 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 48px; vertical-align: top;">Tanggal Akhir</th>
+                    <th class="py-2 px-3 font-semibold text-gray-600 w-40 align-top" style="height: 48px; vertical-align: top;">Keterangan</th>
+                    <th class="py-2 px-3 text-center font-semibold text-gray-600 w-24 align-top" style="height: 48px; vertical-align: top;">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-100 text-gray-700">
+            <tbody class="bg-white divide-y divide-gray-100 text-gray-700 text-[10px]">
                 @forelse ($pricelists as $index => $pricelist)
-                    <tr class="hover:bg-gray-50">
-                        <td class="py-2 px-3 text-center">{{ $pricelists->firstItem() + $index }}</td>
-                        <td class="py-2 px-3">{{ $pricelist->vendor }}</td>
-                        <td class="py-2 px-3">{{ $pricelist->tarif }}</td>
-                        <td class="py-2 px-3 text-center">{{ $pricelist->ukuran_kontainer }} ft</td>
-                        <td class="py-2 px-3 text-right">Rp {{ rtrim(rtrim(number_format($pricelist->harga, 2, ',', '.'), '0'), ',') }}</td>
-                        <td class="py-2 px-3 text-center">{{ \Carbon\Carbon::parse($pricelist->tanggal_harga_awal)->format('d-m-Y') }}</td>
-                        <td class="py-2 px-3 text-center">{{ $pricelist->tanggal_harga_akhir ? \Carbon\Carbon::parse($pricelist->tanggal_harga_akhir)->format('d-m-Y') : '-' }}</td>
-                        <td class="py-2 px-3">{{ $pricelist->keterangan ?? '-' }}</td>
-                        <td class="py-2 px-3 text-center">
+                    <tr class="hover:bg-gray-50 align-top">
+                        <td class="py-2 px-3 text-center w-10 align-top" style="height: 48px; vertical-align: top;">{{ $pricelists->firstItem() + $index }}</td>
+                        <td class="py-2 px-3 text-center w-32 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->vendor }}</td>
+                        <td class="py-2 px-3 text-center w-24 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->tarif }}</td>
+                        <td class="py-2 px-3 text-center w-16 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->ukuran_kontainer }} ft</td>
+                        <td class="py-2 px-3 text-center w-32 align-top" style="height: 48px; vertical-align: top;">Rp {{ rtrim(rtrim(number_format($pricelist->harga, 2, ',', '.'), '0'), ',') }}</td>
+                        <td class="py-2 px-3 text-center w-28 align-top" style="height: 48px; vertical-align: top;">{{ \Carbon\Carbon::parse($pricelist->tanggal_harga_awal)->format('d-m-Y') }}</td>
+                        <td class="py-2 px-3 text-center w-28 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->tanggal_harga_akhir ? \Carbon\Carbon::parse($pricelist->tanggal_harga_akhir)->format('d-m-Y') : '-' }}</td>
+                        <td class="py-2 px-3 text-center w-40 align-top" style="height: 48px; vertical-align: top; word-wrap: break-word;">{{ $pricelist->keterangan ?? '-' }}</td>
+                        <td class="py-2 px-3 text-center w-24 align-top" style="height: 48px; vertical-align: top;">
                             <div class="flex items-center justify-center space-x-2">
-                                <a href="{{ route('master.master.pricelist-sewa-kontainer.edit', $pricelist->id) }}" class="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200 text-xs">Edit</a>
+                                <a href="{{ route('master.master.pricelist-sewa-kontainer.edit', $pricelist->id) }}" class="bg-yellow-500 text-white py-0.5 px-2 rounded hover:bg-yellow-600 transition-colors duration-200 text-xs font-medium">Edit</a>
                                 <form action="{{ route('master.master.pricelist-sewa-kontainer.destroy', $pricelist->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors duration-200 text-xs">Hapus</button>
+                                    <button type="submit" class="bg-red-500 text-white py-0.5 px-2 rounded hover:bg-red-600 transition-colors duration-200 text-xs font-medium">Hapus</button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="py-4 px-6 text-center text-gray-500">Tidak ada data pricelist yang ditemukan.</td>
+                        <td colspan="9" class="py-4 px-6 text-center text-gray-500 text-[10px] align-top" style="height: 48px; vertical-align: top;">Tidak ada data pricelist yang ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>
@@ -102,11 +113,11 @@
 
                 <div class="flex justify-end space-x-3">
                     <button type="button" onclick="document.getElementById('importModal').classList.add('hidden')"
-                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition-colors duration-200">
+                        class="px-3 py-1 bg-gray-300 text-gray-700 rounded text-sm hover:bg-gray-400 transition-colors duration-200">
                         Batal
                     </button>
                     <button type="submit"
-                        class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors duration-200">
+                        class="px-3 py-1 bg-blue-600 text-white rounded text-sm hover:bg-blue-700 transition-colors duration-200">
                         Import Data
                     </button>
                 </div>

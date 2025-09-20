@@ -96,6 +96,14 @@
             @endif
         </div>
 
+        {{-- Rows Per Page Selection --}}
+        @include('components.rows-per-page', [
+            'routeName' => 'master.user.index',
+            'paginator' => $users,
+            'entityName' => 'pengguna',
+            'entityNamePlural' => 'pengguna'
+        ])
+
     <!-- Tabel Daftar Pengguna -->
     <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
         <div class="px-6 py-4 border-b border-gray-200">
@@ -103,9 +111,9 @@
             <p class="mt-1 text-sm text-gray-600">Kelola dan pantau semua pengguna sistem</p>
         </div>
 
-        <div class="overflow-x-auto">
+        <div class="overflow-x-auto table-container">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+                <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center">
@@ -138,26 +146,14 @@
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                     @forelse ($users as $index => $user)
                         <tr class="hover:bg-gray-50 transition-colors duration-200">
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {{ $users->firstItem() + $index }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 h-10 w-10">
-                                        <div class="h-10 w-10 rounded-full bg-indigo-100 flex items-center justify-center">
-                                            <span class="text-sm font-medium text-indigo-700">
-                                                {{ strtoupper(substr($user->username, 0, 1)) }}
-                                            </span>
-                                        </div>
-                                    </div>
-                                    <div class="ml-4">
-                                        <div class="text-sm font-medium text-gray-900">{{ $user->username }}</div>
-                                        <div class="text-sm text-gray-500">ID: {{ $user->id }}</div>
-                                    </div>
-                                </div>
+                                <div class="text-sm font-medium text-gray-900">{{ $user->username }}</div>
                             </td>
                             <td class="px-6 py-4">
                                 @if($user->karyawan)
@@ -227,17 +223,48 @@
     </div>
 
     <!-- Pagination -->
-    @if($users->hasPages())
-        <div class="mt-6 flex items-center justify-between">
-            <div class="text-sm text-gray-700">
-                Menampilkan <span class="font-medium">{{ $users->firstItem() }}</span> sampai <span class="font-medium">{{ $users->lastItem() }}</span> dari <span class="font-medium">{{ $users->total() }}</span> hasil
-            </div>
-            <div class="flex-1 flex justify-center">
-                {{ $users->appends(request()->query())->links() }}
-            </div>
-        </div>
-    @endif
+    @include('components.modern-pagination', ['paginator' => $users, 'routeName' => 'master.user.index'])
 
     </div>
 </div>
 @endsection
+
+<style>
+/* Sticky Table Header Styles */
+.sticky-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* bg-gray-50 */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced table container for better scrolling */
+.table-container {
+    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    overflow-y: auto;
+    border: 1px solid rgb(229 231 235); /* border-gray-200 */
+    border-radius: 0.5rem;
+}
+
+/* Smooth scrolling for better UX */
+.table-container {
+    scroll-behavior: smooth;
+}
+
+/* Table header cells need specific background to avoid transparency issues */
+.sticky-table-header th {
+    background-color: rgb(249 250 251) !important;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Optional: Add a subtle border when scrolling */
+.table-container.scrolled .sticky-table-header {
+    border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+
+/* Ensure dropdown menus appear above sticky header */
+.relative.group .absolute {
+    z-index: 20;
+}
+</style>

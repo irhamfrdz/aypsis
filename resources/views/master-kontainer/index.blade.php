@@ -19,9 +19,17 @@
 </div>
 @endif
 
-<div class="overflow-x-auto shadow-md sm:rounded-lg">
+{{-- Rows Per Page Selection --}}
+@include('components.rows-per-page', [
+    'routeName' => 'master.kontainer.index',
+    'paginator' => $kontainers,
+    'entityName' => 'kontainer',
+    'entityNamePlural' => 'kontainer'
+])
+
+<div class="overflow-x-auto shadow-md sm:rounded-lg table-container">
     <table class="min-w-full divide-y divide-gray-200">
-        <thead class="bg-gray-50">
+        <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
             <tr>
                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nomor Kontainer
@@ -91,8 +99,42 @@
     </table>
 </div>
 
-<div class="mt-4">
-    {{ $kontainers->links() }}
-</div>
+{{-- Modern Pagination Design --}}
+@include('components.modern-pagination', ['paginator' => $kontainers, 'routeName' => 'master.kontainer.index'])
 
 @endsection
+
+<style>
+/* Sticky Table Header Styles */
+.sticky-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* bg-gray-50 */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced table container for better scrolling */
+.table-container {
+    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    overflow-y: auto;
+    border: 1px solid rgb(229 231 235); /* border-gray-200 */
+    border-radius: 0.5rem;
+}
+
+/* Smooth scrolling for better UX */
+.table-container {
+    scroll-behavior: smooth;
+}
+
+/* Table header cells need specific background to avoid transparency issues */
+.sticky-table-header th {
+    background-color: rgb(249 250 251) !important;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Optional: Add a subtle border when scrolling */
+.table-container.scrolled .sticky-table-header {
+    border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+</style>

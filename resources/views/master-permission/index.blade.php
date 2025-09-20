@@ -71,6 +71,14 @@
             </div>
         </div>
 
+        {{-- Rows Per Page Selection --}}
+        @include('components.rows-per-page', [
+            'routeName' => 'master.permission.index',
+            'paginator' => $permissions,
+            'entityName' => 'izin',
+            'entityNamePlural' => 'izin'
+        ])
+
         <div class="p-6">
             <!-- Permission Table -->
             <div class="overflow-x-auto">
@@ -243,11 +251,7 @@
             </div>
 
             <!-- Pagination -->
-            @if($permissions->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $permissions->links() }}
-                </div>
-            @endif
+            @include('components.modern-pagination', ['paginator' => $permissions, 'routeName' => 'master.permission.index'])
         </div>
     </div>
 </div>

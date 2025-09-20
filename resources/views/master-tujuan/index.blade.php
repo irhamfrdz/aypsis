@@ -24,19 +24,19 @@
             <div class="overflow-x-auto">
                 <table class="min-w-full bg-white rounded-lg shadow-md">
                     <thead>
-                        <tr class="bg-gray-100 text-left text-gray-600 text-sm font-semibold">
+                        <tr class="bg-gray-100 text-left text-gray-600 text-[10px] font-semibold">
                             <th class="py-3 px-4">Nama Tujuan</th>
                             <th class="py-3 px-4">Cabang</th>
                             <th class="py-3 px-4">Wilayah</th>
                             <th class="py-3 px-4">Rute</th>
-                            <th class="py-3 px-4">Uang Jalan 20ft</th>
-                            <th class="py-3 px-4">Uang Jalan 40ft</th>
+                            <th class="py-3 px-4">UJ 20ft</th>
+                            <th class="py-3 px-4">UJ 40ft</th>
                             <th class="py-3 px-4">Antarlokasi 20ft</th>
                             <th class="py-3 px-4">Antarlokasi 40ft</th>
                             <th class="py-3 px-4">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="text-gray-700">
+                    <tbody class="text-gray-700 text-[10px]">
                         @foreach ($tujuans as $tujuan)
                             <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
                                 <td class="py-3 px-4">{{ trim((($tujuan->wilayah ?? '') ? $tujuan->wilayah : '') . ' ' . (($tujuan->rute ?? '') ? '- '.$tujuan->rute : '')) }}</td>

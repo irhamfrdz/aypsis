@@ -8,11 +8,11 @@
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Daftar Kegiatan</h2>
         <div class="flex items-center space-x-3">
-            <a href="{{ route('master.kegiatan.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">+ Tambah Kegiatan</a>
-            <a href="{{ route('master.kegiatan.template') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300">Download Template CSV</a>
+            <a href="{{ route('master.kegiatan.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-0.5 px-2 rounded transition duration-300 text-xs">+ Tambah Kegiatan</a>
+            <a href="{{ route('master.kegiatan.template') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-0.5 px-2 rounded transition duration-300 text-xs">Download Template CSV</a>
             <form action="{{ route('master.kegiatan.import') }}" method="POST" enctype="multipart/form-data" class="inline-block">
                 @csrf
-                <label class="inline-flex items-center bg-yellow-100 hover:bg-yellow-200 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300 cursor-pointer">
+                <label class="inline-flex items-center bg-yellow-100 hover:bg-yellow-200 text-gray-800 font-bold py-0.5 px-2 rounded transition duration-300 cursor-pointer text-xs">
                     <input type="file" name="csv_file" accept=".csv" class="hidden" required />
                     Import CSV
                 </label>
@@ -49,7 +49,7 @@
                     <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
+            <tbody class="bg-white divide-y divide-gray-200 text-gray-700 text-[10px]">
                 @forelse ($items as $index => $kegiatan)
                     <tr class="hover:bg-gray-50">
                         <td class="py-4 px-6">{{ $items->firstItem() + $index }}</td>
@@ -75,7 +75,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-4 px-6 text-center text-gray-500">Tidak ada data kegiatan yang ditemukan.</td>
+                        <td colspan="6" class="py-4 px-6 text-center text-gray-500 text-[10px]">Tidak ada data kegiatan yang ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>

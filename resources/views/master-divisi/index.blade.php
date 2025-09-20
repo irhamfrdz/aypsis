@@ -11,12 +11,7 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200                           accept=".csv,.txt,.xlsx,.xls"
                            required
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200">
-                    <div class="mt-2 text-sm text-gray-600">
-                        <p class="mb-1"><strong>Template:</strong> Download template CSV dengan header kolom saja</p>
-                        <p class="mb-1"><strong>Format file:</strong> CSV dengan delimiter titik koma (;)</p>
-                        <p class="mb-1"><strong>Contoh:</strong> Divisi IT; IT; Divisi Teknologi Informasi; 1</p>
-                        <p><strong>Catatan:</strong> Kolom nama_divisi dan kode_divisi wajib diisi. Kode divisi akan otomatis di-uppercase.</p>
-                    </div>6">
+
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div class="mb-4 sm:mb-0">
                     <h1 class="text-3xl font-bold text-gray-900">Master Divisi</h1>
@@ -143,6 +138,14 @@
             @endif
         </div>
 
+        {{-- Rows Per Page Selection --}}
+        @include('components.rows-per-page', [
+            'routeName' => 'master.divisi.index',
+            'paginator' => $divisis,
+            'entityName' => 'divisi',
+            'entityNamePlural' => 'divisi'
+        ])
+
         <!-- Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
@@ -185,17 +188,17 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                         @forelse ($divisis as $index => $divisi)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-[10px] font-medium text-gray-900">
                                     {{ $divisis->firstItem() + $index }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    <div class="text-sm font-medium text-gray-900">{{ $divisi->nama_divisi }}</div>
-                                    <div class="text-sm text-gray-500">ID: {{ $divisi->id }}</div>
+                                    <div class="text-[10px] font-medium text-gray-900">{{ $divisi->nama_divisi }}</div>
+                                    <div class="text-[10px] text-gray-500">ID: {{ $divisi->id }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                <td class="px-6 py-4 whitespace-nowrap text-[10px] text-gray-900">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                         {{ $divisi->karyawans->count() }} karyawan
                                     </span>
@@ -257,16 +260,7 @@
         </div>
 
         <!-- Pagination -->
-        @if($divisis->hasPages())
-            <div class="mt-6 flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Menampilkan <span class="font-medium">{{ $divisis->firstItem() }}</span> sampai <span class="font-medium">{{ $divisis->lastItem() }}</span> dari <span class="font-medium">{{ $divisis->total() }}</span> hasil
-                </div>
-                <div class="flex-1 flex justify-center">
-                    {{ $divisis->appends(request()->query())->links() }}
-                </div>
-            </div>
-        @endif
+        @include('components.modern-pagination', ['paginator' => $divisis, 'routeName' => 'master.divisi.index'])
 
     </div>
 </div>
@@ -297,11 +291,6 @@
                            accept=".csv,.txt"
                            required
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-colors duration-200">
-                    <div class="mt-2 text-sm text-gray-600">
-                        <p class="mb-1"><strong>Format file:</strong> CSV dengan delimiter titik koma (;)</p>
-                        <p class="mb-1"><strong>Contoh:</strong> Divisi IT; Divisi Teknologi Informasi; 1</p>
-                        <p><strong>Catatan:</strong> Kolom nama_divisi wajib diisi.</p>
-                    </div>
                 </div>
 
                 <div class="flex justify-end space-x-3 pt-4">
