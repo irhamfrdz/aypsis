@@ -4,7 +4,7 @@
 @section('page_title','Tambah Karyawan')
 
 @section('content')
-<div class="space-y-8 max-w-4xl mx-auto">
+<div class="space-y-6 max-w-4xl mx-auto">
 
     {{-- Notifikasi --}}
     @if(session('success'))
@@ -74,10 +74,10 @@
                 $labelClasses = "block text-sm font-medium text-gray-700";
             @endphp
         {{-- Informasi Pribadi --}}
-        <fieldset class="border p-4 rounded-md mb-6">
+        <fieldset class="border p-4 rounded-md mb-4">
             <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pribadi</legend>
             <div class="form-section pt-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
                         <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan 16 digit NIK" maxlength="16" pattern="[0-9]{16}">
@@ -163,10 +163,10 @@
         </fieldset>
 
         {{-- Informasi Perusahaan --}}
-        <fieldset class="border p-4 rounded-md mb-6">
+        <fieldset class="border p-4 rounded-md mb-4">
             <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Perusahaan</legend>
             <div class="form-section pt-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="divisi" class="{{ $labelClasses }}">Divisi</label>
                         <select name="divisi" id="divisi" class="{{ $selectClasses }}">
@@ -232,10 +232,10 @@
         </fieldset>
 
         {{-- Informasi Alamat --}}
-        <fieldset class="border p-4 rounded-md mb-6">
+        <fieldset class="border p-4 rounded-md mb-4">
             <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Alamat</legend>
             <div class="form-section pt-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="alamat" class="{{ $labelClasses }}">Alamat</label>
                         <input type="text" name="alamat" id="alamat" class="{{ $inputClasses }}" placeholder="Jalan, nomor rumah">
@@ -279,7 +279,7 @@
         </fieldset>
 
         {{-- Catatan --}}
-        <fieldset class="border p-4 rounded-md mb-6">
+        <fieldset class="border p-4 rounded-md mb-4">
             <legend class="text-lg font-semibold text-gray-800 px-2">Catatan</legend>
             <div class="form-section pt-4">
                 <div>
@@ -290,10 +290,10 @@
         </fieldset>
 
         {{-- Informasi Bank --}}
-        <fieldset class="border p-4 rounded-md mb-6">
+        <fieldset class="border p-4 rounded-md mb-4">
             <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Bank</legend>
             <div class="form-section pt-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="nama_bank" class="{{ $labelClasses }}">Nama Bank</label>
                         <select name="nama_bank" id="nama_bank" class="{{ $selectClasses }}">
@@ -325,10 +325,10 @@
         </fieldset>
 
         {{-- Informasi Pajak & JKN --}}
-        <fieldset class="border p-4 rounded-md mb-6">
+        <fieldset class="border p-4 rounded-md mb-4">
             <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pajak & JKN</legend>
             <div class="form-section pt-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
                         <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
