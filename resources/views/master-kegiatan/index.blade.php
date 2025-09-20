@@ -41,41 +41,49 @@
         <table class="min-w-full bg-white divide-y divide-gray-200">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kegiatan</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kegiatan</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kegiatan</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kegiatan</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-gray-700 text-[10px]">
                 @forelse ($items as $index => $kegiatan)
                     <tr class="hover:bg-gray-50">
-                        <td class="py-4 px-6">{{ $items->firstItem() + $index }}</td>
-                        <td class="py-4 px-6 font-mono text-sm">{{ $kegiatan->kode_kegiatan }}</td>
-                        <td class="py-4 px-6">{{ $kegiatan->nama_kegiatan }}</td>
-                        <td class="py-4 px-6">{{ $kegiatan->keterangan ?? '-' }}</td>
-                        <td class="py-4 px-6 text-center">
+                        <td class="px-4 py-2">{{ $items->firstItem() + $index }}</td>
+                        <td class="px-4 py-2 font-mono text-[10px]">{{ $kegiatan->kode_kegiatan }}</td>
+                        <td class="px-4 py-2">{{ $kegiatan->nama_kegiatan }}</td>
+                        <td class="px-4 py-2">{{ $kegiatan->keterangan ?? '-' }}</td>
+                        <td class="px-4 py-2 text-center">
                             @php $s = strtolower($kegiatan->status ?? ''); @endphp
                             <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $s == 'aktif' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                 {{ ucfirst($s) ?: '-' }}
                             </span>
                         </td>
-                        <td class="py-4 px-6 text-center">
-                            <div class="flex item-center justify-center space-x-2">
-                                <a href="{{ route('master.kegiatan.edit', $kegiatan->id) }}" class="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200 text-sm">Edit</a>
-                                <form action="{{ route('master.kegiatan.destroy', $kegiatan->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kegiatan ini?');">
+                        <td class="px-4 py-2 text-center">
+                            <div class="flex items-center justify-center space-x-3 text-[10px]">
+                                <a href="{{ route('master.kegiatan.edit', $kegiatan->id) }}"
+                                   class="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                                   title="Edit Data">
+                                    Edit
+                                </a>
+                                <span class="text-gray-300">|</span>
+                                <form action="{{ route('master.kegiatan.destroy', $kegiatan->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus kegiatan ini?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors duration-200 text-sm">Hapus</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0"
+                                            title="Hapus Data">
+                                        Hapus
+                                    </button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-4 px-6 text-center text-gray-500 text-[10px]">Tidak ada data kegiatan yang ditemukan.</td>
+                        <td colspan="6" class="px-4 py-2 text-center text-gray-500 text-[10px]">Tidak ada data kegiatan yang ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>

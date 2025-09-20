@@ -15,6 +15,7 @@
             font-size: 1rem; /* text-base */
             padding: 0.5rem 0.75rem; /* p-2.5 equivalent */
             min-height: 46px; /* Ensure consistent height */
+            width: 100%; /* Make it full width for consistent layout */
         }
         .is-focused .choices__inner,
         .is-open .choices__inner {
@@ -25,38 +26,35 @@
             background-color: #f3f4f6; /* bg-gray-100 */
             font-size: 1rem;
         }
-        .choices[data-type*="select-multiple"] .choices__button,
-        .choices[data-type*="text"] .choices__button {
-            border-left: 1px solid #cbd5e1; /* border-gray-300 */
-            margin-left: 0.5rem;
-        }
-        /* Style for the dropdown list with higher contrast */
         .choices__list--dropdown {
             background-color: #e5e7eb; /* bg-gray-200 */
             border-color: #d1d5db; /* border-gray-300 */
             box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); /* shadow-md */
         }
-        /* Style for the highlighted option in the dropdown */
         .choices__list--dropdown .choices__item--selectable.is-highlighted {
             background-color: #c7d2fe; /* bg-indigo-200 */
             color: #3730a3; /* text-indigo-800 */
         }
-        /* Style for the selected items inside the input */
         .choices[data-type*="select-multiple"] .choices__item {
             background-color: #d1d5db; /* bg-gray-300 */
             border: 1px solid #9ca3af; /* border-gray-400 */
             color: #1f2937; /* text-gray-800 */
         }
-        /* Style for each option in the dropdown */
         .choices__item--choice {
             font-size: 1rem; /* text-base */
             padding: 0.5rem 0.75rem; /* p-2.5 equivalent */
+        }
+        /* New custom classes for better layout */
+        .form-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem; /* Equivalent to space-y-6 */
         }
     </style>
 @endpush
 
 @section('content')
-<div class="space-y-8">
+<div class="space-y-8 max-w-3xl mx-auto">
 
     {{-- Notifikasi --}}
     @if(session('success'))
@@ -72,23 +70,24 @@
         </div>
     @endif
 
-    <!-- Form Permohonan -->
-    <div class="bg-white shadow-md rounded-lg">
-        <form id="permohonanForm" action="{{ route('permohonan.store') }}" method="POST" enctype="multipart/form-data" class="p-6">
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <form id="permohonanForm" action="{{ route('permohonan.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
 
             @php
                 // Definisikan kelas Tailwind untuk input yang lebih besar dan jelas
                 $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5";
+                $autoInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-base p-2.5";
             @endphp
 
             {{-- Bagian 1: Informasi Umum --}}
             <fieldset class="border p-4 rounded-md mb-6">
                 <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Umum</legend>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
+                <div class="form-section pt-4">
+                    {{-- Memo Number (Always at the top for visibility) --}}
                     <div>
-                        <label for="nomor_memo" class="block text-sm font-medium text-gray-700 mb-1">Nomor Memo (Otomatis)</label>
-                        <input type="text" name="nomor_memo" id="nomor_memo" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-300 shadow-sm text-base p-2.5" readonly>
+                        <label for="nomor_memo" class="block text-sm font-medium text-gray-700">Nomor Memo (Otomatis)</label>
+                        <input type="text" name="nomor_memo" id="nomor_memo" class="{{ $autoInputClasses }}" readonly>
                         <input type="hidden" id="kode_cetak" value="1">
                         <p class="mt-1 text-xs text-gray-500">
                             <span id="memo_format_info">
@@ -97,8 +96,11 @@
                             </span>
                         </p>
                     </div>
-                    <div>
-                        <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-1">Kegiatan</label>
+
+                    {{-- Activity & Vendor --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="kegiatan" class="block text-sm font-medium text-gray-700">Kegiatan</label>
                             <select name="kegiatan" id="kegiatan" class="{{ $inputClasses }}" required>
                                 <option value="">Pilih Kegiatan</option>
                                 @isset($kegiatans)
@@ -110,42 +112,51 @@
                                     <option value="pengambilan">Pengambilan Kontainer</option>
                                 @endisset
                             </select>
+                        </div>
+                        <div>
+                            <label for="vendor_perusahaan" class="block text-sm font-medium text-gray-700">Vendor Perusahaan</label>
+                            <select name="vendor_perusahaan" id="vendor_perusahaan" class="{{ $inputClasses }}" required>
+                                <option value="">Pilih Vendor</option>
+                                <option value="AYP">AYP</option>
+                                <option value="ZONA">ZONA</option>
+                                <option value="SOC">SOC</option>
+                                <option value="DPE">DPE</option>
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label for="vendor_perusahaan" class="block text-sm font-medium text-gray-700 mb-1">Vendor Perusahaan</label>
-                        <select name="vendor_perusahaan" id="vendor_perusahaan" class="{{ $inputClasses }}" required>
-                            <option value="">Pilih Vendor</option>
-                            <option value="AYP">AYP</option>
-                            <option value="ZONA">ZONA</option>
-                            <option value="SOC">SOC</option>
-                            <option value="DPE">DPE</option>
-                        </select>
+
+                    {{-- Date & Driver --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="tanggal_memo" class="block text-sm font-medium text-gray-700">Tanggal Memo</label>
+                            <input type="date" name="tanggal_memo" id="tanggal_memo" class="{{ $inputClasses }}" value="{{ now()->toDateString() }}">
+                        </div>
+                        <div>
+                            <label for="supir_id" class="block text-sm font-medium text-gray-700">Supir (Nama Panggilan)</label>
+                            <select name="supir_id" id="supir_id" class="{{ $inputClasses }}" required>
+                                <option value="">Cari atau pilih supir...</option>
+                                @foreach ($supirs as $supir)
+                                    <option value="{{ $supir->id }}" data-plat="{{ $supir->plat }}">{{ $supir->nama_panggilan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
-                    <div>
-                        <label for="tanggal_memo" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Memo</label>
-                        <input type="date" name="tanggal_memo" id="tanggal_memo" class="{{ $inputClasses }}" value="{{ now()->toDateString() }}">
-                    </div>
-                    <div>
-                        <label for="supir_id" class="block text-sm font-medium text-gray-700 mb-1">Supir (Nama Panggilan)</label>
-                        <select name="supir_id" id="supir_id" class="mt-1 block w-full" required>
-                            <option value="">Cari atau pilih supir...</option>
-                            @foreach ($supirs as $supir)
-                                <option value="{{ $supir->id }}" data-plat="{{ $supir->plat }}">{{ $supir->nama_panggilan }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label for="plat_nomor" class="block text-sm font-medium text-gray-700 mb-1">No Plat (Otomatis)</label>
-                        <input type="text" name="plat_nomor" id="plat_nomor" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-300 shadow-sm text-base p-2.5">
-                    </div>
-                    <div>
-                        <label for="krani_id" class="block text-sm font-medium text-gray-700 mb-1">Krani (Opsional)</label>
-                        <select name="krani_id" id="krani_id" class="mt-1 block w-full">
-                            <option value="">Cari atau pilih krani...</option>
-                            @foreach ($kranis as $krani)
-                                <option value="{{ $krani->id }}">{{ $krani->nama_panggilan }}</option>
-                            @endforeach
-                        </select>
+
+                    {{-- Automatic Plate & Optional Krani --}}
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="plat_nomor" class="block text-sm font-medium text-gray-700">No Plat (Otomatis)</label>
+                            <input type="text" name="plat_nomor" id="plat_nomor" class="{{ $autoInputClasses }}" readonly>
+                        </div>
+                        <div>
+                            <label for="krani_id" class="block text-sm font-medium text-gray-700">Krani (Opsional)</label>
+                            <select name="krani_id" id="krani_id" class="{{ $inputClasses }}">
+                                <option value="">Cari atau pilih krani...</option>
+                                @foreach ($kranis as $krani)
+                                    <option value="{{ $krani->id }}">{{ $krani->nama_panggilan }}</option>
+                                @endforeach
+                            </select>
+                        </div>
                     </div>
                 </div>
             </fieldset>
@@ -153,26 +164,29 @@
             {{-- Bagian 2: Informasi Kontainer & Tujuan --}}
             <fieldset class="border p-4 rounded-md mb-6">
                 <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Kontainer & Tujuan</legend>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-                    <div>
-                        <label for="jumlah_kontainer" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Kontainer</label>
-                        <input type="number" name="jumlah_kontainer" id="jumlah_kontainer" class="{{ $inputClasses }}" value="1" min="1" required>
+                <div class="form-section pt-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div>
+                            <label for="jumlah_kontainer" class="block text-sm font-medium text-gray-700">Jumlah Kontainer</label>
+                            <input type="number" name="jumlah_kontainer" id="jumlah_kontainer" class="{{ $inputClasses }}" value="1" min="1" required>
+                        </div>
+                        <div>
+                            <label for="ukuran" class="block text-sm font-medium text-gray-700">Ukuran Kontainer</label>
+                            <select name="ukuran" id="ukuran" class="{{ $inputClasses }}" required>
+                                <option value="">Pilih Ukuran</option>
+                                <option value="10">10 ft</option>
+                                <option value="20">20 ft</option>
+                                <option value="40">40 ft</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label for="no_chasis" class="block text-sm font-medium text-gray-700">No Chasis</label>
+                            <input type="text" name="no_chasis" id="no_chasis" class="{{ $inputClasses }}">
+                        </div>
                     </div>
+
                     <div>
-                        <label for="ukuran" class="block text-sm font-medium text-gray-700 mb-1">Ukuran Kontainer</label>
-                        <select name="ukuran" id="ukuran" class="{{ $inputClasses }}" required>
-                            <option value="">Pilih Ukuran</option>
-                            <option value="10">10 ft</option>
-                            <option value="20">20 ft</option>
-                            <option value="40">40 ft</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label for="no_chasis" class="block text-sm font-medium text-gray-700 mb-1">No Chasis</label>
-                        <input type="text" name="no_chasis" id="no_chasis" class="{{ $inputClasses }}">
-                    </div>
-                    <div class="lg:col-span-3">
-                        <label for="tujuan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan</label>
+                        <label for="tujuan" class="block text-sm font-medium text-gray-700">Tujuan</label>
                         <select name="tujuan_id" id="tujuan" class="{{ $inputClasses }}" required>
                             <option value="">Pilih Tujuan</option>
                             @foreach($tujuans as $t)
@@ -183,63 +197,68 @@
                     </div>
 
                     {{-- Rute untuk Perbaikan Kontainer --}}
-                    <div class="lg:col-span-3" id="rute_container" style="display: none;">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Rute Perbaikan</label>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div id="rute_container" style="display: none;">
+                        <label class="block text-sm font-medium text-gray-700">Rute Perbaikan</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="dari" class="block text-xs font-medium text-gray-600 mb-1">Dari</label>
+                                <label for="dari" class="block text-xs font-medium text-gray-600">Dari</label>
                                 <input type="text" name="dari" id="dari" class="{{ $inputClasses }}" placeholder="Lokasi asal">
                             </div>
                             <div>
-                                <label for="ke" class="block text-xs font-medium text-gray-600 mb-1">Ke</label>
+                                <label for="ke" class="block text-xs font-medium text-gray-600">Ke</label>
                                 <input type="text" name="ke" id="ke" class="{{ $inputClasses }}" placeholder="Lokasi tujuan">
                             </div>
                         </div>
                     </div>
-                    <div class="lg:col-span-3 flex items-center pt-2" id="antar_lokasi_container">
-                            <input id="antar_lokasi_checkbox" name="antar_sewa" value="1" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
-                            <label for="antar_lokasi_checkbox" class="ml-2 block text-sm font-medium text-gray-900">Antar Lokasi</label>
-                        </div>
+
+                    <div id="antar_lokasi_container" class="flex items-center pt-2">
+                        <input id="antar_lokasi_checkbox" name="antar_sewa" value="1" type="checkbox" class="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                        <label for="antar_lokasi_checkbox" class="ml-2 block text-sm font-medium text-gray-900">Antar Lokasi</label>
+                    </div>
                 </div>
             </fieldset>
 
+            {{-- Bagian 3: Biaya & Keuangan --}}
             <fieldset class="border p-4 rounded-md mb-6">
                 <legend class="text-lg font-semibold text-gray-800 px-2">Biaya & Keuangan</legend>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 pt-4">
-                    <div>
-                        <label for="jumlah_uang_jalan" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Uang Jalan</label>
-                        <input type="number" name="jumlah_uang_jalan" id="jumlah_uang_jalan" class="{{ $inputClasses }}" value="0" required>
+                <div class="form-section pt-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <div>
+                            <label for="jumlah_uang_jalan" class="block text-sm font-medium text-gray-700">Jumlah Uang Jalan</label>
+                            <input type="number" name="jumlah_uang_jalan" id="jumlah_uang_jalan" class="{{ $inputClasses }}" value="0" required>
+                        </div>
+                        <div>
+                            <label for="adjustment" class="block text-sm font-medium text-gray-700">Adjustment</label>
+                            <input type="number" name="adjustment" id="adjustment" class="{{ $inputClasses }}" value="0" required>
+                        </div>
+                        <div>
+                            <label for="total_setelah_adjustment" class="block text-sm font-medium text-gray-700">Total Biaya (Setelah Adj)</label>
+                            <input type="number" id="total_setelah_adjustment" class="{{ $autoInputClasses }}" readonly>
+                        </div>
                     </div>
                     <div>
-                        <label for="adjustment" class="block text-sm font-medium text-gray-700 mb-1">Adjustment</label>
-                        <input type="number" name="adjustment" id="adjustment" class="{{ $inputClasses }}" value="0" required>
-                    </div>
-                    <div>
-                        <label for="total_setelah_adjustment" class="block text-sm font-medium text-gray-700 mb-1">Total Biaya (Setelah Adj)</label>
-                        <input type="number" id="total_setelah_adjustment" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-300 shadow-sm text-base p-2.5" readonly>
-                    </div>
-                    <div class="lg:col-span-3">
-                        <label for="alasan_adjustment" class="block text-sm font-medium text-gray-700 mb-1">Alasan Adjustment</label>
+                        <label for="alasan_adjustment" class="block text-sm font-medium text-gray-700">Alasan Adjustment</label>
                         <input type="text" name="alasan_adjustment" id="alasan_adjustment" class="{{ $inputClasses }}">
                     </div>
                 </div>
             </fieldset>
 
+            {{-- Bagian 4: Informasi Tambahan --}}
             <fieldset class="border p-4 rounded-md mb-6">
                 <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Tambahan</legend>
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
-                    <div class="md:col-span-2">
-                        <label for="catatan" class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
-                        <textarea name="catatan" id="catatan" rows="3" class="{{ $inputClasses }}"></textarea>
+                <div class="form-section pt-4">
+                    <div>
+                        <label for="catatan" class="block text-sm font-medium text-gray-700">Catatan</label>
+                        <textarea name="catatan" id="catatan" rows="3" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5"></textarea>
                     </div>
-                    <div class="md:col-span-2">
-                        <label for="lampiran" class="block text-sm font-medium text-gray-700 mb-1">Lampiran</label>
+                    <div>
+                        <label for="lampiran" class="block text-sm font-medium text-gray-700">Lampiran</label>
                         <input type="file" name="lampiran" id="lampiran" class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
                     </div>
                 </div>
             </fieldset>
 
-            <div class="flex justify-end">
+            <div class="flex justify-end mt-8">
                 <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     Simpan Permohonan
                 </button>
@@ -249,7 +268,6 @@
 
 </div>
 @endsection
-
 @push('scripts')
     {{-- Tambahkan JS untuk Choices.js --}}
     <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>

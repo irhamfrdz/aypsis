@@ -248,13 +248,13 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
-                        <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center">
                                 <span>NO.</span>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>NIK</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nik', 'direction' => 'asc'])) }}"
@@ -270,8 +270,8 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>NAMA LENGKAP</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_lengkap', 'direction' => 'asc'])) }}"
@@ -287,8 +287,8 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>NAMA PANGGILAN</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nama_panggilan', 'direction' => 'asc'])) }}"
@@ -304,8 +304,8 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>DIVISI</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'divisi', 'direction' => 'asc'])) }}"
@@ -321,8 +321,8 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>PEKERJAAN</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'pekerjaan', 'direction' => 'asc'])) }}"
@@ -338,8 +338,8 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>NO HP</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'no_hp', 'direction' => 'asc'])) }}"
@@ -355,8 +355,8 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-left text-[10px] font-medium text-gray-500 uppercase tracking-wider">
-                            <div class="flex items-center space-x-1">
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                            <div class="flex items-center justify-center space-x-1">
                                 <span>TANGGAL MASUK</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'tanggal_masuk', 'direction' => 'asc'])) }}"
@@ -372,19 +372,19 @@
                                 </div>
                             </div>
                         </th>
-                        <th class="px-4 py-3 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
+                        <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($karyawans as $karyawan)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-4 py-4 whitespace-nowrap text-center text-[10px] text-gray-900 font-medium">
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-medium">
                                 {{ ($karyawans->currentPage() - 1) * $karyawans->perPage() + $loop->iteration }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->nik) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nik) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 <span class="inline-flex px-2 py-1 text-[10px] font-medium rounded-md
                                     {{ strtolower($karyawan->divisi) === 'it' ? 'bg-blue-100 text-blue-800' :
                                        (strtolower($karyawan->divisi) === 'abk' ? 'bg-blue-100 text-blue-800' :
@@ -393,83 +393,67 @@
                                     {{ strtoupper($karyawan->divisi) }}
                                 </span>
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->pekerjaan) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
-                            <td class="px-4 py-4 whitespace-nowrap text-[10px] text-gray-900">
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->pekerjaan) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->no_hp) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
                             </td>
-                            <td class="px-4 py-4 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center space-x-2">
-                                    {{-- Show crew checklist button only for ABK division --}}
+                            <td class="px-4 py-2 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center space-x-3 text-[10px]">
+                                    {{-- Show crew checklist links only for ABK division --}}
                                     @if(strtolower($karyawan->divisi) === 'abk')
                                         <a href="{{ route('master.karyawan.crew-checklist', $karyawan->id) }}"
-                                           class="inline-flex items-center px-2 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                           class="text-purple-600 hover:text-purple-800 hover:underline font-medium"
                                            title="Checklist Kelengkapan Crew">
-                                            <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                                            </svg>
-                                            <span class="hidden sm:inline">Checklist</span>
+                                            Checklist
                                         </a>
-
-                                        {{-- NEW: Simplified crew checklist --}}
+                                        <span class="text-gray-300">|</span>
                                         <a href="{{ route('master.karyawan.crew-checklist-new', $karyawan->id) }}"
-                                           class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-xs font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                           class="text-green-600 hover:text-green-800 hover:underline font-medium"
                                            title="Checklist Baru (Simplified)">
-                                            <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                                            </svg>
-                                            <span class="hidden sm:inline">New</span>
+                                            New
                                         </a>
+                                        <span class="text-gray-300">|</span>
                                     @endif
 
-                                    <!-- View Button -->
+                                    <!-- View Link -->
                                     <a href="{{ route('master.karyawan.show', $karyawan->id) }}"
-                                       class="inline-flex items-center px-2 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                       class="text-blue-600 hover:text-blue-800 hover:underline font-medium"
                                        title="Lihat Detail">
-                                        <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">Lihat</span>
+                                        Lihat
                                     </a>
+                                    <span class="text-gray-300">|</span>
 
-                                    <!-- Print Button -->
+                                    <!-- Print Link -->
                                     <a href="{{ route('master.karyawan.print.single', $karyawan->id) }}"
                                        target="_blank"
-                                       class="inline-flex items-center px-2 py-1.5 bg-green-600 hover:bg-green-700 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                       class="text-green-600 hover:text-green-800 hover:underline font-medium"
                                        title="Cetak Data">
-                                        <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">Cetak</span>
+                                        Cetak
                                     </a>
+                                    <span class="text-gray-300">|</span>
 
-                                    <!-- Edit Button -->
+                                    <!-- Edit Link -->
                                     <a href="{{ route('master.karyawan.edit', $karyawan->id) }}"
-                                       class="inline-flex items-center px-2 py-1.5 bg-amber-500 hover:bg-amber-600 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                       class="text-amber-600 hover:text-amber-800 hover:underline font-medium"
                                        title="Edit Data">
-                                        <svg class="w-2 h-2 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">Edit</span>
+                                        Edit
                                     </a>
+                                    <span class="text-gray-300">|</span>
 
-                                    <!-- Delete Button -->
+                                    <!-- Delete Link -->
                                     <button type="button"
                                             onclick="openDeleteModal('{{ $karyawan->id }}', '{{ $karyawan->nik }}', '{{ $karyawan->nama_lengkap }}')"
-                                            class="inline-flex items-center px-2 py-1.5 bg-red-600 hover:bg-red-700 text-white text-[10px] font-medium rounded-md transition-all duration-200 hover:shadow-md group"
+                                            class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer"
                                             title="Hapus Data">
-                                        <svg class="w-3 h-3 mr-1 group-hover:scale-110 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1-1H9a1 1 0 00-1 1v1M4 7h16"/>
-                                        </svg>
-                                        <span class="hidden sm:inline">Hapus</span>
+                                        Hapus
                                     </button>
                                 </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                            <td colspan="9" class="px-6 py-2 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>

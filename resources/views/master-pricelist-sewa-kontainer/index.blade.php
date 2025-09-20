@@ -37,42 +37,50 @@
             </colgroup>
             <thead class="bg-gray-100">
                 <tr>
-                    <th class="py-2 px-3 text-center font-semibold text-gray-600 w-10 align-top" style="height: 48px; vertical-align: top;">No</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-32 align-top" style="height: 48px; vertical-align: top;">Vendor</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-24 align-top" style="height: 48px; vertical-align: top;">Tarif</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-16 text-center align-top" style="height: 48px; vertical-align: top;">Ukuran</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-32 text-center align-top" style="height: 48px; vertical-align: top;">Harga</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 48px; vertical-align: top;">Tanggal Awal</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 48px; vertical-align: top;">Tanggal Akhir</th>
-                    <th class="py-2 px-3 font-semibold text-gray-600 w-40 align-top" style="height: 48px; vertical-align: top;">Keterangan</th>
-                    <th class="py-2 px-3 text-center font-semibold text-gray-600 w-24 align-top" style="height: 48px; vertical-align: top;">Aksi</th>
+                    <th class="py-1 px-3 text-center font-semibold text-gray-600 w-10 align-top" style="height: 36px; vertical-align: top;">No</th>
+                    <th class="py-1 px-3 font-semibold text-gray-600 w-32 align-top" style="height: 36px; vertical-align: top;">Vendor</th>
+                    <th class="py-1 px-3 font-semibold text-gray-600 w-24 align-top" style="height: 36px; vertical-align: top;">Tarif</th>
+                    <th class="py-1 px-3 font-semibold text-gray-600 w-16 text-center align-top" style="height: 36px; vertical-align: top;">Ukuran</th>
+                    <th class="py-1 px-3 font-semibold text-gray-600 w-32 text-center align-top" style="height: 36px; vertical-align: top;">Harga</th>
+                    <th class="py-1 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 36px; vertical-align: top;">Tanggal Awal</th>
+                    <th class="py-1 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 36px; vertical-align: top;">Tanggal Akhir</th>
+                    <th class="py-1 px-3 font-semibold text-gray-600 w-40 align-top" style="height: 36px; vertical-align: top;">Keterangan</th>
+                    <th class="py-1 px-3 text-center font-semibold text-gray-600 w-24 align-top" style="height: 36px; vertical-align: top;">Aksi</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100 text-gray-700 text-[10px]">
                 @forelse ($pricelists as $index => $pricelist)
                     <tr class="hover:bg-gray-50 align-top">
-                        <td class="py-2 px-3 text-center w-10 align-top" style="height: 48px; vertical-align: top;">{{ $pricelists->firstItem() + $index }}</td>
-                        <td class="py-2 px-3 text-center w-32 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->vendor }}</td>
-                        <td class="py-2 px-3 text-center w-24 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->tarif }}</td>
-                        <td class="py-2 px-3 text-center w-16 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->ukuran_kontainer }} ft</td>
-                        <td class="py-2 px-3 text-center w-32 align-top" style="height: 48px; vertical-align: top;">Rp {{ rtrim(rtrim(number_format($pricelist->harga, 2, ',', '.'), '0'), ',') }}</td>
-                        <td class="py-2 px-3 text-center w-28 align-top" style="height: 48px; vertical-align: top;">{{ \Carbon\Carbon::parse($pricelist->tanggal_harga_awal)->format('d-m-Y') }}</td>
-                        <td class="py-2 px-3 text-center w-28 align-top" style="height: 48px; vertical-align: top;">{{ $pricelist->tanggal_harga_akhir ? \Carbon\Carbon::parse($pricelist->tanggal_harga_akhir)->format('d-m-Y') : '-' }}</td>
-                        <td class="py-2 px-3 text-center w-40 align-top" style="height: 48px; vertical-align: top; word-wrap: break-word;">{{ $pricelist->keterangan ?? '-' }}</td>
-                        <td class="py-2 px-3 text-center w-24 align-top" style="height: 48px; vertical-align: top;">
-                            <div class="flex items-center justify-center space-x-2">
-                                <a href="{{ route('master.master.pricelist-sewa-kontainer.edit', $pricelist->id) }}" class="bg-yellow-500 text-white py-0.5 px-2 rounded hover:bg-yellow-600 transition-colors duration-200 text-xs font-medium">Edit</a>
-                                <form action="{{ route('master.master.pricelist-sewa-kontainer.destroy', $pricelist->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                        <td class="py-1 px-3 text-center w-10 align-top" style="height: 36px; vertical-align: top;">{{ $pricelists->firstItem() + $index }}</td>
+                        <td class="py-1 px-3 text-center w-32 align-top" style="height: 36px; vertical-align: top;">{{ $pricelist->vendor }}</td>
+                        <td class="py-1 px-3 text-center w-24 align-top" style="height: 36px; vertical-align: top;">{{ $pricelist->tarif }}</td>
+                        <td class="py-1 px-3 text-center w-16 align-top" style="height: 36px; vertical-align: top;">{{ $pricelist->ukuran_kontainer }} ft</td>
+                        <td class="py-1 px-3 text-center w-32 align-top" style="height: 36px; vertical-align: top;">Rp {{ rtrim(rtrim(number_format($pricelist->harga, 2, ',', '.'), '0'), ',') }}</td>
+                        <td class="py-1 px-3 text-center w-28 align-top" style="height: 36px; vertical-align: top;">{{ \Carbon\Carbon::parse($pricelist->tanggal_harga_awal)->format('d-m-Y') }}</td>
+                        <td class="py-1 px-3 text-center w-28 align-top" style="height: 36px; vertical-align: top;">{{ $pricelist->tanggal_harga_akhir ? \Carbon\Carbon::parse($pricelist->tanggal_harga_akhir)->format('d-m-Y') : '-' }}</td>
+                        <td class="py-1 px-3 text-center w-40 align-top" style="height: 36px; vertical-align: top; word-wrap: break-word;">{{ $pricelist->keterangan ?? '-' }}</td>
+                        <td class="py-1 px-3 text-center w-24 align-top" style="height: 36px; vertical-align: top;">
+                            <div class="flex items-center justify-center space-x-3 text-[10px]">
+                                <a href="{{ route('master.master.pricelist-sewa-kontainer.edit', $pricelist->id) }}"
+                                   class="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                                   title="Edit Data">
+                                    Edit
+                                </a>
+                                <span class="text-gray-300">|</span>
+                                <form action="{{ route('master.master.pricelist-sewa-kontainer.destroy', $pricelist->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="bg-red-500 text-white py-0.5 px-2 rounded hover:bg-red-600 transition-colors duration-200 text-xs font-medium">Hapus</button>
+                                    <button type="submit" class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0"
+                                            title="Hapus Data">
+                                        Hapus
+                                    </button>
                                 </form>
                             </div>
                         </td>
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="9" class="py-4 px-6 text-center text-gray-500 text-[10px] align-top" style="height: 48px; vertical-align: top;">Tidak ada data pricelist yang ditemukan.</td>
+                        <td colspan="9" class="py-2 px-6 text-center text-gray-500 text-[10px] align-top" style="height: 36px; vertical-align: top;">Tidak ada data pricelist yang ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>

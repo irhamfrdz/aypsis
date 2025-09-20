@@ -48,10 +48,10 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($cabangs as $index => $cabang)
                     <tr class="hover:bg-gray-50">
-                        <td class="py-4 px-6 text-sm text-gray-900">{{ $cabangs->firstItem() + $index }}</td>
-                        <td class="py-4 px-6 text-sm font-medium text-gray-900">{{ $cabang->nama_cabang }}</td>
-                        <td class="py-4 px-6 text-sm text-gray-500">{{ $cabang->keterangan ?: '-' }}</td>
-                        <td class="py-4 px-6 text-center text-sm font-medium">
+                        <td class="py-4 px-6 text-[10px] text-gray-900">{{ $cabangs->firstItem() + $index }}</td>
+                        <td class="py-4 px-6 text-[10px] font-medium text-gray-900">{{ $cabang->nama_cabang }}</td>
+                        <td class="py-4 px-6 text-[10px] text-gray-500">{{ $cabang->keterangan ?: '-' }}</td>
+                        <td class="py-4 px-6 text-center text-[10px] font-medium">
                             <div class="flex justify-center space-x-2">
                                 <a href="{{ route('master.cabang.show', $cabang) }}" class="text-indigo-600 hover:text-indigo-900 transition duration-200">
                                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

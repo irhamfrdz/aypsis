@@ -83,37 +83,37 @@
 
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Pilih Memo Permohonan</h3>
             <div class="mb-6">
-                <div class="overflow-x-auto shadow-md sm:rounded-lg">
+                <div class="overflow-x-auto max-h-96 shadow-md sm:rounded-lg">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-50 sticky top-0 z-20 shadow-sm">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     <input type="checkbox" id="select-all" class="h-4 w-4 text-indigo-600 border-gray-300 rounded">
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Memo</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
-                                <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya Memo</th>
+                                <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Memo</th>
+                                <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                                <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                                <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
+                                <th class="px-6 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya Memo</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($permohonans as $permohonan)
                                 @if($permohonan->pranotas->isEmpty())
                                     <tr class="hover:bg-gray-50 transition-colors">
-                                        <td class="px-6 py-4 whitespace-nowrap">
+                                        <td class="px-6 py-2 whitespace-nowrap text-[10px]">
                                             <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" data-biaya="{{ $permohonan->total_harga_setelah_adj }}" class="permohonan-checkbox h-4 w-4 text-indigo-600 border-gray-300 rounded">
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $permohonan->nomor_memo }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $kegiatanMap[$permohonan->kegiatan] ?? ucfirst($permohonan->kegiatan) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $permohonan->supir->nama_lengkap ?? $permohonan->supir->nama_panggilan ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">{{ $permohonan->plat_nomor ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-right">Rp. {{ number_format($permohonan->total_harga_setelah_adj, 2, ',', '.') }}</td>
+                                        <td class="px-6 py-2 whitespace-nowrap text-[10px]">{{ $permohonan->nomor_memo }}</td>
+                                        <td class="px-6 py-2 whitespace-nowrap text-[10px]">{{ $kegiatanMap[$permohonan->kegiatan] ?? ucfirst($permohonan->kegiatan) }}</td>
+                                        <td class="px-6 py-2 whitespace-nowrap text-[10px]">{{ $permohonan->supir->nama_lengkap ?? $permohonan->supir->nama_panggilan ?? '-' }}</td>
+                                        <td class="px-6 py-2 whitespace-nowrap text-[10px]">{{ $permohonan->plat_nomor ?? '-' }}</td>
+                                        <td class="px-6 py-2 whitespace-nowrap text-right text-[10px]">Rp. {{ number_format($permohonan->total_harga_setelah_adj, 2, ',', '.') }}</td>
                                     </tr>
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                    <td colspan="6" class="px-6 py-2 text-center text-[10px] text-gray-500">
                                         Tidak ada permohonan yang tersedia.
                                     </td>
                                 </tr>

@@ -8,7 +8,7 @@
         </h2>
         <div class="overflow-x-auto rounded-xl border shadow-sm">
             <table class="min-w-full text-sm text-left text-gray-700">
-                <thead class="bg-gray-100">
+                <thead class="bg-gray-100 text-xs">
                         <tr>
                             <th class="px-4 py-3">Nomor Pembayaran</th>
                             <th class="px-4 py-3">Tanggal Pembayaran</th>
@@ -20,7 +20,7 @@
                             <th class="px-4 py-3">Aksi</th>
                         </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 bg-white">
+                <tbody class="divide-y divide-gray-200 bg-white text-[10px]">
                     @forelse ($pembayarans as $pembayaran)
                             <tr class="hover:bg-indigo-50 transition-colors">
                                 <td class="px-4 py-3">{{ $pembayaran->nomor_pembayaran ?? '-' }}</td>

@@ -34,15 +34,15 @@
         <div class="flex justify-between items-center mb-6">
             <h2 class="text-2xl font-bold text-indigo-800">Daftar Permohonan</h2>
             <div class="flex items-center space-x-3">
-                <a href="{{ route('permohonan.create') }}" class="inline-flex items-center px-5 py-2 border border-transparent text-base font-semibold rounded-lg shadow text-white bg-indigo-600 hover:bg-indigo-700 transition">
+                <a href="{{ route('permohonan.create') }}" class="inline-flex items-center px-3 py-1 border border-transparent text-sm font-semibold rounded-lg shadow text-white bg-indigo-600 hover:bg-indigo-700 transition">
                     + Tambah Permohonan
                 </a>
 
-                <a href="{{ route('permohonan.export') }}" class="inline-flex items-center px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300">Download CSV</a>
+                <a href="{{ route('permohonan.export') }}" class="inline-flex items-center px-3 py-1 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 text-sm">Download CSV</a>
 
                 <form action="{{ route('permohonan.import') }}" method="POST" enctype="multipart/form-data">
                     @csrf
-                    <label class="inline-flex items-center px-4 py-2 bg-white border rounded cursor-pointer text-sm">
+                    <label class="inline-flex items-center px-3 py-1 bg-white border rounded cursor-pointer text-xs">
                         <input type="file" name="csv_file" accept=".csv,text/csv" class="hidden" onchange="this.form.submit()">
                         Import CSV
                     </label>
@@ -78,25 +78,33 @@
             </div>
         @endif
 
-        <div class="overflow-x-auto rounded-lg border border-gray-200">
+        {{-- Rows Per Page Selection --}}
+        @include('components.rows-per-page', [
+            'routeName' => 'permohonan.index',
+            'paginator' => $permohonans,
+            'entityName' => 'permohonan',
+            'entityNamePlural' => 'permohonan'
+        ])
+
+        <div class="overflow-auto max-h-96 rounded-lg border border-gray-200">
             <form id="bulk-delete-form" action="{{ route('permohonan.bulk-delete') }}" method="POST">
                 @csrf
                 @method('DELETE')
                 <table class="min-w-full divide-y divide-indigo-200 bg-white rounded-lg">
-                    <thead class="bg-indigo-100">
+                    <thead class="bg-indigo-100 sticky top-0 z-20 shadow-sm">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">
                                 <input type="checkbox" id="select-all" class="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleSelectAll()">
                             </th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Memo</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Kegiatan</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Supir</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Tujuan</th>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">Total Biaya</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Memo</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Supir</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Tujuan</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Total Biaya</th>
                             <th class="px-6 py-3 text-right text-xs font-bold text-indigo-700 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-indigo-100">
+                    <tbody class="bg-white divide-y divide-indigo-100 text-[10px]">
                         @forelse ($permohonans as $permohonan)
                             <tr class="hover:bg-indigo-50 transition">
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -104,10 +112,10 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900 font-semibold">{{ $permohonan->nomor_memo }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $kegiatanMap[$permohonan->kegiatan] ?? $permohonan->kegiatan }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $permohonan->supir->nama_panggilan ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-indigo-800 text-center">{{ $permohonan->supir->nama_panggilan ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $permohonan->tujuan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900 font-bold">Rp. {{ number_format($permohonan->total_harga_setelah_adj, 0, ',', '.') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium space-x-2">
+                                <td class="px-6 py-4 whitespace-nowrap text-right text-[10px] font-medium space-x-2">
                                     <a href="{{ route('permohonan.show', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-indigo-500 text-white hover:bg-indigo-700 transition shadow">Lihat</a>
                                     <a href="{{ route('permohonan.edit', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-700 transition shadow">Edit</a>
                                     <a href="{{ route('permohonan.print', $permohonan) }}" target="_blank" class="inline-block px-3 py-1 rounded bg-green-500 text-white hover:bg-green-700 transition shadow" title="Print Memo Surat Jalan">
@@ -122,7 +130,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="7" class="px-6 py-4 text-center text-[10px] text-gray-500">
                                     Tidak ada data permohonan yang ditemukan.
                                 </td>
                             </tr>
@@ -132,7 +140,7 @@
             </form>
         </div>
         <div class="mt-6">
-            {{ $permohonans->links() }}
+            @include('components.modern-pagination', ['paginator' => $permohonans, 'routeName' => 'permohonan.index'])
         </div>
     </div>
 </div>

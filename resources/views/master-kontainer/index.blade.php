@@ -31,23 +31,23 @@
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
             <tr>
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Nomor Kontainer
                 </th>
 
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Ukuran
                 </th>
 
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tipe
                 </th>
 
-                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                 </th>
 
-                <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aksi
                 </th>
             </tr>
@@ -56,19 +56,19 @@
         <tbody class="bg-white divide-y divide-gray-200">
             @forelse ($kontainers as $kontainer )
             <tr>
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm font-medium text-gray-900">{{$kontainer->nomor_seri_gabungan}}</div>
                 </td>
 
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm text-gray-500">{{$kontainer->ukuran}}</div>
                 </td>
 
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm text-gray-500">{{$kontainer->tipe_kontainer}}</div>
                 </td>
 
-                <td class="px-6 py-4 whitespace-nowrap">
+                <td class="px-4 py-2 whitespace-nowrap text-center">
                     {{-- Contoh styling kondisional untuk status. Anda bisa sesuaikan dengan nilai status yang ada. --}}
                     @php
                         $statusClass = 'bg-gray-100 text-gray-800'; // Default
@@ -81,18 +81,21 @@
                     </span>
                 </td>
 
-                <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <a href="{{route('master.kontainer.edit',$kontainer->id)}}" class="text-indigo-600 hover:text-indigo-900 mr-4">edit</a>
-                    <form action="{{route('master.kontainer.destroy',$kontainer->id)}}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus kontainer ini?')">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-900">Hapus</button>
-                    </form>
+                <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
+                    <div class="flex items-center justify-end space-x-3 text-[10px]">
+                        <a href="{{route('master.kontainer.edit',$kontainer->id)}}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium" title="Edit Data">Edit</a>
+                        <span class="text-gray-300">|</span>
+                        <form action="{{route('master.kontainer.destroy',$kontainer->id)}}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus kontainer ini?')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0" title="Hapus Data">Hapus</button>
+                        </form>
+                    </div>
                 </td>
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data kontainer.</td>
+                <td colspan="5" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data kontainer.</td>
             </tr>
             @endforelse
         </tbody>
