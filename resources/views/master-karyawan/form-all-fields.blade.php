@@ -6,7 +6,7 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
             <label class="{{ $labelClasses }}" for="nik">NIK *</label>
-            <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" value="{{ old('nik', $karyawan->nik ?? '') }}" required>
+            <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" value="{{ old('nik', $karyawan->nik ?? '') }}" required placeholder="Masukkan NIK (angka saja, tanpa huruf)" pattern="[0-9]+">
         </div>
         <div>
             <label class="{{ $labelClasses }}" for="nama_lengkap">Nama Lengkap *</label>
@@ -102,11 +102,11 @@
         </div>
         <div>
             <label class="{{ $labelClasses }}" for="ktp">No KTP</label>
-            <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" value="{{ old('ktp', $karyawan->ktp ?? '') }}">
+            <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" value="{{ old('ktp', $karyawan->ktp ?? '') }}" placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" pattern="[0-9]{16}">
         </div>
         <div>
             <label class="{{ $labelClasses }}" for="kk">No KK</label>
-            <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" value="{{ old('kk', $karyawan->kk ?? '') }}">
+            <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" value="{{ old('kk', $karyawan->kk ?? '') }}" placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" pattern="[0-9]{16}">
         </div>
         <div>
             <label class="{{ $labelClasses }}" for="status_pajak">Status Pajak</label>

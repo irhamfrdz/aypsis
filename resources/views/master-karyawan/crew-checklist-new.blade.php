@@ -6,8 +6,7 @@
 @section('content')
 
 <div class="container mx-auto px-2 py-6">
-    <!-- Modern Header Card -->
-    <section class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-2xl shadow-lg p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+    <section class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-2xl shadow-lg p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-4">
             <div class="flex-shrink-0">
                 <div class="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-blue-800 text-2xl font-bold shadow-inner">
@@ -24,19 +23,19 @@
                 </div>
             </div>
         </div>
-        <div class="flex flex-col gap-2 items-end">
+        <div class="flex flex-col md:flex-row gap-2 md:items-center">
             @if(request()->routeIs('karyawan.onboarding-crew-checklist'))
-            <a href="{{ route('karyawan.onboarding-edit', $karyawan->id) }}" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+            <a href="{{ route('karyawan.onboarding-edit', $karyawan->id) }}" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-sm">
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
                 Kembali ke Onboarding
             </a>
             @else
-            <a href="{{ route('master.karyawan.index') }}" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+            <a href="{{ route('master.karyawan.index') }}" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-sm">
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
                 Kembali
             </a>
             @endif
-            <a href="{{ route('master.karyawan.crew-checklist.print', $karyawan->id) }}" target="_blank" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200">
+            <a href="{{ route('master.karyawan.crew-checklist.print', $karyawan->id) }}" target="_blank" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-sm">
                 <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"></path></svg>
                 Cetak
             </a>
@@ -44,11 +43,10 @@
     </section>
 
     <div class="bg-white shadow rounded p-6">
-    <form id="crew-checklist-new-form" action="{{ route('master.karyawan.crew-checklist.update', $karyawan->id) }}" method="POST">
+        <form id="crew-checklist-new-form" action="{{ route('master.karyawan.crew-checklist.update', $karyawan->id) }}" method="POST">
             @csrf
 
-            <!-- Legend -->
-            <div class="mb-6 flex flex-wrap items-center gap-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
+            <div class="mb-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
                 <span class="font-semibold text-gray-800">Legenda Status:</span>
                 <div class="inline-flex items-center gap-2">
                     <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
@@ -68,18 +66,16 @@
                 </div>
             </div>
 
-            <!-- Summary + Tips -->
             <div class="mb-4 p-4 bg-blue-50 rounded-md flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div class="text-sm text-blue-700">Ringkasan: <span id="summary-ada" class="font-semibold">0</span> Ada • <span id="summary-soon" class="font-semibold">0</span> Akan Expired • <span id="summary-expired" class="font-semibold">0</span> Expired • <span id="summary-tidak" class="font-semibold">0</span> Tidak</div>
                 <div class="text-sm text-gray-600">Format tanggal: <code class="bg-white px-1 py-0.5 rounded">10/Sep/2025</code> atau <code class="bg-white px-1 py-0.5 rounded">10/09/2025</code></div>
             </div>
 
-            <!-- Advanced Search Bar -->
             <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                 <div class="flex flex-col md:flex-row md:items-center gap-4">
                     <div class="flex-1">
                         <input type="text" id="item-search" placeholder="Cari item checklist..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm" autocomplete="off">
-                        <div class="mt-2 text-xs text-gray-500 flex items-center gap-4">
+                        <div class="mt-2 text-xs text-gray-500 flex flex-wrap items-center gap-4">
                             <span>Tip: Gunakan kata kunci seperti "BST", "ijazah", "rekening"</span>
                             <span class="text-blue-600 font-medium">• Enter untuk fokus pertama</span>
                         </div>
@@ -99,12 +95,10 @@
             </div>
 
             @php
-                // Grouping keywords (lowercase) — we match by contains to handle variations in stored names
                 $groupDataPribadiKeywords = ['formulir data karyawan','cv','e-ktp','kartu keluarga','bpjs','npwp','photo','pas photo','rek','rekening','buku pelaut'];
                 $groupIjasahKeywords = ['ijazah','endor','endors'];
                 $groupSertifikatKeywords = ['bst','scrb','aff','mfa','sat','sdsd','erm','brm','mc'];
 
-                // Deduplicate by normalized item_name (case-insensitive, whitespace-normalized)
                 $uniqueMap = [];
                 foreach ($checklistItems as $it) {
                     $norm = mb_strtolower(trim(preg_replace('/\s+/', ' ', $it->item_name)));
@@ -113,350 +107,284 @@
                     }
                 }
                 $items = collect(array_values($uniqueMap));
+
+                $dataPribadiItems = $items->filter(function($it) use ($groupDataPribadiKeywords) {
+                    $name = mb_strtolower($it->item_name);
+                    foreach ($groupDataPribadiKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return true; }
+                    return false;
+                });
+
+                $ijasahItems = $items->filter(function($it) use ($groupIjasahKeywords) {
+                    $name = mb_strtolower($it->item_name);
+                    foreach ($groupIjasahKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return true; }
+                    return false;
+                });
+
+                $sertifikatItems = $items->filter(function($it) use ($groupSertifikatKeywords) {
+                    $name = mb_strtolower($it->item_name);
+                    foreach ($groupSertifikatKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return true; }
+                    return false;
+                });
+
+                $othersItems = $items->filter(function($it) use ($dataPribadiItems, $ijasahItems, $sertifikatItems) {
+                    return !in_array($it, $dataPribadiItems->all()) && !in_array($it, $ijasahItems->all()) && !in_array($it, $sertifikatItems->all());
+                });
             @endphp
 
-            <div class="space-y-8">
-                {{-- Data Pribadi --}}
-                <section aria-labelledby="section-data-pribadi" class="rounded-2xl shadow-lg border border-blue-100 bg-blue-50/60">
-                <details class="group" open>
-                    <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
-                        <div class="flex items-center justify-between">
-                            <h4 id="section-data-pribadi" class="text-lg font-bold text-blue-900 tracking-wide flex items-center gap-2">
-                                <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
-                                1. Data Pribadi
-                            </h4>
-                            <div class="text-sm text-blue-700 font-semibold">Ada: <span class="section-count" data-section="data-pribadi">0</span></div>
-                        </div>
-                    </summary>
-                    <div class="grid gap-4 px-6 pb-6">
-                        @php $seenCanonical = []; @endphp
-                        @foreach($items->filter(function($it) use ($groupDataPribadiKeywords){
-                            $name = mb_strtolower($it->item_name);
-                            foreach ($groupDataPribadiKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return true; }
-                            return false;
-                        }) as $item)
-                            @php
-                                // canonical grouping to avoid duplicates (e.g., 'REKENING BCA' vs 'Rek BCA')
-                                $norm = mb_strtolower(trim(preg_replace('/\s+/', ' ', $item->item_name)));
-                                $canon = $norm;
-                                if (preg_match('/\b(rek|rekening|bca)\b/', $norm)) { $canon = 'rekening bca'; }
-                                if (!empty($seenCanonical[$canon])) { @endphp @continue @php }
-                                $seenCanonical[$canon] = true;
-
-                                $status = ($item->status ?? 'tidak');
-                                $badgeColor = $status === 'ada' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700';
-                                $displayLabel = $canon === 'rekening bca' ? 'Rekening BCA' : $item->item_name;
-                            @endphp
-
-                            <div class="border border-blue-100 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="data-pribadi">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h3 class="text-base font-semibold text-gray-800">{{ $displayLabel }}</h3>
-                                            <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
-                                                data-item-id="{{ $item->id }}"
-                                                :class="{
-                                                    'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
-                                                    'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
-                                                    'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
-                                                    'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
-                                                }">
-                                                {{ ucfirst($status) }}
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="space-y-8">
+                    {{-- Data Pribadi --}}
+                    <section aria-labelledby="section-data-pribadi" class="rounded-2xl shadow-lg border border-blue-100 bg-blue-50/60">
+                        <details class="group" open>
+                            <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
+                                <div class="flex items-center justify-between">
+                                    <h4 id="section-data-pribadi" class="text-lg font-bold text-blue-900 tracking-wide flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+                                        1. Data Pribadi
+                                    </h4>
+                                    <div class="text-sm text-blue-700 font-semibold">Ada: <span class="section-count" data-section="data-pribadi">0</span></div>
+                                </div>
+                            </summary>
+                            <div class="grid gap-4 px-6 pb-6">
+                                @foreach($dataPribadiItems as $item)
+                                    @php
+                                        $status = ($item->status ?? 'tidak');
+                                        $displayLabel = $item->item_name;
+                                    @endphp
+                                    <div class="border border-blue-100 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="data-pribadi">
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h3 class="text-base font-semibold text-gray-800">{{ $displayLabel }}</h3>
+                                                <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
+                                                    data-item-id="{{ $item->id }}"
+                                                    :class="{
+                                                        'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
+                                                        'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
+                                                        'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
+                                                        'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
+                                                    }">
+                                                    {{ ucfirst($status) }}
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
+                                                    <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
+                                                    <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
+                                                    <input type="date" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="date-picker block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
+                                                    <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="expired">Format tidak valid.</p>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
+                                                <textarea name="checklist[{{ $item->id }}][catatan]" rows="1" class="block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
                                             </div>
                                         </div>
+                                        <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
+                                        <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
+                                    </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    </section>
 
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
-                                                <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
-                                                <p class="mt-1 text-xs text-gray-500">Min 4 karakter alfanumerik.</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
+                    {{-- Others --}}
+                    @if($othersItems->count())
+                    <section aria-labelledby="section-others" class="rounded-2xl shadow-lg border border-gray-200 bg-gray-50/60">
+                        <details class="group" open>
+                            <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
+                                <div class="flex items-center justify-between">
+                                    <h4 id="section-others" class="text-lg font-bold text-gray-800 tracking-wide flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+                                        Lainnya
+                                    </h4>
+                                    <div class="text-sm text-gray-700 font-semibold">Ada: <span class="section-count" data-section="others">0</span></div>
+                                </div>
+                            </summary>
+                            <div class="grid gap-4 px-6 pb-6">
+                                @foreach($othersItems as $item)
+                                    @php
+                                        $status = ($item->status ?? 'tidak');
+                                        $displayLabel = $item->item_name;
+                                    @endphp
+                                    <div class="border border-gray-200 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="others">
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h3 class="text-base font-semibold text-gray-800">{{ $displayLabel }}</h3>
+                                                <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
+                                                    data-item-id="{{ $item->id }}"
+                                                    :class="{
+                                                        'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
+                                                        'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
+                                                        'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
+                                                        'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
+                                                    }">
+                                                    {{ ucfirst($status) }}
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
+                                                    <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
+                                                    <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
+                                                    <input type="date" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="date-picker block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
+                                                    <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="expired">Format tidak valid.</p>
+                                                </div>
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Terbit</label>
-                                                <input type="date" name="checklist[{{ $item->id }}][issued_date]" value="{{ $item->issued_date ? \Carbon\Carbon::parse($item->issued_date)->format('Y-m-d') : '' }}" class="date-picker block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="issued">
-                                                <p class="mt-1 text-xs text-gray-500">Pilih tanggal terbit.</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
-                                                <input type="date" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="date-picker block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
-                                                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ada.</p>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
+                                                <textarea name="checklist[{{ $item->id }}][catatan]" rows="1" class="block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
                                             </div>
                                         </div>
+                                        <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
+                                        <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
+                                    </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    </section>
+                    @endif
+                </div>
 
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
-                                            <textarea name="checklist[{{ $item->id }}][catatan]" rows="2" class="block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
+                <div class="space-y-8">
+                    {{-- Ijasah --}}
+                    <section aria-labelledby="section-ijasah" class="rounded-2xl shadow-lg border border-indigo-100 bg-indigo-50/60">
+                        <details class="group" open>
+                            <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
+                                <div class="flex items-center justify-between">
+                                    <h4 id="section-ijasah" class="text-lg font-bold text-indigo-900 tracking-wide flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+                                        2. Ijasah
+                                    </h4>
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-sm text-indigo-700 font-semibold">Ada: <span class="section-count" data-section="ijasah">0</span></div>
+                                        <div class="w-24 bg-indigo-200 rounded-full h-2">
+                                            <div class="section-progress bg-indigo-600 h-2 rounded-full" data-section="ijasah" style="width: 0%"></div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
-                                <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
-                            </div>
-                        @endforeach
-                    </div>
-                </details>
-                </section>
-
-                {{-- Ijasah --}}
-                <section aria-labelledby="section-ijasah" class="rounded-2xl shadow-lg border border-indigo-100 bg-indigo-50/60">
-                <details class="group" open>
-                    <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
-                        <div class="flex items-center justify-between">
-                            <h4 id="section-ijasah" class="text-lg font-bold text-indigo-900 tracking-wide flex items-center gap-2">
-                                <svg class="w-5 h-5 text-indigo-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
-                                2. Ijasah
-                            </h4>
-                            <div class="flex items-center gap-3">
-                                <div class="text-sm text-indigo-700 font-semibold">Ada: <span class="section-count" data-section="ijasah">0</span></div>
-                                <div class="w-24 bg-indigo-200 rounded-full h-2">
-                                    <div class="section-progress bg-indigo-600 h-2 rounded-full" data-section="ijasah" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </summary>
-                    <div class="grid gap-4 px-6 pb-6">
-                        @foreach($items->filter(function($it) use ($groupIjasahKeywords){
-                            $name = mb_strtolower($it->item_name);
-                            foreach ($groupIjasahKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return true; }
-                            return false;
-                        }) as $item)
-                            @php
-                                $status = ($item->status ?? 'tidak');
-                                $badgeColor = $status === 'ada' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700';
-                            @endphp
-
-                            <div class="border border-indigo-100 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="ijasah">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h3 class="text-base font-semibold text-gray-800">{{ $item->item_name }}</h3>
-                                            <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
-                                                data-item-id="{{ $item->id }}"
-                                                :class="{
-                                                    'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
-                                                    'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
-                                                    'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
-                                                    'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
-                                                }">
-                                                {{ ucfirst($status) }}
+                            </summary>
+                            <div class="grid gap-4 px-6 pb-6">
+                                @foreach($ijasahItems as $item)
+                                    @php
+                                        $status = ($item->status ?? 'tidak');
+                                        $displayLabel = $item->item_name;
+                                    @endphp
+                                    <div class="border border-indigo-100 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="ijasah">
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h3 class="text-base font-semibold text-gray-800">{{ $displayLabel }}</h3>
+                                                <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
+                                                    data-item-id="{{ $item->id }}"
+                                                    :class="{
+                                                        'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
+                                                        'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
+                                                        'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
+                                                        'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
+                                                    }">
+                                                    {{ ucfirst($status) }}
+                                                </div>
+                                            </div>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
+                                                    <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
+                                                    <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
+                                                    <input type="date" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="date-picker block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
+                                                    <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="expired">Format tidak valid.</p>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
+                                                <textarea name="checklist[{{ $item->id }}][catatan]" rows="1" class="block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
                                             </div>
                                         </div>
+                                        <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
+                                        <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
+                                    </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    </section>
 
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
-                                                <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
-                                                <p class="mt-1 text-xs text-gray-500">Min 4 karakter alfanumerik.</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Terbit</label>
-                                                <input type="hidden" name="checklist[{{ $item->id }}][issued_date]" value="{{ $item->issued_date ? \Carbon\Carbon::parse($item->issued_date)->format('Y-m-d') : '' }}" class="iso-date-input" data-item-id="{{ $item->id }}" data-field="issued">
-                                                <input type="text" placeholder="dd/Mon/YYYY" value="{{ $item->issued_date ? \Carbon\Carbon::parse($item->issued_date)->format('d/M/Y') : '' }}" class="display-date-input block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="issued">
-                                                <p class="mt-1 text-xs text-gray-500">Contoh: 10/Sep/2025</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="issued">Format tidak valid.</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
-                                                <input type="hidden" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="iso-date-input" data-item-id="{{ $item->id }}" data-field="expired">
-                                                <input type="text" placeholder="dd/Mon/YYYY" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('d/M/Y') : '' }}" class="display-date-input block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
-                                                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ada.</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="expired">Format tidak valid.</p>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
-                                            <textarea name="checklist[{{ $item->id }}][catatan]" rows="2" class="block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
+                    {{-- Sertifikat --}}
+                    <section aria-labelledby="section-sertifikat" class="rounded-2xl shadow-lg border border-purple-100 bg-purple-50/60">
+                        <details class="group" open>
+                            <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
+                                <div class="flex items-center justify-between">
+                                    <h4 id="section-sertifikat" class="text-lg font-bold text-purple-900 tracking-wide flex items-center gap-2">
+                                        <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
+                                        3. Sertifikat
+                                    </h4>
+                                    <div class="flex items-center gap-3">
+                                        <div class="text-sm text-purple-700 font-semibold">Ada: <span class="section-count" data-section="sertifikat">0</span></div>
+                                        <div class="w-24 bg-purple-200 rounded-full h-2">
+                                            <div class="section-progress bg-purple-600 h-2 rounded-full" data-section="sertifikat" style="width: 0%"></div>
                                         </div>
                                     </div>
                                 </div>
-
-                                <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
-                                <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
-                            </div>
-                        @endforeach
-                    </div>
-                </details>
-                </section>
-
-                {{-- Sertifikat --}}
-                <section aria-labelledby="section-sertifikat" class="rounded-2xl shadow-lg border border-purple-100 bg-purple-50/60">
-                <details class="group" open>
-                    <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
-                        <div class="flex items-center justify-between">
-                            <h4 id="section-sertifikat" class="text-lg font-bold text-purple-900 tracking-wide flex items-center gap-2">
-                                <svg class="w-5 h-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
-                                3. Sertifikat
-                            </h4>
-                            <div class="flex items-center gap-3">
-                                <div class="text-sm text-purple-700 font-semibold">Ada: <span class="section-count" data-section="sertifikat">0</span></div>
-                                <div class="w-24 bg-purple-200 rounded-full h-2">
-                                    <div class="section-progress bg-purple-600 h-2 rounded-full" data-section="sertifikat" style="width: 0%"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </summary>
-                    <div class="grid gap-4 px-6 pb-6">
-                        @foreach($items->filter(function($it) use ($groupSertifikatKeywords){
-                            $name = mb_strtolower($it->item_name);
-                            foreach ($groupSertifikatKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return true; }
-                            return false;
-                        }) as $item)
-                            @php
-                                $status = ($item->status ?? 'tidak');
-                                $badgeColor = $status === 'ada' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700';
-                            @endphp
-
-                            <div class="border border-purple-100 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="sertifikat">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h3 class="text-base font-semibold text-gray-800">{{ $item->item_name }}</h3>
-                                            <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
-                                                data-item-id="{{ $item->id }}"
-                                                :class="{
-                                                    'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
-                                                    'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
-                                                    'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
-                                                    'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
-                                                }">
-                                                {{ ucfirst($status) }}
+                            </summary>
+                            <div class="grid gap-4 px-6 pb-6">
+                                @foreach($sertifikatItems as $item)
+                                    @php
+                                        $status = ($item->status ?? 'tidak');
+                                        $displayLabel = $item->item_name;
+                                    @endphp
+                                    <div class="border border-purple-100 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="sertifikat">
+                                        <div class="flex-1">
+                                            <div class="flex items-center justify-between mb-3">
+                                                <h3 class="text-base font-semibold text-gray-800">{{ $displayLabel }}</h3>
+                                                <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
+                                                    data-item-id="{{ $item->id }}"
+                                                    :class="{
+                                                        'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
+                                                        'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
+                                                        'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
+                                                        'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
+                                                    }">
+                                                    {{ ucfirst($status) }}
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
-                                                <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
-                                                <p class="mt-1 text-xs text-gray-500">Min 4 karakter alfanumerik.</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
+                                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
+                                                    <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
+                                                    <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
+                                                </div>
+                                                <div>
+                                                    <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
+                                                    <input type="date" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="date-picker block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
+                                                    <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="expired">Format tidak valid.</p>
+                                                </div>
                                             </div>
                                             <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Terbit</label>
-                                                <input type="hidden" name="checklist[{{ $item->id }}][issued_date]" value="{{ $item->issued_date ? \Carbon\Carbon::parse($item->issued_date)->format('Y-m-d') : '' }}" class="iso-date-input" data-item-id="{{ $item->id }}" data-field="issued">
-                                                <input type="text" placeholder="dd/Mon/YYYY" value="{{ $item->issued_date ? \Carbon\Carbon::parse($item->issued_date)->format('d/M/Y') : '' }}" class="display-date-input block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="issued">
-                                                <p class="mt-1 text-xs text-gray-500">Contoh: 10/Sep/2025</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="issued">Format tidak valid.</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
-                                                <input type="hidden" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="iso-date-input" data-item-id="{{ $item->id }}" data-field="expired">
-                                                <input type="text" placeholder="dd/Mon/YYYY" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('d/M/Y') : '' }}" class="display-date-input block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
-                                                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ada.</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="expired">Format tidak valid.</p>
+                                                <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
+                                                <textarea name="checklist[{{ $item->id }}][catatan]" rows="1" class="block w-full px-4 py-3 text-sm border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
                                             </div>
                                         </div>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
-                                            <textarea name="checklist[{{ $item->id }}][catatan]" rows="2" class="block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
-                                        </div>
+                                        <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
+                                        <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
                                     </div>
-                                </div>
-
-                                <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
-                                <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
+                                @endforeach
                             </div>
-                        @endforeach
-                    </div>
-                </details>
-                </section>
-
-                {{-- Others (not in groups) --}}
-                @php
-                    $others = $items->filter(function($it) use ($groupDataPribadiKeywords, $groupIjasahKeywords, $groupSertifikatKeywords) {
-                        $name = mb_strtolower($it->item_name);
-                        foreach ($groupDataPribadiKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return false; }
-                        foreach ($groupIjasahKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return false; }
-                        foreach ($groupSertifikatKeywords as $kw) { if (mb_stripos($name, $kw) !== false) return false; }
-                        return true;
-                    });
-                @endphp
-                @if($others->count())
-                <section aria-labelledby="section-others" class="rounded-2xl shadow-lg border border-gray-200 bg-gray-50/60">
-                <details class="group" open>
-                    <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
-                        <div class="flex items-center justify-between">
-                            <h4 id="section-others" class="text-lg font-bold text-gray-800 tracking-wide flex items-center gap-2">
-                                <svg class="w-5 h-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20"><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 14a6 6 0 110-12 6 6 0 010 12z"/></svg>
-                                Lainnya
-                            </h4>
-                            <div class="text-sm text-gray-700 font-semibold">Ada: <span class="section-count" data-section="others">0</span></div>
-                        </div>
-                    </summary>
-                    <div class="grid gap-4 px-6 pb-6">
-                        @foreach($others as $item)
-                            @php
-                                $status = ($item->status ?? 'tidak');
-                                $badgeColor = $status === 'ada' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700';
-                            @endphp
-
-                            <div class="border border-gray-200 rounded-xl p-4 shadow bg-white/90 hover:shadow-md transition-shadow duration-200 checklist-item" data-section="others">
-                                <div class="flex items-start justify-between gap-4">
-                                    <div class="flex-1">
-                                        <div class="flex items-center justify-between mb-3">
-                                            <h3 class="text-base font-semibold text-gray-800">{{ $item->item_name }}</h3>
-                                            <div class="inline-flex items-center px-2 py-1 rounded-full status-badge text-xs font-semibold"
-                                                data-item-id="{{ $item->id }}"
-                                                :class="{
-                                                    'bg-green-100 text-green-800': '{{ $status }}' === 'ada',
-                                                    'bg-yellow-100 text-yellow-800': '{{ $status }}' === 'akan expired',
-                                                    'bg-red-100 text-red-800': '{{ $status }}' === 'expired',
-                                                    'bg-gray-100 text-gray-700': '{{ $status }}' === 'tidak'
-                                                }">
-                                                {{ ucfirst($status) }}
-                                            </div>
-                                        </div>
-
-                                        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Nomor / Info</label>
-                                                <input type="text" name="checklist[{{ $item->id }}][nomor_sertifikat]" value="{{ $item->nomor_sertifikat ?? '' }}" placeholder="Contoh: ABCD1234" class="nomor-field block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-item-name="{{ $item->item_name }}">
-                                                <p class="mt-1 text-xs text-gray-500">Min 4 karakter alfanumerik.</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden nomor-error" data-item-id="{{ $item->id }}">Nomor tidak valid.</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Terbit</label>
-                                                <input type="hidden" name="checklist[{{ $item->id }}][issued_date]" value="{{ $item->issued_date ? \Carbon\Carbon::parse($item->issued_date)->format('Y-m-d') : '' }}" class="iso-date-input" data-item-id="{{ $item->id }}" data-field="issued">
-                                                <input type="text" placeholder="dd/Mon/YYYY" value="{{ $item->issued_date ? \Carbon\Carbon::parse($item->issued_date)->format('d/M/Y') : '' }}" class="display-date-input block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="issued">
-                                                <p class="mt-1 text-xs text-gray-500">Contoh: 10/Sep/2025</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="issued">Format tidak valid.</p>
-                                            </div>
-                                            <div>
-                                                <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Expired</label>
-                                                <input type="hidden" name="checklist[{{ $item->id }}][expired_date]" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('Y-m-d') : '' }}" class="iso-date-input" data-item-id="{{ $item->id }}" data-field="expired">
-                                                <input type="text" placeholder="dd/Mon/YYYY" value="{{ $item->expired_date ? \Carbon\Carbon::parse($item->expired_date)->format('d/M/Y') : '' }}" class="display-date-input block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm" data-item-id="{{ $item->id }}" data-field="expired">
-                                                <p class="mt-1 text-xs text-gray-500">Kosongkan jika tidak ada.</p>
-                                                <p class="mt-1 text-xs text-red-600 hidden date-error" data-item-id="{{ $item->id }}" data-field="expired">Format tidak valid.</p>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <label class="block text-xs font-medium text-gray-700 mb-1">Catatan</label>
-                                            <textarea name="checklist[{{ $item->id }}][catatan]" rows="2" class="block w-full px-4 py-3 text-base border border-gray-300 rounded-lg bg-gray-50 focus:bg-white focus:ring-4 focus:ring-blue-200 focus:border-blue-500 transition-all duration-200 shadow-sm resize-none" placeholder="Tambahkan catatan">{{ $item->catatan ?? '' }}</textarea>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <input type="hidden" name="checklist[{{ $item->id }}][status]" value="{{ $status }}" class="status-input" data-item-id="{{ $item->id }}">
-                                <input type="hidden" name="checklist[{{ $item->id }}][item_name]" value="{{ $item->item_name }}">
-                            </div>
-                        @endforeach
-                    </div>
-                </details>
-                </section>
-                @endif
+                        </details>
+                    </section>
+                </div>
             </div>
 
-            <!-- Tombol submit tersembunyi untuk trigger JS -->
-            <button type="submit" id="submit-btn" style="display:none"></button>
-            <!-- Floating sticky save bar -->
-            <div id="sticky-bar" class="fixed bottom-4 left-4 right-4 md:right-auto md:bottom-8 md:left-auto md:pr-8 flex items-center justify-end gap-4 pointer-events-auto z-50">
+            <button type="submit" id="submit-btn" class="hidden"></button>
+            <div id="sticky-bar" class="fixed bottom-4 left-4 right-4 md:right-8 md:bottom-8 md:left-auto flex items-center justify-end gap-4 pointer-events-auto z-50">
                 <div class="hidden md:inline-flex items-center bg-white/90 text-gray-700 px-4 py-2 rounded-lg shadow">
-                    <div class="text-sm">Ringkasan: <span id="sticky-ada" class="font-semibold">0</span> • <span id="sticky-soon" class="font-semibold">0</span> • <span id="sticky-expired" class="font-semibold">0</span> • <span id="sticky-tidak" class="font-semibold">0</span></div>
+                    <div class="text-sm">Ringkasan: <span id="sticky-ada" class="font-semibold">0</span> Ada • <span id="sticky-soon" class="font-semibold">0</span> Akan Expired • <span id="sticky-expired" class="font-semibold">0</span> Expired • <span id="sticky-tidak" class="font-semibold">0</span> Tidak</div>
                 </div>
                 <button type="button" id="sticky-save-btn" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
                     <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
@@ -471,7 +399,10 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const alnumRegex = /^[A-Za-z0-9]{4,}$/;
+    const form = document.getElementById('crew-checklist-new-form');
+    const submitBtn = document.getElementById('submit-btn');
     const nomorFields = document.querySelectorAll('.nomor-field');
+    const datePickers = document.querySelectorAll('.date-picker');
 
     function updateItemStatus(itemId, nomorValue) {
         const statusInput = document.querySelector(`input.status-input[data-item-id="${itemId}"]`);
@@ -482,138 +413,216 @@ document.addEventListener('DOMContentLoaded', function() {
 
     nomorFields.forEach(function(field) {
         const itemId = field.getAttribute('data-item-id');
-        ['input','change','blur'].forEach(function(evt) { field.addEventListener(evt, function(){ updateItemStatus(itemId, this.value); validateNomorField(field); computeExpiryBadge(); updateSummary(); }); });
+        ['input','change','blur'].forEach(function(evt) {
+            field.addEventListener(evt, function() {
+                updateItemStatus(itemId, this.value);
+                validateNomorField(field);
+                computeExpiryBadge();
+                updateSummary();
+            });
+        });
         updateItemStatus(itemId, field.value);
         validateNomorField(field);
     });
 
-    const form = document.getElementById('crew-checklist-new-form');
-    const submitBtn = document.getElementById('submit-btn');
     if (form) {
-        form.addEventListener('submit', function(){
-            nomorFields.forEach(function(field){ updateItemStatus(field.getAttribute('data-item-id'), field.value); });
-            // Before submit, sync display date inputs into hidden ISO inputs and validate
+        form.addEventListener('submit', function(e) {
             let hasErrors = false;
-            document.querySelectorAll('.display-date-input').forEach(function(display){
-                const id = display.getAttribute('data-item-id');
-                const field = display.getAttribute('data-field');
-                const isoInput = document.querySelector(`.iso-date-input[data-item-id="${id}"][data-field="${field}"]`);
-                if (!isoInput) return;
-                const iso = parseDisplayDateToIso(display.value);
-                isoInput.value = iso || '';
-                // show/hide date error
-                const err = document.querySelector(`.date-error[data-item-id="${id}"][data-field="${field}"]`);
-                if (display.value && !iso) { if (err) err.classList.remove('hidden'); hasErrors = true; } else { if (err) err.classList.add('hidden'); }
+            nomorFields.forEach(function(field){
+                if (!validateNomorField(field)) {
+                    hasErrors = true;
+                }
             });
-            // validate nomor fields once more before submit
-            nomorFields.forEach(function(field){ if (!validateNomorField(field)) hasErrors = true; });
-            if (hasErrors) { if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Simpan Checklist'; } alert('Periksa kembali input yang berwarna merah.'); return false; }
-            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Menyimpan...'; }
+            datePickers.forEach(function(picker){
+                if (!validateDateField(picker)) {
+                    hasErrors = true;
+                }
+            });
+
+            if (hasErrors) {
+                e.preventDefault();
+                alert('Periksa kembali input yang berwarna merah.');
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    stickySaveBtn.disabled = false;
+                    stickySaveBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Simpan Checklist';
+                }
+                return false;
+            }
         });
     }
 
-
-    // Date picker: update badge and summary on change
-    document.querySelectorAll('.date-picker').forEach(function(picker){
+    datePickers.forEach(function(picker){
         picker.addEventListener('change', function(){
+            validateDateField(picker);
             computeExpiryBadge();
             updateSummary();
         });
     });
 
-    // Validation helpers
     function validateNomorField(field) {
-        const v = field.value && field.value.trim();
-        const ok = v && alnumRegex.test(v.trim());
-        const err = document.querySelector(`.nomor-error[data-item-id="${field.getAttribute('data-item-id')}"]`);
-        if (!ok) { if (err) err.classList.remove('hidden'); field.classList.add('border-red-400'); } else { if (err) err.classList.add('hidden'); field.classList.remove('border-red-400'); }
-        return ok;
+        const value = field.value && field.value.trim();
+        const isValid = !value || alnumRegex.test(value);
+        const errorElement = document.querySelector(`.nomor-error[data-item-id="${field.getAttribute('data-item-id')}"]`);
+        if (!isValid) {
+            if (errorElement) errorElement.classList.remove('hidden');
+            field.classList.add('border-red-400');
+        } else {
+            if (errorElement) errorElement.classList.add('hidden');
+            field.classList.remove('border-red-400');
+        }
+        return isValid;
     }
 
-    // Summary updater
+    function validateDateField(field) {
+        const value = field.value;
+        const isValid = !value || !isNaN(new Date(value));
+        const errorElement = document.querySelector(`.date-error[data-item-id="${field.getAttribute('data-item-id')}"][data-field="${field.getAttribute('data-field')}"]`);
+        if (!isValid) {
+            if (errorElement) errorElement.classList.remove('hidden');
+            field.classList.add('border-red-400');
+        } else {
+            if (errorElement) errorElement.classList.add('hidden');
+            field.classList.remove('border-red-400');
+        }
+        return isValid;
+    }
+
     function updateSummary() {
         let cntAda = 0, cntSoon = 0, cntExp = 0, cntTidak = 0;
         document.querySelectorAll('.status-badge').forEach(function(badge){
-            const txt = badge.textContent.trim().toLowerCase();
-            if (txt === 'ada') cntAda++; else if (txt === 'akan expired' || txt === 'akan kadaluarsa' || txt === 'akan expired') cntSoon++; else if (txt === 'expired') cntExp++; else if (txt === 'tidak') cntTidak++;
+            const text = badge.textContent.trim().toLowerCase();
+            if (text === 'ada' || text === 'valid') cntAda++;
+            else if (text === 'akan expired') cntSoon++;
+            else if (text === 'expired') cntExp++;
+            else if (text === 'tidak tersedia' || text === 'tidak') cntTidak++;
         });
+
         document.getElementById('summary-ada').textContent = cntAda;
         document.getElementById('summary-soon').textContent = cntSoon;
         document.getElementById('summary-expired').textContent = cntExp;
         document.getElementById('summary-tidak').textContent = cntTidak;
 
-        // update sticky bar copies
         const stickyAda = document.getElementById('sticky-ada'); if (stickyAda) stickyAda.textContent = cntAda;
         const stickySoon = document.getElementById('sticky-soon'); if (stickySoon) stickySoon.textContent = cntSoon;
         const stickyExp = document.getElementById('sticky-expired'); if (stickyExp) stickyExp.textContent = cntExp;
         const stickyTidak = document.getElementById('sticky-tidak'); if (stickyTidak) stickyTidak.textContent = cntTidak;
-        // per-section counts (counts items with status 'ada' inside each data-section)
+
         ['data-pribadi','ijasah','sertifikat','others'].forEach(function(section){
             const el = document.querySelector(`.section-count[data-section="${section}"]`);
             if (!el) return;
-            const cnt = document.querySelectorAll(`[data-section="${section}"] .status-badge`).length ? Array.from(document.querySelectorAll(`[data-section="${section}"] .status-badge`)).filter(b=>b.textContent.trim().toLowerCase() === 'ada').length : 0;
+            const cnt = Array.from(document.querySelectorAll(`[data-section="${section}"] .status-badge`)).filter(b => b.textContent.trim().toLowerCase() === 'ada').length;
             el.textContent = cnt;
+
+            const totalInGroup = document.querySelectorAll(`[data-section="${section}"]`).length;
+            const progressEl = document.querySelector(`.section-progress[data-section="${section}"]`);
+            if (progressEl) {
+                const percentage = totalInGroup > 0 ? (cnt / totalInGroup) * 100 : 0;
+                progressEl.style.width = `${percentage}%`;
+            }
         });
     }
 
-    // Determine expiry state for badges
     function computeExpiryBadge() {
         const today = new Date();
-        document.querySelectorAll('.status-badge').forEach(function(badge){
-            const id = badge.getAttribute('data-item-id');
-            const isoExp = document.querySelector(`.iso-date-input[data-item-id="${id}"][data-field="expired"]`);
-            const isoIssued = document.querySelector(`.iso-date-input[data-item-id="${id}"][data-field="issued"]`);
-            const statusInput = document.querySelector(`input.status-input[data-item-id="${id}"]`);
+        document.querySelectorAll('.checklist-item').forEach(function(item) {
+            const id = item.querySelector('[data-item-id]').getAttribute('data-item-id');
+            const expiredDate = item.querySelector('.date-picker[data-field="expired"]');
+            const nomorField = item.querySelector('.nomor-field');
+            const statusBadge = item.querySelector('.status-badge');
+            const statusInput = item.querySelector('.status-input');
 
-            let badgeText = badge.textContent.trim();
-            let cls = 'bg-gray-100 text-gray-700';
-
-            // If no nomor/status marked 'ada', show 'Tidak'
-            if (statusInput && statusInput.value !== 'ada') {
-                badgeText = 'Tidak';
-                cls = 'bg-gray-100 text-gray-700';
-            } else if (isoExp && isoExp.value) {
-                const expDate = new Date(isoExp.value + 'T00:00:00');
-                const diffDays = Math.ceil((expDate - today) / (1000*60*60*24));
+            if (!nomorField || !nomorField.value.trim()) {
+                statusInput.value = 'tidak';
+                statusBadge.textContent = 'Tidak';
+                statusBadge.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold status-badge bg-gray-100 text-gray-700';
+            } else if (expiredDate && expiredDate.value) {
+                const expDate = new Date(expiredDate.value + 'T00:00:00');
+                const diffDays = Math.ceil((expDate - today) / (1000 * 60 * 60 * 24));
                 if (diffDays < 0) {
-                    badgeText = 'Expired';
-                    cls = 'bg-red-100 text-red-800';
+                    statusInput.value = 'expired';
+                    statusBadge.textContent = 'Expired';
+                    statusBadge.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold status-badge bg-red-100 text-red-800';
                 } else if (diffDays <= 30) {
-                    badgeText = 'Akan Expired';
-                    cls = 'bg-yellow-100 text-yellow-800';
+                    statusInput.value = 'akan expired';
+                    statusBadge.textContent = 'Akan Expired';
+                    statusBadge.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold status-badge bg-yellow-100 text-yellow-800';
                 } else {
-                    badgeText = 'Ada';
-                    cls = 'bg-green-100 text-green-800';
+                    statusInput.value = 'ada';
+                    statusBadge.textContent = 'Ada';
+                    statusBadge.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold status-badge bg-green-100 text-green-800';
                 }
-            } else if (statusInput && statusInput.value === 'ada') {
-                // Has nomor but no expiry date
-                badgeText = 'Ada';
-                cls = 'bg-green-100 text-green-800';
+            } else {
+                statusInput.value = 'ada';
+                statusBadge.textContent = 'Ada';
+                statusBadge.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold status-badge bg-green-100 text-green-800';
             }
+        });
+        updateSummary();
+    }
 
-            badge.textContent = badgeText;
-            badge.className = 'inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold status-badge ' + cls;
+    const stickySaveBtn = document.getElementById('sticky-save-btn');
+    if (stickySaveBtn) {
+        stickySaveBtn.addEventListener('click', function() {
+            submitBtn.click();
         });
     }
 
-    // Recompute badges on init and when display dates change
+    const expandAllBtn = document.getElementById('expand-all-btn');
+    const collapseAllBtn = document.getElementById('collapse-all-btn');
+    expandAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('details').forEach(d => d.open = true);
+    });
+    collapseAllBtn.addEventListener('click', function() {
+        document.querySelectorAll('details').forEach(d => d.open = false);
+    });
+
+    const searchInput = document.getElementById('item-search');
+    const searchResultsDiv = document.getElementById('search-results');
+    const searchCountSpan = document.getElementById('search-count');
+    const allItems = document.querySelectorAll('.checklist-item');
+
+    searchInput.addEventListener('keyup', function(e) {
+        const query = this.value.trim().toLowerCase();
+        let foundCount = 0;
+
+        if (query.length > 2 || query.length === 0) {
+            allItems.forEach(item => {
+                const itemName = item.querySelector('h3').textContent.toLowerCase();
+                const notes = item.querySelector('textarea')?.value.toLowerCase();
+                const isMatch = itemName.includes(query) || (notes && notes.includes(query));
+
+                if (isMatch || query === '') {
+                    item.style.display = 'block';
+                    if (query !== '') {
+                        item.closest('details').open = true;
+                        foundCount++;
+                    }
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+
+            if (query.length > 0) {
+                searchResultsDiv.classList.remove('hidden');
+                searchCountSpan.textContent = foundCount;
+            } else {
+                searchResultsDiv.classList.add('hidden');
+            }
+        }
+
+        if (e.key === 'Enter') {
+            const firstMatch = document.querySelector('.checklist-item:not([style*="display: none"])');
+            if (firstMatch) {
+                firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                firstMatch.querySelector('input, textarea').focus();
+            }
+        }
+    });
+
+    // Initial run
     computeExpiryBadge();
-    document.querySelectorAll('.display-date-input').forEach(function(d){ d.addEventListener('blur', function(){ computeExpiryBadge(); updateSummary(); }); });
-    document.querySelectorAll('.nomor-field').forEach(function(n){ n.addEventListener('blur', function(){ computeExpiryBadge(); updateSummary(); }); });
-    // initial summary
     updateSummary();
-
-    // Wire sticky save button to submit main form
-    const stickyBtn = document.getElementById('sticky-save-btn');
-    if (stickyBtn) {
-        stickyBtn.addEventListener('click', function(){
-            // trigger validation and submit via original submit button
-            if (submitBtn) submitBtn.click();
-        });
-    }
 });
 </script>
 @endpush
-
-@endsection
-

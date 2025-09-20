@@ -590,6 +590,13 @@ class UserController extends Controller
                         continue; // Skip processing this permission
                     }
 
+                    // Special handling for tagihan-cat permissions
+                    if ($module === 'tagihan' && strpos($action, 'cat-') === 0) {
+                        // For tagihan-cat-view, split further
+                        $action = str_replace('cat-', '', $action); // Remove 'cat-' prefix
+                        $module = 'tagihan-cat'; // Set module to tagihan-cat
+                    }
+
                     // Initialize module array if not exists
                     if (!isset($matrixPermissions[$module])) {
                         $matrixPermissions[$module] = [];
@@ -1534,6 +1541,21 @@ class UserController extends Controller
                         }
                     }
 
+                    // Special handling for tagihan-cat module
+                    if ($module === 'tagihan-cat') {
+                        foreach ($possibleActions as $dbAction) {
+                            // Use dash notation (tagihan-cat-view)
+                            $permissionName = $module . '-' . $dbAction;
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                                break;
+                            }
+                        }
+                    }
+
                     // Special handling for tagihan-kontainer-sewa module
                     if ($module === 'tagihan-kontainer-sewa') {
                         foreach ($possibleActions as $dbAction) {
@@ -1669,12 +1691,6 @@ class UserController extends Controller
         return array_unique($permissionIds); // Remove duplicates
     }
 
-    /**
-     * Get user's permissions for copying (without middleware for AJAX use).
-     *
-     * @param  \App\Models\User  $user
-     * @return \Illuminate\Http\JsonResponse
-     */
     /**
      * Get user's permissions for copying (without middleware for AJAX use).
      *

@@ -72,9 +72,9 @@
                             <!-- NIK -->
                             <div>
                                 <label for="nik" class="block text-sm font-medium text-gray-700">NIK *</label>
-                                <input type="text" name="nik" id="nik" value="{{ old('nik') }}" required maxlength="20"
-                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500">
-                                <p class="text-xs text-gray-500 mt-1">Nomor Induk Kependudukan (16 digit)</p>
+                                <input type="text" name="nik" id="nik" value="{{ old('nik') }}" required maxlength="25" pattern="[0-9]+"
+                                       class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500" placeholder="Masukkan NIK (angka saja, tanpa huruf)">
+                                <p class="text-xs text-gray-500 mt-1">harus berupa angka saja, tidak boleh ada huruf</p>
                             </div>
 
                             <!-- No Ketenagakerjaan -->

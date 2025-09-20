@@ -167,12 +167,12 @@
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                                 <div class="space-y-2">
                                     <label for="nik" class="block text-sm font-semibold text-gray-700">NIK</label>
-                                    <input type="text" id="nik" name="nik" value="{{ old('nik', $user->karyawan->nik) }}" maxlength="20"
-                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('nik') border-red-300 @enderror">
+                                    <input type="text" id="nik" name="nik" value="{{ old('nik', $user->karyawan->nik) }}" maxlength="25" pattern="[0-9]+"
+                                        class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent @error('nik') border-red-300 @enderror" placeholder="Masukkan NIK (angka saja, tanpa huruf)">
                                     @error('nik')
                                         <p class="text-red-600 text-sm mt-1">{{ $message }}</p>
                                     @enderror
-                                    <p class="text-gray-500 text-xs">Nomor Induk Kependudukan (16 digit)</p>
+                                    <p class="text-gray-500 text-xs">harus berupa angka saja, tidak boleh ada huruf</p>
                                 </div>
 
                                 <div class="space-y-2">

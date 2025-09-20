@@ -65,7 +65,7 @@
                 <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK<span class="text-red-500 ml-1">*</span></label>
-                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK" value="{{ old('nik', $karyawan->nik ?? '') }}">
+                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK (angka saja, tanpa huruf)" pattern="[0-9]+" value="{{ old('nik', $karyawan->nik ?? '') }}">
                     </div>
                     <div>
                         <label for="nama_lengkap" class="{{ $labelClasses }}">Nama Lengkap <span class="text-red-500 ml-1">*</span></label>
@@ -124,11 +124,11 @@
                     </div>
                     <div>
                         <label for="ktp" class="{{ $labelClasses }}">Nomor KTP</label>
-                        <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="16 digit nomor KTP">
+                        <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" pattern="[0-9]{16}">
                     </div>
                     <div>
                         <label for="kk" class="{{ $labelClasses }}">Nomor KK</label>
-                        <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="16 digit nomor KK">
+                        <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" pattern="[0-9]{16}">
                     </div>
                 </div>
             </fieldset>

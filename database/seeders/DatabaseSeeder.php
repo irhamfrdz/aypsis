@@ -28,6 +28,7 @@ class DatabaseSeeder extends Seeder
             DivisiSeeder::class, // Seeder untuk master divisi
             PekerjaanSeeder::class, // Seeder untuk master pekerjaan
             BankSeeder::class, // Seeder untuk master bank
+            TagihanCatPermissionsSeeder::class, // Permission untuk tagihan CAT
         ]);
     }
 }

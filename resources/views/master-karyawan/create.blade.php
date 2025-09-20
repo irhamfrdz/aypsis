@@ -80,8 +80,9 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
-                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan 16 digit NIK" maxlength="16" pattern="[0-9]{16}">
-                        <p class="text-xs text-gray-500 mt-1">NIK harus berupa 16 digit angka</p>
+                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK (angka saja, tanpa huruf)" maxlength="25" pattern="[0-9]+">
+                        <p class="text-xs text-gray-500 mt-1">NIK harus berupa angka saja, tidak boleh ada huruf</p>
+                                                <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK harus berupa angka saja, tidak boleh ada huruf</div>
                     </div>
 
                     <div>
@@ -149,15 +150,19 @@
                 </div>
 
                 <div>
-                    <label for="ktp" class="{{ $labelClasses }}">Nomor KTP</label>
-                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan 16 digit nomor KTP" maxlength="16" pattern="[0-9]{16}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KTP harus berupa 16 digit angka</p>
+                    <label for="ktp" class="{{ $labelClasses }}">Nomor KTP <span class="text-red-500">*</span></label>
+                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" required>
+                    <p class="text-xs text-gray-500 mt-1">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
+                    <div id="ktpError" class="text-xs text-red-600 mt-1 hidden">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
+                    <div id="ktpWarning" class="text-xs mt-1 hidden"></div>
                 </div>
 
                 <div>
-                    <label for="kk" class="{{ $labelClasses }}">Nomor KK</label>
-                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan 16 digit nomor KK" maxlength="16" pattern="[0-9]{16}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KK harus berupa 16 digit angka</p>
+                    <label for="kk" class="{{ $labelClasses }}">Nomor KK <span class="text-red-500">*</span></label>
+                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" required>
+                    <p class="text-xs text-gray-500 mt-1">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
+                    <div id="kkError" class="text-xs text-red-600 mt-1 hidden">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
+                    <div id="kkWarning" class="text-xs mt-1 hidden"></div>
                 </div>
             </div>
         </fieldset>
@@ -427,6 +432,167 @@
             if (namaLengkapInput && atasNamaInput) {
                 namaLengkapInput.addEventListener('input', function() {
                     atasNamaInput.value = this.value.trim();
+                });
+            }
+
+            // Validasi KTP dan KK
+            const ktpInput = document.getElementById('ktp');
+            const kkInput = document.getElementById('kk');
+            const nikInput = document.getElementById('nik');
+            const ktpError = document.getElementById('ktpError');
+            const kkError = document.getElementById('kkError');
+            const nikError = document.getElementById('nikError');
+            const ktpWarning = document.getElementById('ktpWarning');
+            const kkWarning = document.getElementById('kkWarning');
+            const form = document.querySelector('form');
+
+            // Fungsi validasi nomor identitas (KTP/KK) - harus tepat 16 digit
+            function validateIdentityNumber(input, errorElement, fieldName) {
+                const value = input.value.trim();
+                const isValid = /^\d{16}$/.test(value);
+
+                if (value === '') {
+                    // Kosongkan error jika field kosong (karena mungkin tidak wajib)
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+
+                if (!isValid) {
+                    errorElement.textContent = `${fieldName} harus tepat 16 digit angka saja, tidak boleh ada huruf`;
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500');
+                    return false;
+                } else {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+            }
+
+            // Fungsi validasi NIK - lebih fleksibel, hanya perlu angka
+            function validateNIK(input, errorElement) {
+                const value = input.value.trim();
+                const isValid = /^\d+$/.test(value) && value.length > 0; // Hanya angka, minimal 1 digit
+
+                if (value === '') {
+                    // Kosongkan error jika field kosong (karena mungkin tidak wajib)
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+
+                if (!isValid) {
+                    errorElement.textContent = 'NIK harus berupa angka saja, tidak boleh ada huruf';
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500');
+                    return false;
+                } else {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+            }
+
+            // Fungsi untuk menampilkan warning saat input KTP/KK
+            function showIdentityWarning(input, warningElement, fieldName) {
+                const value = input.value.trim();
+                const length = value.length;
+
+                if (length > 0 && length < 16) {
+                    warningElement.textContent = `${fieldName} membutuhkan 16 digit angka saja. Saat ini: ${length} digit`;
+                    warningElement.classList.remove('hidden');
+                    warningElement.classList.add('text-yellow-600');
+                    warningElement.classList.remove('text-red-600');
+                } else if (length === 16) {
+                    warningElement.textContent = `✅ ${fieldName} lengkap (16 digit angka saja)`;
+                    warningElement.classList.remove('hidden');
+                    warningElement.classList.add('text-green-600');
+                    warningElement.classList.remove('text-yellow-600', 'text-red-600');
+                } else if (length > 16) {
+                    warningElement.textContent = `❌ ${fieldName} terlalu panjang. Maksimal 16 digit angka saja`;
+                    warningElement.classList.remove('hidden');
+                    warningElement.classList.add('text-red-600');
+                    warningElement.classList.remove('text-yellow-600', 'text-green-600');
+                } else {
+                    warningElement.classList.add('hidden');
+                }
+            }
+
+            // Event listener untuk NIK
+            if (nikInput) {
+                nikInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateNIK(this, nikError);
+                });
+
+                nikInput.addEventListener('blur', function() {
+                    validateNIK(this, nikError);
+                });
+            }
+
+            // Event listener untuk KTP
+            if (ktpInput) {
+                ktpInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateIdentityNumber(this, ktpError, 'Nomor KTP');
+                    showIdentityWarning(this, ktpWarning, 'KTP');
+                });
+
+                ktpInput.addEventListener('blur', function() {
+                    validateIdentityNumber(this, ktpError, 'Nomor KTP');
+                    showIdentityWarning(this, ktpWarning, 'KTP');
+                });
+            }
+
+            // Event listener untuk KK
+            if (kkInput) {
+                kkInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateIdentityNumber(this, kkError, 'Nomor KK');
+                    showIdentityWarning(this, kkWarning, 'KK');
+                });
+
+                kkInput.addEventListener('blur', function() {
+                    validateIdentityNumber(this, kkError, 'Nomor KK');
+                    showIdentityWarning(this, kkWarning, 'KK');
+                });
+            }
+
+            // Validasi sebelum submit
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+
+                    // Validasi NIK
+                    if (nikInput && nikInput.value.trim() !== '') {
+                        if (!validateNIK(nikInput, nikError)) {
+                            isValid = false;
+                            nikInput.focus();
+                        }
+                    }
+
+                    // Validasi KTP
+                    if (ktpInput && ktpInput.value.trim() !== '') {
+                        if (!validateIdentityNumber(ktpInput, ktpError, 'Nomor KTP')) {
+                            isValid = false;
+                            if (isValid) ktpInput.focus();
+                        }
+                    }
+
+                    // Validasi KK
+                    if (kkInput && kkInput.value.trim() !== '') {
+                        if (!validateIdentityNumber(kkInput, kkError, 'Nomor KK')) {
+                            isValid = false;
+                            if (isValid) kkInput.focus();
+                        }
+                    }
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Mohon perbaiki kesalahan pada form sebelum menyimpan.');
+                        return false;
+                    }
                 });
             }
         });

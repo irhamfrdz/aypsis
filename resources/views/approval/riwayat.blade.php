@@ -126,28 +126,28 @@
         @endif
 
         <!-- Summary Stats -->
-        <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold text-blue-600">{{ $permohonans->total() }}</div>
-                <div class="text-sm text-blue-700">Total Permohonan</div>
+        <div class="mb-6 grid grid-cols-1 md:grid-cols-4 gap-1">
+            <div class="bg-blue-50 border border-blue-200 rounded-lg p-1 text-center">
+                <div class="text-sm font-bold text-blue-600">{{ $permohonans->total() }}</div>
+                <div class="text-xs text-blue-700">Total Permohonan</div>
             </div>
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold text-green-600">
+            <div class="bg-green-50 border border-green-200 rounded-lg p-1 text-center">
+                <div class="text-sm font-bold text-green-600">
                     {{ $permohonans->where('status', 'Selesai')->count() }}
                 </div>
-                <div class="text-sm text-green-700">Selesai</div>
+                <div class="text-xs text-green-700">Selesai</div>
             </div>
-            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold text-yellow-600">
+            <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-1 text-center">
+                <div class="text-sm font-bold text-yellow-600">
                     {{ $permohonans->where('status', 'Bermasalah')->count() }}
                 </div>
-                <div class="text-sm text-yellow-700">Bermasalah</div>
+                <div class="text-xs text-yellow-700">Bermasalah</div>
             </div>
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4 text-center">
-                <div class="text-2xl font-bold text-red-600">
+            <div class="bg-red-50 border border-red-200 rounded-lg p-1 text-center">
+                <div class="text-sm font-bold text-red-600">
                     {{ $permohonans->where('status', 'Dibatalkan')->count() }}
                 </div>
-                <div class="text-sm text-red-700">Dibatalkan</div>
+                <div class="text-xs text-red-700">Dibatalkan</div>
             </div>
         </div>
 
@@ -156,69 +156,69 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                        <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Nomor Memo
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                        <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                             Supir
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+                        <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
                             Kegiatan
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                        <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Tujuan
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
+                        <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                             Vendor
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
+                        <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                             Nomor Kontainer
                         </th>
-                        <th class="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                        <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Tanggal Selesai
                         </th>
-                        <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                        <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
                             Status
                         </th>
-                        <th class="px-6 py-4 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                        <th class="px-6 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Aksi
                         </th>
                     </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200">
+                <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                     @forelse ($permohonans as $permohonan)
                         <tr class="hover:bg-gray-50 transition-colors duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">
+                            <td class="px-6 py-2 whitespace-nowrap">
+                                <div class="font-medium text-gray-900">
                                     {{ $permohonan->nomor_memo }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
+                            <td class="px-6 py-2 whitespace-nowrap">
+                                <div class="text-gray-900">
                                     {{ $permohonan->supir->nama_panggilan ?? '-' }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-2">
                                 @php
                                     $kegiatanLabel = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)->value('nama_kegiatan') ?? (isset($permohonan->kegiatan) ? ucfirst($permohonan->kegiatan) : '-');
                                 @endphp
-                                <div class="text-sm text-gray-900 max-w-xs">
+                                <div class="text-gray-900 max-w-xs">
                                     {{ $kegiatanLabel }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $permohonan->tujuan }}">
+                            <td class="px-6 py-2">
+                                <div class="text-gray-900 max-w-xs truncate" title="{{ $permohonan->tujuan }}">
                                     {{ $permohonan->tujuan }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
+                            <td class="px-6 py-2 whitespace-nowrap">
+                                <div class="text-gray-900">
                                     {{ $permohonan->vendor_perusahaan ?? '-' }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4">
+                            <td class="px-6 py-2">
                                 @if ($permohonan->kontainers && $permohonan->kontainers->count())
-                                    <div class="text-sm text-gray-900">
+                                    <div class="text-gray-900">
                                         @if($permohonan->kontainers->count() > 1)
                                             <div class="space-y-1">
                                                 @foreach($permohonan->kontainers->take(2) as $kontainer)
@@ -239,18 +239,18 @@
                                         @endif
                                     </div>
                                 @else
-                                    <span class="text-gray-400 text-sm">-</span>
+                                    <span class="text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm text-gray-900">
+                            <td class="px-6 py-2 whitespace-nowrap">
+                                <div class="text-gray-900">
                                     {{ \Carbon\Carbon::parse($permohonan->updated_at)->format('d-m-Y') }}
                                 </div>
                                 <div class="text-xs text-gray-500">
                                     {{ \Carbon\Carbon::parse($permohonan->updated_at)->format('H:i') }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-6 py-2 whitespace-nowrap text-center">
                                 @if($permohonan->status == 'Selesai')
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -274,25 +274,25 @@
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-6 py-2 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-2">
-                                    <!-- View Detail Button -->
-                                    <button onclick="showDetail({{ $permohonan->id }})" class="inline-flex items-center px-3 py-1.5 border border-blue-300 text-xs font-medium rounded-md text-blue-700 bg-blue-50 hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-150">
+                                    <!-- Detail Label -->
+                                    <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-700 bg-blue-50 rounded-md">
                                         <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
                                         Detail
-                                    </button>
+                                    </span>
 
                                     @if($permohonan->checkpoints && $permohonan->checkpoints->count())
-                                        <!-- Timeline Button -->
-                                        <button onclick="showTimeline({{ $permohonan->id }})" class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-150">
+                                        <!-- Timeline Label -->
+                                        <span class="inline-flex items-center px-3 py-1.5 text-xs font-medium text-gray-700 bg-white rounded-md">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                             </svg>
                                             Timeline
-                                        </button>
+                                        </span>
                                     @endif
                                 </div>
                             </td>

@@ -4,64 +4,72 @@
 @section('page_title','Edit Karyawan')
 
 @section('content')
-<div class="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50 py-4 px-4 sm:px-6 lg:px-8">
-    <!-- Mobile-optimized header -->
-    <div class="max-w-4xl mx-auto">
-        <div class="text-center mb-6 lg:text-left">
-            <h2 class="text-2xl lg:text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent mb-2">
-                Formulir Edit Karyawan
-            </h2>
-            <p class="text-gray-600 text-sm lg:text-base">Edit data karyawan di bawah ini</p>
+<div class="space-y-6 max-w-4xl mx-auto">
+
+    {{-- Notifikasi --}}
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert">
+            <p class="font-bold">Sukses</p>
+            <p>{{ session('success') }}</p>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+            <p class="font-bold">Error</p>
+            <p>{{ session('error') }}</p>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
+            <p class="font-bold">Terdapat kesalahan dalam formulir:</p>
+            <ul class="list-disc list-inside mt-2">
+                @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
+
+    <div class="bg-white shadow-md rounded-lg p-6">
+        <div class="mb-6">
+            <h2 class="text-2xl font-bold text-gray-800">Formulir Edit Karyawan</h2>
+            <p class="text-gray-600 mt-1">Edit data karyawan di bawah ini</p>
         </div>
 
-        @if ($errors->any())
-            <div class="bg-red-50 border-l-4 border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 shadow-sm">
-                <div class="flex items-center mb-2">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                    </svg>
-                    <span class="font-medium">Terdapat kesalahan dalam formulir:</span>
-                </div>
-                <ul class="list-disc list-inside space-y-1 text-sm">
-                    @foreach ($errors->all() as $error )
-                    <li>{{$error}}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+        @php
+            // Choose appropriate update route
+            $formAction = route('master.karyawan.update', $karyawan->id);
+        @endphp
 
-        <div class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100">
-            @php
-                // Choose appropriate update route
-                $formAction = route('master.karyawan.update', $karyawan->id);
-            @endphp
-
-            <form action="{{ $formAction }}" method="POST" class="divide-y divide-gray-100">
+        <form action="{{ $formAction }}" method="POST">
             @csrf
             @method('PUT')
 
         @php
-            // Definisikan kelas Tailwind untuk input yang responsif dan mobile-friendly
-            $inputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-gray-400 focus:ring-0 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
-            $readonlyInputClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-100 shadow-sm text-base p-3 lg:p-4 min-h-[48px]";
-            $selectClasses = "mt-1 block w-full rounded-xl border-gray-300 bg-gray-50 shadow-sm focus:border-gray-400 focus:ring-0 text-base p-3 lg:p-4 transition-all duration-200 min-h-[48px]";
-            $labelClasses = "block text-sm font-semibold text-gray-700 mb-2";
-            $fieldsetClasses = "p-6 lg:p-8 space-y-6";
-            $legendClasses = "text-lg lg:text-xl font-bold text-gray-800 mb-6 flex items-center";
+            // Definisikan kelas Tailwind yang sederhana dan konsisten
+            $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
+            $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-[10px] p-2.5";
+            $selectClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
+            $labelClasses = "block text-xs font-medium text-gray-700";
+            $fieldsetClasses = "border border-gray-200 p-6 rounded-lg mb-6 bg-gray-50/30";
+            $legendClasses = "text-lg font-semibold text-gray-800 px-3 py-1 bg-white border border-gray-200 rounded-md shadow-sm flex items-center";
         @endphp
         {{-- Informasi Pribadi --}}
         <fieldset class="{{ $fieldsetClasses }}">
             <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                 </svg>
                 Informasi Pribadi
             </legend>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="nik" class="{{ $labelClasses }}">NIK<span class="text-red-500 ml-1">*</span></label>
-                    <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan 16 digit NIK" maxlength="16" pattern="[0-9]{16}" value="{{ old('nik', $karyawan->nik) }}">
-                    <p class="text-xs text-gray-500 mt-1">NIK harus berupa 16 digit angka</p>
+                    <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
+                    <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK (angka saja, tanpa huruf)" maxlength="25" pattern="[0-9]+" value="{{ old('nik', $karyawan->nik) }}">
+                    <p class="text-xs text-gray-500 mt-1">NIK harus berupa angka saja, tidak boleh ada huruf</p>
+                    <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK harus berupa angka saja, tidak boleh ada huruf</div>
                 </div>
 
                 <div>
@@ -130,14 +138,18 @@
 
                 <div>
                     <label for="ktp" class="{{ $labelClasses }}">Nomor KTP</label>
-                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan 16 digit nomor KTP" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KTP harus berupa 16 digit angka</p>
+                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
+                    <p class="text-xs text-gray-500 mt-1">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
+                    <div id="ktpError" class="text-xs text-red-600 mt-1 hidden">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
+                    <div id="ktpWarning" class="text-xs mt-1 hidden"></div>
                 </div>
 
                 <div>
                     <label for="kk" class="{{ $labelClasses }}">Nomor KK</label>
-                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan 16 digit nomor KK" maxlength="16" pattern="[0-9]{16}" value="{{ old('kk', $karyawan->kk) }}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KK harus berupa 16 digit angka</p>
+                    <input type="text" name="kk" id="kk" class="{{ $inputClasses }}" placeholder="Masukkan nomor KK (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('kk', $karyawan->kk) }}">
+                    <p class="text-xs text-gray-500 mt-1">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
+                    <div id="kkError" class="text-xs text-red-600 mt-1 hidden">Nomor KK harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
+                    <div id="kkWarning" class="text-xs mt-1 hidden"></div>
                 </div>
             </div>
         </fieldset>
@@ -145,26 +157,20 @@
         {{-- Informasi Perusahaan --}}
         <fieldset class="{{ $fieldsetClasses }}">
             <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                 </svg>
                 Informasi Perusahaan
             </legend>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="divisi" class="{{ $labelClasses }}">Divisi</label>
                     <select name="divisi" id="divisi" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Divisi --</option>
-                        <option value="Direksi" {{ old('divisi', $karyawan->divisi) == 'Direksi' ? 'selected' : '' }}>Direksi</option>
-                        <option value="Administrasi" {{ old('divisi', $karyawan->divisi) == 'Administrasi' ? 'selected' : '' }}>Administrasi</option>
-                        <option value="ABK" {{ old('divisi', $karyawan->divisi) == 'ABK' ? 'selected' : '' }}>ABK</option>
-                        <option value="Krani" {{ old('divisi', $karyawan->divisi) == 'Krani' ? 'selected' : '' }}>Krani</option>
-                        <option value="Lapangan" {{ old('divisi', $karyawan->divisi) == 'Lapangan' ? 'selected' : '' }}>Lapangan</option>
-                        <option value="Mekanik" {{ old('divisi', $karyawan->divisi) == 'Mekanik' ? 'selected' : '' }}>Mekanik</option>
-                        <option value="Port" {{ old('divisi', $karyawan->divisi) == 'Port' ? 'selected' : '' }}>Port</option>
-                        <option value="Satpam" {{ old('divisi', $karyawan->divisi) == 'Satpam' ? 'selected' : '' }}>Satpam</option>
-                        <option value="Supir" {{ old('divisi', $karyawan->divisi) == 'Supir' ? 'selected' : '' }}>Supir</option>
-                        <option value="Non Karyawan" {{ old('divisi', $karyawan->divisi) == 'Non Karyawan' ? 'selected' : '' }}>Non Karyawan</option>
+                        @foreach($divisis as $divisi)
+                        <option value="{{ $divisi->nama_divisi }}" {{ old('divisi', $karyawan->divisi) == $divisi->nama_divisi ? 'selected' : '' }}>{{ $divisi->nama_divisi }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -172,9 +178,6 @@
                     <label for="pekerjaan" class="{{ $labelClasses }}">Pekerjaan</label>
                     <select name="pekerjaan" id="pekerjaan" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Pekerjaan --</option>
-                        @if($karyawan->pekerjaan)
-                        <option value="{{ $karyawan->pekerjaan }}" selected>{{ $karyawan->pekerjaan }}</option>
-                        @endif
                     </select>
                 </div>
 
@@ -228,13 +231,14 @@
         {{-- Informasi Alamat --}}
         <fieldset class="{{ $fieldsetClasses }}">
             <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg class="w-6 h-6 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                 </svg>
                 Informasi Alamat
             </legend>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="alamat" class="{{ $labelClasses }}">Alamat</label>
                     <input type="text" name="alamat" id="alamat" class="{{ $inputClasses }}" placeholder="Jalan, nomor rumah" value="{{ old('alamat', $karyawan->alamat) }}">
@@ -413,37 +417,25 @@
 
             const alamatLengkapTextarea = document.getElementById('alamat_lengkap')
 
-            //Mapping divisi ke pekerjaan
-            const pekerjaanOptions = {
-                'Direksi' : ['Direksi'],
-                'Administrasi' : ['Administrasi'],
-                'ABK' : ['ABK'],
-                'Krani' : ['Kenek Alat Berat', 'Kenek Supir', 'Krani'],
-                'Lapangan' : ['Dinas Luar', 'Umum'],
-                'Mekanik' : ['Montir', 'Tambal Ban', 'Tukang Las', 'Teknisi'],
-                'Port' : ['Manajer', 'Pengawasan Kendaraan', 'Shipping', 'Tally', 'Port Captain', 'Port Engineer'],
-                'Satpam' : ['Satpam'],
-                'Supir' : ['Operator Crane', 'Operator Forklift', 'Supir Penumpang', 'Supir Trailer', 'Supir Truck'],
-                'Non Karyawan' : ['Buruh Lepas', 'Magang', 'PBM', 'Cat Kontainer']
-            }
+            // Data pekerjaan dari database
+            const pekerjaanByDivisi = @json($pekerjaanByDivisi);
 
-            // Fungsi Untuk Memperbarui Opsi Pekerjaan
-            function updatePekerjaanOptions(){
-                //Bersihkan Opsi Pekerjaan
-                pekerjaanSelect.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>'
+            // Fungsi untuk memperbarui opsi pekerjaan
+            function updatePekerjaanOptions() {
+                pekerjaanSelect.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
 
-                const selectedDivisi = divisiSelect.value
-                if(selectedDivisi && pekerjaanOptions[selectedDivisi]){
-                    pekerjaanOptions[selectedDivisi].forEach(function(pekerjaan){
-                        const option = document.createElement('option')
-                        option.value = pekerjaan
-                        option.textContent = pekerjaan
+                const selectedDivisi = divisiSelect.value;
+                if (selectedDivisi && pekerjaanByDivisi[selectedDivisi]) {
+                    pekerjaanByDivisi[selectedDivisi].forEach(function(pekerjaan) {
+                        const option = document.createElement('option');
+                        option.value = pekerjaan;
+                        option.textContent = pekerjaan;
                         // Set selected if it matches current karyawan pekerjaan
-                        if(pekerjaan === '{{ $karyawan->pekerjaan }}'){
-                            option.selected = true
+                        if (pekerjaan === '{{ $karyawan->pekerjaan }}') {
+                            option.selected = true;
                         }
-                        pekerjaanSelect.appendChild(option)
-                    })
+                        pekerjaanSelect.appendChild(option);
+                    });
                 }
             }
 

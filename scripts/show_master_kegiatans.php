@@ -12,7 +12,7 @@ try {
         echo "count: $count\n";
         $rows = \DB::table('master_kegiatans')->orderBy('id','desc')->limit(10)->get();
         foreach ($rows as $r) {
-            echo sprintf("id=%d kode=%s kegiatan=%s status=%s\n", $r->id, $r->kode, $r->kegiatan, $r->status);
+            echo sprintf("id=%d kode_kegiatan=%s nama_kegiatan=%s status=%s\n", $r->id, $r->kode_kegiatan, $r->nama_kegiatan, $r->status);
         }
         echo "\ncolumns:\n";
         $cols = \DB::select("SHOW COLUMNS FROM master_kegiatans");

@@ -53,7 +53,7 @@
                         <th class="px-4 py-3 text-xs font-semibold text-gray-600 uppercase">Aksi</th>
                     </tr>
                 </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                         @forelse ($permohonans as $permohonan)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3 font-medium text-gray-900">

@@ -733,7 +733,7 @@ Route::middleware([
 
     // --- Rute Penyelesaian Tugas ---
     // Menggunakan PenyelesaianController yang sudah kita kembangkan
-     Route::prefix('approval')->name('approval.')->middleware('can:permohonan')->group(function () {
+     Route::prefix('approval')->name('approval.')->middleware('can:approval-dashboard')->group(function () {
           // Dashboard untuk melihat tugas yang perlu diselesaikan
           Route::get('/', [\App\Http\Controllers\PenyelesaianController::class, 'index'])->name('dashboard');
           // Riwayat approval yang sudah selesai
@@ -953,4 +953,27 @@ Route::middleware(['auth'])->group(function() {
     Route::delete('pembayaran-pranota-perbaikan-kontainer/{pembayaran}', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'destroy'])
          ->name('pembayaran-pranota-perbaikan-kontainer.destroy')
          ->middleware('can:pembayaran-pranota-perbaikan-kontainer-delete');
+
+    // Tagihan CAT routes - granular permissions
+    Route::get('tagihan-cat', [\App\Http\Controllers\TagihanCatController::class, 'index'])
+         ->name('tagihan-cat.index')
+         ->middleware('can:tagihan-cat-view');
+    Route::get('tagihan-cat/create', [\App\Http\Controllers\TagihanCatController::class, 'create'])
+         ->name('tagihan-cat.create')
+         ->middleware('can:tagihan-cat-create');
+    Route::post('tagihan-cat', [\App\Http\Controllers\TagihanCatController::class, 'store'])
+         ->name('tagihan-cat.store')
+         ->middleware('can:tagihan-cat-create');
+    Route::get('tagihan-cat/{tagihanCat}', [\App\Http\Controllers\TagihanCatController::class, 'show'])
+         ->name('tagihan-cat.show')
+         ->middleware('can:tagihan-cat-view');
+    Route::get('tagihan-cat/{tagihanCat}/edit', [\App\Http\Controllers\TagihanCatController::class, 'edit'])
+         ->name('tagihan-cat.edit')
+         ->middleware('can:tagihan-cat-update');
+    Route::put('tagihan-cat/{tagihanCat}', [\App\Http\Controllers\TagihanCatController::class, 'update'])
+         ->name('tagihan-cat.update')
+         ->middleware('can:tagihan-cat-update');
+    Route::delete('tagihan-cat/{tagihanCat}', [\App\Http\Controllers\TagihanCatController::class, 'destroy'])
+         ->name('tagihan-cat.destroy')
+         ->middleware('can:tagihan-cat-delete');
 });

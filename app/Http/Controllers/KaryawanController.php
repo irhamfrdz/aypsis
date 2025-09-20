@@ -572,13 +572,13 @@ class KaryawanController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nik' => 'required|string|regex:/^[0-9]{16}$/|unique:karyawans',
+            'nik' => 'required|string|regex:/^[0-9]+$/|unique:karyawans',
             'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => 'nullable|string|email|max:255|unique:karyawans',
-            'ktp' => 'nullable|string|regex:/^[0-9]{16}$/',
-            'kk' => 'nullable|string|regex:/^[0-9]{16}$/',
+            'ktp' => 'nullable|string|regex:/^[0-9]{16}$/|unique:karyawans',
+            'kk' => 'nullable|string|regex:/^[0-9]{16}$/|unique:karyawans',
             'alamat' => 'nullable|string|max:255',
             'rt_rw' => 'nullable|string|max:255',
             'kelurahan' => 'nullable|string|max:255',
@@ -611,12 +611,13 @@ class KaryawanController extends Controller
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
         ], [
-            'nik.regex' => 'NIK harus berupa 16 digit angka.',
-            'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
-            'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
+            'nik.regex' => 'NIK harus berupa angka saja, tidak boleh ada huruf.',
+            'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka saja, tidak boleh ada huruf.',
+            'kk.regex' => 'Nomor KK harus berupa 16 digit angka saja, tidak boleh ada huruf.',
             'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
             'email.unique' => 'Email sudah terdaftar dalam sistem.',
             'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
+            'kk.unique' => 'Nomor KK sudah terdaftar dalam sistem.',
         ]);
 
         // Convert data to uppercase except email
@@ -629,7 +630,7 @@ class KaryawanController extends Controller
         //Simpan data dalam database
         $karyawan = Karyawan::create($validated);
         if ($karyawan->isAbk()) {
-            return redirect()->route('karyawan.crew-checklist-new', $karyawan->id)
+            return redirect()->route('master.karyawan.crew-checklist-new', $karyawan->id)
                 ->with('success', 'Data karyawan berhasil ditambahkan. Silakan lengkapi checklist kelengkapan crew.');
         }
         return redirect()->route('master.karyawan.index')->with('success','Data karyawan berhasil ditambahkan');
@@ -722,13 +723,13 @@ class KaryawanController extends Controller
     {
         // Anda perlu menambahkan logika validasi di sini, mirip dengan metode store()
         $validated = $request->validate([
-            'nik' => ['required', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'nik' => ['required', 'string', 'regex:/^[0-9]+$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
             'ktp' => ['nullable', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
-            'kk' => ['nullable', 'string', 'regex:/^[0-9]{16}$/'],
+            'kk' => ['nullable', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'alamat' => 'nullable|string|max:255',
             'rt_rw' => 'nullable|string|max:255',
             'kelurahan' => 'nullable|string|max:255',
@@ -761,7 +762,7 @@ class KaryawanController extends Controller
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
         ], [
-            'nik.regex' => 'NIK harus berupa 16 digit angka.',
+            'nik.regex' => 'NIK harus berupa angka.',
             'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
             'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
             'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
@@ -797,13 +798,13 @@ class KaryawanController extends Controller
     public function onboardingUpdate(Request $request, Karyawan $karyawan)
     {
         $validated = $request->validate([
-            'nik' => ['required', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
+            'nik' => ['required', 'string', 'regex:/^[0-9]+$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'nama_panggilan' => 'required|string|max:255',
             'nama_lengkap' => 'required|string|max:255',
             'plat' => 'nullable|string|max:255',
             'email' => ['nullable', 'string', 'email', 'max:255', Rule::unique('karyawans')->ignore($karyawan->id)],
             'ktp' => ['nullable', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
-            'kk' => 'nullable|string|regex:/^[0-9]{16}$/',
+            'kk' => ['nullable', 'string', 'regex:/^[0-9]{16}$/', Rule::unique('karyawans')->ignore($karyawan->id)],
             'alamat' => 'nullable|string|max:255',
             'rt_rw' => 'nullable|string|max:255',
             'kelurahan' => 'nullable|string|max:255',
@@ -836,7 +837,7 @@ class KaryawanController extends Controller
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
         ], [
-            'nik.regex' => 'NIK harus berupa 16 digit angka.',
+            'nik.regex' => 'NIK harus berupa angka.',
             'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
             'kk.regex' => 'Nomor KK harus berupa 16 digit angka.',
             'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
