@@ -21,7 +21,8 @@
         @csrf
 
         @php
-            $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5";
+            $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
+            $labelClasses = "block text-xs font-medium text-gray-700";
         @endphp
 
         <fieldset class="mb-6">
@@ -29,7 +30,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Vendor -->
                 <div>
-                    <label for="vendor" class="block text-sm font-medium text-gray-700">Vendor <span class="text-red-500">*</span></label>
+                    <label for="vendor" class="{{ $labelClasses }}">Vendor <span class="text-red-500">*</span></label>
                     <select name="vendor" id="vendor" class="{{ $inputClasses }}" required>
                         <option value="">-- Pilih Vendor --</option>
                         <option value="ZONA" {{ old('vendor') == 'ZONA' ? 'selected' : '' }}>ZONA</option>
@@ -41,7 +42,7 @@
                 </div>
                 <!-- Tarif -->
                 <div>
-                    <label for="tarif" class="block text-sm font-medium text-gray-700">Tarif <span class="text-red-500">*</span></label>
+                    <label for="tarif" class="{{ $labelClasses }}">Tarif <span class="text-red-500">*</span></label>
                     <select name="tarif" id="tarif" class="{{ $inputClasses }}" required>
                         <option value="">-- Pilih Tarif --</option>
                         <option value="Bulanan" {{ old('tarif') == 'Bulanan' ? 'selected' : '' }}>Bulanan</option>
@@ -53,7 +54,7 @@
                 </div>
                 <!-- Ukuran Kontainer -->
                 <div>
-                    <label for="ukuran_kontainer" class="block text-sm font-medium text-gray-700">Ukuran Kontainer <span class="text-red-500">*</span></label>
+                    <label for="ukuran_kontainer" class="{{ $labelClasses }}">Ukuran Kontainer <span class="text-red-500">*</span></label>
                     <select name="ukuran_kontainer" id="ukuran_kontainer" class="{{ $inputClasses }}" required>
                         <option value="">-- Pilih Ukuran --</option>
                         <option value="20" {{ old('ukuran_kontainer') == '20' ? 'selected' : '' }}>20 ft</option>
@@ -65,7 +66,7 @@
                 </div>
                 <!-- Harga -->
                 <div>
-                    <label for="harga" class="block text-sm font-medium text-gray-700">Harga <span class="text-red-500">*</span></label>
+                    <label for="harga" class="{{ $labelClasses }}">Harga <span class="text-red-500">*</span></label>
                     <div class="relative">
                         <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">Rp</span>
                         <input type="text" name="harga" id="harga" value="{{ old('harga') }}" class="pl-10 {{ $inputClasses }}" required autocomplete="off">
@@ -101,7 +102,7 @@
                 </div>
                 <!-- Tanggal Harga Awal -->
                 <div>
-                    <label for="tanggal_harga_awal" class="block text-sm font-medium text-gray-700">Tanggal Harga Awal <span class="text-red-500">*</span></label>
+                    <label for="tanggal_harga_awal" class="{{ $labelClasses }}">Tanggal Harga Awal <span class="text-red-500">*</span></label>
                     <input type="date" name="tanggal_harga_awal" id="tanggal_harga_awal" value="{{ old('tanggal_harga_awal') }}" class="{{ $inputClasses }}" required>
                     @error('tanggal_harga_awal')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -109,7 +110,7 @@
                 </div>
                 <!-- Tanggal Harga Akhir -->
                 <div>
-                    <label for="tanggal_harga_akhir" class="block text-sm font-medium text-gray-700">Tanggal Harga Akhir</label>
+                    <label for="tanggal_harga_akhir" class="{{ $labelClasses }}">Tanggal Harga Akhir</label>
                     <input type="date" name="tanggal_harga_akhir" id="tanggal_harga_akhir" value="{{ old('tanggal_harga_akhir') }}" class="{{ $inputClasses }}">
                     @error('tanggal_harga_akhir')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -117,7 +118,7 @@
                 </div>
                 <!-- Keterangan -->
                 <div class="md:col-span-2">
-                    <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan</label>
+                    <label for="keterangan" class="{{ $labelClasses }}">Keterangan</label>
                     <textarea name="keterangan" id="keterangan" rows="3" class="{{ $inputClasses }}">{{ old('keterangan') }}</textarea>
                     @error('keterangan')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
