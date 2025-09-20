@@ -71,7 +71,7 @@
                 $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
                 $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-[10px] p-2.5";
                 $selectClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
-                $labelClasses = "block text-sm font-medium text-gray-700";
+                $labelClasses = "block text-xs font-medium text-gray-700";
             @endphp
         {{-- Informasi Pribadi --}}
         <fieldset class="border p-4 rounded-md mb-4">
