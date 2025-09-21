@@ -30,9 +30,16 @@
             </div>
         </div>
 
-        <div class="mb-4">
-            <label for="rute" class="block text-sm font-medium text-gray-700">Rute</label>
-            <input type="text" name="rute" id="rute" value="{{ old('rute') }}" class="mt-1 block w-full bg-gray-100 rounded-md border border-gray-200 p-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                <label for="dari" class="block text-sm font-medium text-gray-700">Dari</label>
+                <input type="text" name="dari" id="dari" value="{{ old('dari') }}" class="mt-1 block w-full bg-gray-100 rounded-md border border-gray-200 p-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Kota asal">
+            </div>
+
+            <div>
+                <label for="ke" class="block text-sm font-medium text-gray-700">Ke</label>
+                <input type="text" name="ke" id="ke" value="{{ old('ke') }}" class="mt-1 block w-full bg-gray-100 rounded-md border border-gray-200 p-2.5 shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500" placeholder="Kota tujuan">
+            </div>
         </div>
 
         <div class="mb-4">

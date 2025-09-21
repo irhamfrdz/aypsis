@@ -28,7 +28,8 @@
                             <th class="py-3 px-4">Nama Tujuan</th>
                             <th class="py-3 px-4">Cabang</th>
                             <th class="py-3 px-4">Wilayah</th>
-                            <th class="py-3 px-4">Rute</th>
+                            <th class="py-3 px-4">Dari</th>
+                            <th class="py-3 px-4">Ke</th>
                             <th class="py-3 px-4">UJ 20ft</th>
                             <th class="py-3 px-4">UJ 40ft</th>
                             <th class="py-3 px-4">Antarlokasi 20ft</th>
@@ -39,10 +40,11 @@
                     <tbody class="text-gray-700 text-[10px]">
                         @foreach ($tujuans as $tujuan)
                             <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
-                                <td class="py-3 px-4">{{ trim((($tujuan->wilayah ?? '') ? $tujuan->wilayah : '') . ' ' . (($tujuan->rute ?? '') ? '- '.$tujuan->rute : '')) }}</td>
+                                <td class="py-3 px-4">{{ trim((($tujuan->wilayah ?? '') ? $tujuan->wilayah : '') . ' ' . (($tujuan->dari ?? '') ? '- '.$tujuan->dari : '') . ' ' . (($tujuan->ke ?? '') ? 'ke '.$tujuan->ke : '')) }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->cabang }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->wilayah }}</td>
-                                <td class="py-3 px-4">{{ $tujuan->rute }}</td>
+                                <td class="py-3 px-4">{{ $tujuan->dari }}</td>
+                                <td class="py-3 px-4">{{ $tujuan->ke }}</td>
                                 <td class="py-3 px-4">Rp {{ number_format($tujuan->uang_jalan_20 ?? 0, 0, ',', '.') }}</td>
                                 <td class="py-3 px-4">Rp {{ number_format($tujuan->uang_jalan_40 ?? 0, 0, ',', '.') }}</td>
                                 <td class="py-3 px-4">Rp {{ number_format($tujuan->antar_20 ?? 0, 0, ',', '.') }}</td>
