@@ -26,8 +26,20 @@
                 <p>{{ $permohonan->supir->nama_panggilan ?? '-' }} ({{ $permohonan->plat_nomor }})</p>
             </div>
             <div>
-                <p class="font-medium text-gray-500">Tujuan</p>
-                <p>{{ $permohonan->tujuan }}</p>
+                <p class="font-medium text-gray-500">Dari - Ke</p>
+                <p>{{ $permohonan->dari ?? '-' }} - {{ $permohonan->ke ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-500">Uang Jalan</p>
+                <p>Rp. {{ number_format($permohonan->jumlah_uang_jalan, 0, ',', '.') }}</p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-500">Adjustment</p>
+                <p>{{ $permohonan->adjustment ? 'Rp. ' . number_format($permohonan->adjustment, 0, ',', '.') : '-' }}</p>
+            </div>
+            <div>
+                <p class="font-medium text-gray-500">Alasan Adjustment</p>
+                <p>{{ $permohonan->alasan_adjustment ?? '-' }}</p>
             </div>
             <div>
                 <p class="font-medium text-gray-500">Total Biaya</p>

@@ -99,7 +99,10 @@
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Memo</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Kegiatan</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Supir</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Tujuan</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Dari - Ke</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Uang Jalan</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Adjustment</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Alasan Adjustment</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Total Biaya</th>
                             <th class="px-6 py-3 text-right text-xs font-bold text-indigo-700 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -113,7 +116,10 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900 font-semibold">{{ $permohonan->nomor_memo }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $kegiatanMap[$permohonan->kegiatan] ?? $permohonan->kegiatan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800 text-center">{{ $permohonan->supir->nama_panggilan ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $permohonan->tujuan }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $permohonan->dari ?? '-' }} - {{ $permohonan->ke ?? '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-indigo-900">Rp. {{ number_format($permohonan->jumlah_uang_jalan, 0, ',', '.') }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-indigo-900">{{ $permohonan->adjustment ? 'Rp. ' . number_format($permohonan->adjustment, 0, ',', '.') : '-' }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $permohonan->alasan_adjustment ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900 font-bold">Rp. {{ number_format($permohonan->total_harga_setelah_adj, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-[10px] font-medium space-x-2">
                                     <a href="{{ route('permohonan.show', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-indigo-500 text-white hover:bg-indigo-700 transition shadow">Lihat</a>
@@ -130,7 +136,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-4 text-center text-[10px] text-gray-500">
+                                <td colspan="10" class="px-6 py-4 text-center text-[10px] text-gray-500">
                                     Tidak ada data permohonan yang ditemukan.
                                 </td>
                             </tr>

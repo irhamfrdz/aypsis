@@ -15,8 +15,10 @@ class PranotaSupirController extends Controller
      */
     public function create(Request $request)
     {
-        // Ambil data permohonan sesuai filter tanggal jika ada
-        $permohonans = Permohonan::query();
+        // Ambil data permohonan yang sudah disetujui (Selesai atau Bermasalah) dan belum memiliki pranota
+        $permohonans = Permohonan::whereIn('status', ['Selesai', 'Bermasalah'])
+            ->whereDoesntHave('pranotas')
+            ->with(['supir', 'pranotas']);
         if ($request->start_date) {
             $permohonans->whereDate('created_at', '>=', $request->start_date);
         }

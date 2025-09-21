@@ -7,7 +7,25 @@
     {{-- Tambahkan CSS untuk Choices.js --}}
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css"/>
     <style>
-        .choices__inner { background-color: #f3f4f6; border-radius: 0.375rem; border: 1px solid #d1d5db; font-size: 1rem; padding: 0.5rem 0.75rem; min-height: 46px; }
+        .choices__inner { backgroun                if (tujuanData) {
+                    const effectiveUkuran = jumlah === 2 ? '40' : ukuran;
+
+                    if (isAntar) {
+                        // Gunakan harga antar berdasarkan ukuran
+                        if (effectiveUkuran === '20' || effectiveUkuran === '10') {
+                            return parseFloat(tujuanData.antar_20) || 0;
+                        } else if (effectiveUkuran === '40') {
+                            return parseFloat(tujuanData.antar_40) || 0;
+                        }
+                    } else {
+                        // Gunakan harga uang jalan berdasarkan ukuran
+                        if (effectiveUkuran === '20' || effectiveUkuran === '10') {
+                            return parseFloat(tujuanData.uang_jalan_20) || 0;
+                        } else if (effectiveUkuran === '40') {
+                            return parseFloat(tujuanData.uang_jalan_40) || 0;
+                        }
+                    }
+                } else {order-radius: 0.375rem; border: 1px solid #d1d5db; font-size: 1rem; padding: 0.5rem 0.75rem; min-height: 46px; }
         .is-focused .choices__inner, .is-open .choices__inner { border-color: #6366f1; box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.5); }
         .choices__input { background-color: #f3f4f6; font-size: 1rem; }
         .choices__list--dropdown { background-color: #e5e7eb; border-color: #d1d5db; }
@@ -98,28 +116,57 @@
                         <label for="no_chasis" class="block text-sm font-medium text-gray-700 mb-1">No Chasis</label>
                         <input type="text" name="no_chasis" id="no_chasis" class="{{ $inputClasses }}" value="{{ old('no_chasis', $permohonan->no_chasis) }}">
                     </div>
-                    <div class="lg:col-span-3">
-                        <label for="tujuan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan</label>
-                        <select name="tujuan_id" id="tujuan" class="{{ $inputClasses }}" required>
-                            <option value="">Pilih Tujuan</option>
-                            @foreach($tujuans as $t)
-                                @php $label = trim((($t->wilayah ?? '') ? $t->wilayah : '') . ' ' . (($t->rute ?? '') ? '- '.$t->rute : '')); @endphp
-                                <option value="{{ $t->id }}" data-json='@json($t)' {{ $permohonan->tujuan === $label ? 'selected' : '' }}>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-
-                    {{-- Rute untuk Perbaikan Kontainer --}}
-                    <div class="lg:col-span-3" id="rute_container" style="display: none;">
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Rute Perbaikan</label>
+                    {{-- Rute Tujuan --}}
+                    <div class="lg:col-span-3" id="rute_container">
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Rute Tujuan</label>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
                                 <label for="dari" class="block text-xs font-medium text-gray-600 mb-1">Dari</label>
-                                <input type="text" name="dari" id="dari" class="{{ $inputClasses }}" placeholder="Lokasi asal">
+                                <select name="dari" id="dari" class="{{ $inputClasses }}" required>
+                                    <option value="">Pilih Lokasi Asal</option>
+                                    @isset($tujuans)
+                                        @php
+                                            $uniqueDari = collect($tujuans)->pluck('dari')->filter()->unique()->sort();
+                                        @endphp
+                                        @if($uniqueDari->count() > 0)
+                                            @foreach($uniqueDari as $location)
+                                                <option value="{{ $location }}" {{ old('dari', $permohonan->dari) == $location ? 'selected' : '' }}>{{ $location }}</option>
+                                            @endforeach
+                                        @else
+                                            {{-- Fallback to hardcoded options only if no database data --}}
+                                            <option value="Dermaga" {{ old('dari', $permohonan->dari) == 'Dermaga' ? 'selected' : '' }}>Dermaga</option>
+                                            <option value="Merak" {{ old('dari', $permohonan->dari) == 'Merak' ? 'selected' : '' }}>Merak</option>
+                                        @endif
+                                    @else
+                                        {{-- Fallback when tujuans not passed --}}
+                                        <option value="Dermaga" {{ old('dari', $permohonan->dari) == 'Dermaga' ? 'selected' : '' }}>Dermaga</option>
+                                        <option value="Merak" {{ old('dari', $permohonan->dari) == 'Merak' ? 'selected' : '' }}>Merak</option>
+                                    @endisset
+                                </select>
                             </div>
                             <div>
                                 <label for="ke" class="block text-xs font-medium text-gray-600 mb-1">Ke</label>
-                                <input type="text" name="ke" id="ke" class="{{ $inputClasses }}" placeholder="Lokasi tujuan">
+                                <select name="ke" id="ke" class="{{ $inputClasses }}" required>
+                                    <option value="">Pilih Lokasi Tujuan</option>
+                                    @isset($tujuans)
+                                        @php
+                                            $uniqueKe = collect($tujuans)->pluck('ke')->filter()->unique()->sort();
+                                        @endphp
+                                        @if($uniqueKe->count() > 0)
+                                            @foreach($uniqueKe as $location)
+                                                <option value="{{ $location }}" {{ old('ke', $permohonan->ke) == $location ? 'selected' : '' }}>{{ $location }}</option>
+                                            @endforeach
+                                        @else
+                                            {{-- Fallback to hardcoded options only if no database data --}}
+                                            <option value="Semut" {{ old('ke', $permohonan->ke) == 'Semut' ? 'selected' : '' }}>Semut</option>
+                                            <option value="Jakarta" {{ old('ke', $permohonan->ke) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                                        @endif
+                                    @else
+                                        {{-- Fallback when tujuans not passed --}}
+                                        <option value="Semut" {{ old('ke', $permohonan->ke) == 'Semut' ? 'selected' : '' }}>Semut</option>
+                                        <option value="Jakarta" {{ old('ke', $permohonan->ke) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
+                                    @endisset
+                                </select>
                             </div>
                         </div>
                     </div>
@@ -224,7 +271,24 @@
         // Variabel global yang akan digunakan di luar DOMContentLoaded
         let kegiatanSelect, updateTotals;
 
+        // Data tujuan dari database untuk filtering dinamis
+        const tujuansData = @json($tujuans ?? []);
+
         document.addEventListener('DOMContentLoaded', function () {
+            // Fungsi untuk format angka dalam format Indonesia (dengan titik sebagai pemisah ribuan)
+            function formatNumberIndonesia(number) {
+                // Pastikan number adalah number, bukan string
+                const num = typeof number === 'string' ? parseFloat(number) : number;
+                // Jika bukan number valid, return '0'
+                if (isNaN(num)) return '0';
+                return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+            }
+
+            // Fungsi untuk parsing angka dari format Indonesia ke number
+            function parseNumberIndonesia(formattedNumber) {
+                return parseFloat(formattedNumber.replace(/\./g, '')) || 0;
+            }
+
             // elements
             const supirSelect = document.getElementById('supir_id');
             const platInput = document.getElementById('plat_nomor');
@@ -235,6 +299,8 @@
             const ukuranKontainerSelect = document.getElementById('ukuran');
             const adjustmentInput = document.getElementById('adjustment');
             const totalHargaDisplay = document.getElementById('total_harga_setelah_adj_display');
+            const dariSelect = document.getElementById('dari');
+            const keSelect = document.getElementById('ke');
 
             // embed tujuan options map
             const tujuanOptions = Array.from(tujuanSelect.options).filter(o => o.value).map(o => {
@@ -287,7 +353,8 @@
 
             function computeUangJalan() {
                 const isAntar = !!document.getElementById('antar_lokasi_checkbox') && document.getElementById('antar_lokasi_checkbox').checked;
-                const tujuanId = tujuanSelect.value;
+                const dari = dariSelect.value;
+                const ke = keSelect.value;
                 const jumlah = parseInt(jumlahKontainerInput.value, 10) || 0;
                 const ukuran = ukuranKontainerSelect.value;
                 const selectedKegiatan = kegiatanSelect.value.toLowerCase();
@@ -301,38 +368,167 @@
                     return 75000;
                 }
 
-                const effectiveUkuran = jumlah === 2 ? '40' : ukuran;
+                // Cari data tujuan dari database berdasarkan dari dan ke
+                const tujuanData = tujuansData.find(tujuan =>
+                    tujuan.dari === dari && tujuan.ke === ke
+                );
 
-                const tujuanObj = tujuanOptions[tujuanId] || null;
-                if (tujuanObj) {
-                    if (isAntar) return (effectiveUkuran === '20' || effectiveUkuran === '10') ? parseFloat(tujuanObj.antar_20) : parseFloat(tujuanObj.antar_40);
-                    return (effectiveUkuran === '20' || effectiveUkuran === '10') ? parseFloat(tujuanObj.uang_jalan_20) : parseFloat(tujuanObj.uang_jalan_40);
+                if (tujuanData) {
+                    const effectiveUkuran = jumlah === 2 ? '40' : ukuran;
+
+                    if (isAntar) {
+                        // Gunakan harga antar berdasarkan ukuran
+                        if (effectiveUkuran === '20' || effectiveUkuran === '10') {
+                            return tujuanData.antar_20 || 0;
+                        } else if (effectiveUkuran === '40') {
+                            return tujuanData.antar_40 || 0;
+                        }
+                    } else {
+                        // Gunakan harga uang jalan berdasarkan ukuran
+                        if (effectiveUkuran === '20' || effectiveUkuran === '10') {
+                            return tujuanData.uang_jalan_20 || 0;
+                        } else if (effectiveUkuran === '40') {
+                            return tujuanData.uang_jalan_40 || 0;
+                        }
+                    }
+                } else {
+                    // Fallback ke harga default jika tidak ada data tujuan
+                    const effectiveUkuran = jumlah === 2 ? '40' : ukuran;
+                    if (isAntar) {
+                        return effectiveUkuran === '20' || effectiveUkuran === '10' ? 250000 : 350000;
+                    } else {
+                        return effectiveUkuran === '20' || effectiveUkuran === '10' ? 200000 : 300000;
+                    }
                 }
-                // fallback default
-                if (isAntar) return (effectiveUkuran === '20' || effectiveUkuran === '10') ? 50000 : 100000;
-                return (effectiveUkuran === '20' || effectiveUkuran === '10') ? 200000 : 300000;
+
+                return 0;
             }
+
+            // Fungsi untuk update dropdown 'ke' berdasarkan pilihan 'dari'
+            function updateKeOptions() {
+                const dariValue = dariSelect.value;
+
+                // Simpan nilai yang sedang dipilih
+                const currentKeValue = keSelect.value;
+
+                // Kosongkan dropdown ke
+                keSelect.innerHTML = '<option value="">Pilih Lokasi Tujuan</option>';
+
+                if (dariValue) {
+                    // Filter tujuan yang tersedia dari lokasi yang dipilih
+                    const availableDestinations = tujuansData
+                        .filter(tujuan => tujuan.dari === dariValue && tujuan.ke)
+                        .map(tujuan => tujuan.ke)
+                        .filter((value, index, self) => self.indexOf(value) === index) // Remove duplicates
+                        .sort();
+
+                    // Tambahkan opsi yang tersedia
+                    availableDestinations.forEach(destination => {
+                        const option = document.createElement('option');
+                        option.value = destination;
+                        option.textContent = destination;
+                        // Jika nilai sebelumnya masih tersedia, tetap pilih
+                        if (destination === currentKeValue) {
+                            option.selected = true;
+                        }
+                        keSelect.appendChild(option);
+                    });
+
+                    // Jika tidak ada tujuan yang tersedia, tambahkan opsi kosong
+                    if (availableDestinations.length === 0) {
+                        const option = document.createElement('option');
+                        option.value = '';
+                        option.textContent = 'Tidak ada tujuan tersedia';
+                        option.disabled = true;
+                        keSelect.appendChild(option);
+                    }
+                } else {
+                    // Jika tidak ada dari yang dipilih, tampilkan semua opsi ke yang tersedia
+                    const allDestinations = tujuansData
+                        .filter(tujuan => tujuan.ke)
+                        .map(tujuan => tujuan.ke)
+                        .filter((value, index, self) => self.indexOf(value) === index)
+                        .sort();
+
+                    allDestinations.forEach(destination => {
+                        const option = document.createElement('option');
+                        option.value = destination;
+                        option.textContent = destination;
+                        keSelect.appendChild(option);
+                    });
+                }
+
+                // Update perhitungan uang jalan setelah dropdown berubah
+                updateTotals();
+            }
+
+            // Event listener untuk perubahan dropdown dari
+            dariSelect.addEventListener('change', updateKeOptions);
 
             updateTotals = function() {
                 const uangJalan = computeUangJalan();
-                uangJalanInput.value = uangJalan;
-                const pelancar = parseFloat(document.getElementById('jumlah_pelancar').value) || 0;
-                const mel = parseFloat(document.getElementById('jumlah_mel').value) || 0;
-                const kawalan = parseFloat(document.getElementById('jumlah_kawalan').value) || 0;
-                const parkir = parseFloat(document.getElementById('jumlah_parkir').value) || 0;
+                uangJalanInput.value = formatNumberIndonesia(uangJalan);
+                const pelancar = parseNumberIndonesia(document.getElementById('jumlah_pelancar').value) || 0;
+                const mel = parseNumberIndonesia(document.getElementById('jumlah_mel').value) || 0;
+                const kawalan = parseNumberIndonesia(document.getElementById('jumlah_kawalan').value) || 0;
+                const parkir = parseNumberIndonesia(document.getElementById('jumlah_parkir').value) || 0;
                 const totalBiaya = uangJalan + pelancar + mel + kawalan + parkir;
-                document.getElementById('total_biaya_display').value = totalBiaya;
-                const adjustment = parseFloat(adjustmentInput.value) || 0;
-                totalHargaDisplay.value = totalBiaya + adjustment;
+                document.getElementById('total_biaya_display').value = formatNumberIndonesia(totalBiaya);
+                const adjustment = parseNumberIndonesia(adjustmentInput.value) || 0;
+                totalHargaDisplay.value = formatNumberIndonesia(totalBiaya + adjustment);
             }
 
             // attach listeners
-            tujuanSelect.addEventListener('change', updateTotals);
+            dariSelect.addEventListener('change', updateTotals);
+            keSelect.addEventListener('change', updateTotals);
             jumlahKontainerInput.addEventListener('input', updateTotals);
             ukuranKontainerSelect.addEventListener('change', updateTotals);
-            adjustmentInput.addEventListener('input', updateTotals);
+
+            // Event listener untuk adjustment dengan formatting
+            adjustmentInput.addEventListener('input', function(e) {
+                // Hapus semua karakter non-digit kecuali titik
+                let value = e.target.value.replace(/[^\d.]/g, '');
+                // Format ulang nilai
+                if (value) {
+                    const numericValue = parseFloat(value.replace(/\./g, ''));
+                    if (!isNaN(numericValue)) {
+                        e.target.value = formatNumberIndonesia(numericValue);
+                    }
+                }
+                updateTotals();
+            });
+
+            // Event listener untuk input uang jalan dengan formatting
+            uangJalanInput.addEventListener('input', function(e) {
+                // Hapus semua karakter non-digit kecuali titik
+                let value = e.target.value.replace(/[^\d.]/g, '');
+                // Format ulang nilai
+                if (value) {
+                    const numericValue = parseFloat(value.replace(/\./g, ''));
+                    if (!isNaN(numericValue)) {
+                        e.target.value = formatNumberIndonesia(numericValue);
+                    }
+                }
+                updateTotals();
+            });
+
+            // Event listeners untuk field lainnya dengan formatting
             ['jumlah_pelancar','jumlah_mel','jumlah_kawalan','jumlah_parkir'].forEach(id => {
-                const el = document.getElementById(id); if (el) el.addEventListener('input', updateTotals);
+                const el = document.getElementById(id);
+                if (el) {
+                    el.addEventListener('input', function(e) {
+                        // Hapus semua karakter non-digit kecuali titik
+                        let value = e.target.value.replace(/[^\d.]/g, '');
+                        // Format ulang nilai
+                        if (value) {
+                            const numericValue = parseFloat(value.replace(/\./g, ''));
+                            if (!isNaN(numericValue)) {
+                                e.target.value = formatNumberIndonesia(numericValue);
+                            }
+                        }
+                        updateTotals();
+                    });
+                }
             });
 
             // Event listener untuk checkbox antar lokasi
@@ -341,14 +537,11 @@
                 antarLokasiCheckbox.addEventListener('change', updateTotals);
             }
 
-            // Logika untuk mengubah tampilan tujuan berdasarkan kegiatan
-            const tujuanContainer = document.getElementById('tujuan').closest('.lg\\:col-span-3');
+            // Logika untuk mengubah tampilan form berdasarkan kegiatan
             const ruteContainer = document.getElementById('rute_container');
-            const dariInput = document.getElementById('dari');
-            const keInput = document.getElementById('ke');
             const antarLokasiContainer = document.getElementById('antar_lokasi_container');
 
-            function toggleTujuanDisplay() {
+            function toggleFormDisplay() {
                 const selectedKegiatan = kegiatanSelect.value.toLowerCase();
                 const kegiatanText = kegiatanSelect.options[kegiatanSelect.selectedIndex]?.text.toLowerCase() || '';
 
@@ -357,39 +550,11 @@
                                            kegiatanText.includes('perbaikan');
 
                 if (isPerbaikanKontainer) {
-                    // Tampilkan input rute perbaikan, sembunyikan dropdown tujuan
-                    tujuanContainer.style.display = 'none';
-                    ruteContainer.style.display = 'block';
+                    // Untuk perbaikan kontainer, sembunyikan checkbox antar lokasi
                     antarLokasiContainer.style.display = 'none';
-
-                    // Hapus required dari dropdown tujuan dan tambahkan ke input rute
-                    tujuanSelect.removeAttribute('required');
-                    dariInput.setAttribute('required', 'required');
-                    keInput.setAttribute('required', 'required');
-
-                    // Jika sedang edit permohonan perbaikan kontainer, parse tujuan menjadi dari dan ke
-                    const currentTujuan = '{{ $permohonan->tujuan }}';
-                    if (currentTujuan && currentTujuan.includes(' - ')) {
-                        const parts = currentTujuan.split(' - ');
-                        if (parts.length >= 2) {
-                            dariInput.value = parts[0].trim();
-                            keInput.value = parts[1].trim();
-                        }
-                    }
                 } else {
-                    // Tampilkan dropdown tujuan, sembunyikan input rute perbaikan
-                    tujuanContainer.style.display = 'block';
-                    ruteContainer.style.display = 'none';
+                    // Tampilkan checkbox antar lokasi untuk kegiatan normal
                     antarLokasiContainer.style.display = 'flex';
-
-                    // Tambahkan required ke dropdown tujuan dan hapus dari input rute
-                    tujuanSelect.setAttribute('required', 'required');
-                    dariInput.removeAttribute('required');
-                    keInput.removeAttribute('required');
-
-                    // Reset nilai input rute
-                    dariInput.value = '';
-                    keInput.value = '';
                 }
 
                 // Update perhitungan uang jalan
@@ -400,12 +565,13 @@
             // Event listener untuk perubahan kegiatan
             kegiatanSelect.addEventListener('change', () => {
                 updateFormBasedOnJumlah();
-                toggleTujuanDisplay();
+                toggleFormDisplay();
             });
 
             // Panggil fungsi saat halaman dimuat untuk mengatur tampilan awal
-            toggleTujuanDisplay();
+            toggleFormDisplay();
             updateFormBasedOnJumlah();
+            updateKeOptions(); // Initialize ke dropdown based on current dari value
 
             updateTotals();
         });

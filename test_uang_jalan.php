@@ -1,61 +1,118 @@
-<?php
+<?php<?php
 
-require_once 'vendor/autoload.php';
+
+
+require_once 'vendor/autoload.php';require_once 'vendor/autoload.php';
 
 $app = require_once 'bootstrap/app.php';
 
+$kernel = $app->make(Illuminate\Contracts\Console\Kernel::class);$app = require_once 'bootstrap/app.php';
+
+$kernel->bootstrap();
+
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+
+echo "Testing Uang Jalan Calculation:\n\n";
 
 use App\Models\Tujuan;
 
-echo "Testing kolom uang_jalan di tabel tujuans...\n";
-echo "==============================================\n";
+$tujuans = App\Models\Tujuan::all();
 
-// Cek apakah ada data tujuan
-$count = Tujuan::count();
-echo "Jumlah data tujuan: $count\n\n";
+echo "Testing kolom uang_jalan di tabel tujuans...\n";
+
+// Test the available routesecho "==============================================\n";
+
+$validRoutes = $tujuans->where('dari', '!=', '')->where('ke', '!=', '');
+
+echo "Available routes with pricing:\n";// Cek apakah ada data tujuan
+
+foreach ($validRoutes as $route) {$count = Tujuan::count();
+
+    echo "- {$route->dari} -> {$route->ke}: 20ft=Rp." . number_format($route->uang_jalan_20) . ", 40ft=Rp." . number_format($route->uang_jalan_40) . "\n";echo "Jumlah data tujuan: $count\n\n";
+
+}
 
 if ($count > 0) {
-    // Ambil satu data tujuan untuk test
+
+echo "\nTesting calculation logic:\n";    // Ambil satu data tujuan untuk test
+
     $tujuan = Tujuan::first();
-    echo "Data tujuan pertama:\n";
-    echo "- ID: {$tujuan->id}\n";
-    echo "- Cabang: {$tujuan->cabang}\n";
-    echo "- Wilayah: {$tujuan->wilayah}\n";
-    echo "- Rute: {$tujuan->rute}\n";
+
+// Simulate the JavaScript logic    echo "Data tujuan pertama:\n";
+
+function calculateUangJalan($dari, $ke, $ukuran, $isAntarSewa = false, $tujuansData = []) {    echo "- ID: {$tujuan->id}\n";
+
+    $tujuanData = collect($tujuansData)->first(function($tujuan) use ($dari, $ke) {    echo "- Cabang: {$tujuan->cabang}\n";
+
+        return $tujuan['dari'] === $dari && $tujuan['ke'] === $ke;    echo "- Wilayah: {$tujuan->wilayah}\n";
+
+    });    echo "- Rute: {$tujuan->rute}\n";
+
     echo "- Uang Jalan: Rp " . number_format($tujuan->uang_jalan ?? 0, 0, ',', '.') . "\n";
-    echo "- Uang Jalan 20ft: Rp " . number_format($tujuan->uang_jalan_20 ?? 0, 0, ',', '.') . "\n";
-    echo "- Uang Jalan 40ft: Rp " . number_format($tujuan->uang_jalan_40 ?? 0, 0, ',', '.') . "\n\n";
 
-    // Test update uang_jalan
-    echo "Testing update kolom uang_jalan...\n";
-    $oldValue = $tujuan->uang_jalan;
-    $newValue = 150000;
+    if ($tujuanData) {    echo "- Uang Jalan 20ft: Rp " . number_format($tujuan->uang_jalan_20 ?? 0, 0, ',', '.') . "\n";
 
-    $tujuan->uang_jalan = $newValue;
-    $tujuan->save();
+        if ($isAntarSewa) {    echo "- Uang Jalan 40ft: Rp " . number_format($tujuan->uang_jalan_40 ?? 0, 0, ',', '.') . "\n\n";
 
-    // Refresh dari database
-    $tujuan->refresh();
+            return $ukuran === '20' || $ukuran === '10' ? $tujuanData['antar_20'] : $tujuanData['antar_40'];
 
-    if ($tujuan->uang_jalan == $newValue) {
-        echo "✅ Update berhasil! Uang jalan: Rp " . number_format($tujuan->uang_jalan, 0, ',', '.') . "\n";
+        } else {    // Test update uang_jalan
 
-        // Kembalikan ke nilai lama
-        $tujuan->uang_jalan = $oldValue;
-        $tujuan->save();
-        echo "✅ Data dikembalikan ke nilai semula.\n";
-    } else {
-        echo "❌ Update gagal!\n";
+            return $ukuran === '20' || $ukuran === '10' ? $tujuanData['uang_jalan_20'] : $tujuanData['uang_jalan_40'];    echo "Testing update kolom uang_jalan...\n";
+
+        }    $oldValue = $tujuan->uang_jalan;
+
+    } else {    $newValue = 150000;
+
+        // Fallback pricing
+
+        if ($isAntarSewa) {    $tujuan->uang_jalan = $newValue;
+
+            return $ukuran === '20' || $ukuran === '10' ? 250000 : 350000;    $tujuan->save();
+
+        } else {
+
+            return $ukuran === '20' || $ukuran === '10' ? 200000 : 300000;    // Refresh dari database
+
+        }    $tujuan->refresh();
+
     }
 
-} else {
-    echo "Tidak ada data tujuan. Membuat data test...\n";
+}    if ($tujuan->uang_jalan == $newValue) {
 
-    // Buat data test
-    $testData = [
+        echo "✅ Update berhasil! Uang jalan: Rp " . number_format($tujuan->uang_jalan, 0, ',', '.') . "\n";
+
+// Test calculations
+
+$testCases = [        // Kembalikan ke nilai lama
+
+    ['Dermaga', 'Semut', '20', false],        $tujuan->uang_jalan = $oldValue;
+
+    ['Merak', 'Jakarta', '20', false],        $tujuan->save();
+
+    ['Dermaga', 'Semut', '40', false],        echo "✅ Data dikembalikan ke nilai semula.\n";
+
+    ['Merak', 'Jakarta', '40', false],    } else {
+
+    ['NonExistent', 'Nowhere', '20', false], // Should use fallback        echo "❌ Update gagal!\n";
+
+];    }
+
+
+
+foreach ($testCases as $test) {} else {
+
+    list($dari, $ke, $ukuran, $isAntar) = $test;    echo "Tidak ada data tujuan. Membuat data test...\n";
+
+    $result = calculateUangJalan($dari, $ke, $ukuran, $isAntar, $tujuans->toArray());
+
+    echo "Route: {$dari} -> {$ke} ({$ukuran}ft, antar=" . ($isAntar ? 'yes' : 'no') . ") = Rp." . number_format($result) . "\n";    // Buat data test
+
+}    $testData = [
+
         'cabang' => 'JKT',
-        'wilayah' => 'Jakarta',
+
+echo "\n✅ Test completed!\n";        'wilayah' => 'Jakarta',
         'rute' => 'Jakarta - Bandung',
         'uang_jalan' => 100000,
         'uang_jalan_20' => 50000,

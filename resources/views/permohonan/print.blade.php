@@ -213,8 +213,8 @@
                     <span class="info-value">{{ $permohonan->krani->nama_panggilan ?? '-' }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Tujuan:</span>
-                    <span class="info-value">{{ $permohonan->tujuan }}</span>
+                    <span class="info-label">Dari - Ke:</span>
+                    <span class="info-value">{{ $permohonan->dari ?? '-' }} - {{ $permohonan->ke ?? '-' }}</span>
                 </div>
             </div>
         </div>
