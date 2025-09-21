@@ -1,10 +1,8 @@
 @extends('layouts.app')
 
 @section('title', 'Form Pembayaran Pranota Supir')
-@section('page_title', 'Form Pembayaran Pranota Supi                        </select>
-                    </div>
-                </div>
-            </div>
+@section('page_title', 'Form Pembayaran Pranota Supir')
+
 @section('content')
     <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
         @php
@@ -266,7 +264,8 @@
 <script>
     document.addEventListener('DOMContentLoaded', function () {
         const selectAllCheckbox = document.getElementById('select-all');
-    // ...existing code...
+        const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
+
         selectAllCheckbox.addEventListener('change', function () {
             pranotaCheckboxes.forEach(checkbox => {
                 checkbox.checked = this.checked;
@@ -286,9 +285,9 @@
         });
 
         // Perhitungan otomatis total pembayaran berdasarkan pranota yang dipilih
-    const totalPembayaranInput = document.getElementById('total_pembayaran');
-    const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
-    const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
+        const totalPembayaranInput = document.getElementById('total_pembayaran');
+        const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
+        const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
         const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
 
         // Simpan nilai total_biaya_pranota di data attribute
@@ -318,8 +317,8 @@
         pranotaCheckboxes.forEach(function(checkbox) {
             checkbox.addEventListener('change', updateTotalPembayaran);
         });
-    totalPembayaranInput.addEventListener('input', updateTotalSetelahPenyesuaian);
-    totalPenyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
+        totalPembayaranInput.addEventListener('input', updateTotalSetelahPenyesuaian);
+        totalPenyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
         updateTotalPembayaran();
     });
 
