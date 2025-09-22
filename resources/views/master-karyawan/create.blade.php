@@ -147,6 +147,7 @@
                 <div>
                     <label for="no_hp" class="{{ $labelClasses }}">Nomor Handphone/Whatsapp</label>
                     <input type="tel" name="no_hp" id="no_hp" class="{{ $inputClasses }}" placeholder="08xxxxxxxxxx">
+                    <div id="noHpError" class="text-xs text-red-600 mt-1 hidden">Nomor handphone harus berupa angka saja, tidak boleh ada huruf</div>
                 </div>
 
                 <div>
@@ -439,9 +440,11 @@
             const ktpInput = document.getElementById('ktp');
             const kkInput = document.getElementById('kk');
             const nikInput = document.getElementById('nik');
+            const noHpInput = document.getElementById('no_hp');
             const ktpError = document.getElementById('ktpError');
             const kkError = document.getElementById('kkError');
             const nikError = document.getElementById('nikError');
+            const noHpError = document.getElementById('noHpError');
             const ktpWarning = document.getElementById('ktpWarning');
             const kkWarning = document.getElementById('kkWarning');
             const form = document.querySelector('form');
@@ -484,6 +487,29 @@
 
                 if (!isValid) {
                     errorElement.textContent = 'NIK harus berupa angka saja, tidak boleh ada huruf';
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500');
+                    return false;
+                } else {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+            }
+
+            // Fungsi validasi No HP - hanya angka
+            function validateNoHp(input, errorElement) {
+                const value = input.value.trim();
+                const isValid = /^\d+$/.test(value) || value === ''; // Hanya angka atau kosong
+
+                if (value === '') {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+
+                if (!isValid) {
+                    errorElement.textContent = 'Nomor handphone harus berupa angka saja, tidak boleh ada huruf';
                     errorElement.classList.remove('hidden');
                     input.classList.add('border-red-500');
                     return false;
@@ -559,6 +585,18 @@
                 });
             }
 
+            // Event listener untuk No HP
+            if (noHpInput) {
+                noHpInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateNoHp(this, noHpError);
+                });
+
+                noHpInput.addEventListener('blur', function() {
+                    validateNoHp(this, noHpError);
+                });
+            }
+
             // Validasi sebelum submit
             if (form) {
                 form.addEventListener('submit', function(e) {
@@ -585,6 +623,14 @@
                         if (!validateIdentityNumber(kkInput, kkError, 'Nomor KK')) {
                             isValid = false;
                             if (isValid) kkInput.focus();
+                        }
+                    }
+
+                    // Validasi No HP
+                    if (noHpInput && noHpInput.value.trim() !== '') {
+                        if (!validateNoHp(noHpInput, noHpError)) {
+                            isValid = false;
+                            if (isValid) noHpInput.focus();
                         }
                     }
 

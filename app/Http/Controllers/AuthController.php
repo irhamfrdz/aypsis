@@ -53,6 +53,7 @@ class AuthController extends Controller
                 $pekerjaans = Pekerjaan::active()->orderBy('nama_pekerjaan')->get();
                 $cabangs = \App\Models\Cabang::orderBy('nama_cabang')->get();
                 $pajaks = \App\Models\Pajak::orderBy('nama_status')->get();
+                $banks = \App\Models\Bank::orderBy('name')->get();
 
                 // Group pekerjaan by divisi for JavaScript
                 $pekerjaanByDivisi = [];
@@ -64,7 +65,7 @@ class AuthController extends Controller
                     $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
                 }
 
-                return view('karyawan.onboarding-full', compact('divisis', 'pekerjaans', 'cabangs', 'pajaks', 'pekerjaanByDivisi'));
+                return view('karyawan.onboarding-full', compact('divisis', 'pekerjaans', 'cabangs', 'pajaks', 'banks', 'pekerjaanByDivisi'));
             }
 
             // Any other non-approved status should be blocked.
