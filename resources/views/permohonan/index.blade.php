@@ -97,6 +97,7 @@
                                 <input type="checkbox" id="select-all" class="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleSelectAll()">
                             </th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Memo</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Tanggal Memo</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Kegiatan</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Supir</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Dari - Ke</th>
@@ -114,6 +115,7 @@
                                     <input type="checkbox" name="selected_ids[]" value="{{ $permohonan->id }}" class="item-checkbox rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500" onchange="updateBulkActions()">
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900 font-semibold">{{ $permohonan->nomor_memo }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-indigo-800 text-center">{{ $permohonan->tanggal_memo ? \Carbon\Carbon::parse($permohonan->tanggal_memo)->format('d/m/Y') : '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $kegiatanMap[$permohonan->kegiatan] ?? $permohonan->kegiatan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800 text-center">{{ $permohonan->supir->nama_panggilan ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $permohonan->dari ?? '-' }} - {{ $permohonan->ke ?? '-' }}</td>

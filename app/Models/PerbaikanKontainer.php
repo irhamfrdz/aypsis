@@ -22,6 +22,7 @@ class PerbaikanKontainer extends Model
         'estimasi_biaya_perbaikan',
         'realisasi_biaya_perbaikan',
         'vendor_bengkel_id',
+        'vendor_bengkel',
         'status_perbaikan',
         'catatan',
         'tanggal_selesai',

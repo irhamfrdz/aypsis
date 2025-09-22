@@ -152,9 +152,9 @@
         </div>
 
         <!-- Table -->
-        <div class="overflow-x-auto bg-white rounded-lg border border-gray-200">
+        <div class="table-container overflow-x-auto bg-white rounded-lg border border-gray-200 max-h-screen">
             <table class="min-w-full divide-y divide-gray-200">
-                <thead class="bg-gray-50">
+                <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                     <tr>
                         <th class="px-6 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                             Nomor Memo
@@ -323,8 +323,8 @@
         </div>
 
         <!-- Pagination -->
-        <div class="mt-6">
-            {{ $permohonans->appends(request()->query())->links() }}
+        <div class="mt-4">
+            @include('components.modern-pagination', ['paginator' => $permohonans, 'routeName' => 'approval.riwayat'])
         </div>
     </div>
 </div>
@@ -354,6 +354,71 @@
         </div>
     </div>
 </div>
+
+<style>
+/* Sticky Table Header Styles */
+.sticky-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* bg-gray-50 */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced table container for better scrolling */
+.table-container {
+    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    overflow-y: auto;
+    border: 1px solid rgb(229 231 235); /* border-gray-200 */
+    border-radius: 0.5rem;
+}
+
+/* Smooth scrolling for better UX */
+.table-container {
+    scroll-behavior: smooth;
+}
+
+/* Table header cells need specific background to avoid transparency issues */
+.sticky-table-header th {
+    background-color: rgb(249 250 251) !important;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Optional: Add a subtle border when scrolling */
+.table-container.scrolled .sticky-table-header {
+    border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+
+/* Ensure dropdown menus appear above sticky header */
+.relative.group .absolute {
+    z-index: 20;
+}
+
+/* Enhanced Pagination Styles */
+.pagination-links .page-link {
+    @apply inline-flex items-center px-2.5 py-1.5 text-sm font-medium transition-colors duration-200 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900;
+}
+
+.pagination-links .page-link.active {
+    @apply bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700;
+}
+
+.pagination-links .page-link.disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+.pagination-links .page-item:first-child .page-link {
+    @apply rounded-l-md;
+}
+
+.pagination-links .page-item:last-child .page-link {
+    @apply rounded-r-md;
+}
+
+.pagination-links .page-item:not(:first-child):not(:last-child) .page-link {
+    @apply border-l-0;
+}
+</style>
 
 <script>
 function showDetail(permohonanId) {
@@ -435,5 +500,48 @@ function closeModal() {
     document.getElementById('detailModal').classList.add('hidden');
     document.getElementById('modal-title').textContent = 'Detail Permohonan';
 }
+
+// Sticky Header Enhancement
+document.addEventListener('DOMContentLoaded', function() {
+    const tableContainer = document.querySelector('.table-container');
+    const stickyHeader = document.querySelector('.sticky-table-header');
+
+    if (tableContainer && stickyHeader) {
+        // Add scroll event listener for visual feedback
+        tableContainer.addEventListener('scroll', function() {
+            if (tableContainer.scrollTop > 0) {
+                tableContainer.classList.add('scrolled');
+            } else {
+                tableContainer.classList.remove('scrolled');
+            }
+        });
+
+        // Optional: Add smooth scroll to top button
+        const scrollToTopBtn = document.createElement('button');
+        scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+        scrollToTopBtn.className = 'fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 opacity-0 invisible z-50';
+        scrollToTopBtn.title = 'Scroll ke atas';
+        document.body.appendChild(scrollToTopBtn);
+
+        // Show/hide scroll to top button
+        tableContainer.addEventListener('scroll', function() {
+            if (tableContainer.scrollTop > 200) {
+                scrollToTopBtn.classList.remove('opacity-0', 'invisible');
+                scrollToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                scrollToTopBtn.classList.add('opacity-0', 'invisible');
+                scrollToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+
+        // Scroll to top functionality
+        scrollToTopBtn.addEventListener('click', function() {
+            tableContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+});
 </script>
 @endsection

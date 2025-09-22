@@ -94,7 +94,27 @@
             <!-- Pilih Memo Permohonan -->
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-800">Pilih Memo Permohonan</h4>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                        <div class="flex items-center gap-3">
+                            <h4 class="text-sm font-semibold text-gray-800">Pilih Memo Permohonan</h4>
+                            <span id="searchResults" class="text-xs text-gray-500 hidden"></span>
+                        </div>
+                        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                            <div class="relative flex-1 sm:flex-initial">
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                    </svg>
+                                </div>
+                                <input type="text" id="searchInput" placeholder="Cari nomor memo, kegiatan, atau supir... (Ctrl+F)" class="pl-8 pr-3 py-1.5 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64 transition-colors" title="Tekan Ctrl+F untuk fokus search, ESC untuk clear">
+                            </div>
+                            <button type="button" id="clearSearch" class="inline-flex items-center justify-center px-2 py-1.5 border border-gray-300 rounded-md text-xs text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" title="Clear search">
+                                <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
                 </div>
                 <div class="overflow-x-auto max-h-60">
                     <table class="min-w-full divide-y divide-gray-200">
@@ -104,6 +124,7 @@
                                     <input type="checkbox" id="select-all" class="h-3 w-3 text-indigo-600 border-gray-300 rounded">
                                 </th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Memo</th>
+                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Memo</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Plat</th>
@@ -117,6 +138,7 @@
                                         <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" data-biaya="{{ $permohonan->total_harga_setelah_adj }}" class="permohonan-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded">
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $permohonan->nomor_memo }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $permohonan->tanggal_memo ? \Carbon\Carbon::parse($permohonan->tanggal_memo)->format('d/m/Y') : '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $kegiatanMap[$permohonan->kegiatan] ?? ucfirst($permohonan->kegiatan) }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $permohonan->supir->nama_lengkap ?? $permohonan->supir->nama_panggilan ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $permohonan->plat_nomor ?? '-' }}</td>
@@ -124,7 +146,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-2 py-4 text-center text-xs text-gray-500">
+                                    <td colspan="7" class="px-2 py-4 text-center text-xs text-gray-500">
                                         Tidak ada memo yang tersedia. Pastikan memo sudah di-approve.
                                     </td>
                                 </tr>
@@ -205,7 +227,8 @@
             }
 
             selectAllCheckbox.addEventListener('change', function () {
-                permohonanCheckboxes.forEach(checkbox => {
+                const visibleCheckboxes = document.querySelectorAll('.permohonan-checkbox:not([style*="display: none"])');
+                visibleCheckboxes.forEach(checkbox => {
                     checkbox.checked = this.checked;
                 });
                 updateTotalBiayaPranota();
@@ -229,6 +252,138 @@
             });
 
             updateTotalBiayaPranota();
+        });
+
+        // Search functionality with debouncing
+        const searchInput = document.getElementById('searchInput');
+        const clearSearchBtn = document.getElementById('clearSearch');
+        const tableBody = document.querySelector('tbody');
+        const tableRows = tableBody.querySelectorAll('tr');
+
+        let searchTimeout;
+        function debounceSearch(searchTerm) {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                filterTable(searchTerm);
+            }, 300); // 300ms delay
+        }
+
+        function filterTable(searchTerm) {
+            const term = searchTerm.toLowerCase().trim();
+            let visibleCount = 0;
+            const searchResultsEl = document.getElementById('searchResults');
+
+            tableRows.forEach(row => {
+                // Skip the "no data" row
+                if (row.cells.length === 1 && row.textContent.includes('Tidak ada memo')) {
+                    return;
+                }
+
+                const cells = row.querySelectorAll('td');
+                let isVisible = false;
+
+                // Search in relevant columns (No. Memo, Tanggal Memo, Kegiatan, Supir, No. Plat)
+                for (let i = 1; i < cells.length - 1; i++) { // Skip checkbox and total biaya columns
+                    const cellText = cells[i].textContent.toLowerCase();
+                    if (cellText.includes(term)) {
+                        isVisible = true;
+                        break;
+                    }
+                }
+
+                row.style.display = isVisible ? '' : 'none';
+                if (isVisible) visibleCount++;
+            });
+
+            // Update search results count
+            if (term === '') {
+                searchResultsEl.classList.add('hidden');
+            } else {
+                searchResultsEl.textContent = `${visibleCount} memo ditemukan`;
+                searchResultsEl.classList.remove('hidden');
+            }
+
+            // Show/hide "no results" message
+            let noResultsRow = tableBody.querySelector('.no-results-row');
+            if (visibleCount === 0 && term !== '') {
+                if (!noResultsRow) {
+                    noResultsRow = document.createElement('tr');
+                    noResultsRow.className = 'no-results-row';
+                    noResultsRow.innerHTML = `
+                        <td colspan="7" class="px-2 py-8 text-center text-sm text-gray-500">
+                            <div class="flex flex-col items-center">
+                                <svg class="h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                                </svg>
+                                <p>Tidak ada memo yang cocok dengan "<span class="font-medium">${searchTerm}</span>"</p>
+                                <p class="text-xs mt-1">Coba kata kunci yang berbeda</p>
+                            </div>
+                        </td>
+                    `;
+                    tableBody.appendChild(noResultsRow);
+                }
+            } else {
+                if (noResultsRow) {
+                    noResultsRow.remove();
+                }
+            }
+
+            // Update select all checkbox state
+            updateSelectAllState();
+        }
+
+        function updateSelectAllState() {
+            const visibleCheckboxes = document.querySelectorAll('.permohonan-checkbox:not([style*="display: none"])');
+            const checkedVisibleCheckboxes = document.querySelectorAll('.permohonan-checkbox:not([style*="display: none"]):checked');
+            const selectAllCheckbox = document.getElementById('select-all');
+
+            if (visibleCheckboxes.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedVisibleCheckboxes.length === visibleCheckboxes.length) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedVisibleCheckboxes.length > 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+        }
+
+        // Search input event listeners with debouncing
+        searchInput.addEventListener('input', function() {
+            debounceSearch(this.value);
+        });
+
+        // Clear search button
+        clearSearchBtn.addEventListener('click', function() {
+            searchInput.value = '';
+            filterTable('');
+            searchInput.focus();
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', function(e) {
+            // Ctrl+F or Cmd+F to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'f') {
+                e.preventDefault();
+                searchInput.focus();
+                searchInput.select();
+            }
+            // Escape to clear search
+            if (e.key === 'Escape' && document.activeElement === searchInput) {
+                searchInput.value = '';
+                filterTable('');
+            }
+        });
+
+        // Update select all when individual checkboxes change (with search filter consideration)
+        document.addEventListener('change', function(e) {
+            if (e.target.classList.contains('permohonan-checkbox')) {
+                updateSelectAllState();
+            }
         });
     </script>
 @endsection

@@ -291,13 +291,13 @@ class PenyelesaianController extends Controller
             $createdRecords = 0;
             foreach ($permohonan->kontainers as $kontainer) {
                 // Check if perbaikan record already exists for this kontainer on this date
-                $existingRecord = \App\Models\PerbaikanKontainer::where('kontainer_id', $kontainer->id)
+                $existingRecord = \App\Models\PerbaikanKontainer::where('nomor_kontainer', $kontainer->nomor_kontainer)
                     ->whereDate('tanggal_perbaikan', $tanggalPerbaikan)
                     ->first();
 
                 if ($existingRecord) {
                     Log::debug('createPerbaikanKontainer skipped: record already exists', [
-                        'kontainer_id' => $kontainer->id,
+                        'nomor_kontainer' => $kontainer->nomor_kontainer,
                         'tanggal_perbaikan' => $tanggalPerbaikan,
                         'existing_id' => $existingRecord->id
                     ]);
@@ -307,7 +307,7 @@ class PenyelesaianController extends Controller
                 // Create new perbaikan kontainer record
                 $perbaikanData = [
                     'nomor_tagihan' => \App\Models\PerbaikanKontainer::generateNomorTagihan(),
-                    'kontainer_id' => $kontainer->id,
+                    'nomor_kontainer' => $kontainer->nomor_kontainer,
                     'tanggal_perbaikan' => $tanggalPerbaikan,
                     'deskripsi_perbaikan' => 'Perbaikan kontainer berdasarkan permohonan ID: ' . $permohonan->id,
                     'status_perbaikan' => 'belum_masuk_pranota',
@@ -355,7 +355,7 @@ class PenyelesaianController extends Controller
 
                 Log::debug('createPerbaikanKontainer: created record', [
                     'perbaikan_id' => $perbaikanRecord->id,
-                    'kontainer_id' => $kontainer->id,
+                    'nomor_kontainer' => $kontainer->nomor_kontainer,
                     'tanggal_perbaikan' => $tanggalPerbaikan,
                     'permohonan_id' => $permohonan->id
                 ]);
@@ -474,34 +474,43 @@ class PenyelesaianController extends Controller
     {
         $permohonan->load(['supir', 'kontainers.perbaikanKontainers', 'checkpoints']);
 
-        // Check if there are any containers with repairs OR if kegiatan contains "PERBAIKAN"
-        $kontainerPerbaikan = $permohonan->kontainers->filter(function($kontainer) {
-            return $kontainer->perbaikanKontainers && $kontainer->perbaikanKontainers->count() > 0;
-        });
-
         // Check if kegiatan contains "PERBAIKAN" (case insensitive)
         $isPerbaikanKegiatan = stripos($permohonan->kegiatan, 'PERBAIKAN') !== false;
 
-        // If there are repair containers OR kegiatan is PERBAIKAN, use the specialized view
+        // If kegiatan is PERBAIKAN, show all containers in the permohonan
+        // Otherwise, only show containers that already have repair records
+        if ($isPerbaikanKegiatan) {
+            $kontainerPerbaikan = $permohonan->kontainers;
+        } else {
+            $kontainerPerbaikan = $permohonan->kontainers->filter(function($kontainer) {
+                return $kontainer->perbaikanKontainers && $kontainer->perbaikanKontainers->count() > 0;
+            });
+        }
+
+        // If there are containers to show OR kegiatan is PERBAIKAN, use the specialized view
         if ($kontainerPerbaikan->count() > 0 || $isPerbaikanKegiatan) {
             $totalPerbaikan = $kontainerPerbaikan->sum(function($k) {
-                return $k->perbaikanKontainers->count();
+                return $k->perbaikanKontainers ? $k->perbaikanKontainers->count() : 0;
             });
 
             $totalBiaya = $kontainerPerbaikan->sum(function($k) {
-                return $k->perbaikanKontainers->sum('biaya_perbaikan');
+                return $k->perbaikanKontainers ? $k->perbaikanKontainers->sum('biaya_perbaikan') : 0;
             });
 
             $totalSudahDibayar = $kontainerPerbaikan->sum(function($k) {
-                return $k->perbaikanKontainers->where('status_perbaikan', 'sudah_dibayar')->count();
+                return $k->perbaikanKontainers ? $k->perbaikanKontainers->where('status_perbaikan', 'sudah_dibayar')->count() : 0;
             });
+
+            // Get vendor bengkel options for dropdown
+            $vendorBengkelOptions = \App\Models\VendorBengkel::orderBy('nama_bengkel')->get();
 
             return view('approval.checkpoint2-perbaikan', compact(
                 'permohonan',
                 'kontainerPerbaikan',
                 'totalPerbaikan',
                 'totalBiaya',
-                'totalSudahDibayar'
+                'totalSudahDibayar',
+                'vendorBengkelOptions'
             ));
         }
 

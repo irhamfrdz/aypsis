@@ -20,7 +20,7 @@ return new class extends Migration
 
         // Migrate data dari kolom tujuan ke kolom dari dan ke
         DB::statement("
-            UPDATE permohonans 
+            UPDATE permohonans
             SET dari = SUBSTRING_INDEX(tujuan, ' - ', 1),
                 ke = SUBSTRING_INDEX(tujuan, ' - ', -1)
             WHERE tujuan IS NOT NULL AND tujuan != ''
@@ -44,7 +44,7 @@ return new class extends Migration
 
         // Migrate data kembali ke kolom tujuan
         DB::statement("
-            UPDATE permohonans 
+            UPDATE permohonans
             SET tujuan = CONCAT(COALESCE(dari, ''), ' - ', COALESCE(ke, ''))
             WHERE dari IS NOT NULL OR ke IS NOT NULL
         ");
