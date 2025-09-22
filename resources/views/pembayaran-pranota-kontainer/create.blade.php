@@ -1,391 +1,233 @@
 @extends('layouts.app')
 
+@section('title', 'Form Pembayaran Pranota Kontainer')
+@section('page_title', 'Form Pembayaran Pranota Kontainer')
+
 @section('content')
-<div class="max-w-5xl mx-auto px-6 py-8">
-    <div class="bg-white rounded-2xl shadow-lg p-8">
-        <h2 class="text-2xl font-bold text-gray-800 mb-8 border-b pb-4">
-            Form Pembayaran Pranota Kontainer
-        </h2>
+    <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
+        @php
+            // Definisikan kelas Tailwind untuk input yang lebih compact
+            $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-sm p-2 transition-colors";
+            $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm text-sm p-2";
+            $labelClasses = "block text-xs font-medium text-gray-700 mb-1";
+        @endphp
 
-    @if(session('success'))
-        <div id="flash-message" class="mb-6 p-4 rounded-lg bg-green-50 border border-green-200 text-green-800">
-            {{ session('success') }}
-        </div>
-    @endif
-    @if(session('error'))
-        <div id="flash-message" class="mb-6 p-4 rounded-lg bg-red-50 border border-red-200 text-red-800">
-            <strong>Peringatan:</strong> {{ session('error') }}
-        </div>
-    @endif
-    @if($errors->any())
-        <div id="flash-message" class="mb-6 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800">
-            <strong>Terjadi kesalahan:</strong>
-            <ul class="mt-2 list-disc list-inside text-sm">
-                @foreach($errors->all() as $error)
-                    <li>{{ $error }}</li>
-                @endforeach
-            </ul>
-        </div>
-    @endif
+        @if(session('success'))
+            <div class="mb-3 p-3 rounded-lg bg-green-50 border border-green-200 text-green-800 text-sm">
+                {{ session('success') }}
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="mb-3 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
+                <strong>Peringatan:</strong> {{ session('error') }}
+            </div>
+        @endif
+        {{-- Only show validation errors if this is a POST request (form submission) --}}
+        @if(request()->isMethod('post') && !empty($errors) && (is_object($errors) ? $errors->any() : (!empty($errors) && is_array($errors))))
+            <div class="mb-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
+                <strong>Terjadi kesalahan:</strong>
+                <ul class="mt-1 list-disc list-inside">
+                    @if(is_object($errors) && method_exists($errors, 'all'))
+                        @foreach($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    @elseif(is_array($errors))
+                        @foreach($errors as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    @endif
+                </ul>
+            </div>
+        @endif
 
-    <form method="POST" action="{{ route('pembayaran-pranota-kontainer.store') }}" id="pembayaranForm" class="space-y-8">
+        <form id="pembayaranForm" action="{{ route('pembayaran-pranota-kontainer.store') }}" method="POST" class="space-y-3">
             @csrf
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
-                <div class="space-y-6">
-                    <div class="grid grid-cols-2 gap-6">
-                        <div>
-                            <label for="nomor_pembayaran" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Pembayaran</label>
-                            <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
-                                value="{{ '000-1-' . now()->format('y') . '-' . now()->format('m') . '-000001' }}"
-                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" readonly>
+
+            <!-- Data Pembayaran & Bank -->
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <!-- Data Pembayaran -->
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div class="flex items-end gap-1">
+                                <div class="flex-1">
+                                    <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
+                                    <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
+                                        value="{{ '000-1-' . now()->format('y') . '-' . now()->format('m') . '-000001' }}"
+                                        class="{{ $readonlyInputClasses }}" readonly>
+                                </div>
+                                <div class="w-16">
+                                    <label for="nomor_cetakan" class="{{ $labelClasses }}">Cetak</label>
+                                    <input type="number" name="nomor_cetakan" id="nomor_cetakan" min="1" max="9" value="1"
+                                        class="{{ $inputClasses }}">
+                                </div>
+                            </div>
+                            <div>
+                                <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
+                                <input type="text" name="tanggal_kas" id="tanggal_kas"
+                                    value="{{ now()->format('d/M/Y') }}"
+                                    class="{{ $readonlyInputClasses }}" readonly required>
+                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
+                            </div>
                         </div>
-                        <div>
-                            <label for="nomor_cetakan" class="block text-sm font-semibold text-gray-700 mb-1">Nomor Cetakan</label>
-                            <input type="number" name="nomor_cetakan" id="nomor_cetakan" min="1" max="9" value="1"
-                                class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" required>
-                        </div>
-                    </div>
-                    <div>
-                        <label for="tanggal_kas" class="block text-sm font-semibold text-gray-700 mb-1">Tanggal Kas</label>
-                        <input type="date" name="tanggal_kas" id="tanggal_kas"
-                            value="{{ now()->toDateString() }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" required>
-                        {{-- Hidden field required by controller validation: keep in sync with tanggal_kas --}}
-                        <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
                     </div>
                 </div>
-                <div class="grid grid-cols-2 gap-6">
-                    <div>
-                        <label for="bank" class="block text-sm font-semibold text-gray-700 mb-1">Pilih Bank</label>
-                        <select name="bank" id="bank"
-                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" required>
-                            <option value="">-- Pilih Bank --</option>
-                            @foreach($akunCoa as $akun)
-                                <option value="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor ?? '000' }}" {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}>
-                                    {{ $akun->nama_akun }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label for="jenis_transaksi" class="block text-sm font-semibold text-gray-700 mb-1">Jenis Transaksi</label>
-                        <select name="jenis_transaksi" id="jenis_transaksi"
-                            class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5" required>
-                            <option value="">-- Pilih Jenis --</option>
-                            <option value="Debit">Debit</option>
-                            <option value="Kredit">Kredit</option>
-                        </select>
+
+                <!-- Bank & Transaksi -->
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            <div>
+                                <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
+                                <select name="bank" id="bank" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Bank --</option>
+                                    @foreach($akunCoa as $akun)
+                                        <option value="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor ?? '000' }}" {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}>
+                                            {{ $akun->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            </div>
+                            <div>
+                                <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
+                                <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}" required>
+                                    <option value="">-- Pilih Jenis --</option>
+                                    <option value="Debit">Debit</option>
+                                    <option value="Kredit">Kredit</option>
+                                </select>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {{-- Alasan Penyesuaian --}}
-            <div>
-                <label for="alasan_penyesuaian" class="block text-sm font-semibold text-gray-700 mb-1">Alasan Penyesuaian</label>
-                <textarea name="alasan_penyesuaian" id="alasan_penyesuaian" rows="2"
-                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5"></textarea>
-            </div>
-
-            {{-- Keterangan --}}
-            <div>
-                <label for="keterangan" class="block text-sm font-semibold text-gray-700 mb-1">Keterangan</label>
-                <textarea name="keterangan" id="keterangan" rows="2"
-                    class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5"></textarea>
-            </div>
-
-            {{-- Daftar Pranota Kontainer --}}
-            <div>
-                <h3 class="text-lg font-semibold text-gray-800 mb-4">Pilih Pranota Kontainer</h3>
-                <div class="overflow-x-auto">
+            {{-- Pilih Pranota Kontainer --}}
+            <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
+                    <h4 class="text-sm font-semibold text-gray-800">Pilih Pranota Kontainer</h4>
+                </div>
+                <div class="overflow-x-auto max-h-60">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="bg-gray-50 sticky top-0 z-20">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    <input type="checkbox" id="select-all" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                    <input type="checkbox" id="select-all" class="h-3 w-3 text-indigo-600 border-gray-300 rounded">
                                 </th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pranota</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Tagihan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jml Tagihan</th>
+                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse ($pranotaList as $pranota)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500">
+                                <tr class="hover:bg-gray-50 transition-colors">
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        <input type="checkbox" name="pranota_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" checked>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-indigo-600 font-medium">{{ $pranota->no_invoice }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->no_invoice }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if ($pranota->tanggal_pranota)
-                                            {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') }}
+                                            {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') }}
                                         @else
                                             -
                                         @endif
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-blue-100 text-blue-800">
                                             {{ $pranota->jumlah_tagihan ?? 0 }} item
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                        Rp {{ number_format($pranota->total_amount, 2, ',', '.') }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pranota->getSimplePaymentStatusColor() }}">
-                                            {{ $pranota->getSimplePaymentStatus() }}
-                                        </span>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->total_amount, 0, ',', '.') }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">
+                                        @if ($pranota->status_pembayaran == 'Lunas')
+                                            <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-green-100 text-green-800">Lunas</span>
+                                        @else
+                                            <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-yellow-100 text-yellow-800">Belum</span>
+                                        @endif
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="6" class="px-6 py-12 text-center">
-                                        <div class="flex flex-col items-center">
-                                            <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                            </svg>
-                                            <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data pranota kontainer</h3>
-                                            <p class="text-gray-500">Tidak ada pranota kontainer yang tersedia untuk dibayar.</p>
-                                        </div>
+                                    <td colspan="6" class="px-2 py-4 text-center text-xs text-gray-500">
+                                        Tidak ada pranota kontainer yang tersedia.
                                     </td>
                                 </tr>
                             @endforelse
                         </tbody>
                     </table>
                 </div>
-                <p class="mt-2 text-sm text-gray-500">* Anda dapat memilih satu atau lebih pranota kontainer untuk dibayar.</p>
+                <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
+                    <p class="text-xs text-gray-600">
+                        * Pilih satu atau lebih pranota kontainer untuk dibayar.
+                    </p>
+                </div>
             </div>
 
-            {{-- Penyesuaian Total & Nominal Pembayaran --}}
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                <div>
-                    <label for="total_pembayaran" class="block text-sm font-semibold text-gray-700 mb-1">Total Pembayaran</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base">Rp</span>
-                        <input type="text" name="total_pembayaran" id="total_pembayaran"
-                            value="0"
-                            class="mt-1 block w-full pl-8 rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5 text-right" required>
-                        <input type="hidden" name="total_pembayaran_raw" id="total_pembayaran_raw" value="0">
-                    </div>
-                    <p class="mt-1 text-xs text-gray-500">Format: 35.449,53</p>
-                </div>
-                <div>
-                    <label for="total_tagihan_penyesuaian" class="block text-sm font-semibold text-gray-700 mb-1">Penyesuaian</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base">Rp</span>
-                        <input type="text" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian"
-                            class="mt-1 block w-full pl-8 pr-20 rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5 text-right"
-                            value="0" placeholder="Ketik nominal penyesuaian...">
-                        <input type="hidden" name="total_tagihan_penyesuaian_raw" id="total_tagihan_penyesuaian_raw" value="0">
-                        <!-- Plus/Minus buttons -->
-                        <div class="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
-                            <button type="button" id="btn-minus" class="w-6 h-6 bg-red-500 hover:bg-red-600 text-white rounded text-xs font-bold flex items-center justify-center" title="Pengurangan">-</button>
-                            <button type="button" id="btn-plus" class="w-6 h-6 bg-green-500 hover:bg-green-600 text-white rounded text-xs font-bold flex items-center justify-center" title="Penambahan">+</button>
+            {{-- Total Pembayaran & Informasi Tambahan --}}
+            <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
+                <!-- Total Pembayaran -->
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Total Pembayaran</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div>
+                                <label for="total_pembayaran" class="{{ $labelClasses }}">Total Tagihan</label>
+                                <input type="number" name="total_pembayaran" id="total_pembayaran"
+                                    value="0"
+                                    class="{{ $readonlyInputClasses }}" readonly>
+                            </div>
+                            <div>
+                                <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Penyesuaian</label>
+                                <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian"
+                                    class="{{ $inputClasses }}" value="0">
+                            </div>
+                            <div>
+                                <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir</label>
+                                <input type="number" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian"
+                                    class="{{ $readonlyInputClasses }} font-bold text-gray-800 bg-gray-100" readonly value="0">
+                            </div>
                         </div>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500">Ketik langsung: 1000, -500, 1000.50. Format otomatis saat selesai mengetik</p>
                 </div>
-                <div>
-                    <label for="total_tagihan_setelah_penyesuaian" class="block text-sm font-semibold text-gray-700 mb-1">Total Pembayaran setelah Penyesuaian</label>
-                    <div class="relative">
-                        <span class="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 text-base">Rp</span>
-                        <input type="text" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian"
-                            class="mt-1 block w-full pl-8 rounded-md border-gray-300 bg-gray-50 shadow-sm font-semibold text-gray-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5 text-right" readonly value="0">
-                        <input type="hidden" name="total_tagihan_setelah_penyesuaian_raw" id="total_tagihan_setelah_penyesuaian_raw" value="0">
+
+                <!-- Informasi Tambahan -->
+                <div class="lg:col-span-2">
+                    <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Informasi Tambahan</h4>
+                        <div class="space-y-2">
+                            <div>
+                                <label for="alasan_penyesuaian" class="{{ $labelClasses }}">Alasan Penyesuaian</label>
+                                <textarea name="alasan_penyesuaian" id="alasan_penyesuaian" rows="2"
+                                    class="{{ $inputClasses }}" placeholder="Jelaskan alasan penyesuaian..."></textarea>
+                            </div>
+                            <div>
+                                <label for="keterangan" class="{{ $labelClasses }}">Keterangan</label>
+                                <textarea name="keterangan" id="keterangan" rows="2"
+                                    class="{{ $inputClasses }}" placeholder="Tambahkan keterangan..."></textarea>
+                            </div>
+                        </div>
                     </div>
-                    <p class="mt-1 text-xs text-green-600 font-medium">Total yang akan dibayarkan</p>
                 </div>
             </div>
 
-            {{-- Tombol Submit --}}
+            {{-- Submit Button --}}
             <div class="flex justify-end">
-                <button type="submit"
-                    class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl shadow-md transition">
+                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                     Simpan Pembayaran
                 </button>
             </div>
         </form>
     </div>
-</div>
 
 {{-- Script --}}
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const nomorCetakanInput = document.getElementById('nomor_cetakan');
-    const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
-    const bankSelect = document.getElementById('bank');
-
-    // Function to get kode_nomor from selected bank option
-    function getBankCode() {
-        const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-        if (selectedOption && selectedOption.value) {
-            return selectedOption.getAttribute('data-kode') || '000';
-        }
-        return '000';
-    }
-
-    // Function to update nomor pembayaran
-    function updateNomorPembayaran() {
-        const cetakan = nomorCetakanInput ? nomorCetakanInput.value || 1 : 1;
-        const bankCode = getBankCode();
-        const now = new Date();
-        const tahun = String(now.getFullYear()).slice(-2);
-        const bulan = String(now.getMonth() + 1).padStart(2, '0');
-        const running = nomorPembayaranInput.value.split('-').pop() || '000001';
-
-        nomorPembayaranInput.value = `${bankCode}-${cetakan}-${tahun}-${bulan}-${running}`;
-    }
-
-    // Event listeners
-    if (nomorCetakanInput) {
-        nomorCetakanInput.addEventListener('input', updateNomorPembayaran);
-    }
-    bankSelect.addEventListener('change', updateNomorPembayaran);
-
-    // Initial update
-    updateNomorPembayaran();
-});
-</script>
+    document.addEventListener('DOMContentLoaded', function () {
         const selectAllCheckbox = document.getElementById('select-all');
         const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
-
-        // Format currency functions
-        function formatCurrency(value) {
-            if (!value || isNaN(value)) return '0';
-            // Convert to Indonesian format: 35.449,53
-            return parseFloat(value).toLocaleString('id-ID', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
-
-        function parseCurrency(value) {
-            if (!value) return 0;
-            // Handle negative values
-            const isNegative = value.toString().includes('-');
-            // Remove all non-numeric characters except comma, dot and minus
-            let cleanValue = value.toString().replace(/[^\d,.-]/g, '');
-            // Handle Indonesian format (dot as thousand separator, comma as decimal)
-            if (cleanValue.includes('.') && cleanValue.includes(',')) {
-                // Format like 1.000,50 - remove dots (thousand separator), keep comma (decimal)
-                cleanValue = cleanValue.replace(/\./g, '').replace(',', '.');
-            } else if (cleanValue.includes(',') && !cleanValue.includes('.')) {
-                // Format like 1000,50 - replace comma with dot
-                cleanValue = cleanValue.replace(',', '.');
-            }
-            // Remove any remaining non-numeric except dot and minus
-            cleanValue = cleanValue.replace(/[^\d.-]/g, '');
-            let result = parseFloat(cleanValue) || 0;
-            return isNegative ? -result : result;
-        }
-
-        // Setup currency formatting for input fields
-        function setupCurrencyInput(inputId, hiddenId) {
-            const input = document.getElementById(inputId);
-            const hidden = document.getElementById(hiddenId);
-
-            if (!input || !hidden) return;
-
-            // Only format on blur (when user finishes typing)
-            input.addEventListener('blur', function() {
-                const rawValue = parseCurrency(this.value);
-                hidden.value = rawValue;
-
-                if (inputId === 'total_tagihan_penyesuaian') {
-                    if (rawValue < 0) {
-                        this.value = '-' + formatCurrency(Math.abs(rawValue));
-                    } else if (rawValue > 0) {
-                        this.value = formatCurrency(rawValue);
-                    } else {
-                        this.value = '0';
-                    }
-                } else {
-                    this.value = formatCurrency(rawValue);
-                }
-                updateTotalSetelahPenyesuaian();
-            });
-
-            // Update hidden value on input without formatting
-            input.addEventListener('input', function() {
-                const rawValue = parseCurrency(this.value);
-                hidden.value = rawValue;
-                updateTotalSetelahPenyesuaian();
-            });
-
-            // Allow natural typing for penyesuaian field
-            if (inputId === 'total_tagihan_penyesuaian') {
-                input.addEventListener('keydown', function(e) {
-                    // Allow all normal typing keys
-                    const allowedKeys = [
-                        'Backspace', 'Delete', 'Tab', 'Escape', 'Enter',
-                        'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-                        'Home', 'End', 'PageUp', 'PageDown'
-                    ];
-
-                    if (allowedKeys.includes(e.key)) {
-                        return;
-                    }
-
-                    // Allow numbers
-                    if (e.key >= '0' && e.key <= '9') {
-                        return;
-                    }
-
-                    // Allow minus anywhere (will be handled by parsing)
-                    if (e.key === '-') {
-                        return;
-                    }
-
-                    // Allow comma and dot
-                    if (e.key === ',' || e.key === '.') {
-                        return;
-                    }
-
-                    // Allow copy/paste shortcuts
-                    if ((e.ctrlKey || e.metaKey) && ['a', 'c', 'v', 'x', 'z', 'y'].includes(e.key.toLowerCase())) {
-                        return;
-                    }
-
-                    // Block all other keys
-                    e.preventDefault();
-                });
-            }
-        }        // Initialize currency inputs
-        setupCurrencyInput('total_pembayaran', 'total_pembayaran_raw');
-        setupCurrencyInput('total_tagihan_penyesuaian', 'total_tagihan_penyesuaian_raw');
-
-        // Handle plus/minus buttons for penyesuaian
-        const btnPlus = document.getElementById('btn-plus');
-        const btnMinus = document.getElementById('btn-minus');
-        const penyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
-        const penyesuaianRaw = document.getElementById('total_tagihan_penyesuaian_raw');
-
-        btnPlus.addEventListener('click', function() {
-            const currentValue = Math.abs(parseCurrency(penyesuaianInput.value) || 0);
-            if (currentValue === 0) {
-                penyesuaianInput.value = '';
-                penyesuaianInput.focus();
-                return;
-            }
-            penyesuaianRaw.value = currentValue;
-            penyesuaianInput.value = formatCurrency(currentValue);
-            updateTotalSetelahPenyesuaian();
-        });
-
-        btnMinus.addEventListener('click', function() {
-            const currentValue = Math.abs(parseCurrency(penyesuaianInput.value) || 0);
-            if (currentValue === 0) {
-                penyesuaianInput.value = '-';
-                penyesuaianInput.focus();
-                return;
-            }
-            penyesuaianRaw.value = -currentValue;
-            penyesuaianInput.value = '-' + formatCurrency(currentValue);
-            updateTotalSetelahPenyesuaian();
-        });
 
         selectAllCheckbox.addEventListener('change', function () {
             pranotaCheckboxes.forEach(checkbox => {
@@ -403,24 +245,13 @@ document.addEventListener('DOMContentLoaded', function () {
                 alert('Silakan pilih minimal satu pranota kontainer.');
                 return false;
             }
-
-            // Set raw values for submission
-            document.getElementById('total_pembayaran_raw').name = 'total_pembayaran';
-            document.getElementById('total_tagihan_penyesuaian_raw').name = 'total_tagihan_penyesuaian';
-            document.getElementById('total_tagihan_setelah_penyesuaian_raw').name = 'total_tagihan_setelah_penyesuaian';
-
-            // Remove formatted inputs from form submission
-            document.getElementById('total_pembayaran').removeAttribute('name');
-            document.getElementById('total_tagihan_penyesuaian').removeAttribute('name');
-            document.getElementById('total_tagihan_setelah_penyesuaian').removeAttribute('name');
         });
 
         // Perhitungan otomatis total pembayaran berdasarkan pranota yang dipilih
         const totalPembayaranInput = document.getElementById('total_pembayaran');
-        const totalPembayaranRaw = document.getElementById('total_pembayaran_raw');
-        const totalPenyesuaianRaw = document.getElementById('total_tagihan_penyesuaian_raw');
+        const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
         const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
-        const totalSetelahRaw = document.getElementById('total_tagihan_setelah_penyesuaian_raw');
+        const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
 
         // Simpan nilai total_amount di data attribute
         const pranotaBiayaMap = {};
@@ -438,41 +269,67 @@ document.addEventListener('DOMContentLoaded', function () {
                     total += pranotaBiayaMap[id] || 0;
                 }
             });
-            totalPembayaranRaw.value = total;
-            totalPembayaranInput.value = formatCurrency(total);
+            totalPembayaranInput.value = total;
             updateTotalSetelahPenyesuaian();
         }
 
         function updateTotalSetelahPenyesuaian() {
-            const totalPembayaran = parseFloat(totalPembayaranRaw.value) || 0;
-            const totalPenyesuaian = parseFloat(totalPenyesuaianRaw.value) || 0;
-            const totalSetelah = totalPembayaran + totalPenyesuaian;
-
-            totalSetelahRaw.value = totalSetelah;
-            totalSetelahInput.value = formatCurrency(totalSetelah);
+            const totalPembayaran = parseFloat(totalPembayaranInput.value) || 0;
+            const totalPenyesuaian = parseFloat(totalPenyesuaianInput.value) || 0;
+            totalSetelahInput.value = totalPembayaran + totalPenyesuaian;
         }
 
         pranotaCheckboxes.forEach(function(checkbox) {
             checkbox.addEventListener('change', updateTotalPembayaran);
         });
-
-        // Initialize display values
+        totalPembayaranInput.addEventListener('input', updateTotalSetelahPenyesuaian);
+        totalPenyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
         updateTotalPembayaran();
-
-        // Set initial value for penyesuaian field to empty
-        penyesuaianInput.value = '0';
-        penyesuaianInput.placeholder = 'Ketik nominal penyesuaian...';
     });
 
-    // Keep tanggal_pembayaran hidden field synced with tanggal_kas
+    // Keep tanggal_pembayaran hidden field synced with current date
     document.addEventListener('DOMContentLoaded', function () {
-        const tanggalKas = document.getElementById('tanggal_kas');
         const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
-        if (tanggalKas && tanggalPembayaran) {
-            tanggalKas.addEventListener('change', function () {
-                tanggalPembayaran.value = this.value;
-            });
+        if (tanggalPembayaran) {
+            // Keep hidden field with today's date for validation
+            tanggalPembayaran.value = new Date().toISOString().split('T')[0];
         }
+    });
+</script>
+<script>
+    // Script untuk update nomor pembayaran
+    document.addEventListener('DOMContentLoaded', function () {
+        const nomorCetakanInput = document.getElementById('nomor_cetakan');
+        const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
+        const bankSelect = document.getElementById('bank');
+
+        // Function to get kode_nomor from selected bank option
+        function getBankCode() {
+            const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+            if (selectedOption && selectedOption.value) {
+                return selectedOption.getAttribute('data-kode') || '000';
+            }
+            return '000';
+        }
+
+        // Function to update nomor pembayaran
+        function updateNomorPembayaran() {
+            const cetakan = nomorCetakanInput.value || 1;
+            const bankCode = getBankCode();
+            const now = new Date();
+            const tahun = String(now.getFullYear()).slice(-2);
+            const bulan = String(now.getMonth() + 1).padStart(2, '0');
+            const running = nomorPembayaranInput.value.split('-').pop() || '000001';
+
+            nomorPembayaranInput.value = `${bankCode}-${cetakan}-${tahun}-${bulan}-${running}`;
+        }
+
+        // Event listeners
+        nomorCetakanInput.addEventListener('input', updateNomorPembayaran);
+        bankSelect.addEventListener('change', updateNomorPembayaran);
+
+        // Initial update
+        updateNomorPembayaran();
     });
 </script>
 <script>

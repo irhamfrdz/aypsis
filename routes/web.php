@@ -673,12 +673,12 @@ Route::middleware([
     // Print single permohonan memo (declare before resource routes)
     Route::get('permohonan/{permohonan}/print', [PermohonanController::class, 'print'])
          ->name('permohonan.print')
-         ->middleware('can:permohonan');
+         ->middleware('can:permohonan-memo-print');
 
     // Bulk delete permohonan (declare before resource routes)
     Route::delete('permohonan/bulk-delete', [PermohonanController::class, 'bulkDelete'])
          ->name('permohonan.bulk-delete')
-         ->middleware('can:permohonan');
+         ->middleware('can:permohonan-memo-delete');
 
     // Individual routes for permohonan with specific permissions
     Route::get('permohonan', [PermohonanController::class, 'index'])
@@ -977,3 +977,17 @@ Route::middleware(['auth'])->group(function() {
          ->name('tagihan-cat.destroy')
          ->middleware('can:tagihan-cat-delete');
 });
+
+// Test route for debugging permissions
+Route::get('/test-perm', function () {
+    $user = auth()->user();
+    if (!$user) return 'Not logged in';
+
+    return [
+        'can_permohonan_memo_update' => $user->can('permohonan-memo-update'),
+        'gate_allows' => \Illuminate\Support\Facades\Gate::allows('permohonan-memo-update'),
+        'has_permission_to' => $user->hasPermissionTo('permohonan-memo-update'),
+        'has_role_admin' => $user->hasRole('admin'),
+        'user_permissions' => $user->permissions->pluck('name')->toArray(),
+    ];
+})->middleware('auth');

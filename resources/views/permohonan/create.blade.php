@@ -254,15 +254,15 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
                             <label for="jumlah_uang_jalan" class="block text-sm font-medium text-gray-700">Jumlah Uang Jalan</label>
-                            <input type="number" name="jumlah_uang_jalan" id="jumlah_uang_jalan" class="{{ $inputClasses }}" value="0" required>
+                            <input type="text" name="jumlah_uang_jalan" id="jumlah_uang_jalan" class="{{ $inputClasses }}" value="0" required>
                         </div>
                         <div>
                             <label for="adjustment" class="block text-sm font-medium text-gray-700">Adjustment</label>
-                            <input type="number" name="adjustment" id="adjustment" class="{{ $inputClasses }}" value="0" required>
+                            <input type="text" name="adjustment" id="adjustment" class="{{ $inputClasses }}" value="0" required>
                         </div>
                         <div>
                             <label for="total_setelah_adjustment" class="block text-sm font-medium text-gray-700">Total Biaya (Setelah Adj)</label>
-                            <input type="number" id="total_setelah_adjustment" class="{{ $autoInputClasses }}" readonly>
+                            <input type="text" id="total_setelah_adjustment" class="{{ $autoInputClasses }}" readonly>
                         </div>
                     </div>
                     <div>

@@ -15,6 +15,18 @@ use Illuminate\Support\Facades\Auth;
 class PermohonanController extends Controller
 {
     /**
+     * Parse angka dari format Indonesia (dengan titik sebagai pemisah ribuan) ke float.
+     */
+    private function parseIndonesianNumber($value)
+    {
+        if (is_null($value) || $value === '') {
+            return 0;
+        }
+        // Hapus titik (pemisah ribuan) dan ganti koma dengan titik jika ada
+        $cleaned = str_replace(['.', ','], ['', '.'], $value);
+        return (float) $cleaned;
+    }
+    /**
      * Menampilkan daftar permohonan.
      */
     public function index(Request $request)
@@ -93,14 +105,13 @@ class PermohonanController extends Controller
         DB::beginTransaction();
         try {
             $supir = Karyawan::findOrFail($validatedData['supir_id']);
-            $totalSetelahAdj = (float)$validatedData['jumlah_uang_jalan'] + (float)$validatedData['adjustment'];
+            $jumlahUangJalan = $this->parseIndonesianNumber($validatedData['jumlah_uang_jalan']);
+            $adjustment = $this->parseIndonesianNumber($validatedData['adjustment']);
+            $totalSetelahAdj = $jumlahUangJalan + $adjustment;
             $lampiranPath = $request->hasFile('lampiran') ? $request->file('lampiran')->store('public/permohonan_lampiran') : null;
 
             // Tentukan tujuan berdasarkan dari dan ke
             $tujuanString = $validatedData['dari'] . ' - ' . $validatedData['ke'];
-            $jumlahUangJalan = (float)$validatedData['jumlah_uang_jalan'];
-
-            $totalSetelahAdj = $jumlahUangJalan + (float)($validatedData['adjustment'] ?? 0);
 
             $kegiatanCode = $mk->kode_kegiatan;
 
@@ -115,10 +126,11 @@ class PermohonanController extends Controller
                 'plat_nomor' => $validatedData['plat_nomor'],
                 'no_chasis' => $validatedData['no_chasis'],
                 'ukuran' => $validatedData['ukuran'],
-                'tujuan' => $tujuanString,
+                'dari' => $validatedData['dari'],
+                'ke' => $validatedData['ke'],
                 'jumlah_kontainer' => $validatedData['jumlah_kontainer'],
                 'jumlah_uang_jalan' => $jumlahUangJalan,
-                'adjustment' => $validatedData['adjustment'],
+                'adjustment' => $adjustment,
                 'alasan_adjustment' => $validatedData['alasan_adjustment'],
                 'total_harga_setelah_adj' => $totalSetelahAdj,
                 'catatan' => $validatedData['catatan'],
@@ -227,9 +239,9 @@ class PermohonanController extends Controller
 
             // Gabungkan dari dan ke untuk tujuan string
             $tujuanString = $request->input('dari') . ' - ' . $request->input('ke');
-            $jumlahUangJalan = (float)$validatedData['jumlah_uang_jalan'];
+            $jumlahUangJalan = $this->parseIndonesianNumber($validatedData['jumlah_uang_jalan']);
 
-            $adjustment = isset($validatedData['adjustment']) ? (float)$validatedData['adjustment'] : 0;
+            $adjustment = isset($validatedData['adjustment']) ? $this->parseIndonesianNumber($validatedData['adjustment']) : 0;
             $totalSetelahAdj = $jumlahUangJalan + $adjustment;
 
             $kegiatanCode = $mk->kode_kegiatan;

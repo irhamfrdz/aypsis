@@ -135,12 +135,13 @@
     @php
         $user = Auth::user();
         $hasKaryawan = $user && $user->karyawan;
-        $showSidebar = $hasKaryawan;
+        $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
+        $showSidebar = $hasKaryawan || $isAdmin || $user; // Show sidebar for logged in users, especially admins
     @endphp
 
     @if($showSidebar)
     <!-- Sidebar -->
-    <div id="sidebar" class="lg:flex lg:flex-col lg:w-64 bg-gradient-to-b from-blue-50 via-white to-gray-100 shadow-2xl border-r border-gray-300 fixed inset-y-0 left-0 z-50 translate-x-0 transition-transform rounded-r-2xl">
+    <div id="sidebar" class="hidden lg:flex lg:flex-col lg:w-64 bg-gradient-to-b from-blue-50 via-white to-gray-100 shadow-2xl border-r border-gray-300 fixed top-16 bottom-0 left-0 z-50 translate-x-0 transition-transform rounded-r-2xl">
             <!-- Mobile close button -->
             <div class="lg:hidden absolute top-4 right-4">
                 <button id="close-sidebar" class="text-gray-600 hover:text-gray-900">
@@ -835,7 +836,7 @@
     @endif
 
     <!-- Page Content -->
-    <div class="flex-1 overflow-auto {{ $showSidebar ? 'lg:pl-64' : '' }}">
+    <div class="flex-1 overflow-auto {{ $showSidebar ? 'lg:ml-64' : '' }}">
         <div class="p-6">
             @yield('content')
         </div>

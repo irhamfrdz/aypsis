@@ -34,6 +34,11 @@ class PembayaranPranotaKontainerController extends Controller
             return $this->showPaymentForm($request);
         }
 
+        // Clear any old validation errors from session for fresh form load
+        if ($request->isMethod('get')) {
+            session()->forget('errors');
+        }
+
         // Get all pranota that are unpaid (not paid yet)
         $pranotaList = Pranota::where('status', 'unpaid')
             ->orderBy('created_at', 'desc')
