@@ -25,6 +25,12 @@ class PerbaikanKontainer extends Model
         'vendor_bengkel',
         'status_perbaikan',
         'catatan',
+        'jenis_catatan',
+        'teknisi',
+        'prioritas',
+        'sparepart_dibutuhkan',
+        'tanggal_catatan',
+        'estimasi_waktu',
         'tanggal_selesai',
         'created_by',
         'updated_by',
@@ -32,6 +38,7 @@ class PerbaikanKontainer extends Model
 
     protected $dates = [
         'tanggal_perbaikan',
+        'tanggal_catatan',
         'tanggal_selesai',
     ];
 

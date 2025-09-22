@@ -854,12 +854,21 @@ class KaryawanController extends Controller
 
         $karyawan->update($validated);
 
+        // Set user status to approved after successful onboarding
+        $user = Auth::user();
+        if ($user && $user->status !== 'approved') {
+            $user->status = 'approved';
+            $user->approved_at = now();
+            $user->save();
+        }
+
         // Untuk onboarding, selalu redirect ke crew checklist jika ABK
         if ($karyawan->isAbk()) {
             return redirect()->route('karyawan.onboarding-crew-checklist', $karyawan->id)
                 ->with('success', 'Data karyawan berhasil diperbarui. Silakan lengkapi checklist crew.');
         } else {
-            return redirect()->route('dashboard')->with('success', 'Data karyawan berhasil diperbarui.');
+            Auth::logout();
+            return redirect()->route('login')->with('success', 'Data karyawan berhasil diperbarui. Silakan login kembali untuk melanjutkan.');
         }
     }
 

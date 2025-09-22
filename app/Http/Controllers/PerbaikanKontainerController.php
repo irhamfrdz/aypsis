@@ -263,4 +263,45 @@ class PerbaikanKontainerController extends Controller
         return redirect()->back()
                         ->with('success', "{$count} data perbaikan berhasil dimasukkan ke pranota.");
     }
+
+    /**
+     * Add catatan/notes to a perbaikan kontainer
+     */
+    public function addCatatan(Request $request)
+    {
+        $request->validate([
+            'perbaikan_kontainer_id' => 'required|integer|exists:perbaikan_kontainers,id',
+            'jenis_catatan' => 'required|string|max:255',
+            'status_perbaikan' => 'required|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar',
+            'teknisi' => 'nullable|string|max:255',
+            'prioritas' => 'required|in:low,normal,high,urgent',
+            'sparepart_dibutuhkan' => 'nullable|string',
+            'catatan' => 'required|string',
+            'tanggal_catatan' => 'required|date',
+            'estimasi_waktu' => 'nullable|string|max:255',
+        ]);
+
+        $perbaikanKontainer = PerbaikanKontainer::findOrFail($request->perbaikan_kontainer_id);
+
+        $updateData = [
+            'jenis_catatan' => $request->jenis_catatan,
+            'status_perbaikan' => $request->status_perbaikan,
+            'teknisi' => $request->teknisi,
+            'prioritas' => $request->prioritas,
+            'sparepart_dibutuhkan' => $request->sparepart_dibutuhkan,
+            'catatan' => $request->catatan,
+            'tanggal_catatan' => $request->tanggal_catatan,
+            'estimasi_waktu' => $request->estimasi_waktu,
+            'updated_by' => Auth::id(),
+        ];
+
+        if ($request->status_perbaikan === 'sudah_dibayar') {
+            $updateData['tanggal_selesai'] = now();
+        }
+
+        $perbaikanKontainer->update($updateData);
+
+        return redirect()->back()
+                        ->with('success', 'Catatan perbaikan berhasil ditambahkan.');
+    }
 }

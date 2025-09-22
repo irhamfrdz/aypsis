@@ -180,6 +180,10 @@ class AuthController extends Controller
             // Link user to karyawan (pastikan instance Eloquent)
             if ($user) {
                 $user->karyawan_id = $karyawan->id;
+                // Update username jika dikirim dari form (dari auto-generate JS)
+                if ($request->filled('username') && $request->username !== $user->username) {
+                    $user->username = $request->username;
+                }
                 $user->save();
             }
 
@@ -190,7 +194,12 @@ class AuthController extends Controller
                     ->with('success', 'Data karyawan berhasil ditambahkan. Silakan lengkapi checklist kelengkapan crew.');
             }
 
-            return redirect()->route('dashboard')->with('success', 'Registrasi karyawan berhasil!');
+            // User status tetap pending, menunggu approval admin
+            // (Dihapus: otomatis approve setelah onboarding)
+
+            // Logout and redirect to login for non-ABK
+            Auth::logout();
+            return redirect()->route('login')->with('success', 'Data karyawan berhasil disimpan. Akun Anda menunggu persetujuan administrator untuk dapat digunakan.');
         } catch (\Exception $e) {
             Log::error('registerKaryawan failed', ['error' => $e->getMessage(), 'input' => $request->all()]);
             return back()->withInput()->with('error', 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi atau hubungi administrator.');

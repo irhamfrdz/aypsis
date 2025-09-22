@@ -125,51 +125,51 @@
                 <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                     @forelse($perbaikanKontainers as $index => $perbaikan)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-4 whitespace-nowrap">
+                        <td class="px-4 py-2 whitespace-nowrap">
                             <input type="checkbox" name="selected_items[]" value="{{ $perbaikan->id }}"
                                    class="item-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                             {{ $loop->iteration + ($perbaikanKontainers->currentPage() - 1) * $perbaikanKontainers->perPage() }}
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap">
+                        <td class="px-4 py-2 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
                                 {{ $perbaikan->nomor_tagihan ?? '-' }}
                             </div>
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap">
+                        <td class="px-4 py-2 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
                                 {{ $perbaikan->nomor_kontainer ?? 'N/A' }}
                             </div>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap">
+                        <td class="px-6 py-2 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
                                 {{ $perbaikan->vendorBengkel->nama_bengkel ?? $perbaikan->vendor_bengkel ?? '-' }}
                             </div>
                         </td>
-                        <td class="px-6 py-4">
+                        <td class="px-6 py-2">
                             <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $perbaikan->estimasi_kerusakan_kontainer }}">
                                 {{ Str::limit($perbaikan->estimasi_kerusakan_kontainer, 30) }}
                             </div>
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                             {{ $perbaikan->estimasi_biaya_perbaikan ? 'Rp ' . number_format($perbaikan->estimasi_biaya_perbaikan, 0, ',', '.') : '-' }}
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                             {{ $perbaikan->realisasi_biaya_perbaikan ? 'Rp ' . number_format($perbaikan->realisasi_biaya_perbaikan, 0, ',', '.') : '-' }}
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap">
+                        <td class="px-4 py-2 whitespace-nowrap">
                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $perbaikan->status_color }}">
                                 {{ $perbaikan->status_label }}
                             </span>
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                             {{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/m/Y') : '-' }}
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                             {{ $perbaikan->tanggal_selesai ? \Carbon\Carbon::parse($perbaikan->tanggal_selesai)->format('d/m/Y') : '-' }}
                         </td>
-                        <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
                                 @can('perbaikan-kontainer-view')
                                 <a href="{{ route('perbaikan-kontainer.show', $perbaikan) }}"
@@ -178,6 +178,10 @@
                                 @can('perbaikan-kontainer-update')
                                 <a href="{{ route('perbaikan-kontainer.edit', $perbaikan) }}"
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                @endcan
+                                @can('perbaikan-kontainer-update')
+                                <button onclick="openCatatanModal({{ $perbaikan->id }}, '{{ $perbaikan->nomor_tagihan ?? 'N/A' }}', '{{ $perbaikan->estimasi_kerusakan_kontainer ?? '' }}')"
+                                        class="text-green-600 hover:text-green-900">Catatan</button>
                                 @endcan
                                 @can('perbaikan-kontainer-delete')
                                 <form method="POST" action="{{ route('perbaikan-kontainer.destroy', $perbaikan) }}"
@@ -767,3 +771,206 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+
+<!-- Catatan Modal -->
+<div id="catatanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between pb-3 border-b">
+                <h3 class="text-lg font-medium text-gray-900">Input Informasi Perbaikan</h3>
+                <button id="closeCatatanModal" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Modal Body -->
+            <div class="mt-4">
+                <form id="catatanForm" method="POST" action="{{ route('perbaikan-kontainer.add-catatan') }}">
+                    @csrf
+
+                    <!-- Item Info -->
+                    <div class="mb-4 p-3 bg-blue-50 rounded-lg">
+                        <h4 class="text-sm font-medium text-blue-800 mb-2">Data Perbaikan Kontainer:</h4>
+                        <div id="catatanItemInfo" class="text-sm text-blue-700">
+                            <!-- Item info will be populated by JavaScript -->
+                        </div>
+                    </div>
+
+                    <!-- Catatan Form Fields -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Catatan *</label>
+                            <select name="jenis_catatan" id="jenis_catatan" required
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">-- Pilih Jenis Catatan --</option>
+                                <option value="progress">Progress Perbaikan</option>
+                                <option value="issue">Masalah/Kendala</option>
+                                <option value="solution">Solusi</option>
+                                <option value="sparepart">Kebutuhan Sparepart</option>
+                                <option value="completion">Penyelesaian</option>
+                                <option value="other">Lainnya</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Perbaikan</label>
+                            <select name="status_perbaikan" id="status_perbaikan"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">-- Pilih Status --</option>
+                                <option value="pending">Menunggu Perbaikan</option>
+                                <option value="in_progress">Sedang Dikerjakan</option>
+                                <option value="completed">Selesai</option>
+                                <option value="on_hold">Ditunda</option>
+                                <option value="cancelled">Dibatalkan</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Teknisi</label>
+                            <input type="text" name="teknisi" id="teknisi"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Nama teknisi yang mengerjakan">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas</label>
+                            <select name="prioritas" id="prioritas"
+                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                                <option value="">-- Pilih Prioritas --</option>
+                                <option value="low">Rendah</option>
+                                <option value="medium">Sedang</option>
+                                <option value="high">Tinggi</option>
+                                <option value="urgent">Mendesak</option>
+                            </select>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Sparepart yang Dibutuhkan</label>
+                            <textarea name="sparepart_dibutuhkan" id="sparepart_dibutuhkan" rows="2"
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      placeholder="Jenis dan jumlah sparepart yang dibutuhkan..."></textarea>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan *</label>
+                            <textarea name="catatan" id="catatan_text" rows="4" required
+                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                      placeholder="Masukkan detail catatan perbaikan..."></textarea>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Catatan</label>
+                            <input type="date" name="tanggal_catatan" id="tanggal_catatan"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   value="{{ date('Y-m-d') }}">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estimasi Waktu (jam)</label>
+                            <input type="number" name="estimasi_waktu" id="estimasi_waktu" min="0" step="0.5"
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="0">
+                        </div>
+                    </div>
+
+                    <!-- Hidden field for perbaikan ID -->
+                    <input type="hidden" name="perbaikan_id" id="catatan_perbaikan_id">
+                </form>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="flex items-center justify-end pt-4 border-t">
+                <button id="cancelCatatanBtn" type="button"
+                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 mr-2">
+                    Batal
+                </button>
+                <button id="submitCatatanBtn" type="button"
+                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500">
+                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Simpan Informasi Perbaikan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Catatan Modal Functions
+function openCatatanModal(perbaikanId, nomorTagihan, estimasiKerusakan) {
+    // Populate item info
+    document.getElementById('catatanItemInfo').innerHTML = `
+        <div>• <strong>Nomor Tagihan:</strong> ${nomorTagihan}</div>
+        <div>• <strong>Estimasi Kerusakan:</strong> ${estimasiKerusakan || 'Tidak ada informasi'}</div>
+        <div>• <strong>Tanggal Input:</strong> ${new Date().toLocaleDateString('id-ID')}</div>
+    `;
+
+    // Set perbaikan ID
+    document.getElementById('catatan_perbaikan_id').value = perbaikanId;
+
+    // Reset form
+    document.getElementById('catatanForm').reset();
+    document.getElementById('tanggal_catatan').value = new Date().toISOString().split('T')[0];
+
+    // Show modal
+    document.getElementById('catatanModal').classList.remove('hidden');
+}
+
+// Catatan Modal Event Listeners
+document.addEventListener('DOMContentLoaded', function() {
+    const catatanModal = document.getElementById('catatanModal');
+    const closeCatatanModal = document.getElementById('closeCatatanModal');
+    const cancelCatatanBtn = document.getElementById('cancelCatatanBtn');
+    const submitCatatanBtn = document.getElementById('submitCatatanBtn');
+    const catatanForm = document.getElementById('catatanForm');
+
+    // Close modal
+    closeCatatanModal.addEventListener('click', function() {
+        catatanModal.classList.add('hidden');
+    });
+
+    cancelCatatanBtn.addEventListener('click', function() {
+        catatanModal.classList.add('hidden');
+    });
+
+    // Close modal when clicking outside
+    catatanModal.addEventListener('click', function(e) {
+        if (e.target === catatanModal) {
+            catatanModal.classList.add('hidden');
+        }
+    });
+
+    // Submit catatan form
+    submitCatatanBtn.addEventListener('click', function() {
+        const jenisCatatan = document.getElementById('jenis_catatan').value.trim();
+        const catatan = document.getElementById('catatan_text').value.trim();
+        const estimasiWaktu = document.getElementById('estimasi_waktu').value;
+
+        if (!jenisCatatan) {
+            alert('Jenis catatan harus dipilih!');
+            document.getElementById('jenis_catatan').focus();
+            return;
+        }
+
+        if (!catatan) {
+            alert('Catatan harus diisi!');
+            document.getElementById('catatan_text').focus();
+            return;
+        }
+
+        if (estimasiWaktu && parseFloat(estimasiWaktu) < 0) {
+            alert('Estimasi waktu tidak boleh negatif!');
+            document.getElementById('estimasi_waktu').focus();
+            return;
+        }
+
+        // Submit form
+        catatanForm.submit();
+    });
+});
+</script>
+@endsection

@@ -905,6 +905,11 @@ Route::middleware(['auth'])->group(function() {
          ->name('perbaikan-kontainer.bulk-pranota')
          ->middleware('can:perbaikan-kontainer-update');
 
+    // Add catatan route
+    Route::post('perbaikan-kontainer/add-catatan', [\App\Http\Controllers\PerbaikanKontainerController::class, 'addCatatan'])
+         ->name('perbaikan-kontainer.add-catatan')
+         ->middleware('can:perbaikan-kontainer-update');
+
     // Pranota Perbaikan Kontainer routes
     Route::get('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'index'])
          ->name('pranota-perbaikan-kontainer.index')

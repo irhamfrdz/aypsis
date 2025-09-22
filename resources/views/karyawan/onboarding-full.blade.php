@@ -70,6 +70,11 @@
                             <input type="text" name="nama_panggilan" id="nama_panggilan" class="{{ $inputClasses }}" required placeholder="Masukkan nama panggilan" value="{{ old('nama_panggilan', $karyawan->nama_panggilan ?? '') }}">
                         </div>
                         <div>
+                            <label for="username" class="{{ $labelClasses }}">Username</label>
+                            <input type="text" name="username" id="username" class="{{ $readonlyInputClasses }}" readonly placeholder="Username akan terisi otomatis" value="{{ old('username', $karyawan->user->username ?? '') }}">
+                            <p class="text-xs text-blue-600 mt-1">🔄 <strong>Auto-generate:</strong> Username akan terisi otomatis berdasarkan Nama Panggilan</p>
+                        </div>
+                        <div>
                             <label for="email" class="{{ $labelClasses }}">Email</label>
                             <input type="email" name="email" id="email" class="{{ $inputClasses }}" placeholder="contoh@email.com" value="{{ old('email', $karyawan->email ?? '') }}">
                         </div>
@@ -341,6 +346,14 @@
             // Data pekerjaan dari database
             const pekerjaanByDivisi = @json($pekerjaanByDivisi);
 
+            // Auto-fill nama lengkap ke atas nama
+            const namaLengkapInput = document.getElementById('nama_lengkap');
+            const atasNamaInput = document.getElementById('atas_nama');
+
+            // Auto-generate username dari nama panggilan
+            const namaPanggilanInput = document.getElementById('nama_panggilan');
+            const usernameInput = document.getElementById('username');
+
             // Fungsi untuk membersihkan input identitas (hanya angka)
             function formatIdentityNumber(input) {
                 const value = input.value.replace(/\D/g, '');
@@ -373,6 +386,12 @@
             updatePekerjaanOptions();
             updateAlamatLengkap();
 
+            // Trigger auto-generate username jika nama panggilan sudah ada
+            if (namaPanggilanInput && namaPanggilanInput.value.trim()) {
+                const event = new Event('input', { bubbles: true });
+                namaPanggilanInput.dispatchEvent(event);
+            }
+
             // Event listener untuk perubahan dropdown divisi
             divisiSelect.addEventListener('change', updatePekerjaanOptions);
 
@@ -382,12 +401,26 @@
             });
 
             // Auto-fill nama lengkap ke atas nama
-            const namaLengkapInput = document.getElementById('nama_lengkap');
-            const atasNamaInput = document.getElementById('atas_nama');
-
             if (namaLengkapInput && atasNamaInput) {
                 namaLengkapInput.addEventListener('input', function() {
                     atasNamaInput.value = this.value.trim();
+                });
+            }
+
+            // Auto-generate username dari nama panggilan
+            if (namaPanggilanInput && usernameInput) {
+                namaPanggilanInput.addEventListener('input', function() {
+                    const namaPanggilan = this.value.trim();
+                    if (namaPanggilan) {
+                        // Generate username: lowercase, replace spaces with underscore, remove special characters
+                        const username = namaPanggilan
+                            .toLowerCase()
+                            .replace(/\s+/g, '_')
+                            .replace(/[^a-z0-9_]/g, '');
+                        usernameInput.value = username;
+                    } else {
+                        usernameInput.value = '';
+                    }
                 });
             }
 
