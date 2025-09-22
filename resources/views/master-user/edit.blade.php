@@ -642,6 +642,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Pricelist CAT --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pricelist CAT</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-cat][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-cat']['view']) && $userMatrixPermissions['master-pricelist-cat']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-cat][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-cat']['create']) && $userMatrixPermissions['master-pricelist-cat']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-cat][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-cat']['update']) && $userMatrixPermissions['master-pricelist-cat']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-pricelist-cat][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-pricelist-cat']['delete']) && $userMatrixPermissions['master-pricelist-cat']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Vendor/Bengkel --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
@@ -832,6 +849,23 @@
                                 <td class="empty-cell"></td>
                                 <td><input type="checkbox" name="permissions[tagihan-cat][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-cat']['print']) && $userMatrixPermissions['tagihan-cat']['print']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[tagihan-cat][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['tagihan-cat']['export']) && $userMatrixPermissions['tagihan-cat']['export']) checked @endif></td>
+                            </tr>
+
+                            {{-- Pranota CAT --}}
+                            <tr class="submodule-row" data-parent="perbaikan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota CAT</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-cat']['view']) && $userMatrixPermissions['pranota-cat']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-cat']['create']) && $userMatrixPermissions['pranota-cat']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-cat']['update']) && $userMatrixPermissions['pranota-cat']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-cat']['delete']) && $userMatrixPermissions['pranota-cat']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-cat']['print']) && $userMatrixPermissions['pranota-cat']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pranota-cat']['export']) && $userMatrixPermissions['pranota-cat']['export']) checked @endif></td>
                             </tr>
 
                             {{-- Menu Supir --}}

@@ -29,7 +29,7 @@ composer install --no-dev --optimize-autoloader
 
 # 6. Check migration status first
 echo "🗄️ 6. Checking migration status..."
-php artisan migrate:status
+    php artisan migrate:status
 
 # 6b. If there are migration conflicts, run this command to mark the problematic migration as run:
 # php artisan migrate:status | grep "pembayaran_pranota_perbaikan_kontainers"

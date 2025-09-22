@@ -179,6 +179,7 @@
                         $user->can('master-user-view') ||
                         $user->can('master-kontainer-view') ||
                         $user->can('master-pricelist-sewa-kontainer-view') ||
+                        $user->can('master-pricelist-cat-view') ||
                         $user->can('master-tujuan-view') ||
                         $user->can('master-kegiatan-view') ||
                         $user->can('master-permission-view') ||
@@ -210,7 +211,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.permission.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master-bank-*') || Request::routeIs('master-coa-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*');
+                    $isMasterRoute = Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.permission.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master-bank-*') || Request::routeIs('master-coa-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('penyelesaian.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -264,6 +265,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                     </svg>
                                     Pricelist Kontainer Sewa
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-pricelist-cat-view'))
+                                <a href="{{ route('master.pricelist-cat.index') }}" class="flex items-center py-1 px-4 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-600 transition-colors duration-200 {{ Request::routeIs('master.pricelist-cat.*') ? 'bg-indigo-50 font-medium text-indigo-600' : 'text-gray-600' }}">
+                                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                    Pricelist CAT
                                 </a>
                             @endif
                             @if($user && $user->can('master-tujuan-view'))
@@ -374,7 +383,7 @@
                         </div>
                     </div>
                     @else
-                    @if($user && ($user->can('master-karyawan-view') || $user->can('master-user-view') || $user->can('master-kontainer-view') || $user->can('master-tujuan-view') || $user->can('master-kegiatan-view') || $user->can('master-permission-view') || $user->can('master-mobil-view') || $user->can('master-divisi-view') || $user->can('master-pajak-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-bank-view') || $user->can('master-coa-view') || $user->can('master-vendor-bengkel-view') || $user->can('master-kode-nomor-view') || $user->can('master-tipe-akun-view')))
+                    @if($user && ($user->can('master-karyawan-view') || $user->can('master-user-view') || $user->can('master-kontainer-view') || $user->can('master-tujuan-view') || $user->can('master-kegiatan-view') || $user->can('master-permission-view') || $user->can('master-mobil-view') || $user->can('master-divisi-view') || $user->can('master-pajak-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('master-bank-view') || $user->can('master-coa-view') || $user->can('master-vendor-bengkel-view') || $user->can('master-kode-nomor-view') || $user->can('master-tipe-akun-view')))
                     <div class="mt-4 mb-4">
                         <button id="master-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 rounded-lg transition-all duration-200 group {{ $isMasterRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
                             <div class="flex items-center">
@@ -420,6 +429,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                     </svg>
                                     Pricelist Kontainer Sewa
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-pricelist-cat-view'))
+                                <a href="{{ route('master.pricelist-cat.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.pricelist-cat.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                    Pricelist CAT
                                 </a>
                             @endif
                             @if($user && $user->can('master-tujuan-view'))
@@ -748,7 +765,8 @@
                         $isPerbaikanKontainerRoute = Request::routeIs('perbaikan-kontainer.*') ||
                             Request::routeIs('pranota-perbaikan-kontainer.*') ||
                             Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ||
-                            Request::routeIs('tagihan-cat.*');
+                            Request::routeIs('tagihan-cat.*') ||
+                            Request::routeIs('pranota-cat.*');
                     @endphp
                     @if($hasPerbaikanKontainerPermission)
                     <div class="mb-1">
@@ -799,6 +817,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                                     </svg>
                                     Daftar Tagihan CAT
+                                </a>
+                            @endif
+                            @if($user && $user->can('pranota-cat-view'))
+                                <a href="{{ route('pranota-cat.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs {{ Request::routeIs('pranota-cat.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
+                                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Daftar Pranota Tagihan CAT
                                 </a>
                             @endif
                         </div>

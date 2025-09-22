@@ -23,6 +23,7 @@ use App\Http\Controllers\CheckpointController;
 use App\Http\Controllers\MobilController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PricelistSewaKontainerController;
+use App\Http\Controllers\PricelistCatController;
 use App\Http\Controllers\PranotaController;
 use App\Http\Controllers\PembayaranPranotaKontainerController;
 use App\Http\Controllers\VendorBengkelController;
@@ -393,6 +394,29 @@ Route::middleware([
         Route::delete('pricelist-sewa-kontainer/{pricelist_sewa_kontainer}', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'destroy'])
              ->name('master.pricelist-sewa-kontainer.destroy')
              ->middleware('can:master-pricelist-sewa-kontainer-delete');
+
+        // Master pricelist cat routes (with master prefix) - granular permissions
+        Route::get('pricelist-cat', [PricelistCatController::class, 'index'])
+             ->name('pricelist-cat.index')
+             ->middleware('can:master-pricelist-cat-view');
+        Route::get('pricelist-cat/create', [PricelistCatController::class, 'create'])
+             ->name('pricelist-cat.create')
+             ->middleware('can:master-pricelist-cat-create');
+        Route::post('pricelist-cat', [PricelistCatController::class, 'store'])
+             ->name('pricelist-cat.store')
+             ->middleware('can:master-pricelist-cat-create');
+        Route::get('pricelist-cat/{pricelist_cat}', [PricelistCatController::class, 'show'])
+             ->name('pricelist-cat.show')
+             ->middleware('can:master-pricelist-cat-view');
+        Route::get('pricelist-cat/{pricelist_cat}/edit', [PricelistCatController::class, 'edit'])
+             ->name('pricelist-cat.edit')
+             ->middleware('can:master-pricelist-cat-update');
+        Route::put('pricelist-cat/{pricelist_cat}', [PricelistCatController::class, 'update'])
+             ->name('pricelist-cat.update')
+             ->middleware('can:master-pricelist-cat-update');
+        Route::delete('pricelist-cat/{pricelist_cat}', [PricelistCatController::class, 'destroy'])
+             ->name('pricelist-cat.destroy')
+             ->middleware('can:master-pricelist-cat-delete');
 
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
@@ -800,12 +824,16 @@ Route::middleware([
                // Pranota routes
                Route::prefix('pranota')->name('pranota.')->group(function () {
                     Route::get('/', [\App\Http\Controllers\PranotaController::class, 'index'])->name('index');
+                    Route::get('/create', [\App\Http\Controllers\PranotaController::class, 'create'])->name('create')
+                         ->middleware('can:pranota-create');
                     // Print route must be declared before the parameterized show route
                     Route::get('/{id}/print', [\App\Http\Controllers\PranotaController::class, 'print'])->name('print')
                          ->middleware('can:pranota-print');
                     Route::get('/{id}', [\App\Http\Controllers\PranotaController::class, 'show'])->name('show');
                     Route::post('/', [\App\Http\Controllers\PranotaController::class, 'store'])->name('store');
                     Route::post('/bulk', [\App\Http\Controllers\PranotaController::class, 'bulkStore'])->name('bulk.store');
+                    Route::post('/bulk-create-from-tagihan-cat', [\App\Http\Controllers\PranotaController::class, 'bulkCreateFromTagihanCat'])->name('bulk-create-from-tagihan-cat')
+                         ->middleware('can:pranota-create');
                     Route::patch('/{id}/status', [\App\Http\Controllers\PranotaController::class, 'updateStatus'])->name('update.status');
                     Route::delete('/{id}', [\App\Http\Controllers\PranotaController::class, 'destroy'])->name('destroy');
                });
@@ -936,6 +964,17 @@ Route::middleware(['auth'])->group(function() {
          ->name('pranota-perbaikan-kontainer.print')
          ->middleware('can:pranota-perbaikan-kontainer-print');
 
+    // Pranota CAT routes
+    Route::get('pranota-cat', [\App\Http\Controllers\PranotaController::class, 'indexCat'])
+         ->name('pranota-cat.index')
+         ->middleware('can:pranota-cat-view');
+    Route::get('pranota-cat/{id}', [\App\Http\Controllers\PranotaController::class, 'showCat'])
+         ->name('pranota-cat.show')
+         ->middleware('can:pranota-cat-view');
+    Route::get('pranota-cat/{id}/print', [\App\Http\Controllers\PranotaController::class, 'printCat'])
+         ->name('pranota-cat.print')
+         ->middleware('can:pranota-cat-print');
+
     // Pembayaran Pranota Perbaikan Kontainer routes
     Route::get('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'index'])
          ->name('pembayaran-pranota-perbaikan-kontainer.index')
@@ -981,6 +1020,14 @@ Route::middleware(['auth'])->group(function() {
     Route::delete('tagihan-cat/{tagihanCat}', [\App\Http\Controllers\TagihanCatController::class, 'destroy'])
          ->name('tagihan-cat.destroy')
          ->middleware('can:tagihan-cat-delete');
+
+    // Bulk actions for tagihan-cat
+    Route::delete('tagihan-cat/bulk-delete', [\App\Http\Controllers\TagihanCatController::class, 'bulkDelete'])
+         ->name('tagihan-cat.bulk-delete')
+         ->middleware('can:tagihan-cat-delete');
+    Route::post('tagihan-cat/bulk-update-status', [\App\Http\Controllers\TagihanCatController::class, 'bulkUpdateStatus'])
+         ->name('tagihan-cat.bulk-update-status')
+         ->middleware('can:tagihan-cat-update');
 });
 
 // Test route for debugging permissions

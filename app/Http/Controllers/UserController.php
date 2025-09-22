@@ -492,6 +492,12 @@ class UserController extends Controller
                             $action = str_replace('pricelist-sewa-kontainer-', '', $action);
                             $module = 'master-pricelist-sewa-kontainer';
                         }
+                        // Special handling for master-pricelist-cat permissions
+                        elseif (strpos($action, 'pricelist-cat-') === 0) {
+                            // For master-pricelist-cat-view, extract the action
+                            $action = str_replace('pricelist-cat-', '', $action);
+                            $module = 'master-pricelist-cat';
+                        }
                         // Special handling for master-tipe-akun permissions
                         elseif (strpos($action, 'tipe-akun-') === 0) {
                             // For master-tipe-akun-view, extract the action
@@ -595,6 +601,13 @@ class UserController extends Controller
                         // For tagihan-cat-view, split further
                         $action = str_replace('cat-', '', $action); // Remove 'cat-' prefix
                         $module = 'tagihan-cat'; // Set module to tagihan-cat
+                    }
+
+                    // Special handling for pranota-cat permissions
+                    if ($module === 'pranota' && strpos($action, 'cat-') === 0) {
+                        // For pranota-cat-view, split further
+                        $action = str_replace('cat-', '', $action); // Remove 'cat-' prefix
+                        $module = 'pranota-cat'; // Set module to pranota-cat
                     }
 
                     // Initialize module array if not exists
@@ -1220,6 +1233,26 @@ class UserController extends Controller
                         }
                     }
 
+                    // DIRECT FIX: Handle master-pricelist-cat permissions explicitly
+                    if ($module === 'master-pricelist-cat' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pricelist-cat-view',
+                            'create' => 'master-pricelist-cat-create',
+                            'update' => 'master-pricelist-cat-update',
+                            'delete' => 'master-pricelist-cat-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Special handling for admin modules
                     if ($module === 'admin') {
                         foreach ($possibleActions as $dbAction) {
@@ -1545,6 +1578,21 @@ class UserController extends Controller
                     if ($module === 'tagihan-cat') {
                         foreach ($possibleActions as $dbAction) {
                             // Use dash notation (tagihan-cat-view)
+                            $permissionName = $module . '-' . $dbAction;
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    // Special handling for pranota-cat module
+                    if ($module === 'pranota-cat') {
+                        foreach ($possibleActions as $dbAction) {
+                            // Use dash notation (pranota-cat-view)
                             $permissionName = $module . '-' . $dbAction;
                             $permission = Permission::where('name', $permissionName)->first();
 

@@ -24,6 +24,99 @@
         white-space: nowrap;
     }
 }
+
+/* Compact modal styles */
+#catatanModal .modal-content {
+    font-size: 0.875rem;
+}
+
+#catatanModal .modal-header {
+    padding: 0.75rem 1rem;
+}
+
+#catatanModal .modal-body {
+    padding: 1rem;
+}
+
+#catatanModal .modal-footer {
+    padding: 0.75rem 1rem;
+}
+
+#catatanModal input,
+#catatanModal select,
+#catatanModal textarea {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+    height: auto;
+}
+
+#catatanModal textarea {
+    font-size: 0.875rem;
+    padding: 0.5rem 0.75rem;
+}
+
+#catatanModal label {
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+}
+
+#catatanModal .grid {
+    gap: 0.75rem;
+}
+
+#catatanModal .bg-blue-50 {
+    padding: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+#catatanModal .text-sm {
+    font-size: 0.75rem;
+}
+
+#catatanModal .text-xs {
+    font-size: 0.6875rem;
+}
+
+#catatanModal .px-4 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+#catatanModal .py-2 {
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+#catatanModal .space-x-2 > * + * {
+    margin-left: 0.5rem;
+}
+
+/* Make modal more compact */
+#catatanModal h3 {
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+#catatanModal h4 {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+#catatanModal .mb-4 {
+    margin-bottom: 0.75rem;
+}
+
+#catatanModal .mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+#catatanModal .mt-4 {
+    margin-top: 0.75rem;
+}
+
+#catatanModal .pt-4 {
+    padding-top: 0.75rem;
+}
 </style>
 <div class="container mx-auto px-4 py-8">
     <div class="bg-white rounded-lg shadow-md p-6">
@@ -119,6 +212,7 @@
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Status</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Tgl Masuk</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Tgl Selesai</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Tgl Cat</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th>
                     </tr>
                 </thead>
@@ -169,6 +263,9 @@
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                             {{ $perbaikan->tanggal_selesai ? \Carbon\Carbon::parse($perbaikan->tanggal_selesai)->format('d/m/Y') : '-' }}
                         </td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
+                            {{ $perbaikan->tanggal_cat ? \Carbon\Carbon::parse($perbaikan->tanggal_cat)->format('d/m/Y') : '-' }}
+                        </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
                                 @can('perbaikan-kontainer-view')
@@ -179,10 +276,13 @@
                                 <a href="{{ route('perbaikan-kontainer.edit', $perbaikan) }}"
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                 @endcan
+                                @if(!$perbaikan->tanggal_cat)
                                 @can('perbaikan-kontainer-update')
-                                <button onclick="openCatatanModal({{ $perbaikan->id }}, '{{ $perbaikan->nomor_tagihan ?? 'N/A' }}', '{{ $perbaikan->estimasi_kerusakan_kontainer ?? '' }}')"
-                                        class="text-green-600 hover:text-green-900">Catatan</button>
+                                <button type="button" onclick="openCatatanModal({{ $perbaikan->id }}, '{{ $perbaikan->nomor_tagihan ?? 'N/A' }}', '{{ $perbaikan->estimasi_kerusakan_kontainer ?? '' }}', '{{ $perbaikan->nomor_kontainer ?? 'N/A' }}', '{{ $perbaikan->vendorBengkel->nama_bengkel ?? '' }}')"
+                                        class="text-green-600 hover:text-green-900 focus:outline-none focus:ring-0"
+                                        aria-label="Buka modal catatan perbaikan">Butuh Cat</button>
                                 @endcan
+                                @endif
                                 @can('perbaikan-kontainer-delete')
                                 <form method="POST" action="{{ route('perbaikan-kontainer.destroy', $perbaikan) }}"
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus data perbaikan ini?')"
@@ -197,7 +297,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="12" class="px-4 py-4 text-center text-gray-500">
+                        <td colspan="13" class="px-4 py-4 text-center text-gray-500">
                             Tidak ada data perbaikan kontainer ditemukan.
                         </td>
                     </tr>
@@ -217,7 +317,7 @@
 @endsection
 
 <!-- Pranota Modal -->
-<div id="pranotaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+<div id="pranotaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[60]">
     <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <!-- Modal Header -->
@@ -317,6 +417,149 @@
 </div>
 
 <script>
+// Global functions for sidebar interaction
+function disableSidebarInteraction() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.style.pointerEvents = 'none';
+        sidebar.style.opacity = '0.5';
+    }
+}
+
+function enableSidebarInteraction() {
+    const sidebar = document.getElementById('sidebar');
+    if (sidebar) {
+        sidebar.style.pointerEvents = 'auto';
+        sidebar.style.opacity = '1';
+    }
+}
+
+// Global function for rupiah input handling
+function handleRupiahInput(input) {
+    input.addEventListener('input', function(e) {
+        let value = this.value;
+        let number = rupiahToNumber(value);
+        if (number > 0) {
+            this.value = formatRupiah(number);
+        } else {
+            this.value = '';
+        }
+    });
+
+    input.addEventListener('focus', function(e) {
+        if (this.value === 'Rp 0' || this.value === '') {
+            this.value = '';
+        }
+    });
+
+    input.addEventListener('blur', function(e) {
+        if (this.value === '' || rupiahToNumber(this.value) === 0) {
+            this.value = 'Rp 0';
+        }
+    });
+}
+
+// Global function to format rupiah
+function formatRupiah(angka, prefix = 'Rp ') {
+    if (!angka) return '';
+    let number_string = angka.toString().replace(/[^,\d]/g, ''),
+        split = number_string.split(','),
+        sisa = split[0].length % 3,
+        rupiah = split[0].substr(0, sisa),
+        ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+    if (ribuan) {
+        let separator = sisa ? '.' : '';
+        rupiah += separator + ribuan.join('.');
+    }
+
+    rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+    return prefix + rupiah;
+}
+
+// Global function to convert rupiah to number
+function rupiahToNumber(rupiah) {
+    return parseFloat(rupiah.replace(/[^\d]/g, '')) || 0;
+}
+
+// Global function to get tarif from pricelist data
+function getTarifFromPricelist(vendor, jenisCat) {
+    // Pricelist data passed from controller
+    const pricelistData = @json($pricelistData);
+
+    // Find matching pricelist entry
+    const pricelistEntry = pricelistData.find(item =>
+        item.vendor === vendor && item.jenis_cat === jenisCat
+    );
+
+    return pricelistEntry ? pricelistEntry.tarif : null;
+}
+
+// Global function to update estimasi biaya cat
+function updateEstimasiBiayaCat() {
+    const vendorSelect = document.getElementById('teknisi');
+    const statusSelect = document.getElementById('status_perbaikan');
+    const estimasiInput = document.getElementById('estimasi_biaya_cat');
+
+    if (!vendorSelect || !statusSelect || !estimasiInput) return;
+
+    const selectedVendor = vendorSelect.value;
+    const selectedStatus = statusSelect.value;
+
+    if (selectedVendor && selectedStatus) {
+        const tarif = getTarifFromPricelist(selectedVendor, selectedStatus);
+        if (tarif !== null) {
+            estimasiInput.value = formatRupiah(tarif);
+        } else {
+            estimasiInput.value = '';
+        }
+    } else {
+        estimasiInput.value = '';
+    }
+}
+
+// Global function to preview tagihan cat format
+function previewTagihanCatFormat() {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2);
+    const month = (now.getMonth() + 1).toString().padStart(2, '0');
+    const kode = 'TC';
+    const cetakan = '1';
+    const runningNumber = '0000001';
+
+    return `${kode}${cetakan}${year}${month}${runningNumber}`;
+}
+
+// Global function to generate tagihan cat number
+function generateTagihanCatNumber() {
+    const now = new Date();
+    const year = now.getFullYear().toString().slice(-2); // 2 digit tahun (25)
+    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // 2 digit bulan (09)
+    const kode = 'TC'; // 2 digit kode
+    const cetakan = '1'; // 1 digit nomor cetakan
+
+    // Get running number from localStorage or start from 1
+    let runningNumber = parseInt(localStorage.getItem('tagihan_cat_running_number') || '0') + 1;
+
+    // Reset counter if it's a new month
+    const lastGenerated = localStorage.getItem('tagihan_cat_last_generated');
+    const currentMonth = `${year}${month}`;
+
+    if (lastGenerated !== currentMonth) {
+        runningNumber = 1;
+        localStorage.setItem('tagihan_cat_last_generated', currentMonth);
+    }
+
+    // Save new running number
+    localStorage.setItem('tagihan_cat_running_number', runningNumber.toString());
+
+    // Format running number to 7 digits
+    const formattedRunningNumber = runningNumber.toString().padStart(7, '0');
+
+    const nomorTagihanCat = `${kode}${cetakan}${year}${month}${formattedRunningNumber}`;
+    return nomorTagihanCat;
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('selectAll');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
@@ -618,6 +861,9 @@ document.addEventListener('DOMContentLoaded', function() {
         const previewFormat = previewPranotaFormat();
         document.getElementById('formatPreview').textContent = `Contoh: ${previewFormat}`;
 
+        // Disable sidebar interaction
+        disableSidebarInteraction();
+
         // Show modal
         pranotaModal.classList.remove('hidden');
     });
@@ -626,66 +872,21 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close modal
     closePranotaModal.addEventListener('click', function() {
         pranotaModal.classList.add('hidden');
+        enableSidebarInteraction();
     });
 
     cancelPranotaBtn.addEventListener('click', function() {
         pranotaModal.classList.add('hidden');
+        enableSidebarInteraction();
     });
 
     // Close modal when clicking outside
     pranotaModal.addEventListener('click', function(e) {
         if (e.target === pranotaModal) {
             pranotaModal.classList.add('hidden');
+            enableSidebarInteraction();
         }
     });
-
-    // Format rupiah function
-    function formatRupiah(angka, prefix = 'Rp ') {
-        if (!angka) return '';
-        let number_string = angka.toString().replace(/[^,\d]/g, ''),
-            split = number_string.split(','),
-            sisa = split[0].length % 3,
-            rupiah = split[0].substr(0, sisa),
-            ribuan = split[0].substr(sisa).match(/\d{3}/gi);
-
-        if (ribuan) {
-            let separator = sisa ? '.' : '';
-            rupiah += separator + ribuan.join('.');
-        }
-
-        rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
-        return prefix + rupiah;
-    }
-
-    // Convert rupiah to number
-    function rupiahToNumber(rupiah) {
-        return parseFloat(rupiah.replace(/[^\d]/g, '')) || 0;
-    }
-
-    // Handle rupiah input formatting
-    function handleRupiahInput(input) {
-        input.addEventListener('input', function(e) {
-            let value = this.value;
-            let number = rupiahToNumber(value);
-            if (number > 0) {
-                this.value = formatRupiah(number);
-            } else {
-                this.value = '';
-            }
-        });
-
-        input.addEventListener('focus', function(e) {
-            if (this.value === 'Rp 0' || this.value === '') {
-                this.value = '';
-            }
-        });
-
-        input.addEventListener('blur', function(e) {
-            if (this.value === '' || rupiahToNumber(this.value) === 0) {
-                this.value = 'Rp 0';
-            }
-        });
-    }
 
     // Generate pranota number function
     function generatePranotaNumber() {
@@ -773,14 +974,14 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <!-- Catatan Modal -->
-<div id="catatanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
-    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+<div id="catatanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-[60]" role="dialog" aria-modal="true" aria-labelledby="catatanModalTitle">
+    <div class="relative top-5 mx-auto p-4 border w-11/12 max-w-2xl shadow-lg rounded-md bg-white max-h-[90vh] overflow-y-auto">
         <div class="mt-3">
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-3 border-b">
-                <h3 class="text-lg font-medium text-gray-900">Input Informasi Perbaikan</h3>
-                <button id="closeCatatanModal" class="text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h3 id="catatanModalTitle" class="text-lg font-medium text-gray-900">Input Informasi Perbaikan</h3>
+                <button id="closeCatatanModal" class="text-gray-400 hover:text-gray-600 p-1" aria-label="Tutup modal">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                     </svg>
                 </button>
@@ -792,104 +993,94 @@ document.addEventListener('DOMContentLoaded', function() {
                     @csrf
 
                     <!-- Item Info -->
-                    <div class="mb-4 p-3 bg-blue-50 rounded-lg">
-                        <h4 class="text-sm font-medium text-blue-800 mb-2">Data Perbaikan Kontainer:</h4>
-                        <div id="catatanItemInfo" class="text-sm text-blue-700">
+                    <div class="mb-3 p-2 bg-blue-50 rounded-lg">
+                        <h4 class="text-xs font-medium text-blue-800 mb-1">Data Perbaikan Kontainer:</h4>
+                        <div id="catatanItemInfo" class="text-xs text-blue-700">
                             <!-- Item info will be populated by JavaScript -->
                         </div>
                     </div>
 
                     <!-- Catatan Form Fields -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Catatan *</label>
-                            <select name="jenis_catatan" id="jenis_catatan" required
-                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="">-- Pilih Jenis Catatan --</option>
-                                <option value="progress">Progress Perbaikan</option>
-                                <option value="issue">Masalah/Kendala</option>
-                                <option value="solution">Solusi</option>
-                                <option value="sparepart">Kebutuhan Sparepart</option>
-                                <option value="completion">Penyelesaian</option>
-                                <option value="other">Lainnya</option>
-                            </select>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Tagihan Cat *</label>
+                            <input type="text" name="nomor_tagihan_cat" id="nomor_tagihan_cat" readonly
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Nomor akan di-generate otomatis">
+                            <p class="text-xs text-gray-500 mt-1">
+                                Format: TC (2 digit) + 1 (cetakan) + 25 (tahun) + 09 (bulan) + 0000001 (running number)<br>
+                                <span id="tagihanCatFormatPreview" class="font-mono text-blue-600"></span>
+                            </p>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Perbaikan</label>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Status Cat</label>
                             <select name="status_perbaikan" id="status_perbaikan"
                                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                                 <option value="">-- Pilih Status --</option>
-                                <option value="pending">Menunggu Perbaikan</option>
-                                <option value="in_progress">Sedang Dikerjakan</option>
-                                <option value="completed">Selesai</option>
-                                <option value="on_hold">Ditunda</option>
-                                <option value="cancelled">Dibatalkan</option>
+                                @foreach($pricelistJenisCat as $jenis)
+                                <option value="{{ $jenis }}">{{ $jenis == 'cat_full' ? 'Cat Full' : 'Cat Sebagian' }}</option>
+                                @endforeach
                             </select>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Teknisi</label>
-                            <input type="text" name="teknisi" id="teknisi"
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   placeholder="Nama teknisi yang mengerjakan">
-                        </div>
-
-                        <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Prioritas</label>
-                            <select name="prioritas" id="prioritas"
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Vendor/Bengkel *</label>
+                            <select name="teknisi" id="teknisi" required
                                     class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                                <option value="">-- Pilih Prioritas --</option>
-                                <option value="low">Rendah</option>
-                                <option value="medium">Sedang</option>
-                                <option value="high">Tinggi</option>
-                                <option value="urgent">Mendesak</option>
+                                <option value="">-- Pilih Vendor/Bengkel --</option>
+                                @foreach($pricelistVendors as $vendor)
+                                <option value="{{ $vendor }}">{{ $vendor }}</option>
+                                @endforeach
                             </select>
                         </div>
 
-                        <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Sparepart yang Dibutuhkan</label>
-                            <textarea name="sparepart_dibutuhkan" id="sparepart_dibutuhkan" rows="2"
-                                      class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      placeholder="Jenis dan jumlah sparepart yang dibutuhkan..."></textarea>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
+                            <input type="text" name="nomor_kontainer" id="nomor_kontainer" readonly
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                   placeholder="Nomor kontainer">
                         </div>
 
                         <div class="md:col-span-2">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Catatan *</label>
-                            <textarea name="catatan" id="catatan_text" rows="4" required
+                            <textarea name="catatan" id="catatan_text" rows="3" required
                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                       placeholder="Masukkan detail catatan perbaikan..."></textarea>
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Catatan</label>
-                            <input type="date" name="tanggal_catatan" id="tanggal_catatan"
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Cat</label>
+                            <input type="date" name="tanggal_cat" id="tanggal_catatan"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                                    value="{{ date('Y-m-d') }}">
                         </div>
 
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Estimasi Waktu (jam)</label>
-                            <input type="number" name="estimasi_waktu" id="estimasi_waktu" min="0" step="0.5"
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Estimasi Biaya Cat</label>
+                            <input type="text" name="estimasi_biaya_cat" id="estimasi_biaya_cat"
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                   placeholder="0">
+                                   placeholder="Rp 0">
                         </div>
                     </div>
 
                     <!-- Hidden field for perbaikan ID -->
                     <input type="hidden" name="perbaikan_id" id="catatan_perbaikan_id">
+
+                    <!-- Hidden field for numeric estimasi biaya cat -->
+                    <input type="hidden" name="estimasi_biaya_cat_numeric" id="estimasi_biaya_cat_numeric">
                 </form>
             </div>
 
             <!-- Modal Footer -->
             <div class="flex items-center justify-end pt-4 border-t">
                 <button id="cancelCatatanBtn" type="button"
-                        class="px-4 py-2 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 mr-2">
+                        class="px-3 py-1.5 bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 focus:ring-2 focus:ring-gray-500 mr-2 text-sm">
                     Batal
                 </button>
                 <button id="submitCatatanBtn" type="button"
-                        class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500">
-                    <svg class="w-4 h-4 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="px-3 py-1.5 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 text-sm">
+                    <svg class="w-3 h-3 mr-1.5 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                     </svg>
                     Simpan Informasi Perbaikan
@@ -901,23 +1092,122 @@ document.addEventListener('DOMContentLoaded', function() {
 
 <script>
 // Catatan Modal Functions
-function openCatatanModal(perbaikanId, nomorTagihan, estimasiKerusakan) {
-    // Populate item info
-    document.getElementById('catatanItemInfo').innerHTML = `
-        <div>• <strong>Nomor Tagihan:</strong> ${nomorTagihan}</div>
-        <div>• <strong>Estimasi Kerusakan:</strong> ${estimasiKerusakan || 'Tidak ada informasi'}</div>
-        <div>• <strong>Tanggal Input:</strong> ${new Date().toLocaleDateString('id-ID')}</div>
-    `;
+let lastFocusedElement = null;
 
-    // Set perbaikan ID
-    document.getElementById('catatan_perbaikan_id').value = perbaikanId;
+function openCatatanModal(perbaikanId, nomorTagihan, estimasiKerusakan, nomorKontainer, vendorName = '') {
+    try {
+        console.log('openCatatanModal called with:', { perbaikanId, nomorTagihan, estimasiKerusakan, nomorKontainer, vendorName });
 
-    // Reset form
-    document.getElementById('catatanForm').reset();
-    document.getElementById('tanggal_catatan').value = new Date().toISOString().split('T')[0];
+        // Store the currently focused element
+        lastFocusedElement = document.activeElement;
 
-    // Show modal
-    document.getElementById('catatanModal').classList.remove('hidden');
+        // Populate item info
+        const itemInfoElement = document.getElementById('catatanItemInfo');
+        if (itemInfoElement) {
+            itemInfoElement.innerHTML = `
+                <div>• <strong>Nomor Tagihan:</strong> ${nomorTagihan}</div>
+                <div>• <strong>Estimasi Kerusakan:</strong> ${estimasiKerusakan || 'Tidak ada informasi'}</div>
+                <div>• <strong>Tanggal Input:</strong> ${new Date().toLocaleDateString('id-ID')}</div>
+            `;
+        }
+
+        // Set perbaikan ID
+        const perbaikanIdElement = document.getElementById('catatan_perbaikan_id');
+        if (perbaikanIdElement) {
+            perbaikanIdElement.value = perbaikanId;
+        }
+
+        // Reset form
+        const catatanForm = document.getElementById('catatanForm');
+        if (catatanForm) {
+            catatanForm.reset();
+        }
+        const tanggalCatatanElement = document.getElementById('tanggal_catatan');
+        if (tanggalCatatanElement) {
+            tanggalCatatanElement.value = new Date().toISOString().split('T')[0];
+        }
+
+        // Initialize rupiah formatting for estimasi biaya cat
+        const estimasiBiayaCatInput = document.getElementById('estimasi_biaya_cat');
+        if (estimasiBiayaCatInput) {
+            handleRupiahInput(estimasiBiayaCatInput);
+        }
+
+        // Auto-generate nomor tagihan cat
+        const nomorTagihanCat = generateTagihanCatNumber();
+        const nomorTagihanCatElement = document.getElementById('nomor_tagihan_cat');
+        if (nomorTagihanCatElement) {
+            nomorTagihanCatElement.value = nomorTagihanCat;
+        }
+
+        // Update format preview
+        const previewFormat = previewTagihanCatFormat();
+        const previewElement = document.getElementById('tagihanCatFormatPreview');
+        if (previewElement) {
+            previewElement.textContent = `Contoh: ${previewFormat}`;
+        }
+
+        // Set nomor kontainer
+        const nomorKontainerElement = document.getElementById('nomor_kontainer');
+        if (nomorKontainerElement) {
+            nomorKontainerElement.value = nomorKontainer;
+        }
+
+        // Set vendor if available
+        if (vendorName) {
+            const vendorSelect = document.getElementById('teknisi');
+            if (vendorSelect) {
+                // Try to find and select the matching vendor option
+                for (let i = 0; i < vendorSelect.options.length; i++) {
+                    if (vendorSelect.options[i].value === vendorName) {
+                        vendorSelect.selectedIndex = i;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Add event listeners for auto-fill functionality (remove existing first)
+        const vendorSelect = document.getElementById('teknisi');
+        const statusSelect = document.getElementById('status_perbaikan');
+
+        if (vendorSelect && statusSelect) {
+            // Remove existing listeners to prevent duplicates
+            vendorSelect.removeEventListener('change', updateEstimasiBiayaCat);
+            statusSelect.removeEventListener('change', updateEstimasiBiayaCat);
+
+            // Add new listeners
+            vendorSelect.addEventListener('change', updateEstimasiBiayaCat);
+            statusSelect.addEventListener('change', updateEstimasiBiayaCat);
+
+            // Trigger initial update if both are selected
+            updateEstimasiBiayaCat();
+        }
+
+        // Disable sidebar interaction
+        disableSidebarInteraction();
+
+        // Show modal
+        const modal = document.getElementById('catatanModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            console.log('Modal opened successfully');
+        } else {
+            console.error('Modal element not found');
+        }
+
+        // Focus on the first input in the modal
+        setTimeout(() => {
+            const firstInput = document.getElementById('catatan_text');
+            if (firstInput) {
+                firstInput.focus();
+            }
+        }, 100);
+
+    } catch (error) {
+        console.error('Error in openCatatanModal:', error);
+        alert('Terjadi kesalahan saat membuka modal: ' + error.message);
+    }
 }
 
 // Catatan Modal Event Listeners
@@ -928,31 +1218,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitCatatanBtn = document.getElementById('submitCatatanBtn');
     const catatanForm = document.getElementById('catatanForm');
 
-    // Close modal
-    closeCatatanModal.addEventListener('click', function() {
+    function closeModal() {
         catatanModal.classList.add('hidden');
-    });
+        // Restore focus to the last focused element
+        if (lastFocusedElement) {
+            lastFocusedElement.focus();
+        }
+        // Enable sidebar interaction
+        enableSidebarInteraction();
+    }
 
-    cancelCatatanBtn.addEventListener('click', function() {
-        catatanModal.classList.add('hidden');
-    });
+    // Close modal
+    closeCatatanModal.addEventListener('click', closeModal);
+
+    cancelCatatanBtn.addEventListener('click', closeModal);
 
     // Close modal when clicking outside
     catatanModal.addEventListener('click', function(e) {
         if (e.target === catatanModal) {
-            catatanModal.classList.add('hidden');
+            closeModal();
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && !catatanModal.classList.contains('hidden')) {
+            closeModal();
         }
     });
 
     // Submit catatan form
     submitCatatanBtn.addEventListener('click', function() {
-        const jenisCatatan = document.getElementById('jenis_catatan').value.trim();
+        const nomorTagihanCat = document.getElementById('nomor_tagihan_cat').value.trim();
+        const teknisi = document.getElementById('teknisi').value.trim();
         const catatan = document.getElementById('catatan_text').value.trim();
-        const estimasiWaktu = document.getElementById('estimasi_waktu').value;
 
-        if (!jenisCatatan) {
-            alert('Jenis catatan harus dipilih!');
-            document.getElementById('jenis_catatan').focus();
+        if (!nomorTagihanCat) {
+            alert('Nomor tagihan cat belum ter-generate!');
+            return;
+        }
+
+        if (!teknisi) {
+            alert('Vendor/Bengkel harus dipilih!');
+            document.getElementById('teknisi').focus();
             return;
         }
 
@@ -962,15 +1270,12 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        if (estimasiWaktu && parseFloat(estimasiWaktu) < 0) {
-            alert('Estimasi waktu tidak boleh negatif!');
-            document.getElementById('estimasi_waktu').focus();
-            return;
-        }
+        // Convert rupiah format to number for form submission
+        const estimasiBiayaCatNumeric = rupiahToNumber(document.getElementById('estimasi_biaya_cat').value);
+        document.getElementById('estimasi_biaya_cat_numeric').value = estimasiBiayaCatNumeric;
 
         // Submit form
         catatanForm.submit();
     });
 });
 </script>
-@endsection

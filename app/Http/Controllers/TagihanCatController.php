@@ -144,4 +144,47 @@ class TagihanCatController extends Controller
         return redirect()->route('tagihan-cat.index')
                         ->with('success', 'Tagihan CAT berhasil dihapus.');
     }
+
+    /**
+     * Bulk delete tagihan-cat records.
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:tagihan_cats,id'
+        ]);
+
+        $count = TagihanCat::whereIn('id', $request->ids)->delete();
+
+        return redirect()->route('tagihan-cat.index')
+                        ->with('success', "{$count} tagihan CAT berhasil dihapus.");
+    }
+
+    /**
+     * Bulk update status for tagihan-cat records.
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:tagihan_cats,id',
+            'status' => 'required|in:pending,paid,cancelled'
+        ]);
+
+        $count = TagihanCat::whereIn('id', $request->ids)
+                          ->update([
+                              'status' => $request->status,
+                              'updated_by' => Auth::id()
+                          ]);
+
+        $statusLabels = [
+            'pending' => 'Pending',
+            'paid' => 'Sudah Dibayar',
+            'cancelled' => 'Dibatalkan'
+        ];
+
+        return redirect()->route('tagihan-cat.index')
+                        ->with('success', "{$count} tagihan CAT berhasil diubah status menjadi {$statusLabels[$request->status]}.");
+    }
 }

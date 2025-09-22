@@ -29,6 +29,9 @@ class DatabaseSeeder extends Seeder
             PekerjaanSeeder::class, // Seeder untuk master pekerjaan
             BankSeeder::class, // Seeder untuk master bank
             TagihanCatPermissionsSeeder::class, // Permission untuk tagihan CAT
+            PricelistCatPermissionSeeder::class, // Permission untuk pricelist CAT
+            PranotaCatPermissionSeeder::class, // Permission untuk pranota CAT
+            PricelistCatSeeder::class, // Data sample untuk pricelist CAT
         ]);
     }
 }

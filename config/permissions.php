@@ -39,6 +39,7 @@ return [
                 'master-user' => 'Manajemen User',
                 'master-kontainer' => 'Manajemen Kontainer',
                 'master-pricelist-sewa-kontainer' => 'Pricelist Sewa Kontainer',
+                'master-pricelist-cat' => 'Pricelist CAT',
                 'master-tujuan' => 'Manajemen Tujuan',
                 'master-kegiatan' => 'Manajemen Kegiatan',
                 'master-permission' => 'Manajemen Permission',

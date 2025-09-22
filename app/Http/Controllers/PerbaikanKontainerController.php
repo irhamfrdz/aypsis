@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\PerbaikanKontainer;
 use App\Models\Kontainer;
+use App\Models\TagihanCat;
+use App\Models\PricelistCat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -57,7 +59,32 @@ class PerbaikanKontainerController extends Controller
             'sudah_dibayar' => PerbaikanKontainer::where('status_perbaikan', 'sudah_dibayar')->count(),
         ];
 
-        return view('perbaikan-kontainer.index', compact('perbaikanKontainers', 'stats'));
+        // Get vendors from pricelist cat for the cat modal
+        $pricelistVendors = PricelistCat::select('vendor')
+                                      ->whereNotNull('vendor')
+                                      ->where('vendor', '!=', '')
+                                      ->distinct()
+                                      ->orderBy('vendor')
+                                      ->pluck('vendor')
+                                      ->toArray();
+
+        // Get jenis_cat from pricelist cat for status cat dropdown
+        $pricelistJenisCat = PricelistCat::select('jenis_cat')
+                                       ->whereNotNull('jenis_cat')
+                                       ->distinct()
+                                       ->orderBy('jenis_cat')
+                                       ->pluck('jenis_cat')
+                                       ->toArray();
+
+        // Get all pricelist data for auto-fill functionality
+        $pricelistData = PricelistCat::select('vendor', 'jenis_cat', 'tarif', 'ukuran_kontainer')
+                                   ->whereNotNull('vendor')
+                                   ->whereNotNull('jenis_cat')
+                                   ->whereNotNull('tarif')
+                                   ->get()
+                                   ->toArray();
+
+        return view('perbaikan-kontainer.index', compact('perbaikanKontainers', 'stats', 'pricelistVendors', 'pricelistJenisCat', 'pricelistData'));
     }
 
     /**
@@ -270,38 +297,44 @@ class PerbaikanKontainerController extends Controller
     public function addCatatan(Request $request)
     {
         $request->validate([
-            'perbaikan_kontainer_id' => 'required|integer|exists:perbaikan_kontainers,id',
-            'jenis_catatan' => 'required|string|max:255',
-            'status_perbaikan' => 'required|in:belum_masuk_pranota,sudah_masuk_pranota,sudah_dibayar',
+            'perbaikan_id' => 'required|integer|exists:perbaikan_kontainers,id',
+            'nomor_tagihan_cat' => 'required|string|max:255',
+            'status_perbaikan' => 'required|in:cat_sebagian,cat_full',
             'teknisi' => 'nullable|string|max:255',
-            'prioritas' => 'required|in:low,normal,high,urgent',
-            'sparepart_dibutuhkan' => 'nullable|string',
             'catatan' => 'required|string',
-            'tanggal_catatan' => 'required|date',
-            'estimasi_waktu' => 'nullable|string|max:255',
+            'tanggal_cat' => 'required|date',
+            'estimasi_biaya_cat' => 'nullable|string',
+            'estimasi_biaya_cat_numeric' => 'nullable|numeric',
+            'nomor_kontainer' => 'nullable|string|max:255',
         ]);
 
-        $perbaikanKontainer = PerbaikanKontainer::findOrFail($request->perbaikan_kontainer_id);
+        $perbaikanKontainer = PerbaikanKontainer::findOrFail($request->perbaikan_id);
 
+        // Update perbaikan kontainer dengan catatan
         $updateData = [
-            'jenis_catatan' => $request->jenis_catatan,
-            'status_perbaikan' => $request->status_perbaikan,
-            'teknisi' => $request->teknisi,
-            'prioritas' => $request->prioritas,
-            'sparepart_dibutuhkan' => $request->sparepart_dibutuhkan,
             'catatan' => $request->catatan,
-            'tanggal_catatan' => $request->tanggal_catatan,
-            'estimasi_waktu' => $request->estimasi_waktu,
+            'teknisi' => $request->teknisi,
+            'tanggal_catatan' => $request->tanggal_cat,
+            'tanggal_cat' => $request->tanggal_cat, // Simpan juga ke kolom tanggal_cat
             'updated_by' => Auth::id(),
         ];
 
-        if ($request->status_perbaikan === 'sudah_dibayar') {
-            $updateData['tanggal_selesai'] = now();
-        }
-
         $perbaikanKontainer->update($updateData);
 
+        // Simpan data ke tagihan_cat
+        TagihanCat::create([
+            'nomor_tagihan_cat' => $request->nomor_tagihan_cat,
+            'nomor_kontainer' => $request->nomor_kontainer ?: $perbaikanKontainer->nomor_kontainer,
+            'vendor' => $request->teknisi,
+            'tanggal_cat' => $request->tanggal_cat,
+            'estimasi_biaya' => $request->estimasi_biaya_cat_numeric,
+            'status' => 'pending', // Default status untuk tagihan cat baru
+            'keterangan' => $request->catatan,
+            'created_by' => Auth::id(),
+            'updated_by' => Auth::id(),
+        ]);
+
         return redirect()->back()
-                        ->with('success', 'Catatan perbaikan berhasil ditambahkan.');
+                        ->with('success', 'Catatan perbaikan berhasil ditambahkan dan tagihan CAT telah dibuat.');
     }
 }

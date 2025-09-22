@@ -30,6 +30,7 @@ class PerbaikanKontainer extends Model
         'prioritas',
         'sparepart_dibutuhkan',
         'tanggal_catatan',
+        'tanggal_cat',
         'estimasi_waktu',
         'tanggal_selesai',
         'created_by',
