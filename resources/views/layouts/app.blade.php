@@ -780,6 +780,102 @@
 </div>
 @endif
 
+{{-- Tagihan Kontainer Dropdown --}}
+@php
+    $isTagihanKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') ||
+        Request::routeIs('pranota.*') ||
+        Request::routeIs('perbaikan-kontainer.*') ||
+        Request::routeIs('pranota-perbaikan-kontainer.*') ||
+        Request::routeIs('tagihan-cat.*') ||
+        Request::routeIs('pranota-cat.*');
+    $hasTagihanKontainerPermission = ($isAdmin || auth()->user()->can('tagihan-kontainer-view')) ||
+        ($isAdmin || auth()->user()->can('pranota.view')) ||
+        ($isAdmin || auth()->user()->can('perbaikan-kontainer-view')) ||
+        ($isAdmin || auth()->user()->can('pranota-perbaikan-kontainer-view')) ||
+        ($isAdmin || auth()->user()->can('tagihan-cat-view')) ||
+        ($isAdmin || auth()->user()->can('pranota-cat-view'));
+@endphp
+
+@if($hasTagihanKontainerPermission)
+<div class="mt-4 mb-4">
+    <button id="tagihan-kontainer-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-lg mt-4 mb-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isTagihanKontainerRoute ? 'bg-purple-50 text-purple-700 font-medium' : '' }}">
+        <div class="flex items-center">
+            <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isTagihanKontainerRoute ? 'bg-purple-100' : '' }}">
+                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ $isTagihanKontainerRoute ? 'text-purple-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+            </div>
+            <span class="text-xs font-medium truncate w-full">Tagihan Kontainer</span>
+        </div>
+        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isTagihanKontainerRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+    <div id="tagihan-kontainer-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isTagihanKontainerRoute) style="display: block;" @endif>
+        {{-- Daftar Tagihan Kontainer Sewa --}}
+        @if(Route::has('daftar-tagihan-kontainer-sewa.index') && ($isAdmin || auth()->user()->can('tagihan-kontainer-view')))
+            <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                Daftar Tagihan Kontainer Sewa
+            </a>
+        @endif
+
+        {{-- Daftar Pranota Kontainer Sewa --}}
+        @if(Route::has('pranota.index') && ($isAdmin || auth()->user()->can('pranota.view')))
+            <a href="{{ route('pranota.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Daftar Pranota Kontainer Sewa
+            </a>
+        @endif
+
+        {{-- Daftar Tagihan Perbaikan Kontainer --}}
+        @if(Route::has('perbaikan-kontainer.index') && ($isAdmin || auth()->user()->can('perbaikan-kontainer-view')))
+            <a href="{{ route('perbaikan-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Daftar Tagihan Perbaikan Kontainer
+            </a>
+        @endif
+
+        {{-- Pranota Perbaikan Kontainer --}}
+        @if(Route::has('pranota-perbaikan-kontainer.index') && ($isAdmin || auth()->user()->can('pranota-perbaikan-kontainer-view')))
+            <a href="{{ route('pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Pranota Perbaikan Kontainer
+            </a>
+        @endif
+
+        {{-- Daftar Tagihan CAT --}}
+        @if(Route::has('tagihan-cat.index') && ($isAdmin || auth()->user()->can('tagihan-cat-view')))
+            <a href="{{ route('tagihan-cat.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('tagihan-cat.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                </svg>
+                Daftar Tagihan CAT
+            </a>
+        @endif
+
+        {{-- Daftar Pranota Tagihan CAT --}}
+        @if(Route::has('pranota-cat.index') && ($isAdmin || auth()->user()->can('pranota-cat-view')))
+            <a href="{{ route('pranota-cat.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-cat.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Daftar Pranota Tagihan CAT
+            </a>
+        @endif
+    </div>
+</div>
+@endif
+
 {{-- User Approval Management (only for admins or users with master-user or user-approval permission) --}}
 {{-- Sudah dipindahkan ke dropdown User --}}
 
@@ -1028,6 +1124,7 @@
         setupDropdown('kontainer-menu-toggle', 'kontainer-menu-content');
         setupDropdown('pranota-tagihan-kontainer-menu-toggle', 'pranota-tagihan-kontainer-menu-content');
         setupDropdown('perbaikan-kontainer-menu-toggle', 'perbaikan-kontainer-menu-content');
+        setupDropdown('tagihan-kontainer-menu-toggle', 'tagihan-kontainer-menu-content');
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');
