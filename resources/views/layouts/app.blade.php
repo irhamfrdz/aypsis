@@ -876,6 +876,54 @@
 </div>
 @endif
 
+{{-- Pembayaran Tagihan Kontainer Dropdown --}}
+@php
+    $isPembayaranTagihanKontainerRoute = Request::routeIs('pembayaran-pranota-kontainer.*') ||
+        Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*');
+    $hasPembayaranTagihanKontainerPermission = ($isAdmin || auth()->user()->can('pembayaran-pranota-kontainer-view')) ||
+        ($isAdmin || auth()->user()->can('pembayaran-pranota-perbaikan-kontainer-view'));
+@endphp
+
+@if($hasPembayaranTagihanKontainerPermission)
+<div class="mt-4 mb-4">
+    <button id="pembayaran-tagihan-kontainer-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-lg mt-4 mb-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isPembayaranTagihanKontainerRoute ? 'bg-red-50 text-red-700 font-medium' : '' }}">
+        <div class="flex items-center">
+            <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isPembayaranTagihanKontainerRoute ? 'bg-red-100' : '' }}">
+                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ $isPembayaranTagihanKontainerRoute ? 'text-red-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </div>
+            <span class="text-xs font-medium truncate w-full">Pembayaran Tagihan Kontainer</span>
+        </div>
+        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isPembayaranTagihanKontainerRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+        </svg>
+    </button>
+    <div id="pembayaran-tagihan-kontainer-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isPembayaranTagihanKontainerRoute) style="display: block;" @endif>
+        {{-- Pembayaran Pranota Tagihan Kontainer Sewa --}}
+        @if(Route::has('pembayaran-pranota-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-kontainer-view')))
+            <a href="{{ route('pembayaran-pranota-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-kontainer.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+                Pembayaran Pranota Tagihan Kontainer Sewa
+            </a>
+        @endif
+
+        {{-- Pembayaran Pranota Perbaikan Kontainer --}}
+        @if(Route::has('pembayaran-pranota-perbaikan-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-perbaikan-kontainer-view')))
+            <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                </svg>
+                Pembayaran Pranota Perbaikan Kontainer
+            </a>
+        @endif
+    </div>
+</div>
+@endif
+
 {{-- User Approval Management (only for admins or users with master-user or user-approval permission) --}}
 {{-- Sudah dipindahkan ke dropdown User --}}
 
@@ -1125,6 +1173,7 @@
         setupDropdown('pranota-tagihan-kontainer-menu-toggle', 'pranota-tagihan-kontainer-menu-content');
         setupDropdown('perbaikan-kontainer-menu-toggle', 'perbaikan-kontainer-menu-content');
         setupDropdown('tagihan-kontainer-menu-toggle', 'tagihan-kontainer-menu-content');
+        setupDropdown('pembayaran-tagihan-kontainer-menu-toggle', 'pembayaran-tagihan-kontainer-menu-content');
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');
