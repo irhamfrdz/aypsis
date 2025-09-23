@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print Pranota Tagihan CAT - {{ $pranota->nomor_pranota ?? 'Belum ada nomor' }}</title>
+    <title>Print Pranota Tagihan CAT - {{ $pranota->no_invoice ?? 'Belum ada nomor' }}</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -130,8 +130,8 @@
     <div class="print-container">
         <!-- Header -->
         <div class="header">
-            <h1>PT. AYPSIS INDONESIA</h1>
-            <h2>PRANOTA TAGIHAN CONTAINER ANNUAL TEST</h2>
+            <h1>ALEXINDO YAKIN PRIMA</h1>
+            <h2>PRANOTA TAGIHAN CONTAINER</h2>
         </div>
 
         <!-- Pranota Information -->
@@ -140,14 +140,14 @@
                 <h3>Informasi Pranota</h3>
                 <div class="info-row">
                     <div class="info-label">Nomor Pranota:</div>
-                    <div class="info-value">{{ $pranota->nomor_pranota ?? '-' }}</div>
+                    <div class="info-value">{{ $pranota->no_invoice ?? '-' }}</div>
                 </div>
                 <div class="info-row">
                     <div class="info-label">Tanggal Pranota:</div>
                     <div class="info-value">{{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') : '-' }}</div>
                 </div>
                 <div class="info-row">
-                    <div class="info-label">Supplier:</div>
+                    <div class="info-label">Vendor/Bengkel:</div>
                     <div class="info-value">{{ $pranota->supplier ?? '-' }}</div>
                 </div>
             </div>
@@ -155,24 +155,14 @@
                 <h3>Ringkasan Biaya</h3>
                 <div class="info-row">
                     <div class="info-label">Total Biaya:</div>
-                    <div class="info-value">{{ $pranota->total_biaya ? 'Rp ' . number_format($pranota->total_biaya, 0, ',', '.') : '-' }}</div>
-                </div>
-                <div class="info-row">
-                    <div class="info-label">Status:</div>
                     <div class="info-value">
-                        @if($pranota->status == 'draft')
-                            Draft
-                        @elseif($pranota->status == 'approved')
-                            Disetujui
-                        @elseif($pranota->status == 'in_progress')
-                            Dalam Proses
-                        @elseif($pranota->status == 'completed')
-                            Selesai
-                        @elseif($pranota->status == 'cancelled')
-                            Dibatalkan
-                        @else
-                            {{ ucfirst($pranota->status ?? 'Unknown') }}
-                        @endif
+                        @php
+                            $total = $pranota->total_amount ?? 0;
+                            if ($total == 0 && $tagihanItems) {
+                                $total = $tagihanItems->sum('estimasi_biaya');
+                            }
+                        @endphp
+                        {{ $total > 0 ? 'Rp ' . number_format(floatval($total), 0, ',', '.') : '-' }}
                     </div>
                 </div>
             </div>
