@@ -503,6 +503,12 @@ class UserController extends Controller
                             // For master-tipe-akun-view, extract the action
                             $action = str_replace('tipe-akun-', '', $action);
                             $module = 'master-tipe-akun';
+                        }
+                        // Special handling for master-stock-kontainer permissions
+                        elseif (strpos($action, 'stock-kontainer-') === 0) {
+                            // For master-stock-kontainer-view, extract the action
+                            $action = str_replace('stock-kontainer-', '', $action);
+                            $module = 'master-stock-kontainer';
                         } else {
                             // For master-karyawan-view, split further
                             $subParts = explode('-', $action, 2);
@@ -943,6 +949,27 @@ class UserController extends Controller
                                     'delete' => 'master-kode-nomor-delete',
                                     'print' => 'master-kode-nomor-print',
                                     'export' => 'master-kode-nomor-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-stock-kontainer permissions explicitly
+                            if ($module === 'master-stock-kontainer' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-stock-kontainer-view',
+                                    'create' => 'master-stock-kontainer-create',
+                                    'update' => 'master-stock-kontainer-update',
+                                    'delete' => 'master-stock-kontainer-delete'
                                 ];
 
                                 if (isset($actionMap[$action])) {

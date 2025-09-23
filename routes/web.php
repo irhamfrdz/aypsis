@@ -684,6 +684,29 @@ Route::middleware([
          ->name('master.karyawan.index')
          ->middleware('can:master-karyawan-view');
 
+    // Master stock kontainer routes
+    Route::get('master/stock-kontainer', [\App\Http\Controllers\StockKontainerController::class, 'index'])
+         ->name('master.stock-kontainer.index')
+         ->middleware('can:master-stock-kontainer-view');
+    Route::get('master/stock-kontainer/create', [\App\Http\Controllers\StockKontainerController::class, 'create'])
+         ->name('master.stock-kontainer.create')
+         ->middleware('can:master-stock-kontainer-create');
+    Route::post('master/stock-kontainer', [\App\Http\Controllers\StockKontainerController::class, 'store'])
+         ->name('master.stock-kontainer.store')
+         ->middleware('can:master-stock-kontainer-create');
+    Route::get('master/stock-kontainer/{stockKontainer}', [\App\Http\Controllers\StockKontainerController::class, 'show'])
+         ->name('master.stock-kontainer.show')
+         ->middleware('can:master-stock-kontainer-view');
+    Route::get('master/stock-kontainer/{stockKontainer}/edit', [\App\Http\Controllers\StockKontainerController::class, 'edit'])
+         ->name('master.stock-kontainer.edit')
+         ->middleware('can:master-stock-kontainer-update');
+    Route::put('master/stock-kontainer/{stockKontainer}', [\App\Http\Controllers\StockKontainerController::class, 'update'])
+         ->name('master.stock-kontainer.update')
+         ->middleware('can:master-stock-kontainer-update');
+    Route::delete('master/stock-kontainer/{stockKontainer}', [\App\Http\Controllers\StockKontainerController::class, 'destroy'])
+         ->name('master.stock-kontainer.destroy')
+         ->middleware('can:master-stock-kontainer-delete');
+
     // --- Rute Permohonan ---
     // CSV export/import for permohonan (declare before resource to avoid routing conflict with parameterized routes)
     Route::get('permohonan/export', [PermohonanController::class, 'export'])

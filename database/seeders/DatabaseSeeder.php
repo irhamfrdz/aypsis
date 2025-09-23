@@ -19,6 +19,7 @@ class DatabaseSeeder extends Seeder
             AllPermissionsSeeder::class, // Ensures explicit + route-derived permissions exist
             MasterDivisiPermissionSeeder::class, // Permission untuk master divisi
             MasterPekerjaanPermissionSeeder::class, // Permission untuk master pekerjaan
+            MasterStockKontainerPermissionSeeder::class, // Permission untuk master stock kontainer
             KodeNomorPermissionSeeder::class, // Permission untuk master kode nomor
             UserSeeder::class, // Pastikan user dibuat sebelum relasi permission
             UserPermissionSeeder::class, // Seeder untuk user permissions
@@ -32,6 +33,7 @@ class DatabaseSeeder extends Seeder
             PricelistCatPermissionSeeder::class, // Permission untuk pricelist CAT
             PranotaCatPermissionSeeder::class, // Permission untuk pranota CAT
             PricelistCatSeeder::class, // Data sample untuk pricelist CAT
+            StockKontainerSeeder::class, // Data sample untuk stock kontainer
         ]);
     }
 }

@@ -693,6 +693,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Stock Kontainer --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Stock Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-stock-kontainer][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-stock-kontainer']['view']) && $userMatrixPermissions['master-stock-kontainer']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-stock-kontainer][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-stock-kontainer']['create']) && $userMatrixPermissions['master-stock-kontainer']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-stock-kontainer][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-stock-kontainer']['update']) && $userMatrixPermissions['master-stock-kontainer']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-stock-kontainer][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-stock-kontainer']['delete']) && $userMatrixPermissions['master-stock-kontainer']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
 
 
 
