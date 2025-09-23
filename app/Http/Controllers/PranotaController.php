@@ -453,4 +453,32 @@ class PranotaController extends Controller
 
         return view('pranota-cat.print', compact('pranota', 'tagihanItems'));
     }
+
+    /**
+     * Bulk update status for pranota CAT
+     */
+    public function bulkStatusUpdate(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:pranotas,id',
+            'status' => 'required|string|in:unpaid,approved,in_progress,completed,cancelled'
+        ]);
+
+        try {
+            $ids = $request->input('ids');
+            $status = $request->input('status');
+
+            // Update status for selected pranota
+            Pranota::whereIn('id', $ids)->update([
+                'status' => $status,
+                'updated_at' => now()
+            ]);
+
+            return redirect()->back()->with('success', count($ids) . ' pranota berhasil diupdate status menjadi ' . $status);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal mengupdate status pranota: ' . $e->getMessage());
+        }
+    }
 }

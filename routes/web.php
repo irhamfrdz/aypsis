@@ -997,6 +997,9 @@ Route::middleware(['auth'])->group(function() {
     Route::get('pranota-cat/{id}/print', [\App\Http\Controllers\PranotaController::class, 'printCat'])
          ->name('pranota-cat.print')
          ->middleware('can:pranota-cat-print');
+    Route::post('pranota-cat/bulk-status-update', [\App\Http\Controllers\PranotaController::class, 'bulkStatusUpdate'])
+         ->name('pranota-cat.bulk-status-update')
+         ->middleware('can:pranota-cat-update');
 
     // Pembayaran Pranota Perbaikan Kontainer routes
     Route::get('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'index'])
