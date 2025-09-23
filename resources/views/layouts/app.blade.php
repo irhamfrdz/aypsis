@@ -73,6 +73,47 @@
             background: #3b82f6;
             border-radius: 0 2px 2px 0;
         }
+
+        /* Search functionality styles */
+        .sidebar-search-highlight {
+            background-color: #fef3c7;
+            font-weight: 600;
+            padding: 2px 4px;
+            border-radius: 3px;
+            animation: highlight-pulse 0.3s ease-in-out;
+        }
+
+        @keyframes highlight-pulse {
+            0% { background-color: #fef3c7; }
+            50% { background-color: #fde68a; }
+            100% { background-color: #fef3c7; }
+        }
+
+        .sidebar-hidden {
+            display: none !important;
+            opacity: 0;
+            transform: scale(0.95);
+            transition: all 0.2s ease-in-out;
+        }
+
+        .sidebar-visible {
+            display: block !important;
+            opacity: 1;
+            transform: scale(1);
+            transition: all 0.2s ease-in-out;
+        }
+
+        /* Search input focus effects */
+        .sidebar-search-input:focus {
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            border-color: #3b82f6;
+        }
+
+        /* Clear button hover effect */
+        .sidebar-clear-btn:hover {
+            background-color: #f3f4f6;
+            transform: scale(1.1);
+        }
             padding: 12px 16px;
             border-bottom: 1px solid #dee2e6;
         }
@@ -153,7 +194,7 @@
 
             <!-- Sidebar Header -->
             <div class="p-6 border-b border-gray-300 flex-shrink-0 bg-white rounded-tr-2xl shadow-md">
-                <div class="flex items-center text-gray-800">
+                <div class="flex items-center text-gray-800 mb-4">
                     <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
@@ -163,6 +204,27 @@
                         <h2 class="font-bold text-lg text-blue-700 tracking-wide">AYPSIS</h2>
                         <p class="text-xs text-gray-400 font-semibold">Management System</p>
                     </div>
+                </div>
+
+                <!-- Sidebar Search -->
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <input type="text"
+                           id="sidebar-search"
+                           placeholder="Cari menu..."
+                           class="sidebar-search-input w-full pl-10 pr-4 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 focus:bg-white transition-colors duration-200"
+                           autocomplete="off">
+                    <button type="button"
+                            id="clear-search"
+                            class="sidebar-clear-btn absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600 opacity-0 pointer-events-none transition-opacity duration-200">
+                        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
                 </div>
             </div>
 
@@ -941,6 +1003,160 @@
         setupDropdown('pranota-menu-toggle', 'pranota-menu-content');
         setupDropdown('pranota-tagihan-kontainer-menu-toggle', 'pranota-tagihan-kontainer-menu-content');
         setupDropdown('perbaikan-kontainer-menu-toggle', 'perbaikan-kontainer-menu-content');
+
+        // Sidebar search functionality
+        const sidebarSearch = document.getElementById('sidebar-search');
+        const clearSearch = document.getElementById('clear-search');
+        const nav = document.querySelector('nav.sidebar-scroll');
+
+        if (sidebarSearch && nav) {
+            // Function to filter menu items
+            function filterMenuItems(searchTerm) {
+                const menuItems = nav.querySelectorAll('a, button');
+                const dropdownContents = nav.querySelectorAll('.dropdown-content');
+                let hasVisibleItems = false;
+
+                // Reset highlights first
+                menuItems.forEach(item => removeHighlight(item));
+                dropdownContents.forEach(content => {
+                    const subItems = content.querySelectorAll('a');
+                    subItems.forEach(subItem => removeHighlight(subItem));
+                });
+
+                menuItems.forEach(item => {
+                    const text = item.textContent.toLowerCase().trim();
+                    const isVisible = text.includes(searchTerm.toLowerCase()) || searchTerm === '';
+
+                    if (item.tagName === 'A' || item.tagName === 'BUTTON') {
+                        // Main menu items (Dashboard, Master Data, etc.)
+                        if (isVisible) {
+                            item.style.display = '';
+                            if (searchTerm !== '') {
+                                highlightText(item, searchTerm);
+                            }
+                            hasVisibleItems = true;
+
+                            // If this is a dropdown toggle, show its content
+                            const contentId = item.id?.replace('-toggle', '-content');
+                            if (contentId) {
+                                const content = document.getElementById(contentId);
+                                if (content) {
+                                    content.style.display = 'block';
+                                    // Show all submenu items
+                                    const subItems = content.querySelectorAll('a');
+                                    subItems.forEach(subItem => {
+                                        subItem.style.display = '';
+                                        if (searchTerm !== '') {
+                                            const subText = subItem.textContent.toLowerCase().trim();
+                                            if (subText.includes(searchTerm.toLowerCase())) {
+                                                highlightText(subItem, searchTerm);
+                                            }
+                                        }
+                                    });
+                                }
+                            }
+                        } else {
+                            item.style.display = 'none';
+
+                            // Hide dropdown content if toggle is hidden
+                            const contentId = item.id?.replace('-toggle', '-content');
+                            if (contentId) {
+                                const content = document.getElementById(contentId);
+                                if (content) {
+                                    content.style.display = 'none';
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Handle dropdown contents separately
+                dropdownContents.forEach(content => {
+                    const subItems = content.querySelectorAll('a');
+                    let hasVisibleSubItems = false;
+
+                    subItems.forEach(subItem => {
+                        const text = subItem.textContent.toLowerCase().trim();
+                        const isVisible = text.includes(searchTerm.toLowerCase()) || searchTerm === '';
+
+                        if (isVisible) {
+                            subItem.style.display = '';
+                            if (searchTerm !== '') {
+                                highlightText(subItem, searchTerm);
+                            }
+                            hasVisibleSubItems = true;
+                        } else {
+                            subItem.style.display = 'none';
+                        }
+                    });
+
+                    // Show/hide dropdown content based on visible subitems
+                    if (hasVisibleSubItems || searchTerm === '') {
+                        content.style.display = 'block';
+                        // Also show the parent toggle
+                        const toggleId = content.id?.replace('-content', '-toggle');
+                        if (toggleId) {
+                            const toggle = document.getElementById(toggleId);
+                            if (toggle) {
+                                toggle.style.display = '';
+                                if (searchTerm !== '' && toggle.textContent.toLowerCase().trim().includes(searchTerm.toLowerCase())) {
+                                    highlightText(toggle, searchTerm);
+                                }
+                            }
+                        }
+                    }
+                });
+
+                // Show clear button when there's search text
+                if (clearSearch) {
+                    if (searchTerm.length > 0) {
+                        clearSearch.classList.remove('opacity-0', 'pointer-events-none');
+                        clearSearch.classList.add('opacity-100', 'pointer-events-auto');
+                    } else {
+                        clearSearch.classList.add('opacity-0', 'pointer-events-none');
+                        clearSearch.classList.remove('opacity-100', 'pointer-events-auto');
+                    }
+                }
+            }
+
+            function highlightText(element, searchTerm) {
+                const text = element.textContent;
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                const highlightedText = text.replace(regex, '<span class="sidebar-search-highlight">$1</span>');
+                element.innerHTML = highlightedText;
+            }
+
+            function removeHighlight(element) {
+                // Remove highlight spans and restore original text
+                const highlights = element.querySelectorAll('.sidebar-search-highlight');
+                highlights.forEach(highlight => {
+                    highlight.outerHTML = highlight.textContent;
+                });
+            }
+
+            // Search input event listener
+            sidebarSearch.addEventListener('input', function(e) {
+                const searchTerm = e.target.value.trim();
+                filterMenuItems(searchTerm);
+            });
+
+            // Clear search button
+            if (clearSearch) {
+                clearSearch.addEventListener('click', function() {
+                    sidebarSearch.value = '';
+                    sidebarSearch.focus();
+                    filterMenuItems('');
+                });
+            }
+
+            // Clear search on Escape key
+            sidebarSearch.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    sidebarSearch.value = '';
+                    filterMenuItems('');
+                }
+            });
+        }
     </script>
 </body>
 </html>
