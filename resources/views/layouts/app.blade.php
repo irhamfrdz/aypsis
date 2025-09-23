@@ -929,74 +929,7 @@
 
 
 
-                    {{-- Dropdown untuk Tagihan Kontainer Sewa (di luar master data) --}}
-                    {{-- Tagihan Kontainer Sewa menu removed (refactored) --}}
 
-                    {{-- Dropdown untuk Tagihan Kontainer Sewa (baru) --}}
-                    @php
-                        // Check if user has access to any submenu in this section
-                        $hasTagihanAccess = $isAdmin || auth()->user()->can('tagihan-kontainer-view');
-                        $hasPranotaAccess = $isAdmin || auth()->user()->can('pranota.view');
-                        $hasPembayaranPranotaAccess = $isAdmin || auth()->user()->can('pembayaran-pranota-kontainer.view') || auth()->user()->can('pembayaran-pranota-tagihan-kontainer.view');
-                        $hasAnyAccess = $hasTagihanAccess || $hasPranotaAccess || $hasPembayaranPranotaAccess;
-                    @endphp
-
-                    @if($hasAnyAccess)
-                    @php
-                        $isPranotaTagihanRoute = Request::routeIs('pembayaran-pranota-tagihan-kontainer.*') || Request::routeIs('pranota-tagihan-kontainer.*') || Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pranota.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*');
-                    @endphp
-                    <div class="mt-4 mb-4">
-                        <button id="pranota-tagihan-kontainer-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-lg mt-4 mb-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isPranotaTagihanRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
-                            <div class="flex items-center">
-                                <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isPranotaTagihanRoute ? 'bg-blue-100' : '' }}">
-                                    <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ $isPranotaTagihanRoute ? 'text-blue-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                                    </svg>
-                                </div>
-                                <span class="text-xs font-medium menu-text">Tagihan Kontainer Sewa</span>
-                            </div>
-                            <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isPranotaTagihanRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                            </svg>
-                        </button>
-                        <div id="pranota-tagihan-kontainer-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isPranotaTagihanRoute) style="display: block;" @endif>
-                            @if (Route::has('pembayaran-pranota-tagihan-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-tagihan-kontainer.view')))
-                                <a href="{{ route('pembayaran-pranota-tagihan-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs {{ Request::routeIs('pembayaran-pranota-tagihan-kontainer.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
-                                    <div class="w-2 h-2 rounded-full {{ Request::routeIs('pembayaran-pranota-tagihan-kontainer.*') ? 'bg-blue-500' : 'bg-gray-400' }} mr-3"></div>
-                                    Pembayaran Tagihan Kontainer Sewa
-                                </a>
-                            @endif
-
-                            @if (Route::has('daftar-tagihan-kontainer-sewa.index') && ($isAdmin || auth()->user()->can('tagihan-kontainer-view')))
-                                <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
-                                    <div class="w-2 h-2 rounded-full {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-blue-500' : 'bg-gray-400' }} mr-3"></div>
-                                    Daftar Tagihan Kontainer
-                                </a>
-                            @endif
-
-                            @if (Route::has('pranota.index') && ($isAdmin || auth()->user()->can('pranota.view')))
-                                <a href="{{ route('pranota.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs {{ Request::routeIs('pranota.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
-                                    <div class="w-2 h-2 rounded-full {{ Request::routeIs('pranota.*') ? 'bg-blue-500' : 'bg-gray-400' }} mr-3"></div>
-                                    Daftar Pranota Kontainer
-                                </a>
-                            @endif
-
-                            @if (Route::has('pembayaran-pranota-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-kontainer.view')))
-                                <a href="{{ route('pembayaran-pranota-kontainer.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs {{ Request::routeIs('pembayaran-pranota-kontainer.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
-                                    <div class="w-2 h-2 rounded-full {{ Request::routeIs('pembayaran-pranota-kontainer.*') ? 'bg-blue-500' : 'bg-gray-400' }} mr-3"></div>
-                                    Pembayaran Pranota Kontainer
-                                </a>
-                            @endif
-
-                            @if (Route::has('pembayaran-pranota-tagihan-kontainer.create') && ($isAdmin || auth()->user()->can('pembayaran-pranota-tagihan-kontainer.create')))
-                                <a href="{{ route('pembayaran-pranota-tagihan-kontainer.create') }}" class="flex items-center py-1 px-4 rounded-lg text-xs {{ Request::routeIs('pembayaran-pranota-tagihan-kontainer.create') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900' }} transition-all duration-200">
-                                    <div class="w-2 h-2 rounded-full {{ Request::routeIs('pembayaran-pranota-tagihan-kontainer.create') ? 'bg-blue-500' : 'bg-gray-400' }} mr-3"></div>
-                                    Buat Pembayaran
-                                </a>
-                            @endif
-                        </div>
-                    </div>
-                    @endif
 
                     {{-- Menu Perbaikan Kontainer --}}
                     @php
@@ -1170,7 +1103,6 @@
         setupDropdown('aktivitas-supir-menu-toggle', 'aktivitas-supir-menu-content');
         setupDropdown('aktiva-menu-toggle', 'aktiva-menu-content');
         setupDropdown('kontainer-menu-toggle', 'kontainer-menu-content');
-        setupDropdown('pranota-tagihan-kontainer-menu-toggle', 'pranota-tagihan-kontainer-menu-content');
         setupDropdown('perbaikan-kontainer-menu-toggle', 'perbaikan-kontainer-menu-content');
         setupDropdown('tagihan-kontainer-menu-toggle', 'tagihan-kontainer-menu-content');
         setupDropdown('pembayaran-tagihan-kontainer-menu-toggle', 'pembayaran-tagihan-kontainer-menu-content');
