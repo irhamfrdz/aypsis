@@ -16,7 +16,7 @@ class PerbaikanKontainerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PerbaikanKontainer::with(['creator', 'vendorBengkel']);
+        $query = PerbaikanKontainer::with(['creator', 'vendorBengkel', 'kontainer']);
 
         // Filter by status
         if ($request->filled('status')) {

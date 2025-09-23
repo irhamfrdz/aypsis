@@ -25,107 +25,138 @@
             <form action="{{ route('tagihan-cat.store') }}" method="POST" class="space-y-6">
                 @csrf
 
-                <!-- Nomor Tagihan CAT -->
-                <div>
-                    <label for="nomor_tagihan_cat" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Tagihan CAT
-                    </label>
-                    <input type="text" id="nomor_tagihan_cat" name="nomor_tagihan_cat"
-                           value="{{ old('nomor_tagihan_cat') }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Masukkan nomor tagihan CAT...">
-                    @error('nomor_tagihan_cat')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                <!-- Row 1: Nomor Tagihan CAT & Nomor Kontainer -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Nomor Tagihan CAT -->
+                    <div>
+                        <label for="nomor_tagihan_cat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Tagihan CAT
+                        </label>
+                        <input type="text" id="nomor_tagihan_cat" name="nomor_tagihan_cat"
+                               value="{{ old('nomor_tagihan_cat') }}"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Masukkan nomor tagihan CAT...">
+                        @error('nomor_tagihan_cat')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Nomor Kontainer -->
+                    <div>
+                        <label for="nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Kontainer <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="nomor_kontainer" name="nomor_kontainer"
+                               value="{{ old('nomor_kontainer') }}"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Masukkan nomor kontainer..."
+                               required>
+                        @error('nomor_kontainer')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
-                <!-- Nomor Kontainer -->
-                <div>
-                    <label for="nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
-                        Nomor Kontainer <span class="text-red-500">*</span>
-                    </label>
-                    <input type="text" id="nomor_kontainer" name="nomor_kontainer"
-                           value="{{ old('nomor_kontainer') }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="Masukkan nomor kontainer..."
-                           required>
-                    @error('nomor_kontainer')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                <!-- Row 2: Vendor & Tanggal CAT -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Vendor -->
+                    <div>
+                        <label for="vendor" class="block text-sm font-medium text-gray-700 mb-2">
+                            Vendor
+                        </label>
+                        <select id="vendor" name="vendor"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Pilih Vendor...</option>
+                            @foreach($vendors as $vendor)
+                                <option value="{{ $vendor->vendor }}" {{ old('vendor') == $vendor->vendor ? 'selected' : '' }}>
+                                    {{ $vendor->vendor }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('vendor')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Tanggal CAT -->
+                    <div>
+                        <label for="tanggal_cat" class="block text-sm font-medium text-gray-700 mb-2">
+                            Tanggal CAT <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="tanggal_cat" name="tanggal_cat" value="{{ old('tanggal_cat') }}"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               required>
+                        @error('tanggal_cat')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
-                <!-- Tanggal CAT -->
-                <div>
-                    <label for="tanggal_cat" class="block text-sm font-medium text-gray-700 mb-2">
-                        Tanggal CAT <span class="text-red-500">*</span>
-                    </label>
-                    <input type="date" id="tanggal_cat" name="tanggal_cat" value="{{ old('tanggal_cat') }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           required>
-                    @error('tanggal_cat')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                <!-- Row 3: Estimasi Biaya & Realisasi Biaya -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Estimasi Biaya -->
+                    <div>
+                        <label for="estimasi_biaya" class="block text-sm font-medium text-gray-700 mb-2">
+                            Estimasi Biaya
+                        </label>
+                        <input type="text" id="estimasi_biaya" name="estimasi_biaya"
+                               value="{{ old('estimasi_biaya') ? number_format(old('estimasi_biaya'), 0, ',', '.') : '' }}"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="0">
+                        <input type="hidden" id="estimasi_biaya_raw" name="estimasi_biaya_raw" value="{{ old('estimasi_biaya') }}">
+                        <p class="mt-1 text-sm text-gray-500">Estimasi biaya dalam Rupiah</p>
+                        @error('estimasi_biaya_raw')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <!-- Realisasi Biaya -->
+                    <div>
+                        <label for="realisasi_biaya" class="block text-sm font-medium text-gray-700 mb-2">
+                            Realisasi Biaya
+                        </label>
+                        <input type="text" id="realisasi_biaya" name="realisasi_biaya"
+                               value="{{ old('realisasi_biaya') ? number_format(old('realisasi_biaya'), 0, ',', '.') : '' }}"
+                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="0">
+                        <input type="hidden" id="realisasi_biaya_raw" name="realisasi_biaya_raw" value="{{ old('realisasi_biaya') }}">
+                        <p class="mt-1 text-sm text-gray-500">Realisasi biaya dalam Rupiah</p>
+                        @error('realisasi_biaya_raw')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
-                <!-- Estimasi Biaya -->
-                <div>
-                    <label for="estimasi_biaya" class="block text-sm font-medium text-gray-700 mb-2">
-                        Estimasi Biaya
-                    </label>
-                    <input type="text" id="estimasi_biaya" name="estimasi_biaya"
-                           value="{{ old('estimasi_biaya') ? number_format(old('estimasi_biaya'), 0, ',', '.') : '' }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="0">
-                    <input type="hidden" id="estimasi_biaya_raw" name="estimasi_biaya_raw" value="{{ old('estimasi_biaya') }}">
-                    <p class="mt-1 text-sm text-gray-500">Estimasi biaya dalam Rupiah</p>
-                    @error('estimasi_biaya_raw')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+                <!-- Row 4: Status & Keterangan -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Status -->
+                    <div>
+                        <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                            Status
+                        </label>
+                        <select id="status" name="status"
+                                class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>Sudah Dibayar</option>
+                            <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                        </select>
+                        @error('status')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
 
-                <!-- Realisasi Biaya -->
-                <div>
-                    <label for="realisasi_biaya" class="block text-sm font-medium text-gray-700 mb-2">
-                        Realisasi Biaya
-                    </label>
-                    <input type="text" id="realisasi_biaya" name="realisasi_biaya"
-                           value="{{ old('realisasi_biaya') ? number_format(old('realisasi_biaya'), 0, ',', '.') : '' }}"
-                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                           placeholder="0">
-                    <input type="hidden" id="realisasi_biaya_raw" name="realisasi_biaya_raw" value="{{ old('realisasi_biaya') }}">
-                    <p class="mt-1 text-sm text-gray-500">Realisasi biaya dalam Rupiah</p>
-                    @error('realisasi_biaya_raw')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Status -->
-                <div>
-                    <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                        Status
-                    </label>
-                    <select id="status" name="status"
-                            class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                        <option value="pending" {{ old('status', 'pending') == 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="paid" {{ old('status') == 'paid' ? 'selected' : '' }}>Sudah Dibayar</option>
-                        <option value="cancelled" {{ old('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
-                    </select>
-                    @error('status')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <!-- Keterangan -->
-                <div>
-                    <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
-                        Keterangan
-                    </label>
-                    <textarea id="keterangan" name="keterangan" rows="4"
-                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Tambahkan keterangan tambahan jika diperlukan...">{{ old('keterangan') }}</textarea>
-                    @error('keterangan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
+                    <!-- Keterangan -->
+                    <div>
+                        <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Keterangan
+                        </label>
+                        <textarea id="keterangan" name="keterangan" rows="3"
+                                  class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                  placeholder="Tambahkan keterangan tambahan jika diperlukan...">{{ old('keterangan') }}</textarea>
+                        @error('keterangan')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
 
                 <!-- Submit Buttons -->

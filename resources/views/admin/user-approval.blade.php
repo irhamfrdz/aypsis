@@ -44,69 +44,55 @@
 
     {{-- Pending Users Tab --}}
     <div id="pending-tab" class="tab-content">
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 bg-yellow-50 border-b border-yellow-200">
-                <h2 class="text-lg font-semibold text-yellow-800">
-                    <i class="fas fa-clock text-yellow-600 mr-2"></i>
-                    Registrasi Menunggu Persetujuan ({{ $pendingUsers->count() }})
-                </h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">Registrasi Menunggu Persetujuan ({{ $pendingUsers->count() }})</h3>
             </div>
 
             @if($pendingUsers->count() > 0)
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto table-container">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Alasan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Daftar</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($pendingUsers as $user)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-full bg-yellow-500 flex items-center justify-center">
-                                                    <i class="fas fa-user text-white"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                            </div>
-                                        </div>
+                        <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
+                            @foreach($pendingUsers as $index => $user)
+                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ $index + 1 }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $user->username }}</div>
+                                    </td>
+                                    <td class="px-4 py-2">
                                         <div class="text-sm text-gray-900">{{ $user->karyawan->nama_lengkap ?? 'N/A' }}</div>
-                                        <div class="text-sm text-gray-500">{{ $user->karyawan->divisi ?? 'N/A' }} - {{ $user->karyawan->pekerjaan ?? 'N/A' }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->username }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $user->created_at->format('d/m/Y H:i') }}
-                                        <div class="text-xs text-gray-400">{{ $user->created_at->diffForHumans() }}</div>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $user->created_at->format('d/m/Y') }}
                                     </td>
-                                    <td class="px-6 py-4">
-                                        <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $user->registration_reason }}">
-                                            {{ Str::limit($user->registration_reason, 50) }}
-                                        </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                                        <form method="POST" action="{{ route('admin.user-approval.approve', $user) }}" class="inline">
-                                            @csrf
-                                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition-colors duration-200" onclick="return confirm('Setujui registrasi user {{ $user->name }}?')">
-                                                <i class="fas fa-check mr-1"></i>Setujui
+                                    <td class="px-4 py-2 whitespace-nowrap text-center">
+                                        <div class="flex items-center justify-center space-x-3 text-[10px]">
+                                            <form method="POST" action="{{ route('admin.user-approval.approve', $user) }}" class="inline">
+                                                @csrf
+                                                <button type="submit" class="text-green-600 hover:text-green-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0" onclick="return confirm('Setujui registrasi user {{ $user->name }}?')">
+                                                    Setujui
+                                                </button>
+                                            </form>
+                                            <span class="text-gray-300">|</span>
+                                            <button onclick="showRejectModal({{ $user->id }}, '{{ $user->name }}')" class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0">
+                                                Tolak
                                             </button>
-                                        </form>
-                                        <button onclick="showRejectModal({{ $user->id }}, '{{ $user->name }}')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition-colors duration-200">
-                                            <i class="fas fa-times mr-1"></i>Tolak
-                                        </button>
-                                        <a href="{{ route('admin.user-approval.show', $user) }}" class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded text-xs transition-colors duration-200">
-                                            <i class="fas fa-eye mr-1"></i>Detail
-                                        </a>
+                                            <span class="text-gray-300">|</span>
+                                            <a href="{{ route('admin.user-approval.show', $user) }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium">
+                                                Detail
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                             @endforeach
@@ -124,53 +110,39 @@
 
     {{-- Approved Users Tab --}}
     <div id="approved-tab" class="tab-content hidden">
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 bg-green-50 border-b border-green-200">
-                <h2 class="text-lg font-semibold text-green-800">
-                    <i class="fas fa-check-circle text-green-600 mr-2"></i>
-                    User yang Disetujui ({{ $approvedUsers->count() }})
-                </h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">User yang Disetujui ({{ $approvedUsers->count() }})</h3>
             </div>
 
             @if($approvedUsers->count() > 0)
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto table-container">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disetujui</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disetujui Oleh</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disetujui</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Disetujui Oleh</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($approvedUsers as $user)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-full bg-green-500 flex items-center justify-center">
-                                                    <i class="fas fa-user text-white"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                            </div>
-                                        </div>
+                        <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
+                            @foreach($approvedUsers as $index => $user)
+                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ $index + 1 }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $user->username }}</div>
+                                    </td>
+                                    <td class="px-4 py-2">
                                         <div class="text-sm text-gray-900">{{ $user->karyawan->nama_lengkap ?? 'N/A' }}</div>
-                                        <div class="text-sm text-gray-500">{{ $user->karyawan->divisi ?? 'N/A' }} - {{ $user->karyawan->pekerjaan ?? 'N/A' }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->username }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $user->approved_at ? $user->approved_at->format('d/m/Y H:i') : 'N/A' }}
-                                        @if($user->approved_at)
-                                            <div class="text-xs text-gray-400">{{ $user->approved_at->diffForHumans() }}</div>
-                                        @endif
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $user->approved_at ? $user->approved_at->format('d/m/Y') : 'N/A' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                                         {{ $user->approvedBy->name ?? 'N/A' }}
                                     </td>
                                 </tr>
@@ -189,53 +161,39 @@
 
     {{-- Rejected Users Tab --}}
     <div id="rejected-tab" class="tab-content hidden">
-        <div class="bg-white rounded-lg shadow overflow-hidden">
-            <div class="px-6 py-4 bg-red-50 border-b border-red-200">
-                <h2 class="text-lg font-semibold text-red-800">
-                    <i class="fas fa-times-circle text-red-600 mr-2"></i>
-                    User yang Ditolak ({{ $rejectedUsers->count() }})
-                </h2>
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h3 class="text-lg font-medium text-gray-900">User yang Ditolak ({{ $rejectedUsers->count() }})</h3>
             </div>
 
             @if($rejectedUsers->count() > 0)
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto table-container">
                     <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                        <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">User</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak Oleh</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Username</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ditolak Oleh</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @foreach($rejectedUsers as $user)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="flex items-center">
-                                            <div class="flex-shrink-0 h-10 w-10">
-                                                <div class="h-10 w-10 rounded-full bg-red-500 flex items-center justify-center">
-                                                    <i class="fas fa-user text-white"></i>
-                                                </div>
-                                            </div>
-                                            <div class="ml-4">
-                                                <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
-                                            </div>
-                                        </div>
+                        <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
+                            @foreach($rejectedUsers as $index => $user)
+                                <tr class="hover:bg-gray-50 transition-colors duration-200">
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        {{ $index + 1 }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-4 py-2 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900">{{ $user->username }}</div>
+                                    </td>
+                                    <td class="px-4 py-2">
                                         <div class="text-sm text-gray-900">{{ $user->karyawan->nama_lengkap ?? 'N/A' }}</div>
-                                        <div class="text-sm text-gray-500">{{ $user->karyawan->divisi ?? 'N/A' }} - {{ $user->karyawan->pekerjaan ?? 'N/A' }}</div>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $user->username }}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                                        {{ $user->approved_at ? $user->approved_at->format('d/m/Y H:i') : 'N/A' }}
-                                        @if($user->approved_at)
-                                            <div class="text-xs text-gray-400">{{ $user->approved_at->diffForHumans() }}</div>
-                                        @endif
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
+                                        {{ $user->approved_at ? $user->approved_at->format('d/m/Y') : 'N/A' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-500">
                                         {{ $user->approvedBy->name ?? 'N/A' }}
                                     </td>
                                 </tr>
@@ -328,3 +286,43 @@ document.addEventListener('DOMContentLoaded', function() {
 @endpush
 
 @endsection
+
+<style>
+/* Sticky Table Header Styles */
+.sticky-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* bg-gray-50 */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced table container for better scrolling */
+.table-container {
+    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    overflow-y: auto;
+    border: 1px solid rgb(229 231 235); /* border-gray-200 */
+    border-radius: 0.5rem;
+}
+
+/* Smooth scrolling for better UX */
+.table-container {
+    scroll-behavior: smooth;
+}
+
+/* Table header cells need specific background to avoid transparency issues */
+.sticky-table-header th {
+    background-color: rgb(249 250 251) !important;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Optional: Add a subtle border when scrolling */
+.table-container.scrolled .sticky-table-header {
+    border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+
+/* Ensure dropdown menus appear above sticky header */
+.relative.group .absolute {
+    z-index: 20;
+}
+</style>

@@ -44,6 +44,15 @@
         padding: 0.5rem;
         white-space: nowrap;
     }
+
+    .status-badge {
+        font-size: 0.75rem !important;
+        padding: 0.125rem 0.5rem !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        max-width: 100px !important;
+    }
 }
 </style>
 <div class="container mx-auto px-4 py-8">
@@ -64,6 +73,56 @@
             </a>
             @endcan
         </div>
+
+        <!-- Flash Messages -->
+        @if(session('success'))
+        <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        @if(session('error'))
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium text-red-800">{{ session('error') }}</p>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        @if($errors->any())
+        <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <ul class="text-sm font-medium text-red-800">
+                        @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
+            </div>
+        </div>
+        @endif
 
         <!-- Filters -->
         <div class="bg-gray-50 rounded-lg p-4 mb-6">
@@ -129,12 +188,13 @@
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 5%;">No</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;">Nomor Tagihan CAT</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 12%;">Nomor Kontainer</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 18%;">Vendo/Bengkel</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;">Vendo/Bengkel</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Tanggal CAT</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Tanggal Pranota</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Estimasi Biaya</th>
                         <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Realisasi Biaya</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 8%;">Status</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 13%;">Aksi</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Status</th>
+                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
@@ -157,7 +217,7 @@
                                 {{ $tagihanCat->nomor_kontainer }}
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap" style="width: 12%;">
+                        <td class="px-4 py-2 whitespace-nowrap" style="width: 15%;">
                             <div class="text-sm text-gray-900">
                                 {{ $tagihanCat->vendor ?? '-' }}
                             </div>
@@ -166,27 +226,43 @@
                             {{ $tagihanCat->tanggal_cat ? \Carbon\Carbon::parse($tagihanCat->tanggal_cat)->format('d/m/Y') : '-' }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900" style="width: 10%;">
+                            @php
+                                $tanggalPranota = null;
+                                if (!empty($tagihanCat->pranota) && $tagihanCat->pranota->isNotEmpty()) {
+                                    $tanggalPranota = $tagihanCat->pranota->first()->tanggal_pranota;
+                                } elseif (\App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->exists()) {
+                                    $pranota = \App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->first();
+                                    $tanggalPranota = $pranota->tanggal_pranota;
+                                }
+                            @endphp
+                            {{ $tanggalPranota ? \Carbon\Carbon::parse($tanggalPranota)->format('d/m/Y') : '-' }}
+                        </td>
+                        <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900" style="width: 10%;">
                             {{ $tagihanCat->estimasi_biaya ? 'Rp ' . number_format($tagihanCat->estimasi_biaya, 0, ',', '.') : '-' }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900" style="width: 10%;">
                             {{ $tagihanCat->realisasi_biaya ? 'Rp ' . number_format($tagihanCat->realisasi_biaya, 0, ',', '.') : '-' }}
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap" style="width: 8%;">
+                        <td class="px-4 py-2 whitespace-nowrap" style="width: 10%;">
                             @if($tagihanCat->status == 'pending')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800 status-badge">
                                     Pending
                                 </span>
+                            @elseif($tagihanCat->status == 'masuk pranota')
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 status-badge">
+                                    Pranota
+                                </span>
                             @elseif($tagihanCat->status == 'paid')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                    Sudah Dibayar
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 status-badge">
+                                    Dibayar
                                 </span>
                             @elseif($tagihanCat->status == 'cancelled')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                    Dibatalkan
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800 status-badge">
+                                    Batal
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium" style="width: 13%;">
+                        <td class="px-4 py-2 whitespace-nowrap text-sm font-medium" style="width: 10%;">
                             <div class="flex items-center justify-center space-x-2">
                                 @can('tagihan-cat-view')
                                 <a href="{{ route('tagihan-cat.show', $tagihanCat) }}"
@@ -236,7 +312,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="10" class="px-4 py-4 text-center text-gray-500">
+                        <td colspan="11" class="px-4 py-4 text-center text-gray-500">
                             Tidak ada data tagihan CAT ditemukan.
                         </td>
                     </tr>
@@ -351,6 +427,20 @@
 @endsection
 
 <script>
+console.log('Script tag executed - JavaScript is loading');
+
+// Global error handler to catch JavaScript errors
+window.addEventListener('error', function(e) {
+    console.error('JavaScript Error:', e.error);
+    console.error('Error message:', e.message);
+    console.error('Error file:', e.filename);
+    console.error('Error line:', e.lineno);
+});
+
+window.addEventListener('unhandledrejection', function(e) {
+    console.error('Unhandled Promise Rejection:', e.reason);
+});
+
 // Global functions for rupiah input handling
 function handleRupiahInput(input) {
     input.addEventListener('input', function(e) {
@@ -442,6 +532,8 @@ function previewPranotaCatFormat() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded fired - JavaScript is loading');
+
     const selectAllCheckbox = document.getElementById('selectAll');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
     const bulkActions = document.getElementById('bulkActions');
@@ -463,6 +555,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const pranotaForm = document.getElementById('pranotaForm');
     const selectedItemsList = document.getElementById('selectedItemsList');
     const tagihanCatIdsInput = document.getElementById('tagihan_cat_ids');
+
+    console.log('Modal elements found:', {
+        pranotaModal: !!pranotaModal,
+        submitPranotaBtn: !!submitPranotaBtn,
+        pranotaForm: !!pranotaForm
+    });
 
     // Global variables for pranota
     let selectedPranotaIds = [];
@@ -533,6 +631,20 @@ document.addEventListener('DOMContentLoaded', function() {
         ).join('');
 
         // Set hidden input with selected IDs
+        // Clear any existing array inputs first
+        const existingArrayInputs = pranotaForm.querySelectorAll('input[name="tagihan_cat_ids[]"]');
+        existingArrayInputs.forEach(input => input.remove());
+
+        // Create array inputs for tagihan_cat_ids
+        ids_array.forEach(id => {
+            const input = document.createElement('input');
+            input.type = 'hidden';
+            input.name = 'tagihan_cat_ids[]';
+            input.value = id;
+            pranotaForm.appendChild(input);
+        });
+
+        // Keep the JSON version for debugging
         tagihanCatIdsInput.value = JSON.stringify(ids_array);
 
         // Auto-populate vendor field
@@ -542,7 +654,7 @@ document.addEventListener('DOMContentLoaded', function() {
         let totalRealisasi = 0;
         checkedBoxes.forEach(checkbox => {
             const row = checkbox.closest('tr');
-            const biayaText = row.querySelector('td:nth-child(7)').textContent.trim();
+            const biayaText = row.querySelector('td:nth-child(9)').textContent.trim();
             const biaya = biayaText !== '-' ? parseFloat(biayaText.replace(/[^\d]/g, '')) : 0;
             totalRealisasi += biaya;
         });
@@ -588,40 +700,89 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Submit pranota form
-    submitPranotaBtn.addEventListener('click', function() {
-        const nomorPranota = document.getElementById('nomor_pranota').value.trim();
-        const tanggalPranota = document.getElementById('tanggal_pranota').value;
-        const supplier = document.getElementById('supplier').value.trim();
+    if (submitPranotaBtn) {
+        console.log('submitPranotaBtn found, attaching event listener');
+        submitPranotaBtn.addEventListener('click', function() {
+            console.log('Submit button clicked');
 
-        if (!nomorPranota) {
-            alert('Nomor pranota harus diisi');
-            return;
-        }
+            const nomorPranota = document.getElementById('nomor_pranota').value.trim();
+            const tanggalPranota = document.getElementById('tanggal_pranota').value;
+            const supplier = document.getElementById('supplier').value.trim();
+            const realisasiDisplay = document.getElementById('realisasi_biaya_total').value;
 
-        if (!tanggalPranota) {
-            alert('Tanggal pranota harus diisi');
-            return;
-        }
+            console.log('Form values:', { nomorPranota, tanggalPranota, supplier, realisasiDisplay });
 
-        if (!supplier) {
-            alert('Supplier harus diisi');
-            return;
-        }
+            if (!nomorPranota) {
+                alert('Nomor pranota harus diisi');
+                return;
+            }
 
-        const realisasiBiayaTotal = rupiahToNumber(document.getElementById('realisasi_biaya_total').value);
-        if (realisasiBiayaTotal < 0) {
-            alert('Realisasi biaya total tidak valid');
-            return;
-        }
+            if (!tanggalPranota) {
+                alert('Tanggal pranota harus diisi');
+                return;
+            }
 
-        // Convert rupiah format to number for form submission
-        const realisasiNumeric = rupiahToNumber(document.getElementById('realisasi_biaya_total').value);
+            if (!supplier) {
+                alert('Supplier harus diisi');
+                return;
+            }
 
-        document.getElementById('realisasi_biaya_total_numeric').value = realisasiNumeric;
+            // Convert rupiah format to number for form submission
+            const realisasiNumeric = rupiahToNumber(realisasiDisplay);
+            console.log('Converted value:', realisasiNumeric);
 
-        // Submit form
-        pranotaForm.submit();
-    });
+            if (realisasiNumeric <= 0) {
+                alert('Realisasi biaya total harus lebih dari 0');
+                return;
+            }
+
+            // Set the hidden field
+            document.getElementById('realisasi_biaya_total_numeric').value = realisasiNumeric;
+
+            console.log('Submitting form...');
+            // Submit form
+            pranotaForm.submit();
+        });
+    } else {
+        console.error('submitPranotaBtn not found!');
+    }
+
+    // Add form submit event listener for debugging
+    if (pranotaForm) {
+        pranotaForm.addEventListener('submit', function(e) {
+            console.log('Form submit event fired');
+            console.log('Form action:', this.action);
+            console.log('Form method:', this.method);
+
+            const formData = new FormData(this);
+            console.log('Form data:');
+            for (let [key, value] of formData.entries()) {
+                console.log(key + ': ' + value);
+            }
+
+            // Check if we have the required fields
+            const requiredFields = ['nomor_pranota', 'tanggal_pranota', 'supplier', 'realisasi_biaya_total'];
+            const missingFields = requiredFields.filter(field => !formData.has(field) || !formData.get(field));
+
+            if (missingFields.length > 0) {
+                console.error('Missing required fields:', missingFields);
+                e.preventDefault();
+                alert('Field yang diperlukan belum diisi: ' + missingFields.join(', '));
+                return false;
+            }
+
+            // Check if we have tagihan_cat_ids
+            const tagihanIds = formData.getAll('tagihan_cat_ids[]');
+            if (tagihanIds.length === 0) {
+                console.error('No tagihan_cat_ids found');
+                e.preventDefault();
+                alert('Tidak ada tagihan CAT yang dipilih');
+                return false;
+            }
+
+            console.log('tagihan_cat_ids:', tagihanIds);
+        });
+    }
 
     // Close modal when clicking outside
     pranotaModal.addEventListener('click', function(e) {
@@ -811,14 +972,16 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const ids = Array.from(checkedBoxes).map(cb => cb.value);
-        const newStatus = prompt('Masukkan status baru:\n1. pending\n2. paid\n3. cancelled');
+        const newStatus = prompt('Masukkan status baru:\n1. pending\n2. masuk pranota\n3. paid\n4. cancelled');
 
         let statusValue = '';
         if (newStatus === '1' || newStatus === 'pending') {
             statusValue = 'pending';
-        } else if (newStatus === '2' || newStatus === 'paid') {
+        } else if (newStatus === '2' || newStatus === 'masuk pranota') {
+            statusValue = 'masuk pranota';
+        } else if (newStatus === '3' || newStatus === 'paid') {
             statusValue = 'paid';
-        } else if (newStatus === '3' || newStatus === 'cancelled') {
+        } else if (newStatus === '4' || newStatus === 'cancelled') {
             statusValue = 'cancelled';
         }
 
@@ -857,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.submit();
             }
         } else if (newStatus) {
-            alert('Status tidak valid. Pilih:\n1. pending\n2. paid\n3. cancelled');
+            alert('Status tidak valid. Pilih:\n1. pending\n2. masuk pranota\n3. paid\n4. cancelled');
         }
     });
 

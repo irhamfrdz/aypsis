@@ -21,7 +21,7 @@
                     </svg>
                     Print
                 </a>
-                @if($pranota->status == 'draft')
+                @if($pranota->status == 'unpaid')
                 <button type="button"
                         class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center"
                         onclick="openStatusModal()">
@@ -72,13 +72,9 @@
                             <div class="flex justify-between">
                                 <dt class="text-sm font-medium text-gray-500">Status:</dt>
                                 <dd class="text-sm">
-                                    @if($pranota->status == 'draft')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            Draft
-                                        </span>
-                                    @elseif($pranota->status == 'sent')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            Terkirim
+                                    @if($pranota->status == 'unpaid')
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                            Belum Lunas
                                         </span>
                                     @elseif($pranota->status == 'paid')
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -210,7 +206,7 @@
 </div>
 
 <!-- Status Modal -->
-@if($pranota->status == 'draft')
+@if($pranota->status == 'unpaid')
 <div id="statusModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">

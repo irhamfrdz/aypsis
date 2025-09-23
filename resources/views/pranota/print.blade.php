@@ -74,7 +74,7 @@
             text-transform: uppercase;
         }
 
-        .status-draft { background-color: #f3f4f6; color: #374151; }
+        .status-unpaid { background-color: #f3f4f6; color: #374151; }
         .status-sent { background-color: #fef3c7; color: #92400e; }
         .status-paid { background-color: #d1fae5; color: #065f46; }
         .status-cancelled { background-color: #fee2e2; color: #991b1b; }
@@ -290,8 +290,8 @@
                 <div class="info-item">
                     <span class="info-label">Status:</span>
                     <span class="status-badge status-{{ $pranota->status }}">
-                        @if($pranota->status == 'draft')
-                            Draft
+                        @if($pranota->status == 'unpaid')
+                            Belum Lunas
                         @elseif($pranota->status == 'sent')
                             Terkirim
                         @elseif($pranota->status == 'paid')

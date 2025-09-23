@@ -64,7 +64,7 @@ class PranotaController extends Controller
             $pranota = Pranota::create([
                 'no_invoice' => $noInvoice,
                 'keterangan' => $request->keterangan,
-                'status' => 'draft',
+                'status' => 'unpaid',
                 'tagihan_ids' => $tagihanIds,
                 'jumlah_tagihan' => $jumlahTagihan,
                 'total_amount' => $totalAmount,
@@ -123,7 +123,7 @@ class PranotaController extends Controller
                 'no_invoice' => $noInvoice,
                 'total_amount' => 0, // Will be calculated and updated below
                 'keterangan' => 'Pranota bulk untuk ' . count($request->selected_ids) . ' tagihan',
-                'status' => 'draft',
+                'status' => 'unpaid',
                 'tagihan_ids' => $request->selected_ids,
                 'jumlah_tagihan' => count($request->selected_ids),
                 'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
@@ -161,16 +161,16 @@ class PranotaController extends Controller
     {
         $request->validate([
             'tagihan_cat_ids' => 'required|array|min:1',
-            'tagihan_cat_ids.*' => 'exists:tagihan_cats,id',
-            'nomor_pranota' => 'nullable|string',
-            'catatan' => 'nullable|string'
+            'tagihan_cat_ids.*' => 'exists:tagihan_cat,id',
+            'nomor_pranota' => 'required|string',
+            'tanggal_pranota' => 'required|date',
+            'supplier' => 'required|string',
+            'realisasi_biaya_total' => 'required|numeric|min:0',
+            'keterangan' => 'nullable|string'
         ]);
 
         try {
             DB::beginTransaction();
-
-            // Import TagihanCat model
-            // $tagihanCatModel = app(\App\Models\TagihanCat::class);
 
             // Get selected tagihan CAT items
             $tagihanCatItems = TagihanCat::whereIn('id', $request->tagihan_cat_ids)->get();
@@ -179,44 +179,25 @@ class PranotaController extends Controller
                 throw new \Exception('Tidak ada tagihan CAT yang ditemukan dengan ID yang dipilih');
             }
 
-            // Generate nomor pranota
-            $nomorPranota = $request->input('nomor_pranota');
-            if (!$nomorPranota) {
-                // Auto generate if not provided
-                $nomorCetakan = 1; // Default
-                $tahun = Carbon::now()->format('y'); // 2 digit year
-                $bulan = Carbon::now()->format('m'); // 2 digit month
-
-                // Running number: count pranota in current month + 1
-                $runningNumber = str_pad(
-                    Pranota::whereYear('created_at', Carbon::now()->year)
-                        ->whereMonth('created_at', Carbon::now()->month)
-                        ->count() + 1,
-                    6, '0', STR_PAD_LEFT
-                );
-
-                $nomorPranota = "PTK{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
-            }
-
-            // Calculate total amount from tagihan CAT
-            $totalAmount = $tagihanCatItems->sum('realisasi_biaya') ?: $tagihanCatItems->sum('estimasi_biaya');
-
-            // Create pranota
+            // Create pranota with data from form
             $pranota = Pranota::create([
-                'no_invoice' => $nomorPranota,
-                'total_amount' => $totalAmount,
-                'keterangan' => $request->catatan ?: 'Pranota untuk tagihan CAT - ' . $tagihanCatItems->pluck('nomor_kontainer')->join(', '),
-                'status' => 'draft',
+                'no_invoice' => $request->nomor_pranota,
+                'total_amount' => $request->realisasi_biaya_total,
+                'keterangan' => $request->keterangan ?: 'Pranota untuk tagihan CAT - ' . $tagihanCatItems->pluck('nomor_kontainer')->join(', '),
+                'status' => 'unpaid',
                 'tagihan_ids' => $request->tagihan_cat_ids,
                 'jumlah_tagihan' => count($request->tagihan_cat_ids),
-                'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
-                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
+                'tanggal_pranota' => $request->tanggal_pranota,
+                'due_date' => Carbon::parse($request->tanggal_pranota)->addDays(30)->format('Y-m-d')
             ]);
+
+            // Attach tagihan CAT items to pranota via pivot table
+            $pranota->tagihanCatItems()->attach($request->tagihan_cat_ids);
 
             // Update tagihan CAT items to mark them as included in pranota
             TagihanCat::whereIn('id', $request->tagihan_cat_ids)
                 ->update([
-                    'status' => 'paid', // or appropriate status
+                    'status' => 'masuk pranota',
                     'updated_at' => Carbon::now()
                 ]);
 
@@ -229,6 +210,10 @@ class PranotaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            \Illuminate\Support\Facades\Log::error('Error creating pranota from tagihan CAT: ' . $e->getMessage(), [
+                'request_data' => $request->all(),
+                'trace' => $e->getTraceAsString()
+            ]);
             return redirect()->back()->with('error', 'Gagal membuat pranota dari tagihan CAT: ' . $e->getMessage());
         }
     }
@@ -284,7 +269,7 @@ class PranotaController extends Controller
     public function updateStatus(Request $request, $id)
     {
         $request->validate([
-            'status' => 'required|in:draft,sent,paid,cancelled'
+            'status' => 'required|in:unpaid,paid'
         ]);
 
         try {
@@ -325,14 +310,10 @@ class PranotaController extends Controller
     private function getTagihanStatusFromPranota($pranotaStatus)
     {
         switch ($pranotaStatus) {
-            case 'draft':
+            case 'unpaid':
                 return 'included';
-            case 'sent':
-                return 'invoiced';
             case 'paid':
                 return 'paid';
-            case 'cancelled':
-                return 'cancelled';
             default:
                 return 'included';
         }
@@ -344,14 +325,10 @@ class PranotaController extends Controller
     private function getStatusText($status)
     {
         switch ($status) {
-            case 'draft':
-                return 'Draft';
-            case 'sent':
-                return 'Terkirim';
+            case 'unpaid':
+                return 'Belum Lunas';
             case 'paid':
                 return 'Lunas';
-            case 'cancelled':
-                return 'Dibatalkan';
             default:
                 return ucfirst($status);
         }
@@ -433,7 +410,7 @@ class PranotaController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_pranota', 'like', "%{$search}%")
+                $q->where('no_invoice', 'like', "%{$search}%")
                   ->orWhere('supplier', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });

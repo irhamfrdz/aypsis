@@ -51,6 +51,16 @@ class Pranota extends Model
         )->withPivot('amount', 'keterangan')->withTimestamps();
     }
 
+    public function tagihanCatItems()
+    {
+        return $this->belongsToMany(
+            \App\Models\TagihanCat::class,
+            'pranota_tagihan_cat_items',
+            'pranota_id',
+            'tagihan_cat_id'
+        )->withTimestamps();
+    }
+
     public function getLatestPayment()
     {
         return $this->pembayaranKontainer()->latest()->first();
@@ -101,10 +111,9 @@ class Pranota extends Model
             return 'Sudah Dibayar';
         } elseif ($this->hasPaymentPending()) {
             return 'Pembayaran Pending';
-        } elseif ($this->status === 'sent') {
+        } else {
             return 'Belum Dibayar';
         }
-        return 'Belum Siap Dibayar';
     }
 
     public function getPaymentStatusColor()
@@ -113,8 +122,6 @@ class Pranota extends Model
             return 'bg-green-100 text-green-800';
         } elseif ($this->hasPaymentPending()) {
             return 'bg-yellow-100 text-yellow-800';
-        } elseif ($this->status === 'sent') {
-            return 'bg-blue-100 text-blue-800';
         } else {
             return 'bg-red-100 text-red-800';
         }

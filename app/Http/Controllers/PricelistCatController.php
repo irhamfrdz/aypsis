@@ -60,14 +60,14 @@ class PricelistCatController extends Controller
         $request->validate([
             'vendor' => 'required|string|max:255',
             'jenis_cat' => 'required|in:cat_sebagian,cat_full',
-            'tarif' => 'nullable|numeric|min:0',
+            'tarif_raw' => 'nullable|numeric|min:0',
             'ukuran_kontainer' => 'required|string|max:255',
         ]);
 
         PricelistCat::create([
             'vendor' => $request->vendor,
             'jenis_cat' => $request->jenis_cat,
-            'tarif' => $request->tarif,
+            'tarif' => $request->tarif_raw,
             'ukuran_kontainer' => $request->ukuran_kontainer,
             'created_by' => Auth::id(),
             'updated_by' => Auth::id(),
@@ -101,14 +101,14 @@ class PricelistCatController extends Controller
         $request->validate([
             'vendor' => 'required|string|max:255',
             'jenis_cat' => 'required|in:cat_sebagian,cat_full',
-            'tarif' => 'nullable|numeric|min:0',
+            'tarif_raw' => 'nullable|numeric|min:0',
             'ukuran_kontainer' => 'required|string|max:255',
         ]);
 
         $pricelistCat->update([
             'vendor' => $request->vendor,
             'jenis_cat' => $request->jenis_cat,
-            'tarif' => $request->tarif,
+            'tarif' => $request->tarif_raw,
             'ukuran_kontainer' => $request->ukuran_kontainer,
             'updated_by' => Auth::id(),
         ]);

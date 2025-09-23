@@ -586,9 +586,13 @@ class UserController extends Controller
                     }
 
                     // Special handling for approval-* permissions
-                    if ($module === 'approval' && in_array($action, ['dashboard', 'mass_process', 'create', 'riwayat'])) {
+                    if ($module === 'approval' && in_array($action, ['dashboard', 'mass_process', 'create', 'riwayat', 'view', 'approve', 'print'])) {
                         $module = 'approval';
-                        // Action remains the same
+                        // Map dashboard to view for consistency
+                        if ($action === 'dashboard') {
+                            $action = 'view';
+                        }
+                        // Action remains the same for others
                     }
 
                     // Skip approve action for tagihan-kontainer since it's not implemented yet
@@ -1496,8 +1500,18 @@ class UserController extends Controller
                     // Special handling for approval module
                     if ($module === 'approval') {
                         foreach ($possibleActions as $dbAction) {
-                            if ($dbAction === 'dashboard') {
+                            if ($dbAction === 'view') {
+                                // For view action, give both approval-view and approval-dashboard for compatibility
+                                $permission = Permission::where('name', 'approval-view')->first();
+                                if ($permission) {
+                                    $permissionIds[] = $permission->id;
+                                }
                                 $permission = Permission::where('name', 'approval-dashboard')->first();
+                                if ($permission) {
+                                    $permissionIds[] = $permission->id;
+                                }
+                                $found = true;
+                                break;
                             } elseif ($dbAction === 'mass_process') {
                                 $permission = Permission::where('name', 'approval-mass-process')->first();
                             } elseif ($dbAction === 'create') {
@@ -1507,8 +1521,6 @@ class UserController extends Controller
                                 }
                             } elseif ($dbAction === 'riwayat') {
                                 $permission = Permission::where('name', 'approval-riwayat')->first();
-                            } elseif ($dbAction === 'view') {
-                                $permission = Permission::where('name', 'approval-view')->first();
                             } elseif ($dbAction === 'approve') {
                                 $permission = Permission::where('name', 'approval-approve')->first();
                             } elseif ($dbAction === 'print') {

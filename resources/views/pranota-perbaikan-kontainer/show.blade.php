@@ -69,10 +69,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status</label>
                     <p class="mt-1">
-                        @if($pranotaPerbaikanKontainer->status == 'draft')
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                Draft
-                            </span>
+                                                @if($pranotaPerbaikanKontainer->status == 'unpaid')
+                                Belum Lunas
                         @elseif($pranotaPerbaikanKontainer->status == 'approved')
                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                 Disetujui

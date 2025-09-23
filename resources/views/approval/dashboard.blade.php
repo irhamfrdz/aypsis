@@ -140,7 +140,7 @@
                     <tfoot>
                         <tr>
                             <td colspan="10" class="px-4 py-1 text-right">
-                                @if(auth()->user()->can('approval.approve'))
+                                @if(auth()->user()->can('approval-approve'))
                                 <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H5a4 4 0 014-4h2a4 4 0 014 4v2a4 4 0 01-4 4H9z" /></svg>
                                     Proses Masal

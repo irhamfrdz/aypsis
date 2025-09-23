@@ -6,21 +6,21 @@ $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 echo "=== UPDATE STATUS PRANOTA KE SENT ===\n";
 
-// Ambil pranota draft
-$draftPranota = \App\Models\Pranota::where('status', 'draft')->get();
+// Ambil pranota unpaid
+$unpaidPranota = \App\Models\Pranota::where('status', 'unpaid')->get();
 
-if ($draftPranota->count() == 0) {
-    echo "❌ Tidak ada pranota dengan status draft.\n";
+if ($unpaidPranota->count() == 0) {
+    echo "❌ Tidak ada pranota dengan status unpaid.\n";
     exit;
 }
 
 echo "Pranota yang akan diubah statusnya:\n\n";
-foreach ($draftPranota as $pranota) {
+foreach ($unpaidPranota as $pranota) {
     echo "No Invoice: {$pranota->no_invoice}\n";
     echo "Status saat ini: {$pranota->status}\n";
 
-    // Update status ke sent
-    $pranota->update(['status' => 'sent']);
+    // Update status ke paid
+    $pranota->update(['status' => 'paid']);
 
     echo "Status baru: {$pranota->fresh()->status}\n";
     echo "✅ Sekarang bisa dichecklist untuk bulk payment!\n";

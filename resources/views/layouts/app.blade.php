@@ -213,7 +213,7 @@
                 @php
                     $isMasterRoute = Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.kontainer.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.permission.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master.pajak.*') || Request::routeIs('master-bank-*') || Request::routeIs('master-coa-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
-                    $isPenyelesaianRoute = Request::routeIs('penyelesaian.*');
+                    $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
                 @endphp
 
@@ -837,13 +837,10 @@
                     {{-- Link untuk Penyelesaian Tugas --}}
                     @php
                         $hasApprovalPermission = $isAdmin ||
-                            auth()->user()->can('approval.view') ||
-                            auth()->user()->can('approval.create') ||
-                            auth()->user()->can('approval.update') ||
-                            auth()->user()->can('approval.delete') ||
-                            auth()->user()->can('approval.approve') ||
-                            auth()->user()->can('approval.print') ||
-                            auth()->user()->can('approval.export') ||
+                            auth()->user()->can('approval-view') ||
+                            auth()->user()->can('approval-approve') ||
+                            auth()->user()->can('approval-print') ||
+                            auth()->user()->can('approval-dashboard') ||
                             auth()->user()->can('approval') ||
                             auth()->user()->can('permohonan.approve');
                     @endphp

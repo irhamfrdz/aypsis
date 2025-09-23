@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\TagihanCat;
 use App\Models\PerbaikanKontainer;
+use App\Models\VendorBengkel;
+use App\Models\PricelistCat;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -46,8 +48,9 @@ class TagihanCatController extends Controller
     public function create()
     {
         $tagihanCat = new TagihanCat();
+        $vendors = PricelistCat::select('vendor')->distinct()->orderBy('vendor')->get();
 
-        return view('tagihan-cat.create', compact('tagihanCat'));
+        return view('tagihan-cat.create', compact('tagihanCat', 'vendors'));
     }
 
     /**
@@ -90,7 +93,7 @@ class TagihanCatController extends Controller
      */
     public function show(TagihanCat $tagihanCat)
     {
-        $tagihanCat->load(['creator', 'updater', 'perbaikanKontainer']);
+        $tagihanCat->load(['creator', 'updater']);
 
         return view('tagihan-cat.show', compact('tagihanCat'));
     }
@@ -100,7 +103,9 @@ class TagihanCatController extends Controller
      */
     public function edit(TagihanCat $tagihanCat)
     {
-        return view('tagihan-cat.edit', compact('tagihanCat'));
+        $vendors = PricelistCat::select('vendor')->distinct()->orderBy('vendor')->get();
+
+        return view('tagihan-cat.edit', compact('tagihanCat', 'vendors'));
     }
 
     /**
@@ -169,7 +174,7 @@ class TagihanCatController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'integer|exists:tagihan_cats,id',
-            'status' => 'required|in:pending,paid,cancelled'
+            'status' => 'required|in:pending,masuk pranota,paid,cancelled'
         ]);
 
         $count = TagihanCat::whereIn('id', $request->ids)
@@ -180,6 +185,7 @@ class TagihanCatController extends Controller
 
         $statusLabels = [
             'pending' => 'Pending',
+            'masuk pranota' => 'Masuk Pranota',
             'paid' => 'Sudah Dibayar',
             'cancelled' => 'Dibatalkan'
         ];

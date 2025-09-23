@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
 class TagihanCat extends Model
 {
@@ -37,6 +38,16 @@ class TagihanCat extends Model
     public function updater(): BelongsTo
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function pranota(): BelongsToMany
+    {
+        return $this->belongsToMany(
+            Pranota::class,
+            'pranota_tagihan_cat_items',
+            'tagihan_cat_id',
+            'pranota_id'
+        )->withTimestamps();
     }
 
     // Scopes

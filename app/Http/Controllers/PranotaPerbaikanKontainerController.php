@@ -52,7 +52,7 @@ class PranotaPerbaikanKontainerController extends Controller
         // Get stats for dashboard cards
         $stats = [
             'total' => PranotaPerbaikanKontainer::count(),
-            'draft' => PranotaPerbaikanKontainer::where('status', 'draft')->count(),
+                        'draft' => PranotaPerbaikanKontainer::where('status', 'draft')->count(),
             'approved' => PranotaPerbaikanKontainer::where('status', 'approved')->count(),
             'completed' => PranotaPerbaikanKontainer::where('status', 'completed')->count(),
         ];

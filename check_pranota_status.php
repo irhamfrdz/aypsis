@@ -16,4 +16,4 @@ foreach ($pranotaList as $pranota) {
 
 echo "\nTotal Pranota: " . $pranotaList->count() . "\n";
 echo "Belum Lunas: " . Pranota::where('status', 'Belum Lunas')->count() . "\n";
-echo "Draft: " . Pranota::where('status', 'draft')->count() . "\n";
+echo "Unpaid: " . Pranota::where('status', 'unpaid')->count() . "\n";

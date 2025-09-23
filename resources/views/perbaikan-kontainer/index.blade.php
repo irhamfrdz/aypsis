@@ -278,7 +278,7 @@
                                 @endcan
                                 @if(!$perbaikan->tanggal_cat)
                                 @can('perbaikan-kontainer-update')
-                                <button type="button" onclick="openCatatanModal({{ $perbaikan->id }}, '{{ $perbaikan->nomor_tagihan ?? 'N/A' }}', '{{ $perbaikan->estimasi_kerusakan_kontainer ?? '' }}', '{{ $perbaikan->nomor_kontainer ?? 'N/A' }}', '{{ $perbaikan->vendorBengkel->nama_bengkel ?? '' }}')"
+                                <button type="button" onclick="openCatatanModal({{ $perbaikan->id }}, '{{ $perbaikan->nomor_tagihan ?? 'N/A' }}', '{{ $perbaikan->estimasi_kerusakan_kontainer ?? '' }}', '{{ $perbaikan->nomor_kontainer ?? 'N/A' }}', '{{ $perbaikan->vendorBengkel->nama_bengkel ?? '' }}', '{{ $perbaikan->kontainer->ukuran ?? 'N/A' }}')"
                                         class="text-green-600 hover:text-green-900 focus:outline-none focus:ring-0"
                                         aria-label="Buka modal catatan perbaikan">Butuh Cat</button>
                                 @endcan
@@ -461,6 +461,7 @@ function handleRupiahInput(input) {
 
 // Global function to format rupiah
 function formatRupiah(angka, prefix = 'Rp ') {
+    console.log('formatRupiah called with:', angka, typeof angka);
     if (!angka) return '';
     let number_string = angka.toString().replace(/[^,\d]/g, ''),
         split = number_string.split(','),
@@ -474,23 +475,43 @@ function formatRupiah(angka, prefix = 'Rp ') {
     }
 
     rupiah = split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
-    return prefix + rupiah;
+    const result = prefix + rupiah;
+    console.log('formatRupiah result:', result);
+    return result;
 }
 
 // Global function to convert rupiah to number
 function rupiahToNumber(rupiah) {
-    return parseFloat(rupiah.replace(/[^\d]/g, '')) || 0;
+    const result = parseFloat(rupiah.replace(/[^\d]/g, '')) || 0;
+    console.log('rupiahToNumber called with:', rupiah, 'result:', result);
+    return result;
 }
 
 // Global function to get tarif from pricelist data
-function getTarifFromPricelist(vendor, jenisCat) {
+function getTarifFromPricelist(vendor, jenisCat, ukuranKontainer = null) {
     // Pricelist data passed from controller
     const pricelistData = @json($pricelistData);
 
+    console.log('getTarifFromPricelist called with:', { vendor, jenisCat, ukuranKontainer });
+    console.log('Pricelist data:', pricelistData);
+
+    // Normalize ukuranKontainer to match pricelist format
+    let normalizedUkuran = null;
+    if (ukuranKontainer) {
+        // Convert "20", "20 ft" to "20ft", "40" to "40ft", etc.
+        const numMatch = ukuranKontainer.match(/(\d+)/);
+        if (numMatch) {
+            normalizedUkuran = numMatch[1] + 'ft';
+        }
+        console.log('Normalized ukuran from', ukuranKontainer, 'to', normalizedUkuran);
+    }
+
     // Find matching pricelist entry
     const pricelistEntry = pricelistData.find(item =>
-        item.vendor === vendor && item.jenis_cat === jenisCat
+        item.vendor === vendor && item.jenis_cat === jenisCat && (!normalizedUkuran || item.ukuran_kontainer === normalizedUkuran)
     );
+
+    console.log('Matching pricelist entry:', pricelistEntry);
 
     return pricelistEntry ? pricelistEntry.tarif : null;
 }
@@ -506,14 +527,24 @@ function updateEstimasiBiayaCat() {
     const selectedVendor = vendorSelect.value;
     const selectedStatus = statusSelect.value;
 
+    console.log('updateEstimasiBiayaCat called with:', { selectedVendor, selectedStatus });
+
     if (selectedVendor && selectedStatus) {
-        const tarif = getTarifFromPricelist(selectedVendor, selectedStatus);
+        const tarif = getTarifFromPricelist(selectedVendor, selectedStatus, window.currentUkuranKontainer);
+        console.log('Tarif found:', tarif, typeof tarif);
         if (tarif !== null) {
-            estimasiInput.value = formatRupiah(tarif);
+            // Ensure tarif is treated as a number
+            const numericTarif = parseFloat(tarif) || 0;
+            console.log('Numeric tarif:', numericTarif);
+            const formattedTarif = formatRupiah(numericTarif);
+            console.log('Formatted tarif:', formattedTarif);
+            estimasiInput.value = formattedTarif;
         } else {
+            console.log('No tarif found, clearing input');
             estimasiInput.value = '';
         }
     } else {
+        console.log('Vendor or status not selected, clearing input');
         estimasiInput.value = '';
     }
 }
@@ -1094,9 +1125,9 @@ document.addEventListener('DOMContentLoaded', function() {
 // Catatan Modal Functions
 let lastFocusedElement = null;
 
-function openCatatanModal(perbaikanId, nomorTagihan, estimasiKerusakan, nomorKontainer, vendorName = '') {
+function openCatatanModal(perbaikanId, nomorTagihan, estimasiKerusakan, nomorKontainer, vendorName = '', ukuranKontainer = '') {
     try {
-        console.log('openCatatanModal called with:', { perbaikanId, nomorTagihan, estimasiKerusakan, nomorKontainer, vendorName });
+        console.log('openCatatanModal called with:', { perbaikanId, nomorTagihan, estimasiKerusakan, nomorKontainer, vendorName, ukuranKontainer });
 
         // Store the currently focused element
         lastFocusedElement = document.activeElement;
@@ -1106,6 +1137,8 @@ function openCatatanModal(perbaikanId, nomorTagihan, estimasiKerusakan, nomorKon
         if (itemInfoElement) {
             itemInfoElement.innerHTML = `
                 <div>• <strong>Nomor Tagihan:</strong> ${nomorTagihan}</div>
+                <div>• <strong>Nomor Kontainer:</strong> ${nomorKontainer}</div>
+                <div>• <strong>Ukuran Kontainer:</strong> ${ukuranKontainer}</div>
                 <div>• <strong>Estimasi Kerusakan:</strong> ${estimasiKerusakan || 'Tidak ada informasi'}</div>
                 <div>• <strong>Tanggal Input:</strong> ${new Date().toLocaleDateString('id-ID')}</div>
             `;
@@ -1152,6 +1185,10 @@ function openCatatanModal(perbaikanId, nomorTagihan, estimasiKerusakan, nomorKon
         if (nomorKontainerElement) {
             nomorKontainerElement.value = nomorKontainer;
         }
+
+        // Store ukuran kontainer for tarif calculation
+        window.currentUkuranKontainer = ukuranKontainer;
+        console.log('Setting currentUkuranKontainer to:', ukuranKontainer);
 
         // Set vendor if available
         if (vendorName) {

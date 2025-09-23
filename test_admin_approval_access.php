@@ -24,7 +24,9 @@ echo "✅ Admin user found: {$user->username}\n";
 echo "\n=== PERMISSION CHECKS ===\n";
 echo "Can access 'permohonan': " . ($user->can('permohonan') ? 'YES ✅' : 'NO ❌') . "\n";
 echo "Can access 'approval.view': " . ($user->can('approval.view') ? 'YES ✅' : 'NO ❌') . "\n";
-echo "Can access 'approval.dashboard': " . ($user->can('approval.dashboard') ? 'YES ✅' : 'NO ❌') . "\n";
+echo "Can access 'approval-dashboard': " . ($user->can('approval-dashboard') ? 'YES ✅' : 'NO ❌') . "\n";
+echo "Can access 'approval-view': " . ($user->can('approval-view') ? 'YES ✅' : 'NO ❌') . "\n";
+echo "Can access 'approval-approve': " . ($user->can('approval-approve') ? 'YES ✅' : 'NO ❌') . "\n";
 
 // Test route access simulation
 echo "\n=== ROUTE ACCESS SIMULATION ===\n";

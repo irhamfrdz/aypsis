@@ -29,7 +29,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
                     <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Semua Status</option>
-                        <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                        <option value="unpaid" {{ request('status') == 'unpaid' ? 'selected' : '' }}>Belum Lunas</option>
                         <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
                         <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>Dalam Proses</option>
                         <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
@@ -98,16 +98,14 @@
                             {{ $pranota->total_biaya ? 'Rp ' . number_format($pranota->total_biaya, 0, ',', '.') : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                            @if($pranota->status == 'draft')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
-                                    Draft
+                            @if($pranota->status == 'unpaid')
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
+                                    Belum Lunas
                                 </span>
-                            @elseif($pranota->status == 'approved')
+                            @elseif($pranota->status == 'paid')
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
-                                    Disetujui
+                                    Lunas
                                 </span>
-                            @elseif($pranota->status == 'in_progress')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                     Dalam Proses
                                 </span>
                             @elseif($pranota->status == 'completed')

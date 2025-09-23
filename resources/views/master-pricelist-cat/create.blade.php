@@ -76,6 +76,7 @@
                        value="{{ old('tarif') }}"
                        class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent rupiah-input @error('tarif') border-red-500 @enderror"
                        placeholder="0">
+                <input type="hidden" id="tarif_raw" name="tarif_raw" value="{{ old('tarif_raw') }}">
                 @error('tarif')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                 @enderror
@@ -132,6 +133,11 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 this.value = '';
             }
+            // Update hidden field with raw number
+            const hiddenField = this.parentNode.querySelector('input[type="hidden"]');
+            if (hiddenField) {
+                hiddenField.value = number > 0 ? number : '';
+            }
         });
 
         input.addEventListener('focus', function(e) {
@@ -143,6 +149,16 @@ document.addEventListener('DOMContentLoaded', function() {
         input.addEventListener('blur', function(e) {
             if (this.value === '' || rupiahToNumber(this.value) === 0) {
                 this.value = 'Rp 0';
+                const hiddenField = this.parentNode.querySelector('input[type="hidden"]');
+                if (hiddenField) {
+                    hiddenField.value = '';
+                }
+            } else {
+                const number = rupiahToNumber(this.value);
+                const hiddenField = this.parentNode.querySelector('input[type="hidden"]');
+                if (hiddenField) {
+                    hiddenField.value = number;
+                }
             }
         });
     });

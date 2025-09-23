@@ -950,7 +950,6 @@
                                 <td><input type="checkbox" name="permissions[approval][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['view']) && $userMatrixPermissions['approval']['view']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
                                 <td><input type="checkbox" name="permissions[approval][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['approve']) && $userMatrixPermissions['approval']['approve']) checked @endif></td>
                                 <td><input type="checkbox" name="permissions[approval][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval']['print']) && $userMatrixPermissions['approval']['print']) checked @endif></td>
                                 <td class="empty-cell"></td>

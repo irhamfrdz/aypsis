@@ -56,8 +56,8 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status</label>
                     <p class="mt-1">
-                        @if($pranota->status == 'draft')
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Draft</span>
+                        @if($pranota->status == 'unpaid')
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Belum Lunas</span>
                         @elseif($pranota->status == 'approved')
                             <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
                         @elseif($pranota->status == 'in_progress')
