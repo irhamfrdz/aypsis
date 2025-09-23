@@ -193,4 +193,24 @@ class TagihanCatController extends Controller
         return redirect()->route('tagihan-cat.index')
                         ->with('success', "{$count} tagihan CAT berhasil diubah status menjadi {$statusLabels[$request->status]}.");
     }
+
+    /**
+     * Bulk payment for tagihan-cat records.
+     */
+    public function bulkPayment(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'integer|exists:tagihan_cats,id'
+        ]);
+
+        $count = TagihanCat::whereIn('id', $request->ids)
+                          ->update([
+                              'status' => 'paid',
+                              'updated_by' => Auth::id()
+                          ]);
+
+        return redirect()->route('tagihan-cat.index')
+                        ->with('success', "{$count} tagihan CAT berhasil diproses pembayarannya.");
+    }
 }

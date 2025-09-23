@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Pranota;
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\TagihanCat;
+use App\Models\PembayaranPranota;
+use App\Models\PembayaranPranotaItem;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -479,6 +481,70 @@ class PranotaController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal mengupdate status pranota: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk payment for pranota CAT
+     */
+    public function bulkPayment(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'required|integer|exists:pranotalist,id',
+            'payment_date' => 'required|date',
+            'payment_method' => 'required|string',
+            'reference_number' => 'nullable|string',
+            'payment_notes' => 'nullable|string'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $ids = $request->input('ids');
+            $pranotas = Pranota::whereIn('id', $ids)->get();
+
+            // Calculate total payment amount
+            $totalAmount = $pranotas->sum('total_amount');
+
+            // Generate payment number
+            $paymentNumber = 'PP-' . date('Ymd') . '-' . str_pad(PembayaranPranota::count() + 1, 4, '0', STR_PAD_LEFT);
+
+            // Create main payment record
+            $pembayaran = PembayaranPranota::create([
+                'nomor_pembayaran' => $paymentNumber,
+                'bank' => $request->input('payment_method'),
+                'jenis_transaksi' => 'debit', // Assuming debit for payments
+                'tanggal_kas' => $request->input('payment_date'),
+                'total_pembayaran' => $totalAmount,
+                'penyesuaian' => 0,
+                'total_setelah_penyesuaian' => $totalAmount,
+                'keterangan' => $request->input('payment_notes') ?: 'Pembayaran bulk pranota CAT',
+                'status' => 'approved' // Auto-approve bulk payments
+            ]);
+
+            // Create payment items for each pranota
+            foreach ($pranotas as $pranota) {
+                PembayaranPranotaItem::create([
+                    'pembayaran_pranota_id' => $pembayaran->id,
+                    'pranota_id' => $pranota->id,
+                    'amount' => $pranota->total_amount
+                ]);
+            }
+
+            // Update pranota status to paid
+            Pranota::whereIn('id', $ids)->update([
+                'status' => 'paid',
+                'updated_at' => now()
+            ]);
+
+            DB::commit();
+
+            return redirect()->back()->with('success', count($ids) . ' pranota berhasil diproses pembayarannya dengan nomor pembayaran: ' . $paymentNumber);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal memproses pembayaran pranota: ' . $e->getMessage());
         }
     }
 }

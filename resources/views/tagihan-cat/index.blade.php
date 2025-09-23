@@ -147,6 +147,25 @@
                     </a>
                 </div>
             </form>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h2 class="text-lg font-semibold text-gray-800">Data Tagihan CAT</h2>
+                <p class="text-sm text-gray-600">Pilih item untuk melakukan aksi bulk</p>
+            </div>
+            @can('tagihan-cat-create')
+            <a href="{{ route('tagihan-cat.create') }}"
+               class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                </svg>
+                Tambah Tagihan CAT
+            </a>
+            @endcan
+        </div>
+
         <!-- Bulk Actions -->
         <div id="bulkActions" class="hidden bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
             <div class="flex items-center justify-between">

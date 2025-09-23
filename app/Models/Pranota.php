@@ -171,4 +171,14 @@ class Pranota extends Model
     {
         return $this->status === 'unpaid' && !$this->hasPaymentPending();
     }
+
+    public function tagihanCat()
+    {
+        return $this->belongsToMany(
+            \App\Models\TagihanCat::class,
+            'pranota_tagihan_cat_items',
+            'pranota_id',
+            'tagihan_cat_id'
+        )->withTimestamps();
+    }
 }

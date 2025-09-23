@@ -1000,6 +1000,26 @@ Route::middleware(['auth'])->group(function() {
     Route::post('pranota-cat/bulk-status-update', [\App\Http\Controllers\PranotaController::class, 'bulkStatusUpdate'])
          ->name('pranota-cat.bulk-status-update')
          ->middleware('can:pranota-cat-update');
+    Route::post('pranota-cat/bulk-payment', [\App\Http\Controllers\PranotaController::class, 'bulkPayment'])
+         ->name('pranota-cat.bulk-payment')
+         ->middleware('can:pranota-cat-update');
+
+    // Pembayaran Pranota CAT routes
+    Route::get('pembayaran-pranota-cat', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'index'])
+         ->name('pembayaran-pranota-cat.index')
+         ->middleware('can:pranota-cat-view');
+    Route::get('pembayaran-pranota-cat/create', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'create'])
+         ->name('pembayaran-pranota-cat.create')
+         ->middleware('can:pranota-cat-create');
+    Route::post('pembayaran-pranota-cat/payment-form', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'showPaymentForm'])
+         ->name('pembayaran-pranota-cat.payment-form')
+         ->middleware('can:pranota-cat-create');
+    Route::post('pembayaran-pranota-cat', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'store'])
+         ->name('pembayaran-pranota-cat.store')
+         ->middleware('can:pranota-cat-create');
+    Route::get('pembayaran-pranota-cat/{id}', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'show'])
+         ->name('pembayaran-pranota-cat.show')
+         ->middleware('can:pranota-cat-view');
 
     // Pembayaran Pranota Perbaikan Kontainer routes
     Route::get('pembayaran-pranota-perbaikan-kontainer', [\App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController::class, 'index'])
@@ -1053,6 +1073,9 @@ Route::middleware(['auth'])->group(function() {
          ->middleware('can:tagihan-cat-delete');
     Route::post('tagihan-cat/bulk-update-status', [\App\Http\Controllers\TagihanCatController::class, 'bulkUpdateStatus'])
          ->name('tagihan-cat.bulk-update-status')
+         ->middleware('can:tagihan-cat-update');
+    Route::post('tagihan-cat/bulk-payment', [\App\Http\Controllers\TagihanCatController::class, 'bulkPayment'])
+         ->name('tagihan-cat.bulk-payment')
          ->middleware('can:tagihan-cat-update');
 });
 

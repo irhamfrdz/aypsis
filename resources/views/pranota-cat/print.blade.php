@@ -159,7 +159,7 @@
                         @php
                             $total = $pranota->total_amount ?? 0;
                             if ($total == 0 && $tagihanItems) {
-                                $total = $tagihanItems->sum('estimasi_biaya');
+                                $total = $tagihanItems->sum('realisasi_biaya');
                             }
                         @endphp
                         {{ $total > 0 ? 'Rp ' . number_format(floatval($total), 0, ',', '.') : '-' }}
@@ -188,7 +188,7 @@
                     <td>{{ $item->nomor_kontainer ?? '-' }}</td>
                     <td>{{ $item->vendor ?? '-' }}</td>
                     <td>{{ $item->tanggal_cat ? \Carbon\Carbon::parse($item->tanggal_cat)->format('d/m/Y') : '-' }}</td>
-                    <td>{{ $item->estimasi_biaya ? 'Rp ' . number_format($item->estimasi_biaya, 0, ',', '.') : '-' }}</td>
+                    <td>{{ $item->realisasi_biaya ? 'Rp ' . number_format($item->realisasi_biaya, 0, ',', '.') : '-' }}</td>
                 </tr>
                 @empty
                 <tr>

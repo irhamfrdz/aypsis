@@ -901,9 +901,13 @@
 {{-- Pembayaran Tagihan Kontainer Dropdown --}}
 @php
     $isPembayaranTagihanKontainerRoute = Request::routeIs('pembayaran-pranota-kontainer.*') ||
-        Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*');
+        Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ||
+        Request::routeIs('pembayaran-pranota-cat.*') ||
+        Request::routeIs('pranota-cat.*');
     $hasPembayaranTagihanKontainerPermission = ($isAdmin || auth()->user()->can('pembayaran-pranota-kontainer-view')) ||
-        ($isAdmin || auth()->user()->can('pembayaran-pranota-perbaikan-kontainer-view'));
+        ($isAdmin || auth()->user()->can('pembayaran-pranota-perbaikan-kontainer-view')) ||
+        ($isAdmin || auth()->user()->can('pranota-cat-view')) ||
+        ($isAdmin || auth()->user()->can('pranota-cat-update'));
 @endphp
 
 @if($hasPembayaranTagihanKontainerPermission)
@@ -940,6 +944,16 @@
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                 </svg>
                 Bayar Pranota Perbaikan Kontainer
+            </a>
+        @endif
+
+        {{-- Pembayaran Pranota CAT Kontainer --}}
+        @if(Route::has('pembayaran-pranota-cat.index') && ($isAdmin || auth()->user()->can('pranota-cat-view')))
+            <a href="{{ route('pembayaran-pranota-cat.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-cat.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                </svg>
+                Bayar Pranota CAT Kontainer
             </a>
         @endif
     </div>
