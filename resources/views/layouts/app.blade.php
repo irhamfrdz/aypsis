@@ -675,31 +675,43 @@
         </svg>
     </button>
     <div id="uang-jalan-supir-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isUangJalanSupirRoute) style="display: block;" @endif>
-        {{-- Permohonan Memo Sub-section --}}
-        @if($isAdmin || auth()->user()->can('permohonan-memo-view'))
-            <div class="space-y-2">
-                <div class="flex items-center py-1 px-3 text-xs font-medium text-gray-700 border-b border-gray-200 pb-1">
-                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+        {{-- Permohonan Memo Sub-dropdown --}}
+        @if($isAdmin || auth()->user())
+            @php
+                $isPermohonanMemoRoute = Request::routeIs('permohonan.*');
+            @endphp
+            <div class="mt-2 mb-2">
+                <button id="permohonan-memo-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isPermohonanMemoRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
+                    <div class="flex items-center">
+                        <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isPermohonanMemoRoute ? 'bg-blue-100' : '' }}">
+                            <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isPermohonanMemoRoute ? 'text-blue-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-medium truncate w-full">Permohonan Memo</span>
+                    </div>
+                    <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isPermohonanMemoRoute || $isUangJalanSupirRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
-                    Permohonan Memo
+                </button>
+                <div id="permohonan-memo-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isPermohonanMemoRoute || $isUangJalanSupirRoute) style="display: block;" @endif>
+                    <a href="{{ route('permohonan.create') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('permohonan.create') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Buat Permohonan
+                    </a>
+                    <a href="{{ route('permohonan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('permohonan.index') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Daftar Permohonan
+                    </a>
                 </div>
-                <a href="{{ route('permohonan.create') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 ml-4 {{ Request::routeIs('permohonan.create') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Buat Permohonan
-                </a>
-                <a href="{{ route('permohonan.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 ml-4 {{ Request::routeIs('permohonan.index') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                    Daftar Permohonan
-                </a>
             </div>
         @endif
 
-        {{-- Pranota Supir Sub-section --}}
+        {{-- Pranota Supir Sub-dropdown --}}
         @php
             $hasPranotaPermission = $isAdmin ||
                 auth()->user()->can('pranota-supir') ||
@@ -718,43 +730,53 @@
                 auth()->user()->can('pembayaran-pranota-supir-approve') ||
                 auth()->user()->can('pembayaran-pranota-supir-print') ||
                 auth()->user()->can('pembayaran-pranota-supir-export');
+            $isPranotaSupirRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
         @endphp
         @if($hasPranotaPermission)
-            <div class="space-y-2">
-                <div class="flex items-center py-1 px-3 text-xs font-medium text-gray-700 border-b border-gray-200 pb-1">
-                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            <div class="mt-2 mb-2">
+                <button id="pranota-supir-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isPranotaSupirRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
+                    <div class="flex items-center">
+                        <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isPranotaSupirRoute ? 'bg-blue-100' : '' }}">
+                            <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isPranotaSupirRoute ? 'text-blue-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                        </div>
+                        <span class="text-xs font-medium truncate w-full">Pranota Supir</span>
+                    </div>
+                    <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isPranotaSupirRoute || $isUangJalanSupirRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                     </svg>
-                    Pranota Supir
-                </div>
-                <a href="{{ route('pranota-supir.create') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 ml-4 {{ Request::routeIs('pranota-supir.create') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
-                    </svg>
-                    Buat Pranota Supir
-                </a>
-                <a href="{{ route('pranota-supir.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 ml-4 {{ Request::routeIs('pranota-supir.index') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                    </svg>
-                    Daftar Pranota Supir
-                </a>
-                @if($user && ($user->can('pembayaran-pranota-supir-create') || $user->can('pembayaran-pranota-supir-view')))
-                    <a href="{{ route('pembayaran-pranota-supir.create') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 ml-4 {{ Request::routeIs('pembayaran-pranota-supir.create') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                </button>
+                <div id="pranota-supir-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isPranotaSupirRoute || $isUangJalanSupirRoute) style="display: block;" @endif>
+                    <a href="{{ route('pranota-supir.create') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-supir.create') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                         </svg>
-                        Buat Pembayaran Pranota Supir
+                        Buat Pranota Supir
                     </a>
-                @endif
-                @if($user && $user->can('pembayaran-pranota-supir-view'))
-                    <a href="{{ route('pembayaran-pranota-supir.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 ml-4 {{ Request::routeIs('pembayaran-pranota-supir.index') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('pranota-supir.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-supir.index') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                         </svg>
-                        Daftar Pembayaran Pranota Supir
+                        Daftar Pranota Supir
                     </a>
-                @endif
+                    @if($user && ($user->can('pembayaran-pranota-supir-create') || $user->can('pembayaran-pranota-supir-view')))
+                        <a href="{{ route('pembayaran-pranota-supir.create') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.create') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                            Buat Pembayaran Pranota Supir
+                        </a>
+                    @endif
+                    @if($user && $user->can('pembayaran-pranota-supir-view'))
+                        <a href="{{ route('pembayaran-pranota-supir.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.index') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                            <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                            </svg>
+                            Daftar Pembayaran Pranota Supir
+                        </a>
+                    @endif
+                </div>
             </div>
         @endif
 
@@ -1022,6 +1044,8 @@
         setupDropdown('master-menu-toggle', 'master-menu-content');
         setupDropdown('user-menu-toggle', 'user-menu-content');
         setupDropdown('uang-jalan-supir-menu-toggle', 'uang-jalan-supir-menu-content');
+        setupDropdown('permohonan-memo-menu-toggle', 'permohonan-memo-menu-content');
+        setupDropdown('pranota-supir-menu-toggle', 'pranota-supir-menu-content');
         setupDropdown('aktivitas-supir-menu-toggle', 'aktivitas-supir-menu-content');
         setupDropdown('aktiva-menu-toggle', 'aktiva-menu-content');
         setupDropdown('kontainer-menu-toggle', 'kontainer-menu-content');
