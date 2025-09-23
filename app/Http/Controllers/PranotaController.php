@@ -184,6 +184,7 @@ class PranotaController extends Controller
                 'no_invoice' => $request->nomor_pranota,
                 'total_amount' => $request->realisasi_biaya_total,
                 'keterangan' => $request->keterangan ?: 'Pranota untuk tagihan CAT - ' . $tagihanCatItems->pluck('nomor_kontainer')->join(', '),
+                'supplier' => $request->supplier,
                 'status' => 'unpaid',
                 'tagihan_ids' => $request->tagihan_cat_ids,
                 'jumlah_tagihan' => count($request->tagihan_cat_ids),

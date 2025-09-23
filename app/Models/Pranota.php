@@ -10,7 +10,7 @@ class Pranota extends Model
     use HasFactory;
 
     protected $table = "pranotalist";
-    protected $fillable = ["no_invoice", "total_amount", "keterangan", "status", "tagihan_ids", "jumlah_tagihan", "tanggal_pranota", "due_date"];
+    protected $fillable = ["no_invoice", "total_amount", "keterangan", "supplier", "status", "tagihan_ids", "jumlah_tagihan", "tanggal_pranota", "due_date"];
     protected $casts = ["tagihan_ids" => "array", "total_amount" => "decimal:2", "tanggal_pranota" => "date", "due_date" => "date"];
 
     public function getTagihanItems()
