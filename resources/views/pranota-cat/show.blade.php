@@ -10,7 +10,7 @@
             <div class="flex justify-between items-center">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-800">Detail Pranota Tagihan CAT</h1>
-                    <p class="text-gray-600 mt-1">Nomor Pranota: {{ $pranota->nomor_pranota ?? 'Belum ada nomor' }}</p>
+                    <p class="text-gray-600 mt-1">Nomor Pranota: {{ $pranota->no_invoice ?? 'Belum ada nomor' }}</p>
                 </div>
                 <div class="flex space-x-3">
                     <a href="{{ route('pranota-cat.index') }}"
@@ -39,7 +39,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Nomor Pranota</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ $pranota->nomor_pranota ?? '-' }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ $pranota->no_invoice ?? '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Tanggal Pranota</label>
@@ -51,7 +51,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Total Biaya</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ $pranota->total_biaya ? 'Rp ' . number_format($pranota->total_biaya, 0, ',', '.') : '-' }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ $pranota->total_amount ? 'Rp ' . number_format(floatval($pranota->total_amount), 0, ',', '.') : '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status</label>
@@ -112,7 +112,7 @@
                                 {{ $item->tanggal_cat ? \Carbon\Carbon::parse($item->tanggal_cat)->format('d/m/Y') : '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $item->estimasi_biaya ? 'Rp ' . number_format($item->estimasi_biaya, 0, ',', '.') : '-' }}
+                                {{ $item->realisasi_biaya ? 'Rp ' . number_format($item->realisasi_biaya, 0, ',', '.') : '-' }}
                             </td>
                         </tr>
                         @empty
