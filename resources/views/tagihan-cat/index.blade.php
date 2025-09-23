@@ -201,8 +201,17 @@
                     @forelse($tagihanCats as $index => $tagihanCat)
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2 whitespace-nowrap" style="width: 5%;">
+                            @php
+                                $hasPranotaForCheckbox = false;
+                                if (!empty($tagihanCat->pranota) && $tagihanCat->pranota->isNotEmpty()) {
+                                    $hasPranotaForCheckbox = true;
+                                } elseif (\App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->exists()) {
+                                    $hasPranotaForCheckbox = true;
+                                }
+                            @endphp
                             <input type="checkbox" name="selected_items[]" value="{{ $tagihanCat->id }}"
-                                   class="item-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                   class="item-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+                                   {{ $hasPranotaForCheckbox ? 'disabled' : '' }}>
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900" style="width: 5%;">
                             {{ $loop->iteration + ($tagihanCats->currentPage() - 1) * $tagihanCats->perPage() }}
@@ -284,6 +293,15 @@
                                 </a>
                                 @endcan
                                 @can('pranota-create')
+                                @php
+                                    $hasPranota = false;
+                                    if (!empty($tagihanCat->pranota) && $tagihanCat->pranota->isNotEmpty()) {
+                                        $hasPranota = true;
+                                    } elseif (\App\Models\Pranota::whereJsonContains('tagihan_ids', $tagihanCat->id)->exists()) {
+                                        $hasPranota = true;
+                                    }
+                                @endphp
+                                @if(!$hasPranota)
                                 <button type="button"
                                         onclick="showPranotaModal([{{ $tagihanCat->id }}], false)"
                                         class="inline-flex items-center justify-center w-8 h-8 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-md transition-colors duration-200"
@@ -292,6 +310,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                     </svg>
                                 </button>
+                                @else
+                                <div class="inline-flex items-center justify-center w-8 h-8 text-gray-400 cursor-not-allowed"
+                                     title="Sudah masuk pranota">
+                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                                @endif
                                 @endcan
                                 @can('tagihan-cat-delete')
                                 <form method="POST" action="{{ route('tagihan-cat.destroy', $tagihanCat) }}"
@@ -596,13 +622,21 @@ document.addEventListener('DOMContentLoaded', function() {
         const selectedItems = [];
         const ids_array = [];
         const vendors = new Set();
+        const itemsWithPranota = [];
 
         checkedBoxes.forEach(checkbox => {
             const row = checkbox.closest('tr');
             const nomorTagihan = row.querySelector('td:nth-child(3)').textContent.trim();
             const nomorKontainer = row.querySelector('td:nth-child(4) div:first-child').textContent.trim();
             const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
+            const tanggalPranota = row.querySelector('td:nth-child(7)').textContent.trim();
             const id = checkbox.value;
+
+            // Check if item already has pranota
+            if (tanggalPranota && tanggalPranota !== '-') {
+                itemsWithPranota.push(nomorTagihan);
+                return; // Skip this item
+            }
 
             selectedItems.push({
                 nomorTagihan: nomorTagihan,
@@ -614,6 +648,18 @@ document.addEventListener('DOMContentLoaded', function() {
                 vendors.add(vendorName);
             }
         });
+
+        // Check if any selected items already have pranota
+        if (itemsWithPranota.length > 0) {
+            alert(`Item berikut sudah memiliki pranota dan tidak dapat diproses:\n${itemsWithPranota.join('\n')}\n\nSilakan hapus centang pada item tersebut.`);
+            return;
+        }
+
+        // Check if we still have valid items after filtering
+        if (selectedItems.length === 0) {
+            alert('Tidak ada item yang valid untuk dimasukkan ke pranota. Semua item yang dipilih sudah memiliki pranota.');
+            return;
+        }
 
         // Validate vendor consistency
         if (vendors.size > 1) {
@@ -798,7 +844,8 @@ document.addEventListener('DOMContentLoaded', function() {
     selectAllCheckbox.addEventListener('change', function() {
         console.log('Select all checkbox changed:', this.checked);
         const isChecked = this.checked;
-        itemCheckboxes.forEach(checkbox => {
+        // Only check/uncheck enabled checkboxes
+        document.querySelectorAll('.item-checkbox:not([disabled])').forEach(checkbox => {
             checkbox.checked = isChecked;
         });
         updateBulkActions();
@@ -816,12 +863,13 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update select all checkbox state
     function updateSelectAllState() {
         const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        const totalBoxes = itemCheckboxes.length;
+        const enabledBoxes = document.querySelectorAll('.item-checkbox:not([disabled])');
+        const totalEnabledBoxes = enabledBoxes.length;
 
         if (checkedBoxes.length === 0) {
             selectAllCheckbox.checked = false;
             selectAllCheckbox.indeterminate = false;
-        } else if (checkedBoxes.length === totalBoxes) {
+        } else if (checkedBoxes.length === totalEnabledBoxes) {
             selectAllCheckbox.checked = true;
             selectAllCheckbox.indeterminate = false;
         } else {
@@ -848,12 +896,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Check vendor consistency for bulk pranota
                 const vendors = new Set();
                 let hasDifferentVendors = false;
+                let hasItemsWithPranota = false;
 
                 checkedBoxes.forEach(checkbox => {
                     const row = checkbox.closest('tr');
                     const vendorName = row.querySelector('td:nth-child(5) div:first-child').textContent.trim();
+                    const tanggalPranota = row.querySelector('td:nth-child(7)').textContent.trim();
+
                     if (vendorName && vendorName !== '-') {
                         vendors.add(vendorName);
+                    }
+
+                    // Check if item already has pranota
+                    if (tanggalPranota && tanggalPranota !== '-') {
+                        hasItemsWithPranota = true;
                     }
                 });
 
@@ -880,6 +936,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         btnBulkPranota.disabled = true;
                         btnBulkPranota.classList.add('opacity-50', 'cursor-not-allowed');
                         btnBulkPranota.title = 'Tidak dapat memproses pranota bulk karena vendor berbeda';
+                    } else if (hasItemsWithPranota) {
+                        btnBulkPranota.disabled = true;
+                        btnBulkPranota.classList.add('opacity-50', 'cursor-not-allowed');
+                        btnBulkPranota.title = 'Tidak dapat memproses pranota bulk karena ada item yang sudah memiliki pranota';
                     } else {
                         btnBulkPranota.disabled = false;
                         btnBulkPranota.classList.remove('opacity-50', 'cursor-not-allowed');
