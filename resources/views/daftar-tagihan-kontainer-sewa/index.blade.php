@@ -1333,10 +1333,10 @@ window.buatPranotaTerpilih = function() {
     console.log('buatPranotaTerpilih called'); // Debug log
 
     // Check permission for creating pranota
-    @if(!auth()->user()->hasPermissionTo('pranota.create'))
+    @if(!auth()->user()->hasPermissionTo('pranota-tagihan-kontainer.create'))
         // Show warning if user doesn't have permission
         const result = confirm('⚠️ PERINGATAN: Anda tidak memiliki izin untuk membuat pranota.\n\n' +
-                              'Untuk dapat menggunakan fitur ini, Anda memerlukan izin "Input" pada modul Pranota.\n\n' +
+                              'Untuk dapat menggunakan fitur ini, Anda memerlukan izin "Input" pada modul Pranota Tagihan Kontainer.\n\n' +
                               'Silakan hubungi administrator untuk mendapatkan izin yang diperlukan.\n\n' +
                               'Apakah Anda ingin melanjutkan? (Fitur mungkin tidak akan berfungsi dengan baik)');
 
@@ -1413,10 +1413,10 @@ window.buatPranota = function(id) {
     console.log('buatPranota called for ID:', id); // Debug log
 
     // Check permission for creating pranota
-    @if(!auth()->user()->hasPermissionTo('pranota.create'))
+    @if(!auth()->user()->hasPermissionTo('pranota-tagihan-kontainer.create'))
         // Show warning if user doesn't have permission
         const result = confirm('⚠️ PERINGATAN: Anda tidak memiliki izin untuk membuat pranota.\n\n' +
-                              'Untuk dapat menggunakan fitur ini, Anda memerlukan izin "Input" pada modul Pranota.\n\n' +
+                              'Untuk dapat menggunakan fitur ini, Anda memerlukan izin "Input" pada modul Pranota Tagihan Kontainer.\n\n' +
                               'Silakan hubungi administrator untuk mendapatkan izin yang diperlukan.\n\n' +
                               'Apakah Anda ingin melanjutkan? (Fitur mungkin tidak akan berfungsi dengan baik)');
 
