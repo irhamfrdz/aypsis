@@ -209,9 +209,6 @@
                     <button type="button" id="btnMasukanPranota" onclick="masukanKePranota()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
                         Masukan ke Pranota
                     </button>
-                    <button type="button" id="btnBulkPranota" onclick="buatPranotaTerpilih()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
-                        Buat Pranota
-                    </button>
                     @endcan
                 </div>
             </div>
@@ -901,15 +898,6 @@
                                     </svg>
                                     Edit
                                 </a>
-                                @can('pranota-create')
-                                <button type="button" onclick="buatPranota({{ $tagihan->id }})" class="btn-animated inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clip-rule="evenodd"></path>
-                                        <path fill-rule="evenodd" d="M6 8a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm0 3a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Pranota
-                                </button>
-                                @endcan
                                 <form action="{{ route('daftar-tagihan-kontainer-sewa.destroy', $tagihan->id) }}" method="POST" onsubmit="return confirm('Hapus tagihan kontainer ini? Tindakan ini tidak dapat dibatalkan.')" class="inline">
                                     @csrf
                                     @method('DELETE')

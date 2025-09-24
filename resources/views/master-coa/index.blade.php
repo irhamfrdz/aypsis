@@ -67,6 +67,15 @@
                             </th>
                         </tr>
                     </thead>
+
+                    {{-- Rows Per Page Selection --}}
+                    @include('components.rows-per-page', [
+                        'routeName' => 'master-coa-index',
+                        'paginator' => $coas,
+                        'entityName' => 'COA',
+                        'entityNamePlural' => 'COA'
+                    ])
+
                     <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                         @forelse($coas as $coa)
                             <tr class="hover:bg-gray-50">
@@ -143,12 +152,8 @@
                 </table>
             </div>
 
-            <!-- Pagination -->
-            @if($coas->hasPages())
-                <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                    {{ $coas->links() }}
-                </div>
-            @endif
+            <!-- Modern Pagination Design -->
+            @include('components.modern-pagination', ['paginator' => $coas, 'routeName' => 'master-coa-index'])
         </div>
 
         <!-- Import Modal -->
