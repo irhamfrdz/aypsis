@@ -846,6 +846,19 @@ Route::middleware([
                     ->name('daftar-tagihan-kontainer-sewa.destroy')
                     ->middleware('can:tagihan-kontainer-delete');
 
+               // Bulk operations for daftar tagihan kontainer sewa
+               Route::delete('daftar-tagihan-kontainer-sewa/bulk-delete', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'bulkDelete'])
+                    ->name('daftar-tagihan-kontainer-sewa.bulk-delete')
+                    ->middleware('can:tagihan-kontainer-delete');
+
+               Route::post('daftar-tagihan-kontainer-sewa/masukan-ke-pranota', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'masukanKePranota'])
+                    ->name('daftar-tagihan-kontainer-sewa.masukan-ke-pranota')
+                    ->middleware('can:pranota-create');
+
+               Route::post('daftar-tagihan-kontainer-sewa/bulk-update-status', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'bulkUpdateStatus'])
+                    ->name('daftar-tagihan-kontainer-sewa.bulk-update-status')
+                    ->middleware('can:tagihan-kontainer-update');
+
                // Pranota Sewa routes
                Route::prefix('pranota')->name('pranota.')->group(function () {
                     Route::get('/', [\App\Http\Controllers\PranotaSewaController::class, 'index'])->name('index');

@@ -484,6 +484,23 @@
                                 <td>-</td>
                             </tr>
 
+                            {{-- Data Kode Nomor --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Kode Nomor</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kode-nomor][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Aktivitas Supir --}}
                             <tr class="module-row" data-module="aktivitas-supir">
                                 <td class="module-header">

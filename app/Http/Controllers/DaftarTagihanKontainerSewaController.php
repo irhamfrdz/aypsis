@@ -1110,6 +1110,9 @@ class DaftarTagihanKontainerSewaController extends Controller
             $pphRate = 0.02;
             $tagihan->pph = $adjustedDpp * $pphRate;
 
+            // Recalculate DPP Nilai Lain based on adjusted DPP
+            $tagihan->dpp_nilai_lain = round($adjustedDpp * 11/12, 2);
+
             // Recalculate Grand Total: DPP + PPN - PPH (tanpa DPP Nilai Lain)
             $tagihan->grand_total = $adjustedDpp + $tagihan->ppn - $tagihan->pph;
 
@@ -1121,6 +1124,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                 'old_adjustment' => $oldAdjustment,
                 'new_adjustment' => $newAdjustment,
                 'adjusted_dpp' => $adjustedDpp,
+                'new_dpp_nilai_lain' => $tagihan->dpp_nilai_lain,
                 'new_ppn' => $tagihan->ppn,
                 'new_pph' => $tagihan->pph,
                 'new_grand_total' => $tagihan->grand_total,
@@ -1136,10 +1140,12 @@ class DaftarTagihanKontainerSewaController extends Controller
                         'id' => $tagihan->id,
                         'adjustment' => $tagihan->adjustment,
                         'adjusted_dpp' => $adjustedDpp,
+                        'dpp_nilai_lain' => $tagihan->dpp_nilai_lain,
                         'ppn' => $tagihan->ppn,
                         'pph' => $tagihan->pph,
                         'grand_total' => $tagihan->grand_total,
                         'formatted_adjustment' => 'Rp ' . number_format((float)$tagihan->adjustment, 0, '.', ','),
+                        'formatted_dpp_nilai_lain' => 'Rp ' . number_format((float)$tagihan->dpp_nilai_lain, 0, '.', ','),
                         'formatted_ppn' => 'Rp ' . number_format((float)$tagihan->ppn, 0, '.', ','),
                         'formatted_pph' => 'Rp ' . number_format((float)$tagihan->pph, 0, '.', ','),
                         'formatted_grand_total' => 'Rp ' . number_format((float)$tagihan->grand_total, 0, '.', ','),
@@ -1165,5 +1171,65 @@ class DaftarTagihanKontainerSewaController extends Controller
 
             return redirect()->back()->with('error', 'Gagal memperbarui adjustment: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Bulk delete selected items
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewas,id'
+        ]);
+
+        $count = DaftarTagihanKontainerSewa::whereIn('id', $request->ids)->delete();
+
+        return redirect()->back()
+                        ->with('success', "{$count} data tagihan kontainer berhasil dihapus.");
+    }
+
+    /**
+     * Masukan ke pranota - update status to indicate items are added to pranota
+     */
+    public function masukanKePranota(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewas,id'
+        ]);
+
+        // Update status to indicate items are in pranota
+        $count = DaftarTagihanKontainerSewa::whereIn('id', $request->ids)
+                                  ->update(['status_pembayaran' => 'sudah_dibayar']);
+
+        if ($request->ajax()) {
+            return response()->json([
+                'success' => true,
+                'message' => "{$count} item berhasil dimasukkan ke pranota",
+                'count' => $count
+            ]);
+        }
+
+        return redirect()->back()
+                        ->with('success', "{$count} item berhasil dimasukkan ke pranota.");
+    }
+
+    /**
+     * Bulk update status for selected items
+     */
+    public function bulkUpdateStatus(Request $request)
+    {
+        $request->validate([
+            'ids' => 'required|array|min:1',
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewas,id',
+            'status_pembayaran' => 'required|in:belum_dibayar,sudah_dibayar'
+        ]);
+
+        $count = DaftarTagihanKontainerSewa::whereIn('id', $request->ids)
+                                  ->update(['status_pembayaran' => $request->status_pembayaran]);
+
+        return redirect()->back()
+                        ->with('success', "Status pembayaran {$count} data tagihan berhasil diperbarui.");
     }
 }

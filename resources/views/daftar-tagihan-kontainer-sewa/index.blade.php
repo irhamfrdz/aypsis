@@ -82,7 +82,7 @@
             <div class="flex flex-wrap items-center gap-3">
                 <!-- Primary Actions -->
                 @can('tagihan-kontainer-create')
-                <a href="{{ route('daftar-tagihan-kontainer-sewa.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
                     </svg>
@@ -91,7 +91,7 @@
                 @endcan
 
                 <!-- Template Download -->
-                <a href="{{ route('daftar-tagihan-kontainer-sewa.template.csv') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.template.csv') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
@@ -116,7 +116,7 @@
                             </svg>
                         </div>
                     </div>
-                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
                         <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                         </svg>
@@ -142,7 +142,7 @@
                             </svg>
                         </div>
                     </div>
-                    <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
                         <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
                         </svg>
@@ -186,25 +186,38 @@
     </div>
 
     <!-- Bulk Actions Section -->
-    <div class="mb-6 bg-green-50 border border-green-200 rounded-lg shadow-sm p-4">
+    <div id="bulkActions" class="hidden mb-6 bg-blue-50 border border-blue-200 rounded-lg shadow-sm p-4">
         <div class="flex items-center justify-between">
             <div class="flex items-center gap-3">
                 <div class="flex items-center gap-2">
-                    <svg class="h-5 w-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg class="h-5 w-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    <span class="text-sm font-medium text-green-800">Aksi Bulk Pranota</span>
+                    <span class="text-sm font-medium text-blue-800">Aksi Bulk</span>
                 </div>
-                <span id="selection-info" class="text-sm text-green-600">Pilih item untuk membuat pranota</span>
+                <span id="selection-info" class="text-sm text-blue-600"><span id="selected-count">0</span> item dipilih</span>
+                <div class="flex items-center gap-2">
+                    @can('tagihan-kontainer-delete')
+                    <button type="button" id="btnBulkDelete" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Hapus Terpilih
+                    </button>
+                    @endcan
+                    <button type="button" id="btnBulkStatus" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Update Status
+                    </button>
+                    @can('pranota-create')
+                    <button type="button" id="btnMasukanPranota" onclick="masukanKePranota()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Masukan ke Pranota
+                    </button>
+                    <button type="button" id="btnBulkPranota" onclick="buatPranotaTerpilih()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Buat Pranota
+                    </button>
+                    @endcan
+                </div>
             </div>
-            @can('pranota.create')
-            <button type="button" id="bulk-pranota-btn" onclick="buatPranotaTerpilih()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center disabled:bg-gray-400 disabled:cursor-not-allowed" disabled>
-                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Buat Pranota Terpilih (<span id="selected-count">0</span>)
+            <button type="button" id="btnCancelSelection" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                Batal
             </button>
-            @endcan
         </div>
     </div>
 
@@ -219,7 +232,7 @@
                         name="q"
                         value="{{ request('q') }}"
                         placeholder="Cari nomor kontainer (akan menampilkan semua kontainer dalam grup yang sama), vendor, atau group..."
-                        class="w-full border border-gray-300 rounded-lg px-4 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                        class="w-full border border-gray-300 rounded-lg px-2 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <svg class="h-4 w-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -292,7 +305,7 @@
                 </select>
 
                 <!-- Filter by Status Pranota -->
-                <select name="status_pranota" class="border border-orange-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm bg-orange-50">
+                <select name="status_pranota" class="border border-orange-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-[10px] bg-orange-50">
                     <option value="">Semua Status Pranota</option>
                     <option value="null" {{ request('status_pranota') == 'null' ? 'selected' : '' }}>
                         🔄 Belum Masuk Pranota
@@ -323,7 +336,7 @@
 
                 <!-- Action Buttons -->
                 <div class="flex items-center gap-2 ml-auto">
-                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
+                    <button type="submit" class="bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
                         <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
@@ -404,16 +417,19 @@
         <div class="mb-4 p-3 bg-red-50 border border-red-100 text-red-800 rounded">{{ session('error') }}</div>
     @endif
 
-    <div class="overflow-x-auto bg-white rounded-lg shadow-lg border border-gray-200">
-        <table class="min-w-full divide-y divide-gray-200 table-auto" style="min-width: 2650px;">
-            <thead class="bg-gradient-to-r from-gray-50 to-gray-100">
+    <div class="max-w-full mx-auto px-4">
+        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <!-- Table Section with Sticky Header -->
+            <div class="table-container overflow-x-auto max-h-screen">
+                <table class="min-w-full divide-y divide-gray-200" style="min-width: 2650px;">
+                    <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                 <tr class="border-b-2 border-gray-200">
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-indigo-50 sticky top-0 z-10 border-r border-gray-200" style="width: 60px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="width: 60px;">
                         <div class="flex items-center justify-center">
                             <input type="checkbox" id="select-all" class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider bg-purple-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 140px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 140px;">
                         <div class="flex items-center space-x-1">
                             <span>Grup</span>
                             <div class="relative group">
@@ -427,57 +443,52 @@
                             </div>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 120px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
                         <div class="flex items-center space-x-1">
                             <span>Vendor</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 160px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 160px;">
                         <div class="flex items-center space-x-1">
                             <span>Nomor Kontainer</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 80px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 80px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Size</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 220px;">
-                        <div class="flex items-center space-x-1">
-                            <span>Group</span>
-                        </div>
-                    </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 100px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 100px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Periode</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 120px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Masa</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 120px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tgl Awal</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 120px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tgl Akhir</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 100px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 100px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tarif</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-blue-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 140px;">
+                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>DPP</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-cyan-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 140px;">
+                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>Adjustment</span>
                             <div class="relative group">
@@ -490,32 +501,32 @@
                             </div>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-blue-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 140px;">
+                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>DPP Nilai Lain</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-green-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 120px;">
+                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 120px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>PPN</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-red-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 120px;">
+                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 120px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>PPH</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider bg-yellow-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 160px;">
+                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 160px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>Grand Total</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 140px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 140px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Status</span>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-orange-50 sticky top-0 z-10 border-r border-gray-200" style="min-width: 160px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider bg-orange-50 " style="min-width: 160px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Status Pranota</span>
                             <div class="relative group">
@@ -529,7 +540,7 @@
                             </div>
                         </div>
                     </th>
-                    <th class="px-4 py-5 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider bg-gray-50 sticky top-0 z-10" style="min-width: 140px;">
+                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider bg-gray-50" style="min-width: 140px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Aksi</span>
                         </div>
@@ -539,59 +550,28 @@
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($tagihans ?? [] as $index => $tagihan)
                     @php /** @var \App\Models\DaftarTagihanKontainerSewa $tagihan */ @endphp
-                    <tr class="hover:bg-blue-50 transition-colors duration-150 {{ $index % 2 == 0 ? 'bg-white' : 'bg-gray-50' }}">
-                        <td class="px-4 py-5 text-center border-r border-gray-200">
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                             <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm font-mono text-center border-r border-gray-200">
-                            <div class="bg-purple-100 border border-purple-300 px-3 py-2 rounded-lg" title="Kode: {{ substr($tagihan->group ?? '', 0, 2) }} | Cetak: {{ substr($tagihan->group ?? '', 2, 1) }} | Periode: {{ substr($tagihan->group ?? '', 3, 4) }} | Running: {{ substr($tagihan->group ?? '', 7) }}">
-                                <div class="text-xs font-bold text-purple-800 tracking-wider">
-                                    {{ $tagihan->group ?? '-' }}
-                                </div>
-                                @if($tagihan->group)
-                                <div class="text-xs text-purple-600 mt-1">
-                                    {{ substr($tagihan->group, 0, 2) }}-{{ substr($tagihan->group, 2, 1) }}-{{ substr($tagihan->group, 3, 4) }}-{{ substr($tagihan->group, 7) }}
-                                </div>
-                                @endif
-                            </div>
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono ">
+                            {{ optional($tagihan)->group ?? '-' }}
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-medium ">
                             <div class="flex items-center">
                                 <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
                                 <span class="font-semibold">{{ optional($tagihan)->vendor ?? '-' }}</span>
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm font-mono text-gray-900 border-r border-gray-200">
-                            @php
-                                $isSearchedContainer = false;
-                                if (request('q')) {
-                                    $searchTerm = request('q');
-                                    $isSearchedContainer = stripos($tagihan->nomor_kontainer ?? '', $searchTerm) !== false;
-                                }
-                            @endphp
-
-                            <div class="bg-gradient-to-r {{ $isSearchedContainer ? 'from-yellow-50 to-orange-50 border-yellow-300' : 'from-blue-50 to-indigo-50 border-blue-200' }} px-4 py-3 rounded-lg border shadow-sm {{ $isSearchedContainer ? 'ring-2 ring-yellow-400 ring-opacity-50' : '' }}">
-                                <div class="text-lg font-bold text-gray-800 text-center tracking-wider {{ $isSearchedContainer ? 'text-orange-800' : '' }}">
-                                    {{ optional($tagihan)->nomor_kontainer ?? '-' }}
-                                    @if($isSearchedContainer)
-                                        <div class="text-xs font-medium text-orange-600 mt-1">
-                                            📍 Container yang dicari
-                                        </div>
-                                    @endif
-                                </div>
-                            </div>
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono text-gray-900 ">
+                            {{ optional($tagihan)->nomor_kontainer ?? '-' }}
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center text-gray-900 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
                             <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ optional($tagihan)->size == '20' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
                                 {{ optional($tagihan)->size ?? '-' }}'
                             </span>
                         </td>
-                        <td class="px-4 py-5 text-sm text-gray-900 border-r border-gray-200" style="max-width: 220px;">
-                            <div class="truncate font-medium" title="{{ optional($tagihan)->group ?? '-' }}">
-                                {{ optional($tagihan)->group ?? '-' }}
-                            </div>
-                        </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center text-gray-900 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
                             @php
                                 // Implementasi logika periode sesuai CSV
                                 $currentPeriode = optional($tagihan)->periode ?? 1;
@@ -620,19 +600,48 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center text-gray-900 border-r border-gray-200">
-                            <div class="font-semibold text-base">{{ optional($tagihan)->masa ?? '-' }}</div>
-                        </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center text-gray-900 border-r border-gray-200">
-                            <div class="text-xs bg-gray-100 px-3 py-2 rounded-lg font-medium">
-                                {{ optional($tagihan)->tanggal_awal ? \Carbon\Carbon::parse(optional($tagihan)->tanggal_awal)->format('d-m-Y') : '-' }}
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
+                            <div class="font-semibold">
+                                @if(optional($tagihan)->masa)
+                                    @php
+                                        $masa = optional($tagihan)->masa;
+                                        // Check if it's a date range format
+                                        if (strpos($masa, ' - ') !== false) {
+                                            $dates = explode(' - ', $masa);
+                                            $formattedDates = [];
+                                            foreach ($dates as $date) {
+                                                try {
+                                                    $formattedDates[] = \Carbon\Carbon::parse(trim($date))->format('d-M-Y');
+                                                } catch (\Exception $e) {
+                                                    $formattedDates[] = trim($date);
+                                                }
+                                            }
+                                            $masa = implode(' - ', $formattedDates);
+                                        } else {
+                                            // Single date
+                                            try {
+                                                $masa = \Carbon\Carbon::parse($masa)->format('d-M-Y');
+                                            } catch (\Exception $e) {
+                                                // Keep original if parsing fails
+                                            }
+                                        }
+                                    @endphp
+                                    {{ $masa }}
+                                @else
+                                    -
+                                @endif
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center text-gray-900 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
+                            <div class="text-xs bg-gray-100 px-3 py-2 rounded-lg font-medium">
+                                {{ optional($tagihan)->tanggal_awal ? \Carbon\Carbon::parse(optional($tagihan)->tanggal_awal)->format('d-M-Y') : '-' }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
                             @if(optional($tagihan)->tanggal_akhir)
                                 <div class="flex flex-col items-center space-y-1">
                                     <div class="text-xs bg-gray-100 px-3 py-2 rounded-lg font-medium">
-                                        {{ \Carbon\Carbon::parse(optional($tagihan)->tanggal_akhir)->format('d-m-Y') }}
+                                        {{ \Carbon\Carbon::parse(optional($tagihan)->tanggal_akhir)->format('d-M-Y') }}
                                     </div>
                                     <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
                                         <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -668,7 +677,7 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center text-gray-900 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
                             @php
                                 $tarif = optional($tagihan)->tarif ?? '-';
                                 $isHarian = strtolower($tarif) === 'harian';
@@ -678,13 +687,13 @@
                                 {{ $tarif }}
                             </span>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-right font-mono text-gray-900 bg-blue-50 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
                             @php
                                 $originalDpp = (float)(optional($tagihan)->dpp ?? 0);
                                 $adjustment = (float)(optional($tagihan)->adjustment ?? 0);
                                 $adjustedDpp = $originalDpp + $adjustment;
                             @endphp
-                            <div class="font-semibold text-blue-900 text-base">
+                            <div class="font-semibold text-blue-900">
                                 Rp {{ number_format($adjustedDpp, 0, '.', ',') }}
                             </div>
                             @if($adjustment != 0)
@@ -693,14 +702,14 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-right font-mono text-gray-900 bg-cyan-50 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
                             <div class="group relative">
                                 @if(optional($tagihan)->adjustment)
                                     @php
                                         $adjustment = (float)(optional($tagihan)->adjustment ?? 0);
                                         $isPositive = $adjustment >= 0;
                                     @endphp
-                                    <div class="font-semibold text-base {{ $isPositive ? 'text-green-700' : 'text-red-700' }}">
+                                    <div class="font-semibold {{ $isPositive ? 'text-green-700' : 'text-red-700' }}">
                                         {{ $isPositive ? '+' : '' }}Rp {{ number_format(abs($adjustment), 0, '.', ',') }}
                                     </div>
                                     <div class="text-xs {{ $isPositive ? 'text-green-600' : 'text-red-600' }} mt-1">
@@ -727,12 +736,12 @@
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-right font-mono text-gray-900 bg-blue-50 border-r border-gray-200">
-                            <div class="font-semibold text-blue-900 text-base">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
+                            <div class="font-semibold text-blue-900">
                                 Rp {{ number_format((float)(optional($tagihan)->dpp_nilai_lain ?? 0), 0, '.', ',') }}
                             </div>
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-right font-mono text-gray-900 bg-green-50 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
                             @php
                                 // Calculate adjusted DPP for PPN calculation
                                 $originalDpp = (float)(optional($tagihan)->dpp ?? 0);
@@ -741,7 +750,7 @@
                                 $ppnRate = 0.11; // 11% PPN
                                 $calculatedPpn = $adjustedDpp * $ppnRate;
                             @endphp
-                            <div class="font-semibold text-green-700 text-base">
+                            <div class="font-semibold text-green-700">
                                 Rp {{ number_format($calculatedPpn, 0, '.', ',') }}
                             </div>
                             @if($adjustment != 0)
@@ -750,13 +759,13 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-right font-mono text-gray-900 bg-red-50 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
                             @php
                                 // Calculate PPH from adjusted DPP
                                 $pphRate = 0.02; // 2% PPH (adjust as needed)
                                 $calculatedPph = $adjustedDpp * $pphRate;
                             @endphp
-                            <div class="font-semibold text-red-700 text-base">
+                            <div class="font-semibold text-red-700">
                                 Rp {{ number_format($calculatedPph, 0, '.', ',') }}
                             </div>
                             @if($adjustment != 0)
@@ -765,13 +774,13 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-right font-mono text-gray-900 bg-yellow-50 border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
                             @php
                                 // Calculate grand total with adjustment impact
                                 // Formula: DPP + PPN - PPH (tanpa DPP Nilai Lain)
                                 $newGrandTotal = $adjustedDpp + $calculatedPpn - $calculatedPph;
                             @endphp
-                            <div class="font-bold text-lg text-yellow-800">
+                            <div class="font-bold text-yellow-800">
                                 Rp {{ number_format($newGrandTotal, 0, '.', ',') }}
                             </div>
                             @if($adjustment != 0)
@@ -788,7 +797,7 @@
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center ">
                             @php
                                 $paymentStatus = strtolower((string) optional($tagihan)->status_pembayaran);
                                 $isPranota = (bool) (optional($tagihan)->is_pranota ?? false);
@@ -819,7 +828,7 @@
                             @endif
                         </td>
                         <!-- Status Pranota Column -->
-                        <td class="px-4 py-5 whitespace-nowrap text-sm text-center border-r border-gray-200">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center ">
                             @if($tagihan->pranota_id)
                                 @php
                                     $pranota = \App\Models\Pranota::find($tagihan->pranota_id);
@@ -877,7 +886,7 @@
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-5 whitespace-nowrap text-sm">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                             <div class="flex items-center justify-center space-x-2">
                                 <a href="{{ route('daftar-tagihan-kontainer-sewa.show', $tagihan->id) }}" class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
@@ -892,7 +901,7 @@
                                     </svg>
                                     Edit
                                 </a>
-                                @can('pranota.create')
+                                @can('pranota-create')
                                 <button type="button" onclick="buatPranota({{ $tagihan->id }})" class="btn-animated inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-green-100 text-green-700 hover:bg-green-200 transition-colors">
                                     <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2H4zm0 2h12v8H4V6z" clip-rule="evenodd"></path>
@@ -916,12 +925,12 @@
                         </td>
                     </tr>
                 @empty
-                        <td class="px-4 py-5 text-center text-xs font-medium bg-gray-100 text-gray-800 border-r border-gray-200" colspan="18">
+                        <td class="px-2 py-2 text-center text-xs font-medium bg-gray-100 text-gray-800 " colspan="17">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
-                                <p class="text-lg font-medium text-gray-900">Tidak ada data tagihan</p>
+                                <p class="text-lg font-medium">Tidak ada data tagihan</p>
                                 <p class="text-sm text-gray-500 mt-1">Mulai dengan menambahkan tagihan baru atau import data dari CSV</p>
                             </div>
                         </td>
@@ -929,6 +938,8 @@
                 @endforelse
             </tbody>
         </table>
+            </div>
+        </div>
     </div>
     @if(isset($tagihans) && $tagihans instanceof \Illuminate\Pagination\LengthAwarePaginator)
         <div class="mt-6 bg-white rounded-lg shadow p-4">
@@ -976,6 +987,46 @@
 </div>
 @endsection
 
+<style>
+/* Sticky Table Header Styles */
+.sticky-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* bg-gray-50 */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced table container for better scrolling */
+.table-container {
+    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    overflow-y: auto;
+    border: 1px solid rgb(229 231 235); /* border-gray-200 */
+    border-radius: 0.5rem;
+}
+
+/* Smooth scrolling for better UX */
+.table-container {
+    scroll-behavior: smooth;
+}
+
+/* Table header cells need specific background to avoid transparency issues */
+.sticky-table-header th {
+    background-color: rgb(249 250 251) !important;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Optional: Add a subtle border when scrolling */
+.table-container.scrolled .sticky-table-header {
+    border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+
+/* Ensure dropdown menus appear above sticky header */
+.relative.group .absolute {
+    z-index: 20;
+}
+</style>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function(){
@@ -1006,56 +1057,276 @@ document.addEventListener('DOMContentLoaded', function(){
 document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('select-all');
     const rowCheckboxes = document.querySelectorAll('.row-checkbox');
-    const bulkPranotaBtn = document.getElementById('bulk-pranota-btn');
+    const bulkActions = document.getElementById('bulkActions');
     const selectedCount = document.getElementById('selected-count');
     const selectionInfo = document.getElementById('selection-info');
+    const btnBulkDelete = document.getElementById('btnBulkDelete');
+    const btnBulkStatus = document.getElementById('btnBulkStatus');
+    const btnBulkPranota = document.getElementById('btnBulkPranota');
+    const btnCancelSelection = document.getElementById('btnCancelSelection');
 
-    // Function to update bulk action button state
-    function updateBulkActionState() {
+    console.log('JavaScript loaded successfully');
+    console.log('Elements found:', {
+        selectAllCheckbox: !!selectAllCheckbox,
+        rowCheckboxes: rowCheckboxes.length,
+        bulkActions: !!bulkActions,
+        selectedCount: !!selectedCount,
+        btnBulkPranota: !!btnBulkPranota
+    });
+
+    // Initialize bulk actions on page load
+    updateBulkActions();
+
+    // Handle select all checkbox
+    selectAllCheckbox.addEventListener('change', function() {
+        console.log('Select all checkbox changed:', this.checked);
+        const isChecked = this.checked;
+        rowCheckboxes.forEach(checkbox => {
+            checkbox.checked = isChecked;
+        });
+        updateBulkActions();
+    });
+
+    // Handle individual checkboxes
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            console.log('Individual checkbox changed:', this.checked, 'ID:', this.value);
+            updateSelectAllState();
+            updateBulkActions();
+        });
+    });
+
+    // Update select all checkbox state
+    function updateSelectAllState() {
         const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        const count = checkedBoxes.length;
+        const totalBoxes = rowCheckboxes.length;
 
-        selectedCount.textContent = count;
-        bulkPranotaBtn.disabled = count === 0;
-
-        if (count === 0) {
-            selectionInfo.textContent = 'Pilih item untuk membuat pranota';
-            selectionInfo.className = 'text-sm text-green-600';
+        if (checkedBoxes.length === 0) {
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+        } else if (checkedBoxes.length === totalBoxes) {
+            selectAllCheckbox.checked = true;
+            selectAllCheckbox.indeterminate = false;
         } else {
-            selectionInfo.textContent = `${count} item terpilih`;
-            selectionInfo.className = 'text-sm text-green-700 font-medium';
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = true;
         }
     }
 
-    // Select all functionality
-    selectAllCheckbox.addEventListener('change', function() {
+    // Update bulk actions visibility and count
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+        const count = checkedBoxes.length;
+
+        console.log('updateBulkActions called, checked boxes:', count);
+        console.log('bulkActions element:', bulkActions);
+        console.log('selectedCount element:', selectedCount);
+
+        if (selectedCount) {
+            selectedCount.textContent = count;
+        }
+
+        if (bulkActions) {
+            if (count > 0) {
+                console.log('Showing bulk actions - removing hidden class');
+                bulkActions.classList.remove('hidden');
+                bulkActions.style.display = 'block'; // Force show
+            } else {
+                console.log('Hiding bulk actions - adding hidden class');
+                bulkActions.classList.add('hidden');
+                bulkActions.style.display = 'none'; // Force hide
+            }
+        } else {
+            console.error('bulkActions element not found!');
+        }
+    }
+
+    // Cancel selection
+    btnCancelSelection.addEventListener('click', function() {
         rowCheckboxes.forEach(checkbox => {
-            checkbox.checked = this.checked;
+            checkbox.checked = false;
         });
-        updateBulkActionState();
+        selectAllCheckbox.checked = false;
+        selectAllCheckbox.indeterminate = false;
+        updateBulkActions();
     });
 
-    // Individual checkbox functionality
-    rowCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            // Update select all checkbox state
-            const allChecked = Array.from(rowCheckboxes).every(cb => cb.checked);
-            const someChecked = Array.from(rowCheckboxes).some(cb => cb.checked);
+    // Bulk delete handler
+    if (btnBulkDelete) {
+        btnBulkDelete.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Pilih minimal satu item untuk dihapus');
+                return;
+            }
 
-            selectAllCheckbox.checked = allChecked;
-            selectAllCheckbox.indeterminate = someChecked && !allChecked;
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+            const message = `Apakah Anda yakin ingin menghapus ${checkedBoxes.length} item yang dipilih?`;
 
-            updateBulkActionState();
+            if (confirm(message)) {
+                // Create form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-delete") }}';
+
+                // Add CSRF token
+                const csrfToken = document.createElement('input');
+                csrfToken.type = 'hidden';
+                csrfToken.name = '_token';
+                csrfToken.value = '{{ csrf_token() }}';
+                form.appendChild(csrfToken);
+
+                // Add method
+                const methodField = document.createElement('input');
+                methodField.type = 'hidden';
+                methodField.name = '_method';
+                methodField.value = 'DELETE';
+                form.appendChild(methodField);
+
+                // Add selected IDs
+                ids.forEach(id => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = 'ids[]';
+                    input.value = id;
+                    form.appendChild(input);
+                });
+
+                document.body.appendChild(form);
+                form.submit();
+            }
         });
-    });
+    }
 
-    // Initialize state
-    updateBulkActionState();
+    // Bulk status update handler
+    if (btnBulkStatus) {
+        btnBulkStatus.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Pilih minimal satu item untuk update status');
+                return;
+            }
+
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+            const newStatus = prompt('Masukkan status pembayaran baru:\n1. belum_dibayar\n2. sudah_dibayar');
+
+            let statusValue = '';
+            if (newStatus === '1' || newStatus === 'belum_dibayar') {
+                statusValue = 'belum_dibayar';
+            } else if (newStatus === '2' || newStatus === 'sudah_dibayar') {
+                statusValue = 'sudah_dibayar';
+            }
+
+            if (statusValue) {
+                const message = `Apakah Anda yakin ingin mengubah status pembayaran ${checkedBoxes.length} item menjadi "${statusValue}"?`;
+                if (confirm(message)) {
+                    // Create form and submit
+                    const form = document.createElement('form');
+                    form.method = 'POST';
+                    form.action = '{{ route("daftar-tagihan-kontainer-sewa.bulk-update-status") }}';
+
+                    // Add CSRF token
+                    const csrfToken = document.createElement('input');
+                    csrfToken.type = 'hidden';
+                    csrfToken.name = '_token';
+                    csrfToken.value = '{{ csrf_token() }}';
+                    form.appendChild(csrfToken);
+
+                    // Add status
+                    const statusField = document.createElement('input');
+                    statusField.type = 'hidden';
+                    statusField.name = 'status_pembayaran';
+                    statusField.value = statusValue;
+                    form.appendChild(statusField);
+
+                    // Add selected IDs
+                    ids.forEach(id => {
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'ids[]';
+                        input.value = id;
+                        form.appendChild(input);
+                    });
+
+                    document.body.appendChild(form);
+                    form.submit();
+                }
+            } else if (newStatus) {
+                alert('Status tidak valid. Pilih:\n1. belum_dibayar\n2. sudah_dibayar');
+            }
+        });
+    }
 });
 
 // Test function
 window.testPranota = function() {
     console.log('Test function works!');
+};
+
+// Function for "Masukan ke Pranota" - shows a simple popup
+window.masukanKePranota = function() {
+    console.log('masukanKePranota called');
+
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+    console.log('Selected IDs for pranota:', selectedIds);
+
+    if (selectedIds.length === 0) {
+        alert('Pilih minimal satu item untuk dimasukkan ke pranota');
+        return;
+    }
+
+    // Show confirmation popup
+    const confirmed = confirm(`Apakah Anda yakin ingin memasukkan ${selectedIds.length} item terpilih ke dalam pranota?\n\nItem yang dipilih akan dipindahkan ke status "sudah masuk pranota".`);
+
+    if (confirmed) {
+        // Show loading state
+        const btnMasukanPranota = document.getElementById('btnMasukanPranota');
+        const originalText = btnMasukanPranota.textContent;
+        btnMasukanPranota.textContent = 'Memproses...';
+        btnMasukanPranota.disabled = true;
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('action', 'masukan_ke_pranota');
+
+        // Add selected IDs
+        selectedIds.forEach(id => {
+            formData.append('ids[]', id);
+        });
+
+        // Send AJAX request
+        fetch('/daftar-tagihan-kontainer-sewa/masukan-ke-pranota', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error(`Server error: ${response.status}`);
+            }
+        })
+        .then(data => {
+            console.log('Success response:', data);
+            alert(`Berhasil memasukkan ${selectedIds.length} item ke pranota!`);
+            // Reload page to show updated data
+            window.location.reload();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Gagal memasukkan ke pranota: ' + error.message);
+
+            // Reset button state
+            btnMasukanPranota.textContent = originalText;
+            btnMasukanPranota.disabled = false;
+        });
+    }
 };
 
 window.buatPranotaTerpilih = function() {
@@ -1504,7 +1775,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
         <div class="mt-3">
             <!-- Modal Header -->
             <div class="flex items-center justify-between pb-4 border-b">
-                <h3 class="text-lg font-medium text-gray-900" id="modal-title">
+                <h3 class="text-lg font-medium" id="modal-title">
                     Buat Pranota
                 </h3>
                 <button type="button" onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
@@ -1528,7 +1799,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
                     <!-- Data Pranota -->
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label for="nomor_pranota_display" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="nomor_pranota_display" class="block text-[10px] font-medium text-gray-700 mb-2">
                                 Nomor Pranota (Otomatis)
                             </label>
                             <input type="text" id="nomor_pranota_display" readonly
@@ -1537,7 +1808,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
                         </div>
 
                         <div>
-                            <label for="tanggal_pranota" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="tanggal_pranota" class="block text-[10px] font-medium text-gray-700 mb-2">
                                 Tanggal Pranota <span class="text-red-500">*</span>
                             </label>
                             <input type="date" id="tanggal_pranota" name="tanggal_pranota" required
@@ -1546,7 +1817,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
                         </div>
 
                         <div>
-                            <label for="periode_tagihan" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="periode_tagihan" class="block text-[10px] font-medium text-gray-700 mb-2">
                                 Periode Tagihan
                             </label>
                             <input type="text" id="periode_tagihan" name="periode_tagihan" readonly
@@ -1554,7 +1825,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
                         </div>
 
                         <div>
-                            <label for="nomor_invoice" class="block text-sm font-medium text-gray-700 mb-2">
+                            <label for="nomor_invoice" class="block text-[10px] font-medium text-gray-700 mb-2">
                                 Nomor Invoice *
                             </label>
                             <input type="text" id="nomor_invoice" name="nomor_invoice" required
@@ -1564,7 +1835,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
                     </div>
 
                     <div>
-                        <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
+                        <label for="keterangan" class="block text-[10px] font-medium text-gray-700 mb-2">
                             Keterangan
                         </label>
                         <textarea id="keterangan" name="keterangan" rows="3"
@@ -1574,7 +1845,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
 
                     <!-- Summary -->
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                        <h4 class="font-medium text-gray-900 mb-2">Ringkasan</h4>
+                        <h4 class="font-medium mb-2">Ringkasan</h4>
                         <div class="grid grid-cols-2 gap-4 text-sm">
                             <div>
                                 <span class="text-gray-600">Jumlah Tagihan:</span>
@@ -1595,11 +1866,11 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
                 <!-- Modal Footer -->
                 <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
                     <button type="button" onclick="closeModal()"
-                            class="btn-animated px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            class="btn-animated px-2 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
                         Batal
                     </button>
                     <button type="submit"
-                            class="btn-animated px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
+                            class="btn-animated px-2 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors">
                         <span class="btn-text">Buat Pranota</span>
                     </button>
                 </div>
