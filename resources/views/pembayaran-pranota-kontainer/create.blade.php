@@ -143,7 +143,7 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->total_amount, 0, ',', '.') }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @if ($pranota->status_pembayaran == 'Lunas')
+                                        @if ($pranota->status == 'completed' || $pranota->status == 'paid')
                                             <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-green-100 text-green-800">Lunas</span>
                                         @else
                                             <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-yellow-100 text-yellow-800">Belum</span>
@@ -176,18 +176,18 @@
                         <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div>
                                 <label for="total_pembayaran" class="{{ $labelClasses }}">Total Tagihan</label>
-                                <input type="number" name="total_pembayaran" id="total_pembayaran"
+                                <input type="text" name="total_pembayaran" id="total_pembayaran"
                                     value="0"
                                     class="{{ $readonlyInputClasses }}" readonly>
                             </div>
                             <div>
                                 <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Penyesuaian</label>
-                                <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian"
+                                <input type="text" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian"
                                     class="{{ $inputClasses }}" value="0">
                             </div>
                             <div>
                                 <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir</label>
-                                <input type="number" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian"
+                                <input type="text" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian"
                                     class="{{ $readonlyInputClasses }} font-bold text-gray-800 bg-gray-100" readonly value="0">
                             </div>
                         </div>
@@ -245,19 +245,28 @@
                 alert('Silakan pilih minimal satu pranota kontainer.');
                 return false;
             }
+
+            // Convert formatted numbers back to plain numbers for submission
+            const penyesuaianValue = totalPenyesuaianInput.value.replace(/\./g, '').replace(',', '.');
+            totalPenyesuaianInput.value = penyesuaianValue;
+
+            const totalValue = totalPembayaranInput.value.replace(/\./g, '').replace(',', '.');
+            totalPembayaranInput.value = totalValue;
+
+            const totalAkhirValue = totalSetelahInput.value.replace(/\./g, '').replace(',', '.');
+            totalSetelahInput.value = totalAkhirValue;
         });
 
         // Perhitungan otomatis total pembayaran berdasarkan pranota yang dipilih
         const totalPembayaranInput = document.getElementById('total_pembayaran');
         const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
         const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
-        const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
 
         // Simpan nilai total_amount di data attribute
         const pranotaBiayaMap = {};
         @if(isset($pranotaList))
             @foreach ($pranotaList as $pranota)
-                pranotaBiayaMap['{{ $pranota->id }}'] = {{ $pranota->total_amount }};
+                pranotaBiayaMap['{{ $pranota->id }}'] = parseFloat({{ $pranota->total_amount }});
             @endforeach
         @endif
 
@@ -266,17 +275,20 @@
             pranotaCheckboxes.forEach(function(checkbox) {
                 if (checkbox.checked) {
                     const id = checkbox.value;
-                    total += pranotaBiayaMap[id] || 0;
+                    const biaya = parseFloat(pranotaBiayaMap[id]) || 0;
+                    total += biaya;
                 }
             });
-            totalPembayaranInput.value = total;
+            // Format total dengan pemisah ribuan Indonesia
+            totalPembayaranInput.value = total.toLocaleString('id-ID');
             updateTotalSetelahPenyesuaian();
         }
 
         function updateTotalSetelahPenyesuaian() {
-            const totalPembayaran = parseFloat(totalPembayaranInput.value) || 0;
+            const totalPembayaran = parseFloat(totalPembayaranInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             const totalPenyesuaian = parseFloat(totalPenyesuaianInput.value) || 0;
-            totalSetelahInput.value = totalPembayaran + totalPenyesuaian;
+            const totalAkhir = totalPembayaran + totalPenyesuaian;
+            totalSetelahInput.value = totalAkhir.toLocaleString('id-ID');
         }
 
         pranotaCheckboxes.forEach(function(checkbox) {
@@ -284,6 +296,12 @@
         });
         totalPembayaranInput.addEventListener('input', updateTotalSetelahPenyesuaian);
         totalPenyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
+        totalPenyesuaianInput.addEventListener('blur', function() {
+            // Format penyesuaian input saat kehilangan focus
+            const value = parseFloat(this.value) || 0;
+            this.value = value.toLocaleString('id-ID');
+            updateTotalSetelahPenyesuaian();
+        });
         updateTotalPembayaran();
     });
 

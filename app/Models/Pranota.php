@@ -31,7 +31,19 @@ class Pranota extends Model
 
     public function calculateTotalAmount()
     {
-        return $this->getTagihanItems()->sum('grand_total');
+        if (empty($this->tagihan_ids)) {
+            return 0;
+        }
+
+        // First check if there are CAT items
+        $catItems = \App\Models\TagihanCat::whereIn('id', $this->tagihan_ids)->get();
+        if ($catItems->isNotEmpty()) {
+            return $catItems->sum('realisasi_biaya');
+        }
+
+        // If no CAT items, check kontainer sewa items
+        $tagihanItems = $this->getTagihanItems();
+        return $tagihanItems->sum('grand_total');
     }
 
     public function updateTotalAmount()

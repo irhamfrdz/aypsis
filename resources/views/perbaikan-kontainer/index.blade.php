@@ -258,13 +258,13 @@
                             </span>
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                            {{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/m/Y') : '-' }}
+                            {{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/M/Y') : '-' }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                            {{ $perbaikan->tanggal_selesai ? \Carbon\Carbon::parse($perbaikan->tanggal_selesai)->format('d/m/Y') : '-' }}
+                            {{ $perbaikan->tanggal_selesai ? \Carbon\Carbon::parse($perbaikan->tanggal_selesai)->format('d/M/Y') : '-' }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                            {{ $perbaikan->tanggal_cat ? \Carbon\Carbon::parse($perbaikan->tanggal_cat)->format('d/m/Y') : '-' }}
+                            {{ $perbaikan->tanggal_cat ? \Carbon\Carbon::parse($perbaikan->tanggal_cat)->format('d/M/Y') : '-' }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">

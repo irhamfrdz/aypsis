@@ -156,13 +156,7 @@
                 <div class="info-row">
                     <div class="info-label">Total Biaya:</div>
                     <div class="info-value">
-                        @php
-                            $total = $pranota->total_amount ?? 0;
-                            if ($total == 0 && $tagihanItems) {
-                                $total = $tagihanItems->sum('realisasi_biaya');
-                            }
-                        @endphp
-                        {{ $total > 0 ? 'Rp ' . number_format(floatval($total), 0, ',', '.') : '-' }}
+                        {{ $pranota->calculateTotalAmount() ? 'Rp ' . number_format($pranota->calculateTotalAmount(), 0, ',', '.') : '-' }}
                     </div>
                 </div>
             </div>

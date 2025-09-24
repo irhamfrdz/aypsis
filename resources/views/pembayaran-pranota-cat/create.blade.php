@@ -148,7 +148,7 @@
                                             <div>{{ \Carbon\Carbon::parse($tagihan->tanggal_cat)->format('d/M/Y') }}</div>
                                         @endforeach
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->total_amount, 0, ',', '.') }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">Rp {{ number_format($pranota->calculateTotalAmount(), 0, ',', '.') }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if ($pranota->status == 'paid')
                                             <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-green-100 text-green-800">Lunas</span>

@@ -123,13 +123,13 @@
                             {{ $pranota->no_invoice ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') : '-' }}
+                            {{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {{ $pranota->supplier ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {{ $pranota->total_amount ? 'Rp ' . number_format($pranota->total_amount, 0, ',', '.') : '-' }}
+                            {{ $pranota->calculateTotalAmount() ? 'Rp ' . number_format($pranota->calculateTotalAmount(), 0, ',', '.') : '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             @if($pranota->status == 'unpaid')

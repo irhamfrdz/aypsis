@@ -51,7 +51,7 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Total Biaya</label>
-                    <p class="mt-1 text-sm text-gray-900">{{ $pranota->total_amount ? 'Rp ' . number_format(floatval($pranota->total_amount), 0, ',', '.') : '-' }}</p>
+                    <p class="mt-1 text-sm text-gray-900">{{ $tagihanItems->sum('realisasi_biaya') ? 'Rp ' . number_format($tagihanItems->sum('realisasi_biaya'), 0, ',', '.') : '-' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-700">Status</label>

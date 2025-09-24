@@ -160,13 +160,13 @@
         {{-- Permissions System - Accurate Style --}}
         <div class="border border-gray-200 rounded-lg p-6 bg-gray-50">
             <div class="flex items-center justify-between mb-6">
-                <h3 class="text-lg font-semibold text-gray-800">🔐 Sistem Izin Akses (Accurate Style)</h3>
+                <h3 class="text-lg font-semibold text-gray-800">Sistem Izin Akses (Accurate Style)</h3>
             </div>
 
             {{-- Permission Matrix --}}
             <div class="permission-section">
                 <div class="permission-section-header">
-                    <div class="permission-section-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;">📊</div>
+                    <div class="permission-section-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white;"></div>
                     <div>
                         <h4 class="permission-section-title">Matriks Izin Akses Detail</h4>
                         <p class="text-sm text-gray-600 mt-1">Atur izin akses untuk setiap modul dan sub-modul</p>
@@ -179,7 +179,7 @@
                             <strong>Tip:</strong> Gunakan tombol "Centang Semua" untuk memberikan semua izin akses, atau centang secara manual untuk kontrol lebih detail.
                         </div>
                         <button type="button" id="check_all_permissions" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 transition-colors">
-                            ✅ Centang Semua
+                            Centang Semua
                         </button>
                     </div>
                     <table class="permission-matrix">
@@ -201,7 +201,6 @@
                                 <td class="module-header">
                                     <div class="flex items-center">
                                         <span class="expand-icon text-lg mr-2">▶</span>
-                                        <span class="text-lg mr-2">📊</span>
                                         <div>
                                             <div class="font-semibold">Dashboard</div>
                                             <div class="text-xs text-gray-500">Halaman utama sistem</div>
@@ -217,49 +216,48 @@
                                 <td>-</td>
                             </tr>
 
-                            {{-- Master Data --}}
-                            <tr class="module-row" data-module="master">
+                            {{-- User --}}
+                            <tr class="module-row" data-module="user">
                                 <td class="module-header">
                                     <div class="flex items-center">
                                         <span class="expand-icon text-lg mr-2">▶</span>
-                                        <span class="text-lg mr-2">📁</span>
                                         <div>
-                                            <div class="font-semibold">Master Data</div>
-                                            <div class="text-xs text-gray-500">Data master sistem</div>
+                                            <div class="font-semibold">User</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan user dan karyawan</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td colspan="7" class="text-center text-gray-500 text-sm py-3">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Header menu - izin ditentukan oleh sub-menu
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="user-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="user-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="user-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="user-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="user-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="user-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="user-header-checkbox permission-checkbox" data-permission="export">
                                 </td>
                             </tr>
 
-                            {{-- Master Data Sub-modules --}}
+                            {{-- User Sub-modules --}}
                             {{-- Hidden checkbox for master-karyawan main permission --}}
                             <input type="hidden" name="permissions[master-karyawan][main]" value="0" id="master-karyawan-main">
                             <input type="checkbox" name="permissions[master-karyawan][main]" value="1" id="master-karyawan-main-checkbox" class="hidden">
 
-                            <tr class="submodule-row" data-parent="master">
+                            <tr class="submodule-row" data-parent="user">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 👥</span>
-                                        <span>Data Karyawan</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[master-karyawan][view]" value="1" class="permission-checkbox karyawan-permission"></td>
-                                <td><input type="checkbox" name="permissions[master-karyawan][create]" value="1" class="permission-checkbox karyawan-permission"></td>
-                                <td><input type="checkbox" name="permissions[master-karyawan][update]" value="1" class="permission-checkbox karyawan-permission"></td>
-                                <td><input type="checkbox" name="permissions[master-karyawan][delete]" value="1" class="permission-checkbox karyawan-permission"></td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td><input type="checkbox" name="permissions[master-karyawan][print]" value="1" class="permission-checkbox karyawan-permission"></td>
-                                <td><input type="checkbox" name="permissions[master-karyawan][export]" value="1" class="permission-checkbox karyawan-permission"></td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="master">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 👤</span>
                                         <span>Data User</span>
                                     </div>
                                 </td>
@@ -272,10 +270,148 @@
                                 <td>-</td>
                             </tr>
 
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Karyawan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][view]" value="1" class="permission-checkbox karyawan-permission"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][create]" value="1" class="permission-checkbox karyawan-permission"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][update]" value="1" class="permission-checkbox karyawan-permission"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][delete]" value="1" class="permission-checkbox karyawan-permission"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][print]" value="1" class="permission-checkbox karyawan-permission"></td>
+                                <td><input type="checkbox" name="permissions[master-karyawan][export]" value="1" class="permission-checkbox karyawan-permission"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Divisi</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-divisi][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-divisi][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-divisi][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-divisi][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Pekerjaan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pekerjaan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pekerjaan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pekerjaan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pekerjaan][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[master-pekerjaan][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pekerjaan][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Pajak</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-pajak][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pajak][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pajak][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-pajak][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Mobil</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-mobil][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-mobil][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Bank</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-bank][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-bank][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-bank][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-bank][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="user">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Persetujuan User</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[user-approval][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[user-approval][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[user-approval][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[user-approval][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[user-approval][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[user-approval][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            {{-- Master Data --}}
+                            <tr class="module-row" data-module="master">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Master Data</div>
+                                            <div class="text-xs text-gray-500">Data master sistem</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="master-header-checkbox permission-checkbox" data-permission="export">
+                                </td>
+                            </tr>
+
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 📦</span>
                                         <span>Data Kontainer</span>
                                     </div>
                                 </td>
@@ -291,39 +427,6 @@
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 🎯</span>
-                                        <span>Data Tujuan</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[master-tujuan][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[master-tujuan][create]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[master-tujuan][update]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[master-tujuan][delete]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="master">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 📋</span>
-                                        <span>Data Kegiatan</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[master-kegiatan][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[master-kegiatan][create]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[master-kegiatan][update]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[master-kegiatan][delete]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td>-</td>
-                                <td>-</td>
-                            </tr>
-
-                            <tr class="submodule-row" data-parent="master">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 🔐</span>
                                         <span>Data Permission</span>
                                     </div>
                                 </td>
@@ -339,7 +442,6 @@
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 🚗</span>
                                         <span>Data Mobil</span>
                                     </div>
                                 </td>
@@ -355,7 +457,6 @@
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 💰</span>
                                         <span>Data Pricelist Sewa Kontainer</span>
                                     </div>
                                 </td>
@@ -371,7 +472,6 @@
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 📊</span>
                                         <span>Data Tipe Akun</span>
                                     </div>
                                 </td>
@@ -384,30 +484,204 @@
                                 <td>-</td>
                             </tr>
 
-                            {{-- Tagihan Kontainer Sewa --}}
+                            {{-- Aktivitas Supir --}}
+                            <tr class="module-row" data-module="aktivitas-supir">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Aktivitas Supir</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan aktivitas dan kegiatan supir</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-supir-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-supir-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-supir-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-supir-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-supir-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-supir-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-supir-header-checkbox permission-checkbox" data-permission="export">
+                                </td>
+                            </tr>
+
+                            {{-- Aktivitas Supir Sub-modules --}}
+                            <tr class="submodule-row" data-parent="aktivitas-supir">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Tujuan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-tujuan][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="aktivitas-supir">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Data Kegiatan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kegiatan][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                            </tr>
+
+                            {{-- Uang Jalan Supir --}}
+                            <tr class="module-row" data-module="uang-jalan-supir">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Uang Jalan Supir</div>
+                                            <div class="text-xs text-gray-500">Modul permohonan, pranota dan approval uang jalan supir</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="uang-jalan-supir-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="uang-jalan-supir-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="uang-jalan-supir-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="uang-jalan-supir-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="uang-jalan-supir-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="uang-jalan-supir-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="uang-jalan-supir-header-checkbox permission-checkbox" data-permission="export">
+                                </td>
+                            </tr>
+
+                            {{-- Uang Jalan Supir Sub-modules --}}
+                            <tr class="submodule-row" data-parent="uang-jalan-supir">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Permohonan Memo</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[permohonan-memo][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-memo][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-memo][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-memo][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[permohonan-memo][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[permohonan-memo][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="uang-jalan-supir">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pranota Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-supir][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-supir][create]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pranota-supir][print]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="uang-jalan-supir">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pembayaran Pranota Supir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="uang-jalan-supir">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Approval Tugas</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval][view]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[approval][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[approval][print]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                            </tr>
+
+                            {{-- Tagihan Kontainer --}}
                             <tr class="module-row" data-module="tagihan-kontainer">
                                 <td class="module-header">
                                     <div class="flex items-center">
                                         <span class="expand-icon text-lg mr-2">▶</span>
-                                        <span class="text-lg mr-2">💰</span>
                                         <div>
-                                            <div class="font-semibold">Tagihan Kontainer Sewa & Pranota</div>
-                                            <div class="text-xs text-gray-500">Modul tagihan, pembayaran kontainer, pranota dan permohonan</div>
+                                            <div class="font-semibold">Tagihan Kontainer</div>
+                                            <div class="text-xs text-gray-500">Modul tagihan, pranota dan pembayaran kontainer</div>
                                         </div>
                                     </div>
                                 </td>
-                                <td colspan="7" class="text-center text-gray-500 text-sm py-3">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Header menu - izin ditentukan oleh sub-menu
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="tagihan-kontainer-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="tagihan-kontainer-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="tagihan-kontainer-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="tagihan-kontainer-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="tagihan-kontainer-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="tagihan-kontainer-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="tagihan-kontainer-header-checkbox permission-checkbox" data-permission="export">
                                 </td>
                             </tr>
 
-                            {{-- Tagihan Kontainer Sewa Sub-modules --}}
+                            {{-- Tagihan Kontainer Sub-modules --}}
                             <tr class="submodule-row" data-parent="tagihan-kontainer">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 📋</span>
-                                        <span>Daftar Tagihan Kontainer</span>
+                                        <span>Daftar Tagihan Kontainer Sewa</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[tagihan-kontainer][view]" value="1" class="permission-checkbox"></td>
@@ -422,15 +696,14 @@
                             <tr class="submodule-row" data-parent="tagihan-kontainer">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 📄</span>
-                                        <span>Daftar Pranota Kontainer</span>
+                                        <span>Daftar Pranota Kontainer Sewa</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[pranota][view]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[pranota][create]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[pranota][update]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[pranota][delete]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pranota][approve]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
                                 <td><input type="checkbox" name="permissions[pranota][print]" value="1" class="permission-checkbox"></td>
                                 <td><input type="checkbox" name="permissions[pranota][export]" value="1" class="permission-checkbox"></td>
                             </tr>
@@ -438,8 +711,106 @@
                             <tr class="submodule-row" data-parent="tagihan-kontainer">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 💳</span>
-                                        <span>Pembayaran Pranota Kontainer</span>
+                                        <span>Daftar Tagihan Perbaikan Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[perbaikan-kontainer][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pranota Perbaikan Kontainer</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-perbaikan-kontainer][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Daftar Tagihan CAT</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[tagihan-cat][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tagihan-cat][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tagihan-cat][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tagihan-cat][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[tagihan-cat][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[tagihan-cat][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Daftar Pranota Tagihan CAT</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-cat][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+
+
+
+                            {{-- Bayar Tagihan Kontainer --}}
+                            <tr class="module-row" data-module="bayar-tagihan-kontainer">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Bayar Tagihan Kontainer</div>
+                                            <div class="text-xs text-gray-500">Modul pembayaran tagihan dan pranota kontainer</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="bayar-tagihan-kontainer-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="bayar-tagihan-kontainer-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="bayar-tagihan-kontainer-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="bayar-tagihan-kontainer-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="bayar-tagihan-kontainer-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="bayar-tagihan-kontainer-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="bayar-tagihan-kontainer-header-checkbox permission-checkbox" data-permission="export">
+                                </td>
+                            </tr>
+
+                            {{-- Bayar Tagihan Kontainer Sub-modules --}}
+                            {{-- Bayar Pranota Kontainer Sewa --}}
+                            <tr class="submodule-row" data-parent="bayar-tagihan-kontainer">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Bayar Pranota Kontainer Sewa</span>
                                     </div>
                                 </td>
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][view]" value="1" class="permission-checkbox"></td>
@@ -451,75 +822,41 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-kontainer][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
-                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                            {{-- Bayar Pranota Perbaikan Kontainer --}}
+                            <tr class="submodule-row" data-parent="bayar-tagihan-kontainer">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 🚛</span>
-                                        <span>Pranota Supir</span>
+                                        <span>Bayar Pranota Perbaikan Kontainer</span>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-perbaikan-kontainer][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-perbaikan-kontainer][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-perbaikan-kontainer][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-perbaikan-kontainer][delete]" value="1" class="permission-checkbox"></td>
                                 <td class="text-center text-gray-400">-</td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td class="text-center text-gray-400">-</td>
-                                <td><input type="checkbox" name="permissions[pranota-supir][print]" value="1" class="permission-checkbox"></td>
-                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-perbaikan-kontainer][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-perbaikan-kontainer][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
-                            <tr class="submodule-row" data-parent="tagihan-kontainer">
+                            {{-- Bayar Pranota CAT Kontainer --}}
+                            <tr class="submodule-row" data-parent="bayar-tagihan-kontainer">
                                 <td class="submodule">
                                     <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 💰</span>
-                                        <span>Pembayaran Pranota Supir</span>
+                                        <span>Bayar Pranota CAT Kontainer</span>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][create]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][update]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][delete]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][approve]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][print]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[pembayaran-pranota-supir][export]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-cat][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-cat][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-cat][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-cat][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-cat][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-cat][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
-                            {{-- Permohonan Memo Sub-modules (moved to tagihan-kontainer) --}}
-                            <tr class="submodule-row" data-parent="tagihan-kontainer">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─ 📝</span>
-                                        <span>Permohonan Memo</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[permohonan][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan][create]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan][update]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan][delete]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan][approve]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan][print]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[permohonan][export]" value="1" class="permission-checkbox"></td>
-                            </tr>
 
-                            {{-- User Approval --}}
-                            <tr class="module-row" data-module="user-approval">
-                                <td class="module-header">
-                                    <div class="flex items-center">
-                                        <span class="expand-icon text-lg mr-2">▶</span>
-                                        <span class="text-lg mr-2">✅</span>
-                                        <div>
-                                            <div class="font-semibold">Persetujuan User</div>
-                                            <div class="text-xs text-gray-500">Modul approval user baru</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[user-approval][view]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[user-approval][create]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[user-approval][update]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[user-approval][delete]" value="1" class="permission-checkbox"></td>
-                                <td>-</td>
-                                <td><input type="checkbox" name="permissions[user-approval][print]" value="1" class="permission-checkbox"></td>
-                                <td><input type="checkbox" name="permissions[user-approval][export]" value="1" class="permission-checkbox"></td>
-                            </tr>
+
+
                         </tbody>
                     </table>
                 </div>
@@ -536,7 +873,7 @@
                             </svg>
                         </div>
                         <div class="ml-3">
-                            <h4 class="text-sm font-medium text-indigo-800">📋 Copy Permission dari User Lain</h4>
+                            <h4 class="text-sm font-medium text-indigo-800">Copy Permission dari User Lain</h4>
                             <p class="text-sm text-indigo-700 mt-1">
                                 Pilih user yang sudah ada untuk menyalin semua izin aksesnya ke user baru ini.
                             </p>
@@ -552,7 +889,7 @@
                             @endforeach
                         </select>
                         <button type="button" id="copy_permissions_btn" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-md hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed">
-                            📋 Copy Permission
+                            Copy Permission
                         </button>
                     </div>
                 </div>
@@ -702,7 +1039,7 @@
                     .finally(() => {
                         // Reset button state
                         this.disabled = false;
-                        this.innerHTML = '📋 Copy Permission';
+                        this.innerHTML = 'Copy Permission';
                     });
             });
 
@@ -783,6 +1120,24 @@
             // Initialize main permission on page load
             updateKaryawanMainPermission();
 
+            // Initialize check all user permissions
+            initializeCheckAllUser();
+
+            // Initialize check all aktivitas supir permissions
+            initializeCheckAllAktivitasSupir();
+
+            // Initialize check all uang jalan supir permissions
+            initializeCheckAllUangJalanSupir();
+
+            // Initialize check all tagihan kontainer permissions
+            initializeCheckAllTagihanKontainer();
+
+            // Initialize check all bayar tagihan kontainer permissions
+            initializeCheckAllBayarTagihanKontainer();
+
+            // Initialize check all master permissions
+            initializeCheckAllMaster();
+
             // Check All Permissions Button
             document.getElementById('check_all_permissions').addEventListener('click', function() {
                 const checkboxes = document.querySelectorAll('.permission-checkbox');
@@ -804,6 +1159,306 @@
                     showToast('✅ Semua izin telah dicentang', 'success');
                 }
             });
+
+            function initializeCheckAllUser() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.user-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in user sub-modules
+                        const userCheckboxes = document.querySelectorAll(`[data-parent="user"] input[name*="[${permission}]"]`);
+                        userCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} User telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} User telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="user"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateUserHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateUserHeaderCheckboxes();
+            }
+
+            function updateUserHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.user-header-checkbox[data-permission="${permission}"]`);
+                    const userCheckboxes = document.querySelectorAll(`[data-parent="user"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && userCheckboxes.length > 0) {
+                        const allChecked = Array.from(userCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(userCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllAktivitasSupir() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.aktivitas-supir-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in aktivitas supir sub-modules
+                        const aktivitasSupirCheckboxes = document.querySelectorAll(`[data-parent="aktivitas-supir"] input[name*="[${permission}]"]`);
+                        aktivitasSupirCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Aktivitas Supir telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Aktivitas Supir telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="aktivitas-supir"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateAktivitasSupirHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateAktivitasSupirHeaderCheckboxes();
+            }
+
+            function updateAktivitasSupirHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.aktivitas-supir-header-checkbox[data-permission="${permission}"]`);
+                    const aktivitasSupirCheckboxes = document.querySelectorAll(`[data-parent="aktivitas-supir"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && aktivitasSupirCheckboxes.length > 0) {
+                        const allChecked = Array.from(aktivitasSupirCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(aktivitasSupirCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllUangJalanSupir() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.uang-jalan-supir-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in uang jalan supir sub-modules
+                        const uangJalanSupirCheckboxes = document.querySelectorAll(`[data-parent="uang-jalan-supir"] input[name*="[${permission}]"]`);
+                        uangJalanSupirCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Uang Jalan Supir telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Uang Jalan Supir telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="uang-jalan-supir"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateUangJalanSupirHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateUangJalanSupirHeaderCheckboxes();
+            }
+
+            function updateUangJalanSupirHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.uang-jalan-supir-header-checkbox[data-permission="${permission}"]`);
+                    const uangJalanSupirCheckboxes = document.querySelectorAll(`[data-parent="uang-jalan-supir"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && uangJalanSupirCheckboxes.length > 0) {
+                        const allChecked = Array.from(uangJalanSupirCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(uangJalanSupirCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllTagihanKontainer() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.tagihan-kontainer-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in tagihan kontainer sub-modules
+                        const tagihanKontainerCheckboxes = document.querySelectorAll(`[data-parent="tagihan-kontainer"] input[name*="[${permission}]"]`);
+                        tagihanKontainerCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Tagihan Kontainer telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Tagihan Kontainer telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="tagihan-kontainer"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateTagihanKontainerHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateTagihanKontainerHeaderCheckboxes();
+            }
+
+            function updateTagihanKontainerHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.tagihan-kontainer-header-checkbox[data-permission="${permission}"]`);
+                    const tagihanKontainerCheckboxes = document.querySelectorAll(`[data-parent="tagihan-kontainer"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && tagihanKontainerCheckboxes.length > 0) {
+                        const allChecked = Array.from(tagihanKontainerCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(tagihanKontainerCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllBayarTagihanKontainer() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.bayar-tagihan-kontainer-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in bayar tagihan kontainer sub-modules
+                        const bayarTagihanKontainerCheckboxes = document.querySelectorAll(`[data-parent="bayar-tagihan-kontainer"] input[name*="[${permission}]"]`);
+                        bayarTagihanKontainerCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`Semua izin ${permission} Bayar Tagihan Kontainer telah dicentang`, 'success');
+                        } else {
+                            showToast(`Semua izin ${permission} Bayar Tagihan Kontainer telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="bayar-tagihan-kontainer"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateBayarTagihanKontainerHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateBayarTagihanKontainerHeaderCheckboxes();
+            }
+
+            function updateBayarTagihanKontainerHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.bayar-tagihan-kontainer-header-checkbox[data-permission="${permission}"]`);
+                    const bayarTagihanKontainerCheckboxes = document.querySelectorAll(`[data-parent="bayar-tagihan-kontainer"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && bayarTagihanKontainerCheckboxes.length > 0) {
+                        const allChecked = Array.from(bayarTagihanKontainerCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(bayarTagihanKontainerCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllMaster() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.master-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in master sub-modules
+                        const masterCheckboxes = document.querySelectorAll(`[data-parent="master"] input[name*="[${permission}]"]`);
+                        masterCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`Semua izin ${permission} Master Data telah dicentang`, 'success');
+                        } else {
+                            showToast(`Semua izin ${permission} Master Data telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="master"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateMasterHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateMasterHeaderCheckboxes();
+            }
+
+            function updateMasterHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.master-header-checkbox[data-permission="${permission}"]`);
+                    const masterCheckboxes = document.querySelectorAll(`[data-parent="master"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && masterCheckboxes.length > 0) {
+                        const allChecked = Array.from(masterCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(masterCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
         });
     </script>
 @endpush

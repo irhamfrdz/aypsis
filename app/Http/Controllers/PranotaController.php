@@ -87,7 +87,7 @@ class PranotaController extends Controller
     /**
      * Store bulk pranota from selected tagihan items
      */
-    public function bulkStore(Request $request)
+public function bulkStore(Request $request)
     {
         $request->validate([
             'selected_ids' => 'required|array|min:1',
@@ -241,11 +241,38 @@ class PranotaController extends Controller
     /**
      * Display pranota list
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pranotaList = Pranota::with(['pembayaranKontainer' => function($query) {
+        $query = Pranota::with(['pembayaranKontainer' => function($query) {
             $query->orderBy('created_at', 'desc');
-        }])->orderBy('created_at', 'desc')->paginate(15);
+        }])
+        ->whereNotNull('tagihan_ids') // Only pranota that have tagihan_ids
+        ->where('tagihan_ids', '!=', '[]') // Exclude empty arrays
+        ->orderBy('created_at', 'desc');
+
+        // Apply filters
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        if ($request->filled('tanggal_dari')) {
+            $query->whereDate('tanggal_pranota', '>=', $request->tanggal_dari);
+        }
+
+        if ($request->filled('tanggal_sampai')) {
+            $query->whereDate('tanggal_pranota', '<=', $request->tanggal_sampai);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('no_invoice', 'like', "%{$search}%")
+                  ->orWhere('supplier', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%");
+            });
+        }
+
+        $pranotaList = $query->paginate(15)->appends($request->query());
 
         return view('pranota.index', compact('pranotaList'));
     }
