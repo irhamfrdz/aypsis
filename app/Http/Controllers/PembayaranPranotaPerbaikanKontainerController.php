@@ -55,11 +55,13 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     public function create()
     {
         $pranotaPerbaikanKontainers = PranotaPerbaikanKontainer::where('status', 'approved')
-            ->whereDoesntHave('pembayaranPranotaPerbaikanKontainer')
-            ->with(['perbaikanKontainer.kontainer'])
+            ->whereDoesntHave('pembayaranPranotaPerbaikanKontainers')
+            ->with(['perbaikanKontainers.kontainer'])
             ->get();
 
-        return view('pembayaran-pranota-perbaikan-kontainer.create', compact('pranotaPerbaikanKontainers'));
+        $akunCoa = \App\Models\Coa::all();
+
+        return view('pembayaran-pranota-perbaikan-kontainer.create', compact('pranotaPerbaikanKontainers', 'akunCoa'));
     }
 
     /**
@@ -89,29 +91,37 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(PembayaranPranotaPerbaikanKontainer $pembayaranPranotaPerbaikanKontainer)
+    public function show(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
-        $pembayaranPranotaPerbaikanKontainer->load(['pranotaPerbaikanKontainer.perbaikanKontainer.kontainer', 'creator']);
+        $pembayaran->load(['pranotaPerbaikanKontainer.perbaikanKontainer.kontainer', 'creator']);
 
-        return view('pembayaran-pranota-perbaikan-kontainer.show', compact('pembayaranPranotaPerbaikanKontainer'));
+        return view('pembayaran-pranota-perbaikan-kontainer.show', compact('pembayaran'));
+    }
+
+    /**
+     * Display the specified resource for printing.
+     */
+    public function print(PembayaranPranotaPerbaikanKontainer $pembayaran)
+    {
+        return view('pembayaran-pranota-perbaikan-kontainer.print', compact('pembayaran'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(PembayaranPranotaPerbaikanKontainer $pembayaranPranotaPerbaikanKontainer)
+    public function edit(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
         $pranotaPerbaikanKontainers = PranotaPerbaikanKontainer::where('status', 'approved')
             ->with(['perbaikanKontainer.kontainer'])
             ->get();
 
-        return view('pembayaran-pranota-perbaikan-kontainer.edit', compact('pembayaranPranotaPerbaikanKontainer', 'pranotaPerbaikanKontainers'));
+        return view('pembayaran-pranota-perbaikan-kontainer.edit', compact('pembayaran', 'pranotaPerbaikanKontainers'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, PembayaranPranotaPerbaikanKontainer $pembayaranPranotaPerbaikanKontainer)
+    public function update(Request $request, PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
         $request->validate([
             'pranota_perbaikan_kontainer_id' => 'required|exists:pranota_perbaikan_kontainers,id',
@@ -126,7 +136,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
         $data = $request->all();
         $data['updated_by'] = Auth::id();
 
-        $pembayaranPranotaPerbaikanKontainer->update($data);
+        $pembayaran->update($data);
 
         return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
             ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil diperbarui.');
@@ -135,9 +145,9 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(PembayaranPranotaPerbaikanKontainer $pembayaranPranotaPerbaikanKontainer)
+    public function destroy(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
-        $pembayaranPranotaPerbaikanKontainer->delete();
+        $pembayaran->delete();
 
         return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
             ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil dihapus.');

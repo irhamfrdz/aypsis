@@ -33,6 +33,8 @@ class Permohonan extends Model
         'catatan',
         'lampiran',
         'status',
+        'approved_by_system_1',
+        'approved_by_system_2',
     ];
 
     protected $casts = [

@@ -15,8 +15,10 @@ class PranotaSupirController extends Controller
      */
     public function create(Request $request)
     {
-        // Ambil data permohonan yang sudah disetujui (Selesai atau Bermasalah) dan belum memiliki pranota
+        // Ambil data permohonan yang sudah disetujui oleh kedua sistem approval (Selesai atau Bermasalah) dan belum memiliki pranota
         $permohonans = Permohonan::whereIn('status', ['Selesai', 'Bermasalah'])
+            ->where('approved_by_system_1', true)
+            ->where('approved_by_system_2', true)
             ->whereDoesntHave('pranotas')
             ->with(['supir', 'pranotas']);
         if ($request->start_date) {
@@ -119,7 +121,24 @@ class PranotaSupirController extends Controller
             'alasan_adjustment' => 'nullable|string',
         ]);
 
+        // Validasi tambahan: Pastikan semua permohonan masih eligible untuk pranota
+        $eligiblePermohonans = Permohonan::whereIn('id', $validatedData['permohonan_ids'])
+            ->whereIn('status', ['Selesai', 'Bermasalah'])
+            ->where('approved_by_system_1', true)
+            ->where('approved_by_system_2', true)
+            ->whereDoesntHave('pranotas')
+            ->get();
+
+        if ($eligiblePermohonans->count() !== count($validatedData['permohonan_ids'])) {
+            return back()->with('error', 'Beberapa memo yang dipilih sudah tidak eligible untuk dibuat pranota. Status mungkin telah berubah atau sudah memiliki pranota.')->withInput();
+        }
+
         $total_biaya_memo = Permohonan::whereIn('id', $validatedData['permohonan_ids'])->sum('total_harga_setelah_adj');
+
+        if ($total_biaya_memo <= 0) {
+            return back()->with('error', 'Total biaya memo harus lebih besar dari 0 untuk membuat pranota.')->withInput();
+        }
+
         $adjustment = $validatedData['adjustment'] ?? 0;
         $total_biaya_pranota = $total_biaya_memo + $adjustment;
 

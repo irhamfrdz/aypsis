@@ -214,7 +214,7 @@ public function bulkStore(Request $request)
 
         } catch (\Exception $e) {
             DB::rollback();
-            \Illuminate\Support\Facades\Log::error('Error creating pranota from tagihan CAT: ' . $e->getMessage(), [
+            Log::error('Error creating pranota from tagihan CAT: ' . $e->getMessage(), [
                 'request_data' => $request->all(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -288,7 +288,7 @@ public function bulkStore(Request $request)
         // Direct query instead of using model method to avoid undefined method error
         $tagihanItems = collect();
         if (!empty($pranota->tagihan_ids)) {
-            $tagihanItems = \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $pranota->tagihan_ids)->get();
+            $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $pranota->tagihan_ids)->get();
         }
 
         return view('pranota.show', compact('pranota', 'tagihanItems'));

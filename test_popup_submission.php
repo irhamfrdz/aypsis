@@ -1,13 +1,6 @@
 <?php
 
-require_once 'vendor/autolo        echo "✅ Created test perbaikan kontainer with ID: {$perbaikan->id}\n";
-        echo "   - Estimasi Biaya: " . ($perbaikan->estimasi_biaya_perbaikan ?? 'NULL') . "\n";
-        echo "   - Realisasi Biaya: " . ($perbaikan->realisasi_biaya_perbaikan ?? 'NULL') . "\n";
-    } else {
-        echo "✅ Using existing perbaikan kontainer with ID: {$perbaikan->id}\n";
-        echo "   - Estimasi Biaya: " . ($perbaikan->estimasi_biaya_perbaikan ?? 'NULL') . "\n";
-        echo "   - Realisasi Biaya: " . ($perbaikan->realisasi_biaya_perbaikan ?? 'NULL') . "\n";
-    }
+require_once 'vendor/autoload.php';
 
 $app = require_once 'bootstrap/app.php';
 $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
@@ -44,8 +37,8 @@ try {
         echo "   - Realisasi Biaya: {$perbaikan->realisasi_biaya_perbaikan}\n";
     } else {
         echo "✅ Using existing perbaikan kontainer with ID: {$perbaikan->id}\n";
-        echo "   - Estimasi Biaya: {$perbaikan->estimasi_biaya_perbaikan ?? 'NULL'}\n";
-        echo "   - Realisasi Biaya: {$perbaikan->realisasi_biaya_perbaikan ?? 'NULL'}\n";
+        echo "   - Estimasi Biaya: " . ($perbaikan->estimasi_biaya_perbaikan !== null ? $perbaikan->estimasi_biaya_perbaikan : 'NULL') . "\n";
+        echo "   - Realisasi Biaya: " . ($perbaikan->realisasi_biaya_perbaikan !== null ? $perbaikan->realisasi_biaya_perbaikan : 'NULL') . "\n";
     }
 
     // Simulate the popup form submission data
@@ -130,7 +123,6 @@ try {
     echo "✅ Cleaned up test perbaikan\n";
 
     echo "\n🎉 Popup submission test completed successfully!\n";
-
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
     echo "Stack trace:\n" . $e->getTraceAsString() . "\n";

@@ -1223,6 +1223,63 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log('Showing bulk actions - removing hidden class');
                 bulkActions.classList.remove('hidden');
                 bulkActions.style.display = 'block'; // Force show
+
+                // Cek apakah ada item yang memiliki grup untuk tombol "Masukan ke Pranota"
+                let hasItemsWithGroup = false;
+                let hasItemsAlreadyInPranota = false;
+                checkedBoxes.forEach((checkbox, index) => {
+                    const row = checkbox.closest('tr');
+                    if (row) {
+                        const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
+                        const groupValue = groupElement ? groupElement.textContent.trim() : '';
+
+                        const statusPranotaElement = row.querySelector('td:nth-child(18)'); // Status Pranota column (index 18)
+                        const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
+
+                        console.log(`Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
+                        console.log(`Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
+
+                        if (groupValue && groupValue !== '-' && groupValue !== '') {
+                            hasItemsWithGroup = true;
+                            console.log(`Item ${index + 1} has valid group: "${groupValue}"`);
+                        } else {
+                            console.log(`Item ${index + 1} has invalid/no group: "${groupValue}"`);
+                        }
+
+                        // Cek apakah item sudah masuk pranota
+                        // Case insensitive check untuk "belum masuk pranota"
+                        const isNotInPranota = !statusPranotaValue ||
+                                               statusPranotaValue.toLowerCase().includes('belum masuk pranota') ||
+                                               statusPranotaValue === '-';
+
+                        if (!isNotInPranota) {
+                            hasItemsAlreadyInPranota = true;
+                            console.log(`Item ${index + 1} already in pranota: "${statusPranotaValue}"`);
+                        } else {
+                            console.log(`Item ${index + 1} not in pranota: "${statusPranotaValue}"`);
+                        }
+                    }
+                });
+
+                console.log('Final result: hasItemsWithGroup =', hasItemsWithGroup, 'hasItemsAlreadyInPranota =', hasItemsAlreadyInPranota);
+
+                // Enable/disable tombol "Masukan ke Pranota" berdasarkan validasi grup dan status pranota
+                const btnMasukanPranota = document.getElementById('btnMasukanPranota');
+                if (btnMasukanPranota) {
+                    if (hasItemsWithGroup && !hasItemsAlreadyInPranota) {
+                        btnMasukanPranota.disabled = false;
+                        btnMasukanPranota.classList.remove('opacity-50', 'cursor-not-allowed');
+                        btnMasukanPranota.title = 'Masukan item terpilih ke pranota';
+                    } else {
+                        btnMasukanPranota.disabled = true;
+                        btnMasukanPranota.classList.add('opacity-50', 'cursor-not-allowed');
+                        if (hasItemsAlreadyInPranota) {
+                            btnMasukanPranota.title = 'Beberapa item sudah masuk pranota dan tidak dapat dimasukkan kembali';
+                        } else {
+                            btnMasukanPranota.title = 'Pilih item yang memiliki grup terlebih dahulu';
+                        }
+                    }
+                }
             } else {
                 console.log('Hiding bulk actions - adding hidden class');
                 bulkActions.classList.add('hidden');
@@ -1369,7 +1426,67 @@ window.masukanKePranota = function() {
         return;
     }
 
-    console.log('Starting data collection...');
+    // Validasi: Periksa apakah semua item yang dipilih memiliki grup
+    let itemsWithoutGroup = [];
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
+            const groupValue = groupElement ? groupElement.textContent.trim() : '';
+
+            console.log(`Validation Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
+
+            if (!groupValue || groupValue === '-' || groupValue === '') {
+                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
+                itemsWithoutGroup.push(containerName);
+                console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutGroup`);
+            } else {
+                console.log(`Item ${index + 1} has valid group: "${groupValue}"`);
+            }
+        }
+    });
+
+    // Jika ada item yang tidak memiliki grup, tampilkan pesan error
+    if (itemsWithoutGroup.length > 0) {
+        const itemList = itemsWithoutGroup.join(', ');
+        alert(`❌ Tidak dapat memasukkan ke pranota!\n\nItem berikut belum memiliki grup:\n${itemList}\n\nSilakan buat grup terlebih dahulu sebelum memasukkan ke pranota.`);
+        return;
+    }
+
+    // Validasi: Periksa apakah ada item yang sudah masuk pranota
+    let itemsAlreadyInPranota = [];
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            const statusPranotaElement = row.querySelector('td:nth-child(18)'); // Status Pranota column (index 18)
+            const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
+
+            console.log(`Pranota Status Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
+
+            // Jika status menunjukkan sudah masuk pranota (bukan "Belum masuk pranota" atau kosong)
+            // Case insensitive check untuk "belum masuk pranota"
+            const isNotInPranota = !statusPranotaValue ||
+                                   statusPranotaValue.toLowerCase().includes('belum masuk pranota') ||
+                                   statusPranotaValue === '-';
+
+            if (!isNotInPranota) {
+                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
+                itemsAlreadyInPranota.push(`${containerName} (${statusPranotaValue})`);
+                console.log(`Item ${index + 1} (${containerName}) already in pranota: "${statusPranotaValue}"`);
+            } else {
+                console.log(`Item ${index + 1} not in pranota: "${statusPranotaValue}"`);
+            }
+        }
+    });
+
+    // Jika ada item yang sudah masuk pranota, tampilkan pesan error
+    if (itemsAlreadyInPranota.length > 0) {
+        const itemList = itemsAlreadyInPranota.join(', ');
+        alert(`❌ Tidak dapat memasukkan ke pranota!\n\nItem berikut sudah masuk pranota:\n${itemList}\n\nItem yang sudah masuk pranota tidak dapat dimasukkan kembali.`);
+        return;
+    }
 
     // Collect data from selected rows
     const selectedData = {

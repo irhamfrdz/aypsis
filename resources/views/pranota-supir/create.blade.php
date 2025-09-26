@@ -5,6 +5,19 @@
 
 @section('content')
     <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
+        {{-- Notifikasi --}}
+        @if(session('success'))
+            <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-4" role="alert">
+                <p class="font-bold">Sukses</p>
+                <p>{{ session('success') }}</p>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4" role="alert">
+                <p class="font-bold">Peringatan</p>
+                <p>{{ session('error') }}</p>
+            </div>
+        @endif
         @php
             // Definisikan kelas Tailwind untuk input yang lebih compact
             $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-50 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-sm p-2 transition-colors";
@@ -156,7 +169,7 @@
                 </div>
                 <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
                     <p class="text-xs text-gray-600">
-                        * Hanya memo yang sudah di-approve (status Selesai/Bermasalah) dan belum memiliki pranota.
+                        * Hanya memo yang sudah di-approve oleh <strong>Approval Tugas 1</strong> dan <strong>Approval Tugas 2</strong> (status Selesai/Bermasalah) dan belum memiliki pranota.
                     </p>
                 </div>
             </div>

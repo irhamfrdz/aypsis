@@ -149,7 +149,9 @@ class UserController extends Controller
         // Handle permissions - prioritize new matrix format
         $permissionIds = [];
         if ($request->has('permissions') && !empty($request->permissions)) {
+            error_log('DEBUG: permissions matrix received: ' . json_encode($request->permissions));
             $permissionIds = $this->convertMatrixPermissionsToIds($request->permissions);
+            error_log('DEBUG: converted permission IDs: ' . json_encode($permissionIds));
         } elseif ($request->has('simple_permissions') && !empty($request->simple_permissions)) {
             // Fallback to simple permissions
             $permissionIds = $this->convertSimplePermissionsToIds($request->simple_permissions);
@@ -542,6 +544,12 @@ class UserController extends Controller
                     if ($module === 'pembayaran' && strpos($action, 'pranota-kontainer-') === 0) {
                         $action = str_replace('pranota-kontainer-', '', $action);
                         $module = 'pembayaran-pranota-kontainer';
+                    }
+
+                    // Special handling for pembayaran-pranota-cat-* permissions
+                    if ($module === 'pembayaran' && strpos($action, 'pranota-cat-') === 0) {
+                        $action = str_replace('pranota-cat-', '', $action);
+                        $module = 'pembayaran-pranota-cat';
                     }
 
                     // Special handling for pranota-perbaikan-kontainer-* permissions
@@ -1363,6 +1371,33 @@ class UserController extends Controller
                         }
                     }
 
+                    // Special handling for pembayaran-pranota-cat
+                    if ($module === 'pembayaran-pranota-cat') {
+                        error_log("DEBUG: Processing pembayaran-pranota-cat with action: $action");
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = 'pembayaran-pranota-cat-' . $actionMap[$action];
+                            error_log("DEBUG: Looking for permission: $permissionName");
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                                error_log("DEBUG: Found permission ID: {$permission->id}");
+                            } else {
+                                error_log("DEBUG: Permission not found");
+                            }
+                        }
+                    }
+
                     // Special handling for perbaikan-kontainer module
                     if ($module === 'perbaikan-kontainer') {
                         // For perbaikan-kontainer, map matrix actions directly to permission names
@@ -1420,7 +1455,7 @@ class UserController extends Controller
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'pembayaran-pranota-perbaikan-kontainer.' . $directActionMap[$action];
+                            $permissionName = 'pembayaran-pranota-perbaikan-kontainer-' . $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {

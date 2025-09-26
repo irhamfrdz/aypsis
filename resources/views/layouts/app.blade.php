@@ -7,6 +7,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title','AYPSIS')</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -800,6 +801,25 @@
                 Approval Tugas
             </a>
         @endif
+
+        {{-- Approval Tugas II --}}
+        @php
+            $hasApprovalIIPermission = $isAdmin ||
+                auth()->user()->can('approval-view') ||
+                auth()->user()->can('approval-approve') ||
+                auth()->user()->can('approval-print') ||
+                auth()->user()->can('approval-dashboard') ||
+                auth()->user()->can('approval') ||
+                auth()->user()->can('permohonan.approve');
+        @endphp
+        @if($hasApprovalIIPermission)
+            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Approval Tugas II
+            </a>
+        @endif
     </div>
 </div>
 @endif
@@ -950,7 +970,7 @@
         @endif
 
         {{-- Pembayaran Pranota CAT Kontainer --}}
-        @if(Route::has('pembayaran-pranota-cat.index') && ($isAdmin || auth()->user()->can('pranota-cat-view')))
+        @if(Route::has('pembayaran-pranota-cat.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-cat-view')))
             <a href="{{ route('pembayaran-pranota-cat.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-cat.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
                 <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>

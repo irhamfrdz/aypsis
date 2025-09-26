@@ -29,6 +29,9 @@ use App\Http\Controllers\PranotaSewaController;
 use App\Http\Controllers\PranotaTagihanCatController;
 use App\Http\Controllers\PranotaTagihanKontainerSewaController;
 use App\Http\Controllers\PembayaranPranotaKontainerController;
+use App\Http\Controllers\PembayaranPranotaCatController;
+use App\Http\Controllers\PembayaranPranotaPerbaikanController;
+use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\VendorBengkelController;
 use App\Http\Controllers\TipeAkunController;
 
@@ -91,11 +94,11 @@ Route::middleware([
     // 'can:master-karyawan' gate so that newly created users (pending) can submit
     // their karyawan data on first login.
     // Route create/store karyawan untuk master/admin hanya gunakan prefix master/karyawan agar tidak bentrok dengan onboarding
-    Route::get('master/karyawan/create', [\App\Http\Controllers\KaryawanController::class, 'create'])
+    Route::get('master/karyawan/create', [KaryawanController::class, 'create'])
         ->name('master.karyawan.create')
         ->middleware(['auth', 'can:master-karyawan-create']);
 
-    Route::post('master/karyawan', [\App\Http\Controllers\KaryawanController::class, 'store'])
+    Route::post('master/karyawan', [KaryawanController::class, 'store'])
         ->name('master.karyawan.store')
         ->middleware(['auth', 'can:master-karyawan-create']);
 
@@ -431,7 +434,7 @@ Route::middleware([
              ->middleware(['auth', 'can:master-pajak-view']);
 
         // Download template for bank import
-        Route::get('bank/download-template', [\App\Http\Controllers\MasterBankController::class, 'downloadTemplate'])
+        Route::get('bank/download-template', [MasterBankController::class, 'downloadTemplate'])
              ->name('bank.download-template');
 
         // Download template for coa import
@@ -440,28 +443,28 @@ Route::middleware([
     });
 
     // Master bank routes (moved outside master group to use dash format)
-    Route::get('master/bank', [\App\Http\Controllers\MasterBankController::class, 'index'])
+    Route::get('master/bank', [MasterBankController::class, 'index'])
          ->name('master-bank-index')
          ->middleware('can:master-bank-view');
-    Route::get('master/bank/create', [\App\Http\Controllers\MasterBankController::class, 'create'])
+    Route::get('master/bank/create', [MasterBankController::class, 'create'])
          ->name('master-bank-create')
          ->middleware('can:master-bank-create');
-    Route::post('master/bank', [\App\Http\Controllers\MasterBankController::class, 'store'])
+    Route::post('master/bank', [MasterBankController::class, 'store'])
          ->name('master-bank-store')
          ->middleware('can:master-bank-create');
-    Route::get('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'show'])
+    Route::get('master/bank/{bank}', [MasterBankController::class, 'show'])
          ->name('master-bank-show')
          ->middleware('can:master-bank-view');
-    Route::get('master/bank/{bank}/edit', [\App\Http\Controllers\MasterBankController::class, 'edit'])
+    Route::get('master/bank/{bank}/edit', [MasterBankController::class, 'edit'])
          ->name('master-bank-edit')
          ->middleware('can:master-bank-update');
-    Route::put('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'update'])
+    Route::put('master/bank/{bank}', [MasterBankController::class, 'update'])
          ->name('master-bank-update')
          ->middleware('can:master-bank-update');
-    Route::delete('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'destroy'])
+    Route::delete('master/bank/{bank}', [MasterBankController::class, 'destroy'])
          ->name('master-bank-destroy')
          ->middleware('can:master-bank-delete');
-    Route::post('master/bank/import', [\App\Http\Controllers\MasterBankController::class, 'import'])
+    Route::post('master/bank/import', [MasterBankController::class, 'import'])
          ->name('master-bank-import')
          ->middleware(['auth', 'can:master-bank-create']);
 
@@ -774,6 +777,18 @@ Route::middleware([
      Route::post('/simpan', [PembayaranPranotaSupirController::class, 'store'])->name('store')->middleware('can:pembayaran-pranota-supir-create'); // Menyimpan pembayaran
     });
 
+    // --- Rute Pembayaran Pranota Perbaikan Kontainer ---
+    Route::prefix('pembayaran-pranota-perbaikan-kontainer')->name('pembayaran-pranota-perbaikan-kontainer.')->group(function() {
+     Route::get('/', [PembayaranPranotaPerbaikanKontainerController::class, 'index'])->name('index')->middleware('can:pembayaran-pranota-perbaikan-kontainer-view');
+     Route::get('/create', [PembayaranPranotaPerbaikanKontainerController::class, 'create'])->name('create')->middleware('can:pembayaran-pranota-perbaikan-kontainer-create');
+     Route::post('/', [PembayaranPranotaPerbaikanKontainerController::class, 'store'])->name('store')->middleware('can:pembayaran-pranota-perbaikan-kontainer-create');
+     Route::get('/{pembayaran}', [PembayaranPranotaPerbaikanKontainerController::class, 'show'])->name('show')->middleware('can:pembayaran-pranota-perbaikan-kontainer-view');
+     Route::get('/{pembayaran}/print', [PembayaranPranotaPerbaikanKontainerController::class, 'print'])->name('print')->middleware('can:pembayaran-pranota-perbaikan-kontainer-print');
+     Route::get('/{pembayaran}/edit', [PembayaranPranotaPerbaikanKontainerController::class, 'edit'])->name('edit')->middleware('can:pembayaran-pranota-perbaikan-kontainer-update');
+     Route::put('/{pembayaran}', [PembayaranPranotaPerbaikanKontainerController::class, 'update'])->name('update')->middleware('can:pembayaran-pranota-perbaikan-kontainer-update');
+     Route::delete('/{pembayaran}', [PembayaranPranotaPerbaikanKontainerController::class, 'destroy'])->name('destroy')->middleware('can:pembayaran-pranota-perbaikan-kontainer-delete');
+    });
+
     // --- Rute Khusus untuk Supir ---
     Route::prefix('supir')->name('supir.')->group(function () {
         Route::get('/dashboard', [SupirDashboardController::class, 'index'])->name('dashboard');
@@ -794,6 +809,21 @@ Route::middleware([
                Route::get('/{permohonan}', [\App\Http\Controllers\PenyelesaianController::class, 'create'])->name('create');
                // Menyimpan data dari form approval
                Route::post('/{permohonan}', [\App\Http\Controllers\PenyelesaianController::class, 'store'])->name('store');
+     });
+
+     // --- Rute Penyelesaian Tugas II (Duplicate dari Approval) ---
+     // Menggunakan PenyelesaianIIController untuk sistem approval kedua
+     Route::prefix('approval-ii')->name('approval-ii.')->middleware('can:approval-dashboard')->group(function () {
+          // Dashboard untuk melihat tugas yang perlu diselesaikan
+          Route::get('/', [\App\Http\Controllers\PenyelesaianIIController::class, 'index'])->name('dashboard');
+          // Riwayat approval yang sudah selesai
+          Route::get('/riwayat', [\App\Http\Controllers\PenyelesaianIIController::class, 'riwayat'])->name('riwayat');
+               // Proses masal permohonan (define before parameterized routes to avoid route-model binding conflicts)
+               Route::post('/mass-process', [\App\Http\Controllers\PenyelesaianIIController::class, 'massProcess'])->name('mass_process');
+               // Menampilkan form approval untuk permohonan tertentu
+               Route::get('/{permohonan}', [\App\Http\Controllers\PenyelesaianIIController::class, 'create'])->name('create');
+               // Menyimpan data dari form approval
+               Route::post('/{permohonan}', [\App\Http\Controllers\PenyelesaianIIController::class, 'store'])->name('store');
      });
 
                // Minimal CRUD routes for new simplified Tagihan Kontainer Sewa (daftar)
@@ -881,6 +911,209 @@ Route::middleware([
                     ->name('daftar-tagihan-kontainer-sewa.bulk-update-status')
                     ->middleware('can:tagihan-kontainer-update');
 
+               // Pembayaran Pranota Kontainer routes
+               Route::prefix('pembayaran-pranota-kontainer')->name('pembayaran-pranota-kontainer.')->group(function () {
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'index'])->name('index')
+                         ->middleware('can:pembayaran-pranota-kontainer-view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'create'])->name('create')
+                         ->middleware('can:pembayaran-pranota-kontainer-create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('can:pembayaran-pranota-kontainer-view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'store'])->name('store')
+                         ->middleware('can:pembayaran-pranota-kontainer-create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'show'])->name('show')
+                         ->middleware('can:pembayaran-pranota-kontainer-view');
+                    Route::get('/{id}/edit', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'edit'])->name('edit')
+                         ->middleware('can:pembayaran-pranota-kontainer-update');
+                    Route::put('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'update'])->name('update')
+                         ->middleware('can:pembayaran-pranota-kontainer-update');
+                    Route::delete('/{id}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'destroy'])->name('destroy')
+                         ->middleware('can:pembayaran-pranota-kontainer-delete');
+                    Route::delete('/{pembayaranId}/pranota/{pranotaId}', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'removePranota'])->name('remove-pranota')
+                         ->middleware('can:pembayaran-pranota-kontainer-update');
+                    Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print')
+                         ->middleware('can:pembayaran-pranota-kontainer-print');
+               });
+
+               // Pembayaran Pranota CAT routes
+               Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->group(function () {
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'index'])->name('index')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'create'])->name('create')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'store'])->name('store')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'show'])->name('show')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+               });
+
+               // Pembayaran Pranota Perbaikan routes
+               Route::prefix('pembayaran-pranota-perbaikan')->name('pembayaran-pranota-perbaikan.')->group(function () {
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaPerbaikanController::class, 'index'])->name('index')
+                         ->middleware('can:pembayaran-pranota-perbaikan-view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaPerbaikanController::class, 'create'])->name('create')
+                         ->middleware('can:pembayaran-pranota-perbaikan-create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaPerbaikanController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('can:pembayaran-pranota-perbaikan-view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaPerbaikanController::class, 'store'])->name('store')
+                         ->middleware('can:pembayaran-pranota-perbaikan-create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaPerbaikanController::class, 'show'])->name('show')
+                         ->middleware('can:pembayaran-pranota-perbaikan-view');
+               });
+
+
+     // Admin: daftar semua fitur (permissions + routes)
+          Route::get('/admin/features', [\App\Http\Controllers\AdminController::class, 'features'])
+                ->name('admin.features')
+                ->middleware(['auth', 'role:admin']);
+               Route::get('/admin/debug-perms', [\App\Http\Controllers\AdminController::class, 'debug'])
+                     ->name('admin.debug.perms')
+                     ->middleware(['auth', 'role:admin']);
+
+     // User Approval System Routes
+     Route::prefix('admin/user-approval')->middleware(['auth'])->group(function () {
+         Route::get('/', [\App\Http\Controllers\UserApprovalController::class, 'index'])->name('admin.user-approval.index');
+         Route::get('/{user}', [\App\Http\Controllers\UserApprovalController::class, 'show'])->name('admin.user-approval.show');
+         Route::post('/{user}/approve', [\App\Http\Controllers\UserApprovalController::class, 'approve'])->name('admin.user-approval.approve');
+         Route::post('/{user}/reject', [\App\Http\Controllers\UserApprovalController::class, 'reject'])->name('admin.user-approval.reject');
+     });
+
+});
+
+// Profile Management Routes (for all authenticated users)
+Route::middleware(['auth'])->group(function () {
+    Route::prefix('profile')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
+        Route::get('/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+        Route::put('/account', [\App\Http\Controllers\ProfileController::class, 'updateAccount'])->name('profile.update.account');
+        Route::put('/personal', [\App\Http\Controllers\ProfileController::class, 'updatePersonal'])->name('profile.update.personal');
+        Route::post('/avatar', [\App\Http\Controllers\ProfileController::class, 'updateAvatar'])->name('profile.update.avatar');
+        Route::delete('/delete', [\App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
+    });
+});
+
+// Perbaikan Kontainer Routes (Independent from Master)
+Route::middleware(['auth'])->group(function() {
+    // Perbaikan Kontainer routes - granular permissions
+    Route::get('perbaikan-kontainer', [\App\Http\Controllers\PerbaikanKontainerController::class, 'index'])
+         ->name('perbaikan-kontainer.index')
+         ->middleware('can:perbaikan-kontainer-view');
+    Route::get('perbaikan-kontainer/create', [\App\Http\Controllers\PerbaikanKontainerController::class, 'create'])
+         ->name('perbaikan-kontainer.create')
+         ->middleware('can:perbaikan-kontainer-create');
+    Route::post('perbaikan-kontainer', [\App\Http\Controllers\PerbaikanKontainerController::class, 'store'])
+         ->name('perbaikan-kontainer.store')
+         ->middleware('can:perbaikan-kontainer-create');
+    Route::get('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'show'])
+         ->name('perbaikan-kontainer.show')
+         ->middleware('can:perbaikan-kontainer-view');
+    Route::get('perbaikan-kontainer/{perbaikanKontainer}/edit', [\App\Http\Controllers\PerbaikanKontainerController::class, 'edit'])
+         ->name('perbaikan-kontainer.edit')
+         ->middleware('can:perbaikan-kontainer-update');
+    Route::put('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'update'])
+         ->name('perbaikan-kontainer.update')
+         ->middleware('can:perbaikan-kontainer-update');
+    Route::delete('perbaikan-kontainer/{perbaikanKontainer}', [\App\Http\Controllers\PerbaikanKontainerController::class, 'destroy'])
+         ->name('perbaikan-kontainer.destroy')
+         ->middleware('can:perbaikan-kontainer-delete');
+
+    // Additional perbaikan kontainer routes
+    Route::patch('perbaikan-kontainer/{perbaikanKontainer}/status', [\App\Http\Controllers\PerbaikanKontainerController::class, 'updateStatus'])
+         ->name('perbaikan-kontainer.update-status')
+         ->middleware('can:perbaikan-kontainer-update');
+
+    // Bulk operations for perbaikan kontainer
+    Route::delete('perbaikan-kontainer/bulk-delete', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkDelete'])
+         ->name('perbaikan-kontainer.bulk-delete')
+         ->middleware('can:perbaikan-kontainer-delete');
+    Route::patch('perbaikan-kontainer/bulk-update-status', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkUpdateStatus'])
+         ->name('perbaikan-kontainer.bulk-update-status')
+         ->middleware('can:perbaikan-kontainer-update');
+    Route::patch('perbaikan-kontainer/bulk-pranota', [\App\Http\Controllers\PerbaikanKontainerController::class, 'bulkPranota'])
+         ->name('perbaikan-kontainer.bulk-pranota')
+         ->middleware('can:perbaikan-kontainer-update');
+
+    // Add catatan route
+    Route::post('perbaikan-kontainer/add-catatan', [\App\Http\Controllers\PerbaikanKontainerController::class, 'addCatatan'])
+         ->name('perbaikan-kontainer.add-catatan')
+         ->middleware('can:perbaikan-kontainer-update');
+
+    // Pranota Perbaikan Kontainer routes
+    Route::get('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'index'])
+         ->name('pranota-perbaikan-kontainer.index')
+         ->middleware('can:pranota-perbaikan-kontainer-view');
+    Route::get('pranota-perbaikan-kontainer/create', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'create'])
+         ->name('pranota-perbaikan-kontainer.create')
+         ->middleware('can:pranota-perbaikan-kontainer-create');
+    Route::post('pranota-perbaikan-kontainer', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'store'])
+         ->name('pranota-perbaikan-kontainer.store')
+         ->middleware('can:pranota-perbaikan-kontainer-create');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'show'])
+         ->name('pranota-perbaikan-kontainer.show')
+         ->middleware('can:pranota-perbaikan-kontainer-view');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/edit', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'edit'])
+         ->name('pranota-perbaikan-kontainer.edit')
+         ->middleware('can:pranota-perbaikan-kontainer-update');
+    Route::put('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'update'])
+         ->name('pranota-perbaikan-kontainer.update')
+         ->middleware('can:pranota-perbaikan-kontainer-update');
+    Route::delete('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'destroy'])
+         ->name('pranota-perbaikan-kontainer.destroy')
+         ->middleware('can:pranota-perbaikan-kontainer-delete');
+    Route::get('pranota-perbaikan-kontainer/{pranotaPerbaikanKontainer}/print', [\App\Http\Controllers\PranotaPerbaikanKontainerController::class, 'print'])
+         ->name('pranota-perbaikan-kontainer.print')
+         ->middleware('can:pranota-perbaikan-kontainer-print');
+
+    // Pranota CAT routes
+    Route::get('pranota-cat', [\App\Http\Controllers\PranotaTagihanCatController::class, 'index'])
+         ->name('pranota-cat.index')
+         ->middleware('can:pranota-cat-view');
+    Route::get('pranota-cat/{id}', [\App\Http\Controllers\PranotaTagihanCatController::class, 'show'])
+         ->name('pranota-cat.show')
+         ->middleware('can:pranota-cat-view');
+    Route::get('pranota-cat/{id}/print', [\App\Http\Controllers\PranotaTagihanCatController::class, 'print'])
+         ->name('pranota-cat.print')
+         ->middleware('can:pranota-cat-print');
+    Route::post('pranota-cat', [\App\Http\Controllers\PranotaTagihanCatController::class, 'store'])
+         ->name('pranota-cat.store')
+         ->middleware('can:pranota-cat-create');
+    Route::post('pranota-cat/bulk-create-from-tagihan-cat', [\App\Http\Controllers\PranotaTagihanCatController::class, 'bulkCreateFromTagihanCat'])
+         ->name('pranota-cat.bulk-create-from-tagihan-cat')
+         ->middleware('can:pranota-cat-create');
+    Route::post('pranota-cat/bulk-status-update', [\App\Http\Controllers\PranotaTagihanCatController::class, 'bulkStatusUpdate'])
+         ->name('pranota-cat.bulk-status-update')
+         ->middleware('can:pranota-cat-update');
+    Route::post('pranota-cat/bulk-payment', [\App\Http\Controllers\PranotaTagihanCatController::class, 'bulkPayment'])
+         ->name('pranota-cat.bulk-payment')
+         ->middleware('can:pranota-cat-update');
+
+    // Pranota Kontainer Sewa routes
+    Route::get('pranota-kontainer-sewa', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'index'])
+         ->name('pranota-kontainer-sewa.index')
+         ->middleware('can:pranota-kontainer-sewa-view');
+    Route::get('pranota-kontainer-sewa/create', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'create'])
+         ->name('pranota-kontainer-sewa.create')
+         ->middleware('can:pranota-kontainer-sewa-create');
+    Route::get('pranota-kontainer-sewa/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'show'])
+         ->name('pranota-kontainer-sewa.show')
+         ->middleware('can:pranota-kontainer-sewa-view');
+    Route::get('pranota-kontainer-sewa/{pranota}/print', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'print'])
+         ->name('pranota-kontainer-sewa.print')
+         ->middleware('can:pranota-kontainer-sewa-print');
+    Route::post('pranota-kontainer-sewa', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'store'])
+         ->name('pranota-kontainer-sewa.store')
+         ->middleware('can:pranota-kontainer-sewa-create');
+    Route::post('pranota-kontainer-sewa/bulk-create-from-tagihan-kontainer-sewa', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkCreateFromTagihanKontainerSewa'])
+         ->name('pranota-kontainer-sewa.bulk-create-from-tagihan-kontainer-sewa')
+         ->middleware('can:pranota-create');
+    Route::get('pranota-kontainer-sewa/next-number', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'getNextPranotaNumber'])
+         ->name('pranota-kontainer-sewa.next-number');
+    Route::post('pranota-kontainer-sewa/bulk-status-update', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkStatusUpdate'])
+         ->name('pranota-kontainer-sewa.bulk-update-status')
+         ->middleware('can:tagihan-kontainer-update');
+
                // Pranota Sewa routes
                Route::prefix('pranota')->name('pranota.')->group(function () {
                     Route::get('/', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'index'])->name('index');
@@ -894,8 +1127,6 @@ Route::middleware([
                     Route::post('/bulk', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkStore'])->name('bulk.store');
                     Route::patch('/{pranota}/status', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'updateStatus'])->name('update.status');
                     Route::post('/{pranota}/lepas-kontainer', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'lepasKontainer'])->name('lepas-kontainer');
-                         // ->middleware('can:pranota-update');
-                    Route::post('/{pranota}/test-lepas-kontainer', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'lepasKontainer'])->name('test-lepas-kontainer');
                     Route::delete('/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'destroy'])->name('destroy');
                });
 
@@ -921,6 +1152,20 @@ Route::middleware([
                          ->middleware('can:pembayaran-pranota-kontainer-update');
                     Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print')
                          ->middleware('can:pembayaran-pranota-kontainer-print');
+               });
+
+               // Pembayaran Pranota CAT routes
+               Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->group(function () {
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'index'])->name('index')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'create'])->name('create')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'store'])->name('store')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'show'])->name('show')
+                         ->middleware('can:pembayaran-pranota-cat-view');
                });
 
      // Admin: daftar semua fitur (permissions + routes)
@@ -1085,6 +1330,7 @@ Route::middleware(['auth'])->group(function() {
                     Route::post('/', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'store'])->name('store');
                     Route::post('/bulk', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkStore'])->name('bulk.store');
                     Route::patch('/{pranota}/status', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'updateStatus'])->name('update.status');
+                    Route::post('/{pranota}/lepas-kontainer', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'lepasKontainer'])->name('lepas-kontainer');
                     Route::delete('/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'destroy'])->name('destroy');
                });
 
@@ -1110,6 +1356,20 @@ Route::middleware(['auth'])->group(function() {
                          ->middleware('can:pembayaran-pranota-kontainer-update');
                     Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print')
                          ->middleware('can:pembayaran-pranota-kontainer-print');
+               });
+
+               // Pembayaran Pranota CAT routes
+               Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->group(function () {
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'index'])->name('index')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'create'])->name('create')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'store'])->name('store')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'show'])->name('show')
+                         ->middleware('can:pembayaran-pranota-cat-view');
                });
 
      // Admin: daftar semua fitur (permissions + routes)
@@ -1274,6 +1534,7 @@ Route::middleware(['auth'])->group(function() {
                     Route::post('/', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'store'])->name('store');
                     Route::post('/bulk', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkStore'])->name('bulk.store');
                     Route::patch('/{pranota}/status', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'updateStatus'])->name('update.status');
+                    Route::post('/{pranota}/lepas-kontainer', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'lepasKontainer'])->name('lepas-kontainer');
                     Route::delete('/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'destroy'])->name('destroy');
                });
 
@@ -1299,6 +1560,20 @@ Route::middleware(['auth'])->group(function() {
                          ->middleware('can:pembayaran-pranota-kontainer-update');
                     Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print')
                          ->middleware('can:pembayaran-pranota-kontainer-print');
+               });
+
+               // Pembayaran Pranota CAT routes
+               Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->group(function () {
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'index'])->name('index')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'create'])->name('create')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'store'])->name('store')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'show'])->name('show')
+                         ->middleware('can:pembayaran-pranota-cat-view');
                });
 
      // Admin: daftar semua fitur (permissions + routes)
@@ -1463,6 +1738,7 @@ Route::middleware(['auth'])->group(function() {
                     Route::post('/', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'store'])->name('store');
                     Route::post('/bulk', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkStore'])->name('bulk.store');
                     Route::patch('/{pranota}/status', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'updateStatus'])->name('update.status');
+                    Route::post('/{pranota}/lepas-kontainer', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'lepasKontainer'])->name('lepas-kontainer');
                     Route::delete('/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'destroy'])->name('destroy');
                });
 
@@ -1488,6 +1764,20 @@ Route::middleware(['auth'])->group(function() {
                          ->middleware('can:pembayaran-pranota-kontainer-update');
                     Route::get('/{id}/print', [\App\Http\Controllers\PembayaranPranotaKontainerController::class, 'print'])->name('print')
                          ->middleware('can:pembayaran-pranota-kontainer-print');
+               });
+
+               // Pembayaran Pranota CAT routes
+               Route::prefix('pembayaran-pranota-cat')->name('pembayaran-pranota-cat.')->group(function () {
+                    Route::get('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'index'])->name('index')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::get('/create', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'create'])->name('create')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::post('/payment-form', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'showPaymentForm'])->name('payment-form')
+                         ->middleware('can:pembayaran-pranota-cat-view');
+                    Route::post('/', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'store'])->name('store')
+                         ->middleware('can:pembayaran-pranota-cat-create');
+                    Route::get('/{id}', [\App\Http\Controllers\PembayaranPranotaCatController::class, 'show'])->name('show')
+                         ->middleware('can:pembayaran-pranota-cat-view');
                });
 
      // Admin: daftar semua fitur (permissions + routes)

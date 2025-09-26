@@ -4,6 +4,20 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-8">
+    {{-- Notifikasi --}}
+    @if(session('success'))
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md mb-4" role="alert">
+            <p class="font-bold">Sukses</p>
+            <p>{{ session('success') }}</p>
+        </div>
+    @endif
+    @if(session('error'))
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md mb-4" role="alert">
+            <p class="font-bold">Peringatan</p>
+            <p>{{ session('error') }}</p>
+        </div>
+    @endif
+
     <div class="bg-white rounded-lg shadow-md p-6">
         <div class="mb-6">
             <h1 class="text-2xl font-bold text-gray-800">Buat Pranota Baru</h1>
