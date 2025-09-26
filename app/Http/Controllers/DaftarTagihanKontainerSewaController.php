@@ -4,10 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Models\DaftarTagihanKontainerSewa;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
 use App\Jobs\RunCreateNextPeriode;
 use App\Models\MasterPricelistSewaKontainer;
 
@@ -32,6 +35,10 @@ class DaftarTagihanKontainerSewaController extends Controller
         }
 
         $query = DaftarTagihanKontainerSewa::query();
+
+        // Exclude GROUP_SUMMARY records from main listing
+        $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
+              ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
 
         // Handle search functionality with group-based search
         if ($request->filled('q')) {
@@ -90,7 +97,7 @@ class DaftarTagihanKontainerSewaController extends Controller
             }
         }
 
-        // Get all data first untuk grouping logic
+        // Get all data first untuk periode filtering
         // Apply CSV-like logic: limit periods based on container duration
         $allData = $query->orderBy('nomor_kontainer')
             ->orderBy('periode')
@@ -135,77 +142,8 @@ class DaftarTagihanKontainerSewaController extends Controller
                 }
             });
 
-        // Apply grouping logic sama seperti di CSV
-        // Logika: vendor berbeda dengan tanggal sama = grup berbeda
-        $groupedData = [];
-        $globalGroupNumber = 1;
-
-        foreach ($allData as $tagihan) {
-            // Generate vendor code - semua menggunakan TK untuk group code
-            $vendorCode = 'TK';
-
-            // Parse tanggal mulai untuk format group code
-            $year = '00';
-            $month = '00';
-
-            if ($tagihan->tanggal_awal) {
-                try {
-                    $date = \Carbon\Carbon::parse($tagihan->tanggal_awal);
-                    $year = $date->format('y'); // 2 digit year (25)
-                    $month = $date->format('m'); // 2 digit month (01)
-                } catch (\Exception $e) {
-                    // Keep default 00-00 jika parsing gagal
-                }
-            }
-
-            // Create group key berdasarkan vendor ASLI dan tanggal lengkap
-            // Contoh: "DPE_2025-01-21", "ZONA_2025-01-21"
-            $groupKey = $tagihan->vendor . '_' . $tagihan->tanggal_awal;
-
-            // Initialize group if not exists
-            if (!isset($groupedData[$groupKey])) {
-                $groupedData[$groupKey] = [
-                    'groupNumber' => $globalGroupNumber,
-                    'items' => [],
-                    'vendor' => $tagihan->vendor,
-                    'tanggal' => $tagihan->tanggal_awal
-                ];
-                $globalGroupNumber++;
-            }
-
-            // Generate full group code: TK1YYMMXXXXXXX
-            $runningNumber = str_pad($groupedData[$groupKey]['groupNumber'], 7, '0', STR_PAD_LEFT);
-            $fullGroupCode = $vendorCode . '1' . $year . $month . $runningNumber;
-
-            // Update group field dengan group code baru
-            $tagihan->group = $fullGroupCode;
-
-            // Add to grouped data
-            $groupedData[$groupKey]['items'][] = $tagihan;
-        }
-
-        // Flatten grouped data untuk pagination
-        $processedData = collect([]);
-        foreach ($groupedData as $groupKey => $group) {
-            foreach ($group['items'] as $item) {
-                $processedData->push($item);
-            }
-        }
-
-        // Debug info (bisa dihapus di production)
-        if (request()->has('debug_groups')) {
-            $debugInfo = [];
-            foreach ($groupedData as $groupKey => $group) {
-                $debugInfo[] = [
-                    'group_key' => $groupKey,
-                    'group_code' => $group['items'][0]->group ?? 'N/A',
-                    'vendor' => $group['vendor'],
-                    'tanggal' => $group['tanggal'],
-                    'count' => count($group['items'])
-                ];
-            }
-            dd($debugInfo);
-        }
+        // Use data directly from database without grouping logic
+        $processedData = $allData;
 
         // Paginate the processed data
         $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
@@ -955,6 +893,106 @@ class DaftarTagihanKontainerSewaController extends Controller
     }
 
     /**
+     * Show the form for creating a new group.
+     */
+    public function createGroup()
+    {
+        // Get all tagihan that don't have a group yet
+        $tagihans = DaftarTagihanKontainerSewa::where(function($query) {
+            $query->whereNull('group')
+                  ->orWhere('group', '');
+        })
+        ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
+        ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%')
+        ->orderBy('vendor')
+        ->orderBy('nomor_kontainer')
+        ->get();
+
+        return view('daftar-tagihan-kontainer-sewa.create-group', compact('tagihans'));
+    }
+
+    /**
+     * Store a newly created group in storage.
+     */
+    public function storeGroup(Request $request)
+    {
+        $request->validate([
+            'group_name' => 'required|string|max:255',
+            'selected_containers' => 'required|array|min:1',
+            'selected_containers.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa,id',
+        ]);
+
+        // Additional validation: Check if selected containers are available (not already in another group)
+        $selectedContainers = DaftarTagihanKontainerSewa::whereIn('id', $request->selected_containers)->get();
+        $containersWithGroups = $selectedContainers->filter(function($container) {
+            return !empty($container->group);
+        });
+
+        if ($containersWithGroups->isNotEmpty()) {
+            $containerNumbers = $containersWithGroups->pluck('nomor_kontainer')->join(', ');
+            return response()->json([
+                'success' => false,
+                'message' => 'Beberapa kontainer sudah memiliki group: ' . $containerNumbers . '. Pilih kontainer yang belum memiliki group.'
+            ], 422);
+        }
+
+        $validated = $request->all();
+
+        DB::beginTransaction();
+        try {
+            // Get selected containers to extract common values
+            $selectedContainers = DaftarTagihanKontainerSewa::whereIn('id', $validated['selected_containers'])->get();
+
+            // Use values from the first container as defaults for the group
+            $firstContainer = $selectedContainers->first();
+            $groupPeriode = $firstContainer ? $firstContainer->periode : now()->format('Y-m');
+
+            // Update selected containers to assign them to the group
+            DaftarTagihanKontainerSewa::whereIn('id', $validated['selected_containers'])
+                ->update([
+                    'group' => $validated['group_name'],
+                    'updated_at' => now(),
+                ]);
+
+            // Create a group summary record
+            $groupRecord = DaftarTagihanKontainerSewa::create([
+                'group' => $validated['group_name'],
+                'vendor' => 'GROUP',
+                'size' => 'GROUP',
+                'periode' => $groupPeriode,
+                'nomor_kontainer' => 'GROUP_SUMMARY_' . $validated['group_name'],
+                'tanggal_harga_awal' => now()->format('Y-m-d'),
+                'tanggal_harga_akhir' => now()->addDays(30)->format('Y-m-d'),
+                'tarif' => 0,
+                'dpp' => 0,
+                'dpp_nilai_lain' => 0,
+                'ppn' => 0,
+                'pph' => 0,
+                'grand_total' => 0,
+                'status_pembayaran' => 'belum_dibayar',
+                'keterangan' => 'Group summary untuk ' . $validated['group_name'],
+            ]);
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => "Group '{$validated['group_name']}' berhasil dibuat dengan " . count($validated['selected_containers']) . " kontainer",
+                'group_id' => $groupRecord->id,
+                'container_count' => count($validated['selected_containers'])
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal membuat group: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
@@ -1180,7 +1218,7 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         $request->validate([
             'ids' => 'required|array|min:1',
-            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewas,id'
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa,id'
         ]);
 
         $count = DaftarTagihanKontainerSewa::whereIn('id', $request->ids)->delete();
@@ -1196,23 +1234,88 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         $request->validate([
             'ids' => 'required|array|min:1',
-            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewas,id'
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa,id',
+            'tanggal_pranota' => 'required|date',
+            'keterangan' => 'nullable|string'
         ]);
 
-        // Update status to indicate items are in pranota
-        $count = DaftarTagihanKontainerSewa::whereIn('id', $request->ids)
-                                  ->update(['status_pembayaran' => 'sudah_dibayar']);
+        try {
+            DB::beginTransaction();
 
-        if ($request->ajax()) {
-            return response()->json([
-                'success' => true,
-                'message' => "{$count} item berhasil dimasukkan ke pranota",
-                'count' => $count
+            // Get selected tagihan items
+            $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $request->ids)->get();
+
+            if ($tagihanItems->isEmpty()) {
+                throw new \Exception('Tidak ada tagihan yang ditemukan dengan ID yang dipilih');
+            }
+
+            // Generate nomor pranota with format: PTK + 1 digit cetakan + 2 digit tahun + 2 digit bulan + 6 digit running number
+            $nomorCetakan = 1; // Fixed value since input removed
+            $tanggalPranota = Carbon::parse($request->tanggal_pranota);
+            $tahun = $tanggalPranota->format('y'); // 2 digit year
+            $bulan = $tanggalPranota->format('m'); // 2 digit month
+
+            // Running number: count pranota in current month + 1
+            $runningNumber = str_pad(
+                \App\Models\Pranota::whereYear('created_at', $tanggalPranota->year)
+                    ->whereMonth('created_at', $tanggalPranota->month)
+                    ->count() + 1,
+                6, '0', STR_PAD_LEFT
+            );
+
+            $noInvoice = "PTK{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
+
+            // Create pranota
+            $pranota = \App\Models\Pranota::create([
+                'no_invoice' => $noInvoice,
+                'total_amount' => 0, // Will be calculated and updated below
+                'keterangan' => $request->keterangan ?: 'Pranota untuk ' . count($request->ids) . ' tagihan kontainer sewa',
+                'status' => 'unpaid',
+                'tagihan_ids' => $request->ids,
+                'jumlah_tagihan' => count($request->ids),
+                'tanggal_pranota' => $request->tanggal_pranota,
+                'due_date' => $tanggalPranota->addDays(30)->format('Y-m-d')
             ]);
-        }
 
-        return redirect()->back()
-                        ->with('success', "{$count} item berhasil dimasukkan ke pranota.");
+            // Update total amount using model method
+            $pranota->updateTotalAmount();
+
+            // Update tagihan items to mark them as included in pranota
+            DaftarTagihanKontainerSewa::whereIn('id', $request->ids)
+                ->update([
+                    'status_pranota' => 'included',
+                    'pranota_id' => $pranota->id,
+                    'updated_at' => Carbon::now()
+                ]);
+
+            DB::commit();
+
+            $message = 'Pranota berhasil dibuat dengan nomor: ' . $pranota->no_invoice .
+                      ' untuk ' . count($request->ids) . ' tagihan (Total: Rp ' . number_format($pranota->total_amount ?? 0, 2, ',', '.') . ')';
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => $message,
+                    'pranota_id' => $pranota->id,
+                    'pranota_no' => $pranota->no_invoice
+                ]);
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal membuat pranota: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Gagal membuat pranota: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -1222,7 +1325,7 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         $request->validate([
             'ids' => 'required|array|min:1',
-            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewas,id',
+            'ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa,id',
             'status_pembayaran' => 'required|in:belum_dibayar,sudah_dibayar'
         ]);
 
@@ -1231,5 +1334,137 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         return redirect()->back()
                         ->with('success', "Status pembayaran {$count} data tagihan berhasil diperbarui.");
+    }
+
+    /**
+     * Get all existing groups with their container counts
+     */
+    public function getGroups()
+    {
+        try {
+            // Get all unique groups that are not null/empty and not GROUP_SUMMARY or GROUP_TEMPLATE
+            $groups = DaftarTagihanKontainerSewa::whereNotNull('group')
+                ->where('group', '!=', '')
+                ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
+                ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%')
+                ->select('group')
+                ->selectRaw('COUNT(*) as count')
+                ->selectRaw('MIN(created_at) as created_at')
+                ->groupBy('group')
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($group) {
+                    return [
+                        'name' => $group->group,
+                        'count' => $group->count,
+                        'created_at' => $group->created_at
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'groups' => $groups
+            ]);
+
+        } catch (\Exception $e) {
+            \Log::error('Error getting groups: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil data group'
+            ], 500);
+        }
+    }
+
+    /**
+     * Delete selected groups (remove group assignment from containers)
+     */
+    public function deleteGroups(Request $request)
+    {
+        $request->validate([
+            'group_names' => 'required|array|min:1',
+            'group_names.*' => 'required|string|max:255'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $deletedGroups = [];
+            $totalContainers = 0;
+
+            foreach ($request->group_names as $groupName) {
+                // Count containers in this group before deletion
+                $containerCount = DaftarTagihanKontainerSewa::where('group', $groupName)->count();
+
+                if ($containerCount > 0) {
+                    // Remove group assignment (set group to null)
+                    DaftarTagihanKontainerSewa::where('group', $groupName)
+                        ->update(['group' => null]);
+
+                    $deletedGroups[] = $groupName;
+                    $totalContainers += $containerCount;
+                }
+            }
+
+            DB::commit();
+
+            $message = count($deletedGroups) === 1
+                ? "Group '{$deletedGroups[0]}' berhasil dihapus. {$totalContainers} kontainer dikembalikan ke status individual."
+                : count($deletedGroups) . " group berhasil dihapus. {$totalContainers} kontainer dikembalikan ke status individual.";
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'deleted_groups' => $deletedGroups,
+                'total_containers' => $totalContainers
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            \Log::error('Error deleting groups: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus group: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    public function ungroupContainers(Request $request)
+    {
+        $request->validate([
+            'container_ids' => 'required|array|min:1',
+            'container_ids.*' => 'required|integer|exists:daftar_tagihan_kontainer_sewa,id'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Update selected containers to remove group assignment (set group to null)
+            $updatedCount = DaftarTagihanKontainerSewa::whereIn('id', $request->container_ids)
+                ->whereNotNull('group') // Only update containers that actually have a group
+                ->update(['group' => null]);
+
+            DB::commit();
+
+            $message = $updatedCount === 1
+                ? "1 kontainer berhasil dikembalikan ke status individual."
+                : "{$updatedCount} kontainer berhasil dikembalikan ke status individual.";
+
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'ungrouped_count' => $updatedCount
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error ungrouping containers: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal menghapus group: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

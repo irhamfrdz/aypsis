@@ -140,6 +140,7 @@
                                         || ($kegiatanLower === 'pengambilan');
                                     $isPerbaikanKontainer = (stripos($kegiatanLower, 'perbaikan') !== false && stripos($kegiatanLower, 'kontainer') !== false)
                                         || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
+                                    $isAntarSewa = stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'sewa') !== false;
                                 @endphp
 
                                 @for ($i = 0; $i < $permohonan->jumlah_kontainer; $i++)
@@ -147,6 +148,9 @@
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Kontainer #{{ $i + 1 }}</label>
                                         @if($isPerbaikanKontainer)
                                             {{-- For perbaikan kontainer, allow free text input regardless of vendor --}}
+                                            <input type="text" name="nomor_kontainer[]" class="block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5" placeholder="Masukkan nomor kontainer #{{ $i + 1 }}" required>
+                                        @elseif($isAntarSewa)
+                                            {{-- For antar kontainer sewa, allow free text input regardless of vendor --}}
                                             <input type="text" name="nomor_kontainer[]" class="block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5" placeholder="Masukkan nomor kontainer #{{ $i + 1 }}" required>
                                         @elseif(in_array($permohonan->vendor_perusahaan, ['ZONA','DPE','SOC']) && $isTarikSewa)
                                             {{-- For sewa pickup (tarik kontainer sewa), require selecting from approved/tagihan group kontainers --}}
@@ -185,6 +189,8 @@
                                 <p class="text-xs text-gray-500 mt-1">
                                     @if($isPerbaikanKontainer)
                                         Masukkan nomor kontainer yang akan diperbaiki.
+                                    @elseif($isAntarSewa)
+                                        Masukkan nomor kontainer yang akan diantar.
                                     @else
                                         Pilih nomor kontainer sesuai jumlah di memo.
                                     @endif

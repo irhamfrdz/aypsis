@@ -389,8 +389,8 @@
 
 {{-- User Dropdown --}}
 @php
-    $isUserRoute = Request::routeIs('master.user.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-bank-*');
-    $hasUserPermissions = $user && ($user->can('master-user-view') || $user->can('master-karyawan-view') || $user->can('master-divisi-view') || $user->can('master-pekerjaan-view') || $user->can('master-pajak-view') || $user->can('master-mobil-view') || $user->can('master-bank-view'));
+    $isUserRoute = Request::routeIs('master.user.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*');
+    $hasUserPermissions = $user && ($user->can('master-user-view') || $user->can('master-karyawan-view') || $user->can('master-divisi-view') || $user->can('master-pekerjaan-view') || $user->can('master-pajak-view') || $user->can('master-bank-view'));
     $hasUserApprovalAccess = $isAdmin ||
         auth()->user()->can('master-user') ||
         auth()->user()->can('user-approval') ||
@@ -460,14 +460,6 @@
                 Master Pajak
             </a>
         @endif
-        @if($user && $user->can('master-mobil-view'))
-            <a href="{{ route('master.mobil.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a2 2 0 100-4 2 2 0 000 4zm0 0v10m0-10a2 2 0 002-2V2"/>
-                </svg>
-                Master Mobil
-            </a>
-        @endif
         @if($user && $user->can('master-bank-view'))
             <a href="{{ route('master-bank-index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master-bank-*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
                 <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -494,8 +486,8 @@
 
 {{-- Aktiva Dropdown --}}
 @php
-    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*');
-    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-pricelist-cat-view'));
+    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.mobil.*');
+    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('master-mobil-view'));
 @endphp
 
 @if($hasAktivaPermissions)
@@ -578,6 +570,16 @@
                 @endif
             </div>
         </div>
+        @endif
+
+        {{-- Master Mobil --}}
+        @if($user && $user->can('master-mobil-view'))
+            <a href="{{ route('master.mobil.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
+                <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a2 2 0 100-4 2 2 0 000 4zm0 0v10m0-10a2 2 0 002-2V2"/>
+                </svg>
+                Master Mobil
+            </a>
         @endif
     </div>
 </div>

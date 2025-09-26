@@ -114,8 +114,8 @@ class PenyelesaianController extends Controller
             // Normalize dateForTagihan to Y-m-d
             $dateStr = Carbon::parse($dateForTagihan)->toDateString();
 
-            // Deterministic group id: VENDOR-YYYYMMDD (keeps same group for same vendor+date)
-            $groupId = strtoupper($vendor) . '-' . Carbon::parse($dateStr)->format('Ymd');
+            // No group assignment for approved containers - each container stands alone
+            // $groupId = strtoupper($vendor) . '-' . Carbon::parse($dateStr)->format('Ymd');
 
             foreach ($permohonan->kontainers as $kontainer) {
                 // Prepare values
@@ -162,7 +162,8 @@ class PenyelesaianController extends Controller
                     'vendor' => $vendor,
                     'nomor_kontainer' => $nomor,
                     'tanggal_awal' => $tanggal_awal,
-                    'group' => $groupId,
+                    // No group assignment - each approved container stands alone
+                    // 'group' => $groupId,
                 ];
 
                 // Attempt to fetch monthly pricelist for this vendor + kontainer ukuran (use override if provided)
@@ -243,7 +244,7 @@ class PenyelesaianController extends Controller
                 DaftarTagihanKontainerSewa::firstOrCreate($attrs, array_merge($attrs, $values));
             }
 
-            Log::debug('createOrUpdateTagihan created/merged daftar_tagihan_kontainer_sewa', ['permohonan_id' => $permohonan->id, 'date' => $dateStr, 'group' => $groupId]);
+            Log::debug('createOrUpdateTagihan created/merged daftar_tagihan_kontainer_sewa', ['permohonan_id' => $permohonan->id, 'date' => $dateStr, 'container' => $nomor]);
         } catch (\Exception $e) {
             Log::error('createOrUpdateTagihan failed', ['message' => $e->getMessage(), 'permohonan_id' => $permohonan->id ?? null]);
         }

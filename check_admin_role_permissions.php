@@ -52,7 +52,7 @@ if (!$user) {
         // Test the can() method
         echo "User can('approval-dashboard'): " . ($user->can('approval-dashboard') ? 'YES' : 'NO') . "\n";
     }
-} else {
+ else {
     echo "Admin user not found\n";
 }
 

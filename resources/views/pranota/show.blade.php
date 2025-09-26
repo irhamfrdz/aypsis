@@ -133,6 +133,9 @@
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
                                 <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <input type="checkbox" id="selectAllTagihan" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllTagihan()">
+                                    </th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
@@ -147,6 +150,14 @@
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($tagihanItems as $index => $item)
                                 <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <input type="checkbox"
+                                               class="tagihan-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                               value="{{ $item->id }}"
+                                               data-amount="{{ $item->grand_total }}"
+                                               data-vendor="{{ $item->vendor }}"
+                                               onchange="updateTagihanSelection()">
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->vendor }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{{ $item->nomor_kontainer }}</td>
@@ -181,7 +192,7 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="9" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="10" class="px-6 py-12 text-center text-gray-500">
                                         Tidak ada tagihan ditemukan
                                     </td>
                                 </tr>
@@ -190,7 +201,7 @@
                             @if($tagihanItems->count() > 0)
                             <tfoot class="bg-blue-50">
                                 <tr>
-                                    <th colspan="8" class="px-6 py-3 text-right text-sm font-medium text-blue-900">Total:</th>
+                                    <th colspan="9" class="px-6 py-3 text-right text-sm font-medium text-blue-900">Total:</th>
                                     <th class="px-6 py-3 text-left text-sm font-bold text-green-600">
                                         Rp {{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}
                                     </th>
@@ -198,6 +209,29 @@
                             </tfoot>
                             @endif
                         </table>
+                    </div>
+
+                    <!-- Selected Items Summary & Actions -->
+                    <div id="selectedItemsSummary" class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg hidden">
+                        <div class="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                            <div class="flex items-center space-x-4">
+                                <div class="text-sm text-blue-800">
+                                    <span id="selectedTagihanCount" class="font-semibold">0</span> tagihan dipilih
+                                    (<span id="selectedTotalAmount" class="font-bold text-green-600">Rp 0</span>)
+                                </div>
+                            </div>
+                            <div class="flex space-x-2">
+                                <button type="button"
+                                        id="lepasKontainerBtn"
+                                        onclick="lepasKontainer()"
+                                        class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm font-medium">
+                                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                    </svg>
+                                    Lepas Kontainer
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -254,6 +288,112 @@
 @endif
 
 <script>
+function toggleAllTagihan() {
+    const selectAll = document.getElementById('selectAllTagihan');
+    const checkboxes = document.querySelectorAll('.tagihan-checkbox');
+
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+
+    updateTagihanSelection();
+}
+
+function updateTagihanSelection() {
+    const checkboxes = document.querySelectorAll('.tagihan-checkbox:checked');
+    const selectedCount = checkboxes.length;
+    const totalAmount = Array.from(checkboxes).reduce((sum, checkbox) => {
+        return sum + parseFloat(checkbox.dataset.amount);
+    }, 0);
+
+    // Update select all checkbox state
+    const selectAll = document.getElementById('selectAllTagihan');
+    const allCheckboxes = document.querySelectorAll('.tagihan-checkbox');
+
+    if (selectedCount === 0) {
+        selectAll.indeterminate = false;
+        selectAll.checked = false;
+    } else if (selectedCount === allCheckboxes.length) {
+        selectAll.indeterminate = false;
+        selectAll.checked = true;
+    } else {
+        selectAll.indeterminate = true;
+        selectAll.checked = false;
+    }
+
+    // Update selected items summary
+    const summaryDiv = document.getElementById('selectedItemsSummary');
+    const countSpan = document.getElementById('selectedTagihanCount');
+    const amountSpan = document.getElementById('selectedTotalAmount');
+
+    if (selectedCount > 0) {
+        summaryDiv.classList.remove('hidden');
+        countSpan.textContent = selectedCount;
+        amountSpan.textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAmount);
+    } else {
+        summaryDiv.classList.add('hidden');
+        countSpan.textContent = '0';
+        amountSpan.textContent = 'Rp 0';
+    }
+}
+
+function lepasKontainer() {
+    const checkboxes = document.querySelectorAll('.tagihan-checkbox:checked');
+    const selectedItems = Array.from(checkboxes).map(checkbox => ({
+        id: checkbox.value,
+        vendor: checkbox.dataset.vendor,
+        amount: checkbox.dataset.amount
+    }));
+
+    if (selectedItems.length === 0) {
+        alert('Silakan pilih tagihan yang akan dilepas kontainernya.');
+        return;
+    }
+
+    const totalAmount = selectedItems.reduce((sum, item) => sum + parseFloat(item.amount), 0);
+    const confirmation = confirm(
+        `Anda akan melepas kontainer untuk ${selectedItems.length} tagihan:\n\n` +
+        selectedItems.map(item => `- ${item.vendor} (Rp ${new Intl.NumberFormat('id-ID').format(item.amount)})`).join('\n') +
+        `\n\nTotal Amount: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}\n\n` +
+        'Apakah Anda yakin ingin melanjutkan?'
+    );
+
+    if (confirmation) {
+        // Create JSON payload
+        const payload = {
+            _token: '{{ csrf_token() }}',
+            tagihan_ids: selectedItems.map(item => item.id)
+        };
+
+        // Send POST request
+        fetch(`{{ route('pranota.lepas-kontainer', $pranota->id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => {
+            console.log('Response status:', response.status);
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data);
+            if (data.success) {
+                alert('Kontainer berhasil dilepas dari pranota.');
+                location.reload(); // Reload page to show updated data
+            } else {
+                alert('Gagal melepas kontainer: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses permintaan.');
+        });
+    }
+}
+
 function openStatusModal() {
     document.getElementById('statusModal').classList.remove('hidden');
 }

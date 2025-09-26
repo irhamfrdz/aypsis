@@ -58,6 +58,106 @@
     margin-right: 8px;
 }
 
+/* Notification styles */
+.notification-container {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    max-width: 400px;
+}
+
+.notification {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transform: translateX(100%);
+    opacity: 0;
+    transition: all 0.3s ease-in-out;
+    border-left: 4px solid;
+}
+
+.notification.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.notification.success {
+    border-left-color: #10b981;
+}
+
+.notification.error {
+    border-left-color: #ef4444;
+}
+
+.notification.warning {
+    border-left-color: #f59e0b;
+}
+
+.notification-icon {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+.notification.success .notification-icon {
+    background-color: #10b981;
+}
+
+.notification.error .notification-icon {
+    background-color: #ef4444;
+}
+
+.notification.warning .notification-icon {
+    background-color: #f59e0b;
+}
+
+.notification-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.notification-title {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 4px;
+    color: #1f2937;
+}
+
+.notification-message {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.4;
+}
+
+.notification-close {
+    background: none;
+    border: none;
+    color: #9ca3af;
+    cursor: pointer;
+    padding: 2px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    flex-shrink: 0;
+}
+
+.notification-close:hover {
+    color: #6b7280;
+    background-color: #f3f4f6;
+}
+
 /* Button hover effects */
 .btn-animated {
     transition: all 0.2s ease-in-out;
@@ -74,6 +174,8 @@
 </style>
 
 <div class="container mx-auto p-4">
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container"></div>
     <h1 class="text-2xl font-bold mb-4">Daftar Tagihan Kontainer Sewa</h1>
 
     <!-- Action Buttons Section -->
@@ -149,6 +251,16 @@
                         Import & Group
                     </button>
                 </form>
+
+                <!-- Buat Group -->
+                @can('tagihan-kontainer-create')
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.create-group') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                    </svg>
+                    Buat Group
+                </a>
+                @endcan
             </div>
         </div>
 
@@ -208,6 +320,11 @@
                     @can('pranota-create')
                     <button type="button" id="btnMasukanPranota" onclick="masukanKePranota()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
                         Masukan ke Pranota
+                    </button>
+                    @endcan
+                    @can('tagihan-kontainer-delete')
+                    <button type="button" onclick="ungroupSelectedContainers()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Hapus Group
                     </button>
                     @endcan
                 </div>
@@ -780,19 +897,6 @@
                             <div class="font-bold text-yellow-800">
                                 Rp {{ number_format($newGrandTotal, 0, '.', ',') }}
                             </div>
-                            @if($adjustment != 0)
-                                <div class="text-xs text-yellow-600 mt-1">
-                                    @php
-                                        $originalTotal = (float)(optional($tagihan)->grand_total ?? 0);
-                                        $totalDifference = $newGrandTotal - $originalTotal;
-                                    @endphp
-                                    @if($totalDifference > 0)
-                                        +Rp {{ number_format($totalDifference, 0, '.', ',') }} dari asli
-                                    @elseif($totalDifference < 0)
-                                        -Rp {{ number_format(abs($totalDifference), 0, '.', ',') }} dari asli
-                                    @endif
-                                </div>
-                            @endif
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center ">
                             @php
@@ -1251,7 +1355,7 @@ window.testPranota = function() {
     console.log('Test function works!');
 };
 
-// Function for "Masukan ke Pranota" - shows a simple popup
+// Function for "Masukan ke Pranota" - shows modal first
 window.masukanKePranota = function() {
     console.log('masukanKePranota called');
 
@@ -1265,56 +1369,44 @@ window.masukanKePranota = function() {
         return;
     }
 
-    // Show confirmation popup
-    const confirmed = confirm(`Apakah Anda yakin ingin memasukkan ${selectedIds.length} item terpilih ke dalam pranota?\n\nItem yang dipilih akan dipindahkan ke status "sudah masuk pranota".`);
+    console.log('Starting data collection...');
 
-    if (confirmed) {
-        // Show loading state
-        const btnMasukanPranota = document.getElementById('btnMasukanPranota');
-        const originalText = btnMasukanPranota.textContent;
-        btnMasukanPranota.textContent = 'Memproses...';
-        btnMasukanPranota.disabled = true;
+    // Collect data from selected rows
+    const selectedData = {
+        containers: [],
+        vendors: [],
+        sizes: [],
+        periodes: [],
+        totals: []
+    };
 
-        // Prepare form data
-        const formData = new FormData();
-        formData.append('_token', '{{ csrf_token() }}');
-        formData.append('action', 'masukan_ke_pranota');
+    checkedBoxes.forEach((checkbox, index) => {
+        console.log(`Processing checkbox ${index + 1}:`, checkbox.value);
 
-        // Add selected IDs
-        selectedIds.forEach(id => {
-            formData.append('ids[]', id);
-        });
+        const row = checkbox.closest('tr');
+        if (!row) {
+            console.error(`Row not found for checkbox ${index + 1}`);
+            return;
+        }
 
-        // Send AJAX request
-        fetch('/daftar-tagihan-kontainer-sewa/masukan-ke-pranota', {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error(`Server error: ${response.status}`);
-            }
-        })
-        .then(data => {
-            console.log('Success response:', data);
-            alert(`Berhasil memasukkan ${selectedIds.length} item ke pranota!`);
-            // Reload page to show updated data
-            window.location.reload();
-        })
-        .catch(error => {
-            console.error('Error:', error);
-            alert('Gagal memasukkan ke pranota: ' + error.message);
+        const containerElement = row.querySelector('td:nth-child(4)');
+        const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
+        const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
+        const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
+        const totalElement = row.querySelector('td:nth-child(16)'); // Grand Total column (16th column) - Total Biaya
 
-            // Reset button state
-            btnMasukanPranota.textContent = originalText;
-            btnMasukanPranota.disabled = false;
-        });
-    }
+        selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
+        selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
+        selectedData.sizes.push(sizeElement ? sizeElement.textContent.trim() : '-');
+        selectedData.periodes.push(periodeElement ? periodeElement.textContent.trim() : '-');
+        selectedData.totals.push(totalElement ? totalElement.textContent.trim() : '-');
+    });
+
+    console.log('Bulk data extracted:', selectedData);
+    console.log('Opening modal...');
+
+    // Open modal with collected data
+    openModal('bulk', selectedIds, selectedData, 'masukan_ke_pranota');
 };
 
 window.buatPranotaTerpilih = function() {
@@ -1354,6 +1446,7 @@ window.buatPranotaTerpilih = function() {
     const selectedData = {
         containers: [],
         vendors: [],
+        sizes: [],
         periodes: [],
         totals: []
     };
@@ -1367,20 +1460,15 @@ window.buatPranotaTerpilih = function() {
             return;
         }
 
-        const containerElement = row.querySelector('td:nth-child(4) .text-lg');
+        const containerElement = row.querySelector('td:nth-child(4)');
         const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
-        const periodeElement = row.querySelector('td:nth-child(7) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(17)'); // Grand Total column (17th column)
-
-        console.log(`Elements for row ${index + 1}:`, {
-            containerElement: !!containerElement,
-            vendorElement: !!vendorElement,
-            periodeElement: !!periodeElement,
-            totalElement: !!totalElement
-        });
+        const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
+        const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
+        const totalElement = row.querySelector('td:nth-child(16)'); // Grand Total column (16th column) - Total Biaya
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
+        selectedData.sizes.push(sizeElement ? sizeElement.textContent.trim() : '-');
         selectedData.periodes.push(periodeElement ? periodeElement.textContent.trim() : '-');
         selectedData.totals.push(totalElement ? totalElement.textContent.trim() : '-');
     });
@@ -1434,21 +1522,122 @@ window.buatPranota = function(id) {
     // Based on table structure: checkbox, no, vendor, container, ukuran, periode, etc
     const vendor = cells[2] ? cells[2].textContent.trim() : '-';
     const container = cells[3] ? cells[3].textContent.trim() : '-';
-    const periode = cells[6] ? cells[6].textContent.trim() : '-';
-    const total = cells[16] ? cells[16].textContent.trim() : '-'; // Grand total column (index 16)
+    const size = cells[4] ? cells[4].textContent.trim() : '-'; // Size column (index 4)
+    const periode = cells[5] ? cells[5].textContent.trim() : '-'; // Periode column (index 5)
+    const total = cells[12] ? cells[12].textContent.trim() : '-'; // Grand Total column (index 12) - Total Biaya
 
-    console.log('Single pranota data extracted:', { container, vendor, periode, total }); // Debug log
+    console.log('Single pranota data extracted:', { container, vendor, size, periode, total }); // Debug log
 
     openModal('single', [id], {
         containers: [container],
         vendors: [vendor],
+        sizes: [size],
         periodes: [periode],
         totals: [total]
     });
 };
 
-window.openModal = function(type, ids, data) {
-    console.log('openModal called:', { type, ids, data }); // Debug log
+// Function to ungroup selected containers
+window.ungroupSelectedContainers = function() {
+    console.log('ungroupSelectedContainers called');
+
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+    console.log('Selected IDs for ungrouping:', selectedIds);
+
+    if (selectedIds.length === 0) {
+        alert('Pilih minimal satu kontainer untuk menghapus group');
+        return;
+    }
+
+    // Check if any selected containers are not in a group
+    let containersWithoutGroup = 0;
+    checkedBoxes.forEach((checkbox) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            const groupCell = row.querySelector('td:nth-child(7)'); // Group column (index 7)
+            const groupValue = groupCell ? groupCell.textContent.trim() : '';
+            if (!groupValue || groupValue === '-') {
+                containersWithoutGroup++;
+            }
+        }
+    });
+
+    if (containersWithoutGroup === checkedBoxes.length) {
+        alert('Kontainer yang dipilih sudah tidak memiliki group');
+        return;
+    }
+
+    const message = selectedIds.length === 1
+        ? 'Apakah Anda yakin ingin menghapus group dari kontainer yang dipilih?'
+        : `Apakah Anda yakin ingin menghapus group dari ${selectedIds.length} kontainer yang dipilih?`;
+
+    if (!confirm(message)) {
+        return;
+    }
+
+    // Show loading state
+    const ungroupBtn = document.querySelector('button[onclick="ungroupSelectedContainers()"]');
+    const originalText = ungroupBtn ? ungroupBtn.innerHTML : '';
+    if (ungroupBtn) {
+        ungroupBtn.innerHTML = '<span class="loading-spinner"></span>Menghapus Group...';
+        ungroupBtn.disabled = true;
+    }
+
+    // Prepare form data
+    const formData = new FormData();
+    formData.append('_token', '{{ csrf_token() }}');
+    formData.append('_method', 'PATCH');
+
+    selectedIds.forEach(id => {
+        formData.append('container_ids[]', id);
+    });
+
+    // Send AJAX request
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.ungroup-containers") }}', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.json();
+        } else {
+            return response.text().then(text => {
+                throw new Error(`Server error: ${response.status}`);
+            });
+        }
+    })
+    .then(data => {
+        if (data.success) {
+            showNotification('success', 'Group Berhasil Dihapus',
+                `${data.ungrouped_count} kontainer berhasil dikembalikan ke status individual.`);
+
+            // Reload page after success
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            throw new Error(data.message || 'Gagal menghapus group');
+        }
+    })
+    .catch(error => {
+        console.error('Error ungrouping containers:', error);
+        showNotification('error', 'Gagal Menghapus Group', error.message || 'Terjadi kesalahan saat menghapus group');
+
+        // Reset button state
+        if (ungroupBtn) {
+            ungroupBtn.innerHTML = originalText;
+            ungroupBtn.disabled = false;
+        }
+    });
+};
+
+window.openModal = function(type, ids, data, action = 'buat_pranota') {
+    console.log('openModal called:', { type, ids, data, action }); // Debug log
 
     const modal = document.getElementById('pranotaModal');
     if (!modal) {
@@ -1456,24 +1645,33 @@ window.openModal = function(type, ids, data) {
         return;
     }
 
+    console.log('Modal element found, updating content...');
+
     const modalTitle = document.getElementById('modal-title');
     const tagihanInfo = document.getElementById('tagihan-info');
     const jumlahTagihan = document.getElementById('jumlah-tagihan');
     const totalNilai = document.getElementById('total-nilai');
     const selectedTagihanIds = document.getElementById('selected_tagihan_ids');
     const pranotaType = document.getElementById('pranota_type');
-    const periodeTagihan = document.getElementById('periode_tagihan');
     const tanggalPranota = document.getElementById('tanggal_pranota');
 
     console.log('Modal elements found:', {
         modal: !!modal,
         modalTitle: !!modalTitle,
-        tagihanInfo: !!tagihanInfo
+        tagihanInfo: !!tagihanInfo,
+        jumlahTagihan: !!jumlahTagihan,
+        totalNilai: !!totalNilai
     }); // Debug log
 
     // Set form data
     selectedTagihanIds.value = ids.join(',');
     pranotaType.value = type;
+
+    // Set action type (buat_pranota or masukan_ke_pranota)
+    const actionInput = document.getElementById('pranota_action');
+    if (actionInput) {
+        actionInput.value = action;
+    }
 
     // Set default dates
     const today = new Date().toISOString().split('T')[0];
@@ -1482,21 +1680,46 @@ window.openModal = function(type, ids, data) {
     // Get nomor pranota elements
     const nomorPranotaDisplay = document.getElementById('nomor_pranota_display');
 
-    // Generate nomor pranota
+    // Generate nomor pranota via AJAX
     function updateNomorPranota() {
-        const cetakan = '1'; // Fixed value since input removed
+        // Show loading state
+        nomorPranotaDisplay.value = 'Memuat...';
 
-        // Use selected date from tanggal_pranota field, fallback to today
-        const selectedDate = tanggalPranota.value ? new Date(tanggalPranota.value) : new Date();
-        const tahun = selectedDate.getFullYear().toString().slice(-2); // 2 digit year
-        const bulan = String(selectedDate.getMonth() + 1).padStart(2, '0'); // 2 digit month
+        // Make AJAX call to get next pranota number
+        fetch('{{ route("api.next-pranota-number") }}', {
+            method: 'GET',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            // Check if response is JSON
+            const contentType = response.headers.get('content-type');
+            const isJson = contentType && contentType.includes('application/json');
 
-        // For running number, we'll use a placeholder since we need server data
-        // This will be the format shown to user
-        const runningNumber = '000001'; // Placeholder - actual number generated by server
-
-        const nomorPranota = `PTK${cetakan}${tahun}${bulan}${runningNumber}`;
-        nomorPranotaDisplay.value = nomorPranota;
+            if (isJson) {
+                return response.json();
+            } else {
+                // Not JSON, probably an error page
+                return response.text().then(text => {
+                    throw new Error('Server returned non-JSON response: ' + text.substring(0, 100) + '...');
+                });
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                nomorPranotaDisplay.value = data.nomor_pranota;
+            } else {
+                console.error('Error getting pranota number:', data.message);
+                nomorPranotaDisplay.value = 'Error loading number';
+            }
+        })
+        .catch(error => {
+            console.error('AJAX error:', error);
+            nomorPranotaDisplay.value = 'Error loading number';
+        });
     }
 
     // Update nomor pranota when tanggal changes
@@ -1505,18 +1728,88 @@ window.openModal = function(type, ids, data) {
     // Initial nomor pranota generation
     updateNomorPranota();
 
-    // Update modal content based on type
-    if (type === 'single') {
-        modalTitle.textContent = 'Buat Pranota - Single Item';
+    // Update modal content based on type and action
+    if (action === 'masukan_ke_pranota') {
+        modalTitle.textContent = `Masukan ke Pranota - ${ids.length} Items`;
+        // Update button text
+        const submitBtn = document.querySelector('#pranotaForm button[type="submit"] .btn-text');
+        if (submitBtn) {
+            submitBtn.textContent = 'Masukan ke Pranota';
+        }
+
+        // Create detailed table for bulk items (same as bulk pranota)
+        let containerRows = '';
+        data.containers.forEach((container, index) => {
+            containerRows += `
+                <tr class="border-b border-gray-200">
+                    <td class="px-2 py-1 text-sm">${index + 1}</td>
+                    <td class="px-2 py-1 text-sm font-medium">${container}</td>
+                    <td class="px-2 py-1 text-sm">${data.vendors[index]}</td>
+                    <td class="px-2 py-1 text-sm text-center">${data.sizes[index]}</td>
+                    <td class="px-2 py-1 text-sm">${data.periodes[index]}</td>
+                    <td class="px-2 py-1 text-sm text-right font-medium">${data.totals[index]}</td>
+                </tr>
+            `;
+        });
+
         tagihanInfo.innerHTML = `
-            <div class="space-y-1">
-                <div><strong>Container:</strong> ${data.containers[0]}</div>
-                <div><strong>Vendor:</strong> ${data.vendors[0]}</div>
-                <div><strong>Periode:</strong> ${data.periodes[0]}</div>
-                <div><strong>Total:</strong> ${data.totals[0]}</div>
+            <div class="space-y-2">
+                <div class="text-sm font-medium text-gray-700 mb-2">Detail Tagihan (${ids.length} items):</div>
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Container</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
+                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white">
+                            ${containerRows}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `;
-        periodeTagihan.value = data.periodes[0];
+
+        jumlahTagihan.textContent = `${ids.length} tagihan`;
+
+        // Calculate total (remove currency formatting for calculation)
+        const totals = data.totals.map(total => {
+            // Handle Indonesian number format: Rp 35,450 (comma as thousands separator)
+            const cleanTotal = total.replace(/Rp\s*/g, '').replace(/,/g, '');
+            return parseFloat(cleanTotal) || 0;
+        });
+        const grandTotal = totals.reduce((sum, total) => sum + total, 0);
+        totalNilai.textContent = `Rp ${grandTotal.toLocaleString('id-ID')}`;
+
+        console.log('Masukan ke Pranota total calculation:', { rawTotals: data.totals, cleanTotals: totals, grandTotal }); // Debug log
+    } else if (type === 'single') {
+        modalTitle.textContent = 'Buat Pranota - Single Item';
+        tagihanInfo.innerHTML = `
+            <div class="space-y-2">
+                <div class="text-sm font-medium text-gray-700 mb-2">Detail Tagihan:</div>
+                <div class="bg-gray-50 rounded-lg p-3 border">
+                    <div class="grid grid-cols-2 gap-2 text-sm">
+                        <div><strong>Container:</strong></div>
+                        <div>${data.containers[0]}</div>
+                        <div><strong>Vendor:</strong></div>
+                        <div>${data.vendors[0]}</div>
+                        <div><strong>Ukuran:</strong></div>
+                        <div>${data.sizes[0]}</div>
+                        <div><strong>Periode:</strong></div>
+                        <div>${data.periodes[0]}</div>
+                        <div><strong>Total Biaya:</strong></div>
+                        <div class="font-semibold text-green-600">${data.totals[0]}</div>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        console.log('tagihanInfo content set for single:', tagihanInfo.innerHTML);
         jumlahTagihan.textContent = '1 tagihan';
 
         // Format single total consistently
@@ -1529,20 +1822,46 @@ window.openModal = function(type, ids, data) {
     } else {
         modalTitle.textContent = `Buat Pranota - ${ids.length} Items`;
 
-        // Create summary for bulk
-        const uniqueVendors = [...new Set(data.vendors)];
-        const uniquePeriodes = [...new Set(data.periodes)];
+        // Create detailed table for bulk items
+        let containerRows = '';
+        data.containers.forEach((container, index) => {
+            containerRows += `
+                <tr class="border-b border-gray-200">
+                    <td class="px-2 py-1 text-sm">${index + 1}</td>
+                    <td class="px-2 py-1 text-sm font-medium">${container}</td>
+                    <td class="px-2 py-1 text-sm">${data.vendors[index]}</td>
+                    <td class="px-2 py-1 text-sm text-center">${data.sizes[index]}</td>
+                    <td class="px-2 py-1 text-sm">${data.periodes[index]}</td>
+                    <td class="px-2 py-1 text-sm text-right font-medium">${data.totals[index]}</td>
+                </tr>
+            `;
+        });
 
         tagihanInfo.innerHTML = `
-            <div class="space-y-1">
-                <div><strong>Jumlah Tagihan:</strong> ${ids.length} items</div>
-                <div><strong>Containers:</strong> ${data.containers.slice(0, 3).join(', ')}${data.containers.length > 3 ? ` dan ${data.containers.length - 3} lainnya` : ''}</div>
-                <div><strong>Vendors:</strong> ${uniqueVendors.join(', ')}</div>
-                <div><strong>Periodes:</strong> ${uniquePeriodes.join(', ')}</div>
+            <div class="space-y-2">
+                <div class="text-sm font-medium text-gray-700 mb-2">Detail Tagihan (${ids.length} items):</div>
+                <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">No</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Container</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
+                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Ukuran</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
+                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                            </tr>
+                        </thead>
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            ${containerRows}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         `;
 
-        periodeTagihan.value = uniquePeriodes.length === 1 ? uniquePeriodes[0] : 'Multiple';
+        console.log('tagihanInfo content set for bulk:', tagihanInfo.innerHTML);
+
         jumlahTagihan.textContent = `${ids.length} tagihan`;
 
         // Calculate total (remove currency formatting for calculation)
@@ -1557,9 +1876,13 @@ window.openModal = function(type, ids, data) {
         console.log('Bulk total calculation:', { rawTotals: data.totals, cleanTotals: totals, grandTotal }); // Debug log
     }
 
+    console.log('Modal content updated, showing modal...');
+
     // Show modal with animation
     modal.classList.remove('hidden');
     document.body.style.overflow = 'hidden';
+
+    console.log('Modal should now be visible');
 
     // Trigger animation after a small delay to ensure the modal is rendered
     setTimeout(() => {
@@ -1568,6 +1891,7 @@ window.openModal = function(type, ids, data) {
         if (modalContent) {
             modalContent.classList.add('modal-show');
         }
+        console.log('Modal animation triggered');
     }, 10);
 };
 
@@ -1651,7 +1975,11 @@ document.addEventListener('DOMContentLoaded', function() {
             const btnText = submitBtn.querySelector('.btn-text');
             const originalText = btnText.textContent;
 
-            btnText.innerHTML = '<span class="loading-spinner"></span>Memproses...';
+            // Set loading text based on action
+            const pranotaAction = document.getElementById('pranota_action').value;
+            const loadingText = pranotaAction === 'masukan_ke_pranota' ? 'Memproses...' : 'Membuat Pranota...';
+
+            btnText.innerHTML = `<span class="loading-spinner"></span>${loadingText}`;
             submitBtn.disabled = true;
             submitBtn.classList.add('opacity-75', 'cursor-not-allowed');
 
@@ -1664,14 +1992,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             let actionUrl;
 
-            if (pranotaType === 'bulk') {
-                // Bulk pranota submission
+            if (pranotaAction === 'masukan_ke_pranota') {
+                // Masukan ke pranota (update status existing items) - menggunakan sistem pranota kontainer sewa
+                actionUrl = '{{ route("pranota-kontainer-sewa.bulk-create-from-tagihan-kontainer-sewa") }}';
+                submitData.append('action', 'masukan_ke_pranota');
+                selectedIds.forEach(id => {
+                    submitData.append('selected_ids[]', id);
+                });
+            } else if (pranotaType === 'bulk') {
+                // Bulk pranota submission (create new pranota)
                 actionUrl = '{{ route("pranota.bulk.store") }}';
                 selectedIds.forEach(id => {
                     submitData.append('selected_ids[]', id);
                 });
             } else {
-                // Single pranota submission
+                // Single pranota submission (create new pranota)
                 actionUrl = '{{ route("pranota.store") }}';
             }
 
@@ -1684,18 +2019,143 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             })
             .then(response => {
+                // Check if response is JSON
+                const contentType = response.headers.get('content-type');
+                const isJson = contentType && contentType.includes('application/json');
+
                 if (response.ok) {
-                    // Success - reload page to show updated data
-                    window.location.reload();
+                    if (isJson) {
+                        return response.json().then(data => {
+                            // Success handling with JSON response
+                            const pranotaAction = document.getElementById('pranota_action').value;
+                            const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+
+                            let successTitle, successMessage;
+
+                            if (isMasukanKePranota) {
+                                successTitle = 'Berhasil Masukan ke Pranota';
+                                successMessage = `Berhasil memproses ${selectedIds.length} tagihan kontainer sewa ke dalam sistem pranota. Data telah diperbarui.`;
+                            } else {
+                                successTitle = 'Berhasil Membuat Pranota';
+                                successMessage = `Pranota baru telah berhasil dibuat dengan nomor ${data.nomor_pranota || 'tergenerasi otomatis'}.`;
+                            }
+
+                            // Show success notification
+                            showSuccess(successTitle, successMessage);
+
+                            // Close modal
+                            closeModal();
+
+                            // Reset form
+                            document.getElementById('pranotaForm').reset();
+
+                            // Reset tanggal to today
+                            const today = new Date().toISOString().split('T')[0];
+                            const tanggalField = document.getElementById('tanggal_pranota');
+                            if (tanggalField) {
+                                tanggalField.value = today;
+                            }
+
+                            // Reload page after a short delay to show updated data
+                            setTimeout(() => {
+                                window.location.reload();
+                            }, 2000);
+
+                            return data;
+                        });
+                    } else {
+                        // Success but not JSON (probably redirect or HTML response)
+                        const pranotaAction = document.getElementById('pranota_action').value;
+                        const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+
+                        const successTitle = isMasukanKePranota ? 'Berhasil Masukan ke Pranota' : 'Berhasil Membuat Pranota';
+                        const successMessage = isMasukanKePranota
+                            ? `Berhasil memproses ${selectedIds.length} tagihan kontainer sewa ke dalam sistem pranota.`
+                            : 'Pranota baru telah berhasil dibuat.';
+
+                        // Show success notification
+                        showSuccess(successTitle, successMessage);
+
+                        // Close modal
+                        closeModal();
+
+                        // Reset form
+                        document.getElementById('pranotaForm').reset();
+
+                        // Reset tanggal to today
+                        const today = new Date().toISOString().split('T')[0];
+                        const tanggalField = document.getElementById('tanggal_pranota');
+                        if (tanggalField) {
+                            tanggalField.value = today;
+                        }
+
+                        // Reload page after a short delay to show updated data
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 2000);
+
+                        return { success: true };
+                    }
                 } else {
-                    return response.text().then(text => {
-                        throw new Error(`Server error: ${response.status} - ${text}`);
-                    });
+                    // Error response
+                    if (isJson) {
+                        return response.json().then(data => {
+                            // Error handling with JSON response
+                            const pranotaAction = document.getElementById('pranota_action').value;
+                            const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+
+                            let errorTitle, errorMessage;
+
+                            if (isMasukanKePranota) {
+                                errorTitle = 'Gagal Masukan ke Pranota';
+                                errorMessage = data.message || 'Terjadi kesalahan saat memproses tagihan ke pranota. Silakan coba lagi.';
+                            } else {
+                                errorTitle = 'Gagal Membuat Pranota';
+                                errorMessage = data.message || 'Terjadi kesalahan saat membuat pranota. Silakan periksa data dan coba lagi.';
+                            }
+
+                            // Show error notification
+                            showError(errorTitle, errorMessage);
+
+                            // Reset button state
+                            btnText.textContent = originalText;
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+                            throw new Error(errorMessage);
+                        });
+                    } else {
+                        // Error response that's not JSON (HTML error page, etc.)
+                        return response.text().then(text => {
+                            const pranotaAction = document.getElementById('pranota_action').value;
+                            const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+
+                            const errorTitle = isMasukanKePranota ? 'Gagal Masukan ke Pranota' : 'Gagal Membuat Pranota';
+                            const errorMessage = `Terjadi kesalahan server (${response.status}). Silakan coba lagi atau hubungi administrator.`;
+
+                            showError(errorTitle, errorMessage);
+
+                            // Reset button state
+                            btnText.textContent = originalText;
+                            submitBtn.disabled = false;
+                            submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+                            throw new Error(errorMessage);
+                        });
+                    }
                 }
             })
             .catch(error => {
                 console.error('Error:', error);
-                alert('Gagal membuat pranota: ' + error.message);
+
+                // Network or other errors
+                const pranotaAction = document.getElementById('pranota_action').value;
+                const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+
+                const errorTitle = isMasukanKePranota ? 'Gagal Masukan ke Pranota' : 'Gagal Membuat Pranota';
+                const errorMessage = 'Koneksi bermasalah. Silakan periksa koneksi internet dan coba lagi.';
+
+                showError(errorTitle, errorMessage);
 
                 // Reset button state
                 btnText.textContent = originalText;
@@ -1706,30 +2166,239 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Function to edit adjustment
-window.editAdjustment = function(tagihanId, currentAdjustment) {
-    const newValue = prompt(`Edit Adjustment untuk tagihan ID ${tagihanId}:\n\nMasukkan nilai adjustment (gunakan - untuk pengurangan):`, currentAdjustment || 0);
+// Function to open delete group modal
+window.openDeleteGroupModal = function() {
+    console.log('openDeleteGroupModal called');
 
-    if (newValue === null) {
-        return; // User cancelled
+    // Show loading notification
+    showNotification('warning', 'Memuat Groups', 'Sedang memuat daftar group yang ada...');
+
+    // Fetch existing groups via AJAX
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.groups") }}', {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to fetch groups');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success && data.groups && data.groups.length > 0) {
+            showDeleteGroupModal(data.groups);
+        } else {
+            showNotification('warning', 'Tidak Ada Group', 'Belum ada group yang dibuat atau semua group sudah dihapus.');
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching groups:', error);
+        showNotification('error', 'Error', 'Gagal memuat daftar group. Silakan coba lagi.');
+    });
+};
+
+// Function to show delete group modal
+window.showDeleteGroupModal = function(groups) {
+    console.log('showDeleteGroupModal called with groups:', groups);
+
+    // Create modal HTML
+    const modalHTML = `
+        <div id="deleteGroupModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between pb-4 border-b">
+                        <h3 class="text-lg font-medium text-gray-900">
+                            Hapus Group Tagihan Kontainer
+                        </h3>
+                        <button type="button" onclick="closeDeleteGroupModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <div class="mt-4">
+                        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-yellow-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                                </svg>
+                                <div class="text-sm text-yellow-800">
+                                    <strong>Perhatian:</strong> Menghapus group akan menghapus pengelompokan kontainer dan mengembalikan kontainer-kontainer tersebut ke status individual (tanpa group).
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
+                            <div class="px-4 py-3 bg-gray-50 border-b border-gray-200">
+                                <h4 class="text-sm font-medium text-gray-900">Daftar Group yang Tersedia</h4>
+                            </div>
+                            <div class="max-h-96 overflow-y-auto">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50 sticky top-0">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                <input type="checkbox" id="select-all-groups" class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500">
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Nama Group
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Jumlah Kontainer
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Dibuat Pada
+                                            </th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Aksi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        ${groups.map(group => `
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="checkbox" class="group-checkbox w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500" value="${group.name}">
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900">
+                                                    ${group.name}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    ${group.count} kontainer
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-500">
+                                                    ${new Date(group.created_at).toLocaleDateString('id-ID')}
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                    <button type="button" onclick="deleteSingleGroup('${group.name}')"
+                                                            class="text-red-600 hover:text-red-900 text-sm font-medium">
+                                                        Hapus
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        `).join('')}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Modal Footer -->
+                    <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
+                        <button type="button" onclick="closeDeleteGroupModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                            Batal
+                        </button>
+                        <button type="button" onclick="deleteSelectedGroups()"
+                                class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors flex items-center">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                            </svg>
+                            Hapus Group Terpilih
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('deleteGroupModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Add event listeners for checkboxes
+    setupGroupCheckboxes();
+};
+
+// Function to setup group checkboxes
+window.setupGroupCheckboxes = function() {
+    const selectAllGroups = document.getElementById('select-all-groups');
+    const groupCheckboxes = document.querySelectorAll('.group-checkbox');
+
+    if (selectAllGroups) {
+        selectAllGroups.addEventListener('change', function() {
+            groupCheckboxes.forEach(cb => {
+                cb.checked = this.checked;
+            });
+        });
     }
 
-    const adjustmentValue = parseFloat(newValue) || 0;
+    groupCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            const checkedBoxes = document.querySelectorAll('.group-checkbox:checked');
+            selectAllGroups.checked = checkedBoxes.length === groupCheckboxes.length;
+            selectAllGroups.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < groupCheckboxes.length;
+        });
+    });
+};
+
+// Function to delete single group
+window.deleteSingleGroup = function(groupName) {
+    if (confirm(`Apakah Anda yakin ingin menghapus group "${groupName}"?\n\nKontainer-kontainer dalam group ini akan dikembalikan ke status individual.`)) {
+        deleteGroups([groupName]);
+    }
+};
+
+// Function to delete selected groups
+window.deleteSelectedGroups = function() {
+    const selectedGroups = Array.from(document.querySelectorAll('.group-checkbox:checked')).map(cb => cb.value);
+
+    if (selectedGroups.length === 0) {
+        alert('Pilih minimal satu group untuk dihapus');
+        return;
+    }
+
+    const message = selectedGroups.length === 1
+        ? `Apakah Anda yakin ingin menghapus group "${selectedGroups[0]}"?`
+        : `Apakah Anda yakin ingin menghapus ${selectedGroups.length} group yang dipilih?`;
+
+    if (confirm(message + '\n\nKontainer-kontainer dalam group ini akan dikembalikan ke status individual.')) {
+        deleteGroups(selectedGroups);
+    }
+};
+
+// Function to delete groups via AJAX
+window.deleteGroups = function(groupNames) {
+    console.log('deleteGroups called with:', groupNames);
 
     // Show loading state
-    const button = event.target.closest('button');
-    const originalHTML = button.innerHTML;
-    button.innerHTML = '<div class="animate-spin w-3 h-3 border border-white border-t-transparent rounded-full"></div>';
-    button.disabled = true;
+    const modal = document.getElementById('deleteGroupModal');
+    const submitBtn = modal.querySelector('button[onclick="deleteSelectedGroups()"]');
+    const originalText = submitBtn ? submitBtn.innerHTML : '';
+    if (submitBtn) {
+        submitBtn.innerHTML = '<span class="loading-spinner"></span>Menghapus...';
+        submitBtn.disabled = true;
+    }
 
     // Prepare form data
     const formData = new FormData();
     formData.append('_token', '{{ csrf_token() }}');
-    formData.append('_method', 'PATCH');
-    formData.append('adjustment', adjustmentValue);
+    formData.append('_method', 'DELETE');
 
-    // Send AJAX request to update adjustment
-    fetch(`/daftar-tagihan-kontainer-sewa/${tagihanId}/adjustment`, {
+    groupNames.forEach(name => {
+        formData.append('group_names[]', name);
+    });
+
+    // Send AJAX request
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.delete-groups") }}', {
         method: 'POST',
         body: formData,
         headers: {
@@ -1738,22 +2407,120 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
     })
     .then(response => {
         if (response.ok) {
-            // Reload page to show updated data
-            window.location.reload();
+            return response.json();
         } else {
             return response.text().then(text => {
                 throw new Error(`Server error: ${response.status}`);
             });
         }
     })
+    .then(data => {
+        if (data.success) {
+            showNotification('success', 'Group Berhasil Dihapus',
+                `Berhasil menghapus ${groupNames.length} group. Kontainer-kontainer telah dikembalikan ke status individual.`);
+
+            // Close modal and reload page
+            closeDeleteGroupModal();
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            throw new Error(data.message || 'Gagal menghapus group');
+        }
+    })
     .catch(error => {
-        console.error('Error:', error);
-        alert('Gagal mengupdate adjustment: ' + error.message);
+        console.error('Error deleting groups:', error);
+        showNotification('error', 'Gagal Menghapus Group', error.message || 'Terjadi kesalahan saat menghapus group');
 
         // Reset button state
-        button.innerHTML = originalHTML;
-        button.disabled = false;
+        if (submitBtn) {
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
     });
+};
+
+// Function to close delete group modal
+window.closeDeleteGroupModal = function() {
+    const modal = document.getElementById('deleteGroupModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
+// Notification system functions
+window.showNotification = function(type, title, message, duration = 5000) {
+    const container = document.getElementById('notification-container');
+    if (!container) {
+        console.error('Notification container not found');
+        return;
+    }
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+
+    // Set icon based on type
+    let icon = '✓';
+    if (type === 'error') icon = '✕';
+    if (type === 'warning') icon = '⚠';
+
+    notification.innerHTML = `
+        <div class="notification-icon">${icon}</div>
+        <div class="notification-content">
+            <div class="notification-title">${title}</div>
+            <div class="notification-message">${message}</div>
+        </div>
+        <button class="notification-close" onclick="this.parentElement.remove()">×</button>
+    `;
+
+    // Add to container
+    container.appendChild(notification);
+
+    // Trigger animation
+    setTimeout(() => {
+        notification.classList.add('show');
+    }, 10);
+
+    // Auto remove after duration
+    if (duration > 0) {
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.classList.remove('show');
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 300);
+            }
+        }, duration);
+    }
+
+    return notification;
+};
+
+window.showSuccess = function(title, message, duration) {
+    return showNotification('success', title, message, duration);
+};
+
+window.showError = function(title, message, duration) {
+    return showNotification('error', title, message, duration);
+};
+
+window.showWarning = function(title, message, duration) {
+    return showNotification('warning', title, message, duration);
 };
 </script>
 
@@ -1775,6 +2542,8 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
 
             <!-- Modal Body -->
             <form id="pranotaForm" class="mt-4">
+                <!-- Hidden inputs for form data -->
+                <input type="hidden" id="pranota_action" name="pranota_action">
                 <div class="space-y-4">
                     <!-- Info Tagihan -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
@@ -1802,23 +2571,6 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
                             <input type="date" id="tanggal_pranota" name="tanggal_pranota" required
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <small class="text-gray-500 text-xs mt-1">Pilih tanggal pembuatan pranota</small>
-                        </div>
-
-                        <div>
-                            <label for="periode_tagihan" class="block text-[10px] font-medium text-gray-700 mb-2">
-                                Periode Tagihan
-                            </label>
-                            <input type="text" id="periode_tagihan" name="periode_tagihan" readonly
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 bg-gray-100">
-                        </div>
-
-                        <div>
-                            <label for="nomor_invoice" class="block text-[10px] font-medium text-gray-700 mb-2">
-                                Nomor Invoice *
-                            </label>
-                            <input type="text" id="nomor_invoice" name="nomor_invoice" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                   placeholder="Contoh: INV-202509-905">
                         </div>
                     </div>
 

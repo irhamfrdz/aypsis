@@ -6,7 +6,7 @@
         <!-- Header -->
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
             <h1 class="text-2xl font-semibold text-gray-900">Daftar Pranota Kontainer Sewa</h1>
-            <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}"
+            <a href="{{ route('pranota.create') }}"
                class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                 <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
@@ -40,21 +40,21 @@
                 </div>
                 <div class="flex space-x-2">
                     <button id="processPembayaranBtn"
-                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center disabled:opacity-50 disabled:cursor-not-allowed"
+                            class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center cursor-not-allowed opacity-50"
                             disabled
-                            onclick="processPembayaranBatch()">
+                            title="Fitur pembayaran belum tersedia untuk pranota kontainer sewa">
                         <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
                         </svg>
-                        Proses Pembayaran
+                        Proses Pembayaran (Coming Soon)
                     </button>
                 </div>
             </div>
 
             <!-- Table -->
-            <div class="overflow-x-auto">
+            <div class="table-container overflow-x-auto max-h-screen">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-50">
+                    <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                         <tr>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
@@ -63,13 +63,13 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pranota</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Tagihan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Amount</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 table-body-text">
                         @forelse($pranotaList as $index => $pranota)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
@@ -101,8 +101,8 @@
                                 Rp {{ number_format($pranota->total_amount, 2, ',', '.') }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pranota->getSimplePaymentStatusColor() }}">
-                                    {{ $pranota->getSimplePaymentStatus() }}
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pranota->getStatusColor() }}">
+                                    {{ $pranota->getStatusLabel() }}
                                 </span>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -145,7 +145,7 @@
                                     </svg>
                                     <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data pranota</h3>
                                     <p class="text-gray-500 mb-4">Mulai dengan membuat pranota pertama Anda.</p>
-                                    <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}"
+                                    <a href="{{ route('pranota.create') }}"
                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
                                         Buat Pranota Sekarang
                                     </a>
@@ -158,47 +158,7 @@
             </div>
 
             <!-- Pagination -->
-            @if($pranotaList->hasPages())
-            <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-6">
-                <div class="flex flex-1 justify-between sm:hidden">
-                    @if($pranotaList->onFirstPage())
-                        <span class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-md">
-                            Previous
-                        </span>
-                    @else
-                        <a href="{{ $pranotaList->previousPageUrl() }}" class="relative inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            Previous
-                        </a>
-                    @endif
-
-                    @if($pranotaList->hasMorePages())
-                        <a href="{{ $pranotaList->nextPageUrl() }}" class="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50">
-                            Next
-                        </a>
-                    @else
-                        <span class="relative ml-3 inline-flex items-center px-4 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 cursor-default rounded-md">
-                            Next
-                        </span>
-                    @endif
-                </div>
-                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Showing
-                            <span class="font-medium">{{ $pranotaList->firstItem() ?? 0 }}</span>
-                            to
-                            <span class="font-medium">{{ $pranotaList->lastItem() ?? 0 }}</span>
-                            of
-                            <span class="font-medium">{{ $pranotaList->total() }}</span>
-                            results
-                        </p>
-                    </div>
-                    <div>
-                        {{ $pranotaList->links() }}
-                    </div>
-                </div>
-            </div>
-            @endif
+            @include('components.modern-pagination', ['paginator' => $pranotaList, 'routeName' => 'pranota.index'])
         </div>
     </div>
 </div>
@@ -276,6 +236,11 @@ function processPembayaranBatch() {
         return;
     }
 
+    // For now, show message that payment feature is not yet available for pranota kontainer sewa
+    alert('Fitur pembayaran untuk pranota kontainer sewa belum tersedia. Sistem pembayaran saat ini hanya mendukung pranota dari tabel pranotalist.');
+
+    // Uncomment below code when payment system is extended to support pranota_tagihan_kontainer_sewa
+    /*
     const selectedPranota = Array.from(checkboxes).map(checkbox => ({
         id: checkbox.value,
         no_invoice: checkbox.dataset.noInvoice,
@@ -316,6 +281,7 @@ function processPembayaranBatch() {
         document.body.appendChild(form);
         form.submit();
     }
+    */
 }
 
 // Initialize
@@ -327,6 +293,117 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial update
     updateSelection();
+
+    // Sticky Header Enhancement
+    const tableContainer = document.querySelector('.table-container');
+    const stickyHeader = document.querySelector('.sticky-table-header');
+
+    if (tableContainer && stickyHeader) {
+        // Add scroll event listener for visual feedback
+        tableContainer.addEventListener('scroll', function() {
+            if (tableContainer.scrollTop > 0) {
+                tableContainer.classList.add('scrolled');
+            } else {
+                tableContainer.classList.remove('scrolled');
+            }
+        });
+
+        // Optional: Add smooth scroll to top button
+        const scrollToTopBtn = document.createElement('button');
+        scrollToTopBtn.innerHTML = '<i class="fas fa-arrow-up"></i>';
+        scrollToTopBtn.className = 'fixed bottom-4 right-4 bg-blue-600 text-white p-3 rounded-full shadow-lg hover:bg-blue-700 transition-all duration-300 opacity-0 invisible z-50';
+        scrollToTopBtn.title = 'Scroll ke atas';
+        document.body.appendChild(scrollToTopBtn);
+
+        // Show/hide scroll to top button
+        tableContainer.addEventListener('scroll', function() {
+            if (tableContainer.scrollTop > 200) {
+                scrollToTopBtn.classList.remove('opacity-0', 'invisible');
+                scrollToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                scrollToTopBtn.classList.add('opacity-0', 'invisible');
+                scrollToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+
+        // Scroll to top functionality
+        scrollToTopBtn.addEventListener('click', function() {
+            tableContainer.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
 });
 </script>
+
+<style>
+/* Sticky Table Header Styles */
+.sticky-table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: rgb(249 250 251); /* bg-gray-50 */
+    box-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+}
+
+/* Enhanced table container for better scrolling */
+.table-container {
+    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    overflow-y: auto;
+    border: 1px solid rgb(229 231 235); /* border-gray-200 */
+    border-radius: 0.5rem;
+}
+
+/* Smooth scrolling for better UX */
+.table-container {
+    scroll-behavior: smooth;
+}
+
+/* Table header cells need specific background to avoid transparency issues */
+.sticky-table-header th {
+    background-color: rgb(249 250 251) !important;
+    border-bottom: 1px solid rgb(229 231 235);
+}
+
+/* Optional: Add a subtle border when scrolling */
+.table-container.scrolled .sticky-table-header {
+    border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
+}
+
+/* Ensure dropdown menus appear above sticky header */
+.relative.group .absolute {
+    z-index: 20;
+}
+
+/* Custom table body font size */
+.table-body-text td {
+    font-size: 10px !important;
+}
+
+/* Enhanced Pagination Styles */
+.pagination-links .page-link {
+    @apply inline-flex items-center px-2.5 py-1.5 text-sm font-medium transition-colors duration-200 border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900;
+}
+
+.pagination-links .page-link.active {
+    @apply bg-blue-600 border-blue-600 text-white hover:bg-blue-700 hover:border-blue-700;
+}
+
+.pagination-links .page-link.disabled {
+    @apply opacity-50 cursor-not-allowed pointer-events-none;
+}
+
+.pagination-links .page-item:first-child .page-link {
+    @apply rounded-l-md;
+}
+
+.pagination-links .page-item:last-child .page-link {
+    @apply rounded-r-md;
+}
+
+.pagination-links .page-item:not(:first-child):not(:last-child) .page-link {
+    @apply border-l-0;
+}
+</style>
 @endsection

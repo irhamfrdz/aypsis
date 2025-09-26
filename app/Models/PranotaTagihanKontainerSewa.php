@@ -5,51 +5,50 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class PranotaTagihanCat extends Model
+class PranotaTagihanKontainerSewa extends Model
 {
     use HasFactory;
 
-    protected $table = "pranota_tagihan_cat";
+    protected $table = "pranota_tagihan_kontainer_sewa";
     protected $fillable = [
         "no_invoice",
         "total_amount",
         "keterangan",
-        "supplier",
         "status",
-        "tagihan_cat_ids",
+        "tagihan_kontainer_sewa_ids",
         "jumlah_tagihan",
         "tanggal_pranota",
         "due_date"
     ];
     protected $casts = [
-        "tagihan_cat_ids" => "array",
+        "tagihan_kontainer_sewa_ids" => "array",
         "total_amount" => "decimal:2",
         "tanggal_pranota" => "date",
         "due_date" => "date"
     ];
 
-    public function tagihanCatItems()
+    public function tagihanKontainerSewaItems()
     {
-        if (empty($this->tagihan_cat_ids)) {
+        if (empty($this->tagihan_kontainer_sewa_ids)) {
             return collect();
         }
-        return TagihanCat::whereIn('id', $this->tagihan_cat_ids)->get();
+        return DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_kontainer_sewa_ids)->get();
     }
 
     public function calculateTotalAmount()
     {
-        if (empty($this->tagihan_cat_ids)) {
+        if (empty($this->tagihan_kontainer_sewa_ids)) {
             return 0;
         }
 
-        $catItems = TagihanCat::whereIn('id', $this->tagihan_cat_ids)->get();
-        return $catItems->sum('realisasi_biaya');
+        $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_kontainer_sewa_ids)->get();
+        return $tagihanItems->sum('grand_total');
     }
 
     public function updateTotalAmount()
     {
         $this->total_amount = $this->calculateTotalAmount();
-        $this->jumlah_tagihan = count($this->tagihan_cat_ids);
+        $this->jumlah_tagihan = count($this->tagihan_kontainer_sewa_ids);
         $this->save();
     }
 
@@ -78,5 +77,12 @@ class PranotaTagihanCat extends Model
         } else {
             return 'bg-yellow-100 text-yellow-800';
         }
+    }
+
+    public function getPaymentDate()
+    {
+        // For now, return null since payment system is not yet integrated
+        // TODO: Implement payment relationship when payment system is extended
+        return null;
     }
 }

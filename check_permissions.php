@@ -1,4 +1,4 @@
-<?php<?php
+<?php
 
 
 
@@ -12,7 +12,7 @@ $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();$app->boot();
 
 
 
-use App\Models\Permission;use App\Models\Permission;
+use App\Models\Permission;
 
 use App\Models\User;
 

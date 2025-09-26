@@ -2,11 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pranota;
+use App\Models\PranotaTagihanCat;
 use App\Models\TagihanCat;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use DB;
+use Illuminate\Support\Facades\DB;
 
 class PranotaTagihanCatController extends Controller
 {
@@ -15,12 +15,7 @@ class PranotaTagihanCatController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Pranota::with(['pembayaranKontainer' => function($query) {
-            $query->orderBy('created_at', 'desc');
-        }])
-        ->whereNotNull('tagihan_ids')
-        ->where('tagihan_ids', '!=', '[]')
-        ->orderBy('created_at', 'desc');
+        $query = PranotaTagihanCat::orderBy('created_at', 'desc');
 
         // Apply filters
         if ($request->filled('status')) {
@@ -54,13 +49,10 @@ class PranotaTagihanCatController extends Controller
      */
     public function show($id)
     {
-        $pranota = Pranota::findOrFail($id);
+        $pranota = PranotaTagihanCat::findOrFail($id);
 
         // Get tagihan CAT items
-        $tagihanItems = collect();
-        if (!empty($pranota->tagihan_ids)) {
-            $tagihanItems = \App\Models\TagihanCat::whereIn('id', $pranota->tagihan_ids)->get();
-        }
+        $tagihanItems = $pranota->tagihanCatItems();
 
         return view('pranota-cat.show', compact('pranota', 'tagihanItems'));
     }
@@ -70,13 +62,10 @@ class PranotaTagihanCatController extends Controller
      */
     public function print($id)
     {
-        $pranota = Pranota::findOrFail($id);
+        $pranota = PranotaTagihanCat::findOrFail($id);
 
         // Get tagihan CAT items
-        $tagihanItems = collect();
-        if (!empty($pranota->tagihan_ids)) {
-            $tagihanItems = \App\Models\TagihanCat::whereIn('id', $pranota->tagihan_ids)->get();
-        }
+        $tagihanItems = $pranota->tagihanCatItems();
 
         return view('pranota-cat.print', compact('pranota', 'tagihanItems'));
     }
@@ -89,6 +78,7 @@ class PranotaTagihanCatController extends Controller
         $request->validate([
             'no_invoice' => 'nullable|string',
             'keterangan' => 'nullable|string',
+            'supplier' => 'nullable|string',
             'tagihan_cat_id' => 'nullable|exists:tagihan_cats,id'
         ]);
 
@@ -106,7 +96,7 @@ class PranotaTagihanCatController extends Controller
 
                 // Running number: count pranota in current month + 1
                 $runningNumber = str_pad(
-                    Pranota::whereYear('created_at', Carbon::now()->year)
+                    PranotaTagihanCat::whereYear('created_at', Carbon::now()->year)
                         ->whereMonth('created_at', Carbon::now()->month)
                         ->count() + 1,
                     6, '0', STR_PAD_LEFT
@@ -131,11 +121,12 @@ class PranotaTagihanCatController extends Controller
                 }
             }
 
-            $pranota = Pranota::create([
+            $pranota = PranotaTagihanCat::create([
                 'no_invoice' => $noInvoice,
                 'keterangan' => $request->keterangan,
+                'supplier' => $request->supplier,
                 'status' => 'unpaid',
-                'tagihan_ids' => $tagihanIds,
+                'tagihan_cat_ids' => $tagihanIds,
                 'jumlah_tagihan' => $jumlahTagihan,
                 'total_amount' => $totalAmount,
                 'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
@@ -179,7 +170,7 @@ class PranotaTagihanCatController extends Controller
 
             // Running number: count pranota in current month + 1
             $runningNumber = str_pad(
-                Pranota::whereYear('created_at', Carbon::now()->year)
+                PranotaTagihanCat::whereYear('created_at', Carbon::now()->year)
                     ->whereMonth('created_at', Carbon::now()->month)
                     ->count() + 1,
                 6, '0', STR_PAD_LEFT
@@ -188,12 +179,12 @@ class PranotaTagihanCatController extends Controller
             $noInvoice = "PTK{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
 
             // Create pranota
-            $pranota = Pranota::create([
+            $pranota = PranotaTagihanCat::create([
                 'no_invoice' => $noInvoice,
                 'total_amount' => $tagihanItems->sum('realisasi_biaya'),
                 'keterangan' => 'Pranota bulk CAT untuk ' . count($request->selected_ids) . ' tagihan',
                 'status' => 'unpaid',
-                'tagihan_ids' => $request->selected_ids,
+                'tagihan_cat_ids' => $request->selected_ids,
                 'jumlah_tagihan' => count($request->selected_ids),
                 'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
                 'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
@@ -223,12 +214,12 @@ class PranotaTagihanCatController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'required|integer|exists:pranotas,id',
+            'ids.*' => 'required|integer|exists:pranota_tagihan_cats,id',
             'status' => 'required|string|in:unpaid,approved,in_progress,completed,cancelled'
         ]);
 
         try {
-            Pranota::whereIn('id', $request->ids)->update([
+            PranotaTagihanCat::whereIn('id', $request->ids)->update([
                 'status' => $request->status,
                 'updated_at' => Carbon::now()
             ]);
@@ -257,11 +248,11 @@ class PranotaTagihanCatController extends Controller
     {
         $request->validate([
             'ids' => 'required|array',
-            'ids.*' => 'required|integer|exists:pranotas,id'
+            'ids.*' => 'required|integer|exists:pranota_tagihan_cats,id'
         ]);
 
         try {
-            $pranotaList = Pranota::whereIn('id', $request->ids)->get();
+            $pranotaList = PranotaTagihanCat::whereIn('id', $request->ids)->get();
 
             if ($pranotaList->isEmpty()) {
                 return redirect()->back()->with('error', 'Tidak ada pranota yang ditemukan');

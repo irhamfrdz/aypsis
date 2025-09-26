@@ -73,6 +73,14 @@ class Pranota extends Model
         )->withTimestamps();
     }
 
+    public function tagihanKontainerSewa()
+    {
+        if (empty($this->tagihan_ids)) {
+            return collect();
+        }
+        return \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_ids);
+    }
+
     public function getLatestPayment()
     {
         return $this->pembayaranKontainer()->latest()->first();

@@ -91,7 +91,7 @@
                         <input type="hidden" id="kode_cetak" value="1">
                         <p class="mt-1 text-xs text-gray-500">
                             <span id="memo_format_info">
-                                Format: MS (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)<br>
+                                Format: MSP (3 digit) + cetakan (1 digit) + bulan (2 digit) + tahun (2 digit) + running number (6 digit)<br>
                                 <span class="font-mono text-blue-600"></span>
                             </span>
                         </p>
@@ -400,7 +400,7 @@
                 console.log('Kegiatan changed to:', kegiatanSelect.value);
                 updateFormBasedOnJumlah();
                 toggleFormDisplay();
-                generateMemoNumber(); // Update nomor memo saat kegiatan berubah
+                // generateMemoNumber() tidak perlu dipanggil karena format sudah tetap
             });
 
             // Logika untuk Uang Jalan dan Total Biaya Otomatis
@@ -597,47 +597,25 @@
                         console.error('memoInput not found');
                         return;
                     }
-                    if (!kegiatanSelect) {
-                        console.error('kegiatanSelect not found');
-                        return;
-                    }
-                    const selectedKegiatan = kegiatanSelect.value.toLowerCase();
-                    console.log('Selected Kegiatan:', selectedKegiatan);
-                    const isTarikAntarPerbaikan = (selectedKegiatan.includes('tarik') || selectedKegiatan.includes('antar')) && selectedKegiatan.includes('perbaikan');
-                    const isPerbaikanKontainer = (selectedKegiatan.includes('perbaikan kontainer') || selectedKegiatan.includes('perbaikan')) && !isTarikAntarPerbaikan;
-                    console.log('isTarikAntarPerbaikan:', isTarikAntarPerbaikan);
-                    console.log('isPerbaikanKontainer:', isPerbaikanKontainer);
 
-                    let prefix = 'MS'; // Default untuk Memo Supir
-                    let kodeCetak = document.getElementById('kode_cetak');
-                    if (!kodeCetak) {
-                        console.error('kode_cetak not found');
-                        return;
-                    }
-                    kodeCetak = kodeCetak.value;
-                    let formatInfo = 'Format: MS (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)';
-
-                    // Jika kegiatan perbaikan kontainer (termasuk tarik/antar perbaikan), gunakan prefix MP dan kode cetak 1
-                    if (isPerbaikanKontainer || isTarikAntarPerbaikan) {
-                        prefix = 'MP';
-                        kodeCetak = '1'; // Selalu 1 untuk semua jenis perbaikan kontainer
-                        formatInfo = 'Format: MP (2 digit) + cetakan (1 digit) + tahun (2 digit) + bulan (2 digit) + running number (7 digit)';
-                    }
-                    console.log('Prefix:', prefix);
+                    // Format tetap: MSP (3 digit) + cetakan (1 digit) + bulan (2 digit) + tahun (2 digit) + running number (6 digit)
+                    const prefix = 'MSP'; // Selalu MSP untuk Memo Supir Permohonan
+                    const kodeCetak = '1'; // Selalu 1
+                    const formatInfo = 'Format: MSP (3 digit) + cetakan (1 digit) + bulan (2 digit) + tahun (2 digit) + running number (6 digit)';
 
                     const now = new Date();
                     const year = now.getFullYear().toString().slice(-2);
                     const month = (now.getMonth() + 1).toString().padStart(2, '0');
 
-                    const runningNumber = Date.now().toString().slice(-7);
+                    // Running number 6 digit dimulai dari 000001
+                    const runningNumber = String((Date.now() % 999999) + 1).padStart(6, '0');
 
-                    const nomorMemo = `${prefix}${kodeCetak}${year}${month}${runningNumber}`;
+                    const nomorMemo = `${prefix}${kodeCetak}${month}${year}${runningNumber}`;
                     console.log('Generated Nomor Memo:', nomorMemo);
                     memoInput.value = nomorMemo;
 
                     // Update informasi format dan preview
                     const formatInfoElement = document.getElementById('memo_format_info');
-                    const previewElement = document.getElementById('memo_format_preview');
 
                     if (formatInfoElement) {
                         formatInfoElement.innerHTML = `${formatInfo}<br><span class="font-mono text-blue-600">${nomorMemo}</span>`;

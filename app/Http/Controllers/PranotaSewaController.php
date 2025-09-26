@@ -20,6 +20,7 @@ class PranotaSewaController extends Controller
         }])
         ->whereNotNull('tagihan_ids') // Only pranota that have tagihan_ids
         ->where('tagihan_ids', '!=', '[]') // Exclude empty arrays
+        ->whereDoesntHave('tagihanCatItems') // Exclude pranota that have CAT items
         ->orderBy('created_at', 'desc');
 
         // Apply filters
