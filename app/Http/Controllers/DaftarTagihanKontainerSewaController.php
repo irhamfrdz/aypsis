@@ -26,7 +26,7 @@ class DaftarTagihanKontainerSewaController extends Controller
         try {
             if (!Cache::has('tagihan:create-next-periode:lock')) {
                 // dispatch a queued job so the work runs asynchronously
-                \App\Jobs\RunCreateNextPeriode::dispatch();
+                RunCreateNextPeriode::dispatch();
                 // prevent re-dispatch for 60 minutes
                 Cache::put('tagihan:create-next-periode:lock', true, now()->addMinutes(60));
             }
@@ -108,8 +108,8 @@ class DaftarTagihanKontainerSewaController extends Controller
                 if (!$tagihan->tanggal_awal) return true;
 
                 try {
-                    $startDate = \Carbon\Carbon::parse($tagihan->tanggal_awal);
-                    $currentDate = \Carbon\Carbon::now();
+                    $startDate = Carbon::parse($tagihan->tanggal_awal);
+                    $currentDate = Carbon::now();
 
                     if ($tagihan->tanggal_akhir) {
                         $endDate = \Carbon\Carbon::parse($tagihan->tanggal_akhir);

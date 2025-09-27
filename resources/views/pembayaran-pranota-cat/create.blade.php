@@ -134,17 +134,17 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->no_invoice }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCat as $tagihan)
+                                        @foreach($pranota->tagihanCatItems() as $tagihan)
                                             <div>{{ $tagihan->nomor_kontainer }}</div>
                                         @endforeach
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCat as $tagihan)
+                                        @foreach($pranota->tagihanCatItems() as $tagihan)
                                             <div>{{ $tagihan->vendor }}</div>
                                         @endforeach
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCat as $tagihan)
+                                        @foreach($pranota->tagihanCatItems() as $tagihan)
                                             <div>{{ \Carbon\Carbon::parse($tagihan->tanggal_cat)->format('d/M/Y') }}</div>
                                         @endforeach
                                     </td>

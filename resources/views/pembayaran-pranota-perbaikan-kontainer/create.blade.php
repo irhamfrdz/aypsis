@@ -18,8 +18,32 @@
             </div>
         @endif
         @if(session('error'))
-            <div class="mb-3 p-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm">
-                <strong>Peringatan:</strong> {{ session('error') }}
+            <div class="mb-3 p-4 rounded-lg bg-red-50 border-l-4 border-red-400 text-red-800 text-sm" id="error-alert">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-red-800">
+                            Pembayaran Gagal!
+                        </h3>
+                        <div class="mt-2 text-sm text-red-700">
+                            <p>{{ session('error') }}</p>
+                        </div>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <div class="-mx-1.5 -my-1.5">
+                            <button type="button" class="inline-flex bg-red-50 rounded-md p-1.5 text-red-500 hover:bg-red-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-red-50 focus:ring-red-600" onclick="dismissErrorAlert()">
+                                <span class="sr-only">Tutup</span>
+                                <svg class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
         @endif
         {{-- Only show validation errors if this is a POST request (form submission) --}}
@@ -146,6 +170,10 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if ($pranota->status == 'approved')
                                             <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-green-100 text-green-800">Approved</span>
+                                        @elseif ($pranota->status == 'belum_dibayar')
+                                            <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-blue-100 text-blue-800">Belum Dibayar</span>
+                                        @elseif ($pranota->status == 'sudah_dibayar')
+                                            <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-emerald-100 text-emerald-800">Sudah Dibayar</span>
                                         @elseif ($pranota->status == 'pending')
                                             <span class="px-1.5 py-0.5 inline-flex text-xs font-medium rounded bg-yellow-100 text-yellow-800">Pending</span>
                                         @else
@@ -255,6 +283,19 @@ $(document).ready(function() {
     // Initial summary update
     updateSummary();
 
+    // Show alert for session error
+    @if(session('error'))
+        // Auto-scroll to error alert
+        setTimeout(function() {
+            $('#error-alert')[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 500);
+
+        // Show browser alert for error
+        setTimeout(function() {
+            alert('Pembayaran Gagal!\n\n' + '{{ session("error") }}');
+        }, 1000);
+    @endif
+
     // Form validation
     $('#pembayaranForm').on('submit', function(e) {
         var selectedPranota = $('.pranota-checkbox:checked');
@@ -283,5 +324,12 @@ $(document).ready(function() {
         return confirm('Apakah Anda yakin ingin memproses pembayaran untuk ' + selectedPranota.length + ' pranota?');
     });
 });
+
+// Function to dismiss error alert
+function dismissErrorAlert() {
+    $('#error-alert').fadeOut(300, function() {
+        $(this).remove();
+    });
+}
 </script>
 @endpush

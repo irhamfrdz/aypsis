@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PembayaranPranota;
 use App\Models\PembayaranPranotaItem;
-use App\Models\Pranota;
+use App\Models\PranotaTagihanCat;
 use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -48,9 +48,9 @@ class PembayaranPranotaCatController extends Controller
         }
 
         // Get all pranota CAT that are unpaid (not paid yet)
-        $pranotaList = Pranota::where('status', 'unpaid')
-            ->whereHas('tagihanCat')
-            ->with('tagihanCat')
+        $pranotaList = PranotaTagihanCat::where('status', 'unpaid')
+            ->whereNotNull('tagihan_cat_ids')
+            ->where('tagihan_cat_ids', '!=', '[]')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -67,18 +67,18 @@ class PembayaranPranotaCatController extends Controller
     {
         $request->validate([
             'pranota_ids' => 'required|array|min:1',
-            'pranota_ids.*' => 'exists:pranotalist,id'
+            'pranota_ids.*' => 'exists:pranota_tagihan_cat,id'
         ]);
 
         $pranotaIds = $request->input('pranota_ids');
-        $pranotaList = Pranota::whereIn('id', $pranotaIds)->with('tagihanCat')->get();
+        $pranotaList = PranotaTagihanCat::whereIn('id', $pranotaIds)->get();
 
         // Validate that all selected pranota are unpaid and have CAT tagihan
         foreach ($pranotaList as $pranota) {
             if ($pranota->status !== 'unpaid') {
                 return redirect()->back()->with('error', "Pranota {$pranota->no_invoice} sudah dibayar atau tidak dapat diproses");
             }
-            if (!$pranota->tagihanCat()->exists()) {
+            if (empty($pranota->tagihan_cat_ids)) {
                 return redirect()->back()->with('error', "Pranota {$pranota->no_invoice} bukan pranota CAT");
             }
         }
@@ -104,7 +104,7 @@ class PembayaranPranotaCatController extends Controller
             'jenis_transaksi' => 'required|in:debit,credit',
             'tanggal_kas' => 'required|date',
             'pranota_ids' => 'required|array|min:1',
-            'pranota_ids.*' => 'exists:pranotalist,id',
+            'pranota_ids.*' => 'exists:pranota_tagihan_cat,id',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string'
@@ -117,13 +117,13 @@ class PembayaranPranotaCatController extends Controller
             $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', 0));
 
             // Get and validate pranota records
-            $pranotas = Pranota::whereIn('id', $pranotaIds)->with('tagihanCat')->get();
+            $pranotas = PranotaTagihanCat::whereIn('id', $pranotaIds)->get();
 
             foreach ($pranotas as $pranota) {
                 if ($pranota->status !== 'unpaid') {
                     throw new \Exception("Pranota {$pranota->no_invoice} sudah dibayar atau tidak dapat diproses");
                 }
-                if (!$pranota->tagihanCat()->exists()) {
+                if (empty($pranota->tagihan_cat_ids)) {
                     throw new \Exception("Pranota {$pranota->no_invoice} bukan pranota CAT");
                 }
             }

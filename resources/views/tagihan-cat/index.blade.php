@@ -391,9 +391,8 @@
 
             <!-- Modal Body -->
             <div class="mt-4">
-                <form id="pranotaForm" method="POST" action="{{ route('pranota.bulk-create-from-tagihan-cat') }}">
+                <form id="pranotaForm" method="POST" action="{{ route('pranota-cat.bulk-create-from-tagihan-cat') }}">
                     @csrf
-                    <input type="hidden" id="tagihan_cat_ids" name="tagihan_cat_ids">
 
                     <!-- Selected Items Info -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
@@ -599,7 +598,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const submitPranotaBtn = document.getElementById('submitPranotaBtn');
     const pranotaForm = document.getElementById('pranotaForm');
     const selectedItemsList = document.getElementById('selectedItemsList');
-    const tagihanCatIdsInput = document.getElementById('tagihan_cat_ids');
 
     console.log('Modal elements found:', {
         pranotaModal: !!pranotaModal,
@@ -708,9 +706,6 @@ document.addEventListener('DOMContentLoaded', function() {
             input.value = id;
             pranotaForm.appendChild(input);
         });
-
-        // Keep the JSON version for debugging
-        tagihanCatIdsInput.value = JSON.stringify(ids_array);
 
         // Auto-populate vendor field
         document.getElementById('supplier').value = vendorName;

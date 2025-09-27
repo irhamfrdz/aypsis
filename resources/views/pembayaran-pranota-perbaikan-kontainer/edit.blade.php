@@ -173,7 +173,7 @@
                         </div>
                         <div>
                             <label class="{{ $labelClasses }}">Kontainer</label>
-                            <input type="text" value="{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainer->kontainer->nomor_kontainer ?? 'N/A' }}"
+                            <input type="text" value="{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers->first()->kontainer->nomor_kontainer ?? 'N/A' }}"
                                 class="{{ $readonlyInputClasses }}" readonly>
                         </div>
                         <div>
@@ -197,7 +197,7 @@
                         </div>
                         <div>
                             <label class="{{ $labelClasses }}">Status Pranota</label>
-                            <input type="text" value="{{ ucfirst($pembayaran->pranotaPerbaikanKontainer->status ?? 'Unknown') }}"
+                            <input type="text" value="@if($pembayaran->pranotaPerbaikanKontainer->status == 'belum_dibayar') Belum Dibayar @else {{ ucfirst($pembayaran->pranotaPerbaikanKontainer->status ?? 'Unknown') }} @endif"
                                 class="{{ $readonlyInputClasses }}" readonly>
                         </div>
                     </div>

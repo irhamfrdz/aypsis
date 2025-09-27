@@ -52,7 +52,7 @@ class PranotaPerbaikanKontainerController extends Controller
         // Get stats for dashboard cards
         $stats = [
             'total' => PranotaPerbaikanKontainer::count(),
-                        'draft' => PranotaPerbaikanKontainer::where('status', 'draft')->count(),
+            'belum_dibayar' => PranotaPerbaikanKontainer::where('status', 'belum_dibayar')->count(),
             'approved' => PranotaPerbaikanKontainer::where('status', 'approved')->count(),
             'completed' => PranotaPerbaikanKontainer::where('status', 'completed')->count(),
         ];
@@ -112,7 +112,7 @@ class PranotaPerbaikanKontainerController extends Controller
                 'nama_teknisi' => $request->supplier ?? 'Supplier',
                 'total_biaya' => $totalBiaya,
                 'catatan' => $request->catatan,
-                'status' => 'draft',
+                'status' => 'belum_dibayar',
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);
@@ -171,7 +171,7 @@ class PranotaPerbaikanKontainerController extends Controller
             'nama_teknisi' => 'required|string',
             'total_biaya' => 'required|numeric|min:0',
             'catatan' => 'nullable|string',
-            'status' => 'required|in:draft,approved,rejected,completed',
+            'status' => 'required|in:draft,belum_dibayar,approved,rejected,completed',
         ]);
 
         $data = $request->all();
@@ -191,6 +191,9 @@ class PranotaPerbaikanKontainerController extends Controller
         if (!Gate::allows('pranota-perbaikan-kontainer-delete')) {
             abort(403, 'Akses ditolak. Anda tidak memiliki izin untuk menghapus pranota.');
         }
+
+        // Update status perbaikan kontainer kembali ke belum_masuk_pranota
+        $pranotaPerbaikanKontainer->perbaikanKontainers()->update(['status_perbaikan' => 'belum_masuk_pranota']);
 
         $pranotaPerbaikanKontainer->delete();
 

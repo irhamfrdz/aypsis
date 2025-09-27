@@ -1,143 +1,382 @@
-@extends('layouts.app')
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Print Pembayaran Pranota Perbaikan Kontainer - {{ $pembayaran->nomor_pembayaran ?? $pembayaran->nomor_invoice }}</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 12px;
+            margin: 0;
+            padding: 20px;
+            background: white;
+        }
 
-@section('title', 'Print Pembayaran Pranota Perbaikan Kontainer')
-@section('page_title', 'Print Pembayaran Pranota Perbaikan Kontainer')
+        .print-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border: 2px solid #000;
+        }
 
-@section('content')
-    <div class="bg-white shadow-lg rounded-lg p-4 max-w-4xl mx-auto">
-        {{-- Header --}}
-        <div class="text-center mb-6">
-            <h1 class="text-2xl font-bold text-gray-800">BUKTI PEMBAYARAN</h1>
-            <h2 class="text-lg font-semibold text-gray-600">PRANOTA PERBAIKAN KONTAINER</h2>
-            <p class="text-sm text-gray-500 mt-1">{{ now()->format('d F Y H:i:s') }}</p>
+        .header {
+            text-align: center;
+            border-bottom: 2px solid #000;
+            padding: 15px;
+            background: #f8f9fa;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 20px;
+            font-weight: bold;
+            text-transform: uppercase;
+        }
+
+        .header h2 {
+            margin: 5px 0 0 0;
+            font-size: 16px;
+            color: #666;
+        }
+
+        .pembayaran-info {
+            display: flex;
+            justify-content: space-between;
+            padding: 15px;
+            border-bottom: 1px solid #ddd;
+            background: #fff;
+        }
+
+        .info-left, .info-right {
+            width: 48%;
+        }
+
+        .info-row {
+            display: flex;
+            margin-bottom: 8px;
+            align-items: center;
+        }
+
+        .info-label {
+            font-weight: bold;
+            width: 140px;
+            flex-shrink: 0;
+        }
+
+        .info-value {
+            flex: 1;
+            border-bottom: 1px solid #333;
+            min-height: 18px;
+            padding-left: 5px;
+        }
+
+        .content-section {
+            padding: 15px;
+        }
+
+        .section-title {
+            font-weight: bold;
+            font-size: 14px;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+            border-bottom: 1px solid #333;
+            padding-bottom: 5px;
+        }
+
+        .perbaikan-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+
+        .perbaikan-table th,
+        .perbaikan-table td {
+            border: 1px solid #333;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .perbaikan-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+        }
+
+        .signatures {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 40px;
+            padding: 20px;
+        }
+
+        .signature-box {
+            text-align: center;
+            width: 200px;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            height: 60px;
+            margin-bottom: 10px;
+        }
+
+        .total-section {
+            background: #f8f9fa;
+            border: 2px solid #333;
+            padding: 15px;
+            margin: 20px 0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+
+        .total-final {
+            font-weight: bold;
+            font-size: 16px;
+            border-top: 2px solid #333;
+            padding-top: 10px;
+            margin-top: 10px;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 10px;
+            }
+
+            .print-container {
+                border: none;
+                box-shadow: none;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 1000;
+        }
+
+        .print-button:hover {
+            background: #0056b3;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .status-completed { background: #28a745; color: #fff; }
+        .status-pending { background: #ffc107; color: #000; }
+        .status-cancelled { background: #dc3545; color: #fff; }
+    </style>
+</head>
+<body>
+    <button class="print-button no-print" onclick="window.print()">🖨️ Print Dokumen</button>
+
+    <div class="print-container">
+        <!-- Header -->
+        <div class="header">
+            <h1>Bukti Pembayaran Pranota Perbaikan Kontainer</h1>
+            <h2>{{ config('app.name', 'PT. AYPSIS') }}</h2>
         </div>
 
-        {{-- Informasi Pembayaran --}}
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="font-semibold text-gray-800 mb-3">Informasi Pembayaran</h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Nomor Pembayaran:</span>
-                        <span class="font-medium">{{ $pembayaran->nomor_pembayaran ?? $pembayaran->nomor_invoice }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Tanggal Pembayaran:</span>
-                        <span class="font-medium">{{ $pembayaran->tanggal_pembayaran ? \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d F Y') : '-' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Nominal:</span>
-                        <span class="font-medium">Rp {{ number_format($pembayaran->nominal_pembayaran, 0, ',', '.') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Metode:</span>
-                        <span class="font-medium">{{ ucfirst($pembayaran->metode_pembayaran ?? '-') }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Bank:</span>
-                        <span class="font-medium">{{ $pembayaran->bank ?? '-' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Status:</span>
-                        <span class="font-medium {{ $pembayaran->status_pembayaran == 'completed' ? 'text-green-600' : ($pembayaran->status_pembayaran == 'pending' ? 'text-yellow-600' : 'text-red-600') }}">
-                            {{ ucfirst($pembayaran->status_pembayaran ?? '-') }}
-                        </span>
-                    </div>
+        <!-- Pembayaran Information -->
+        <div class="pembayaran-info">
+            <div class="info-left">
+                <div class="info-row">
+                    <span class="info-label">Nomor Pembayaran:</span>
+                    <span class="info-value">{{ $pembayaran->nomor_pembayaran ?? $pembayaran->nomor_invoice }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tanggal Pembayaran:</span>
+                    <span class="info-value">{{ $pembayaran->tanggal_pembayaran ? \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y') : '-' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Metode Pembayaran:</span>
+                    <span class="info-value">{{ ucfirst($pembayaran->metode_pembayaran ?? '-') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Bank:</span>
+                    <span class="info-value">{{ $pembayaran->bank ?? '-' }}</span>
                 </div>
             </div>
-
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <h3 class="font-semibold text-gray-800 mb-3">Informasi Pranota</h3>
-                <div class="space-y-2 text-sm">
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Nomor Pranota:</span>
-                        <span class="font-medium">{{ $pembayaran->pranotaPerbaikanKontainer->nomor_pranota ?? '-' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Kontainer:</span>
-                        <span class="font-medium">{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainer->kontainer->nomor_kontainer ?? '-' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Tanggal Pranota:</span>
-                        <span class="font-medium">{{ $pembayaran->pranotaPerbaikanKontainer->tanggal_pranota ? \Carbon\Carbon::parse($pembayaran->pranotaPerbaikanKontainer->tanggal_pranota)->format('d F Y') : '-' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Teknisi:</span>
-                        <span class="font-medium">{{ $pembayaran->pranotaPerbaikanKontainer->nama_teknisi ?? '-' }}</span>
-                    </div>
-                    <div class="flex justify-between">
-                        <span class="text-gray-600">Total Biaya:</span>
-                        <span class="font-medium">Rp {{ number_format($pembayaran->pranotaPerbaikanKontainer->total_biaya ?? 0, 0, ',', '.') }}</span>
-                    </div>
+            <div class="info-right">
+                <div class="info-row">
+                    <span class="info-label">Nominal Pembayaran:</span>
+                    <span class="info-value">Rp {{ number_format($pembayaran->nominal_pembayaran, 0, ',', '.') }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Status Pembayaran:</span>
+                    <span class="info-value">
+                        @if($pembayaran->status_pembayaran == 'completed')
+                            <span class="status-badge status-completed">Lunas</span>
+                        @elseif($pembayaran->status_pembayaran == 'pending')
+                            <span class="status-badge status-pending">Pending</span>
+                        @elseif($pembayaran->status_pembayaran == 'cancelled')
+                            <span class="status-badge status-cancelled">Dibatalkan</span>
+                        @else
+                            <span class="status-badge">{{ ucfirst($pembayaran->status_pembayaran ?? 'Unknown') }}</span>
+                        @endif
+                    </span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Dibuat Oleh:</span>
+                    <span class="info-value">{{ $pembayaran->creator->name ?? 'Unknown' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tanggal Dibuat:</span>
+                    <span class="info-value">{{ $pembayaran->created_at ? $pembayaran->created_at->format('d/m/Y H:i') : '-' }}</span>
                 </div>
             </div>
         </div>
 
-        {{-- Detail Pekerjaan --}}
-        <div class="mb-6">
-            <h3 class="font-semibold text-gray-800 mb-3">Detail Pekerjaan Perbaikan</h3>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-700">{{ $pembayaran->pranotaPerbaikanKontainer->deskripsi_pekerjaan ?? 'Tidak ada deskripsi' }}</p>
-            </div>
+        <!-- Informasi Pranota -->
+        <div class="content-section">
+            <div class="section-title">Informasi Pranota Perbaikan</div>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="width: 25%; padding: 5px; font-weight: bold;">Nomor Pranota:</td>
+                    <td style="width: 25%; padding: 5px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainer->nomor_pranota ?? '-' }}</td>
+                    <td style="width: 25%; padding: 5px; font-weight: bold;">Tanggal Pranota:</td>
+                    <td style="width: 25%; padding: 5px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainer->tanggal_pranota ? \Carbon\Carbon::parse($pembayaran->pranotaPerbaikanKontainer->tanggal_pranota)->format('d/m/Y') : '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 5px; font-weight: bold;">Nama Teknisi/Vendor:</td>
+                    <td style="padding: 5px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainer->nama_teknisi ?? '-' }}</td>
+                    <td style="padding: 5px; font-weight: bold;">Total Biaya:</td>
+                    <td style="padding: 5px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaPerbaikanKontainer->total_biaya ?? 0, 0, ',', '.') }}</td>
+                </tr>
+            </table>
         </div>
 
-        {{-- Keterangan --}}
-        @if($pembayaran->keterangan)
-        <div class="mb-6">
-            <h3 class="font-semibold text-gray-800 mb-3">Keterangan</h3>
-            <div class="bg-gray-50 p-4 rounded-lg">
-                <p class="text-sm text-gray-700">{{ $pembayaran->keterangan }}</p>
+        <!-- Deskripsi Pekerjaan -->
+        @if($pembayaran->pranotaPerbaikanKontainer->deskripsi_pekerjaan)
+        <div class="content-section">
+            <div class="section-title">Deskripsi Pekerjaan</div>
+            <div style="border: 1px solid #ddd; padding: 10px; min-height: 40px; background: #f9f9f9;">
+                {{ $pembayaran->pranotaPerbaikanKontainer->deskripsi_pekerjaan }}
             </div>
         </div>
         @endif
 
-        {{-- Tanda Tangan --}}
-        <div class="grid grid-cols-2 gap-8 mt-8">
-            <div class="text-center">
-                <div class="border-b border-gray-400 w-full mb-2"></div>
-                <p class="text-sm text-gray-600">Pembayar</p>
-                <p class="text-xs text-gray-500">{{ Auth::user()->name ?? 'Admin' }}</p>
+        <!-- Daftar Tagihan Perbaikan Kontainer -->
+        <div class="content-section">
+            <div class="section-title">Daftar Tagihan Perbaikan Kontainer</div>
+
+            @if($pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers->count() > 0)
+                <table class="perbaikan-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 5%;">No</th>
+                            <th style="width: 15%;">Nomor Tagihan</th>
+                            <th style="width: 15%;">Nomor Kontainer</th>
+                            <th style="width: 12%;">Tanggal</th>
+                            <th style="width: 35%;">Deskripsi Perbaikan</th>
+                            <th style="width: 18%;">Total Biaya</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers as $index => $perbaikan)
+                        <tr>
+                            <td>{{ $index + 1 }}</td>
+                            <td>{{ $perbaikan->nomor_tagihan ?? '-' }}</td>
+                            <td>{{ $perbaikan->nomor_kontainer ?? '-' }}</td>
+                            <td>{{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/m/Y') : '-' }}</td>
+                            <td>{{ $perbaikan->deskripsi_perbaikan ?? '-' }}</td>
+                            <td style="text-align: right; font-weight: bold;">
+                                {{ $perbaikan->realisasi_biaya_perbaikan ? 'Rp ' . number_format($perbaikan->realisasi_biaya_perbaikan, 0, ',', '.') : '-' }}
+                            </td>
+                        </tr>
+                        @if($perbaikan->pivot->catatan_item)
+                        <tr>
+                            <td colspan="6" style="font-style: italic; font-size: 11px; background: #f9f9f9;">
+                                <strong>Catatan:</strong> {{ $perbaikan->pivot->catatan_item }}
+                            </td>
+                        </tr>
+                        @endif
+                        @endforeach
+                    </tbody>
+                </table>
+
+                <!-- Total Biaya -->
+                <div class="total-section">
+                    <div class="total-row total-final">
+                        <span>TOTAL BIAYA PERBAIKAN:</span>
+                        <span>Rp. {{ number_format($pembayaran->pranotaPerbaikanKontainer->total_biaya ?? 0, 0, ',', '.') }}</span>
+                    </div>
+                </div>
+            @else
+                <div style="text-align: center; color: #666; font-style: italic; padding: 20px; border: 1px solid #ddd;">
+                    Tidak ada tagihan perbaikan kontainer yang terkait dengan pranota ini.
+                </div>
+            @endif
+        </div>
+
+        <!-- Keterangan Pembayaran -->
+        @if($pembayaran->keterangan)
+        <div class="content-section">
+            <div class="section-title">Keterangan Pembayaran</div>
+            <div style="border: 1px solid #ddd; padding: 10px; min-height: 40px; background: #f9f9f9;">
+                {{ $pembayaran->keterangan }}
             </div>
-            <div class="text-center">
-                <div class="border-b border-gray-400 w-full mb-2"></div>
-                <p class="text-sm text-gray-600">Penerima</p>
-                <p class="text-xs text-gray-500">{{ $pembayaran->pranotaPerbaikanKontainer->nama_teknisi ?? 'Teknisi' }}</p>
+        </div>
+        @endif
+
+        <!-- Signatures -->
+        <div class="signatures">
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div><strong>Mengetahui</strong></div>
+                <div>Kepala Bagian</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div><strong>Pembayar</strong></div>
+                <div>{{ $pembayaran->creator->name ?? 'Admin' }}</div>
+            </div>
+            <div class="signature-box">
+                <div class="signature-line"></div>
+                <div><strong>Penerima</strong></div>
+                <div>{{ $pembayaran->pranotaPerbaikanKontainer->nama_teknisi ?? 'Teknisi' }}</div>
             </div>
         </div>
 
-        {{-- Footer --}}
-        <div class="text-center mt-8 text-xs text-gray-500 border-t border-gray-200 pt-4">
-            <p>Dicetak pada {{ now()->format('d F Y H:i:s') }} oleh {{ Auth::user()->name ?? 'System' }}</p>
-            <p>Sistem Manajemen AYP SIS - Pembayaran Pranota Perbaikan Kontainer</p>
+        <!-- Footer -->
+        <div class="content-section" style="text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd;">
+            <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }} | {{ config('app.name', 'PT. AYPSIS') }}</p>
         </div>
     </div>
 
-    {{-- Tombol Aksi --}}
-    <div class="flex justify-center gap-4 mt-6">
-        <button onclick="window.print()" class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors">
-            <i class="fas fa-print mr-2"></i>Print
-        </button>
-        <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.show', $pembayaran) }}" class="px-6 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 transition-colors">
-            <i class="fas fa-arrow-left mr-2"></i>Kembali
-        </a>
-    </div>
-@endsection
-
-@section('styles')
-<style>
-@media print {
-    .no-print {
-        display: none !important;
-    }
-    body {
-        font-size: 12px;
-    }
-    .bg-white {
-        background: white !important;
-    }
-    .shadow-lg {
-        box-shadow: none !important;
-    }
-}
-</style>
-@endsection
+    <script>
+        // Auto-focus untuk print
+        window.onload = function() {
+            // Auto print jika ada parameter print
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('auto_print') === '1') {
+                setTimeout(() => {
+                    window.print();
+                }, 500);
+            }
+        };
+    </script>
+</body>
+</html>

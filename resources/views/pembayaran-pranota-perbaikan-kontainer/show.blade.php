@@ -137,8 +137,8 @@
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                     <div>
-                                        <div class="font-medium">{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainer->kontainer->nomor_kontainer ?? 'N/A' }}</div>
-                                        <div class="text-xs text-gray-500">{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainer->kontainer->ukuran_kontainer ?? '' }}</div>
+                                        <div class="font-medium">{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers->first()->kontainer->nomor_kontainer ?? 'N/A' }}</div>
+                                        <div class="text-xs text-gray-500">{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers->first()->kontainer->ukuran_kontainer ?? '' }}</div>
                                     </div>
                                 </td>
                                 <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -158,6 +158,8 @@
                                 <td class="px-4 py-4 whitespace-nowrap text-sm">
                                     @if($pembayaran->pranotaPerbaikanKontainer->status == 'approved')
                                         <span class="px-2 py-1 text-xs font-medium rounded bg-green-100 text-green-800">Approved</span>
+                                    @elseif($pembayaran->pranotaPerbaikanKontainer->status == 'belum_dibayar')
+                                        <span class="px-2 py-1 text-xs font-medium rounded bg-blue-100 text-blue-800">Belum Dibayar</span>
                                     @elseif($pembayaran->pranotaPerbaikanKontainer->status == 'pending')
                                         <span class="px-2 py-1 text-xs font-medium rounded bg-yellow-100 text-yellow-800">Pending</span>
                                     @else

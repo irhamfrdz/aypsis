@@ -20,7 +20,7 @@ return new class extends Migration
             $table->decimal('estimasi_biaya', 15, 2);
             $table->integer('estimasi_waktu')->comment('dalam jam');
             $table->text('catatan')->nullable();
-            $table->enum('status', ['draft', 'approved', 'in_progress', 'completed', 'cancelled'])->default('draft');
+            $table->enum('status', ['draft', 'belum_dibayar', 'approved', 'in_progress', 'completed', 'cancelled'])->default('belum_dibayar');
             $table->foreignId('created_by')->constrained('users');
             $table->foreignId('updated_by')->constrained('users');
             $table->timestamps();

@@ -149,61 +149,52 @@ class PranotaTagihanCatController extends Controller
     public function bulkCreateFromTagihanCat(Request $request)
     {
         $request->validate([
-            'selected_ids' => 'required|array|min:1',
-            'selected_ids.*' => 'exists:tagihan_cats,id'
+            'tagihan_cat_ids' => 'required|array|min:1',
+            'tagihan_cat_ids.*' => 'exists:tagihan_cat,id',
+            'nomor_pranota' => 'required|string|max:255',
+            'tanggal_pranota' => 'required|date',
+            'supplier' => 'required|string|max:255',
+            'realisasi_biaya_total' => 'required|numeric|min:0',
+            'keterangan' => 'nullable|string|max:1000'
         ]);
 
         try {
             DB::beginTransaction();
 
             // Get selected tagihan CAT items
-            $tagihanItems = TagihanCat::whereIn('id', $request->selected_ids)->get();
+            $tagihanItems = TagihanCat::whereIn('id', $request->tagihan_cat_ids)->get();
 
             if ($tagihanItems->isEmpty()) {
                 throw new \Exception('Tidak ada tagihan CAT yang ditemukan dengan ID yang dipilih');
             }
 
-            // Generate nomor pranota with format: PTK + 1 digit cetakan + 2 digit tahun + 2 digit bulan + 6 digit running number
-            $nomorCetakan = 1; // Default
-            $tahun = Carbon::now()->format('y'); // 2 digit year
-            $bulan = Carbon::now()->format('m'); // 2 digit month
-
-            // Running number: count pranota in current month + 1
-            $runningNumber = str_pad(
-                PranotaTagihanCat::whereYear('created_at', Carbon::now()->year)
-                    ->whereMonth('created_at', Carbon::now()->month)
-                    ->count() + 1,
-                6, '0', STR_PAD_LEFT
-            );
-
-            $noInvoice = "PTK{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
-
-            // Create pranota
+            // Create pranota using form data
             $pranota = PranotaTagihanCat::create([
-                'no_invoice' => $noInvoice,
-                'total_amount' => $tagihanItems->sum('realisasi_biaya'),
-                'keterangan' => 'Pranota bulk CAT untuk ' . count($request->selected_ids) . ' tagihan',
+                'no_invoice' => $request->nomor_pranota,
+                'total_amount' => $request->realisasi_biaya_total,
+                'keterangan' => $request->keterangan ?: 'Pranota bulk CAT untuk ' . count($request->tagihan_cat_ids) . ' tagihan',
                 'status' => 'unpaid',
-                'tagihan_cat_ids' => $request->selected_ids,
-                'jumlah_tagihan' => count($request->selected_ids),
-                'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
-                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
+                'tagihan_cat_ids' => $request->tagihan_cat_ids,
+                'jumlah_tagihan' => count($request->tagihan_cat_ids),
+                'tanggal_pranota' => $request->tanggal_pranota,
+                'supplier' => $request->supplier,
+                'due_date' => Carbon::parse($request->tanggal_pranota)->addDays(30)->format('Y-m-d')
             ]);
 
             // Update tagihan CAT items status
-            TagihanCat::whereIn('id', $request->selected_ids)
-                ->update(['status' => 'paid']);
+            TagihanCat::whereIn('id', $request->tagihan_cat_ids)
+                ->update(['status' => 'masuk pranota']);
 
             DB::commit();
 
             return redirect()->back()->with('success',
-                'Pranota CAT bulk berhasil dibuat dengan nomor: ' . $pranota->no_invoice .
-                ' untuk ' . count($request->selected_ids) . ' tagihan CAT (Total: Rp ' . number_format($pranota->total_amount ?? 0, 2, ',', '.') . ')'
+                'Pranota CAT berhasil dibuat dengan nomor: ' . $pranota->no_invoice .
+                ' untuk ' . count($request->tagihan_cat_ids) . ' tagihan CAT (Total: Rp ' . number_format($pranota->total_amount ?? 0, 0, ',', '.') . ')'
             );
 
         } catch (\Exception $e) {
             DB::rollback();
-            return redirect()->back()->with('error', 'Gagal membuat pranota CAT bulk: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal membuat pranota CAT: ' . $e->getMessage());
         }
     }
 

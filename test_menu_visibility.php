@@ -1,10 +1,10 @@
-<?php<?php<?php
+<?php
 
-
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Request;
+use App\Models\User;
 
 require 'vendor/autoload.php';
-
-
 
 $app = require_once 'bootstrap/app.php';require 'vendor/autoload.php';require_once 'vendor/autoload.php';
 
@@ -34,11 +34,10 @@ if ($user) {$kernel->bootstrap();$app->make(Illuminate\Contracts\Console\Kernel:
 
     echo "\nCOA permissions for user 'test':\n";
 
-    foreach($permissions as $permission) {echo "===========================\n";use Illuminate\Support\Facades\Request;
-
+    foreach($permissions as $permission) {
+        echo "===========================\n";
         echo "- " . $permission->name . "\n";
-
-    }use App\Models\User;
+    }
 
 } else {
 

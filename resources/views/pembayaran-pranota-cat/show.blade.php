@@ -45,9 +45,9 @@
                             <dt class="text-sm font-medium text-gray-500">Status</dt>
                             <dd class="text-sm">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                    @if($pembayaran->status === 'approved') bg-green-100 text-green-800
-                                    @elseif($pembayaran->status === 'pending') bg-yellow-100 text-yellow-800
-                                    @else bg-red-100 text-red-800
+                                    @if($pembayaran->status === 'approved') status-approved
+                                    @elseif($pembayaran->status === 'pending') status-pending
+                                    @else status-rejected
                                     @endif">
                                     {{ ucfirst($pembayaran->status) }}
                                 </span>

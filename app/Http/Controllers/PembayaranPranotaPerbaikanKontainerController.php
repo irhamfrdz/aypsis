@@ -6,6 +6,7 @@ use App\Models\PembayaranPranotaPerbaikanKontainer;
 use App\Models\PranotaPerbaikanKontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 
 class PembayaranPranotaPerbaikanKontainerController extends Controller
 {
@@ -14,7 +15,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PembayaranPranotaPerbaikanKontainer::with(['pranotaPerbaikanKontainer.perbaikanKontainer.kontainer', 'creator']);
+        $query = PembayaranPranotaPerbaikanKontainer::with(['pranotaPerbaikanKontainer.perbaikanKontainers.kontainer', 'creator']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -34,7 +35,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->whereHas('pranotaPerbaikanKontainer.perbaikanKontainer.kontainer', function($kontainer) use ($search) {
+                $q->whereHas('pranotaPerbaikanKontainer.perbaikanKontainers.kontainer', function($kontainer) use ($search) {
                     $kontainer->where('nomor_kontainer', 'like', "%{$search}%");
                 })
                 ->orWhere('nomor_invoice', 'like', "%{$search}%")
@@ -54,8 +55,14 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function create()
     {
-        $pranotaPerbaikanKontainers = PranotaPerbaikanKontainer::where('status', 'approved')
-            ->whereDoesntHave('pembayaranPranotaPerbaikanKontainers')
+        // Check permission manually to provide better error message
+        if (!Gate::allows('pembayaran-pranota-perbaikan-kontainer-create')) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota perbaikan kontainer. Silakan hubungi administrator.');
+        }
+
+        $pranotaPerbaikanKontainers = PranotaPerbaikanKontainer::whereDoesntHave('pembayaranPranotaPerbaikanKontainers')
+            ->where('status', 'belum_dibayar')
             ->with(['perbaikanKontainers.kontainer'])
             ->get();
 
@@ -69,23 +76,67 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function store(Request $request)
     {
+        // Check permission manually to provide better error message
+        if (!Gate::allows('pembayaran-pranota-perbaikan-kontainer-create')) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota perbaikan kontainer. Silakan hubungi administrator.');
+        }
+
         $request->validate([
-            'pranota_perbaikan_kontainer_id' => 'required|exists:pranota_perbaikan_kontainers,id',
+            'pranota_perbaikan_kontainer_ids' => 'required|array|min:1',
+            'pranota_perbaikan_kontainer_ids.*' => 'exists:pranota_perbaikan_kontainers,id',
             'tanggal_pembayaran' => 'required|date',
-            'nominal_pembayaran' => 'required|numeric|min:0',
-            'nomor_invoice' => 'nullable|string',
-            'metode_pembayaran' => 'required|string',
-            'keterangan' => 'nullable|string',
-            'status_pembayaran' => 'required|in:pending,completed,cancelled',
+            'nomor_pembayaran' => 'required|string',
+            'nomor_cetakan' => 'required|integer|min:1|max:9',
+            'bank' => 'required|string',
+            'jenis_transaksi' => 'required|in:Debit,Kredit',
         ]);
 
-        $data = $request->all();
-        $data['created_by'] = Auth::id();
+        try {
+            $pranotaIds = $request->pranota_perbaikan_kontainer_ids;
+            $totalPembayaran = 0;
+            $pembayaranRecords = [];
 
-        PembayaranPranotaPerbaikanKontainer::create($data);
+            // Hitung total pembayaran dari semua pranota yang dipilih
+            foreach ($pranotaIds as $pranotaId) {
+                $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
+                $totalPembayaran += $pranota->total_biaya ?? 0;
+            }
 
-        return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
-            ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil dibuat.');
+            // Buat record pembayaran untuk setiap pranota
+            foreach ($pranotaIds as $pranotaId) {
+                $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
+
+                $pembayaranRecords[] = PembayaranPranotaPerbaikanKontainer::create([
+                    'pranota_perbaikan_kontainer_id' => $pranotaId,
+                    'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                    'nominal_pembayaran' => $pranota->total_biaya ?? 0,
+                    'nomor_invoice' => $request->nomor_pembayaran,
+                    'metode_pembayaran' => 'transfer', // Gunakan enum yang valid
+                    'keterangan' => "Pembayaran pranota {$pranota->nomor_pranota} - {$request->jenis_transaksi} via {$request->bank}",
+                    'status_pembayaran' => 'paid',
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id(),
+                ]);
+
+                // Update status pranota menjadi sudah dibayar
+                $pranota->update(['status' => 'sudah_dibayar']);
+
+                // Update status perbaikan kontainer yang terkait
+                foreach ($pranota->perbaikanKontainers as $perbaikan) {
+                    $perbaikan->update(['status_perbaikan' => 'completed']);
+                }
+            }
+
+            return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
+                ->with('success', "Pembayaran berhasil dibuat untuk " . count($pranotaIds) . " pranota dengan total Rp " . number_format($totalPembayaran, 0, ',', '.'));
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat memproses pembayaran: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -93,7 +144,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function show(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
-        $pembayaran->load(['pranotaPerbaikanKontainer.perbaikanKontainer.kontainer', 'creator']);
+        $pembayaran->load(['pranotaPerbaikanKontainer.perbaikanKontainers.kontainer', 'creator']);
 
         return view('pembayaran-pranota-perbaikan-kontainer.show', compact('pembayaran'));
     }
@@ -111,8 +162,9 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function edit(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
-        $pranotaPerbaikanKontainers = PranotaPerbaikanKontainer::where('status', 'approved')
-            ->with(['perbaikanKontainer.kontainer'])
+        $pranotaPerbaikanKontainers = PranotaPerbaikanKontainer::whereDoesntHave('pembayaranPranotaPerbaikanKontainers')
+            ->whereNotIn('status', ['cancelled', 'completed'])
+            ->with(['perbaikanKontainers.kontainer'])
             ->get();
 
         return view('pembayaran-pranota-perbaikan-kontainer.edit', compact('pembayaran', 'pranotaPerbaikanKontainers'));
@@ -147,9 +199,22 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function destroy(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
-        $pembayaran->delete();
+        try {
+            // Reset status pranota menjadi belum_dibayar
+            $pembayaran->pranotaPerbaikanKontainer->update(['status' => 'belum_dibayar']);
 
-        return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
-            ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil dihapus.');
+            // Reset status perbaikan kontainer yang terkait
+            foreach ($pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers as $perbaikan) {
+                $perbaikan->update(['status_perbaikan' => 'belum_masuk_pranota']);
+            }
+
+            $pembayaran->delete();
+
+            return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
+                ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil dihapus dan status dikembalikan.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Terjadi kesalahan saat menghapus pembayaran: ' . $e->getMessage());
+        }
     }
 }

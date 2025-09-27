@@ -221,8 +221,8 @@
                 <div class="info-row">
                     <span class="info-label">Status:</span>
                     <span class="info-value">
-                        @if($pranotaPerbaikanKontainer->status == 'draft')
-                            <span class="status-badge status-draft">Draft</span>
+                        @if($pranotaPerbaikanKontainer->status == 'belum_dibayar')
+                            <span class="status-badge status-draft">Belum Dibayar</span>
                         @elseif($pranotaPerbaikanKontainer->status == 'approved')
                             <span class="status-badge status-approved">Disetujui</span>
                         @elseif($pranotaPerbaikanKontainer->status == 'in_progress')
