@@ -35,7 +35,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-600">Nama Lengkap</label>
-                    <p class="text-gray-900">{{ Auth::user()->name }}</p>
+                    <p class="text-gray-900">{{ Auth::user()->karyawan->nama_lengkap ?? Auth::user()->name }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-600">Username</label>
@@ -43,7 +43,23 @@
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-600">Email</label>
-                    <p class="text-gray-900">{{ Auth::user()->email ?? 'Tidak tersedia' }}</p>
+                    <p class="text-gray-900">{{ Auth::user()->karyawan->email ?? Auth::user()->email ?? 'Tidak tersedia' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">NIK</label>
+                    <p class="text-gray-900">{{ Auth::user()->karyawan->nik ?? 'Tidak tersedia' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Divisi</label>
+                    <p class="text-gray-900">{{ Auth::user()->karyawan->divisi ?? 'Tidak tersedia' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">Pekerjaan</label>
+                    <p class="text-gray-900">{{ Auth::user()->karyawan->pekerjaan ?? 'Tidak tersedia' }}</p>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-600">No. HP</label>
+                    <p class="text-gray-900">{{ Auth::user()->karyawan->no_hp ?? 'Tidak tersedia' }}</p>
                 </div>
                 <div>
                     <label class="block text-sm font-medium text-gray-600">Status</label>
