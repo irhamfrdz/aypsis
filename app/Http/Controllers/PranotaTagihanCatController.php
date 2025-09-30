@@ -206,7 +206,7 @@ class PranotaTagihanCatController extends Controller
         $request->validate([
             'ids' => 'required|array',
             'ids.*' => 'required|integer|exists:pranota_tagihan_cats,id',
-            'status' => 'required|string|in:unpaid,approved,in_progress,completed,cancelled'
+            'status' => 'required|string|in:unpaid,paid'
         ]);
 
         try {
@@ -217,10 +217,7 @@ class PranotaTagihanCatController extends Controller
 
             $statusLabels = [
                 'unpaid' => 'Belum Lunas',
-                'approved' => 'Disetujui',
-                'in_progress' => 'Dalam Proses',
-                'completed' => 'Selesai',
-                'cancelled' => 'Dibatalkan'
+                'paid' => 'Lunas'
             ];
 
             return redirect()->back()->with('success',

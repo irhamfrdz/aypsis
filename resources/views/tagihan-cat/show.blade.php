@@ -134,7 +134,7 @@
                     @method('PATCH')
                     <input type="hidden" name="nomor_kontainer" value="{{ $tagihanCat->nomor_kontainer }}">
                     <input type="hidden" name="vendor" value="{{ $tagihanCat->vendor }}">
-                    <input type="hidden" name="tanggal_tagihan" value="{{ $tagihanCat->tanggal_tagihan->format('Y-m-d') }}">
+                    <input type="hidden" name="tanggal_tagihan" value="{{ $tagihanCat->tanggal_tagihan ? $tagihanCat->tanggal_tagihan->format('Y-m-d') : '' }}">
                     <input type="hidden" name="jumlah_raw" value="{{ $tagihanCat->jumlah }}">
                     <input type="hidden" name="keterangan" value="{{ $tagihanCat->keterangan }}">
                     <input type="hidden" name="perbaikan_kontainer_id" value="{{ $tagihanCat->perbaikan_kontainer_id }}">

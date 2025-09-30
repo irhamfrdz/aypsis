@@ -36,19 +36,24 @@
                                 <tr class="hover:bg-gray-50">
                                     <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $loop->iteration }}</td>
                                     <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm text-gray-900">
-                                        <strong>{{ $pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers->first()->kontainer->nomor_kontainer ?? 'N/A' }}</strong><br>
-                                        <small class="text-gray-500">{{ Str::limit($pembayaran->pranotaPerbaikanKontainer->deskripsi_pekerjaan, 50) }}</small>
+                                        <strong>{{ $pembayaran->nomor_pembayaran }}</strong><br>
+                                        <small class="text-gray-500">
+                                            @foreach($pembayaran->pranotaPerbaikanKontainers as $pranota)
+                                                {{ $pranota->perbaikanKontainers?->first()?->kontainer?->nomor_kontainer ?? 'N/A' }}
+                                                @if(!$loop->last), @endif
+                                            @endforeach
+                                        </small>
                                     </td>
-                                    <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $pembayaran->tanggal_pembayaran->format('d/m/Y') }}</td>
-                                    <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm text-gray-900">Rp {{ number_format($pembayaran->nominal_pembayaran, 0, ',', '.') }}</td>
+                                    <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm text-gray-900">{{ $pembayaran->tanggal_kas->format('d/m/Y') }}</td>
+                                    <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm text-gray-900">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</td>
                                     <td class="border border-gray-300 px-4 py-2 whitespace-nowrap">
                                         <span class="bg-blue-100 text-blue-800 px-2 py-1 rounded-full text-xs font-medium">
-                                            {{ ucfirst($pembayaran->metode_pembayaran) }}
+                                            {{ ucfirst($pembayaran->jenis_transaksi) }}
                                         </span>
                                     </td>
                                     <td class="border border-gray-300 px-4 py-2 whitespace-nowrap">
-                                        <span class="px-2 py-1 rounded-full text-xs font-medium {{ $pembayaran->status_pembayaran == 'paid' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                            {{ $pembayaran->status_pembayaran == 'paid' ? 'Lunas' : 'Pending' }}
+                                        <span class="px-2 py-1 rounded-full text-xs font-medium {{ $pembayaran->status == 'approved' ? 'bg-green-100 text-green-800' : ($pembayaran->status == 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-red-100 text-red-800') }}">
+                                            {{ $pembayaran->status == 'approved' ? 'Approved' : ($pembayaran->status == 'pending' ? 'Pending' : 'Rejected') }}
                                         </span>
                                     </td>
                                     <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm font-medium">

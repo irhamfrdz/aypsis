@@ -47,8 +47,12 @@
             </div>
         @endif
 
-        <form id="pembayaranForm" action="{{ route('pembayaran-pranota-cat.payment-form') }}" method="POST" class="space-y-3">
+        <form id="pembayaranForm" action="{{ route('pembayaran-pranota-cat.store') }}" method="POST" class="space-y-3">
             @csrf
+
+            {{-- Hidden inputs for additional data --}}
+            <input type="hidden" name="nomor_pembayaran" id="nomor_pembayaran_hidden" value="">
+            <input type="hidden" name="tanggal_kas" value="{{ now()->toDateString() }}">
 
             <!-- Data Pembayaran & Bank -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
@@ -68,7 +72,7 @@
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
-                                <input type="text" name="tanggal_kas" id="tanggal_kas"
+                                <input type="text" id="tanggal_kas"
                                     value="{{ now()->format('d/M/Y') }}"
                                     class="{{ $readonlyInputClasses }}" readonly required>
                                 <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
@@ -224,7 +228,7 @@
             {{-- Submit Button --}}
             <div class="flex justify-end">
                 <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                    Lanjutkan ke Form Pembayaran
+                    Simpan Pembayaran
                 </button>
             </div>
         </form>
@@ -278,9 +282,15 @@
 
         // Bank change
         document.getElementById('bank').addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
+            updateNomorPembayaran();
+        });
+
+        // Function to update nomor pembayaran
+        function updateNomorPembayaran() {
+            const bankSelect = document.getElementById('bank');
+            const selectedOption = bankSelect.options[bankSelect.selectedIndex];
             const kode = selectedOption.getAttribute('data-kode') || '000';
-            const counter = {{ $catPaymentCounter }};
+            const counter = {{ \App\Models\PembayaranPranotaCat::count() + 1 }};
             const now = new Date();
             const year = now.getFullYear().toString().slice(-2);
             const month = (now.getMonth() + 1).toString().padStart(2, '0');
@@ -288,6 +298,33 @@
             const print = '1';
             const nomor = kode + print + year + month + running;
             document.getElementById('nomor_pembayaran').value = nomor;
+            document.getElementById('nomor_pembayaran_hidden').value = nomor;
+        }
+
+        // Form validation before submission
+        document.getElementById('pembayaranForm').addEventListener('submit', function(e) {
+            const checkedBoxes = document.querySelectorAll('.pranota-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                e.preventDefault();
+                alert('Pilih minimal satu pranota CAT untuk dibayar.');
+                return false;
+            }
+
+            const bankSelect = document.getElementById('bank');
+            if (!bankSelect.value) {
+                e.preventDefault();
+                alert('Pilih bank terlebih dahulu.');
+                bankSelect.focus();
+                return false;
+            }
+
+            const jenisTransaksi = document.getElementById('jenis_transaksi');
+            if (!jenisTransaksi.value) {
+                e.preventDefault();
+                alert('Pilih jenis transaksi.');
+                jenisTransaksi.focus();
+                return false;
+            }
         });
 
         // Penyesuaian change
@@ -307,6 +344,12 @@
         // Initial calculation
         calculateTotal();
         penyesuaianInput.value = '0';
+
+        // Generate initial nomor pembayaran if bank is selected
+        const bankSelect = document.getElementById('bank');
+        if (bankSelect.value) {
+            updateNomorPembayaran();
+        }
     });
 </script>
 @endsection

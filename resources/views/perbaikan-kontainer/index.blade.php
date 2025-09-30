@@ -126,7 +126,7 @@
                 <h1 class="text-2xl font-bold text-gray-800">Perbaikan Kontainer</h1>
                 <p class="text-gray-600 mt-1">Kelola data perbaikan kontainer</p>
             </div>
-            @can('perbaikan-kontainer-create')
+            @can('tagihan-perbaikan-kontainer-create')
             <a href="{{ route('perbaikan-kontainer.create') }}"
                class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition duration-200 flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -174,17 +174,30 @@
                         <span id="selectedCount">0</span> item dipilih
                     </span>
                     <div class="flex space-x-2">
+                        @can('tagihan-perbaikan-kontainer-delete')
                         <button type="button" id="btnBulkDelete"
                                 class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
                             Hapus Terpilih
                         </button>
+                        @endcan
+                        @can('tagihan-perbaikan-kontainer-update')
                         <button type="button" id="btnBulkStatus"
                                 class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
                             Update Status
                         </button>
+                        @endcan
+                        @can('pranota-perbaikan-kontainer-create')
                         <button type="button" id="btnBulkPranota"
                                 class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
                             Masukan Pranota
+                        </button>
+                        @endcan
+                        <button type="button" id="btnBulkPrint"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                            <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                            </svg>
+                            Print Terpilih
                         </button>
                     </div>
                 </div>
@@ -253,9 +266,33 @@
                             {{ $perbaikan->realisasi_biaya_perbaikan ? 'Rp ' . number_format($perbaikan->realisasi_biaya_perbaikan, 0, ',', '.') : '-' }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap">
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $perbaikan->status_color }}">
-                                {{ $perbaikan->status_label }}
-                            </span>
+                            @if(in_array($perbaikan->status_perbaikan, ['belum_masuk_pranota', 'sudah_dibayar']))
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $perbaikan->status_color }}">
+                                    {{ $perbaikan->status_label }}
+                                </span>
+                            @elseif(in_array($perbaikan->status_perbaikan, ['sudah_masuk_pranota', 'completed']))
+                                @php
+                                    $pranotaInfo = $perbaikan->pranotaPerbaikanKontainers->first();
+                                @endphp
+                                @if($pranotaInfo)
+                                    <div class="flex flex-col items-start">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $perbaikan->status_color }} mb-1">
+                                            {{ $perbaikan->status_label }}
+                                        </span>
+                                        <span class="text-xs text-gray-600 bg-gray-100 px-1 py-0.5 rounded">
+                                            {{ $pranotaInfo->nomor_pranota }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $perbaikan->status_color }}">
+                                        {{ $perbaikan->status_label }}
+                                    </span>
+                                @endif
+                            @else
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                    Tidak Diketahui
+                                </span>
+                            @endif
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                             {{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/M/Y') : '-' }}
@@ -268,22 +305,30 @@
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-sm font-medium">
                             <div class="flex space-x-2">
-                                @can('perbaikan-kontainer-view')
+                                @can('tagihan-perbaikan-kontainer-view')
                                 <a href="{{ route('perbaikan-kontainer.show', $perbaikan) }}"
                                    class="text-blue-600 hover:text-blue-900">Lihat</a>
                                 @endcan
-                                @can('perbaikan-kontainer-update')
+                                @can('tagihan-perbaikan-kontainer-update')
                                 <a href="{{ route('perbaikan-kontainer.edit', $perbaikan) }}"
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                 @endcan
                                 @if(!$perbaikan->tanggal_cat)
-                                @can('perbaikan-kontainer-update')
+                                @can('tagihan-perbaikan-kontainer-update')
                                 <button type="button" onclick="openCatatanModal({{ $perbaikan->id }}, '{{ $perbaikan->nomor_tagihan ?? 'N/A' }}', '{{ $perbaikan->estimasi_kerusakan_kontainer ?? '' }}', '{{ $perbaikan->nomor_kontainer ?? 'N/A' }}', '{{ $perbaikan->vendorBengkel->nama_bengkel ?? '' }}', '{{ $perbaikan->kontainer->ukuran ?? 'N/A' }}')"
                                         class="text-green-600 hover:text-green-900 focus:outline-none focus:ring-0"
                                         aria-label="Buka modal catatan perbaikan">Butuh Cat</button>
                                 @endcan
                                 @endif
-                                @can('perbaikan-kontainer-delete')
+                                <button type="button" onclick="printSingleRecord({{ $perbaikan->id }})"
+                                        class="text-indigo-600 hover:text-indigo-900 flex items-center px-2 py-1 border border-indigo-300 rounded transition duration-200"
+                                        aria-label="Print perbaikan kontainer">
+                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/>
+                                    </svg>
+                                    Print
+                                </button>
+                                @can('tagihan-perbaikan-kontainer-delete')
                                 <form method="POST" action="{{ route('perbaikan-kontainer.destroy', $perbaikan) }}"
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus data perbaikan ini?')"
                                       class="inline">
@@ -591,6 +636,19 @@ function generateTagihanCatNumber() {
     return nomorTagihanCat;
 }
 
+// Global print functions
+function printSingleRecord(perbaikanId) {
+    window.open('/perbaikan-kontainer/' + perbaikanId + '/print', '_blank');
+}
+
+function printSelectedRecords(checkedBoxes) {
+    const ids = Array.from(checkedBoxes).map(checkbox => checkbox.value);
+    if (ids.length > 0) {
+        const idsString = ids.join(',');
+        window.open(`{{ url('perbaikan-kontainer/print') }}?ids=${idsString}`, '_blank');
+    }
+}
+
 document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('selectAll');
     const itemCheckboxes = document.querySelectorAll('.item-checkbox');
@@ -697,21 +755,22 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Bulk delete handler
-    btnBulkDelete.addEventListener('click', function() {
-        const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
-        if (checkedBoxes.length === 0) {
-            alert('Pilih minimal satu item untuk dihapus');
-            return;
-        }
+    if (btnBulkDelete) {
+        btnBulkDelete.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Pilih minimal satu item untuk dihapus');
+                return;
+            }
 
-        const ids = Array.from(checkedBoxes).map(cb => cb.value);
-        const message = `Apakah Anda yakin ingin menghapus ${checkedBoxes.length} item yang dipilih?`;
+            const ids = Array.from(checkedBoxes).map(cb => cb.value);
+            const message = `Apakah Anda yakin ingin menghapus ${checkedBoxes.length} item yang dipilih?`;
 
-        if (confirm(message)) {
-            // Create form and submit
-            const form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '{{ route("perbaikan-kontainer.bulk-delete") }}';
+            if (confirm(message)) {
+                // Create form and submit
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '{{ route("perbaikan-kontainer.bulk-delete") }}';
 
             // Add CSRF token
             const csrfToken = document.createElement('input');
@@ -740,9 +799,11 @@ document.addEventListener('DOMContentLoaded', function() {
             form.submit();
         }
     });
+    }
 
     // Bulk status update handler
-    btnBulkStatus.addEventListener('click', function() {
+    if (btnBulkStatus) {
+        btnBulkStatus.addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
         if (checkedBoxes.length === 0) {
             alert('Pilih minimal satu item untuk update status');
@@ -799,9 +860,11 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Status tidak valid. Pilih:\n1. belum_masuk_pranota\n2. sudah_masuk_pranota\n3. sudah_dibayar');
         }
     });
+    }
 
     // Bulk pranota handler - Open modal
-    btnBulkPranota.addEventListener('click', function() {
+    if (btnBulkPranota) {
+        btnBulkPranota.addEventListener('click', function() {
         const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
         if (checkedBoxes.length === 0) {
             alert('Pilih minimal satu item untuk dimasukkan ke pranota');
@@ -898,6 +961,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show modal
         pranotaModal.classList.remove('hidden');
     });
+    }
+
+    // Bulk print handler
+    const btnBulkPrint = document.getElementById('btnBulkPrint');
+    if (btnBulkPrint) {
+        btnBulkPrint.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.item-checkbox:checked');
+            if (checkedBoxes.length === 0) {
+                alert('Pilih minimal satu item untuk dicetak');
+                return;
+            }
+
+            printSelectedRecords(checkedBoxes);
+        });
+    }
 
     // Modal handlers
     // Close modal
@@ -1001,6 +1079,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Submit form
         pranotaForm.submit();
     });
+
+    // Print functions
+    // Moved to global scope above
+
 });
 </script>
 
@@ -1074,10 +1156,10 @@ document.addEventListener('DOMContentLoaded', function() {
                         </div>
 
                         <div class="md:col-span-2">
-                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan *</label>
-                            <textarea name="catatan" id="catatan_text" rows="3" required
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Catatan</label>
+                            <textarea name="catatan" id="catatan_text" rows="3"
                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                                      placeholder="Masukkan detail catatan perbaikan..."></textarea>
+                                      placeholder="Masukkan detail catatan perbaikan (opsional)..."></textarea>
                         </div>
 
                         <div>
@@ -1288,7 +1370,6 @@ document.addEventListener('DOMContentLoaded', function() {
     submitCatatanBtn.addEventListener('click', function() {
         const nomorTagihanCat = document.getElementById('nomor_tagihan_cat').value.trim();
         const teknisi = document.getElementById('teknisi').value.trim();
-        const catatan = document.getElementById('catatan_text').value.trim();
 
         if (!nomorTagihanCat) {
             alert('Nomor tagihan cat belum ter-generate!');
@@ -1298,12 +1379,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!teknisi) {
             alert('Vendor/Bengkel harus dipilih!');
             document.getElementById('teknisi').focus();
-            return;
-        }
-
-        if (!catatan) {
-            alert('Catatan harus diisi!');
-            document.getElementById('catatan_text').focus();
             return;
         }
 

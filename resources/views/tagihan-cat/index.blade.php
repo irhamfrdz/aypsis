@@ -277,9 +277,30 @@
                                     Pending
                                 </span>
                             @elseif($tagihanCat->status == 'masuk pranota')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 status-badge">
-                                    Pranota
-                                </span>
+                                @php
+                                    $pranotaInfo = null;
+                                    $pranotaCatRecords = \App\Models\PranotaTagihanCat::all();
+                                    foreach($pranotaCatRecords as $pranota) {
+                                        if (!empty($pranota->tagihan_cat_ids) && in_array($tagihanCat->id, $pranota->tagihan_cat_ids)) {
+                                            $pranotaInfo = $pranota;
+                                            break;
+                                        }
+                                    }
+                                @endphp
+                                @if($pranotaInfo)
+                                    <div class="flex flex-col items-start">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 status-badge mb-1">
+                                            Pranota
+                                        </span>
+                                        <span class="text-xs text-gray-600 bg-gray-100 px-1 py-0.5 rounded">
+                                            {{ $pranotaInfo->no_invoice }}
+                                        </span>
+                                    </div>
+                                @else
+                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 status-badge">
+                                        Pranota
+                                    </span>
+                                @endif
                             @elseif($tagihanCat->status == 'paid')
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800 status-badge">
                                     Dibayar

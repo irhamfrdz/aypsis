@@ -54,7 +54,7 @@
                                 <div class="flex-1">
                                     <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
                                     <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
-                                        value="{{ '000-1-' . now()->format('y') . '-' . now()->format('m') . '-000001' }}"
+                                        value=""
                                         class="{{ $readonlyInputClasses }}" readonly>
                                 </div>
                                 <div class="w-16">
@@ -66,7 +66,7 @@
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
                                 <input type="text" name="tanggal_kas" id="tanggal_kas"
-                                    value="{{ now()->format('d/M/Y') }}"
+                                    value="{{ now()->format('d/m/Y') }}"
                                     class="{{ $readonlyInputClasses }}" readonly required>
                                 <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
                             </div>
@@ -337,9 +337,10 @@
             const now = new Date();
             const tahun = String(now.getFullYear()).slice(-2);
             const bulan = String(now.getMonth() + 1).padStart(2, '0');
-            const running = nomorPembayaranInput.value.split('-').pop() || '000001';
+            // For client-side, we'll use a simple sequence, server will handle uniqueness
+            const sequence = '000001';
 
-            nomorPembayaranInput.value = `${bankCode}-${cetakan}-${tahun}-${bulan}-${running}`;
+            nomorPembayaranInput.value = `BPK-${cetakan}-${tahun}-${bulan}-${sequence}`;
         }
 
         // Event listeners
@@ -359,6 +360,19 @@
             flash.setAttribute('tabindex', '-1');
             flash.focus();
         }
+
+        // Show warning alert for success or error messages
+        @if(session('success'))
+            setTimeout(function() {
+                alert('✅ Pembayaran Berhasil!\n\n{{ session('success') }}');
+            }, 500);
+        @endif
+
+        @if(session('error'))
+            setTimeout(function() {
+                alert('⚠️ Gagal Membuat Pembayaran!\n\n{{ session('error') }}');
+            }, 500);
+        @endif
     });
 </script>
 @endsection

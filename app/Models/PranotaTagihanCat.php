@@ -61,11 +61,9 @@ class PranotaTagihanCat extends Model
     public function getStatusLabel()
     {
         if ($this->status === 'paid') {
-            return 'Sudah Dibayar';
-        } elseif ($this->status === 'cancelled') {
-            return 'Dibatalkan';
+            return 'Lunas';
         } else {
-            return 'Belum Dibayar';
+            return 'Belum Lunas';
         }
     }
 
@@ -73,10 +71,18 @@ class PranotaTagihanCat extends Model
     {
         if ($this->status === 'paid') {
             return 'bg-green-100 text-green-800';
-        } elseif ($this->status === 'cancelled') {
-            return 'bg-red-100 text-red-800';
         } else {
-            return 'bg-yellow-100 text-yellow-800';
+            return 'bg-red-100 text-red-800';
         }
+    }
+
+    public function pembayaranPranotaCats()
+    {
+        return $this->belongsToMany(
+            PembayaranPranotaCat::class,
+            'pembayaran_pranota_cat_items',
+            'pranota_tagihan_cat_id',
+            'pembayaran_pranota_cat_id'
+        )->withPivot('amount')->withTimestamps();
     }
 }

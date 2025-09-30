@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PembayaranPranotaKontainer;
 use App\Models\PembayaranPranotaKontainerItem;
-use App\Models\Pranota;
+use App\Models\PranotaTagihanKontainerSewa;
 use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +40,8 @@ class PembayaranPranotaKontainerController extends Controller
         }
 
         // Get all pranota that are unpaid (not paid yet)
-        $pranotaList = Pranota::where('status', 'unpaid')
+        $pranotaList = PranotaTagihanKontainerSewa::where('status', '!=', 'paid')
+            ->where('status', '!=', 'cancelled')
             ->orderBy('created_at', 'desc')
             ->get();
 
@@ -57,15 +58,15 @@ class PembayaranPranotaKontainerController extends Controller
     {
         $request->validate([
             'pranota_ids' => 'required|array|min:1',
-            'pranota_ids.*' => 'exists:pranotalist,id'
+            'pranota_ids.*' => 'exists:pranota_tagihan_kontainer_sewa,id'
         ]);
 
         $pranotaIds = $request->input('pranota_ids');
-        $pranotaList = Pranota::whereIn('id', $pranotaIds)->get();
+        $pranotaList = PranotaTagihanKontainerSewa::whereIn('id', $pranotaIds)->get();
 
         // Validate that all selected pranota are unpaid
         foreach ($pranotaList as $pranota) {
-            if ($pranota->status !== 'unpaid') {
+            if ($pranota->status === 'paid' || $pranota->status === 'cancelled') {
                 return redirect()->back()->with('error', "Pranota {$pranota->no_invoice} sudah dibayar atau tidak dapat diproses");
             }
         }
@@ -89,9 +90,9 @@ class PembayaranPranotaKontainerController extends Controller
             'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota_kontainer',
             'bank' => 'required|string|max:255',
             'jenis_transaksi' => 'required|in:Debit,Kredit',
-            'tanggal_kas' => 'required|date',
+            'tanggal_kas' => 'required|date_format:d/m/Y',
             'pranota_ids' => 'required|array|min:1',
-            'pranota_ids.*' => 'exists:pranotalist,id',
+            'pranota_ids.*' => 'exists:pranota_tagihan_kontainer_sewa,id',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'alasan_penyesuaian' => 'nullable|string',
             'keterangan' => 'nullable|string'
@@ -104,10 +105,10 @@ class PembayaranPranotaKontainerController extends Controller
             $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', 0));
 
             // Get and validate pranota records
-            $pranotas = Pranota::whereIn('id', $pranotaIds)->get();
+            $pranotas = PranotaTagihanKontainerSewa::whereIn('id', $pranotaIds)->get();
 
             foreach ($pranotas as $pranota) {
-                if ($pranota->status !== 'unpaid') {
+                if ($pranota->status === 'paid' || $pranota->status === 'cancelled') {
                     throw new \Exception("Pranota {$pranota->no_invoice} sudah dibayar atau tidak dapat diproses");
                 }
             }
@@ -119,7 +120,7 @@ class PembayaranPranotaKontainerController extends Controller
                 'nomor_pembayaran' => $request->nomor_pembayaran,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'tanggal_kas' => $request->tanggal_kas,
+                'tanggal_kas' => \Carbon\Carbon::createFromFormat('d/m/Y', $request->tanggal_kas)->format('Y-m-d'),
                 'tanggal_pembayaran' => now()->toDateString(),
                 'total_pembayaran' => $totalPembayaran,
                 'total_tagihan_penyesuaian' => $penyesuaian,

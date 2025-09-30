@@ -59,6 +59,8 @@ class PranotaPerbaikanKontainer extends Model
      */
     public function pembayaranPranotaPerbaikanKontainers()
     {
-        return $this->hasMany(PembayaranPranotaPerbaikanKontainer::class, 'pranota_perbaikan_kontainer_id');
+        return $this->belongsToMany(PembayaranPranotaPerbaikanKontainer::class, 'pembayaran_pranota_perbaikan_kontainer_items', 'pranota_perbaikan_kontainer_id', 'pembayaran_pranota_perbaikan_kontainer_id')
+                    ->withPivot('amount')
+                    ->withTimestamps();
     }
 }

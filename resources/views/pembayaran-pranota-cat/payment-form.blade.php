@@ -6,9 +6,7 @@
 @section('content')
     @php
         // Hitung counter untuk pembayaran pranota CAT
-        $catPaymentCounter = \App\Models\PembayaranPranota::whereHas('pranotas', function($query) {
-            $query->whereHas('tagihanCat');
-        })->count() + 1;
+        $catPaymentCounter = \App\Models\PembayaranPranotaCat::count() + 1;
     @endphp
     <div class="bg-white shadow-lg rounded-lg p-4 max-w-6xl mx-auto">
         @php
@@ -49,6 +47,11 @@
         <form id="pembayaranForm" action="{{ route('pembayaran-pranota-cat.store') }}" method="POST" class="space-y-3">
             @csrf
 
+            {{-- Hidden inputs for pranota IDs --}}
+            @foreach($pranotaList as $pranota)
+                <input type="hidden" name="pranota_ids[]" value="{{ $pranota->id }}">
+            @endforeach
+
             <!-- Data Pembayaran & Bank -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 <!-- Data Pembayaran -->
@@ -66,10 +69,10 @@
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
-                                <input type="text" name="tanggal_kas" id="tanggal_kas"
-                                    value="{{ now()->format('d/M/Y') }}"
-                                    class="{{ $readonlyInputClasses }}" readonly required>
-                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
+                                <input type="text" name="tanggal_kas_display" id="tanggal_kas_display"
+                                    value="{{ now()->format('d/m/Y') }}"
+                                    class="{{ $readonlyInputClasses }}" readonly>
+                                <input type="hidden" name="tanggal_kas" id="tanggal_kas" value="{{ now()->toDateString() }}">
                             </div>
                         </div>
                     </div>
@@ -128,17 +131,17 @@
                                         <input type="hidden" name="pranota_ids[]" value="{{ $pranota->id }}">
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCat as $tagihan)
+                                        @foreach($pranota->tagihanCatItems() as $tagihan)
                                             <div>{{ $tagihan->nomor_kontainer }}</div>
                                         @endforeach
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCat as $tagihan)
+                                        @foreach($pranota->tagihanCatItems() as $tagihan)
                                             <div>{{ $tagihan->vendor }}</div>
                                         @endforeach
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        @foreach($pranota->tagihanCat as $tagihan)
+                                        @foreach($pranota->tagihanCatItems() as $tagihan)
                                             <div>{{ \Carbon\Carbon::parse($tagihan->tanggal_cat)->format('d/M/Y') }}</div>
                                         @endforeach
                                     </td>
@@ -164,13 +167,13 @@
                                     class="{{ $readonlyInputClasses }}" readonly>
                             </div>
                             <div>
-                                <label for="total_tagihan_penyesuaian" class="{{ $labelClasses }}">Penyesuaian</label>
-                                <input type="number" name="total_tagihan_penyesuaian" id="total_tagihan_penyesuaian"
+                                <label for="penyesuaian" class="{{ $labelClasses }}">Penyesuaian</label>
+                                <input type="number" name="penyesuaian" id="penyesuaian"
                                     class="{{ $inputClasses }}" value="0">
                             </div>
                             <div>
-                                <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir</label>
-                                <input type="number" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian"
+                                <label for="total_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir</label>
+                                <input type="number" name="total_setelah_penyesuaian" id="total_setelah_penyesuaian"
                                     class="{{ $readonlyInputClasses }} font-bold text-gray-800 bg-gray-100" readonly value="{{ $totalPembayaran }}">
                             </div>
                         </div>
@@ -214,16 +217,16 @@
     document.addEventListener('DOMContentLoaded', function () {
         // Perhitungan otomatis total pembayaran berdasarkan penyesuaian
         const totalPembayaranInput = document.getElementById('total_pembayaran');
-        const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
-        const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
+        const penyesuaianInput = document.getElementById('penyesuaian');
+        const totalSetelahInput = document.getElementById('total_setelah_penyesuaian');
 
         function updateTotalSetelahPenyesuaian() {
             const totalPembayaran = parseFloat(totalPembayaranInput.value) || 0;
-            const totalPenyesuaian = parseFloat(totalPenyesuaianInput.value) || 0;
-            totalSetelahInput.value = totalPembayaran + totalPenyesuaian;
+            const penyesuaian = parseFloat(penyesuaianInput.value) || 0;
+            totalSetelahInput.value = totalPembayaran + penyesuaian;
         }
 
-        totalPenyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
+        penyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
         updateTotalSetelahPenyesuaian();
 
         // Update nomor pembayaran berdasarkan pilihan bank
@@ -232,13 +235,15 @@
 
         function updateNomorPembayaran() {
             const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-            const kodeBank = selectedOption.getAttribute('data-kode') || '000';
-            const tanggal = new Date().toISOString().slice(0, 10).replace(/-/g, '');
-            // Gunakan counter khusus untuk pembayaran pranota CAT
+            const kode = selectedOption.getAttribute('data-kode') || '000';
             const counter = {{ $catPaymentCounter }};
-            const nomorUrut = String(counter).padStart(4, '0');
-
-            nomorPembayaranInput.value = `${kodeBank}-${tanggal}-${nomorUrut}`;
+            const now = new Date();
+            const year = now.getFullYear().toString().slice(-2);
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            const running = counter.toString().padStart(6, '0');
+            const print = '1';
+            const nomor = kode + print + year + month + running;
+            nomorPembayaranInput.value = nomor;
         }
 
         bankSelect.addEventListener('change', updateNomorPembayaran);
@@ -247,11 +252,11 @@
             updateNomorPembayaran();
         }
 
-        // Keep tanggal_pembayaran hidden field synced with current date
-        const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
-        if (tanggalPembayaran) {
+        // Keep tanggal_kas hidden field synced with current date
+        const tanggalKas = document.getElementById('tanggal_kas');
+        if (tanggalKas) {
             // Keep hidden field with today's date for validation
-            tanggalPembayaran.value = new Date().toISOString().split('T')[0];
+            tanggalKas.value = new Date().toISOString().split('T')[0];
         }
     });
 </script>

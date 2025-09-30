@@ -473,6 +473,82 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for tagihan-kontainer-sewa dash notation permissions
+            if (strpos($permissionName, 'tagihan-kontainer-sewa-') === 0) {
+                $module = 'tagihan-kontainer-sewa';
+                $action = str_replace('tagihan-kontainer-sewa-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'index' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'destroy' => 'delete',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+            // Special handling for pranota-kontainer-sewa dash notation permissions
+            if (strpos($permissionName, 'pranota-kontainer-sewa-') === 0) {
+                $module = 'pranota-kontainer-sewa';
+                $action = str_replace('pranota-kontainer-sewa-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+            // Special handling for tagihan-perbaikan-kontainer dash notation permissions
+            if (strpos($permissionName, 'tagihan-perbaikan-kontainer-') === 0) {
+                $module = 'tagihan-perbaikan-kontainer';
+                $action = str_replace('tagihan-perbaikan-kontainer-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'approve' => 'approve',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Pattern 3: module-action (e.g., dashboard-view, master-karyawan-view)
             if (strpos($permissionName, '-') !== false) {
                 $parts = explode('-', $permissionName, 2);
@@ -556,6 +632,12 @@ class UserController extends Controller
                     if ($module === 'pranota' && strpos($action, 'perbaikan-kontainer-') === 0) {
                         $action = str_replace('perbaikan-kontainer-', '', $action);
                         $module = 'pranota-perbaikan-kontainer';
+                    }
+
+                    // Special handling for user-approval-* permissions
+                    if ($module === 'user' && strpos($action, 'approval-') === 0) {
+                        $action = str_replace('approval-', '', $action);
+                        $module = 'user-approval';
                     }
 
                     // Special handling for pembayaran-pranota-perbaikan-kontainer-* permissions
@@ -1314,8 +1396,19 @@ class UserController extends Controller
 
                     // Special handling for user-approval
                     if ($module === 'user-approval') {
-                        if ($action === 'view') {
-                            $permission = Permission::where('name', 'user-approval')->first();
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'user-approval',
+                            'create' => 'user-approval-create',
+                            'update' => 'user-approval-update',
+                            'delete' => 'user-approval-delete',
+                            'print' => 'user-approval-print',
+                            'export' => 'user-approval-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;
@@ -1417,22 +1510,28 @@ class UserController extends Controller
                                 $found = true;
                             }
                         }
+
+                        // Always assign perbaikan-kontainer-view when any perbaikan-kontainer action is checked
+                        $viewPermission = Permission::where('name', 'perbaikan-kontainer-view')->first();
+                        if ($viewPermission && !in_array($viewPermission->id, $permissionIds)) {
+                            $permissionIds[] = $viewPermission->id;
+                        }
                     }
 
                     // Special handling for pranota-perbaikan-kontainer module
                     if ($module === 'pranota-perbaikan-kontainer') {
                         // For pranota-perbaikan-kontainer, map matrix actions directly to permission names
                         $directActionMap = [
-                            'view' => 'view',
-                            'create' => 'create',
-                            'update' => 'update',
-                            'delete' => 'delete',
-                            'print' => 'print',
-                            'export' => 'export'
+                            'view' => 'pranota-perbaikan-kontainer-view',
+                            'create' => 'pranota-perbaikan-kontainer-create',
+                            'update' => 'pranota-perbaikan-kontainer-update',
+                            'delete' => 'pranota-perbaikan-kontainer-delete',
+                            'print' => 'pranota-perbaikan-kontainer-print',
+                            'export' => 'pranota-perbaikan-kontainer-export'
                         ];
 
                         if (isset($directActionMap[$action])) {
-                            $permissionName = 'pranota-perbaikan-kontainer.' . $directActionMap[$action];
+                            $permissionName = $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -1456,6 +1555,30 @@ class UserController extends Controller
 
                         if (isset($directActionMap[$action])) {
                             $permissionName = 'pembayaran-pranota-perbaikan-kontainer-' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for tagihan-perbaikan-kontainer module
+                    if ($module === 'tagihan-perbaikan-kontainer') {
+                        // For tagihan-perbaikan-kontainer, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                            'approve' => 'approve',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = 'tagihan-perbaikan-kontainer-' . $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {
@@ -1680,20 +1803,22 @@ class UserController extends Controller
 
                     // Special handling for tagihan-kontainer-sewa module
                     if ($module === 'tagihan-kontainer-sewa') {
-                        foreach ($possibleActions as $dbAction) {
-                            // Handle group actions
-                            if ($dbAction === 'group_show') {
-                                $permission = Permission::where('name', 'tagihan-kontainer-sewa-group-show')->first();
-                            } elseif ($dbAction === 'group_adjust_price') {
-                                $permission = Permission::where('name', 'tagihan-kontainer-sewa-group-adjust-price')->first();
-                            } else {
-                                $permission = Permission::where('name', 'tagihan-kontainer-sewa-' . $dbAction)->first();
-                            }
+                        // Map matrix actions to permission names (using dash notation as they exist in DB)
+                        $actionMap = [
+                            'view' => 'tagihan-kontainer-sewa-index',
+                            'create' => 'tagihan-kontainer-sewa-create',
+                            'update' => 'tagihan-kontainer-sewa-update',
+                            'delete' => 'tagihan-kontainer-sewa-destroy',
+                            'export' => 'tagihan-kontainer-sewa-export'
+                            // Note: 'approve' and 'print' permissions don't exist in database for this module
+                        ];
 
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;
-                                // Don't break here, continue to find all matching permissions
                             }
                         }
                     }
@@ -1858,5 +1983,14 @@ class UserController extends Controller
     public function testConvertMatrixPermissionsToIds(array $matrixPermissions): array
     {
         return $this->convertMatrixPermissionsToIds($matrixPermissions);
+    }
+
+    /**
+     * TEMPORARY PUBLIC METHOD FOR DEBUGGING
+     * Convert permission names to matrix format
+     */
+    public function testConvertPermissionsToMatrix(array $permissionNames): array
+    {
+        return $this->convertPermissionsToMatrix($permissionNames);
     }
 }

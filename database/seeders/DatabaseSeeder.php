@@ -34,6 +34,8 @@ class DatabaseSeeder extends Seeder
             PranotaCatPermissionSeeder::class, // Permission untuk pranota CAT
             PricelistCatSeeder::class, // Data sample untuk pricelist CAT
             StockKontainerSeeder::class, // Data sample untuk stock kontainer
+            VendorBengkelSeeder::class, // Data sample untuk vendor bengkel
+            PerbaikanKontainerSeeder::class, // Data sample untuk perbaikan kontainer
         ]);
     }
 }

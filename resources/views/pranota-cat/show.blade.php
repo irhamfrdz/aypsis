@@ -57,17 +57,11 @@
                     <label class="block text-sm font-medium text-gray-700">Status</label>
                     <p class="mt-1">
                         @if($pranota->status == 'unpaid')
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Belum Lunas</span>
-                        @elseif($pranota->status == 'approved')
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Disetujui</span>
-                        @elseif($pranota->status == 'in_progress')
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Dalam Proses</span>
-                        @elseif($pranota->status == 'completed')
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Selesai</span>
-                        @elseif($pranota->status == 'cancelled')
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Dibatalkan</span>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">Belum Lunas</span>
+                        @elseif($pranota->status == 'paid')
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lunas</span>
                         @else
-                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">{{ ucfirst($pranota->status ?? 'Unknown') }}</span>
+                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">{{ ucfirst($pranota->status ?? 'Unknown') }}</span>
                         @endif
                     </p>
                 </div>

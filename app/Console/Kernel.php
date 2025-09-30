@@ -12,6 +12,8 @@ use App\Console\Commands\BackfillTagihanMasa;
 use App\Console\Commands\BackfillTagihanMasaString;
 use App\Console\Commands\CreateNextPeriodeTagihan;
 use App\Console\Commands\UpdateKontainerPeriods;
+use App\Console\Commands\CheckTagihanPermissions;
+use App\Console\Commands\CheckTagihanPerbaikanPermissions;
 
 class Kernel extends ConsoleKernel
 {
@@ -29,6 +31,8 @@ class Kernel extends ConsoleKernel
     BackfillTagihanMasaString::class,
     CreateNextPeriodeTagihan::class,
     UpdateKontainerPeriods::class,
+    CheckTagihanPermissions::class,
+    CheckTagihanPerbaikanPermissions::class,
     ];
 
     /**

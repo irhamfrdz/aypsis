@@ -117,6 +117,10 @@
                                    class="text-blue-600 hover:text-blue-900 mr-3">
                                     <i class="fas fa-eye"></i> Lihat Detail
                                 </a>
+                                <a href="{{ route('pembayaran-pranota-cat.print', $pembayaran->id) }}"
+                                   class="text-green-600 hover:text-green-900 mr-3" target="_blank">
+                                    <i class="fas fa-print"></i> Print
+                                </a>
                             </td>
                         </tr>
                     @empty

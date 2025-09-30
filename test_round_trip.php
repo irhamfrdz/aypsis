@@ -1,13 +1,62 @@
 <?php
+require_once "vendor/autoload.php";
 
-require_once 'vendor/autoload.php';
+$app = require_once "bootstrap/app.php";
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
+use App\Models\Permission;
 use App\Http\Controllers\UserController;
-use App\Models\User;
-use Illuminate\Foundation\Application;
-use Illuminate\Contracts\Console\Kernel;
 
-// Bootstrap Laravel
+// Test the full round trip: matrix -> permissions -> matrix
+$permissionsMatrix = [
+    'user-approval' => [
+        'create' => '1',
+        'update' => '1',
+        'delete' => '1'
+    ]
+];
+
+echo '=== TESTING USER-APPROVAL PERMISSION ROUND TRIP ===' . PHP_EOL;
+echo 'Original matrix: ' . json_encode($permissionsMatrix) . PHP_EOL;
+
+// Use reflection to access private methods
+$controller = new UserController();
+$reflection = new ReflectionClass($controller);
+
+// Step 1: Convert matrix to permission IDs
+$convertMatrixMethod = $reflection->getMethod('convertMatrixPermissionsToIds');
+$convertMatrixMethod->setAccessible(true);
+$permissionIds = $convertMatrixMethod->invoke($controller, $permissionsMatrix);
+
+echo 'Permission IDs: ' . json_encode($permissionIds) . PHP_EOL;
+
+// Step 2: Get permission names from IDs
+$permissions = Permission::whereIn('id', $permissionIds)->pluck('name')->toArray();
+echo 'Permission names: ' . json_encode($permissions) . PHP_EOL;
+
+// Step 3: Convert back to matrix
+$convertToMatrixMethod = $reflection->getMethod('convertPermissionsToMatrix');
+$convertToMatrixMethod->setAccessible(true);
+$userMatrixPermissions = $convertToMatrixMethod->invoke($controller, $permissions);
+echo 'Converted back to matrix: ' . json_encode($userMatrixPermissions) . PHP_EOL;
+
+// Check if round trip worked
+$originalCreate = $permissionsMatrix['user-approval']['create'] ?? false;
+$originalUpdate = $permissionsMatrix['user-approval']['update'] ?? false;
+$originalDelete = $permissionsMatrix['user-approval']['delete'] ?? false;
+
+$roundTripCreate = $userMatrixPermissions['user-approval']['create'] ?? false;
+$roundTripUpdate = $userMatrixPermissions['user-approval']['update'] ?? false;
+$roundTripDelete = $userMatrixPermissions['user-approval']['delete'] ?? false;
+
+echo PHP_EOL . '=== ROUND TRIP VERIFICATION ===' . PHP_EOL;
+echo "Create: Original=$originalCreate, RoundTrip=$roundTripCreate - " . ($originalCreate == $roundTripCreate ? '✅ PASS' : '❌ FAIL') . PHP_EOL;
+echo "Update: Original=$originalUpdate, RoundTrip=$roundTripUpdate - " . ($originalUpdate == $roundTripUpdate ? '✅ PASS' : '❌ FAIL') . PHP_EOL;
+echo "Delete: Original=$originalDelete, RoundTrip=$roundTripDelete - " . ($originalDelete == $roundTripDelete ? '✅ PASS' : '❌ FAIL') . PHP_EOL;
+
+$allPass = ($originalCreate == $roundTripCreate) && ($originalUpdate == $roundTripUpdate) && ($originalDelete == $roundTripDelete);
+echo PHP_EOL . 'Overall result: ' . ($allPass ? '✅ ALL TESTS PASSED' : '❌ SOME TESTS FAILED') . PHP_EOL;
+?>
 $app = require_once 'bootstrap/app.php';
 $kernel = $app->make(Kernel::class);
 $kernel->bootstrap();

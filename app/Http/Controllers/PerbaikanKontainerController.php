@@ -16,7 +16,7 @@ class PerbaikanKontainerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PerbaikanKontainer::with(['creator', 'vendorBengkel', 'kontainer']);
+        $query = PerbaikanKontainer::with(['creator', 'vendorBengkel', 'kontainer', 'pranotaPerbaikanKontainers']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -146,6 +146,30 @@ class PerbaikanKontainerController extends Controller
         $perbaikanKontainer->load(['creator', 'updater', 'vendorBengkel']);
 
         return view('perbaikan-kontainer.show', compact('perbaikanKontainer'));
+    }
+
+    /**
+     * Display the specified resource for printing.
+     */
+    public function print(PerbaikanKontainer $perbaikanKontainer)
+    {
+        $perbaikanKontainer->load(['creator', 'updater', 'vendorBengkel', 'kontainer']);
+
+        return view('perbaikan-kontainer.print', compact('perbaikanKontainer'));
+    }
+
+    /**
+     * Display multiple resources for bulk printing.
+     */
+    public function printBulk(Request $request)
+    {
+        $ids = explode(',', $request->query('ids', ''));
+        $perbaikanKontainers = PerbaikanKontainer::whereIn('id', $ids)
+            ->with(['creator', 'updater', 'vendorBengkel', 'kontainer'])
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        return view('perbaikan-kontainer.print-bulk', compact('perbaikanKontainers'));
     }
 
     /**
@@ -301,7 +325,7 @@ class PerbaikanKontainerController extends Controller
             'nomor_tagihan_cat' => 'required|string|max:255',
             'status_perbaikan' => 'required|in:cat_sebagian,cat_full',
             'teknisi' => 'nullable|string|max:255',
-            'catatan' => 'required|string',
+            'catatan' => 'nullable|string',
             'tanggal_cat' => 'required|date',
             'estimasi_biaya_cat' => 'nullable|string',
             'estimasi_biaya_cat_numeric' => 'nullable|numeric',

@@ -48,10 +48,7 @@
                     <select name="status" class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                         <option value="">Semua Status</option>
                         <option value="unpaid" {{ request('status') == 'unpaid' ? 'selected' : '' }}>Belum Lunas</option>
-                        <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Disetujui</option>
-                        <option value="in_progress" {{ request('status') == 'in_progress' ? 'selected' : '' }}>Dalam Proses</option>
-                        <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
-                        <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
+                        <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Lunas</option>
                     </select>
                 </div>
                 <div>
@@ -128,16 +125,8 @@
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
                                     Lunas
                                 </span>
-                            @elseif($pranota->status == 'completed')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
-                                    Selesai
-                                </span>
-                            @elseif($pranota->status == 'cancelled')
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">
-                                    Dibatalkan
-                                </span>
                             @else
-                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-purple-100 text-purple-800">
+                                <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
                                     {{ ucfirst($pranota->status ?? 'Unknown') }}
                                 </span>
                             @endif
@@ -338,19 +327,13 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         const ids = Array.from(checkedBoxes).map(cb => cb.value);
-        const newStatus = prompt('Masukkan status baru:\n1. unpaid\n2. approved\n3. in_progress\n4. completed\n5. cancelled');
+        const newStatus = prompt('Masukkan status baru:\n1. unpaid - Belum Lunas\n2. paid - Lunas');
 
         let statusValue = '';
         if (newStatus === '1' || newStatus === 'unpaid') {
             statusValue = 'unpaid';
-        } else if (newStatus === '2' || newStatus === 'approved') {
-            statusValue = 'approved';
-        } else if (newStatus === '3' || newStatus === 'in_progress') {
-            statusValue = 'in_progress';
-        } else if (newStatus === '4' || newStatus === 'completed') {
-            statusValue = 'completed';
-        } else if (newStatus === '5' || newStatus === 'cancelled') {
-            statusValue = 'cancelled';
+        } else if (newStatus === '2' || newStatus === 'paid') {
+            statusValue = 'paid';
         }
 
         if (statusValue) {
@@ -388,7 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.submit();
             }
         } else if (newStatus) {
-            alert('Status tidak valid. Pilih:\n1. unpaid\n2. approved\n3. in_progress\n4. completed\n5. cancelled');
+            alert('Status tidak valid. Pilih:\n1. unpaid - Belum Lunas\n2. paid - Lunas');
         }
     });
 

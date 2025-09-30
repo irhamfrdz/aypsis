@@ -7,43 +7,44 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 10px;
             margin: 0;
-            padding: 20px;
+            padding: 5px;
             background: white;
+            line-height: 1.2;
         }
 
         .print-container {
             max-width: 1000px;
             margin: 0 auto;
             background: white;
-            border: 2px solid #000;
+            border: 1px solid #000;
         }
 
         .header {
             text-align: center;
-            border-bottom: 2px solid #000;
-            padding: 15px;
+            border-bottom: 1px solid #000;
+            padding: 8px;
             background: #f8f9fa;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 16px;
             font-weight: bold;
             text-transform: uppercase;
         }
 
         .header h2 {
-            margin: 5px 0 0 0;
-            font-size: 16px;
+            margin: 2px 0 0 0;
+            font-size: 12px;
             color: #666;
         }
 
         .pembayaran-info {
             display: flex;
             justify-content: space-between;
-            padding: 15px;
+            padding: 8px;
             border-bottom: 1px solid #ddd;
             background: #fff;
         }
@@ -54,98 +55,102 @@
 
         .info-row {
             display: flex;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             align-items: center;
         }
 
         .info-label {
             font-weight: bold;
-            width: 140px;
+            width: 120px;
             flex-shrink: 0;
+            font-size: 9px;
         }
 
         .info-value {
             flex: 1;
             border-bottom: 1px solid #333;
-            min-height: 18px;
-            padding-left: 5px;
+            min-height: 14px;
+            padding-left: 3px;
+            font-size: 9px;
         }
 
         .content-section {
-            padding: 15px;
+            padding: 8px;
         }
 
         .section-title {
             font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 11px;
+            margin-bottom: 6px;
             text-transform: uppercase;
             border-bottom: 1px solid #333;
-            padding-bottom: 5px;
+            padding-bottom: 3px;
         }
 
         .perbaikan-table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 10px;
+            font-size: 9px;
         }
 
         .perbaikan-table th,
         .perbaikan-table td {
             border: 1px solid #333;
-            padding: 8px;
+            padding: 4px;
             text-align: left;
         }
 
         .perbaikan-table th {
             background: #f0f0f0;
             font-weight: bold;
+            font-size: 8px;
         }
 
         .signatures {
             display: flex;
             justify-content: space-between;
-            margin-top: 40px;
-            padding: 20px;
+            margin-top: 20px;
+            padding: 10px;
         }
 
         .signature-box {
             text-align: center;
-            width: 200px;
+            width: 150px;
         }
 
         .signature-line {
             border-bottom: 1px solid #333;
-            height: 60px;
-            margin-bottom: 10px;
+            height: 40px;
+            margin-bottom: 5px;
         }
 
         .total-section {
             background: #f8f9fa;
-            border: 2px solid #333;
-            padding: 15px;
-            margin: 20px 0;
+            border: 1px solid #333;
+            padding: 8px;
+            margin: 10px 0;
         }
 
         .total-row {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 14px;
+            margin-bottom: 3px;
+            font-size: 11px;
         }
 
         .total-final {
             font-weight: bold;
-            font-size: 16px;
-            border-top: 2px solid #333;
-            padding-top: 10px;
-            margin-top: 10px;
+            font-size: 12px;
+            border-top: 1px solid #333;
+            padding-top: 5px;
+            margin-top: 5px;
         }
 
         @media print {
             body {
                 margin: 0;
-                padding: 10px;
+                padding: 2px;
             }
 
             .print-container {
@@ -155,6 +160,11 @@
 
             .no-print {
                 display: none !important;
+            }
+
+            @page {
+                size: A4;
+                margin: 0.5cm;
             }
         }
 
@@ -178,15 +188,24 @@
 
         .status-badge {
             display: inline-block;
-            padding: 2px 8px;
-            border-radius: 3px;
-            font-size: 11px;
+            padding: 1px 4px;
+            border-radius: 2px;
+            font-size: 8px;
             font-weight: bold;
         }
 
         .status-completed { background: #28a745; color: #fff; }
         .status-pending { background: #ffc107; color: #000; }
         .status-cancelled { background: #dc3545; color: #fff; }
+
+        .compact-table {
+            font-size: 8px;
+        }
+
+        .compact-table th,
+        .compact-table td {
+            padding: 2px 3px;
+        }
     </style>
 </head>
 <body>
@@ -199,81 +218,43 @@
             <h2>{{ config('app.name', 'PT. AYPSIS') }}</h2>
         </div>
 
-        <!-- Pembayaran Information -->
-        <div class="pembayaran-info">
-            <div class="info-left">
-                <div class="info-row">
-                    <span class="info-label">Nomor Pembayaran:</span>
-                    <span class="info-value">{{ $pembayaran->nomor_pembayaran ?? $pembayaran->nomor_invoice }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Tanggal Pembayaran:</span>
-                    <span class="info-value">{{ $pembayaran->tanggal_pembayaran ? \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y') : '-' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Metode Pembayaran:</span>
-                    <span class="info-value">{{ ucfirst($pembayaran->metode_pembayaran ?? '-') }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Bank:</span>
-                    <span class="info-value">{{ $pembayaran->bank ?? '-' }}</span>
-                </div>
-            </div>
-            <div class="info-right">
-                <div class="info-row">
-                    <span class="info-label">Nominal Pembayaran:</span>
-                    <span class="info-value">Rp {{ number_format($pembayaran->nominal_pembayaran, 0, ',', '.') }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Status Pembayaran:</span>
-                    <span class="info-value">
-                        @if($pembayaran->status_pembayaran == 'completed')
-                            <span class="status-badge status-completed">Lunas</span>
-                        @elseif($pembayaran->status_pembayaran == 'pending')
-                            <span class="status-badge status-pending">Pending</span>
-                        @elseif($pembayaran->status_pembayaran == 'cancelled')
-                            <span class="status-badge status-cancelled">Dibatalkan</span>
-                        @else
-                            <span class="status-badge">{{ ucfirst($pembayaran->status_pembayaran ?? 'Unknown') }}</span>
-                        @endif
-                    </span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Dibuat Oleh:</span>
-                    <span class="info-value">{{ $pembayaran->creator->name ?? 'Unknown' }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Tanggal Dibuat:</span>
-                    <span class="info-value">{{ $pembayaran->created_at ? $pembayaran->created_at->format('d/m/Y H:i') : '-' }}</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Informasi Pranota -->
+<!-- Informasi Pranota -->
         <div class="content-section">
-            <div class="section-title">Informasi Pranota Perbaikan</div>
-            <table style="width: 100%; border-collapse: collapse;">
+            <div class="section-title">Informasi Pranota & Pembayaran</div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 9px;">
                 <tr>
-                    <td style="width: 25%; padding: 5px; font-weight: bold;">Nomor Pranota:</td>
-                    <td style="width: 25%; padding: 5px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainer->nomor_pranota ?? '-' }}</td>
-                    <td style="width: 25%; padding: 5px; font-weight: bold;">Tanggal Pranota:</td>
-                    <td style="width: 25%; padding: 5px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainer->tanggal_pranota ? \Carbon\Carbon::parse($pembayaran->pranotaPerbaikanKontainer->tanggal_pranota)->format('d/m/Y') : '-' }}</td>
+                    <td style="width: 20%; padding: 3px; font-weight: bold;">Nomor Pranota:</td>
+                    <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainers->first()?->nomor_pranota ?? '-' }}</td>
+                    <td style="width: 20%; padding: 3px; font-weight: bold;">Nomor Pembayaran:</td>
+                    <td style="width: 30%; padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->nomor_pembayaran ?? $pembayaran->nomor_invoice }}</td>
                 </tr>
                 <tr>
-                    <td style="padding: 5px; font-weight: bold;">Nama Teknisi/Vendor:</td>
-                    <td style="padding: 5px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainer->nama_teknisi ?? '-' }}</td>
-                    <td style="padding: 5px; font-weight: bold;">Total Biaya:</td>
-                    <td style="padding: 5px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaPerbaikanKontainer->total_biaya ?? 0, 0, ',', '.') }}</td>
+                    <td style="padding: 3px; font-weight: bold;">Tanggal Pranota:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainers->first()?->tanggal_pranota ? \Carbon\Carbon::parse($pembayaran->pranotaPerbaikanKontainers->first()?->tanggal_pranota)->format('d/m/Y') : '-' }}</td>
+                    <td style="padding: 3px; font-weight: bold;">Tanggal Pembayaran:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->tanggal_kas ? \Carbon\Carbon::parse($pembayaran->tanggal_kas)->format('d/m/Y') : '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px; font-weight: bold;">Nama Teknisi:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->pranotaPerbaikanKontainers->first()?->nama_teknisi ?? '-' }}</td>
+                    <td style="padding: 3px; font-weight: bold;">Bank:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">{{ $pembayaran->bank ?? '-' }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 3px; font-weight: bold;">Total Biaya:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->pranotaPerbaikanKontainers->first()?->total_biaya ?? 0, 0, ',', '.') }}</td>
+                    <td style="padding: 3px; font-weight: bold;">Nominal Bayar:</td>
+                    <td style="padding: 3px; border-bottom: 1px solid #333;">Rp {{ number_format($pembayaran->nominal_pembayaran, 0, ',', '.') }}</td>
                 </tr>
             </table>
         </div>
 
         <!-- Deskripsi Pekerjaan -->
-        @if($pembayaran->pranotaPerbaikanKontainer->deskripsi_pekerjaan)
+        @if($pembayaran->pranotaPerbaikanKontainers->first()?->deskripsi_pekerjaan)
         <div class="content-section">
             <div class="section-title">Deskripsi Pekerjaan</div>
-            <div style="border: 1px solid #ddd; padding: 10px; min-height: 40px; background: #f9f9f9;">
-                {{ $pembayaran->pranotaPerbaikanKontainer->deskripsi_pekerjaan }}
+            <div style="border: 1px solid #ddd; padding: 5px; min-height: 25px; background: #f9f9f9; font-size: 8px;">
+                {{ Str::limit($pembayaran->pranotaPerbaikanKontainers->first()?->deskripsi_pekerjaan, 200) }}
             </div>
         </div>
         @endif
@@ -282,37 +263,30 @@
         <div class="content-section">
             <div class="section-title">Daftar Tagihan Perbaikan Kontainer</div>
 
-            @if($pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers->count() > 0)
-                <table class="perbaikan-table">
+                        @if($pembayaran->pranotaPerbaikanKontainers->first()?->perbaikanKontainers?->count() > 0)
+                <table class="perbaikan-table compact-table">
                     <thead>
                         <tr>
                             <th style="width: 5%;">No</th>
-                            <th style="width: 15%;">Nomor Tagihan</th>
-                            <th style="width: 15%;">Nomor Kontainer</th>
-                            <th style="width: 12%;">Tanggal</th>
-                            <th style="width: 35%;">Deskripsi Perbaikan</th>
-                            <th style="width: 18%;">Total Biaya</th>
+                            <th style="width: 15%;">No.Tagihan</th>
+                            <th style="width: 15%;">Kontainer</th>
+                            <th style="width: 10%;">Tanggal</th>
+                            <th style="width: 35%;">Deskripsi</th>
+                            <th style="width: 20%;">Biaya</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @foreach($pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers as $index => $perbaikan)
+                        @foreach($pembayaran->pranotaPerbaikanKontainers->first()?->perbaikanKontainers ?? [] as $index => $perbaikan)
                         <tr>
                             <td>{{ $index + 1 }}</td>
                             <td>{{ $perbaikan->nomor_tagihan ?? '-' }}</td>
                             <td>{{ $perbaikan->nomor_kontainer ?? '-' }}</td>
-                            <td>{{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/m/Y') : '-' }}</td>
-                            <td>{{ $perbaikan->deskripsi_perbaikan ?? '-' }}</td>
+                            <td>{{ $perbaikan->tanggal_perbaikan ? \Carbon\Carbon::parse($perbaikan->tanggal_perbaikan)->format('d/m') : '-' }}</td>
+                            <td style="font-size: 7px;">{{ Str::limit($perbaikan->deskripsi_perbaikan ?? '-', 40) }}</td>
                             <td style="text-align: right; font-weight: bold;">
                                 {{ $perbaikan->realisasi_biaya_perbaikan ? 'Rp ' . number_format($perbaikan->realisasi_biaya_perbaikan, 0, ',', '.') : '-' }}
                             </td>
                         </tr>
-                        @if($perbaikan->pivot->catatan_item)
-                        <tr>
-                            <td colspan="6" style="font-style: italic; font-size: 11px; background: #f9f9f9;">
-                                <strong>Catatan:</strong> {{ $perbaikan->pivot->catatan_item }}
-                            </td>
-                        </tr>
-                        @endif
                         @endforeach
                     </tbody>
                 </table>
@@ -321,7 +295,7 @@
                 <div class="total-section">
                     <div class="total-row total-final">
                         <span>TOTAL BIAYA PERBAIKAN:</span>
-                        <span>Rp. {{ number_format($pembayaran->pranotaPerbaikanKontainer->total_biaya ?? 0, 0, ',', '.') }}</span>
+                        <span>Rp. {{ number_format($pembayaran->pranotaPerbaikanKontainers->first()?->total_biaya ?? 0, 0, ',', '.') }}</span>
                     </div>
                 </div>
             @else
@@ -334,9 +308,9 @@
         <!-- Keterangan Pembayaran -->
         @if($pembayaran->keterangan)
         <div class="content-section">
-            <div class="section-title">Keterangan Pembayaran</div>
-            <div style="border: 1px solid #ddd; padding: 10px; min-height: 40px; background: #f9f9f9;">
-                {{ $pembayaran->keterangan }}
+            <div class="section-title">Keterangan</div>
+            <div style="border: 1px solid #ddd; padding: 5px; min-height: 25px; background: #f9f9f9; font-size: 8px;">
+                {{ Str::limit($pembayaran->keterangan, 150) }}
             </div>
         </div>
         @endif
@@ -345,24 +319,24 @@
         <div class="signatures">
             <div class="signature-box">
                 <div class="signature-line"></div>
-                <div><strong>Mengetahui</strong></div>
-                <div>Kepala Bagian</div>
+                <div style="font-size: 9px;"><strong>Mengetahui</strong></div>
+                <div style="font-size: 8px;">Kepala Bagian</div>
             </div>
             <div class="signature-box">
                 <div class="signature-line"></div>
-                <div><strong>Pembayar</strong></div>
-                <div>{{ $pembayaran->creator->name ?? 'Admin' }}</div>
+                <div style="font-size: 9px;"><strong>Pembayar</strong></div>
+                <div style="font-size: 8px;">Admin</div>
             </div>
             <div class="signature-box">
                 <div class="signature-line"></div>
-                <div><strong>Penerima</strong></div>
-                <div>{{ $pembayaran->pranotaPerbaikanKontainer->nama_teknisi ?? 'Teknisi' }}</div>
+                <div style="font-size: 9px;"><strong>Penerima</strong></div>
+                <div style="font-size: 8px;">{{ $pembayaran->pranotaPerbaikanKontainers->first()?->nama_teknisi ?? 'Teknisi' }}</div>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="content-section" style="text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd;">
-            <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }} | {{ config('app.name', 'PT. AYPSIS') }}</p>
+        <div class="content-section" style="text-align: center; font-size: 7px; color: #666; border-top: 1px solid #ddd; padding-top: 5px;">
+            <p>Dicetak: {{ now()->format('d/m/Y H:i:s') }} | {{ config('app.name', 'PT. AYPSIS') }}</p>
         </div>
     </div>
 

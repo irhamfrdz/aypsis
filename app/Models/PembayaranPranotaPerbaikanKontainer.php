@@ -11,43 +11,32 @@ class PembayaranPranotaPerbaikanKontainer extends Model
     use HasFactory;
 
     protected $fillable = [
-        'pranota_perbaikan_kontainer_id',
-        'tanggal_pembayaran',
-        'nominal_pembayaran',
-        'nomor_invoice',
-        'metode_pembayaran',
-        'keterangan',
-        'status_pembayaran',
-        'created_by',
-        'updated_by',
+        'nomor_pembayaran',
+        'nomor_cetakan',
+        'bank',
+        'jenis_transaksi',
+        'tanggal_kas',
+        'total_pembayaran',
+        'penyesuaian',
+        'total_setelah_penyesuaian',
+        'alasan_penyesuaian',
+        'status',
     ];
 
     protected $casts = [
-        'tanggal_pembayaran' => 'date',
-        'nominal_pembayaran' => 'decimal:2',
+        'tanggal_kas' => 'date',
+        'total_pembayaran' => 'decimal:2',
+        'penyesuaian' => 'decimal:2',
+        'total_setelah_penyesuaian' => 'decimal:2',
     ];
 
     /**
-     * Get the pranota perbaikan kontainer that owns the pembayaran.
+     * Get the pranota perbaikan kontainers associated with this pembayaran.
      */
-    public function pranotaPerbaikanKontainer(): BelongsTo
+    public function pranotaPerbaikanKontainers()
     {
-        return $this->belongsTo(PranotaPerbaikanKontainer::class);
-    }
-
-    /**
-     * Get the user who created the pembayaran.
-     */
-    public function creator(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'created_by');
-    }
-
-    /**
-     * Get the user who last updated the pembayaran.
-     */
-    public function updater(): BelongsTo
-    {
-        return $this->belongsTo(User::class, 'updated_by');
+        return $this->belongsToMany(PranotaPerbaikanKontainer::class, 'pembayaran_pranota_perbaikan_kontainer_items', 'pembayaran_pranota_perbaikan_kontainer_id', 'pranota_perbaikan_kontainer_id')
+                    ->withPivot('amount')
+                    ->withTimestamps();
     }
 }

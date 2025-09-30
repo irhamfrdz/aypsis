@@ -1,32 +1,70 @@
-<?php<?php<?php
+<?php
+require_once "vendor/autoload.php";
 
+$app = require_once "bootstrap/app.php";
+$app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
+use App\Models\Permission;
 
-require_once 'vendor/autoload.php';
+// Test the permission names directly
+$testPermissions = [
+    'user-approval',
+    'user-approval-create',
+    'user-approval-update',
+    'user-approval-delete'
+];
 
+echo 'Testing permission lookup for user-approval permissions...' . PHP_EOL;
 
+foreach ($testPermissions as $permName) {
+    $permission = Permission::where('name', $permName)->first();
+    if ($permission) {
+        echo "✓ Found: {$permName} (ID: {$permission->id})" . PHP_EOL;
+    } else {
+        echo "✗ Not found: {$permName}" . PHP_EOL;
+    }
+}
 
-$app = require_once 'bootstrap/app.php';require_once 'vendor/autoload.php';require_once 'vendor/autoload.php';
+// Test the matrix conversion logic manually
+echo PHP_EOL . 'Testing matrix conversion logic...' . PHP_EOL;
 
-$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
+$permissionsMatrix = [
+    'user-approval' => [
+        'create' => '1',
+        'update' => '1',
+        'delete' => '1'
+    ]
+];
 
+$permissionIds = [];
+foreach ($permissionsMatrix as $module => $actions) {
+    if ($module === 'user-approval') {
+        $actionMap = [
+            'view' => 'user-approval',
+            'create' => 'user-approval-create',
+            'update' => 'user-approval-update',
+            'delete' => 'user-approval-delete',
+            'print' => 'user-approval-print',
+            'export' => 'user-approval-export'
+        ];
 
+        foreach ($actions as $action => $value) {
+            if ($value === '1' && isset($actionMap[$action])) {
+                $permissionName = $actionMap[$action];
+                $permission = Permission::where('name', $permissionName)->first();
+                if ($permission) {
+                    $permissionIds[] = $permission->id;
+                    echo "✓ Mapped {$module}.{$action} -> {$permissionName} (ID: {$permission->id})" . PHP_EOL;
+                } else {
+                    echo "✗ Permission not found: {$permissionName}" . PHP_EOL;
+                }
+            }
+        }
+    }
+}
 
-use App\Http\Controllers\UserController;
-
-$app = require_once 'bootstrap/app.php';use App\Models\Permission;
-
-echo "Testing convertMatrixPermissionsToIds for master-tipe-akun...\n";
-
-$app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();use Illuminate\Foundation\Application;
-
-$controller = new UserController();
-
-use Illuminate\Contracts\Console\Kernel;
-
-// Test data - simulate form submission with master-tipe-akun permissions checked
-
-$testPermissions = [use App\Http\Controllers\UserController;
+echo PHP_EOL . 'Final permission IDs: ' . json_encode($permissionIds) . PHP_EOL;
+?>
 
     'master-tipe-akun' => [
 

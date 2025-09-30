@@ -2,32 +2,31 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PembayaranPranota;
-use App\Models\PembayaranPranotaItem;
+use App\Models\PembayaranPranotaCat;
+use App\Models\PembayaranPranotaCatItem;
 use App\Models\PranotaTagihanCat;
 use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 
 class PembayaranPranotaCatController extends Controller
 {
     public function index()
     {
-        // Get all pembayaran_pranota that have pranota items related to CAT
-        $pembayaranList = PembayaranPranota::whereHas('pranotas', function($query) {
-            $query->whereHas('tagihanCat');
-        })
-        ->with(['pranotas.tagihanCat'])
-        ->orderBy('created_at', 'desc')
-        ->paginate(15);
+        // Get all pembayaran_pranota_cat
+        $pembayaranList = PembayaranPranotaCat::with(['pranotaTagihanCats'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(15);
 
         return view('pembayaran-pranota-cat.index', compact('pembayaranList'));
     }
 
     public function show($id)
     {
-        $pembayaran = PembayaranPranota::with(['pranotas.tagihanCat'])->findOrFail($id);
+        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats'])->findOrFail($id);
 
         return view('pembayaran-pranota-cat.show', compact('pembayaran'));
     }
@@ -37,6 +36,12 @@ class PembayaranPranotaCatController extends Controller
      */
     public function create(Request $request)
     {
+        // Check permission manually to provide better error message
+        if (!Gate::allows('pembayaran-pranota-cat-create')) {
+            return redirect()->route('dashboard')
+                ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota CAT. Silakan hubungi administrator.');
+        }
+
         // If pranota_ids are provided (from pranota index page), redirect to payment form
         if ($request->has('pranota_ids') && !empty($request->pranota_ids)) {
             return $this->showPaymentForm($request);
@@ -84,7 +89,10 @@ class PembayaranPranotaCatController extends Controller
         }
 
         // Generate nomor pembayaran (akan diupdate berdasarkan bank yang dipilih)
-        $nomorPembayaran = '';
+        $nomorPembayaran = $request->input('nomor_pembayaran', '');
+        if (empty($nomorPembayaran)) {
+            $nomorPembayaran = PembayaranPranotaCat::generateNomorPembayaran();
+        }
         $totalPembayaran = $pranotaList->sum('total_amount');
 
         // Get akun_coa data for bank selection
@@ -98,26 +106,35 @@ class PembayaranPranotaCatController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota',
-            'bank' => 'required|string|max:255',
-            'jenis_transaksi' => 'required|in:debit,credit',
-            'tanggal_kas' => 'required|date',
-            'pranota_ids' => 'required|array|min:1',
-            'pranota_ids.*' => 'exists:pranota_tagihan_cat,id',
-            'total_tagihan_penyesuaian' => 'nullable|numeric',
-            'alasan_penyesuaian' => 'nullable|string',
-            'keterangan' => 'nullable|string'
-        ]);
+        // Check permission manually to provide better error message
+        if (!Gate::allows('pembayaran-pranota-cat-create')) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota CAT. Silakan hubungi administrator.');
+        }
 
         try {
             DB::beginTransaction();
+            Log::info('Starting pembayaran pranota CAT store', $request->all());
+
+            $request->validate([
+                'nomor_pembayaran' => 'required|string',
+                'bank' => 'required|string|max:255',
+                'jenis_transaksi' => 'required|in:debit,credit',
+                'tanggal_kas' => 'required|date',
+                'pranota_ids' => 'required|array|min:1',
+                'pranota_ids.*' => 'exists:pranota_tagihan_cat,id',
+                'total_tagihan_penyesuaian' => 'nullable|numeric',
+                'alasan_penyesuaian' => 'nullable|string',
+                'keterangan' => 'nullable|string'
+            ]);
 
             $pranotaIds = $request->input('pranota_ids');
             $penyesuaian = floatval($request->input('total_tagihan_penyesuaian', 0));
 
             // Get and validate pranota records
             $pranotas = PranotaTagihanCat::whereIn('id', $pranotaIds)->get();
+            Log::info('Found pranotas', ['count' => $pranotas->count(), 'ids' => $pranotaIds]);
 
             foreach ($pranotas as $pranota) {
                 if ($pranota->status !== 'unpaid') {
@@ -129,10 +146,19 @@ class PembayaranPranotaCatController extends Controller
             }
 
             $totalPembayaran = $pranotas->sum('total_amount');
+            Log::info('Calculated total pembayaran', ['total' => $totalPembayaran]);
+
+            // Check for duplicate nomor_pembayaran
+            $existingPayment = PembayaranPranotaCat::where('nomor_pembayaran', $request->nomor_pembayaran)->first();
+            if ($existingPayment) {
+                // If duplicate found, generate a new number
+                $request->merge(['nomor_pembayaran' => PembayaranPranotaCat::generateNomorPembayaran()]);
+            }
 
             // Create pembayaran record
-            $pembayaran = PembayaranPranota::create([
+            $pembayaran = PembayaranPranotaCat::create([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
+                'nomor_cetakan' => 1,
                 'bank' => $request->bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'tanggal_kas' => $request->tanggal_kas,
@@ -143,20 +169,24 @@ class PembayaranPranotaCatController extends Controller
                 'keterangan' => $request->keterangan,
                 'status' => 'approved'
             ]);
+            Log::info('Pembayaran record created', ['id' => $pembayaran->id]);
 
             // Create payment items and update pranota status
             foreach ($pranotas as $pranota) {
-                PembayaranPranotaItem::create([
-                    'pembayaran_pranota_id' => $pembayaran->id,
-                    'pranota_id' => $pranota->id,
+                PembayaranPranotaCatItem::create([
+                    'pembayaran_pranota_cat_id' => $pembayaran->id,
+                    'pranota_tagihan_cat_id' => $pranota->id,
                     'amount' => $pranota->total_amount
                 ]);
+                Log::info('Payment item created', ['pranota_id' => $pranota->id]);
 
                 // Update pranota status to paid
                 $pranota->update(['status' => 'paid']);
+                Log::info('Pranota status updated', ['pranota_id' => $pranota->id]);
             }
 
             DB::commit();
+            Log::info('Transaction committed successfully');
 
             $message = "Pembayaran pranota CAT berhasil dibuat dengan nomor: {$request->nomor_pembayaran}. ";
             $message .= "Total pranota: " . count($pranotaIds) . ". ";
@@ -166,7 +196,19 @@ class PembayaranPranotaCatController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Error in pembayaran pranota CAT store', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'request' => $request->all()
+            ]);
             return redirect()->back()->withInput()->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage());
         }
+    }
+
+    public function print($id)
+    {
+        $pembayaran = PembayaranPranotaCat::with(['pranotaTagihanCats'])->findOrFail($id);
+
+        return view('pembayaran-pranota-cat.print', compact('pembayaran'));
     }
 }

@@ -92,7 +92,7 @@
                                 <input type="text" name="tanggal_kas" id="tanggal_kas"
                                     value="{{ now()->format('d/M/Y') }}"
                                     class="{{ $readonlyInputClasses }}" readonly required>
-                                <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
+                                <input type="hidden" name="tanggal_kas" value="{{ now()->toDateString() }}">
                             </div>
                         </div>
                     </div>
@@ -155,7 +155,7 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->nomor_pranota ?? 'Belum ada' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        <strong>{{ $pranota->perbaikanKontainers->first()->kontainer->nomor_kontainer ?? 'N/A' }}</strong><br>
+                                        <strong>{{ $pranota->perbaikanKontainers->first()->nomor_kontainer ?? 'N/A' }}</strong><br>
                                         <small class="text-gray-500">{{ Str::limit($pranota->perbaikanKontainers->first()->deskripsi_kerusakan ?? '', 30) }}</small>
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">

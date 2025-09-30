@@ -15,35 +15,35 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PembayaranPranotaPerbaikanKontainer::with(['pranotaPerbaikanKontainer.perbaikanKontainers.kontainer', 'creator']);
+        $query = PembayaranPranotaPerbaikanKontainer::with(['pranotaPerbaikanKontainers.perbaikanKontainers.kontainer']);
 
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('status_pembayaran', $request->status);
+            $query->where('status', $request->status);
         }
 
         // Filter by date range
         if ($request->filled('tanggal_dari')) {
-            $query->where('tanggal_pembayaran', '>=', $request->tanggal_dari);
+            $query->where('tanggal_kas', '>=', $request->tanggal_dari);
         }
 
         if ($request->filled('tanggal_sampai')) {
-            $query->where('tanggal_pembayaran', '<=', $request->tanggal_sampai);
+            $query->where('tanggal_kas', '<=', $request->tanggal_sampai);
         }
 
         // Search by kontainer number or description
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->whereHas('pranotaPerbaikanKontainer.perbaikanKontainers.kontainer', function($kontainer) use ($search) {
+                $q->whereHas('pranotaPerbaikanKontainers.perbaikanKontainers.kontainer', function($kontainer) use ($search) {
                     $kontainer->where('nomor_kontainer', 'like', "%{$search}%");
                 })
-                ->orWhere('nomor_invoice', 'like', "%{$search}%")
-                ->orWhere('keterangan', 'like', "%{$search}%");
+                ->orWhere('nomor_pembayaran', 'like', "%{$search}%")
+                ->orWhere('alasan_penyesuaian', 'like', "%{$search}%");
             });
         }
 
-        $pembayaranPranotaPerbaikanKontainers = $query->orderBy('tanggal_pembayaran', 'desc')
+        $pembayaranPranotaPerbaikanKontainers = $query->orderBy('tanggal_kas', 'desc')
             ->paginate(15)
             ->appends($request->query());
 
@@ -86,41 +86,55 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
         $request->validate([
             'pranota_perbaikan_kontainer_ids' => 'required|array|min:1',
             'pranota_perbaikan_kontainer_ids.*' => 'exists:pranota_perbaikan_kontainers,id',
-            'tanggal_pembayaran' => 'required|date',
-            'nomor_pembayaran' => 'required|string',
-            'nomor_cetakan' => 'required|integer|min:1|max:9',
+            'tanggal_kas' => 'required|date',
+            'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota_perbaikan_kontainers,nomor_pembayaran',
+            'nomor_cetakan' => 'nullable|integer|min:1|max:9',
             'bank' => 'required|string',
             'jenis_transaksi' => 'required|in:Debit,Kredit',
+            'penyesuaian' => 'nullable|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string',
         ]);
 
         try {
             $pranotaIds = $request->pranota_perbaikan_kontainer_ids;
             $totalPembayaran = 0;
-            $pembayaranRecords = [];
+            $pembayaranData = [];
 
             // Hitung total pembayaran dari semua pranota yang dipilih
             foreach ($pranotaIds as $pranotaId) {
                 $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
                 $totalPembayaran += $pranota->total_biaya ?? 0;
+                $pembayaranData[$pranotaId] = $pranota->total_biaya ?? 0;
             }
 
-            // Buat record pembayaran untuk setiap pranota
-            foreach ($pranotaIds as $pranotaId) {
-                $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
+            // Hitung total setelah penyesuaian
+            $penyesuaian = $request->penyesuaian ?? 0;
+            $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
 
-                $pembayaranRecords[] = PembayaranPranotaPerbaikanKontainer::create([
-                    'pranota_perbaikan_kontainer_id' => $pranotaId,
-                    'tanggal_pembayaran' => $request->tanggal_pembayaran,
-                    'nominal_pembayaran' => $pranota->total_biaya ?? 0,
-                    'nomor_invoice' => $request->nomor_pembayaran,
-                    'metode_pembayaran' => 'transfer', // Gunakan enum yang valid
-                    'keterangan' => "Pembayaran pranota {$pranota->nomor_pranota} - {$request->jenis_transaksi} via {$request->bank}",
-                    'status_pembayaran' => 'paid',
-                    'created_by' => Auth::id(),
-                    'updated_by' => Auth::id(),
+            // Buat satu record pembayaran
+            $pembayaran = PembayaranPranotaPerbaikanKontainer::create([
+                'nomor_pembayaran' => $request->nomor_pembayaran,
+                'nomor_cetakan' => $request->nomor_cetakan,
+                'bank' => $request->bank,
+                'jenis_transaksi' => $request->jenis_transaksi,
+                'tanggal_kas' => $request->tanggal_kas,
+                'total_pembayaran' => $totalPembayaran,
+                'penyesuaian' => $penyesuaian,
+                'total_setelah_penyesuaian' => $totalSetelahPenyesuaian,
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                'status' => 'approved',
+            ]);
+
+            // Associate pranota dengan pembayaran melalui pivot table
+            foreach ($pembayaranData as $pranotaId => $amount) {
+                $pembayaran->pranotaPerbaikanKontainers()->attach($pranotaId, [
+                    'amount' => $amount,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
 
                 // Update status pranota menjadi sudah dibayar
+                $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
                 $pranota->update(['status' => 'sudah_dibayar']);
 
                 // Update status perbaikan kontainer yang terkait
@@ -144,7 +158,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function show(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
-        $pembayaran->load(['pranotaPerbaikanKontainer.perbaikanKontainers.kontainer', 'creator']);
+        $pembayaran->load(['pranotaPerbaikanKontainers.perbaikanKontainers.kontainer']);
 
         return view('pembayaran-pranota-perbaikan-kontainer.show', compact('pembayaran'));
     }
@@ -154,6 +168,8 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
      */
     public function print(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
+        $pembayaran->load(['pranotaPerbaikanKontainers.perbaikanKontainers']);
+
         return view('pembayaran-pranota-perbaikan-kontainer.print', compact('pembayaran'));
     }
 
@@ -176,22 +192,89 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     public function update(Request $request, PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
         $request->validate([
-            'pranota_perbaikan_kontainer_id' => 'required|exists:pranota_perbaikan_kontainers,id',
-            'tanggal_pembayaran' => 'required|date',
-            'nominal_pembayaran' => 'required|numeric|min:0',
-            'nomor_invoice' => 'nullable|string',
-            'metode_pembayaran' => 'required|string',
-            'keterangan' => 'nullable|string',
-            'status_pembayaran' => 'required|in:pending,completed,cancelled',
+            'pranota_perbaikan_kontainer_ids' => 'required|array|min:1',
+            'pranota_perbaikan_kontainer_ids.*' => 'exists:pranota_perbaikan_kontainers,id',
+            'tanggal_kas' => 'required|date',
+            'nomor_pembayaran' => 'required|string|unique:pembayaran_pranota_perbaikan_kontainers,nomor_pembayaran,' . $pembayaran->id,
+            'nomor_cetakan' => 'nullable|integer|min:1|max:9',
+            'bank' => 'required|string',
+            'jenis_transaksi' => 'required|in:Debit,Kredit',
+            'penyesuaian' => 'nullable|numeric|min:0',
+            'alasan_penyesuaian' => 'nullable|string',
+            'status' => 'required|in:pending,approved,rejected',
         ]);
 
-        $data = $request->all();
-        $data['updated_by'] = Auth::id();
+        try {
+            $pranotaIds = $request->pranota_perbaikan_kontainer_ids;
+            $totalPembayaran = 0;
+            $pembayaranData = [];
 
-        $pembayaran->update($data);
+            // Hitung total pembayaran dari semua pranota yang dipilih
+            foreach ($pranotaIds as $pranotaId) {
+                $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
+                $totalPembayaran += $pranota->total_biaya ?? 0;
+                $pembayaranData[$pranotaId] = $pranota->total_biaya ?? 0;
+            }
 
-        return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
-            ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil diperbarui.');
+            // Hitung total setelah penyesuaian
+            $penyesuaian = $request->penyesuaian ?? 0;
+            $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
+
+            // Update pembayaran
+            $pembayaran->update([
+                'nomor_pembayaran' => $request->nomor_pembayaran,
+                'nomor_cetakan' => $request->nomor_cetakan,
+                'bank' => $request->bank,
+                'jenis_transaksi' => $request->jenis_transaksi,
+                'tanggal_kas' => $request->tanggal_kas,
+                'total_pembayaran' => $totalPembayaran,
+                'penyesuaian' => $penyesuaian,
+                'total_setelah_penyesuaian' => $totalSetelahPenyesuaian,
+                'alasan_penyesuaian' => $request->alasan_penyesuaian,
+                'status' => $request->status,
+            ]);
+
+            // Sync pranota associations
+            $currentPranotaIds = $pembayaran->pranotaPerbaikanKontainers->pluck('id')->toArray();
+            $newPranotaIds = $pranotaIds;
+
+            // Detach pranota yang tidak lagi dipilih
+            $pranotaToDetach = array_diff($currentPranotaIds, $newPranotaIds);
+            foreach ($pranotaToDetach as $pranotaId) {
+                $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
+                $pranota->update(['status' => 'belum_dibayar']);
+                foreach ($pranota->perbaikanKontainers as $perbaikan) {
+                    $perbaikan->update(['status_perbaikan' => 'belum_masuk_pranota']);
+                }
+            }
+
+            // Sync pivot table
+            $syncData = [];
+            foreach ($pembayaranData as $pranotaId => $amount) {
+                $syncData[$pranotaId] = [
+                    'amount' => $amount,
+                    'updated_at' => now(),
+                ];
+            }
+            $pembayaran->pranotaPerbaikanKontainers()->sync($syncData);
+
+            // Update status pranota yang baru dipilih
+            $pranotaToAttach = array_diff($newPranotaIds, $currentPranotaIds);
+            foreach ($pranotaToAttach as $pranotaId) {
+                $pranota = PranotaPerbaikanKontainer::findOrFail($pranotaId);
+                $pranota->update(['status' => 'sudah_dibayar']);
+                foreach ($pranota->perbaikanKontainers as $perbaikan) {
+                    $perbaikan->update(['status_perbaikan' => 'completed']);
+                }
+            }
+
+            return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
+                ->with('success', 'Pembayaran pranota perbaikan kontainer berhasil diperbarui.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Terjadi kesalahan saat memperbarui pembayaran: ' . $e->getMessage());
+        }
     }
 
     /**
@@ -200,13 +283,18 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     public function destroy(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
         try {
-            // Reset status pranota menjadi belum_dibayar
-            $pembayaran->pranotaPerbaikanKontainer->update(['status' => 'belum_dibayar']);
+            // Reset status semua pranota yang terkait
+            foreach ($pembayaran->pranotaPerbaikanKontainers as $pranota) {
+                $pranota->update(['status' => 'belum_dibayar']);
 
-            // Reset status perbaikan kontainer yang terkait
-            foreach ($pembayaran->pranotaPerbaikanKontainer->perbaikanKontainers as $perbaikan) {
-                $perbaikan->update(['status_perbaikan' => 'belum_masuk_pranota']);
+                // Reset status perbaikan kontainer yang terkait
+                foreach ($pranota->perbaikanKontainers as $perbaikan) {
+                    $perbaikan->update(['status_perbaikan' => 'belum_masuk_pranota']);
+                }
             }
+
+            // Detach semua pranota dari pivot table
+            $pembayaran->pranotaPerbaikanKontainers()->detach();
 
             $pembayaran->delete();
 
