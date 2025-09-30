@@ -549,6 +549,58 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for approval-tugas-i dash notation permissions
+            if (strpos($permissionName, 'approval-tugas-i-') === 0) {
+                $module = 'approval-tugas-i';
+                $action = str_replace('approval-tugas-i-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'approve' => 'approve',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+            // Special handling for approval-tugas-ii dash notation permissions
+            if (strpos($permissionName, 'approval-tugas-ii-') === 0) {
+                $module = 'approval-tugas-ii';
+                $action = str_replace('approval-tugas-ii-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'approve' => 'approve',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Pattern 3: module-action (e.g., dashboard-view, master-karyawan-view)
             if (strpos($permissionName, '-') !== false) {
                 $parts = explode('-', $permissionName, 2);
@@ -1606,6 +1658,54 @@ class UserController extends Controller
 
                         if (isset($directActionMap[$action])) {
                             $permissionName = 'tagihan-perbaikan-kontainer-' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for approval-tugas-i module
+                    if ($module === 'approval-tugas-i') {
+                        // For approval-tugas-i, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                            'approve' => 'approve',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = 'approval-tugas-i-' . $directActionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for approval-tugas-ii module
+                    if ($module === 'approval-tugas-ii') {
+                        // For approval-tugas-ii, map matrix actions directly to permission names
+                        $directActionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'update',
+                            'delete' => 'delete',
+                            'approve' => 'approve',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($directActionMap[$action])) {
+                            $permissionName = 'approval-tugas-ii-' . $directActionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
 
                             if ($permission) {

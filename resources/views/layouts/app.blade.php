@@ -593,6 +593,15 @@
         $user->can('approval-print') ||
         $user->can('approval-dashboard') ||
         $user->can('approval') ||
+        // New approval tugas I/II permissions
+        $user->can('approval-tugas-i-view') ||
+        $user->can('approval-tugas-i-approve') ||
+        $user->can('approval-tugas-i-print') ||
+        $user->can('approval-tugas-i-export') ||
+        $user->can('approval-tugas-ii-view') ||
+        $user->can('approval-tugas-ii-approve') ||
+        $user->can('approval-tugas-ii-print') ||
+        $user->can('approval-tugas-ii-export') ||
         $user->can('permohonan.approve')
     );
     $showAktivitasSection = $isAdmin || $hasAktivitasPermissions;
@@ -782,7 +791,23 @@
         {{-- Approval Tugas Sub-Dropdown --}}
         @php
             $isApprovalTugasRoute = Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
-            $hasApprovalTugasPermissions = $user && ($user->can('approval-view') || $user->can('approval-approve') || $user->can('approval-print') || $user->can('approval-dashboard') || $user->can('approval') || $user->can('permohonan.approve'));
+            $hasApprovalTugasPermissions = $user && (
+                $user->can('approval-view') ||
+                $user->can('approval-approve') ||
+                $user->can('approval-print') ||
+                $user->can('approval-dashboard') ||
+                $user->can('approval') ||
+                $user->can('permohonan.approve') ||
+                // New approval tugas I/II permissions
+                $user->can('approval-tugas-i-view') ||
+                $user->can('approval-tugas-i-approve') ||
+                $user->can('approval-tugas-i-print') ||
+                $user->can('approval-tugas-i-export') ||
+                $user->can('approval-tugas-ii-view') ||
+                $user->can('approval-tugas-ii-approve') ||
+                $user->can('approval-tugas-ii-print') ||
+                $user->can('approval-tugas-ii-export')
+            );
         @endphp
 
         @if($hasApprovalTugasPermissions)

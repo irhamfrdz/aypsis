@@ -263,32 +263,36 @@
 {{-- Script --}}
 <script>
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('Script 1: DOM loaded');
         const selectAllCheckbox = document.getElementById('select-all');
         const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
 
-        selectAllCheckbox.addEventListener('change', function () {
-            pranotaCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
+        if (selectAllCheckbox) {
+            selectAllCheckbox.addEventListener('change', function () {
+                pranotaCheckboxes.forEach(checkbox => {
+                    checkbox.checked = this.checked;
+                });
+                updateTotalPembayaran();
             });
-            updateTotalPembayaran();
-        });
+        }
 
         // Validasi minimal satu pranota
         const pembayaranForm = document.getElementById('pembayaranForm');
-        pembayaranForm.addEventListener('submit', function(e) {
-            const checkedCheckboxes = document.querySelectorAll('.pranota-checkbox:checked');
-            if (checkedCheckboxes.length === 0) {
-                e.preventDefault();
-                alert('Silakan pilih minimal satu pranota supir.');
-                return false;
-            }
-        });
+        if (pembayaranForm) {
+            pembayaranForm.addEventListener('submit', function(e) {
+                const checkedCheckboxes = document.querySelectorAll('.pranota-checkbox:checked');
+                if (checkedCheckboxes.length === 0) {
+                    e.preventDefault();
+                    alert('Silakan pilih minimal satu pranota supir.');
+                    return false;
+                }
+            });
+        }
 
         // Perhitungan otomatis total pembayaran berdasarkan pranota yang dipilih
         const totalPembayaranInput = document.getElementById('total_pembayaran');
         const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
         const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
-        const pranotaCheckboxes = document.querySelectorAll('.pranota-checkbox');
 
         // Simpan nilai total_biaya_pranota di data attribute
         const pranotaBiayaMap = {};
@@ -304,26 +308,27 @@
                     total += pranotaBiayaMap[id] || 0;
                 }
             });
-            totalPembayaranInput.value = total;
+            if (totalPembayaranInput) totalPembayaranInput.value = total;
             updateTotalSetelahPenyesuaian();
         }
 
         function updateTotalSetelahPenyesuaian() {
-            const totalPembayaran = parseFloat(totalPembayaranInput.value) || 0;
-            const totalPenyesuaian = parseFloat(totalPenyesuaianInput.value) || 0;
-            totalSetelahInput.value = totalPembayaran + totalPenyesuaian;
+            const totalPembayaran = parseFloat(totalPembayaranInput?.value) || 0;
+            const totalPenyesuaian = parseFloat(totalPenyesuaianInput?.value) || 0;
+            if (totalSetelahInput) totalSetelahInput.value = totalPembayaran + totalPenyesuaian;
         }
 
         pranotaCheckboxes.forEach(function(checkbox) {
             checkbox.addEventListener('change', updateTotalPembayaran);
         });
-        totalPembayaranInput.addEventListener('input', updateTotalSetelahPenyesuaian);
-        totalPenyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
+        if (totalPembayaranInput) totalPembayaranInput.addEventListener('input', updateTotalSetelahPenyesuaian);
+        if (totalPenyesuaianInput) totalPenyesuaianInput.addEventListener('input', updateTotalSetelahPenyesuaian);
         updateTotalPembayaran();
     });
 
     // Keep tanggal_pembayaran hidden field synced with current date
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('Script 2: Tanggal pembayaran');
         const tanggalPembayaran = document.getElementById('tanggal_pembayaran');
         if (tanggalPembayaran) {
             // Keep hidden field with today's date for validation
@@ -334,6 +339,7 @@
 <script>
     // Script untuk update nomor pembayaran
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('Script 3: Update nomor pembayaran');
         const nomorCetakanInput = document.getElementById('nomor_cetakan');
         const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
         const bankSelect = document.getElementById('bank');
@@ -370,6 +376,7 @@
 <script>
     // Scroll to flash message if present and focus it for accessibility
     document.addEventListener('DOMContentLoaded', function () {
+        console.log('Script 4: Scroll to flash');
         const flash = document.getElementById('flash-message');
         if (flash) {
             flash.scrollIntoView({ behavior: 'smooth', block: 'center' });
