@@ -159,8 +159,8 @@
 
     <!-- Header -->
     <div class="header">
-        <div class="company-name">PT. AYPSIS INDONESIA</div>
-        <div>Jl. Contoh Alamat No. 123, Jakarta</div>
+        <div class="company-name">PT. Alexindo Yakin Prima</div>
+        <div>Jl. Pluit Raya</div>
         <div>Telp: (021) 1234567 | Email: info@aypsis.com</div>
         <div class="document-title">KWITANSI PEMBAYARAN</div>
     </div>

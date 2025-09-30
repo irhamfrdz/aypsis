@@ -10,7 +10,7 @@
                 <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center">
                     <h3 class="text-lg font-semibold text-gray-800">Pembayaran Pranota Perbaikan Kontainer</h3>
                     <div class="flex space-x-2">
-                        @can('pembayaran-pranota-perbaikan-kontainer.create')
+                        @can('pembayaran-pranota-perbaikan-kontainer-create')
                         <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.create') }}" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded text-sm inline-flex items-center">
                             <i class="fas fa-plus mr-2"></i> Tambah Pembayaran
                         </a>
@@ -58,22 +58,22 @@
                                     </td>
                                     <td class="border border-gray-300 px-4 py-2 whitespace-nowrap text-sm font-medium">
                                         <div class="flex space-x-1">
-                                            @can('pembayaran-pranota-perbaikan-kontainer.show')
+                                            @can('pembayaran-pranota-perbaikan-kontainer-view')
                                             <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.show', $pembayaran) }}" class="bg-blue-500 hover:bg-blue-700 text-white py-1 px-2 rounded text-xs inline-flex items-center">
                                                 <i class="fas fa-eye"></i>
                                             </a>
                                             @endcan
-                                            @can('pembayaran-pranota-perbaikan-kontainer.print')
+                                            @can('pembayaran-pranota-perbaikan-kontainer-print')
                                             <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.print', $pembayaran) }}" class="bg-green-500 hover:bg-green-700 text-white py-1 px-2 rounded text-xs inline-flex items-center" target="_blank">
                                                 <i class="fas fa-print"></i>
                                             </a>
                                             @endcan
-                                            @can('pembayaran-pranota-perbaikan-kontainer.edit')
+                                            @can('pembayaran-pranota-perbaikan-kontainer-update')
                                             <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.edit', $pembayaran) }}" class="bg-yellow-500 hover:bg-yellow-700 text-white py-1 px-2 rounded text-xs inline-flex items-center">
                                                 <i class="fas fa-edit"></i>
                                             </a>
                                             @endcan
-                                            @can('pembayaran-pranota-perbaikan-kontainer.delete')
+                                            @can('pembayaran-pranota-perbaikan-kontainer-delete')
                                             <form action="{{ route('pembayaran-pranota-perbaikan-kontainer.destroy', $pembayaran) }}" method="POST" class="inline">
                                                 @csrf
                                                 @method('DELETE')

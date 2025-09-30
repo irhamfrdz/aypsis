@@ -8,14 +8,14 @@
             <div class="flex items-center justify-between">
                 <h1 class="text-2xl font-bold text-gray-900">Detail Pembayaran Pranota Perbaikan Kontainer</h1>
                 <div class="flex space-x-3">
-                    @can('pembayaran-pranota-perbaikan-kontainer.print')
+                    @can('pembayaran-pranota-perbaikan-kontainer-print')
                     <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.print', $pembayaran) }}"
                        class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-print mr-2"></i>
                         Print
                     </a>
                     @endcan
-                    @can('pembayaran-pranota-perbaikan-kontainer.edit')
+                    @can('pembayaran-pranota-perbaikan-kontainer-update')
                     <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.edit', $pembayaran) }}"
                        class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-edit mr-2"></i>
@@ -171,14 +171,14 @@
 
             <!-- Action Buttons -->
             <div class="mt-8 flex justify-end space-x-3">
-                @can('pembayaran-pranota-perbaikan-kontainer.print')
+                @can('pembayaran-pranota-perbaikan-kontainer-print')
                 <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.print', $pembayaran) }}"
                    class="inline-flex items-center px-4 py-2 bg-green-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-green-700 active:bg-green-900 focus:outline-none focus:border-green-900 focus:ring ring-green-300 disabled:opacity-25 transition ease-in-out duration-150">
                     <i class="fas fa-print mr-2"></i>
                     Print Bukti Pembayaran
                 </a>
                 @endcan
-                @can('pembayaran-pranota-perbaikan-kontainer.edit')
+                @can('pembayaran-pranota-perbaikan-kontainer-update')
                 <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.edit', $pembayaran) }}"
                    class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                     <i class="fas fa-edit mr-2"></i>
