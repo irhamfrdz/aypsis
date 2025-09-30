@@ -12,7 +12,13 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pembayaran_pranota_perbaikan_kontainers', function (Blueprint $table) {
-            $table->enum('jenis_transaksi', ['Debit', 'Kredit'])->change();
+            // Add jenis_transaksi column if it doesn't exist
+            if (!Schema::hasColumn('pembayaran_pranota_perbaikan_kontainers', 'jenis_transaksi')) {
+                $table->enum('jenis_transaksi', ['Debit', 'Kredit'])->default('Debit')->after('nominal_pembayaran');
+            } else {
+                // If column exists, just change the enum values
+                $table->enum('jenis_transaksi', ['Debit', 'Kredit'])->change();
+            }
         });
     }
 
