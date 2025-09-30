@@ -471,6 +471,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Nomor Terakhir --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Nomor Terakhir</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-nomor-terakhir][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-nomor-terakhir']['view']) && $userMatrixPermissions['master-nomor-terakhir']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-nomor-terakhir][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-nomor-terakhir']['create']) && $userMatrixPermissions['master-nomor-terakhir']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-nomor-terakhir][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-nomor-terakhir']['update']) && $userMatrixPermissions['master-nomor-terakhir']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-nomor-terakhir][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-nomor-terakhir']['delete']) && $userMatrixPermissions['master-nomor-terakhir']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
                             {{-- Data Tujuan --}}
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">

@@ -587,6 +587,12 @@ class UserController extends Controller
                             // For master-stock-kontainer-view, extract the action
                             $action = str_replace('stock-kontainer-', '', $action);
                             $module = 'master-stock-kontainer';
+                        }
+                        // Special handling for master-nomor-terakhir permissions
+                        elseif (strpos($action, 'nomor-terakhir-') === 0) {
+                            // For master-nomor-terakhir-view, extract the action
+                            $action = str_replace('nomor-terakhir-', '', $action);
+                            $module = 'master-nomor-terakhir';
                         } else {
                             // For master-karyawan-view, split further
                             $subParts = explode('-', $action, 2);
@@ -1060,6 +1066,27 @@ class UserController extends Controller
                                     'create' => 'master-stock-kontainer-create',
                                     'update' => 'master-stock-kontainer-update',
                                     'delete' => 'master-stock-kontainer-delete'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-nomor-terakhir permissions explicitly
+                            if ($module === 'master-nomor-terakhir' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-nomor-terakhir-view',
+                                    'create' => 'master-nomor-terakhir-create',
+                                    'update' => 'master-nomor-terakhir-update',
+                                    'delete' => 'master-nomor-terakhir-delete'
                                 ];
 
                                 if (isset($actionMap[$action])) {
