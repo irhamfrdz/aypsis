@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -11,6 +12,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Clean up invalid data before adding foreign key constraint
+        DB::table('pembayaran_pranota_kontainer_items')
+            ->whereNotIn('pranota_id', DB::table('pranota_tagihan_kontainer_sewa')->pluck('id'))
+            ->delete();
+
         Schema::table('pembayaran_pranota_kontainer_items', function (Blueprint $table) {
             // Drop existing foreign key and unique constraint
             $table->dropForeign(['pranota_id']);
