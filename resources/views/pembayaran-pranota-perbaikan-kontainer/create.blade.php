@@ -228,13 +228,22 @@
 @push('scripts')
 <script>
 $(document).ready(function() {
+    // Function to generate unique nomor pembayaran
+    function generateUniqueNomorPembayaran(kode) {
+        var tahun = new Date().getFullYear().toString().slice(-2);
+        var bulan = ('0' + (new Date().getMonth() + 1)).toString().slice(-2);
+        var baseNomor = kode + tahun + bulan;
+
+        // For simplicity, just use 000001 for now
+        // In production, you'd make an AJAX call to check uniqueness
+        return baseNomor + '-000001';
+    }
+
     // Function to update nomor pembayaran based on selected bank
     function updateNomorPembayaran() {
         var selectedOption = $('#bank option:selected');
-        var kode = selectedOption.data('kode') || '000';
-        var tahun = new Date().getFullYear().toString().slice(-2);
-        var bulan = ('0' + (new Date().getMonth() + 1)).toString().slice(-2);
-        var nomor = kode + tahun + bulan + '-000001';
+        var kode = selectedOption.data('kode') || 'PPK';
+        var nomor = generateUniqueNomorPembayaran(kode);
         $('#nomor_pembayaran').val(nomor);
     }
 

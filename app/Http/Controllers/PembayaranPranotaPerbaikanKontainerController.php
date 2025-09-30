@@ -83,6 +83,11 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
                 ->with('error', 'Anda tidak memiliki izin untuk membuat pembayaran pranota perbaikan kontainer. Silakan hubungi administrator.');
         }
 
+        // Generate unique nomor pembayaran if not provided or if it's a default value
+        if (!$request->filled('nomor_pembayaran') || str_contains($request->nomor_pembayaran, '-000001')) {
+            $request->merge(['nomor_pembayaran' => $this->generateUniqueNomorPembayaran($request->bank)]);
+        }
+
         $request->validate([
             'pranota_perbaikan_kontainer_ids' => 'required|array|min:1',
             'pranota_perbaikan_kontainer_ids.*' => 'exists:pranota_perbaikan_kontainers,id',
@@ -278,8 +283,28 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Generate unique nomor pembayaran
      */
+    private function generateUniqueNomorPembayaran($bankName)
+    {
+        // Get kode from CoA based on bank name
+        $coa = \App\Models\Coa::where('nama_akun', $bankName)->first();
+        $kode = $coa ? ($coa->kode_nomor ?: 'PPK') : 'PPK';
+
+        $tahun = now()->format('y');
+        $bulan = now()->format('m');
+        $baseNomor = $kode . $tahun . $bulan;
+
+        // Find the next available number
+        $counter = 1;
+        do {
+            $nomor = $baseNomor . '-' . str_pad($counter, 6, '0', STR_PAD_LEFT);
+            $exists = PembayaranPranotaPerbaikanKontainer::where('nomor_pembayaran', $nomor)->exists();
+            $counter++;
+        } while ($exists && $counter <= 999999);
+
+        return $nomor;
+    }
     public function destroy(PembayaranPranotaPerbaikanKontainer $pembayaran)
     {
         try {
