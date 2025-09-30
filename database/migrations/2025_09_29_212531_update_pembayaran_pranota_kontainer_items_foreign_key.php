@@ -12,16 +12,38 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Drop existing foreign key if it exists (using raw SQL for safety)
+        $foreignKeyName = 'pembayaran_pranota_kontainer_items_pranota_id_foreign';
+        $checkForeignKey = DB::select("
+            SELECT CONSTRAINT_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'pembayaran_pranota_kontainer_items'
+            AND COLUMN_NAME = 'pranota_id'
+            AND REFERENCED_TABLE_NAME IS NOT NULL
+        ");
+
+        if (!empty($checkForeignKey)) {
+            $actualForeignKeyName = $checkForeignKey[0]->CONSTRAINT_NAME;
+            DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP FOREIGN KEY `{$actualForeignKeyName}`");
+        }
+
+        // Drop unique constraint if it exists
+        $checkUnique = DB::select("
+            SHOW INDEX FROM pembayaran_pranota_kontainer_items
+            WHERE Column_name = 'pranota_id' AND Non_unique = 0
+        ");
+
+        if (!empty($checkUnique)) {
+            DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id");
+        }
+
         // Clean up invalid data before adding foreign key constraint
         DB::table('pembayaran_pranota_kontainer_items')
             ->whereNotIn('pranota_id', DB::table('pranota_tagihan_kontainer_sewa')->pluck('id'))
             ->delete();
 
         Schema::table('pembayaran_pranota_kontainer_items', function (Blueprint $table) {
-            // Drop existing foreign key and unique constraint
-            $table->dropForeign(['pranota_id']);
-            $table->dropUnique(['pranota_id']);
-
             // Add new foreign key to pranota_tagihan_kontainer_sewa
             $table->foreign('pranota_id')->references('id')->on('pranota_tagihan_kontainer_sewa')->onDelete('cascade');
 
