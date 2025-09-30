@@ -242,6 +242,7 @@
                         $user->can('master-cabang-view') ||
                         $user->can('master-coa-view') ||
                         $user->can('master-kode-nomor-view') ||
+                        $user->can('master-nomor-terakhir-view') ||
                         $user->can('master-tipe-akun-view') ||
                         $user->can('master-tujuan-view') ||
                         $user->can('master-kegiatan-view')
@@ -263,7 +264,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*');
+                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -315,6 +316,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"/>
                                     </svg>
                                     Kode Nomor
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-nomor-terakhir-view'))
+                                <a href="{{ route('master.nomor-terakhir.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.nomor-terakhir.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 20l4-16m2 16l4-16M6 9h14M4 15h14"/>
+                                    </svg>
+                                    Nomor Terakhir
                                 </a>
                             @endif
                             @if($user && $user->can('master-tipe-akun-view'))

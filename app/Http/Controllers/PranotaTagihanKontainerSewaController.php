@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PranotaTagihanKontainerSewa;
 use App\Models\DaftarTagihanKontainerSewa;
+use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -72,25 +73,20 @@ class PranotaTagihanKontainerSewaController extends Controller
                 throw new \Exception('Tidak ada tagihan kontainer sewa yang ditemukan dengan ID yang dipilih');
             }
 
-            // Generate nomor pranota with format: PTKS + 1 digit cetakan + 2 digit tahun + 2 digit bulan + 6 digit running number
+            // Generate nomor pranota dengan format PMS dari master nomor terakhir
             $nomorCetakan = 1; // Default
             $tahun = Carbon::now()->format('y'); // 2 digit year
             $bulan = Carbon::now()->format('m'); // 2 digit month
 
-            // FIXED: Find highest running number for current prefix instead of counting all records
-            $prefix = "PTKS{$nomorCetakan}{$tahun}{$bulan}";
-            $latestPranota = PranotaTagihanKontainerSewa::where('no_invoice', 'like', $prefix . '%')
-                ->orderBy('no_invoice', 'desc')
-                ->first();
-
-            if ($latestPranota) {
-                $latestRunningNumber = (int) substr($latestPranota->no_invoice, -6);
-                $runningNumber = str_pad($latestRunningNumber + 1, 6, '0', STR_PAD_LEFT);
-            } else {
-                $runningNumber = '000001';
+            // Get next nomor pranota from master nomor terakhir dengan modul PMS
+            $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+            if (!$nomorTerakhir) {
+                throw new \Exception('Modul PMS tidak ditemukan di master nomor terakhir.');
             }
-
-            $noInvoice = "PTKS{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
+            $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+            $noInvoice = "PMS{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $nomorTerakhir->nomor_terakhir = $nextNumber;
+            $nomorTerakhir->save();
 
             // Create pranota
             $pranota = PranotaTagihanKontainerSewa::create([
@@ -160,25 +156,20 @@ class PranotaTagihanKontainerSewaController extends Controller
                 throw new \Exception('Tidak ada tagihan kontainer sewa yang ditemukan dengan ID yang dipilih');
             }
 
-            // Generate nomor pranota dengan format: PTK + 1 digit cetakan + 2 digit tahun + 2 digit bulan + 6 digit running number
+            // Generate nomor pranota dengan format PMS dari master nomor terakhir
             $nomorCetakan = 1; // Default
             $tahun = Carbon::now()->format('y'); // 2 digit year
             $bulan = Carbon::now()->format('m'); // 2 digit month
 
-            // Cari nomor terakhir PTK di PranotaTagihanKontainerSewa
-            // Use regex to match PTK followed by digit (not PTKS)
-            $latestPranota = PranotaTagihanKontainerSewa::where('no_invoice', 'regexp', '^PTK[0-9]')
-                ->orderByRaw('CAST(SUBSTRING(no_invoice, -6) AS UNSIGNED) DESC')
-                ->first();
-
-            if ($latestPranota) {
-                $latestRunningNumber = (int) substr($latestPranota->no_invoice, -6);
-                $runningNumber = str_pad($latestRunningNumber + 1, 6, '0', STR_PAD_LEFT);
-            } else {
-                $runningNumber = '000001';
+            // Get next nomor pranota from master nomor terakhir dengan modul PMS
+            $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+            if (!$nomorTerakhir) {
+                throw new \Exception('Modul PMS tidak ditemukan di master nomor terakhir.');
             }
-
-            $noInvoice = "PTK{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
+            $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+            $noInvoice = "PMS{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $nomorTerakhir->nomor_terakhir = $nextNumber;
+            $nomorTerakhir->save();
 
             // Create pranota
             $pranota = PranotaTagihanKontainerSewa::create([
@@ -303,24 +294,16 @@ class PranotaTagihanKontainerSewaController extends Controller
     public function getNextPranotaNumber(Request $request)
     {
         try {
-            // Generate nomor pranota dengan format: PTK + 1 digit cetakan + 2 digit tahun + 2 digit bulan + 6 digit running number
+            // Generate nomor pranota dengan format PMS dari master nomor terakhir
             $nomorCetakan = 1; // Default
             $tahun = Carbon::now()->format('y'); // 2 digit year
             $bulan = Carbon::now()->format('m'); // 2 digit month
 
-            // Cari nomor terakhir PTK di PranotaTagihanKontainerSewa
-            $latestPranota = PranotaTagihanKontainerSewa::where('no_invoice', 'like', 'PTK%')
-                ->orderByRaw('CAST(SUBSTRING(no_invoice, -6) AS UNSIGNED) DESC')
-                ->first();
+            // Get next nomor pranota from master nomor terakhir dengan modul PMS
+            $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->first();
+            $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
 
-            if ($latestPranota) {
-                $latestRunningNumber = (int) substr($latestPranota->no_invoice, -6);
-                $runningNumber = str_pad($latestRunningNumber + 1, 6, '0', STR_PAD_LEFT);
-            } else {
-                $runningNumber = '000001';
-            }
-
-            $noInvoice = "PTK{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
+            $noInvoice = "PMS{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
             return response()->json([
                 'success' => true,

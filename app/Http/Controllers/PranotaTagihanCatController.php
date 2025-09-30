@@ -185,6 +185,20 @@ class PranotaTagihanCatController extends Controller
             TagihanCat::whereIn('id', $request->tagihan_cat_ids)
                 ->update(['status' => 'masuk pranota']);
 
+            // Update nomor terakhir in database if using PMS format
+            if (str_starts_with($request->nomor_pranota, 'PMS')) {
+                // Extract the running number from the end of the nomor_pranota (last 6 digits)
+                $nomorPranota = $request->nomor_pranota;
+                $runningNumber = (int) substr($nomorPranota, -6);
+
+                // Update master nomor terakhir
+                $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+                if ($nomorTerakhir) {
+                    $nomorTerakhir->nomor_terakhir = $runningNumber;
+                    $nomorTerakhir->save();
+                }
+            }
+
             DB::commit();
 
             return redirect()->back()->with('success',
@@ -264,6 +278,48 @@ class PranotaTagihanCatController extends Controller
 
         } catch (\Exception $e) {
             return redirect()->back()->with('error', 'Gagal memproses pembayaran bulk: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Generate nomor pranota CAT menggunakan sistem master nomor terakhir
+     */
+    public function generateNomor()
+    {
+        try {
+            $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+
+            if (!$nomorTerakhir) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Modul PMS tidak ditemukan di master nomor terakhir'
+                ], 404);
+            }
+
+            // Increment nomor terakhir
+            $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+
+            // Update the database immediately to reserve this number
+            $nomorTerakhir->nomor_terakhir = $nextNumber;
+            $nomorTerakhir->save();
+
+            // Format: PMS + 1 digit cetakan + 2 digit bulan + 2 digit tahun + 6 digit nomor terakhir
+            $nomorCetakan = 1; // Default cetakan
+            $tahun = now()->format('y'); // 2 digit tahun
+            $bulan = now()->format('m'); // 2 digit bulan
+            $nomorPranota = "PMS{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+            return response()->json([
+                'success' => true,
+                'nomor_pranota' => $nomorPranota,
+                'next_number' => $nextNumber
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor pranota: ' . $e->getMessage()
+            ], 500);
         }
     }
 }

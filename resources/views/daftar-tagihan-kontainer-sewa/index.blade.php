@@ -317,7 +317,7 @@
                     <button type="button" id="btnBulkStatus" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
                         Update Status
                     </button>
-                    @can('pranota-create')
+                    @can('pranota-kontainer-sewa-create')
                     <button type="button" id="btnMasukanPranota" onclick="masukanKePranota()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
                         Masukan ke Pranota
                     </button>

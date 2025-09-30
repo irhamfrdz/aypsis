@@ -4,6 +4,16 @@
 @section('page_title', 'Daftar Pranota Supir')
 
 @section('content')
+<div class="flex justify-between items-center mb-6">
+    <div></div>
+    <a href="{{ route('pranota-supir.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+        <svg class="-ml-1 mr-2 h-5 w-5" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"></path>
+        </svg>
+        Tambah Pranota Supir
+    </a>
+</div>
+
 <div class="bg-white shadow-md rounded-lg p-6">
     <!-- Form Filter -->
     <form action="{{ route('pranota-supir.index') }}" method="GET" class="mb-6 p-4 border rounded-lg bg-gray-50">

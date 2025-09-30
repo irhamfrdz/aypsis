@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Models\NomorTerakhir;
 
 class PerbaikanKontainer extends Model
 {
@@ -154,29 +155,25 @@ class PerbaikanKontainer extends Model
     }
 
     /**
-     * Generate nomor tagihan
-     * Format: TP + [1 digit cetakan] + [2 digit tahun] + [2 digit bulan] + [7 digit running number]
-     * Example: TP12509240000001
+     * Generate nomor tagihan perbaikan kontainer dengan format PMS dari master nomor terakhir
+     * Format: PMS + [1 digit cetakan] + [2 digit bulan] + [2 digit tahun] + [6 digit nomor terakhir]
+     * Example: PMS11025000001
      */
     public static function generateNomorTagihan()
     {
-        $year = date('y'); // 2 digit year
-        $month = date('m'); // 2 digit month
         $cetakan = '1'; // Default cetakan number
+        $tahun = date('y'); // 2 digit year
+        $bulan = date('m'); // 2 digit month
 
-        // Get the last running number for current year and month
-        $lastRecord = self::where('nomor_tagihan', 'like', "TP{$cetakan}{$year}{$month}%")
-                         ->orderBy('nomor_tagihan', 'desc')
-                         ->first();
-
-        if ($lastRecord) {
-            // Extract the running number from the last record
-            $lastNumber = substr($lastRecord->nomor_tagihan, -7);
-            $runningNumber = str_pad((int)$lastNumber + 1, 7, '0', STR_PAD_LEFT);
-        } else {
-            $runningNumber = '0000001';
+        // Get next nomor tagihan from master nomor terakhir dengan modul PMS
+        $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+        if (!$nomorTerakhir) {
+            throw new \Exception('Modul PMS tidak ditemukan di master nomor terakhir.');
         }
+        $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+        $nomorTerakhir->nomor_terakhir = $nextNumber;
+        $nomorTerakhir->save();
 
-        return "TP{$cetakan}{$year}{$month}{$runningNumber}";
+        return "PMS{$cetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
     }
 }

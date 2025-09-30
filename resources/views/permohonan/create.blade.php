@@ -87,13 +87,11 @@
                     {{-- Memo Number (Always at the top for visibility) --}}
                     <div>
                         <label for="nomor_memo" class="block text-sm font-medium text-gray-700">Nomor Memo (Otomatis)</label>
-                        <input type="text" name="nomor_memo" id="nomor_memo" class="{{ $autoInputClasses }}" readonly>
+                        <input type="text" name="nomor_memo" id="nomor_memo" class="{{ $autoInputClasses }}" value="{{ $previewMemo ?? '' }}" readonly>
                         <input type="hidden" id="kode_cetak" value="1">
                         <p class="mt-1 text-xs text-gray-500">
-                            <span id="memo_format_info">
-                                Format: MSP (3 digit) + cetakan (1 digit) + bulan (2 digit) + tahun (2 digit) + running number (6 digit)<br>
-                                <span class="font-mono text-blue-600"></span>
-                            </span>
+                            Format: MSN (3 digit) + cetakan (1 digit) + bulan (2 digit) + tahun (2 digit) + running number (6 digit)<br>
+                            <span class="font-mono text-blue-600" id="memo_preview">{{ $previewMemo ?? 'MSN1000001' }}</span>
                         </p>
                     </div>
 
@@ -587,46 +585,6 @@
 
             // Event listener untuk perubahan dropdown dari
             dariSelect.addEventListener('change', updateKeOptions);
-
-            // Fungsi untuk generate Nomor Memo
-            function generateMemoNumber() {
-                try {
-                    console.log('generateMemoNumber called');
-                    const memoInput = document.getElementById('nomor_memo');
-                    if (!memoInput) {
-                        console.error('memoInput not found');
-                        return;
-                    }
-
-                    // Format tetap: MSP (3 digit) + cetakan (1 digit) + bulan (2 digit) + tahun (2 digit) + running number (6 digit)
-                    const prefix = 'MSP'; // Selalu MSP untuk Memo Supir Permohonan
-                    const kodeCetak = '1'; // Selalu 1
-                    const formatInfo = 'Format: MSP (3 digit) + cetakan (1 digit) + bulan (2 digit) + tahun (2 digit) + running number (6 digit)';
-
-                    const now = new Date();
-                    const year = now.getFullYear().toString().slice(-2);
-                    const month = (now.getMonth() + 1).toString().padStart(2, '0');
-
-                    // Running number 6 digit dimulai dari 000001
-                    const runningNumber = String((Date.now() % 999999) + 1).padStart(6, '0');
-
-                    const nomorMemo = `${prefix}${kodeCetak}${month}${year}${runningNumber}`;
-                    console.log('Generated Nomor Memo:', nomorMemo);
-                    memoInput.value = nomorMemo;
-
-                    // Update informasi format dan preview
-                    const formatInfoElement = document.getElementById('memo_format_info');
-
-                    if (formatInfoElement) {
-                        formatInfoElement.innerHTML = `${formatInfo}<br><span class="font-mono text-blue-600">${nomorMemo}</span>`;
-                    }
-                } catch (error) {
-                    console.error('Error in generateMemoNumber:', error);
-                }
-            }
-
-            generateMemoNumber();
-            console.log('Initial generateMemoNumber called');
 
             // Logika untuk mengubah tampilan form berdasarkan kegiatan
             const ruteContainer = document.getElementById('rute_container');

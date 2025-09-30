@@ -7,6 +7,7 @@ use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\Tujuan;
 use App\Models\MasterKegiatan;
+use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -60,7 +61,14 @@ class PermohonanController extends Controller
     $kontainers = Kontainer::where('status', 'Tersedia')->orderBy('nomor_seri_gabungan')->get();
     $kegiatans = MasterKegiatan::orderBy('kode_kegiatan')->get();
     $tujuans = Tujuan::orderBy('dari')->get();
-    return view('permohonan.create', compact('supirs', 'kranis', 'kontainers', 'kegiatans', 'tujuans'));
+    // Get next nomor memo for preview
+    $nomorTerakhir = NomorTerakhir::where('modul', 'MSN')->first();
+    $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
+    $now = now();
+    $bulan = $now->format('m');
+    $tahun = $now->format('y');
+    $previewMemo = 'MSN' . '1' . $bulan . $tahun . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+    return view('permohonan.create', compact('supirs', 'kranis', 'kontainers', 'kegiatans', 'tujuans', 'previewMemo'));
     }
 
     /**
@@ -70,7 +78,7 @@ class PermohonanController extends Controller
     {
         // Validasi dasar untuk semua permohonan
         $validatedData = $request->validate([
-            'nomor_memo' => 'required|string|max:255|unique:permohonans,nomor_memo',
+            'nomor_memo' => 'nullable|string|max:255', // Changed to nullable since we'll generate it
             'kegiatan' => 'required|string|max:255',
             'vendor_perusahaan' => 'required|string|max:255',
             'tanggal_memo' => 'required|date',
@@ -115,8 +123,21 @@ class PermohonanController extends Controller
 
             $kegiatanCode = $mk->kode_kegiatan;
 
+            // Generate nomor memo from master nomor terakhir
+            $nomorTerakhir = NomorTerakhir::where('modul', 'MSN')->lockForUpdate()->first();
+            if (!$nomorTerakhir) {
+                return back()->withInput()->with('error', 'Modul MSN tidak ditemukan di master nomor terakhir.');
+            }
+            $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+            $now = now();
+            $bulan = $now->format('m');
+            $tahun = $now->format('y');
+            $nomorMemo = 'MSN' . '1' . $bulan . $tahun . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $nomorTerakhir->nomor_terakhir = $nextNumber;
+            $nomorTerakhir->save();
+
             $permohonan = Permohonan::create([
-                'nomor_memo' => $validatedData['nomor_memo'],
+                'nomor_memo' => $nomorMemo,
                 'status' => 'draft',
                 'tanggal_memo' => $validatedData['tanggal_memo'],
                 'kegiatan' => $kegiatanCode,

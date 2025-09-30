@@ -207,11 +207,11 @@
             function updateNomorPranota() {
                 // Ambil format dari value awal
                 let format = nomorPranotaDisplay.value;
-                // Ganti nomor cetakan di format
-                let parts = format.split('-');
-                if(parts.length === 5) {
-                    parts[1] = nomorCetakanInput.value;
-                    nomorPranotaDisplay.value = parts.join('-');
+                // Ganti nomor cetakan di format (karakter ke-4)
+                if (format.length >= 4) {
+                    let parts = format.split('');
+                    parts[3] = nomorCetakanInput.value;
+                    nomorPranotaDisplay.value = parts.join('');
                 }
             }
 

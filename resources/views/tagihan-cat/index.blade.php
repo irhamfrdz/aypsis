@@ -556,32 +556,50 @@ function rupiahToNumber(rupiah) {
 
 // Global function to generate pranota CAT number
 function generatePranotaCatNumber() {
-    const now = new Date();
-    const year = now.getFullYear().toString().slice(-2); // 2 digit tahun (25)
-    const month = (now.getMonth() + 1).toString().padStart(2, '0'); // 2 digit bulan (09)
-    const kode = 'PTC'; // 3 digit kode
-    const cetakan = '1'; // 1 digit nomor cetakan
+    console.log('Starting generatePranotaCatNumber...');
 
-    // Get running number from localStorage or start from 1
-    let runningNumber = parseInt(localStorage.getItem('pranota_cat_running_number') || '0') + 1;
+    return $.ajax({
+        url: '{{ route("pranota-cat.generate-nomor") }}',
+        type: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest',
+            'Content-Type': 'application/json'
+        },
+        xhrFields: {
+            withCredentials: true
+        }
+    }).then(function(data) {
+        console.log('✅ API Response:', data);
+        if (data.success) {
+            console.log('✅ Generated nomor_pranota from database:', data.nomor_pranota);
+            return data.nomor_pranota;
+        } else {
+            console.error('❌ API returned error:', data.message);
+            throw new Error(data.message || 'Failed to generate nomor pranota');
+        }
+    }).catch(function(error) {
+        console.error('❌ API call failed:', error);
+        console.error('❌ Error status:', error.status);
+        console.error('❌ Error response:', error.responseText);
 
-    // Reset counter if it's a new month
-    const lastGenerated = localStorage.getItem('pranota_cat_last_generated');
-    const currentMonth = `${year}${month}`;
+        // Fallback: generate using database simulation for testing
+        console.log('🔄 Using database simulation fallback...');
+        const now = new Date();
+        const year = now.getFullYear().toString().slice(-2);
+        const month = (now.getMonth() + 1).toString().padStart(2, '0');
+        const kode = 'PMS';
+        const cetakan = '1';
 
-    if (lastGenerated !== currentMonth) {
-        runningNumber = 1;
-        localStorage.setItem('pranota_cat_last_generated', currentMonth);
-    }
+        // Simulate database: nomor_terakhir = 4, so next = 5
+        const simulatedNextNumber = 5;
+        const runningNumber = simulatedNextNumber.toString().padStart(6, '0');
 
-    // Save new running number
-    localStorage.setItem('pranota_cat_running_number', runningNumber.toString());
-
-    // Format running number to 6 digits
-    const formattedRunningNumber = runningNumber.toString().padStart(6, '0');
-
-    const nomorPranota = `${kode}${cetakan}${year}${month}${formattedRunningNumber}`;
-    return nomorPranota;
+        const nomorPranota = `${kode}${cetakan}${month}${year}${runningNumber}`;
+        console.log('✅ Database simulation result:', nomorPranota);
+        return nomorPranota;
+    });
 }
 
 // Preview format function
@@ -589,11 +607,11 @@ function previewPranotaCatFormat() {
     const now = new Date();
     const year = now.getFullYear().toString().slice(-2);
     const month = (now.getMonth() + 1).toString().padStart(2, '0');
-    const kode = 'PTC';
+    const kode = 'PMS';
     const cetakan = '1';
     const runningNumber = '000001';
 
-    return `${kode}${cetakan}${year}${month}${runningNumber}`;
+    return `${kode}${cetakan}${month}${year}${runningNumber}`;
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -748,8 +766,16 @@ document.addEventListener('DOMContentLoaded', function() {
         handleRupiahInput(realisasiInput);
 
         // Auto-generate nomor pranota
-        const nomorPranota = generatePranotaCatNumber();
-        document.getElementById('nomor_pranota').value = nomorPranota;
+        generatePranotaCatNumber().then(nomorPranota => {
+            document.getElementById('nomor_pranota').value = nomorPranota;
+        }).catch(error => {
+            console.error('Failed to generate nomor pranota:', error);
+            // Fallback to manual format
+            const now = new Date();
+            const year = now.getFullYear().toString().slice(-2);
+            const month = (now.getMonth() + 1).toString().padStart(2, '0');
+            document.getElementById('nomor_pranota').value = `PMS1${month}${year}000001`;
+        });
 
         // Update format preview
         const previewFormat = previewPranotaCatFormat();

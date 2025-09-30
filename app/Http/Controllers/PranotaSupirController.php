@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PranotaSupir;
 use App\Models\Permohonan;
 use App\Models\MasterKegiatan;
+use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -31,16 +32,12 @@ class PranotaSupirController extends Controller
 
         // Nomor cetakan default 1, bisa diubah via query
         $nomor_cetakan = $request->input('nomor_cetakan', 1);
+        // Get next nomor pranota from master nomor terakhir
+        $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->first();
+        $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
         $tahun = now()->format('y');
         $bulan = now()->format('m');
-        // Running number: jumlah pranota bulan ini + 1
-        $runningNumber = str_pad(
-            PranotaSupir::whereYear('created_at', now()->year)
-                ->whereMonth('created_at', now()->month)
-                ->count() + 1,
-            6, '0', STR_PAD_LEFT
-        );
-        $nomor_pranota_display = "PMS-{$nomor_cetakan}-{$tahun}-{$bulan}-{$runningNumber}";
+        $nomor_pranota_display = "PMS{$nomor_cetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
         // Preload a map of kode_kegiatan => nama_kegiatan so the view can display names without queries inside the loop
         $kegiatanMap = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
@@ -146,8 +143,20 @@ class PranotaSupirController extends Controller
 
         DB::beginTransaction();
         try {
+            // Generate nomor pranota from master nomor terakhir
+            $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+            if (!$nomorTerakhir) {
+                return back()->with('error', 'Modul PMS tidak ditemukan di master nomor terakhir.');
+            }
+            $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+            $tahun = now()->format('y');
+            $bulan = now()->format('m');
+            $nomor_pranota = "PMS{$nomor_cetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+            $nomorTerakhir->nomor_terakhir = $nextNumber;
+            $nomorTerakhir->save();
+
             $pranota = PranotaSupir::create([
-                'nomor_pranota' => 'TEMP',
+                'nomor_pranota' => $nomor_pranota,
                 'tanggal_pranota' => now(),
                 'total_biaya_memo' => $total_biaya_memo,
                 'adjustment' => $adjustment,
@@ -155,14 +164,6 @@ class PranotaSupirController extends Controller
                 'total_biaya_pranota' => $total_biaya_pranota,
                 'catatan' => $validatedData['catatan'],
             ]);
-
-            $tahun = now()->format('y');
-            $bulan = now()->format('m');
-            $runningNumber = str_pad($pranota->id, 6, '0', STR_PAD_LEFT);
-            $nomor_pranota = "PMS-{$nomor_cetakan}-{$tahun}-{$bulan}-{$runningNumber}";
-
-            $pranota->nomor_pranota = $nomor_pranota;
-            $pranota->save();
             $pranota->permohonans()->sync($validatedData['permohonan_ids']);
 
             DB::commit();
