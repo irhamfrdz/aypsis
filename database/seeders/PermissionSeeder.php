@@ -20,7 +20,7 @@ class PermissionSeeder extends Seeder
         $modules = [
             // Dashboard
             'dashboard' => ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'],
-            
+
             // Master modules
             'master' => ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'],
             'master-karyawan' => ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'],
@@ -43,25 +43,25 @@ class PermissionSeeder extends Seeder
             'master-nomor-terakhir' => ['view', 'create', 'update', 'delete'],
             'master-kode-nomor' => ['view', 'create', 'update', 'delete'],
             'master-divisi' => ['view', 'create', 'update', 'delete', 'print', 'export'],
-            
+
             // Tagihan modules
             'tagihan-kontainer' => ['view', 'create', 'update', 'delete', 'print', 'export'],
             'tagihan-cat' => ['view', 'create', 'update', 'delete', 'print', 'export'],
             'tagihan-kontainer-sewa' => ['view', 'create', 'update', 'delete', 'export'],
             'tagihan-perbaikan-kontainer' => ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'],
-            
+
             // Pranota modules
             'pranota-supir' => ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'],
             'pranota-cat' => ['view', 'create', 'update', 'delete', 'print', 'export'],
             'pranota-kontainer-sewa' => ['view', 'create', 'update', 'delete', 'print', 'export'],
             'pranota-perbaikan-kontainer' => ['view', 'create', 'update', 'delete'],
-            
+
             // Pembayaran modules
             'pembayaran-pranota-supir' => ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'],
             'pembayaran-pranota-kontainer' => ['view', 'create', 'update', 'delete'],
             'pembayaran-pranota-cat' => ['view', 'create', 'update', 'delete'],
             'pembayaran-pranota-perbaikan-kontainer' => ['view', 'create', 'update', 'delete'],
-            
+
             // Other modules
             'perbaikan-kontainer' => ['view', 'create', 'update', 'delete'],
             'permohonan' => ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'],
@@ -99,7 +99,7 @@ class PermissionSeeder extends Seeder
         $specialPermissions = [
             // Module-only permissions (no actions)
             'master-karyawan' => 'Master Karyawan',
-            'master-kontainer' => 'Master Kontainer', 
+            'master-kontainer' => 'Master Kontainer',
             'master-tujuan' => 'Master Tujuan',
             'master-kegiatan' => 'Master Kegiatan',
             'master-permission' => 'Master Permission',
@@ -107,17 +107,17 @@ class PermissionSeeder extends Seeder
             'tagihan-kontainer' => 'Tagihan Kontainer',
             'permohonan' => 'Permohonan',
             'user-approval' => 'User Approval',
-            
+
             // UserController specific permission variants (for compatibility)
             'master-bank-index' => 'Master Bank Index',
-            'master-bank-edit' => 'Master Bank Edit',  
+            'master-bank-edit' => 'Master Bank Edit',
             'master-bank-destroy' => 'Master Bank Destroy',
             'master-coa-delete' => 'Master COA Delete',
             'master-pajak-destroy' => 'Master Pajak Destroy',
             'master-pekerjaan-destroy' => 'Master Pekerjaan Destroy',
             'master-divisi-destroy' => 'Master Divisi Destroy',
             'master-vendor-bengkel-destroy' => 'Master Vendor Bengkel Destroy',
-            
+
             // Action variants that UserController expects
             'master-user-bulk-manage' => 'Master User Bulk Manage',
             'tagihan-perbaikan-kontainer-view' => 'Tagihan Perbaikan Kontainer View',
@@ -125,26 +125,26 @@ class PermissionSeeder extends Seeder
             'tagihan-perbaikan-kontainer-update' => 'Tagihan Perbaikan Kontainer Update',
             'tagihan-perbaikan-kontainer-delete' => 'Tagihan Perbaikan Kontainer Delete',
             'tagihan-perbaikan-kontainer-print' => 'Tagihan Perbaikan Kontainer Print',
-            
+
             // Profile permissions (UserController specific)
             'profile-view' => 'Profile View',
-            'profile-update' => 'Profile Update', 
+            'profile-update' => 'Profile Update',
             'profile-delete' => 'Profile Delete',
-            
+
             // Supir permissions (UserController specific)
             'supir-dashboard-view' => 'Supir Dashboard View',
-            
+
             // Permission variants from web.php routes
             'master-karyawan-crew-checklist' => 'Master Karyawan Crew Checklist',
             'master-karyawan-template' => 'Master Karyawan Template',
             'tagihan-kontainer-sewa-index' => 'Tagihan Kontainer Sewa Index',
             'tagihan-kontainer-sewa-create' => 'Tagihan Kontainer Sewa Create',
             'pembayaran-pranota-cat-view' => 'Pembayaran Pranota CAT View',
-            
+
             // Additional permission compatibility
             'dashboard' => 'Dashboard Access',
             'master' => 'Master Module Access',
-            
+
             // Dot notation variants
             'master.karyawan' => 'Master Karyawan (dot notation)',
             'master.karyawan.index' => 'Master Karyawan Index',
@@ -155,7 +155,7 @@ class PermissionSeeder extends Seeder
             'master.karyawan.update' => 'Master Karyawan Update',
             'master.karyawan.destroy' => 'Master Karyawan Destroy',
             'master-vendor-bengkel.view' => 'Master Vendor Bengkel View',
-            'master-vendor-bengkel.create' => 'Master Vendor Bengkel Create', 
+            'master-vendor-bengkel.create' => 'Master Vendor Bengkel Create',
             'master-vendor-bengkel.update' => 'Master Vendor Bengkel Update',
             'master-vendor-bengkel.delete' => 'Master Vendor Bengkel Delete',
             'permohonan.edit' => 'Permohonan Edit (dot notation)',
@@ -166,28 +166,28 @@ class PermissionSeeder extends Seeder
             'tagihan-kontainer-sewa.update' => 'Tagihan Kontainer Sewa Update (dot notation)',
             'tagihan-kontainer-sewa.destroy' => 'Tagihan Kontainer Sewa Destroy (dot notation)',
             'tagihan-kontainer-sewa.export' => 'Tagihan Kontainer Sewa Export (dot notation)',
-            
+
             // Auth permissions
             'login' => 'Login',
             'logout' => 'Logout',
-            
+
             // Storage permissions
             'storage-local' => 'Storage Local',
-            
+
             // Special action permissions
             'pembayaran-pranota-tagihan-kontainer' => 'Pembayaran Pranota Tagihan Kontainer',
             'master-pranota-tagihan-kontainer' => 'Master Pranota Tagihan Kontainer',
-            
+
             // Checkpoint permissions
             'supir-checkpoint-create' => 'Supir Checkpoint Create',
             'supir-checkpoint-store' => 'Supir Checkpoint Store',
-            
+
             // Profile update account
             'profile-update-account' => 'Profile Update Account',
-            
+
             // Approval store
             'approval-store' => 'Approval Store',
-            
+
             // Admin debug permissions
             'admin-debug-perms' => 'Admin Debug Permissions',
         ];

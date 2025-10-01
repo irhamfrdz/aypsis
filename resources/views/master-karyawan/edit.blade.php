@@ -46,29 +46,22 @@
             @csrf
             @method('PUT')
 
-        @php
-            // Definisikan kelas Tailwind yang sederhana dan konsisten
-            $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
-            $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-[10px] p-2.5";
-            $selectClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
-            $labelClasses = "block text-xs font-medium text-gray-700";
-            $fieldsetClasses = "border border-gray-200 p-6 rounded-lg mb-6 bg-gray-50/30";
-            $legendClasses = "text-lg font-semibold text-gray-800 px-3 py-1 bg-white border border-gray-200 rounded-md shadow-sm flex items-center";
-        @endphp
+            @php
+                // Definisikan kelas Tailwind yang sederhana dan konsisten
+                $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
+                $readonlyInputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-200 shadow-sm text-[10px] p-2.5";
+                $selectClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-[10px] p-2.5";
+                $labelClasses = "block text-xs font-medium text-gray-700";
+            @endphp
         {{-- Informasi Pribadi --}}
-        <fieldset class="{{ $fieldsetClasses }}">
-            <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
-                </svg>
-                Informasi Pribadi
-            </legend>
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pribadi</legend>
             <div class="form-section pt-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
-                    <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK (angka saja, tanpa huruf)" maxlength="25" pattern="[0-9]+" value="{{ old('nik', $karyawan->nik) }}">
-                    <p class="text-xs text-gray-500 mt-1">NIK harus berupa angka saja, tidak boleh ada huruf</p>
+                    <input type="text" name="nik" id="nik" class="{{ $readonlyInputClasses }}" readonly required placeholder="Masukkan NIK (angka saja, tanpa huruf)" maxlength="25" pattern="[0-9]+" value="{{ old('nik', $karyawan->nik) }}">
+                    <p class="text-xs text-gray-500 mt-1">NIK tidak dapat diubah setelah data dibuat</p>
                     <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK harus berupa angka saja, tidak boleh ada huruf</div>
                 </div>
 
@@ -134,12 +127,13 @@
                 <div>
                     <label for="no_hp" class="{{ $labelClasses }}">Nomor Handphone/Whatsapp</label>
                     <input type="tel" name="no_hp" id="no_hp" class="{{ $inputClasses }}" placeholder="08xxxxxxxxxx" value="{{ old('no_hp', $karyawan->no_hp) }}">
+                    <div id="noHpError" class="text-xs text-red-600 mt-1 hidden">Nomor handphone harus berupa angka saja, tidak boleh ada huruf</div>
                 </div>
 
                 <div>
                     <label for="ktp" class="{{ $labelClasses }}">Nomor KTP</label>
-                    <input type="text" name="ktp" id="ktp" class="{{ $inputClasses }}" placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
-                    <p class="text-xs text-gray-500 mt-1">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</p>
+                    <input type="text" name="ktp" id="ktp" class="{{ $readonlyInputClasses }}" readonly placeholder="Masukkan nomor KTP (16 digit angka saja, tanpa huruf)" maxlength="16" pattern="[0-9]{16}" value="{{ old('ktp', $karyawan->ktp) }}">
+                    <p class="text-xs text-gray-500 mt-1">Nomor KTP tidak dapat diubah setelah data dibuat</p>
                     <div id="ktpError" class="text-xs text-red-600 mt-1 hidden">Nomor KTP harus tepat 16 digit angka saja, tidak boleh ada huruf</div>
                     <div id="ktpWarning" class="text-xs mt-1 hidden"></div>
                 </div>
@@ -155,13 +149,8 @@
         </fieldset>
 
         {{-- Informasi Perusahaan --}}
-        <fieldset class="{{ $fieldsetClasses }}">
-            <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
-                </svg>
-                Informasi Perusahaan
-            </legend>
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Perusahaan</legend>
             <div class="form-section pt-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -183,7 +172,8 @@
 
                 <div>
                     <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk</label>
-                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk', $karyawan->tanggal_masuk ? (\is_object($karyawan->tanggal_masuk) ? $karyawan->tanggal_masuk->format('Y-m-d') : $karyawan->tanggal_masuk) : '') }}">
+                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $readonlyInputClasses }}" readonly value="{{ old('tanggal_masuk', $karyawan->tanggal_masuk ? (\is_object($karyawan->tanggal_masuk) ? $karyawan->tanggal_masuk->format('Y-m-d') : $karyawan->tanggal_masuk) : '') }}">
+                    <p class="text-xs text-gray-500 mt-1">Tanggal masuk tidak dapat diubah setelah data dibuat</p>
                 </div>
 
                 <div>
@@ -215,9 +205,9 @@
                     <label for="cabang" class="{{ $labelClasses }}">Kantor Cabang AYP</label>
                     <select name="cabang" id="cabang" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Kantor Cabang AYP --</option>
-                        <option value="Jakarta" {{ old('cabang', $karyawan->cabang) == 'Jakarta' ? 'selected' : '' }}>Jakarta</option>
-                        <option value="Batam" {{ old('cabang', $karyawan->cabang) == 'Batam' ? 'selected' : '' }}>Batam</option>
-                        <option value="Pinang" {{ old('cabang', $karyawan->cabang) == 'Pinang' ? 'selected' : '' }}>Pinang</option>
+                        @foreach($cabangs as $cabang)
+                        <option value="{{ $cabang->nama_cabang }}" {{ old('cabang', $karyawan->cabang) == $cabang->nama_cabang ? 'selected' : '' }}>{{ $cabang->nama_cabang }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -229,14 +219,8 @@
         </fieldset>
 
         {{-- Informasi Alamat --}}
-        <fieldset class="{{ $fieldsetClasses }}">
-            <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                </svg>
-                Informasi Alamat
-            </legend>
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Alamat</legend>
             <div class="form-section pt-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -282,28 +266,21 @@
         </fieldset>
 
         {{-- Catatan --}}
-        <fieldset class="{{ $fieldsetClasses }}">
-            <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                </svg>
-                Catatan
-            </legend>
-            <div>
-                <label for="catatan" class="{{ $labelClasses }}">Catatan</label>
-                <textarea name="catatan" id="catatan" rows="4" class="{{ $inputClasses }}" placeholder="Tambahkan catatan khusus (opsional)">{{ old('catatan', $karyawan->catatan) }}</textarea>
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Catatan</legend>
+            <div class="form-section pt-4">
+                <div>
+                    <label for="catatan" class="{{ $labelClasses }}">Catatan</label>
+                    <textarea name="catatan" id="catatan" rows="4" class="{{ $inputClasses }}" placeholder="Tambahkan catatan khusus (opsional)">{{ old('catatan', $karyawan->catatan) }}</textarea>
+                </div>
             </div>
         </fieldset>
 
         {{-- Informasi Bank --}}
-        <fieldset class="{{ $fieldsetClasses }}">
-            <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                </svg>
-                Informasi Bank
-            </legend>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Bank</legend>
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="nama_bank" class="{{ $labelClasses }}">Nama Bank</label>
                     <select name="nama_bank" id="nama_bank" class="{{ $selectClasses }}">
@@ -327,38 +304,23 @@
                 <div class="lg:col-span-2">
                     <label for="atas_nama" class="{{ $labelClasses }}">Atas Nama</label>
                     <input type="text" name="atas_nama" id="atas_nama" class="{{ $inputClasses }}" placeholder="Nama pemilik rekening" value="{{ old('atas_nama', $karyawan->atas_nama) }}">
-                    <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Auto-fill:</strong> Field ini akan terisi otomatis saat Anda mengetik "Nama Lengkap" di atas</p>
+                    <p class="text-xs text-blue-600 mt-1 font-medium">💡 <strong>Auto-fill:</strong> Field ini akan terisi otomatis saat Anda mengetik "Nama Lengkap" di atas. Jika nama rekening berbeda, Anda bisa mengubahnya manual.</p>
                 </div>
             </div>
         </fieldset>
 
         {{-- Informasi Pajak & JKN --}}
-        <fieldset class="{{ $fieldsetClasses }}">
-            <legend class="{{ $legendClasses }}">
-                <svg class="w-6 h-6 mr-3 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                </svg>
-                Informasi Pajak & JKN
-            </legend>
-            <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 lg:gap-6">
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Informasi Pajak & JKN</legend>
+            <div class="form-section pt-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                     <label for="status_pajak" class="{{ $labelClasses }}">Status Pajak</label>
                     <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Status Pajak --</option>
-                        <option value="TK0" {{ old('status_pajak', $karyawan->status_pajak) == 'TK0' ? 'selected' : '' }}>TK0 - Tidak Kawin</option>
-                        <option value="TK1" {{ old('status_pajak', $karyawan->status_pajak) == 'TK1' ? 'selected' : '' }}>TK1 - Tidak Kawin + 1 Tanggungan</option>
-                        <option value="TK2" {{ old('status_pajak', $karyawan->status_pajak) == 'TK2' ? 'selected' : '' }}>TK2 - Tidak Kawin + 2 Tanggungan</option>
-                        <option value="TK3" {{ old('status_pajak', $karyawan->status_pajak) == 'TK3' ? 'selected' : '' }}>TK3 - Tidak Kawin + 3 Tanggungan</option>
-                        <option value="K0" {{ old('status_pajak', $karyawan->status_pajak) == 'K0' ? 'selected' : '' }}>K0 - Kawin</option>
-                        <option value="K1" {{ old('status_pajak', $karyawan->status_pajak) == 'K1' ? 'selected' : '' }}>K1 - Kawin + 1 Tanggungan</option>
-                        <option value="K2" {{ old('status_pajak', $karyawan->status_pajak) == 'K2' ? 'selected' : '' }}>K2 - Kawin + 2 Tanggungan</option>
-                        <option value="K3" {{ old('status_pajak', $karyawan->status_pajak) == 'K3' ? 'selected' : '' }}>K3 - Kawin + 3 Tanggungan</option>
-                        <option value="K/0" {{ old('status_pajak', $karyawan->status_pajak) == 'K/0' ? 'selected' : '' }}>K/0 - Kawin Penghasilan Istri Digabung</option>
-                        <option value="K/1" {{ old('status_pajak', $karyawan->status_pajak) == 'K/1' ? 'selected' : '' }}>K/1 - Kawin Penghasilan Istri Digabung + 1 Tanggungan</option>
-                        <option value="K/2" {{ old('status_pajak', $karyawan->status_pajak) == 'K/2' ? 'selected' : '' }}>K/2 - Kawin Penghasilan Istri Digabung + 2 Tanggungan</option>
-                        <option value="K/3" {{ old('status_pajak', $karyawan->status_pajak) == 'K/3' ? 'selected' : '' }}>K/3 - Kawin Penghasilan Istri Digabung + 3 Tanggungan</option>
-                        <option value="TK/" {{ old('status_pajak', $karyawan->status_pajak) == 'TK/' ? 'selected' : '' }}>TK/ - Tidak Kawin Penghasilan Suami Istri Digabung</option>
-                        <option value="TK/0" {{ old('status_pajak', $karyawan->status_pajak) == 'TK/0' ? 'selected' : '' }}>TK/0 - Tidak Kawin Penghasilan Digabung</option>
+                        @foreach($pajaks as $pajak)
+                        <option value="{{ $pajak->nama_status }}" {{ old('status_pajak', $karyawan->status_pajak) == $pajak->nama_status ? 'selected' : '' }}>{{ $pajak->nama_status }} - {{ $pajak->keterangan }}</option>
+                        @endforeach
                     </select>
                 </div>
 
@@ -374,25 +336,13 @@
             </div>
         </fieldset>
 
-        <!-- Action Buttons -->
-        <div class="bg-gray-50 px-6 py-6 lg:px-8 lg:py-8">
-            <div class="flex flex-col sm:flex-row justify-end space-y-3 sm:space-y-0 sm:space-x-4">
-                <a href="{{ route('master.karyawan.index') }}"
-                   class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border-2 border-gray-300 bg-white py-3 px-6 text-base font-semibold text-gray-700 shadow-sm hover:bg-gray-50 hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 transition-all duration-200 min-h-[48px]">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                    </svg>
-                    Batal
-                </a>
-
-                <button type="submit"
-                        class="w-full sm:w-auto inline-flex justify-center items-center rounded-xl border-2 border-transparent bg-gradient-to-r from-blue-600 to-indigo-600 py-3 px-6 text-base font-semibold text-white shadow-lg hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 transform hover:scale-105 min-h-[48px]">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Update Data Karyawan
-                </button>
-            </div>
+        <div class="flex justify-end mt-8">
+            <a href="{{ route('master.karyawan.index') }}" class="inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+                Batal
+            </a>
+            <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                Update Data Karyawan
+            </button>
         </div>
         </form>
     </div>
@@ -402,9 +352,9 @@
 
 @push('scripts')
     <script>
-        document.addEventListener('DOMContentLoaded',function(){
+        document.addEventListener('DOMContentLoaded', function () {
             const divisiSelect = document.getElementById('divisi');
-            const pekerjaanSelect = document.getElementById('pekerjaan')
+            const pekerjaanSelect = document.getElementById('pekerjaan');
             const alamatFields = [
                 document.getElementById('alamat'),
                 document.getElementById('rt_rw'),
@@ -413,9 +363,9 @@
                 document.getElementById('kabupaten'),
                 document.getElementById('provinsi'),
                 document.getElementById('kode_pos'),
-            ]
+            ];
 
-            const alamatLengkapTextarea = document.getElementById('alamat_lengkap')
+            const alamatLengkapTextarea = document.getElementById('alamat_lengkap');
 
             // Data pekerjaan dari database
             const pekerjaanByDivisi = @json($pekerjaanByDivisi);
@@ -425,253 +375,277 @@
                 pekerjaanSelect.innerHTML = '<option value="">-- Pilih Pekerjaan --</option>';
 
                 const selectedDivisi = divisiSelect.value;
+                const currentPekerjaan = '{{ $karyawan->pekerjaan ?? "" }}'; // Pekerjaan yang tersimpan
+                
                 if (selectedDivisi && pekerjaanByDivisi[selectedDivisi]) {
                     pekerjaanByDivisi[selectedDivisi].forEach(function(pekerjaan) {
                         const option = document.createElement('option');
                         option.value = pekerjaan;
                         option.textContent = pekerjaan;
+                        
                         // Set selected if it matches current karyawan pekerjaan
-                        if (pekerjaan === '{{ $karyawan->pekerjaan }}') {
+                        if (pekerjaan === currentPekerjaan) {
                             option.selected = true;
                         }
+                        
                         pekerjaanSelect.appendChild(option);
                     });
                 }
             }
 
-            //Fungsi Untuk Memperbarui Kolam Alamat Lengkap
-            function updateAlamatLengkap(){
-                const alamatParts = alamatFields.map(field=>field.value.trim()).filter(part => part !== '')
-                const combinedAddress = alamatParts.join(', ')
-                alamatLengkapTextarea.value = combinedAddress
+            // Fungsi untuk memperbarui alamat lengkap
+            function updateAlamatLengkap() {
+                const alamatParts = alamatFields.map(field => field.value.trim()).filter(part => part !== '');
+                const combinedAddress = alamatParts.join(', ');
+                alamatLengkapTextarea.value = combinedAddress;
             }
 
-            // Jalankan Fungsi Saat Halaman Dimuat
-            updatePekerjaanOptions()
-            updateAlamatLengkap()
+            // Jalankan fungsi saat halaman dimuat
+            // Delay sedikit untuk memastikan DOM sudah fully loaded
+            setTimeout(function() {
+                updatePekerjaanOptions();
+                updateAlamatLengkap();
+            }, 100);
 
-            // Tambahkan Event Listener Untuk Perubahan Pada Halaman DropDown Divisi
-            divisiSelect.addEventListener('change', updatePekerjaanOptions)
+            // Event listener untuk perubahan dropdown divisi
+            divisiSelect.addEventListener('change', updatePekerjaanOptions);
 
-            // Tambahkan Event Listener Untuk Setiap Input Alamat
-            alamatFields.forEach(field =>{
-                field.addEventListener('input', updateAlamatLengkap)
-            })
+            // Event listener untuk setiap input alamat
+            alamatFields.forEach(field => {
+                field.addEventListener('input', updateAlamatLengkap);
+            });
 
-            // Auto-fill "Atas Nama" dari "Nama Lengkap"
-            const namaLengkapField = document.getElementById('nama_lengkap');
-            const atasNamaField = document.getElementById('atas_nama');
+            // Auto-fill nama lengkap ke atas nama
+            const namaLengkapInput = document.getElementById('nama_lengkap');
+            const atasNamaInput = document.getElementById('atas_nama');
 
-            if (namaLengkapField && atasNamaField) {
-                // Auto-fill saat nama lengkap berubah
-                namaLengkapField.addEventListener('input', function() {
-                    const namaLengkap = this.value.trim();
-                    const atasNama = atasNamaField.value.trim();
-
-                    // Jika atas nama masih kosong atau sama dengan nilai sebelumnya, update otomatis
-                    if (atasNama === '' || atasNama === namaLengkapField.dataset.previousValue) {
-                        atasNamaField.value = namaLengkap;
-                        atasNamaField.dataset.previousValue = namaLengkap;
+            if (namaLengkapInput && atasNamaInput) {
+                namaLengkapInput.addEventListener('input', function() {
+                    // Hanya update jika atas nama masih kosong atau sama dengan nilai sebelumnya
+                    if (atasNamaInput.value.trim() === '' || atasNamaInput.value === namaLengkapInput.dataset.previousValue) {
+                        atasNamaInput.value = this.value.trim();
                     }
-
-                    // Update previous value untuk tracking
-                    namaLengkapField.dataset.previousValue = namaLengkap;
+                    namaLengkapInput.dataset.previousValue = this.value.trim();
                 });
 
                 // Set initial previous value
-                namaLengkapField.dataset.previousValue = namaLengkapField.value;
-                atasNamaField.dataset.previousValue = atasNamaField.value;
-
-                // Tambahkan visual feedback untuk field atas nama
-                atasNamaField.addEventListener('input', function() {
-                    const namaLengkap = namaLengkapField.value.trim();
-                    const atasNama = this.value.trim();
-
-                    // Jika atas nama sama dengan nama lengkap, beri indikasi auto-filled
-                    if (atasNama === namaLengkap && atasNama !== '') {
-                        this.classList.add('bg-blue-50', 'border-blue-300');
-                        this.classList.remove('bg-red-50', 'border-red-300');
-                    } else if (atasNama !== namaLengkap && atasNama !== '') {
-                        this.classList.add('bg-green-50', 'border-green-300');
-                        this.classList.remove('bg-blue-50', 'border-blue-300', 'bg-red-50', 'border-red-300');
-                    } else {
-                        this.classList.remove('bg-blue-50', 'border-blue-300', 'bg-green-50', 'border-green-300');
-                    }
-                });
-
-                // Trigger initial check
-                atasNamaField.dispatchEvent(new Event('input'));
+                namaLengkapInput.dataset.previousValue = namaLengkapInput.value.trim();
             }
 
-            // Mobile-friendly enhancements
+            // Validasi KTP dan KK
+            const ktpInput = document.getElementById('ktp');
+            const kkInput = document.getElementById('kk');
+            const nikInput = document.getElementById('nik');
+            const noHpInput = document.getElementById('no_hp');
+            const ktpError = document.getElementById('ktpError');
+            const kkError = document.getElementById('kkError');
+            const nikError = document.getElementById('nikError');
+            const noHpError = document.getElementById('noHpError');
+            const ktpWarning = document.getElementById('ktpWarning');
+            const kkWarning = document.getElementById('kkWarning');
             const form = document.querySelector('form');
-            const submitButton = form.querySelector('button[type="submit"]');
 
-            // Add loading state on form submission
-            form.addEventListener('submit', function() {
-                submitButton.disabled = true;
-                submitButton.innerHTML = `
-                    <svg class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Mengupdate...
-                `;
-            });
+            // Fungsi validasi nomor identitas (KTP/KK) - harus tepat 16 digit
+            function validateIdentityNumber(input, errorElement, fieldName) {
+                const value = input.value.trim();
+                const isValid = /^\d{16}$/.test(value);
 
-            // Add focus effects for better UX
-            const inputs = document.querySelectorAll('input, select, textarea');
-            inputs.forEach(input => {
-                input.addEventListener('focus', function() {
-                    // Remove blue ring effect
-                    // this.closest('div')?.classList.add('ring-2', 'ring-blue-200');
-                });
+                if (value === '') {
+                    // Kosongkan error jika field kosong (karena mungkin tidak wajib)
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
 
-                input.addEventListener('blur', function() {
-                    // Remove blue ring effect
-                    // this.closest('div')?.classList.remove('ring-2', 'ring-blue-200');
-                });
-            });
-
-            // Smooth scroll to error fields if any
-            const errorInputs = document.querySelectorAll('.border-red-500');
-            if (errorInputs.length > 0) {
-                errorInputs[0].scrollIntoView({ behavior: 'smooth', block: 'center' });
-                errorInputs[0].focus();
+                if (!isValid) {
+                    errorElement.textContent = `${fieldName} harus tepat 16 digit angka saja, tidak boleh ada huruf`;
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500');
+                    return false;
+                } else {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
             }
 
-            // Auto-resize textarea
-            const textareas = document.querySelectorAll('textarea');
-            textareas.forEach(textarea => {
-                textarea.addEventListener('input', function() {
-                    this.style.height = 'auto';
-                    this.style.height = this.scrollHeight + 'px';
+            // Fungsi validasi NIK - lebih fleksibel, hanya perlu angka
+            function validateNIK(input, errorElement) {
+                const value = input.value.trim();
+                const isValid = /^\d+$/.test(value) && value.length > 0; // Hanya angka, minimal 1 digit
+
+                if (value === '') {
+                    // Kosongkan error jika field kosong (karena mungkin tidak wajib)
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+
+                if (!isValid) {
+                    errorElement.textContent = 'NIK harus berupa angka saja, tidak boleh ada huruf';
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500');
+                    return false;
+                } else {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+            }
+
+            // Fungsi validasi No HP - hanya angka
+            function validateNoHp(input, errorElement) {
+                const value = input.value.trim();
+                const isValid = /^\d+$/.test(value) || value === ''; // Hanya angka atau kosong
+
+                if (value === '') {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+
+                if (!isValid) {
+                    errorElement.textContent = 'Nomor handphone harus berupa angka saja, tidak boleh ada huruf';
+                    errorElement.classList.remove('hidden');
+                    input.classList.add('border-red-500');
+                    return false;
+                } else {
+                    errorElement.classList.add('hidden');
+                    input.classList.remove('border-red-500');
+                    return true;
+                }
+            }
+
+            // Fungsi untuk format nomor identitas - hanya menerima angka
+            function formatIdentityNumber(input) {
+                // Remove any non-numeric characters
+                let value = input.value.replace(/\D/g, '');
+                input.value = value;
+            }
+
+            // Fungsi untuk menampilkan warning saat input KTP/KK
+            function showIdentityWarning(input, warningElement, fieldName) {
+                const value = input.value.trim();
+                const length = value.length;
+
+                if (length > 0 && length < 16) {
+                    warningElement.textContent = `${fieldName} membutuhkan 16 digit angka saja. Saat ini: ${length} digit`;
+                    warningElement.classList.remove('hidden');
+                    warningElement.classList.add('text-yellow-600');
+                    warningElement.classList.remove('text-red-600');
+                } else if (length === 16) {
+                    warningElement.textContent = `✅ ${fieldName} lengkap (16 digit angka saja)`;
+                    warningElement.classList.remove('hidden');
+                    warningElement.classList.add('text-green-600');
+                    warningElement.classList.remove('text-yellow-600', 'text-red-600');
+                } else if (length > 16) {
+                    warningElement.textContent = `❌ ${fieldName} terlalu panjang. Maksimal 16 digit angka saja`;
+                    warningElement.classList.remove('hidden');
+                    warningElement.classList.add('text-red-600');
+                    warningElement.classList.remove('text-yellow-600', 'text-green-600');
+                } else {
+                    warningElement.classList.add('hidden');
+                }
+            }
+
+            // Event listener untuk NIK (skip jika readonly)
+            if (nikInput && !nikInput.hasAttribute('readonly')) {
+                nikInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateNIK(this, nikError);
                 });
-            });
 
-            // Real-time validation for 16-digit fields
-            const sixteenDigitFields = ['nik', 'ktp', 'kk'];
-            sixteenDigitFields.forEach(fieldId => {
-                const field = document.getElementById(fieldId);
-                const helperText = field.parentElement.querySelector('.text-xs');
+                nikInput.addEventListener('blur', function() {
+                    validateNIK(this, nikError);
+                });
+            }
 
-                field.addEventListener('input', function() {
-                    const value = this.value.replace(/\D/g, ''); // Remove non-digits
-                    this.value = value; // Update field value
+            // Event listener untuk KTP (skip jika readonly)
+            if (ktpInput && !ktpInput.hasAttribute('readonly')) {
+                ktpInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateIdentityNumber(this, ktpError, 'Nomor KTP');
+                    showIdentityWarning(this, ktpWarning, 'KTP');
+                });
 
-                    if (value.length === 0) {
-                        this.classList.remove('border-red-500', 'border-green-500');
-                        if (helperText) {
-                            helperText.className = 'text-xs text-gray-500 mt-1';
-                            helperText.textContent = `${fieldId.toUpperCase()} harus berupa 16 digit angka`;
-                        }
-                    } else if (value.length === 16) {
-                        this.classList.remove('border-red-500');
-                        this.classList.add('border-green-500');
-                        if (helperText) {
-                            helperText.className = 'text-xs text-green-600 mt-1';
-                            helperText.textContent = '✓ Format valid';
-                        }
-                    } else {
-                        this.classList.remove('border-green-500');
-                        this.classList.add('border-red-500');
-                        if (helperText) {
-                            helperText.className = 'text-xs text-red-600 mt-1';
-                            helperText.textContent = `${fieldId.toUpperCase()} harus 16 digit (saat ini: ${value.length} digit)`;
+                ktpInput.addEventListener('blur', function() {
+                    validateIdentityNumber(this, ktpError, 'Nomor KTP');
+                    showIdentityWarning(this, ktpWarning, 'KTP');
+                });
+            }
+
+            // Event listener untuk KK
+            if (kkInput) {
+                kkInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateIdentityNumber(this, kkError, 'Nomor KK');
+                    showIdentityWarning(this, kkWarning, 'KK');
+                });
+
+                kkInput.addEventListener('blur', function() {
+                    validateIdentityNumber(this, kkError, 'Nomor KK');
+                    showIdentityWarning(this, kkWarning, 'KK');
+                });
+            }
+
+            // Event listener untuk No HP
+            if (noHpInput) {
+                noHpInput.addEventListener('input', function() {
+                    formatIdentityNumber(this);
+                    validateNoHp(this, noHpError);
+                });
+
+                noHpInput.addEventListener('blur', function() {
+                    validateNoHp(this, noHpError);
+                });
+            }
+
+            // Validasi sebelum submit
+            if (form) {
+                form.addEventListener('submit', function(e) {
+                    let isValid = true;
+
+                    // Validasi NIK (skip jika readonly)
+                    if (nikInput && !nikInput.hasAttribute('readonly') && nikInput.value.trim() !== '') {
+                        if (!validateNIK(nikInput, nikError)) {
+                            isValid = false;
+                            nikInput.focus();
                         }
                     }
-                });
 
-                field.addEventListener('blur', function() {
-                    const value = this.value;
-                    if (value.length > 0 && value.length !== 16) {
-                        this.classList.add('border-red-500');
-                        if (helperText) {
-                            helperText.className = 'text-xs text-red-600 mt-1';
-                            helperText.textContent = `${fieldId.toUpperCase()} harus tepat 16 digit angka`;
+                    // Validasi KTP (skip jika readonly)
+                    if (ktpInput && !ktpInput.hasAttribute('readonly') && ktpInput.value.trim() !== '') {
+                        if (!validateIdentityNumber(ktpInput, ktpError, 'Nomor KTP')) {
+                            isValid = false;
+                            if (isValid) ktpInput.focus();
                         }
                     }
+
+                    // Validasi KK
+                    if (kkInput && kkInput.value.trim() !== '') {
+                        if (!validateIdentityNumber(kkInput, kkError, 'Nomor KK')) {
+                            isValid = false;
+                            if (isValid) kkInput.focus();
+                        }
+                    }
+
+                    // Validasi No HP
+                    if (noHpInput && noHpInput.value.trim() !== '') {
+                        if (!validateNoHp(noHpInput, noHpError)) {
+                            isValid = false;
+                            if (isValid) noHpInput.focus();
+                        }
+                    }
+
+                    if (!isValid) {
+                        e.preventDefault();
+                        alert('Mohon perbaiki kesalahan pada form sebelum menyimpan.');
+                        return false;
+                    }
                 });
-            });
+            }
         })
     </script>
 
-    <style>
-        /* Custom mobile-friendly styles */
-        @media (max-width: 768px) {
-            /* Ensure inputs are touch-friendly on mobile */
-            input, select, textarea {
-                font-size: 16px !important; /* Prevents zoom on iOS */
-                min-height: 48px !important;
-            }
 
-            /* Better spacing for mobile */
-            .grid {
-                gap: 1rem !important;
-            }
-
-            /* Improved button sizing */
-            button, .btn {
-                min-height: 48px !important;
-                font-size: 16px !important;
-            }
-        }
-
-        /* Smooth transitions */
-        * {
-            transition: all 0.2s ease;
-        }
-
-        /* Enhanced focus states */
-        input:focus, select:focus, textarea:focus {
-            /* Remove blue shadow effect */
-            /* transform: translateY(-1px); */
-            /* box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15); */
-        }
-
-        /* Loading spinner animation */
-        @keyframes spin {
-            from { transform: rotate(0deg); }
-            to { transform: rotate(360deg); }
-        }
-
-        .animate-spin {
-            animation: spin 1s linear infinite;
-        }
-
-        /* Custom gradient backgrounds */
-        .bg-gradient-to-br {
-            background: linear-gradient(135deg, var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to));
-        }
-
-        /* Enhanced shadow effects */
-        .shadow-xl {
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-        }
-
-        /* Improved hover effects */
-        button:hover, .btn:hover {
-            transform: translateY(-2px);
-        }
-
-        /* Better fieldset styling */
-        fieldset {
-            position: relative;
-        }
-
-        fieldset::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 50%;
-            height: 1px;
-            background: linear-gradient(to right, transparent, #e5e7eb, transparent);
-        }
-
-        fieldset:last-of-type::after {
-            display: none;
-        }
-    </style>
 @endpush
