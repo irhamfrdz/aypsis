@@ -819,7 +819,21 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
-            // Pattern 8: Login/Logout permissions
+            // Pattern 8: Standalone dashboard permission
+            if ($permissionName === 'dashboard') {
+                $module = 'system';
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                $matrixPermissions[$module]['dashboard'] = true;
+                continue; // Skip other patterns
+            }
+
+            // Pattern 9: Login/Logout permissions
+
             if (in_array($permissionName, ['login', 'logout'])) {
                 $module = 'auth';
 
@@ -849,6 +863,23 @@ class UserController extends Controller
         foreach ($matrixPermissions as $module => $actions) {
             // Skip if no actions are selected for this module
             if (!is_array($actions)) continue;
+
+                // Handle system module permissions
+                if ($module === 'system') {
+                    // Explicitly check for dashboard permission (handle both checked and unchecked states)
+                    $dashboardEnabled = isset($actions['dashboard']) && ($actions['dashboard'] == '1' || $actions['dashboard'] === true);
+                    
+                    if ($dashboardEnabled) {
+                        $permission = Permission::where('name', 'dashboard')->first();
+                        if ($permission) {
+                            $permissionIds[] = $permission->id;
+                        }
+                    }
+                    // Note: if dashboard is not enabled (unchecked), it won't be added to $permissionIds
+                    // This ensures sync() will remove it from user permissions
+                    continue;
+                }
+
 
             foreach ($actions as $action => $value) {
                 // Only process checked permissions (value = true or 1)

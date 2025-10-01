@@ -20,9 +20,6 @@ class DashboardController extends Controller
      */
     public function index()
     {
-        // Check dashboard permission
-        $this->authorize('dashboard');
-
         $user = Auth::user();
 
         // Check if user is a driver (supir) - redirect to supir dashboard
@@ -30,13 +27,18 @@ class DashboardController extends Controller
             return redirect()->route('supir.dashboard');
         }
 
-        // Check if user has any permissions
-        $hasPermissions = $user->permissions->count() > 0;
+        // Check if user has any meaningful permissions (exclude basic auth permissions)
+        $meaningfulPermissions = $user->permissions
+            ->whereNotIn('name', ['login', 'logout']) // Exclude basic auth permissions
+            ->count();
 
-        // If user has no permissions, show special dashboard
-        if (!$hasPermissions) {
+        // If user has no meaningful permissions, show special dashboard
+        if ($meaningfulPermissions == 0) {
             return view('dashboard_no_permissions');
         }
+
+        // Only check dashboard permission if user has meaningful permissions
+        $this->authorize('dashboard');
 
         // Menghitung total data dari masing-masing model
         $totalPermohonan = Permohonan::count();

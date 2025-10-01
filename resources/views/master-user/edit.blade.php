@@ -341,7 +341,7 @@
                                         </div>
                                     </div>
                                 </td>
-                                <td><input type="checkbox" name="permissions[dashboard][view]" value="1" class="permission-checkbox" checked></td>
+                                <td><input type="checkbox" name="permissions[system][dashboard]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['system']['dashboard']) && $userMatrixPermissions['system']['dashboard']) checked @endif></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>
                                 <td class="empty-cell"></td>

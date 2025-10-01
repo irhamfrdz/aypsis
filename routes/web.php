@@ -110,12 +110,11 @@ Route::middleware([
     // Arahkan root URL ke dashboard
     Route::get('/', function () {
         return redirect()->route('dashboard');
-    })->middleware('can:dashboard');
+    });
 
-    // Dashboard utama untuk admin/staff - protected with permission
+    // Dashboard utama untuk admin/staff - controller handles permission logic
     Route::get('/dashboard', [DashboardController::class, 'index'])
-         ->name('dashboard')
-         ->middleware('can:dashboard');
+         ->name('dashboard');
 
     /*
     |===========================================================================
