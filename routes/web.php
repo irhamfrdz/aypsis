@@ -444,21 +444,43 @@ Route::middleware([
              ->name('coa.download-template')
              ->middleware('can:master-coa-view');
 
-        // 🏦 Master Bank Routes - Inside master prefix group (clean) 
-        // Names explicitly set to maintain compatibility with existing views
-        Route::resource('bank', \App\Http\Controllers\MasterBankController::class)
-             ->names('bank')
-             ->middleware([
-                 'index' => 'can:master-bank-view',
-                 'create' => 'can:master-bank-create',
-                 'edit' => 'can:master-bank-update',
-                 'destroy' => 'can:master-bank-delete'
-             ]);
-        Route::post('bank/import', [\App\Http\Controllers\MasterBankController::class, 'import'])
-             ->name('master-bank-import')
-             ->middleware('can:master-bank-create');
+
 
     });
+
+// ⚡ Master Bank Routes - Clean implementation without middleware duplication
+Route::middleware([
+    'auth',
+    \App\Http\Middleware\EnsureKaryawanPresent::class,
+    \App\Http\Middleware\EnsureUserApproved::class,
+    \App\Http\Middleware\EnsureCrewChecklistComplete::class,
+])->group(function() {
+    // Bank resource routes with exact names expected by views
+    Route::get('master/bank', [\App\Http\Controllers\MasterBankController::class, 'index'])
+         ->name('master-bank-index')
+         ->middleware('can:master-bank-view');
+    Route::get('master/bank/create', [\App\Http\Controllers\MasterBankController::class, 'create'])
+         ->name('master-bank-create')
+         ->middleware('can:master-bank-create');
+    Route::post('master/bank', [\App\Http\Controllers\MasterBankController::class, 'store'])
+         ->name('master-bank-store')
+         ->middleware('can:master-bank-create');
+    Route::get('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'show'])
+         ->name('master-bank-show')
+         ->middleware('can:master-bank-view');
+    Route::get('master/bank/{bank}/edit', [\App\Http\Controllers\MasterBankController::class, 'edit'])
+         ->name('master-bank-edit')
+         ->middleware('can:master-bank-update');
+    Route::put('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'update'])
+         ->name('master-bank-update')
+         ->middleware('can:master-bank-update');
+    Route::delete('master/bank/{bank}', [\App\Http\Controllers\MasterBankController::class, 'destroy'])
+         ->name('master-bank-destroy')
+         ->middleware('can:master-bank-delete');
+    Route::post('master/bank/import', [\App\Http\Controllers\MasterBankController::class, 'import'])
+         ->name('master-bank-import')
+         ->middleware('can:master-bank-create');
+});
 
 // Master divisi routes with required middleware - HYBRID: Resource + additional routes with permissions
 Route::middleware([
