@@ -444,6 +444,19 @@ Route::middleware([
              ->name('coa.download-template')
              ->middleware('can:master-coa-view');
 
+        // 🏦 Master Bank Routes - Inside master prefix group (clean) 
+        // Names explicitly set to maintain compatibility with existing views
+        Route::resource('bank', \App\Http\Controllers\MasterBankController::class)
+             ->names('bank')
+             ->middleware([
+                 'index' => 'can:master-bank-view',
+                 'create' => 'can:master-bank-create',
+                 'edit' => 'can:master-bank-update',
+                 'destroy' => 'can:master-bank-delete'
+             ]);
+        Route::post('bank/import', [\App\Http\Controllers\MasterBankController::class, 'import'])
+             ->name('master-bank-import')
+             ->middleware('can:master-bank-create');
 
     });
 
@@ -490,29 +503,7 @@ Route::middleware([
          ->name('master.pajak.import')
          ->middleware('can:master-pajak-create');
 
-    // 🏦 Master Bank (Bank Management) - HYBRID: Resource + additional routes with permissions
-    Route::resource('master/bank', \App\Http\Controllers\MasterBankController::class)
-         ->names([
-             'index' => 'master-bank-index',
-             'create' => 'master-bank-create',
-             'store' => 'master-bank-store',
-             'show' => 'master-bank-show',
-             'edit' => 'master-bank-edit',
-             'update' => 'master-bank-update',
-             'destroy' => 'master-bank-destroy'
-         ])
-         ->middleware([
-             'index' => 'can:master-bank-index',
-             'show' => 'can:master-bank-view',
-             'create' => 'can:master-bank-create',
-             'store' => 'can:master-bank-create',
-             'edit' => 'can:master-bank-edit',
-             'update' => 'can:master-bank-update',
-             'destroy' => 'can:master-bank-destroy'
-         ]);
-    Route::post('master/bank/import', [\App\Http\Controllers\MasterBankController::class, 'import'])
-         ->name('master-bank-import')
-         ->middleware('can:master-bank-create');
+
 
     // ═══════════════════════════════════════════════════════════════════════
     // 🏗️ CORE MASTER DATA (SIMPLE RESOURCES) - Alphabetical Order
