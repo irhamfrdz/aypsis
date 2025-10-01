@@ -8,9 +8,11 @@ use App\Models\Karyawan;
 use App\Models\Kontainer;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class DashboardController extends Controller
 {
+    use AuthorizesRequests;
     /**
      * Menampilkan halaman dashboard dengan data ringkasan.
      *
@@ -18,6 +20,9 @@ class DashboardController extends Controller
      */
     public function index()
     {
+        // Check dashboard permission
+        $this->authorize('dashboard');
+
         $user = Auth::user();
 
         // Check if user is a driver (supir) - redirect to supir dashboard

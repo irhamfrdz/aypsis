@@ -1,0 +1,248 @@
+{
+    "${module}": [
+        "${action}"
+    ],
+    "dashboard": [
+        "view"
+    ],
+    "master-bank": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-cabang": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-coa": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-divisi": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-karyawan": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "print",
+        "export"
+    ],
+    "master-kegiatan": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-kode-nomor": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-kontainer": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-mobil": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-nomor-terakhir": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-pajak": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-pekerjaan": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "print",
+        "export"
+    ],
+    "master-permission": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-pricelist-cat": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-pricelist-sewa-kontainer": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-stock-kontainer": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-tipe-akun": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-tujuan": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-user": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "master-vendor-bengkel": [
+        "view",
+        "create",
+        "update",
+        "delete"
+    ],
+    "pembayaran-pranota-cat": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "pembayaran-pranota-kontainer": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "pembayaran-pranota-perbaikan-kontainer": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "pembayaran-pranota-supir": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "permohonan-memo": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "pranota-cat": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "pranota-kontainer-sewa": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "pranota-perbaikan-kontainer": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "pranota-supir": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "tagihan-cat": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "tagihan-kontainer-sewa": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "tagihan-perbaikan-kontainer": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "approve",
+        "print",
+        "export"
+    ],
+    "user-approval": [
+        "view",
+        "create",
+        "update",
+        "delete",
+        "print",
+        "export"
+    ]
+}

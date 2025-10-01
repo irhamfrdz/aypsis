@@ -267,7 +267,20 @@
                                 <option value="">-- Pilih Nama Bank --</option>
                                 @if(isset($banks))
                                     @foreach($banks as $bank)
-                                    <option value="{{ $bank->name }}" {{ old('nama_bank', $karyawan->nama_bank ?? '') == $bank->name ? 'selected' : '' }}>{{ $bank->name }} @if($bank->code) ({{ $bank->code }}) @endif</option>
+                                    @php
+                                        $isSelected = old('nama_bank', $karyawan->nama_bank ?? '') == $bank->name || 
+                                                     (empty(old('nama_bank')) && empty($karyawan->nama_bank ?? '') && 
+                                                      (str_contains(strtolower($bank->name), 'bca') || str_contains(strtolower($bank->name), 'bank central asia')));
+                                        
+                                        // Check if bank name already contains the code to avoid duplication
+                                        $displayName = $bank->name;
+                                        if ($bank->code && !str_contains($bank->name, $bank->code)) {
+                                            $displayName = $bank->name . ' (' . $bank->code . ')';
+                                        }
+                                    @endphp
+                                    <option value="{{ $bank->name }}" {{ $isSelected ? 'selected' : '' }}>
+                                        {{ $displayName }}
+                                    </option>
                                     @endforeach
                                 @endif
                             </select>

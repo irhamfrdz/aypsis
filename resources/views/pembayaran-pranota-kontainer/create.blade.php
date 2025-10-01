@@ -321,33 +321,51 @@
         const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
         const bankSelect = document.getElementById('bank');
 
-        // Function to get kode_nomor from selected bank option
-        function getBankCode() {
-            const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-            if (selectedOption && selectedOption.value) {
-                return selectedOption.getAttribute('data-kode') || '000';
-            }
-            return '000';
-        }
-
         // Function to update nomor pembayaran
         function updateNomorPembayaran() {
             const cetakan = nomorCetakanInput.value || 1;
-            const bankCode = getBankCode();
-            const now = new Date();
-            const tahun = String(now.getFullYear()).slice(-2);
-            const bulan = String(now.getMonth() + 1).padStart(2, '0');
-            // For client-side, we'll use a simple sequence, server will handle uniqueness
-            const sequence = '000001';
 
-            nomorPembayaranInput.value = `BPK-${cetakan}-${tahun}-${bulan}-${sequence}`;
+            // Get bank code from selected option's data-kode attribute
+            let kodeBank = '000'; // Default
+            if (bankSelect.value) {
+                const selectedOption = bankSelect.querySelector(`option[value="${bankSelect.value}"]`);
+                if (selectedOption && selectedOption.dataset.kode) {
+                    kodeBank = selectedOption.dataset.kode;
+                }
+            }
+
+            // Make AJAX call to get the current nomor pembayaran
+            const url = `{{ route('pembayaran-pranota-kontainer.generate-nomor') }}?nomor_cetakan=${cetakan}&kode_bank=${kodeBank}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        nomorPembayaranInput.value = data.nomor_pembayaran;
+                    } else {
+                        console.error('Error generating nomor pembayaran:', data.message);
+                        // Fallback to client-side generation if server fails
+                        const now = new Date();
+                        const tahun = String(now.getFullYear()).slice(-2);
+                        const bulan = String(now.getMonth() + 1).padStart(2, '0');
+                        const sequence = '000001';
+                        nomorPembayaranInput.value = `${kodeBank}-${cetakan}-${tahun}-${bulan}-${sequence}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching nomor pembayaran:', error);
+                    // Fallback to client-side generation if server fails
+                    const now = new Date();
+                    const tahun = String(now.getFullYear()).slice(-2);
+                    const bulan = String(now.getMonth() + 1).padStart(2, '0');
+                    const sequence = '000001';
+                    nomorPembayaranInput.value = `${kodeBank}-${cetakan}-${tahun}-${bulan}-${sequence}`;
+                });
         }
 
         // Event listeners
         nomorCetakanInput.addEventListener('input', updateNomorPembayaran);
-        bankSelect.addEventListener('change', updateNomorPembayaran);
-
-        // Initial update
+        bankSelect.addEventListener('change', updateNomorPembayaran);        // Initial update
         updateNomorPembayaran();
     });
 </script>

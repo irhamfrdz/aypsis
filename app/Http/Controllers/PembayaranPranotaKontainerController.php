@@ -71,7 +71,7 @@ class PembayaranPranotaKontainerController extends Controller
             }
         }
 
-        // Generate nomor pembayaran
+        // Generate nomor pembayaran (preview only, tidak update database)
         $nomorPembayaran = PembayaranPranotaKontainer::generateNomorPembayaran();
         $totalPembayaran = $pranotaList->sum('total_amount');
 
@@ -143,6 +143,18 @@ class PembayaranPranotaKontainerController extends Controller
 
                 // Update pranota status to paid
                 $pranota->update(['status' => 'paid']);
+            }
+
+            // Update nomor terakhir after successful payment creation
+            // Extract the running number from the nomor_pembayaran (last 6 digits)
+            $nomorPembayaran = $request->nomor_pembayaran;
+            $runningNumber = (int) substr($nomorPembayaran, -6);
+
+            // Update master nomor terakhir
+            $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->lockForUpdate()->first();
+            if ($nomorTerakhir) {
+                $nomorTerakhir->nomor_terakhir = $runningNumber;
+                $nomorTerakhir->save();
             }
 
             DB::commit();
@@ -315,6 +327,30 @@ class PembayaranPranotaKontainerController extends Controller
         } catch (\Exception $e) {
             DB::rollback();
             return response()->json(['error' => 'Gagal menghapus pranota: ' . $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Generate nomor pembayaran untuk AJAX request
+     */
+    public function generateNomorPembayaran(Request $request)
+    {
+        try {
+            $nomorCetakan = $request->get('nomor_cetakan', 1);
+            $kodeBank = $request->get('kode_bank', '000');
+
+            $nomorPembayaran = PembayaranPranotaKontainer::generateNomorPembayaran($nomorCetakan, $kodeBank);
+
+            return response()->json([
+                'success' => true,
+                'nomor_pembayaran' => $nomorPembayaran
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
         }
     }
 }

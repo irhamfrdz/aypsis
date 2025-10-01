@@ -22,16 +22,17 @@
                 <strong>Peringatan:</strong> {{ session('error') }}
             </div>
         @endif
-        @if(!empty($errors))
+        {{-- Only show validation errors if this is a POST request (form submission) --}}
+        @if(request()->isMethod('post') && !empty($errors) && (is_object($errors) ? $errors->any() : (!empty($errors) && is_array($errors))))
             <div class="mb-3 p-3 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800 text-sm">
                 <strong>Terjadi kesalahan:</strong>
                 <ul class="mt-1 list-disc list-inside">
-                    @if(is_array($errors))
-                        @foreach($errors as $error)
+                    @if(is_object($errors) && method_exists($errors, 'all'))
+                        @foreach($errors->all() as $error)
                             <li>{{ $error }}</li>
                         @endforeach
-                    @elseif(is_object($errors) && method_exists($errors, 'all'))
-                        @foreach($errors->all() as $error)
+                    @elseif(is_array($errors))
+                        @foreach($errors as $error)
                             <li>{{ $error }}</li>
                         @endforeach
                     @endif
@@ -82,7 +83,7 @@
                                 <div class="flex-1">
                                     <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
                                     <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
-                                        value="{{ '000-' . (request('nomor_cetakan', 1)) . '-' . now()->format('y') . '-' . now()->format('m') . '-' . str_pad((\App\Models\PembayaranPranotaSupir::count() + 1), 6, '0', STR_PAD_LEFT) }}"
+                                        value=""
                                         class="{{ $readonlyInputClasses }}" readonly>
                                 </div>
                                 <div class="w-16">
@@ -344,25 +345,46 @@
         const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
         const bankSelect = document.getElementById('bank');
 
-        // Function to get kode_nomor from selected bank option
-        function getBankCode() {
-            const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-            if (selectedOption && selectedOption.value) {
-                return selectedOption.getAttribute('data-kode') || '000';
-            }
-            return '000';
-        }
-
         // Function to update nomor pembayaran
         function updateNomorPembayaran() {
             const cetakan = nomorCetakanInput.value || 1;
-            const bankCode = getBankCode();
-            const now = new Date();
-            const tahun = String(now.getFullYear()).slice(-2);
-            const bulan = String(now.getMonth() + 1).padStart(2, '0');
-            const running = nomorPembayaranInput.value.split('-').pop() || '000001';
 
-            nomorPembayaranInput.value = `${bankCode}-${cetakan}-${tahun}-${bulan}-${running}`;
+            // Get bank code from selected option's data-kode attribute
+            let kodeBank = '000'; // Default
+            if (bankSelect.value) {
+                const selectedOption = bankSelect.querySelector(`option[value="${bankSelect.value}"]`);
+                if (selectedOption && selectedOption.dataset.kode) {
+                    kodeBank = selectedOption.dataset.kode;
+                }
+            }
+
+            // Make AJAX call to get the current nomor pembayaran
+            const url = `{{ route('pembayaran-pranota-supir.generate-nomor') }}?nomor_cetakan=${cetakan}&kode_bank=${kodeBank}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        nomorPembayaranInput.value = data.nomor_pembayaran;
+                    } else {
+                        console.error('Error generating nomor pembayaran:', data.message);
+                        // Fallback to client-side generation if server fails
+                        const now = new Date();
+                        const tahun = String(now.getFullYear()).slice(-2);
+                        const bulan = String(now.getMonth() + 1).padStart(2, '0');
+                        const sequence = '000001';
+                        nomorPembayaranInput.value = `${kodeBank}-${cetakan}-${tahun}-${bulan}-${sequence}`;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching nomor pembayaran:', error);
+                    // Fallback to client-side generation if server fails
+                    const now = new Date();
+                    const tahun = String(now.getFullYear()).slice(-2);
+                    const bulan = String(now.getMonth() + 1).padStart(2, '0');
+                    const sequence = '000001';
+                    nomorPembayaranInput.value = `${kodeBank}-${cetakan}-${tahun}-${bulan}-${sequence}`;
+                });
         }
 
         // Event listeners

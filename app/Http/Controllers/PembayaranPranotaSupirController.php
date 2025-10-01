@@ -75,6 +75,19 @@ class PembayaranPranotaSupirController extends Controller
             ]);
             Log::debug('PembayaranPranotaSupirController: pembayaran_created', array_merge($pembayaran->toArray(), ['pranota_ids' => $validated['pranota_ids']]));
             $pembayaran->pranotas()->sync($validated['pranota_ids']);
+
+            // Update nomor terakhir after successful payment creation
+            // Extract the running number from the nomor_pembayaran (last 6 digits)
+            $nomorPembayaran = $validated['nomor_pembayaran'];
+            $runningNumber = (int) substr($nomorPembayaran, -6);
+
+            // Update master nomor terakhir
+            $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->lockForUpdate()->first();
+            if ($nomorTerakhir) {
+                $nomorTerakhir->nomor_terakhir = $runningNumber;
+                $nomorTerakhir->save();
+            }
+
             DB::commit();
             return redirect()->route('pembayaran-pranota-supir.index')->with('success', 'Pembayaran berhasil disimpan!');
         } catch (\Exception $e) {
@@ -89,5 +102,29 @@ class PembayaranPranotaSupirController extends Controller
     {
         $pembayaran->load('pranotas');
         return view('pembayaran-pranota-supir.print', compact('pembayaran'));
+    }
+
+    /**
+     * Generate nomor pembayaran untuk AJAX request
+     */
+    public function generateNomorPembayaran(Request $request)
+    {
+        try {
+            $nomorCetakan = $request->get('nomor_cetakan', 1);
+            $kodeBank = $request->get('kode_bank', '000');
+
+            $nomorPembayaran = PembayaranPranotaSupir::generateNomorPembayaran($nomorCetakan, $kodeBank);
+
+            return response()->json([
+                'success' => true,
+                'nomor_pembayaran' => $nomorPembayaran
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
     }
 }

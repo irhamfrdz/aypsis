@@ -222,14 +222,22 @@ class User extends Authenticatable
     {
         // Handle string ability (most common case in this app)
         if (is_string($abilities)) {
-            return $this->hasPermissionTo($abilities);
+            // First try exact match
+            if ($this->hasPermissionTo($abilities)) {
+                return true;
+            }
+
+            // If exact match fails, try flexible matching for compatibility
+            return $this->hasFlexiblePermission($abilities);
         }
 
         // Handle array of abilities
         if (is_array($abilities)) {
             foreach ($abilities as $ability) {
-                if (is_string($ability) && $this->hasPermissionTo($ability)) {
-                    return true;
+                if (is_string($ability)) {
+                    if ($this->hasPermissionTo($ability) || $this->hasFlexiblePermission($ability)) {
+                        return true;
+                    }
                 }
             }
             return false;
@@ -237,5 +245,52 @@ class User extends Authenticatable
 
         // For other cases, fall back to parent implementation
         return parent::can($abilities, $arguments);
+    }
+
+    /**
+     * Check permission with flexible matching to handle different naming conventions
+     *
+     * @param string $ability
+     * @return bool
+     */
+    private function hasFlexiblePermission(string $ability): bool
+    {
+        // Try various permission name patterns that might match the ability
+        $patterns = [
+            $ability,                           // exact match (already tried)
+            str_replace('-', '.', $ability),    // dash to dot (master-coa-view -> master.coa.view)
+            str_replace('.', '-', $ability),    // dot to dash (master.coa.view -> master-coa-view)
+        ];
+
+        // Check for common action mappings
+        $actionMappings = [
+            'view' => ['index', 'show', 'view'],
+            'create' => ['create', 'store'],
+            'update' => ['edit', 'update'],
+            'delete' => ['destroy', 'delete']
+        ];
+
+        // Extract module and action from ability
+        if (preg_match('/^(.+)-([^-]+)$/', $ability, $matches)) {
+            $module = $matches[1];
+            $action = $matches[2];
+
+            // Add mapped actions to patterns
+            if (isset($actionMappings[$action])) {
+                foreach ($actionMappings[$action] as $mappedAction) {
+                    $patterns[] = $module . '-' . $mappedAction;
+                    $patterns[] = $module . '.' . $mappedAction;
+                }
+            }
+        }
+
+        // Check each pattern against user permissions
+        foreach ($patterns as $pattern) {
+            if ($this->hasPermissionTo($pattern)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 }

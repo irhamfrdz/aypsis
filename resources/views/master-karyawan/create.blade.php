@@ -305,8 +305,18 @@
                         <select name="nama_bank" id="nama_bank" class="{{ $selectClasses }}">
                             <option value="">-- Pilih Nama Bank --</option>
                             @foreach($banks as $bank)
-                            <option value="{{ $bank->name }}" {{ old('nama_bank') == $bank->name ? 'selected' : '' }}>
-                                {{ $bank->name }} @if($bank->code) ({{ $bank->code }}) @endif
+                            @php
+                                $isSelected = old('nama_bank') == $bank->name ||
+                                             (!old('nama_bank') && (str_contains(strtolower($bank->name), 'bca') || str_contains(strtolower($bank->name), 'bank central asia')));
+
+                                // Check if bank name already contains the code to avoid duplication
+                                $displayName = $bank->name;
+                                if ($bank->code && !str_contains($bank->name, $bank->code)) {
+                                    $displayName = $bank->name . ' (' . $bank->code . ')';
+                                }
+                            @endphp
+                            <option value="{{ $bank->name }}" {{ $isSelected ? 'selected' : '' }}>
+                                {{ $displayName }}
                             </option>
                             @endforeach
                         </select>
@@ -518,6 +528,13 @@
                     input.classList.remove('border-red-500');
                     return true;
                 }
+            }
+
+            // Fungsi untuk format nomor identitas - hanya menerima angka
+            function formatIdentityNumber(input) {
+                // Remove any non-numeric characters
+                let value = input.value.replace(/\D/g, '');
+                input.value = value;
             }
 
             // Fungsi untuk menampilkan warning saat input KTP/KK
