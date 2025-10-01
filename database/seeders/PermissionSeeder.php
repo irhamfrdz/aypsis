@@ -108,6 +108,43 @@ class PermissionSeeder extends Seeder
             'permohonan' => 'Permohonan',
             'user-approval' => 'User Approval',
             
+            // UserController specific permission variants (for compatibility)
+            'master-bank-index' => 'Master Bank Index',
+            'master-bank-edit' => 'Master Bank Edit',  
+            'master-bank-destroy' => 'Master Bank Destroy',
+            'master-coa-delete' => 'Master COA Delete',
+            'master-pajak-destroy' => 'Master Pajak Destroy',
+            'master-pekerjaan-destroy' => 'Master Pekerjaan Destroy',
+            'master-divisi-destroy' => 'Master Divisi Destroy',
+            'master-vendor-bengkel-destroy' => 'Master Vendor Bengkel Destroy',
+            
+            // Action variants that UserController expects
+            'master-user-bulk-manage' => 'Master User Bulk Manage',
+            'tagihan-perbaikan-kontainer-view' => 'Tagihan Perbaikan Kontainer View',
+            'tagihan-perbaikan-kontainer-create' => 'Tagihan Perbaikan Kontainer Create',
+            'tagihan-perbaikan-kontainer-update' => 'Tagihan Perbaikan Kontainer Update',
+            'tagihan-perbaikan-kontainer-delete' => 'Tagihan Perbaikan Kontainer Delete',
+            'tagihan-perbaikan-kontainer-print' => 'Tagihan Perbaikan Kontainer Print',
+            
+            // Profile permissions (UserController specific)
+            'profile-view' => 'Profile View',
+            'profile-update' => 'Profile Update', 
+            'profile-delete' => 'Profile Delete',
+            
+            // Supir permissions (UserController specific)
+            'supir-dashboard-view' => 'Supir Dashboard View',
+            
+            // Permission variants from web.php routes
+            'master-karyawan-crew-checklist' => 'Master Karyawan Crew Checklist',
+            'master-karyawan-template' => 'Master Karyawan Template',
+            'tagihan-kontainer-sewa-index' => 'Tagihan Kontainer Sewa Index',
+            'tagihan-kontainer-sewa-create' => 'Tagihan Kontainer Sewa Create',
+            'pembayaran-pranota-cat-view' => 'Pembayaran Pranota CAT View',
+            
+            // Additional permission compatibility
+            'dashboard' => 'Dashboard Access',
+            'master' => 'Master Module Access',
+            
             // Dot notation variants
             'master.karyawan' => 'Master Karyawan (dot notation)',
             'master.karyawan.index' => 'Master Karyawan Index',
