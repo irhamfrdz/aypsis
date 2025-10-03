@@ -1,7 +1,7 @@
 <?php
 /**
  * Script untuk restore permission dari backup JSON
- * 
+ *
  * Usage: php restore_permissions_from_backup.php <backup_file.json>
  */
 
@@ -23,7 +23,7 @@ if ($argc < 2) {
     echo "Usage: php restore_permissions_from_backup.php <backup_file.json>\n\n";
     echo "Contoh:\n";
     echo "  php restore_permissions_from_backup.php backup_permissions_2025-10-03_123456.json\n\n";
-    
+
     // List available backup files
     $backupFiles = glob(base_path('backup_permissions_*.json'));
     if (!empty($backupFiles)) {
@@ -97,17 +97,17 @@ try {
     $restored = 0;
     $skipped = 0;
     $errors = 0;
-    
+
     foreach ($backupData as $permData) {
         // Check if permission already exists
         $exists = Permission::where('id', $permData['id'])->exists();
-        
+
         if ($exists) {
             echo "⏭️  Skip ID {$permData['id']}: {$permData['name']} (sudah ada)\n";
             $skipped++;
             continue;
         }
-        
+
         try {
             // Create permission
             Permission::create([
@@ -115,40 +115,40 @@ try {
                 'name' => $permData['name'],
                 'description' => $permData['description'] ?? '',
             ]);
-            
+
             $restored++;
-            
+
             if ($restored % 10 == 0) {
                 echo "✅ Restored $restored permissions...\n";
             }
-            
+
         } catch (\Exception $e) {
             echo "❌ Error restoring ID {$permData['id']}: {$e->getMessage()}\n";
             $errors++;
         }
     }
-    
+
     DB::commit();
-    
+
     echo "\n╔═══════════════════════════════════════════════════════════════════════╗\n";
     echo "║                    RESTORE SELESAI                                    ║\n";
     echo "╚═══════════════════════════════════════════════════════════════════════╝\n\n";
-    
+
     echo "📊 Ringkasan:\n";
     echo "   ✅ Permission di-restore:  $restored\n";
     echo "   ⏭️  Permission di-skip:     $skipped\n";
     echo "   ❌ Error:                  $errors\n\n";
-    
+
     if ($errors > 0) {
         echo "⚠️  Terdapat $errors error. Periksa log di atas.\n\n";
     }
-    
+
     // Tampilkan statistik akhir
     $totalPermissions = Permission::count();
     echo "📈 Total permission sekarang: $totalPermissions\n";
-    
+
     echo "\n✅ Restore selesai!\n";
-    
+
 } catch (\Exception $e) {
     DB::rollBack();
     echo "\n❌ FATAL ERROR: " . $e->getMessage() . "\n";

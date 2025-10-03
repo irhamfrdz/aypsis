@@ -45,7 +45,7 @@ echo "❌ Permission yang TIDAK assigned: " . $unusedPermissions->count() . "\n\
 if ($unusedPermissions->count() == 0) {
     echo "✅ Tidak ada permission yang bisa dihapus dengan aman.\n";
     echo "   Semua permission sudah assigned ke user atau role.\n\n";
-    
+
     echo "💡 Untuk pembersihan lebih lanjut:\n";
     echo "   1. Review permission duplikat (dot vs dash notation)\n";
     echo "   2. Hapus permission yang tidak digunakan di routes\n";
@@ -63,7 +63,7 @@ foreach ($unusedPermissions as $perm) {
     if (strpos($perm->name, '.') !== false) {
         $prefix = explode('.', $perm->name)[0];
     }
-    
+
     if (!isset($modules[$prefix])) {
         $modules[$prefix] = 0;
     }
@@ -138,45 +138,45 @@ DB::beginTransaction();
 
 try {
     $permissionIds = $unusedPermissions->pluck('id')->toArray();
-    
+
     // Hapus dari permissions table
     // (Tidak perlu hapus dari user_permissions/permission_role karena sudah tidak ada)
     echo "1️⃣  Menghapus permissions dari database...\n";
     $deleted = Permission::whereIn('id', $permissionIds)->delete();
     echo "   ✅ Dihapus: $deleted permissions\n\n";
-    
+
     DB::commit();
-    
+
     echo "╔═══════════════════════════════════════════════════════════════════════╗\n";
     echo "║                    PEMBERSIHAN SELESAI                                ║\n";
     echo "╚═══════════════════════════════════════════════════════════════════════╝\n\n";
-    
+
     $newTotal = Permission::count();
-    
+
     echo "📊 Hasil:\n";
     echo "   ✅ Permission dihapus:               $deleted\n";
     echo "   📈 Total permission sekarang:        $newTotal\n";
     echo "   💾 Backup tersimpan:                 " . basename($backupFile) . "\n\n";
-    
+
     echo "✅ Database telah dibersihkan!\n\n";
-    
+
     // Rekomendasi selanjutnya
     if ($newTotal > 300) {
         echo "💡 REKOMENDASI LANJUTAN:\n";
         echo "   Database masih memiliki $newTotal permissions.\n";
         echo "   Untuk pembersihan lebih lanjut:\n\n";
-        
+
         echo "   1. Review permission duplikat:\n";
         echo "      php analyze_server_permissions.php\n\n";
-        
+
         echo "   2. Review file yang dibuat:\n";
         echo "      - server_duplicate_permissions.json\n";
         echo "      - server_unassigned_permissions.json\n\n";
-        
+
         echo "   3. Hapus permission duplikat secara manual atau gunakan:\n";
         echo "      php cleanup_duplicate_permissions.php\n\n";
     }
-    
+
 } catch (\Exception $e) {
     DB::rollBack();
     echo "\n❌ ERROR: " . $e->getMessage() . "\n";

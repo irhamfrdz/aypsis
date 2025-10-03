@@ -28,11 +28,11 @@ $uniqueBase = [];
 foreach ($allPermissions as $perm) {
     // Convert to base format (normalize)
     $base = str_replace(['.', '-'], '_', $perm->name);
-    
+
     if (!isset($uniqueBase[$base])) {
         $uniqueBase[$base] = [];
     }
-    
+
     $uniqueBase[$base][] = [
         'id' => $perm->id,
         'name' => $perm->name,
@@ -54,16 +54,16 @@ echo "   📊 Total duplicate entries: " . array_sum(array_map('count', $duplica
 if (!empty($duplicates)) {
     echo "🔍 Contoh Duplikasi (10 pertama):\n";
     echo str_repeat("─", 75) . "\n";
-    
+
     $count = 0;
     foreach ($duplicates as $base => $perms) {
         if ($count >= 10) break;
-        
+
         echo "\n📂 Set " . ($count + 1) . ":\n";
         foreach ($perms as $perm) {
             echo "   - ID: " . str_pad($perm['id'], 4) . " │ " . $perm['name'] . "\n";
         }
-        
+
         $count++;
     }
     echo "\n" . str_repeat("─", 75) . "\n\n";
@@ -75,7 +75,7 @@ $usedInRoutes = [];
 
 foreach (Route::getRoutes() as $route) {
     $middleware = $route->middleware();
-    
+
     foreach ($middleware as $mw) {
         if (strpos($mw, 'can:') === 0) {
             $permission = str_replace('can:', '', $mw);
@@ -135,7 +135,7 @@ foreach ($allPermissions as $perm) {
     if (strpos($perm->name, '.') !== false) {
         $prefix = explode('.', $perm->name)[0];
     }
-    
+
     if (!isset($modules[$prefix])) {
         $modules[$prefix] = 0;
     }

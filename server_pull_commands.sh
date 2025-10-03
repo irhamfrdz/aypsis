@@ -57,6 +57,7 @@ php debug_permission_error.php | grep -A 10 "PROBLEMATIC PERMISSIONS"
 
 # 9. Optimize application
 echo "⚡ 9. Optimizing application..."
+
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache

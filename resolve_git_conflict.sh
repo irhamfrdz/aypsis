@@ -91,13 +91,13 @@ read -p "Backup file lokal dan pull update? (y/n): " confirm
 if [ "$confirm" = "y" ]; then
     echo "Creating backup..."
     cp server_pull_commands.sh server_pull_commands.sh.backup.$(date +%Y%m%d_%H%M%S)
-    
+
     echo "Stashing local changes..."
     git stash save "Auto-backup before pull $(date +%Y%m%d_%H%M%S)"
-    
+
     echo "Pulling updates..."
     git pull origin main
-    
+
     echo ""
     echo "✅ Pull completed successfully!"
     echo ""
@@ -115,4 +115,4 @@ echo ""
 echo "Save script di atas sebagai resolve.sh dan jalankan dengan:"
 echo "chmod +x resolve.sh && ./resolve.sh"
 echo ""
-echo "=== END OF CONFLICT RESOLUTION GUIDE ===" 
+echo "=== END OF CONFLICT RESOLUTION GUIDE ==="

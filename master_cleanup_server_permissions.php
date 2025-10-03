@@ -2,7 +2,7 @@
 /**
  * Script MASTER untuk membersihkan permission di server Ubuntu
  * Menangani 691+ permissions secara bertahap dan aman
- * 
+ *
  * Strategi:
  * 1. Hapus permission yang tidak assigned
  * 2. Merge permission duplikat
@@ -69,24 +69,24 @@ $processed = [];
 
 foreach ($allPerms as $perm) {
     if (in_array($perm->id, $processed)) continue;
-    
+
     $similars = [];
     foreach ($allPerms as $candidate) {
         if ($candidate->id == $perm->id || in_array($candidate->id, $processed)) continue;
-        
+
         // Normalize names
         $n1 = str_replace(['.', '-'], '_', strtolower($perm->name));
         $n2 = str_replace(['.', '-'], '_', strtolower($candidate->name));
-        
+
         if ($n1 === $n2) {
             $similars[] = $candidate;
         }
     }
-    
+
     if (!empty($similars)) {
         $set = array_merge([$perm], $similars);
         $duplicateSets[] = $set;
-        
+
         $processed[] = $perm->id;
         foreach ($similars as $s) {
             $processed[] = $s->id;
@@ -181,27 +181,27 @@ try {
         'duplicates_merged' => 0,
         'duplicates_deleted' => 0,
     ];
-    
+
     // STEP 1: Delete unassigned
     echo "1️⃣  Menghapus permission yang tidak assigned...\n";
     $stats['unassigned_deleted'] = Permission::whereNotIn('id', $allActiveIds)->delete();
     echo "   ✅ Dihapus: " . $stats['unassigned_deleted'] . " permissions\n\n";
-    
+
     // STEP 2: Merge duplicates
     echo "2️⃣  Merge & hapus permission duplikat...\n";
-    
+
     foreach ($duplicateSets as $set) {
         // Keep dash notation version, or first one
         $dashPerms = array_filter($set, fn($p) => strpos($p->name, '-') !== false && strpos($p->name, '.') === false);
         $keep = !empty($dashPerms) ? reset($dashPerms) : reset($set);
         $deletes = array_filter($set, fn($p) => $p->id != $keep->id);
-        
+
         foreach ($deletes as $perm) {
             // Merge user_permissions
             $users = DB::table('user_permissions')
                 ->where('permission_id', $perm->id)
                 ->pluck('user_id');
-            
+
             foreach ($users as $userId) {
                 DB::table('user_permissions')->updateOrInsert(
                     ['user_id' => $userId, 'permission_id' => $keep->id],
@@ -209,12 +209,12 @@ try {
                 );
                 $stats['duplicates_merged']++;
             }
-            
+
             // Merge permission_role
             $roles = DB::table('permission_role')
                 ->where('permission_id', $perm->id)
                 ->pluck('role_id');
-            
+
             foreach ($roles as $roleId) {
                 DB::table('permission_role')->updateOrInsert(
                     ['role_id' => $roleId, 'permission_id' => $keep->id],
@@ -222,7 +222,7 @@ try {
                 );
                 $stats['duplicates_merged']++;
             }
-            
+
             // Delete old relations & permission
             DB::table('user_permissions')->where('permission_id', $perm->id)->delete();
             DB::table('permission_role')->where('permission_id', $perm->id)->delete();
@@ -230,18 +230,18 @@ try {
             $stats['duplicates_deleted']++;
         }
     }
-    
+
     echo "   ✅ Relasi di-merge: " . $stats['duplicates_merged'] . "\n";
     echo "   ✅ Duplikat dihapus: " . $stats['duplicates_deleted'] . "\n\n";
-    
+
     DB::commit();
-    
+
     $totalAfter = Permission::count();
-    
+
     echo "╔═══════════════════════════════════════════════════════════════════════╗\n";
     echo "║                    PEMBERSIHAN SELESAI                                ║\n";
     echo "╚═══════════════════════════════════════════════════════════════════════╝\n\n";
-    
+
     echo "📊 Hasil Akhir:\n";
     echo "   Permission sebelum:                  $totalBefore\n";
     echo "   └─ Tidak assigned dihapus:           " . $stats['unassigned_deleted'] . "\n";
@@ -250,17 +250,17 @@ try {
     echo "   Permission sekarang:                 $totalAfter\n";
     echo "   Total dihapus:                       " . ($totalBefore - $totalAfter) . "\n";
     echo "   Persentase pengurangan:              " . round((($totalBefore - $totalAfter) / $totalBefore) * 100, 1) . "%\n\n";
-    
+
     echo "💾 Backup: " . basename($backupFile) . "\n";
     echo "✅ Database berhasil dibersihkan!\n\n";
-    
+
     if ($totalAfter > 250) {
         echo "💡 Rekomendasi Lanjutan:\n";
         echo "   Masih ada $totalAfter permissions.\n";
         echo "   Untuk analisis lebih lanjut:\n";
         echo "   php analyze_server_permissions.php\n\n";
     }
-    
+
 } catch (\Exception $e) {
     DB::rollBack();
     echo "\n❌ ERROR: " . $e->getMessage() . "\n";
