@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title','Master Kontainer')
-@section('page_title','Master Kontainer')
+@section('title','Master Kontainer Sewa')
+@section('page_title','Master Kontainer Sewa')
 
 @section('content')
 
@@ -69,15 +69,21 @@
                 </td>
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
-                    {{-- Contoh styling kondisional untuk status. Anda bisa sesuaikan dengan nilai status yang ada. --}}
                     @php
-                        $statusClass = 'bg-gray-100 text-gray-800'; // Default
-                        if (in_array($kontainer->status, ['Tersedia', 'Baik'])) $statusClass = 'bg-green-100 text-green-800';
-                        if (in_array($kontainer->status, ['Disewa', 'Digunakan'])) $statusClass = 'bg-yellow-100 text-yellow-800';
-                        if (in_array($kontainer->status, ['Rusak', 'Perbaikan'])) $statusClass = 'bg-red-100 text-red-800';
+                        // Normalize status - hanya ada 2 status: Tersedia dan Disewa
+                        $displayStatus = 'Tersedia'; // Default
+                        $statusClass = 'bg-green-100 text-green-800'; // Default: Hijau untuk Tersedia
+
+                        // Jika status menunjukkan sedang digunakan, maka "Disewa"
+                        if (in_array($kontainer->status, ['Disewa', 'Digunakan', 'rented'])) {
+                            $displayStatus = 'Disewa';
+                            $statusClass = 'bg-yellow-100 text-yellow-800'; // Kuning untuk Disewa
+                        }
+                        // Semua status lainnya dianggap "Tersedia"
+                        // (Tersedia, available, dikembalikan, dll)
                     @endphp
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
-                        {{ $kontainer->status ?? 'N/A' }}
+                        {{ $displayStatus }}
                     </span>
                 </td>
 

@@ -376,18 +376,18 @@
 
                 const selectedDivisi = divisiSelect.value;
                 const currentPekerjaan = '{{ $karyawan->pekerjaan ?? "" }}'; // Pekerjaan yang tersimpan
-                
+
                 if (selectedDivisi && pekerjaanByDivisi[selectedDivisi]) {
                     pekerjaanByDivisi[selectedDivisi].forEach(function(pekerjaan) {
                         const option = document.createElement('option');
                         option.value = pekerjaan;
                         option.textContent = pekerjaan;
-                        
+
                         // Set selected if it matches current karyawan pekerjaan
                         if (pekerjaan === currentPekerjaan) {
                             option.selected = true;
                         }
-                        
+
                         pekerjaanSelect.appendChild(option);
                     });
                 }

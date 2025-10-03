@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
             MasterPekerjaanPermissionSeeder::class, // Permission untuk master pekerjaan
             MasterStockKontainerPermissionSeeder::class, // Permission untuk master stock kontainer
             KodeNomorPermissionSeeder::class, // Permission untuk master kode nomor
+            ApprovalPermissionSeeder::class, // Permission untuk approval tugas 1 & 2
             UserSeeder::class, // Pastikan user dibuat sebelum relasi permission
             UserPermissionSeeder::class, // Seeder untuk user permissions
             UserAdminSeeder::class, // Seeder untuk user_admin dengan semua permission

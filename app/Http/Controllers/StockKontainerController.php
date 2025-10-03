@@ -20,10 +20,7 @@ class StockKontainerController extends Controller
             $query->where('status', $request->status);
         }
 
-        // Filter berdasarkan kondisi
-        if ($request->filled('kondisi')) {
-            $query->where('kondisi', $request->kondisi);
-        }
+
 
         // Search berdasarkan nomor kontainer
         if ($request->filled('search')) {
@@ -50,17 +47,13 @@ class StockKontainerController extends Controller
     {
         $request->validate([
             'nomor_kontainer' => 'required|string|unique:stock_kontainers,nomor_kontainer',
-            'ukuran' => 'nullable|string',
+            'ukuran' => 'nullable|string|in:20ft,40ft',
             'tipe_kontainer' => 'nullable|string',
             'status' => 'required|string|in:available,rented,maintenance,damaged',
             'lokasi' => 'nullable|string',
             'tanggal_masuk' => 'nullable|date',
             'tanggal_keluar' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'kondisi' => 'required|string|in:baik,rusak_ringan,rusak_berat',
-            'harga_sewa_per_hari' => 'nullable|numeric|min:0',
-            'harga_sewa_per_bulan' => 'nullable|numeric|min:0',
-            'pemilik' => 'nullable|string',
             'nomor_seri' => 'nullable|string',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
         ]);
@@ -94,17 +87,13 @@ class StockKontainerController extends Controller
     {
         $request->validate([
             'nomor_kontainer' => ['required', 'string', Rule::unique('stock_kontainers')->ignore($stockKontainer->id)],
-            'ukuran' => 'nullable|string',
+            'ukuran' => 'nullable|string|in:20ft,40ft',
             'tipe_kontainer' => 'nullable|string',
             'status' => 'required|string|in:available,rented,maintenance,damaged',
             'lokasi' => 'nullable|string',
             'tanggal_masuk' => 'nullable|date',
             'tanggal_keluar' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'kondisi' => 'required|string|in:baik,rusak_ringan,rusak_berat',
-            'harga_sewa_per_hari' => 'nullable|numeric|min:0',
-            'harga_sewa_per_bulan' => 'nullable|numeric|min:0',
-            'pemilik' => 'nullable|string',
             'nomor_seri' => 'nullable|string',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
         ]);

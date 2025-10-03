@@ -40,8 +40,6 @@
                         <option value="">Pilih Ukuran</option>
                         <option value="20ft" {{ old('ukuran') == '20ft' ? 'selected' : '' }}>20ft</option>
                         <option value="40ft" {{ old('ukuran') == '40ft' ? 'selected' : '' }}>40ft</option>
-                        <option value="40ft HC" {{ old('ukuran') == '40ft HC' ? 'selected' : '' }}>40ft HC</option>
-                        <option value="45ft" {{ old('ukuran') == '45ft' ? 'selected' : '' }}>45ft</option>
                     </select>
                     @error('ukuran')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
@@ -76,25 +74,9 @@
                     @enderror
                 </div>
 
-                <div>
-                    <label for="kondisi" class="block text-sm font-medium text-gray-700">Kondisi</label>
-                    <select name="kondisi" id="kondisi" class="{{ $selectClasses }}" required>
-                        <option value="baik" {{ old('kondisi', 'baik') == 'baik' ? 'selected' : '' }}>Baik</option>
-                        <option value="rusak_ringan" {{ old('kondisi') == 'rusak_ringan' ? 'selected' : '' }}>Rusak Ringan</option>
-                        <option value="rusak_berat" {{ old('kondisi') == 'rusak_berat' ? 'selected' : '' }}>Rusak Berat</option>
-                    </select>
-                    @error('kondisi')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <div>
-                    <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi Penyimpanan</label>
-                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}" class="{{ $inputClasses }}" placeholder="Contoh: Gudang A, Blok 1">
-                    @error('lokasi')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+
+
 
                 <div>
                     <label for="tanggal_masuk" class="block text-sm font-medium text-gray-700">Tanggal Masuk</label>
@@ -104,29 +86,11 @@
                     @enderror
                 </div>
 
-                <div>
-                    <label for="harga_sewa_per_hari" class="block text-sm font-medium text-gray-700">Harga Sewa per Hari (Rp)</label>
-                    <input type="number" name="harga_sewa_per_hari" id="harga_sewa_per_hari" value="{{ old('harga_sewa_per_hari') }}" class="{{ $inputClasses }}" min="0" step="0.01" placeholder="0.00">
-                    @error('harga_sewa_per_hari')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <div>
-                    <label for="harga_sewa_per_bulan" class="block text-sm font-medium text-gray-700">Harga Sewa per Bulan (Rp)</label>
-                    <input type="number" name="harga_sewa_per_bulan" id="harga_sewa_per_bulan" value="{{ old('harga_sewa_per_bulan') }}" class="{{ $inputClasses }}" min="0" step="0.01" placeholder="0.00">
-                    @error('harga_sewa_per_bulan')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <div>
-                    <label for="pemilik" class="block text-sm font-medium text-gray-700">Pemilik</label>
-                    <input type="text" name="pemilik" id="pemilik" value="{{ old('pemilik') }}" class="{{ $inputClasses }}" placeholder="Nama pemilik kontainer">
-                    @error('pemilik')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
+
+
+
 
                 <div>
                     <label for="nomor_seri" class="block text-sm font-medium text-gray-700">Nomor Seri</label>

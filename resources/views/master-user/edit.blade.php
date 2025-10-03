@@ -1102,7 +1102,66 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-cat][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-cat']['export']) && $userMatrixPermissions['pembayaran-pranota-cat']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Approval System --}}
+                            <tr class="module-row" data-module="approval">
+                                <td class="module-header">
+                                    <span class="expand-icon">▶</span>
+                                    <span class="module-icon">✅</span>
+                                    Sistem Persetujuan
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="approval-header-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="approval-header-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="approval-header-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="approval-header-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="approval-header-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="approval-header-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="approval-header-checkbox" data-permission="export">
+                                </td>
+                            </tr>
 
+                            {{-- Approval Sub-modules --}}
+                            {{-- Approval Tugas 1 --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <span class="module-icon">🔐</span>
+                                    Approval Tugas 1 (Supervisor/Manager)
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-tugas-1][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-1']['view']) && $userMatrixPermissions['approval-tugas-1']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[approval-tugas-1][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-1']['approve']) && $userMatrixPermissions['approval-tugas-1']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
+
+                            {{-- Approval Tugas 2 --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <span class="module-icon">🔒</span>
+                                    Approval Tugas 2 (General Manager)
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-tugas-2][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-2']['view']) && $userMatrixPermissions['approval-tugas-2']['view']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[approval-tugas-2][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-tugas-2']['approve']) && $userMatrixPermissions['approval-tugas-2']['approve']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td class="empty-cell"></td>
+                            </tr>
 
                         </tbody>
                     </table>
@@ -1297,6 +1356,9 @@
 
                 // Initialize check all aktivitas permissions
                 initializeCheckAllAktivitas();
+
+                // Initialize check all approval permissions
+                initializeCheckAllApproval();
             }
 
             function initializeKaryawanPermissions() {
@@ -1675,6 +1737,56 @@
                     if (headerCheckbox && aktivitasCheckboxes.length > 0) {
                         const allChecked = Array.from(aktivitasCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(aktivitasCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            function initializeCheckAllApproval() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.approval-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in approval sub-modules
+                        const approvalCheckboxes = document.querySelectorAll(`[data-parent="approval"] input[name*="[${permission}]"]`);
+                        approvalCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`Semua izin ${permission} Approval telah dicentang`, 'success');
+                        } else {
+                            showToast(`Semua izin ${permission} Approval telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="approval"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateApprovalHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateApprovalHeaderCheckboxes();
+            }
+
+            function updateApprovalHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.approval-header-checkbox[data-permission="${permission}"]`);
+                    const approvalCheckboxes = document.querySelectorAll(`[data-parent="approval"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && approvalCheckboxes.length > 0) {
+                        const allChecked = Array.from(approvalCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(approvalCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;

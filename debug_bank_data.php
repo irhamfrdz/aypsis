@@ -42,7 +42,7 @@ echo "\n";
 if ($karyawan && $karyawan->nama_bank) {
     echo "3. Analisis Matching:\n";
     $exactMatch = $banks->where('name', $karyawan->nama_bank)->first();
-    
+
     if ($exactMatch) {
         echo "   ✅ EXACT MATCH ditemukan: '{$karyawan->nama_bank}' = '{$exactMatch->name}'\n";
     } else {
@@ -51,7 +51,7 @@ if ($karyawan && $karyawan->nama_bank) {
         echo "   - Nama bank di data karyawan berbeda dengan nama di tabel banks\n";
         echo "   - Ada spasi ekstra atau karakter khusus\n";
         echo "   - Case sensitivity (huruf besar/kecil)\n\n";
-        
+
         echo "   Mencari bank dengan nama mirip:\n";
         foreach ($banks as $bank) {
             $similarity = similar_text(strtolower($karyawan->nama_bank), strtolower($bank->name), $percent);

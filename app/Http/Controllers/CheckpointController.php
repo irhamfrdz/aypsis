@@ -16,14 +16,24 @@ class CheckpointController extends Controller
      */
     public function create(Permohonan $permohonan)
     {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
+        }
+
         // Otorisasi: Pastikan supir yang login adalah yang ditugaskan
-        if (Auth::user()->karyawan?->id !== $permohonan->supir_id) {
+        if ($user->karyawan->id !== $permohonan->supir_id) {
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
-    // Ambil semua kontainer dari tabel kontainers
-    $kontainerList = Kontainer::all();
-    return view('supir.checkpoint-create', compact('permohonan', 'kontainerList'));
+        // Ambil semua kontainer dari tabel kontainers
+        $kontainerList = Kontainer::all();
+
+        // Ambil semua stock kontainer dari master stock kontainer
+        $stockKontainers = \App\Models\StockKontainer::all();
+
+        return view('supir.checkpoint-create', compact('permohonan', 'kontainerList', 'stockKontainers'));
     }
 
     /**
@@ -31,6 +41,17 @@ class CheckpointController extends Controller
      */
     public function store(Request $request, Permohonan $permohonan)
     {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
+        }
+
+        // Otorisasi: Pastikan supir yang login adalah yang ditugaskan
+        if ($user->karyawan->id !== $permohonan->supir_id) {
+            abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
+        }
+
         // Validasi dasar
         $rules = [
             'surat_jalan_vendor' => 'nullable|string|max:255',
@@ -65,12 +86,17 @@ class CheckpointController extends Controller
             if ($permohonan->kontainers->isEmpty() && !empty($validated['nomor_kontainer'])) {
                 $kontainerIds = [];
 
+                // Resolve kegiatan name untuk deteksi yang akurat
+                $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
+                               ->value('nama_kegiatan') ?? $permohonan->kegiatan;
+
                 // Determine if this permohonan is a return of sewa containers
-                $kegiatanLower = strtolower($permohonan->kegiatan ?? '');
+                $kegiatanLower = strtolower($kegiatanName ?? ($permohonan->kegiatan ?? ''));
                 $isReturnSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false) || ($kegiatanLower === 'pengambilan');
                 $isPerbaikanKontainer = (stripos($kegiatanLower, 'perbaikan') !== false && stripos($kegiatanLower, 'kontainer') !== false)
                     || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
                 $isAntarSewa = stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'sewa') !== false;
+                $isAntarKontainerPerbaikan = (stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'kontainer') !== false && stripos($kegiatanLower, 'perbaikan') !== false);
 
                 // Jika kegiatan perbaikan kontainer, antar sewa, atau vendor menerima input nomor kontainer bebas, cari atau buat kontainer berdasarkan nomor_seri_gabungan
                 if ($isPerbaikanKontainer || $isAntarSewa || in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
@@ -143,6 +169,44 @@ class CheckpointController extends Controller
 
                 // Hubungkan kontainer ke permohonan
                 $permohonan->kontainers()->sync($kontainerIds);
+
+                // Update status stock kontainer berdasarkan jenis kegiatan
+                if (!empty($validated['nomor_kontainer'])) {
+                    foreach ($validated['nomor_kontainer'] as $nomor) {
+                        $nomorRaw = trim($nomor);
+
+                        // Cari stock kontainer berdasarkan nomor kontainer
+                        $stockKontainer = \App\Models\StockKontainer::where('nomor_kontainer', $nomorRaw)->first();
+
+                        if ($stockKontainer) {
+                            if ($isAntarKontainerPerbaikan) {
+                                // Untuk antar kontainer perbaikan, status menjadi maintenance
+                                $stockKontainer->update(['status' => 'maintenance']);
+                                Log::info("Stock kontainer {$nomorRaw} status updated to maintenance for antar kontainer perbaikan");
+
+                            } elseif (stripos($kegiatanLower, 'kembali') !== false && stripos($kegiatanLower, 'perbaikan') !== false) {
+                                // Untuk kembali dari perbaikan, status menjadi available
+                                $stockKontainer->update(['status' => 'available']);
+                                Log::info("Stock kontainer {$nomorRaw} status updated to available from perbaikan");
+
+                            } elseif (stripos($kegiatanLower, 'selesai') !== false && stripos($kegiatanLower, 'perbaikan') !== false) {
+                                // Untuk selesai perbaikan, status menjadi available
+                                $stockKontainer->update(['status' => 'available']);
+                                Log::info("Stock kontainer {$nomorRaw} status updated to available - selesai perbaikan");
+
+                            } elseif ($isReturnSewa) {
+                                // Untuk tarik/pengambilan sewa, status menjadi available
+                                $stockKontainer->update(['status' => 'available']);
+                                Log::info("Stock kontainer {$nomorRaw} status updated to available - return sewa");
+
+                            } elseif (!$isPerbaikanKontainer && !$isAntarSewa) {
+                                // Untuk kegiatan lain (selain perbaikan), status menjadi rented
+                                $stockKontainer->update(['status' => 'rented']);
+                                Log::info("Stock kontainer {$nomorRaw} status updated to rented");
+                            }
+                        }
+                    }
+                }
             }
 
             // Simpan data checkpoint

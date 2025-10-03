@@ -192,66 +192,6 @@
                 </a>
                 @endcan
 
-                <!-- Template Download -->
-                <a href="{{ route('daftar-tagihan-kontainer-sewa.template.csv') }}" class="bg-gray-600 hover:bg-gray-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                    </svg>
-                    Download Template CSV
-                </a>
-
-                <!-- Import CSV Standard -->
-                <form action="{{ route('daftar-tagihan-kontainer-sewa.import') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
-                    @csrf
-                    <div class="flex items-center gap-1">
-                        <label class="inline-flex items-center gap-2 bg-white border border-gray-300 rounded-lg px-3 py-2 cursor-pointer hover:bg-gray-50 transition-colors duration-150">
-                            <input type="file" name="file" accept=".csv,text/csv" class="hidden file-input" id="csvFileInput" />
-                            <svg class="h-4 w-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-                            </svg>
-                            <span class="text-sm text-gray-700">Upload CSV</span>
-                            <span id="uploadFilename" class="text-sm text-gray-500">(belum ada file)</span>
-                        </label>
-                        <div class="text-gray-400 text-xs" title="Import CSV standar tanpa auto-grouping">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
-                        </svg>
-                        Import
-                    </button>
-                </form>
-
-                <!-- Import CSV with Grouping -->
-                <form action="{{ route('daftar-tagihan-kontainer-sewa.import.grouped') }}" method="POST" enctype="multipart/form-data" class="flex items-center gap-2">
-                    @csrf
-                    <div class="flex items-center gap-1">
-                        <label class="inline-flex items-center gap-2 bg-white border border-orange-300 rounded-lg px-3 py-2 cursor-pointer hover:bg-orange-50 transition-colors duration-150">
-                            <input type="file" name="csv_file" accept=".csv,text/csv" class="hidden file-input" id="csvFileGroupInput" />
-                            <svg class="h-4 w-4 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17V7m0 10a2 2 0 01-2 2H5a2 2 0 01-2-2V7a2 2 0 012-2h2a2 2 0 012 2m0 10a2 2 0 002 2h2a2 2 0 002-2M9 7a2 2 0 012-2h2a2 2 0 012 2m0 10V7m0 10a2 2 0 002 2h2a2 2 0 002-2V7a2 2 0 00-2-2h-2a2 2 0 00-2 2"></path>
-                            </svg>
-                            <span class="text-sm text-orange-700">Upload CSV dengan Grouping</span>
-                            <span id="uploadGroupFilename" class="text-sm text-orange-500">(belum ada file)</span>
-                        </label>
-                        <div class="text-orange-400 text-xs" title="Import CSV dengan auto-grouping berdasarkan kontainer yang sama">
-                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                        </div>
-                    </div>
-                    <button type="submit" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                        Import & Group
-                    </button>
-                </form>
-
                 <!-- Buat Group -->
                 @can('tagihan-kontainer-create')
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.create-group') }}" class="bg-purple-600 hover:bg-purple-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
@@ -261,40 +201,40 @@
                     Buat Group
                 </a>
                 @endcan
+
+                <!-- Import Data -->
+                @can('tagihan-kontainer-sewa-create')
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.import') }}" class="bg-green-600 hover:bg-green-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    Import Data
+                </a>
+                @endcan
+
+                <!-- Export Data -->
+                @can('tagihan-kontainer-sewa-create')
+                <button type="button" id="btnExport" class="bg-blue-600 hover:bg-blue-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Export Data
+                </button>
+                @endcan
+
+                <!-- Export Template -->
+                @can('tagihan-kontainer-sewa-create')
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.export-template') }}" class="bg-orange-600 hover:bg-orange-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Download Template
+                </a>
+                @endcan
             </div>
         </div>
 
-        <!-- Import Information -->
-        <div class="mt-4 pt-4 border-t border-gray-200">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-3">
-                    <div class="flex items-center gap-2 font-medium text-gray-700">
-                        <svg class="h-4 w-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                        </svg>
-                        Import CSV Standard
-                    </div>
-                    <ul class="mt-2 text-gray-600 text-xs space-y-1">
-                        <li>• Import data sesuai template CSV</li>
-                        <li>• Tidak ada auto-grouping</li>
-                        <li>• Manual group assignment</li>
-                    </ul>
-                </div>
-                <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
-                    <div class="flex items-center gap-2 font-medium text-orange-700">
-                        <svg class="h-4 w-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
-                        </svg>
-                        Import CSV dengan Grouping
-                    </div>
-                    <ul class="mt-2 text-orange-600 text-xs space-y-1">
-                        <li>• Import data dengan auto-grouping</li>
-                        <li>• Group berdasarkan kontainer sama</li>
-                        <li>• Generate group ID otomatis</li>
-                    </ul>
-                </div>
-            </div>
-        </div>
+
     </div>
 
     <!-- Bulk Actions Section -->
@@ -523,7 +463,7 @@
         </form>
     </div>
 
-    {{-- Flash messages for import/download actions --}}
+    {{-- Flash messages --}}
     @if(session('success'))
         <div class="mb-4 p-3 bg-green-50 border border-green-100 text-green-800 rounded">{{ session('success') }}</div>
     @endif
@@ -687,7 +627,7 @@
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
                             @php
-                                // Implementasi logika periode sesuai CSV
+                                // Implementasi logika periode
                                 $currentPeriode = optional($tagihan)->periode ?? 1;
                                 $tanggalAwal = optional($tagihan)->tanggal_awal;
                                 $tanggalAkhir = optional($tagihan)->tanggal_akhir;
@@ -1023,7 +963,7 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                 </svg>
                                 <p class="text-lg font-medium">Tidak ada data tagihan</p>
-                                <p class="text-sm text-gray-500 mt-1">Mulai dengan menambahkan tagihan baru atau import data dari CSV</p>
+                                <p class="text-sm text-gray-500 mt-1">Mulai dengan menambahkan tagihan baru</p>
                             </div>
                         </td>
                     </tr>
@@ -1121,29 +1061,7 @@
 
 @push('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function(){
-    // Handle regular CSV file input
-    const input = document.getElementById('csvFileInput');
-    const label = document.getElementById('uploadFilename');
-    if (input && label) {
-        input.addEventListener('change', function(e){
-            const f = input.files && input.files[0];
-            if (f) label.textContent = f.name;
-            else label.textContent = '(belum ada file)';
-        });
-    }
 
-    // Handle grouped CSV file input
-    const groupInput = document.getElementById('csvFileGroupInput');
-    const groupLabel = document.getElementById('uploadGroupFilename');
-    if (groupInput && groupLabel) {
-        groupInput.addEventListener('change', function(e){
-            const f = groupInput.files && groupInput.files[0];
-            if (f) groupLabel.textContent = f.name;
-            else groupLabel.textContent = '(belum ada file)';
-        });
-    }
-});
 
 // Checkbox functionality
 document.addEventListener('DOMContentLoaded', function() {
@@ -1168,6 +1086,52 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize bulk actions on page load
     updateBulkActions();
+
+    // Handle Export button
+    const btnExport = document.getElementById('btnExport');
+    if (btnExport) {
+        btnExport.addEventListener('click', function() {
+            // Get current filter parameters from URL
+            const urlParams = new URLSearchParams(window.location.search);
+
+            // Build export URL with same filters
+            let exportUrl = '{{ route("daftar-tagihan-kontainer-sewa.export") }}';
+            const params = [];
+
+            // Add all existing filters
+            if (urlParams.has('vendor')) params.push('vendor=' + urlParams.get('vendor'));
+            if (urlParams.has('size')) params.push('size=' + urlParams.get('size'));
+            if (urlParams.has('periode')) params.push('periode=' + urlParams.get('periode'));
+            if (urlParams.has('status')) params.push('status=' + urlParams.get('status'));
+            if (urlParams.has('status_pranota')) params.push('status_pranota=' + urlParams.get('status_pranota'));
+            if (urlParams.has('q')) params.push('q=' + urlParams.get('q'));
+
+            if (params.length > 0) {
+                exportUrl += '?' + params.join('&');
+            }
+
+            // Show loading state
+            const originalText = btnExport.innerHTML;
+            btnExport.disabled = true;
+            btnExport.innerHTML = `
+                <svg class="animate-spin h-4 w-4 mr-2 inline" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Exporting...
+            `;
+
+            // Trigger download
+            window.location.href = exportUrl;
+
+            // Reset button after delay
+            setTimeout(() => {
+                btnExport.disabled = false;
+                btnExport.innerHTML = originalText;
+                showSuccess('Berhasil', 'Data berhasil diexport ke CSV');
+            }, 2000);
+        });
+    }
 
     // Handle select all checkbox
     selectAllCheckbox.addEventListener('change', function() {
@@ -2474,6 +2438,7 @@ window.deleteSingleGroup = function(groupName) {
     }
 };
 
+
 // Function to delete selected groups
 window.deleteSelectedGroups = function() {
     const selectedGroups = Array.from(document.querySelectorAll('.group-checkbox:checked')).map(cb => cb.value);
@@ -2639,6 +2604,8 @@ window.showError = function(title, message, duration) {
 window.showWarning = function(title, message, duration) {
     return showNotification('warning', title, message, duration);
 };
+
+
 </script>
 
 <!-- Modal Buat Pranota -->

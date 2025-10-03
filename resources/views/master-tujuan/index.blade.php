@@ -40,7 +40,7 @@
                     <tbody class="text-gray-700 text-[10px]">
                         @foreach ($tujuans as $tujuan)
                             <tr class="border-b border-gray-200 hover:bg-gray-50 transition-colors duration-150">
-                                <td class="py-3 px-4">{{ trim((($tujuan->wilayah ?? '') ? $tujuan->wilayah : '') . ' ' . (($tujuan->dari ?? '') ? '- '.$tujuan->dari : '') . ' ' . (($tujuan->ke ?? '') ? 'ke '.$tujuan->ke : '')) }}</td>
+                                <td class="py-3 px-4">{{ trim((($tujuan->dari ?? '') ? $tujuan->dari : '') . ' ' . (($tujuan->ke ?? '') ? '- '.$tujuan->ke : '')) }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->cabang }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->wilayah }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->dari }}</td>

@@ -120,11 +120,32 @@
                                     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
                                     <script>
                                         document.addEventListener('DOMContentLoaded', function () {
-                                            // Inisialisasi Select2 pada semua dropdown kontainer
+                                            // Inisialisasi Select2 pada dropdown kontainer biasa
                                             $('select.select-kontainer').each(function() {
                                                 $(this).select2({
                                                     placeholder: 'Cari nomor kontainer',
                                                     width: '100%'
+                                                });
+                                            });
+
+                                            // Inisialisasi Select2 dengan tags pada dropdown antar kontainer perbaikan
+                                            $('select.select-kontainer-perbaikan').each(function() {
+                                                $(this).select2({
+                                                    placeholder: 'Pilih atau ketik nomor kontainer',
+                                                    width: '100%',
+                                                    tags: true,
+                                                    tokenSeparators: [',', ' '],
+                                                    createTag: function (params) {
+                                                        var term = $.trim(params.term);
+                                                        if (term === '') {
+                                                            return null;
+                                                        }
+                                                        return {
+                                                            id: term,
+                                                            text: term,
+                                                            newTag: true
+                                                        }
+                                                    }
                                                 });
                                             });
                                         });
@@ -141,12 +162,23 @@
                                     $isPerbaikanKontainer = (stripos($kegiatanLower, 'perbaikan') !== false && stripos($kegiatanLower, 'kontainer') !== false)
                                         || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
                                     $isAntarSewa = stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'sewa') !== false;
+                                    $isAntarKontainerPerbaikan = (stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'kontainer') !== false && stripos($kegiatanLower, 'perbaikan') !== false);
                                 @endphp
 
                                 @for ($i = 0; $i < $permohonan->jumlah_kontainer; $i++)
                                     <div class="relative mt-1">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Kontainer #{{ $i + 1 }}</label>
-                                        @if($isPerbaikanKontainer)
+                                        @if($isAntarKontainerPerbaikan)
+                                            {{-- For antar kontainer perbaikan, show dropdown from master stock kontainer but allow free text --}}
+                                            <select name="nomor_kontainer[]" class="select-kontainer-perbaikan block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5 pr-10" required>
+                                                <option value="">-- Pilih atau Ketik Nomor Kontainer #{{ $i + 1 }} --</option>
+                                                @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
+                                                    @foreach($stockKontainers as $stock)
+                                                        <option value="{{ $stock->nomor_kontainer }}">{{ $stock->nomor_kontainer }}</option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                        @elseif($isPerbaikanKontainer)
                                             {{-- For perbaikan kontainer, allow free text input regardless of vendor --}}
                                             <input type="text" name="nomor_kontainer[]" class="block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5" placeholder="Masukkan nomor kontainer #{{ $i + 1 }}" required>
                                         @elseif($isAntarSewa)
@@ -187,7 +219,9 @@
                                     </div>
                                 @endfor
                                 <p class="text-xs text-gray-500 mt-1">
-                                    @if($isPerbaikanKontainer)
+                                    @if($isAntarKontainerPerbaikan)
+                                        Pilih dari master stock kontainer atau ketik nomor kontainer yang akan diantar untuk perbaikan.
+                                    @elseif($isPerbaikanKontainer)
                                         Masukkan nomor kontainer yang akan diperbaiki.
                                     @elseif($isAntarSewa)
                                         Masukkan nomor kontainer yang akan diantar.
@@ -242,10 +276,32 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
+            // Inisialisasi Select2 pada dropdown kontainer biasa
             $('select.select-kontainer').each(function() {
                 $(this).select2({
                     placeholder: 'Cari nomor kontainer',
                     width: '100%'
+                });
+            });
+
+            // Inisialisasi Select2 dengan tags pada dropdown antar kontainer perbaikan
+            $('select.select-kontainer-perbaikan').each(function() {
+                $(this).select2({
+                    placeholder: 'Pilih atau ketik nomor kontainer',
+                    width: '100%',
+                    tags: true,
+                    tokenSeparators: [',', ' '],
+                    createTag: function (params) {
+                        var term = $.trim(params.term);
+                        if (term === '') {
+                            return null;
+                        }
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true
+                        }
+                    }
                 });
             });
         });

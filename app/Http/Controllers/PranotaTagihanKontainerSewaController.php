@@ -423,4 +423,364 @@ class PranotaTagihanKontainerSewaController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Show import page
+     */
+    public function importPage()
+    {
+        return view('pranota.import');
+    }
+
+    /**
+     * Download template CSV for import
+     */
+    public function downloadTemplateCsv()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="template_import_pranota_kontainer_sewa.csv"',
+        ];
+
+        $columns = [
+            'group',
+            'periode',
+            'keterangan',
+            'due_date'
+        ];
+
+        $callback = function() use ($columns) {
+            $file = fopen('php://output', 'w');
+            // Add UTF-8 BOM for Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            fputcsv($file, $columns);
+
+            // Add sample data
+            fputcsv($file, [
+                '1',
+                '1',
+                'Pranota Group 1 Periode 1',
+                '2025-11-01'
+            ]);
+            fputcsv($file, [
+                '2',
+                '1',
+                'Pranota Group 2 Periode 1',
+                '2025-11-15'
+            ]);
+            fputcsv($file, [
+                '1',
+                '2',
+                'Pranota Group 1 Periode 2',
+                '2025-12-01'
+            ]);
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Import pranota from CSV
+     * 1 Pranota = Multiple kontainer dengan group dan periode yang sama
+     */
+    public function importCsv(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $path = $file->getRealPath();
+
+            // Read CSV with semicolon delimiter (from export file format)
+            $csv = array_map(function($line) {
+                return str_getcsv($line, ';', '"', '\\');
+            }, file($path));
+
+            // Remove BOM if exists
+            if (!empty($csv[0][0])) {
+                $csv[0][0] = preg_replace('/^\x{FEFF}/u', '', $csv[0][0]);
+            }
+
+            // Get header
+            $header = array_shift($csv);
+
+            // Validate header - support both formats
+            $requiredColumns = ['group', 'periode'];
+            $alternateColumns = ['Group', 'Periode', 'Nomor Kontainer'];
+
+            $hasRequiredFormat = true;
+            foreach ($requiredColumns as $col) {
+                if (!in_array($col, $header)) {
+                    $hasRequiredFormat = false;
+                    break;
+                }
+            }
+
+            // If not found, check alternate format (exported format)
+            if (!$hasRequiredFormat) {
+                $hasAlternateFormat = true;
+                foreach ($alternateColumns as $col) {
+                    if (!in_array($col, $header)) {
+                        $hasAlternateFormat = false;
+                        break;
+                    }
+                }
+
+                if (!$hasAlternateFormat) {
+                    return redirect()->back()->with('error',
+                        "Format CSV tidak valid. Pastikan file memiliki kolom: 'Group', 'Periode', dan 'Nomor Kontainer' atau gunakan template yang disediakan.");
+                }
+            }
+
+            // Map header to index
+            $colMap = array_flip($header);
+
+            // Group data by group and periode
+            $groupedData = [];
+            $notFound = [];
+            $errors = [];
+            $skippedRows = [];
+
+            Log::info('Import CSV started', [
+                'total_rows' => count($csv),
+                'columns' => $header
+            ]);
+
+            foreach ($csv as $rowIndex => $row) {
+                $rowNumber = $rowIndex + 2;
+
+                // Skip empty rows
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+
+                try {
+                    // Support both lowercase and capitalized column names
+                    $group = isset($colMap['group']) ? trim($row[$colMap['group']] ?? '') :
+                             (isset($colMap['Group']) ? trim($row[$colMap['Group']] ?? '') : '');
+                    $periode = isset($colMap['periode']) ? trim($row[$colMap['periode']] ?? '') :
+                               (isset($colMap['Periode']) ? trim($row[$colMap['Periode']] ?? '') : '');
+                    $nomorKontainer = isset($colMap['nomor_kontainer']) ? trim($row[$colMap['nomor_kontainer']] ?? '') :
+                                     (isset($colMap['Nomor Kontainer']) ? trim($row[$colMap['Nomor Kontainer']] ?? '') : '');
+                    $keterangan = isset($colMap['keterangan']) ? trim($row[$colMap['keterangan']] ?? '') : '';
+                    $dueDate = isset($colMap['due_date']) ? trim($row[$colMap['due_date']] ?? '') : '';
+
+                    // Validate required fields
+                    if (empty($group) || empty($periode)) {
+                        $errors[] = "Baris $rowNumber: Group dan Periode tidak boleh kosong";
+                        continue;
+                    }
+
+                    if (empty($nomorKontainer)) {
+                        $errors[] = "Baris $rowNumber: Nomor kontainer tidak boleh kosong";
+                        continue;
+                    }
+
+                    // Find tagihan by nomor kontainer, group, and periode
+                    // More flexible search - handle both string and integer types
+                    $query = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)
+                        ->whereNull('status_pranota');
+
+                    // Add group condition if not empty
+                    if (!empty($group)) {
+                        $query->where(function($q) use ($group) {
+                            $q->where('group', $group)
+                              ->orWhere('group', (string)$group)
+                              ->orWhereRaw('CAST(`group` AS CHAR) = ?', [(string)$group]);
+                        });
+                    }
+
+                    // Add periode condition if not empty
+                    if (!empty($periode)) {
+                        $query->where(function($q) use ($periode) {
+                            $q->where('periode', $periode)
+                              ->orWhere('periode', (string)$periode)
+                              ->orWhereRaw('CAST(periode AS CHAR) = ?', [(string)$periode]);
+                        });
+                    }
+
+                    $tagihan = $query->first();
+
+                    if (!$tagihan) {
+                        // Try searching without group/periode constraint for better error message
+                        $anyTagihan = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)->first();
+                        if (!$anyTagihan) {
+                            $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer tidak ditemukan di database";
+                        } else if ($anyTagihan->status_pranota !== null) {
+                            $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer sudah masuk pranota (Group: {$anyTagihan->group}, Periode: {$anyTagihan->periode})";
+                        } else {
+                            $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer ditemukan tapi Group/Periode tidak cocok (DB: Group={$anyTagihan->group}, Periode={$anyTagihan->periode} vs CSV: Group={$group}, Periode={$periode})";
+                        }
+                        continue;
+                    }
+
+                    // Group by group and periode
+                    $key = "{$group}_{$periode}";
+                    if (!isset($groupedData[$key])) {
+                        $groupedData[$key] = [
+                            'group' => $group,
+                            'periode' => $periode,
+                            'tagihan_ids' => [],
+                            'keterangan' => $keterangan,
+                            'due_date' => $dueDate,
+                            'kontainers' => []
+                        ];
+                    }
+
+                    $groupedData[$key]['tagihan_ids'][] = $tagihan->id;
+                    $groupedData[$key]['kontainers'][] = $nomorKontainer;
+
+                    // Use first non-empty keterangan and due_date
+                    if (empty($groupedData[$key]['keterangan']) && !empty($keterangan)) {
+                        $groupedData[$key]['keterangan'] = $keterangan;
+                    }
+                    if (empty($groupedData[$key]['due_date']) && !empty($dueDate)) {
+                        $groupedData[$key]['due_date'] = $dueDate;
+                    }
+
+                } catch (\Exception $e) {
+                    $errors[] = "Baris $rowNumber: " . $e->getMessage();
+                    Log::error("Import parsing error at row $rowNumber", [
+                        'error' => $e->getMessage(),
+                        'row' => $row
+                    ]);
+                }
+            }
+
+            // Now create pranota for each group
+            $imported = 0;
+            $totalKontainers = 0;
+            $pranotaDetails = [];
+
+            DB::beginTransaction();
+
+            foreach ($groupedData as $key => $data) {
+                try {
+                    $tagihanIds = $data['tagihan_ids'];
+
+                    if (empty($tagihanIds)) {
+                        continue;
+                    }
+
+                    // Get tagihan items
+                    $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $tagihanIds)->get();
+
+                    if ($tagihanItems->isEmpty()) {
+                        continue;
+                    }
+
+                    // Generate nomor pranota dengan format PMS
+                    $nomorCetakan = 1;
+                    $tahun = Carbon::now()->format('y');
+                    $bulan = Carbon::now()->format('m');
+
+                    $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+                    if (!$nomorTerakhir) {
+                        throw new \Exception('Modul PMS tidak ditemukan di master nomor terakhir.');
+                    }
+                    $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+                    $noInvoice = "PMS{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+                    $nomorTerakhir->nomor_terakhir = $nextNumber;
+                    $nomorTerakhir->save();
+
+                    // Parse due date
+                    $dueDateParsed = null;
+                    if (!empty($data['due_date'])) {
+                        try {
+                            $dueDateParsed = Carbon::parse($data['due_date'])->format('Y-m-d');
+                        } catch (\Exception $e) {
+                            $dueDateParsed = Carbon::now()->addDays(30)->format('Y-m-d');
+                        }
+                    } else {
+                        $dueDateParsed = Carbon::now()->addDays(30)->format('Y-m-d');
+                    }
+
+                    // Calculate total amount
+                    $totalAmount = $tagihanItems->sum('grand_total');
+
+                    // Default keterangan
+                    $keterangan = !empty($data['keterangan'])
+                        ? $data['keterangan']
+                        : "Pranota Group {$data['group']} Periode {$data['periode']} - " . count($tagihanIds) . " kontainer (Import)";
+
+                    // Create pranota
+                    $pranota = PranotaTagihanKontainerSewa::create([
+                        'no_invoice' => $noInvoice,
+                        'total_amount' => $totalAmount,
+                        'keterangan' => $keterangan,
+                        'status' => 'unpaid',
+                        'tagihan_kontainer_sewa_ids' => $tagihanIds,
+                        'jumlah_tagihan' => count($tagihanIds),
+                        'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
+                        'due_date' => $dueDateParsed
+                    ]);
+
+                    // Update tagihan status to "masuk pranota"
+                    DaftarTagihanKontainerSewa::whereIn('id', $tagihanIds)->update([
+                        'status_pranota' => 'included',
+                        'pranota_id' => $pranota->id
+                    ]);
+
+                    $imported++;
+                    $totalKontainers += count($tagihanIds);
+
+                    $pranotaDetails[] = [
+                        'no_invoice' => $noInvoice,
+                        'group' => $data['group'],
+                        'periode' => $data['periode'],
+                        'jumlah_kontainer' => count($tagihanIds),
+                        'total_amount' => $totalAmount,
+                        'kontainers' => implode(', ', array_slice($data['kontainers'], 0, 5)) . (count($data['kontainers']) > 5 ? '...' : '')
+                    ];
+
+                } catch (\Exception $e) {
+                    $errors[] = "Group {$data['group']} Periode {$data['periode']}: " . $e->getMessage();
+                    Log::error("Import error for group", [
+                        'group' => $data['group'],
+                        'periode' => $data['periode'],
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            // Prepare result message
+            $message = "Import selesai: $imported pranota berhasil dibuat untuk $totalKontainers kontainer.";
+
+            if (!empty($notFound)) {
+                $message .= " " . count($notFound) . " kontainer tidak ditemukan atau sudah masuk pranota.";
+            }
+
+            if (!empty($errors)) {
+                $message .= " " . count($errors) . " error terjadi.";
+            }
+
+            // Store details in session for display
+            session([
+                'import_result' => [
+                    'imported' => $imported,
+                    'total_kontainers' => $totalKontainers,
+                    'pranota_details' => $pranotaDetails,
+                    'not_found' => $notFound,
+                    'errors' => $errors
+                ]
+            ]);
+
+            if ($imported > 0) {
+                return redirect()->route('pranota.index')->with('success', $message);
+            } else {
+                return redirect()->back()->with('error', 'Tidak ada data yang berhasil diimport. ' . $message);
+            }
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Import CSV failed', ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return redirect()->back()->with('error', 'Gagal import CSV: ' . $e->getMessage());
+        }
+    }
 }

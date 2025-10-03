@@ -97,25 +97,48 @@ class MasterKegiatanController extends Controller
             return redirect()->back()->with('error', 'Tidak dapat membaca file CSV');
         }
 
-        $header = fgetcsv($handle);
+        // Detect delimiter (semicolon or comma)
+        $firstLine = fgets($handle);
+        rewind($handle);
+        $delimiter = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+
+        // Read header with detected delimiter
+        $header = fgetcsv($handle, 0, $delimiter);
+
+        // Remove BOM from first header if present
+        if (!empty($header[0])) {
+            $header[0] = preg_replace('/^\xEF\xBB\xBF/', '', $header[0]);
+            $header[0] = preg_replace('/^[\x{FEFF}]/u', '', $header[0]);
+        }
+
         $expected = ['kode_kegiatan', 'nama_kegiatan', 'keterangan', 'status'];
-        // normalize header lower-case
+        // normalize header lower-case and trim
         $norm = array_map(function($v){ return strtolower(trim($v)); }, (array)$header);
-        if ($norm !== $expected) {
+
+        // Check if header contains required columns (more flexible)
+        $hasRequiredColumns = in_array('kode_kegiatan', $norm) && in_array('nama_kegiatan', $norm);
+
+        if (!$hasRequiredColumns) {
             fclose($handle);
-            return redirect()->back()->with('error', 'Format CSV tidak sesuai. Gunakan template yang disediakan.');
+            return redirect()->back()->with('error', 'Format CSV tidak sesuai. Minimal harus ada kolom: kode_kegiatan dan nama_kegiatan.');
         }
 
         $created = 0;
         $errors = [];
         $line = 1;
-        while (($row = fgetcsv($handle)) !== false) {
+
+        while (($row = fgetcsv($handle, 0, $delimiter)) !== false) {
             $line++;
             $row = array_map('trim', $row);
-            // skip empty rows
-            if (count($row) < 2 || ($row[0] === '' && $row[1] === '')) continue;
 
-            $data = array_combine($expected, array_pad($row, count($expected), ''));
+            // skip empty rows
+            if (count($row) < 2 || (empty($row[0]) && empty($row[1]))) continue;
+
+            // Map row to associative array
+            $data = [];
+            foreach ($norm as $index => $headerName) {
+                $data[$headerName] = $row[$index] ?? '';
+            }
 
             // validate minimal fields
             if (empty($data['kode_kegiatan']) || empty($data['nama_kegiatan'])) {
@@ -132,24 +155,26 @@ class MasterKegiatanController extends Controller
             // ensure status valid
             $status = strtolower($data['status'] ?? '');
             if (!in_array($status, ['aktif','nonaktif'])) {
-                $status = 'nonaktif';
+                $status = 'aktif'; // default aktif instead of nonaktif
             }
 
-            MasterKegiatan::create([
-                'kode_kegiatan' => $data['kode_kegiatan'],
-                'nama_kegiatan' => $data['nama_kegiatan'],
-                'keterangan' => $data['keterangan'] ?? null,
-                'status' => $status,
-            ]);
-            $created++;
+            try {
+                MasterKegiatan::create([
+                    'kode_kegiatan' => $data['kode_kegiatan'],
+                    'nama_kegiatan' => $data['nama_kegiatan'],
+                    'keterangan' => $data['keterangan'] ?? null,
+                    'status' => $status,
+                ]);
+                $created++;
+            } catch (\Exception $e) {
+                $errors[] = "Baris {$line}: " . $e->getMessage();
+            }
         }
 
         fclose($handle);
 
-        $msg = "Import selesai. Dibuat: {$created}.";
+        $msg = "Import selesai. Berhasil dibuat: {$created} data.";
         if (!empty($errors)) {
-            // attach errors to session (string)
-            $msg .= ' Beberapa baris dilewati: ' . implode(' | ', array_slice($errors,0,10));
             session()->flash('import_errors', $errors);
         }
 

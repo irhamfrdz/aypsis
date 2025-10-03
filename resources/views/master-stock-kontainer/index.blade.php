@@ -18,13 +18,7 @@
             <option value="damaged" {{ request('status') == 'damaged' ? 'selected' : '' }}>Rusak</option>
         </select>
 
-        <!-- Filter Kondisi -->
-        <select id="kondisi-filter" class="rounded-md border-gray-300 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50 text-sm">
-            <option value="">Semua Kondisi</option>
-            <option value="baik" {{ request('kondisi') == 'baik' ? 'selected' : '' }}>Baik</option>
-            <option value="rusak_ringan" {{ request('kondisi') == 'rusak_ringan' ? 'selected' : '' }}>Rusak Ringan</option>
-            <option value="rusak_berat" {{ request('kondisi') == 'rusak_berat' ? 'selected' : '' }}>Rusak Berat</option>
-        </select>
+
 
         <!-- Search -->
         <div class="relative">
@@ -73,12 +67,6 @@
                 <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                 </th>
-                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Kondisi
-                </th>
-                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Lokasi
-                </th>
                 <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Aksi
                 </th>
@@ -102,18 +90,23 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $stockKontainer->status_badge }}">
-                        {{ ucfirst(str_replace('_', ' ', $stockKontainer->status)) }}
+                        @switch($stockKontainer->status)
+                            @case('available')
+                                Tersedia
+                                @break
+                            @case('rented')
+                                Disewa
+                                @break
+                            @case('maintenance')
+                                Perbaikan
+                                @break
+                            @case('damaged')
+                                Rusak
+                                @break
+                            @default
+                                {{ ucfirst(str_replace('_', ' ', $stockKontainer->status)) }}
+                        @endswitch
                     </span>
-                </td>
-
-                <td class="px-4 py-2 whitespace-nowrap text-center">
-                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $stockKontainer->kondisi_badge }}">
-                        {{ ucfirst(str_replace('_', ' ', $stockKontainer->kondisi)) }}
-                    </span>
-                </td>
-
-                <td class="px-4 py-2 whitespace-nowrap text-center">
-                    <div class="text-sm text-gray-500">{{ $stockKontainer->lokasi ?? '-' }}</div>
                 </td>
 
                 <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
@@ -132,7 +125,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="7" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data stock kontainer.</td>
+                <td colspan="5" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data stock kontainer.</td>
             </tr>
             @endforelse
         </tbody>
@@ -149,7 +142,6 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const statusFilter = document.getElementById('status-filter');
-    const kondisiFilter = document.getElementById('kondisi-filter');
     const searchInput = document.getElementById('search-input');
 
     function updateFilters() {
@@ -159,12 +151,6 @@ document.addEventListener('DOMContentLoaded', function() {
             params.set('status', statusFilter.value);
         } else {
             params.delete('status');
-        }
-
-        if (kondisiFilter.value) {
-            params.set('kondisi', kondisiFilter.value);
-        } else {
-            params.delete('kondisi');
         }
 
         if (searchInput.value) {
@@ -177,7 +163,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     statusFilter.addEventListener('change', updateFilters);
-    kondisiFilter.addEventListener('change', updateFilters);
 
     searchInput.addEventListener('keypress', function(e) {
         if (e.key === 'Enter') {

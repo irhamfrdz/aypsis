@@ -19,14 +19,9 @@ class StockKontainer extends Model
         'ukuran',
         'tipe_kontainer',
         'status',
-        'lokasi',
         'tanggal_masuk',
         'tanggal_keluar',
         'keterangan',
-        'kondisi',
-        'harga_sewa_per_hari',
-        'harga_sewa_per_bulan',
-        'pemilik',
         'nomor_seri',
         'tahun_pembuatan'
     ];
@@ -39,8 +34,6 @@ class StockKontainer extends Model
     protected $casts = [
         'tanggal_masuk' => 'date',
         'tanggal_keluar' => 'date',
-        'harga_sewa_per_hari' => 'decimal:2',
-        'harga_sewa_per_bulan' => 'decimal:2',
     ];
 
     /**
@@ -57,18 +50,7 @@ class StockKontainer extends Model
         };
     }
 
-    /**
-     * Get the kondisi badge color for the kontainer.
-     */
-    public function getKondisiBadgeAttribute()
-    {
-        return match($this->kondisi) {
-            'baik' => 'bg-green-100 text-green-800',
-            'rusak_ringan' => 'bg-yellow-100 text-yellow-800',
-            'rusak_berat' => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800'
-        };
-    }
+
 
     /**
      * Scope untuk filter berdasarkan status
@@ -76,14 +58,6 @@ class StockKontainer extends Model
     public function scopeByStatus($query, $status)
     {
         return $query->where('status', $status);
-    }
-
-    /**
-     * Scope untuk filter berdasarkan kondisi
-     */
-    public function scopeByKondisi($query, $kondisi)
-    {
-        return $query->where('kondisi', $kondisi);
     }
 
     /**

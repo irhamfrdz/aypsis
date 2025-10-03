@@ -53,7 +53,7 @@ try {
     $pekerjaans = Capsule::table('pekerjaans')->get();
     echo "💼 DAFTAR PEKERJAAN YANG TERSEDIA:\n";
     echo "Total pekerjaan: " . $pekerjaans->count() . "\n";
-    
+
     $pekerjaanByDivisi = [];
     foreach ($pekerjaans as $pekerjaan) {
         if (!isset($pekerjaanByDivisi[$pekerjaan->divisi])) {

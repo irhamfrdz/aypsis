@@ -10,19 +10,61 @@
         <div class="flex items-center space-x-3">
             <a href="{{ route('master.kegiatan.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-0.5 px-2 rounded transition duration-300 text-xs">+ Tambah Kegiatan</a>
             <a href="{{ route('master.kegiatan.template') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-0.5 px-2 rounded transition duration-300 text-xs">Download Template CSV</a>
-            <form action="{{ route('master.kegiatan.import') }}" method="POST" enctype="multipart/form-data" class="inline-block">
+            <form id="importForm" action="{{ route('master.kegiatan.import') }}" method="POST" enctype="multipart/form-data" class="inline-block">
                 @csrf
-                <label class="inline-flex items-center bg-yellow-100 hover:bg-yellow-200 text-gray-800 font-bold py-0.5 px-2 rounded transition duration-300 cursor-pointer text-xs">
-                    <input type="file" name="csv_file" accept=".csv" class="hidden" required />
-                    Import CSV
+                <label id="importLabel" class="inline-flex items-center bg-yellow-100 hover:bg-yellow-200 text-gray-800 font-bold py-0.5 px-2 rounded transition duration-300 cursor-pointer text-xs">
+                    <input type="file" id="csvFileInput" name="csv_file" accept=".csv,.txt" class="hidden" required onchange="handleFileSelect(this)" />
+                    <span id="importText">Import CSV</span>
                 </label>
             </form>
+
+            <script>
+                function handleFileSelect(input) {
+                    if (input.files && input.files[0]) {
+                        const fileName = input.files[0].name;
+                        const fileExt = fileName.split('.').pop().toLowerCase();
+
+                        // Validate file extension
+                        if (!['csv', 'txt'].includes(fileExt)) {
+                            alert('File harus berformat CSV atau TXT');
+                            input.value = '';
+                            return;
+                        }
+
+                        // Show loading indicator
+                        document.getElementById('importText').textContent = 'Uploading...';
+                        document.getElementById('importLabel').classList.add('opacity-50', 'cursor-wait');
+
+                        // Submit form
+                        setTimeout(() => {
+                            input.form.submit();
+                        }, 100);
+                    }
+                }
+            </script>
         </div>
     </div>
 
     @if(session('success'))
         <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
             <span class="block sm:inline">{{ session('success') }}</span>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <span class="block sm:inline">{{ session('error') }}</span>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mb-4" role="alert">
+            <strong>Terjadi kesalahan:</strong>
+            <ul class="mt-2 list-disc pl-5 text-sm">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
         </div>
     @endif
 

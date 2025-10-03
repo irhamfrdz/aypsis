@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Import Debug</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <style>
+            body {
+                font-family: Arial, sans-serif;
+                margin: 20px;
+            }
+            .debug-info {
+                background: #f4f4f4;
+                padding: 10px;
+                margin: 10px 0;
+                border-radius: 5px;
+            }
+            .error {
+                background: #ffe6e6;
+            }
+            .success {
+                background: #e6ffe6;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Import Debug Information</h1>
+
+        <div class="debug-info">
+            <h3>Route Information</h3>
+            <p>
+                <strong>Import Route:</strong> POST
+                /daftar-tagihan-kontainer-sewa/import
+            </p>
+            <p>
+                <strong>Import Grouped Route:</strong> POST
+                /daftar-tagihan-kontainer-sewa/import-grouped
+            </p>
+            <p><strong>Current URL:</strong> <span id="current-url"></span></p>
+        </div>
+
+        <div class="debug-info">
+            <h3>File Test</h3>
+            <form id="test-form" enctype="multipart/form-data">
+                <input type="file" name="csv_file" accept=".csv" required />
+                <button type="submit">Test Upload</button>
+            </form>
+            <div id="result"></div>
+        </div>
+
+        <div class="debug-info">
+            <h3>Session Information</h3>
+            <p><strong>User Agent:</strong> <span id="user-agent"></span></p>
+            <p><strong>Cookies:</strong> <span id="cookies"></span></p>
+        </div>
+
+        <script>
+            // Display current URL
+            document.getElementById("current-url").textContent =
+                window.location.href;
+            document.getElementById("user-agent").textContent =
+                navigator.userAgent;
+            document.getElementById("cookies").textContent =
+                document.cookie || "No cookies";
+
+            // Handle form submission
+            document
+                .getElementById("test-form")
+                .addEventListener("submit", async function (e) {
+                    e.preventDefault();
+
+                    const formData = new FormData(this);
+                    const resultDiv = document.getElementById("result");
+
+                    resultDiv.innerHTML = "<p>Testing upload...</p>";
+
+                    try {
+                        // First get CSRF token
+                        const csrfResponse = await fetch(
+                            "/daftar-tagihan-kontainer-sewa"
+                        );
+                        const csrfHtml = await csrfResponse.text();
+                        const tokenMatch = csrfHtml.match(
+                            /name="_token" value="([^"]+)"/
+                        );
+
+                        if (tokenMatch) {
+                            formData.append("_token", tokenMatch[1]);
+                        }
+
+                        // Try import
+                        const response = await fetch(
+                            "/daftar-tagihan-kontainer-sewa/import-grouped",
+                            {
+                                method: "POST",
+                                body: formData,
+                                credentials: "same-origin",
+                            }
+                        );
+
+                        const result = await response.text();
+
+                        if (response.ok) {
+                            resultDiv.innerHTML = `<div class="success"><h4>Success!</h4><p>Response: ${result}</p></div>`;
+                        } else {
+                            resultDiv.innerHTML = `<div class="error"><h4>Error ${response.status}</h4><p>${result}</p></div>`;
+                        }
+                    } catch (error) {
+                        resultDiv.innerHTML = `<div class="error"><h4>Network Error</h4><p>${error.message}</p></div>`;
+                    }
+                });
+        </script>
+    </body>
+</html>

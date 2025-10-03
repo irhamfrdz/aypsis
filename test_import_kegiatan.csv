@@ -1,0 +1,4 @@
+kode_kegiatan;nama_kegiatan;keterangan;status
+KGT-TEST-001;Pengiriman Express;Test import kegiatan;aktif
+KGT-TEST-002;Pengiriman Regular;Test import kegiatan 2;aktif
+KGT-TEST-003;Pengambilan Barang;Test import kegiatan 3;nonaktif

@@ -149,9 +149,7 @@ class UserController extends Controller
         // Handle permissions - prioritize new matrix format
         $permissionIds = [];
         if ($request->has('permissions') && !empty($request->permissions)) {
-            error_log('DEBUG: permissions matrix received: ' . json_encode($request->permissions));
             $permissionIds = $this->convertMatrixPermissionsToIds($request->permissions);
-            error_log('DEBUG: converted permission IDs: ' . json_encode($permissionIds));
         } elseif ($request->has('simple_permissions') && !empty($request->simple_permissions)) {
             // Fallback to simple permissions
             $permissionIds = $this->convertSimplePermissionsToIds($request->simple_permissions);
@@ -423,6 +421,30 @@ class UserController extends Controller
                         'import' => 'import',
                         'approve' => 'approve',
                         'history' => 'history'
+                    ];
+
+                    $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                    $matrixPermissions[$module][$mappedAction] = true;
+                    continue; // Skip other patterns
+                }
+            }
+
+            // Special handling for approval-tugas permissions (dot notation)
+            if (strpos($permissionName, 'approval-tugas-') === 0 && strpos($permissionName, '.') !== false) {
+                $parts = explode('.', $permissionName);
+                if (count($parts) >= 2) {
+                    $module = $parts[0]; // approval-tugas-1 or approval-tugas-2
+                    $action = $parts[1]; // view or approve
+
+                    // Initialize module array if not exists
+                    if (!isset($matrixPermissions[$module])) {
+                        $matrixPermissions[$module] = [];
+                    }
+
+                    // Map database actions to matrix actions
+                    $actionMap = [
+                        'view' => 'view',
+                        'approve' => 'approve'
                     ];
 
                     $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
@@ -847,6 +869,23 @@ class UserController extends Controller
             }
         }
 
+        // Special handling: If user has approval-dashboard, also show approval-tugas permissions in matrix
+        if (in_array('approval-dashboard', $permissionNames)) {
+            // Initialize approval-tugas-1 if not exists
+            if (!isset($matrixPermissions['approval-tugas-1'])) {
+                $matrixPermissions['approval-tugas-1'] = [];
+            }
+            // Set view permission for approval-tugas-1
+            $matrixPermissions['approval-tugas-1']['view'] = true;
+
+            // Initialize approval-tugas-2 if not exists
+            if (!isset($matrixPermissions['approval-tugas-2'])) {
+                $matrixPermissions['approval-tugas-2'] = [];
+            }
+            // Set view permission for approval-tugas-2
+            $matrixPermissions['approval-tugas-2']['view'] = true;
+        }
+
         return $matrixPermissions;
     }
 
@@ -868,7 +907,7 @@ class UserController extends Controller
                 if ($module === 'system') {
                     // Explicitly check for dashboard permission (handle both checked and unchecked states)
                     $dashboardEnabled = isset($actions['dashboard']) && ($actions['dashboard'] == '1' || $actions['dashboard'] === true);
-                    
+
                     if ($dashboardEnabled) {
                         $permission = Permission::where('name', 'dashboard')->first();
                         if ($permission) {
@@ -1780,6 +1819,44 @@ class UserController extends Controller
                         }
                     }
 
+                    // DIRECT FIX: Handle approval-tugas-1 permissions explicitly
+                    if ($module === 'approval-tugas-1' && in_array($action, ['view', 'approve'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'approval-tugas-1.view',
+                            'approve' => 'approval-tugas-1.approve'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                                continue; // Skip to next action
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle approval-tugas-2 permissions explicitly
+                    if ($module === 'approval-tugas-2' && in_array($action, ['view', 'approve'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'approval-tugas-2.view',
+                            'approve' => 'approval-tugas-2.approve'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                                continue; // Skip to next action
+                            }
+                        }
+                    }
+
                     // Special handling for storage module
                     if ($module === 'storage') {
                         if ($action === 'local') {
@@ -1881,6 +1958,28 @@ class UserController extends Controller
                         }
                     }
 
+                    // Special handling for pranota-kontainer-sewa module
+                    if ($module === 'pranota-kontainer-sewa') {
+                        // Map matrix actions to permission names (using dash notation as they exist in DB)
+                        $actionMap = [
+                            'view' => 'pranota-kontainer-sewa-view',
+                            'create' => 'pranota-kontainer-sewa-create',
+                            'update' => 'pranota-kontainer-sewa-update',
+                            'delete' => 'pranota-kontainer-sewa-delete',
+                            'print' => 'pranota-kontainer-sewa-print',
+                            'export' => 'pranota-kontainer-sewa-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // If not master module or not found above, try other patterns
                     if (!$found) {
 
@@ -1968,6 +2067,33 @@ class UserController extends Controller
                 if ($simplePermission && !in_array($simplePermission->id, $permissionIds)) {
                     $permissionIds[] = $simplePermission->id;
                 }
+            }
+        }
+
+        // Special handling: Add approval-dashboard permission when user has approval-tugas permissions
+        $hasApprovalTugasPermission = false;
+        if (isset($matrixPermissions['approval-tugas-1']) && is_array($matrixPermissions['approval-tugas-1'])) {
+            foreach ($matrixPermissions['approval-tugas-1'] as $action => $value) {
+                if ($value == '1' || $value === true) {
+                    $hasApprovalTugasPermission = true;
+                    break;
+                }
+            }
+        }
+        if (!$hasApprovalTugasPermission && isset($matrixPermissions['approval-tugas-2']) && is_array($matrixPermissions['approval-tugas-2'])) {
+            foreach ($matrixPermissions['approval-tugas-2'] as $action => $value) {
+                if ($value == '1' || $value === true) {
+                    $hasApprovalTugasPermission = true;
+                    break;
+                }
+            }
+        }
+
+        // If user has any approval-tugas permission, also give them approval-dashboard
+        if ($hasApprovalTugasPermission) {
+            $dashboardPermission = Permission::where('name', 'approval-dashboard')->first();
+            if ($dashboardPermission && !in_array($dashboardPermission->id, $permissionIds)) {
+                $permissionIds[] = $dashboardPermission->id;
             }
         }
 

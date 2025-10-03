@@ -7,14 +7,14 @@
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
             <h1 class="text-2xl font-semibold text-gray-900">Detail Pranota: {{ $pranota->no_invoice }}</h1>
             <div class="flex space-x-2">
-                <a href="{{ route('pranota.index') }}"
+                <a href="{{ route('pranota-kontainer-sewa.index') }}"
                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                     </svg>
                     Kembali
                 </a>
-                <a href="{{ route('pranota.print', $pranota->id) }}" target="_blank"
+                <a href="{{ route('pranota-kontainer-sewa.print', $pranota->id) }}" target="_blank"
                    class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
@@ -256,7 +256,7 @@
                 Pilih status baru untuk pranota <strong>{{ $pranota->no_invoice }}</strong>:
             </p>
             <div class="grid grid-cols-1 gap-3">
-                <form action="{{ route('pranota.update.status', $pranota->id) }}" method="POST">
+                <form action="{{ route('pranota-kontainer-sewa.update.status', $pranota->id) }}" method="POST">
                     @csrf
                     @method('PATCH')
                     <input type="hidden" name="status" value="sent">
@@ -268,7 +268,7 @@
                         Kirim
                     </button>
                 </form>
-                <form action="{{ route('pranota.update.status', $pranota->id) }}" method="POST"
+                <form action="{{ route('pranota-kontainer-sewa.update.status', $pranota->id) }}" method="POST"
                       onsubmit="return confirm('Apakah Anda yakin ingin membatalkan pranota ini?')">
                     @csrf
                     @method('PATCH')
@@ -366,7 +366,7 @@ function lepasKontainer() {
         };
 
         // Send POST request
-        fetch(`{{ route('pranota.lepas-kontainer', $pranota->id) }}`, {
+        fetch(`{{ route('pranota-kontainer-sewa.lepas-kontainer', $pranota->id) }}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

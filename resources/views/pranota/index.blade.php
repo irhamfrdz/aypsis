@@ -6,13 +6,22 @@
         <!-- Header -->
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
             <h1 class="text-2xl font-semibold text-gray-900">Daftar Pranota Kontainer Sewa</h1>
-            <a href="{{ route('pranota.create') }}"
-               class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                </svg>
-                Buat Pranota Baru
-            </a>
+            <div class="flex items-center space-x-3">
+                <a href="{{ route('pranota-kontainer-sewa.import') }}"
+                   class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
+                    </svg>
+                    Import Pranota
+                </a>
+                <a href="{{ route('pranota-kontainer-sewa.create') }}"
+                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                    Buat Pranota Baru
+                </a>
+            </div>
         </div>
 
         <!-- Content -->
@@ -84,7 +93,7 @@
                                 {{ $pranotaList->firstItem() + $index }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <a href="{{ route('pranota.show', $pranota->id) }}"
+                                <a href="{{ route('pranota-kontainer-sewa.show', $pranota->id) }}"
                                    class="text-indigo-600 hover:text-indigo-900 font-medium">
                                     {{ $pranota->no_invoice }}
                                 </a>
@@ -117,7 +126,7 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center space-x-2">
                                     <!-- View Button -->
-                                    <a href="{{ route('pranota.show', $pranota->id) }}"
+                                    <a href="{{ route('pranota-kontainer-sewa.show', $pranota->id) }}"
                                        class="text-indigo-600 hover:text-indigo-900">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -126,7 +135,7 @@
                                     </a>
 
                                     <!-- Print Button -->
-                                    <a href="{{ route('pranota.print', $pranota->id) }}" target="_blank"
+                                    <a href="{{ route('pranota-kontainer-sewa.print', $pranota->id) }}" target="_blank"
                                        class="text-blue-600 hover:text-blue-900"
                                        title="Print Pranota">
                                         <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -145,7 +154,7 @@
                                     </svg>
                                     <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data pranota</h3>
                                     <p class="text-gray-500 mb-4">Mulai dengan membuat pranota pertama Anda.</p>
-                                    <a href="{{ route('pranota.create') }}"
+                                    <a href="{{ route('pranota-kontainer-sewa.create') }}"
                                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
                                         Buat Pranota Sekarang
                                     </a>

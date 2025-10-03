@@ -77,25 +77,7 @@
                     @enderror
                 </div>
 
-                <div>
-                    <label for="kondisi" class="block text-sm font-medium text-gray-700">Kondisi</label>
-                    <select name="kondisi" id="kondisi" class="{{ $selectClasses }}" required>
-                        <option value="baik" {{ old('kondisi', $stockKontainer->kondisi) == 'baik' ? 'selected' : '' }}>Baik</option>
-                        <option value="rusak_ringan" {{ old('kondisi', $stockKontainer->kondisi) == 'rusak_ringan' ? 'selected' : '' }}>Rusak Ringan</option>
-                        <option value="rusak_berat" {{ old('kondisi', $stockKontainer->kondisi) == 'rusak_berat' ? 'selected' : '' }}>Rusak Berat</option>
-                    </select>
-                    @error('kondisi')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
-                <div>
-                    <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi Penyimpanan</label>
-                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $stockKontainer->lokasi) }}" class="{{ $inputClasses }}">
-                    @error('lokasi')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
 
                 <div>
                     <label for="tanggal_masuk" class="block text-sm font-medium text-gray-700">Tanggal Masuk</label>

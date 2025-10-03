@@ -33,10 +33,22 @@
                     </div>
                     <div class="flex space-x-2">
                         <span class="px-3 py-1 rounded-full text-xs font-medium {{ $stockKontainer->status_badge }}">
-                            {{ ucfirst(str_replace('_', ' ', $stockKontainer->status)) }}
-                        </span>
-                        <span class="px-3 py-1 rounded-full text-xs font-medium {{ $stockKontainer->kondisi_badge }}">
-                            {{ ucfirst(str_replace('_', ' ', $stockKontainer->kondisi)) }}
+                            @switch($stockKontainer->status)
+                                @case('available')
+                                    Tersedia
+                                    @break
+                                @case('rented')
+                                    Disewa
+                                    @break
+                                @case('maintenance')
+                                    Perbaikan
+                                    @break
+                                @case('damaged')
+                                    Rusak
+                                    @break
+                                @default
+                                    {{ ucfirst(str_replace('_', ' ', $stockKontainer->status)) }}
+                            @endswitch
                         </span>
                     </div>
                 </div>
@@ -72,29 +84,32 @@
                         </dl>
                     </div>
 
-                    <!-- Status & Kondisi -->
+                    <!-- Status & Informasi -->
                     <div>
-                        <h4 class="text-lg font-medium text-gray-900 mb-4">Status & Kondisi</h4>
+                        <h4 class="text-lg font-medium text-gray-900 mb-4">Status & Informasi</h4>
                         <dl class="space-y-3">
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">Status</dt>
                                 <dd class="text-sm">
                                     <span class="px-2 py-1 rounded-full text-xs font-medium {{ $stockKontainer->status_badge }}">
-                                        {{ ucfirst(str_replace('_', ' ', $stockKontainer->status)) }}
+                                        @switch($stockKontainer->status)
+                                            @case('available')
+                                                Tersedia
+                                                @break
+                                            @case('rented')
+                                                Disewa
+                                                @break
+                                            @case('maintenance')
+                                                Perbaikan
+                                                @break
+                                            @case('damaged')
+                                                Rusak
+                                                @break
+                                            @default
+                                                {{ ucfirst(str_replace('_', ' ', $stockKontainer->status)) }}
+                                        @endswitch
                                     </span>
                                 </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500">Kondisi</dt>
-                                <dd class="text-sm">
-                                    <span class="px-2 py-1 rounded-full text-xs font-medium {{ $stockKontainer->kondisi_badge }}">
-                                        {{ ucfirst(str_replace('_', ' ', $stockKontainer->kondisi)) }}
-                                    </span>
-                                </dd>
-                            </div>
-                            <div>
-                                <dt class="text-sm font-medium text-gray-500">Lokasi Penyimpanan</dt>
-                                <dd class="text-sm text-gray-900">{{ $stockKontainer->lokasi ?? '-' }}</dd>
                             </div>
                             <div>
                                 <dt class="text-sm font-medium text-gray-500">Tanggal Masuk</dt>

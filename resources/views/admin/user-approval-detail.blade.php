@@ -142,31 +142,67 @@
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
                     {{-- Tab Navigation --}}
                     <div class="border-b border-gray-200 bg-gray-50">
-                        <nav class="flex space-x-6 px-6 overflow-x-auto scrollbar-hide" aria-label="Tabs" style="scrollbar-width: none; -ms-overflow-style: none;">
-                            <style>
-                                .scrollbar-hide::-webkit-scrollbar {
-                                    display: none;
+                        <style>
+                            /* Custom scrollable tabs */
+                            .tab-scroll-container {
+                                scrollbar-width: thin;
+                                scrollbar-color: #cbd5e0 #f7fafc;
+                                scroll-behavior: smooth;
+                                padding-bottom: 8px;
+                                margin-bottom: -8px;
+                            }
+                            .tab-scroll-container::-webkit-scrollbar {
+                                height: 6px;
+                            }
+                            .tab-scroll-container::-webkit-scrollbar-track {
+                                background: #f7fafc;
+                                border-radius: 3px;
+                            }
+                            .tab-scroll-container::-webkit-scrollbar-thumb {
+                                background: #cbd5e0;
+                                border-radius: 3px;
+                            }
+                            .tab-scroll-container::-webkit-scrollbar-thumb:hover {
+                                background: #a0aec0;
+                            }
+                            /* Prevent text wrapping and ensure proper min-width */
+                            .tab-button {
+                                flex-shrink: 0;
+                                min-width: max-content;
+                            }
+                            /* Mobile specific improvements */
+                            @media (max-width: 768px) {
+                                .tab-scroll-container {
+                                    padding-left: 1rem;
+                                    padding-right: 1rem;
                                 }
-                            </style>
-                            <button onclick="showDetailTab('akun')" id="tab-akun" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center min-w-max">
+                                .tab-button {
+                                    font-size: 0.875rem;
+                                    padding-left: 0.75rem;
+                                    padding-right: 0.75rem;
+                                }
+                            }
+                        </style>
+                        <nav class="flex space-x-6 px-6 overflow-x-auto tab-scroll-container" aria-label="Tabs">
+                            <button onclick="showDetailTab('akun')" id="tab-akun" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
                                 <i class="fas fa-user-shield mr-2"></i>Informasi Akun
                             </button>
-                            <button onclick="showDetailTab('pribadi')" id="tab-pribadi" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center min-w-max">
+                            <button onclick="showDetailTab('pribadi')" id="tab-pribadi" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
                                 <i class="fas fa-user mr-2"></i>Data Pribadi
                             </button>
-                            <button onclick="showDetailTab('alamat')" id="tab-alamat" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center min-w-max">
+                            <button onclick="showDetailTab('alamat')" id="tab-alamat" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
                                 <i class="fas fa-map-marker-alt mr-2"></i>Data Alamat
                             </button>
-                            <button onclick="showDetailTab('pekerjaan')" id="tab-pekerjaan" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center min-w-max">
+                            <button onclick="showDetailTab('pekerjaan')" id="tab-pekerjaan" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
                                 <i class="fas fa-briefcase mr-2"></i>Data Pekerjaan & Riwayat
                             </button>
-                            <button onclick="showDetailTab('bank')" id="tab-bank" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center min-w-max">
+                            <button onclick="showDetailTab('bank')" id="tab-bank" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
                                 <i class="fas fa-university mr-2"></i>Data Bank
                             </button>
-                            <button onclick="showDetailTab('pajak')" id="tab-pajak" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center min-w-max">
+                            <button onclick="showDetailTab('pajak')" id="tab-pajak" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
                                 <i class="fas fa-file-invoice-dollar mr-2"></i>Data Pajak & JKN
                             </button>
-                            <button onclick="showDetailTab('audit')" id="tab-audit" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center min-w-max">
+                            <button onclick="showDetailTab('audit')" id="tab-audit" class="tab-button border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-3 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
                                 <i class="fas fa-history mr-2"></i>Audit Trail
                             </button>
                         </nav>
@@ -706,8 +742,30 @@ function showDetailTab(tabName) {
         btn.classList.add('border-transparent', 'text-gray-500');
     });
 
-    document.getElementById('tab-' + tabName).classList.add('border-blue-500', 'text-blue-600');
-    document.getElementById('tab-' + tabName).classList.remove('border-transparent', 'text-gray-500');
+    const activeTab = document.getElementById('tab-' + tabName);
+    activeTab.classList.add('border-blue-500', 'text-blue-600');
+    activeTab.classList.remove('border-transparent', 'text-gray-500');
+
+    // Scroll active tab into view
+    scrollTabIntoView(activeTab);
+}
+
+function scrollTabIntoView(tabElement) {
+    const container = document.querySelector('.tab-scroll-container');
+    if (!container || !tabElement) return;
+
+    const containerRect = container.getBoundingClientRect();
+    const tabRect = tabElement.getBoundingClientRect();
+
+    const isTabVisible = tabRect.left >= containerRect.left && tabRect.right <= containerRect.right;
+
+    if (!isTabVisible) {
+        const scrollLeft = tabElement.offsetLeft - container.offsetLeft - (containerRect.width / 2) + (tabRect.width / 2);
+        container.scrollTo({
+            left: Math.max(0, scrollLeft),
+            behavior: 'smooth'
+        });
+    }
 }
 
 function showRejectModal(userId, userName) {
@@ -721,9 +779,47 @@ function closeRejectModal() {
     document.querySelector('textarea[name="rejection_reason"]').value = '';
 }
 
+// Initialize scroll indicators for tab navigation
+function initTabScrollIndicators() {
+    const tabContainer = document.querySelector('.tab-scroll-container');
+    if (!tabContainer) return;
+
+    // Create scroll indicators
+    const leftIndicator = document.createElement('div');
+    leftIndicator.className = 'absolute left-0 top-0 h-full w-8 bg-gradient-to-r from-gray-50 to-transparent pointer-events-none opacity-0 transition-opacity duration-200 z-10';
+
+    const rightIndicator = document.createElement('div');
+    rightIndicator.className = 'absolute right-0 top-0 h-full w-8 bg-gradient-to-l from-gray-50 to-transparent pointer-events-none opacity-0 transition-opacity duration-200 z-10';
+
+    // Add relative positioning to parent
+    tabContainer.parentElement.style.position = 'relative';
+    tabContainer.parentElement.appendChild(leftIndicator);
+    tabContainer.parentElement.appendChild(rightIndicator);
+
+    function updateScrollIndicators() {
+        const { scrollLeft, scrollWidth, clientWidth } = tabContainer;
+
+        // Show left indicator if scrolled right
+        leftIndicator.style.opacity = scrollLeft > 0 ? '1' : '0';
+
+        // Show right indicator if can scroll more
+        rightIndicator.style.opacity = scrollLeft < scrollWidth - clientWidth - 1 ? '1' : '0';
+    }
+
+    // Update indicators on scroll
+    tabContainer.addEventListener('scroll', updateScrollIndicators);
+
+    // Update indicators on resize
+    window.addEventListener('resize', updateScrollIndicators);
+
+    // Initial update
+    setTimeout(updateScrollIndicators, 100);
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     showDetailTab('akun');
+    initTabScrollIndicators();
 });
 </script>
 @endpush

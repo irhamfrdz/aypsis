@@ -80,4 +80,31 @@ class Permohonan extends Model
     {
         return $this->belongsToMany(PranotaSupir::class, 'pranota_permohonan', 'permohonan_id', 'pranota_supir_id');
     }
+
+    /**
+     * Accessor untuk tujuan yang menggabungkan dari dan ke.
+     */
+    public function getTujuanAttribute(): string
+    {
+        $dari = trim($this->dari ?? '');
+        $ke = trim($this->ke ?? '');
+
+        if (empty($dari) && empty($ke)) {
+            return '-';
+        }
+
+        if (empty($dari)) {
+            return "Ke: {$ke}";
+        }
+
+        if (empty($ke)) {
+            return "Dari: {$dari}";
+        }
+
+        if ($dari === $ke) {
+            return $dari;
+        }
+
+        return "{$dari} → {$ke}";
+    }
 }

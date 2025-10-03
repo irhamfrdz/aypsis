@@ -28,7 +28,7 @@ class SampleKaryawanSeeder extends Seeder
             'no_hp' => '081234567890',
             'ktp' => '3201234567890123',
             'kk' => '3201234567890124',
-            
+
             // Informasi Perusahaan
             'divisi' => 'Operasional',
             'pekerjaan' => 'Supervisor',
@@ -40,7 +40,7 @@ class SampleKaryawanSeeder extends Seeder
             'supervisor' => 'Budi Santoso',
             'cabang' => 'Jakarta',
             'plat' => 'B 1234 XYZ',
-            
+
             // Informasi Alamat
             'alamat' => 'Jl. Sudirman No. 123',
             'rt_rw' => '001/002',
@@ -50,21 +50,21 @@ class SampleKaryawanSeeder extends Seeder
             'provinsi' => 'DKI Jakarta',
             'kode_pos' => '10220',
             'alamat_lengkap' => 'Jl. Sudirman No. 123, 001/002, Karet Tengsin, Tanah Abang, Jakarta Pusat, DKI Jakarta, 10220',
-            
+
             // Catatan
             'catatan' => 'Karyawan teladan dengan dedikasi tinggi. Memiliki sertifikat K3 dan pengalaman supervisi 5 tahun.',
-            
+
             // Informasi Bank
             'nama_bank' => 'Bank Central Asia (BCA)',
             'bank_cabang' => 'Cabang Sudirman',
             'akun_bank' => '1234567890',
             'atas_nama' => 'Ahmad Fauzi Rahman',
-            
+
             // Informasi Pajak & JKN
             'status_pajak' => 'K1',
             'jkn' => '0001234567890',
             'no_ketenagakerjaan' => 'JHT1234567890',
-            
+
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),
         ]);

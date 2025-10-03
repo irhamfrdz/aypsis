@@ -185,8 +185,8 @@ class User extends Authenticatable
         }
 
         // Check if karyawan's divisi is 'supir' (case insensitive)
-        $divisi = strtolower($this->karyawan->divisi ?? '');
-        return $divisi === 'supir' || $divisi === 'driver';
+        $divisi = strtoupper(trim($this->karyawan->divisi ?? ''));
+        return $divisi === 'SUPIR' || $divisi === 'DRIVER';
     }
 
     /**

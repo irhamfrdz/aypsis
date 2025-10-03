@@ -36,12 +36,12 @@ try {
 
     if ($updated) {
         echo "✅ Data karyawan berhasil diupdate!\n";
-        
+
         // Verifikasi data yang sudah diupdate
         $karyawan = Capsule::table('karyawans')
                     ->where('nik', '3201234567890123')
                     ->first();
-        
+
         echo "\n📋 DATA KARYAWAN SETELAH UPDATE:\n";
         echo "Nama: {$karyawan->nama_lengkap}\n";
         echo "NIK: {$karyawan->nik}\n";
@@ -54,7 +54,7 @@ try {
         $divisiExists = Capsule::table('divisis')
                         ->where('nama_divisi', $karyawan->divisi)
                         ->exists();
-        
+
         $pekerjaanExists = Capsule::table('pekerjaans')
                           ->where('divisi', $karyawan->divisi)
                           ->where('nama_pekerjaan', $karyawan->pekerjaan)
@@ -76,7 +76,7 @@ try {
         if ($divisiExists && $pekerjaanExists) {
             echo "\n🎉 MASALAH SELESAI!\n";
             echo "Form edit sekarang akan menampilkan divisi dan pekerjaan dengan benar.\n\n";
-            
+
             echo "💡 CARA TESTING:\n";
             echo "1. Buka form edit karyawan untuk Ahmad Fauzi Rahman\n";
             echo "2. Divisi 'ADMINISTRASI' harus sudah terselect\n";

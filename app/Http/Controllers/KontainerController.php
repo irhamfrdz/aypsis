@@ -62,7 +62,7 @@ class KontainerController extends Controller
             'kontainer_asal' => 'nullable|string|max:255',
             'keterangan1' => 'nullable|string',
             'keterangan2' => 'nullable|string',
-            'status' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:Tersedia,Disewa',
         ]);
 
         // Tambahkan tanggal kondisi terakhir
@@ -122,7 +122,7 @@ class KontainerController extends Controller
             'kontainer_asal' => 'nullable|string|max:255',
             'keterangan1' => 'nullable|string',
             'keterangan2' => 'nullable|string',
-            'status' => 'nullable|string|max:255',
+            'status' => 'nullable|string|in:Tersedia,Disewa',
         ]);
 
         $data = $request->all();

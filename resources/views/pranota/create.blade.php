@@ -24,7 +24,7 @@
             <p class="text-gray-600 mt-1">Form pembuatan pranota</p>
         </div>
 
-        <form method="POST" action="{{ route('pranota.store') }}">
+        <form method="POST" action="{{ route('pranota-kontainer-sewa.store') }}">
             @csrf
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -73,7 +73,7 @@
             @endif
 
             <div class="mt-6 flex justify-end space-x-3">
-                <a href="{{ route('pranota.index') }}"
+                <a href="{{ route('pranota-kontainer-sewa.index') }}"
                    class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg font-medium transition duration-200">
                     Batal
                 </a>

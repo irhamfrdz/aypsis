@@ -97,71 +97,40 @@ class DaftarTagihanKontainerSewaController extends Controller
             }
         }
 
-        // Get all data first untuk periode filtering
-        // Apply CSV-like logic: limit periods based on container duration
-        $allData = $query->orderBy('nomor_kontainer')
-            ->orderBy('periode')
-            ->select('*') // Explicitly select all fields including size
-            ->get()
-            ->filter(function($tagihan) {
-                // Filter periods based on CSV logic
-                if (!$tagihan->tanggal_awal) return true;
+        // Apply basic ordering and pagination directly at database level for better performance
+        $query->orderBy('nomor_kontainer')
+              ->orderBy('periode');
 
-                try {
-                    $startDate = Carbon::parse($tagihan->tanggal_awal);
-                    $currentDate = Carbon::now();
+        // Use database-level pagination instead of collection filtering for better performance
+        $perPage = 25; // Increase per page to reduce pagination requests
+        $tagihans = $query->paginate($perPage);
 
-                    if ($tagihan->tanggal_akhir) {
-                        $endDate = \Carbon\Carbon::parse($tagihan->tanggal_akhir);
+        // Get filter options with caching for better performance
+        $vendors = Cache::remember('tagihan_vendors', 300, function() {
+            return DaftarTagihanKontainerSewa::distinct()
+                ->whereNotNull('vendor')
+                ->where('vendor', '!=', '')
+                ->pluck('vendor')
+                ->sort()
+                ->values();
+        });
 
-                        // Jika kontainer sudah selesai (tanggal akhir <= sekarang)
-                        if ($endDate->lte($currentDate)) {
-                            $totalMonths = intval($startDate->diffInMonths($endDate));
-                            $maxPeriode = max(1, $totalMonths + 1);
-                        } else {
-                            // Kontainer belum selesai tapi ada tanggal akhir
-                            $totalMonths = intval($startDate->diffInMonths($currentDate));
-                            $maxPeriode = max(1, $totalMonths + 1);
+        $sizes = Cache::remember('tagihan_sizes', 300, function() {
+            return DaftarTagihanKontainerSewa::distinct()
+                ->whereNotNull('size')
+                ->where('size', '!=', '')
+                ->pluck('size')
+                ->sort()
+                ->values();
+        });
 
-                            // Tapi tidak melebihi periode sampai tanggal akhir
-                            $totalMonthsToEnd = intval($startDate->diffInMonths($endDate));
-                            $maxPeriodeToEnd = max(1, $totalMonthsToEnd + 1);
-                            $maxPeriode = min($maxPeriode, $maxPeriodeToEnd);
-                        }
-                    } else {
-                        // Container ongoing - hitung periode sampai sekarang
-                        $totalMonths = intval($startDate->diffInMonths($currentDate));
-                        $maxPeriode = max(1, $totalMonths + 1);
-                    }
-
-                    // Only show periods within calculated limit
-                    return $tagihan->periode <= $maxPeriode;
-
-                } catch (\Exception $e) {
-                    return true; // Show if calculation fails
-                }
-            });
-
-        // Use data directly from database without grouping logic
-        $processedData = $allData;
-
-        // Paginate the processed data
-        $currentPage = \Illuminate\Pagination\Paginator::resolveCurrentPage();
-        $perPage = 15;
-        $currentItems = $processedData->slice(($currentPage - 1) * $perPage, $perPage)->values();
-
-        $tagihans = new \Illuminate\Pagination\LengthAwarePaginator(
-            $currentItems,
-            $processedData->count(),
-            $perPage,
-            $currentPage,
-            ['path' => request()->url(), 'query' => request()->query()]
-        );
-
-        // Get filter options
-        $vendors = DaftarTagihanKontainerSewa::distinct()->pluck('vendor')->filter()->sort()->values();
-        $sizes = DaftarTagihanKontainerSewa::distinct()->pluck('size')->filter()->sort()->values();
-        $periodes = DaftarTagihanKontainerSewa::distinct()->pluck('periode')->filter()->sort()->values();
+        $periodes = Cache::remember('tagihan_periodes', 300, function() {
+            return DaftarTagihanKontainerSewa::distinct()
+                ->whereNotNull('periode')
+                ->pluck('periode')
+                ->sort()
+                ->values();
+        });
 
         // Status options
         $statusOptions = [
@@ -173,724 +142,14 @@ class DaftarTagihanKontainerSewaController extends Controller
     }
 
     /**
-     * Download a CSV template for bulk import of tagihan kontainer sewa.
-     */
-    public function downloadTemplateCsv()
-    {
-        $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="template_daftar_tagihan_kontainer_sewa.csv"',
-        ];
-
-        // CSV template for bulk import. Include common fields so users can provide
-        // tanggal/periode/tarif/dpp if they want to import full rows directly.
-        $columns = [
-            'vendor',
-            'nomor_kontainer',
-            'size',
-            'group',
-            'tanggal_awal',
-            'tanggal_akhir',
-            'periode',
-            'masa',
-            'tarif',
-            'dpp',
-            'dpp_nilai_lain',
-            'ppn',
-            'pph',
-            'grand_total',
-            'status',
-        ];
-
-        $callback = function() use ($columns) {
-            $FH = fopen('php://output', 'w');
-            // write UTF-8 BOM so Excel recognizes UTF-8
-            fwrite($FH, "\xEF\xBB\xBF");
-            // write header row using semicolon delimiter (Excel-friendly in many locales)
-            fputcsv($FH, $columns, ';');
-            // write an example row so users can see expected formats (dates yyyy-mm-dd, tariff labels 'Bulanan'/'Harian')
-            fputcsv($FH, [
-                'ZONA',                // vendor
-                'ZONA-12345',          // nomor_kontainer
-                '40',                  // size
-                'Z001',                // group
-                '2024-09-01',          // tanggal_awal
-                '2024-09-30',          // tanggal_akhir
-                '1',                   // periode
-                '30',                  // masa (days)
-                'Bulanan',             // tarif
-                '',                    // dpp (leave empty to let importer lookup pricelist)
-                '',                    // dpp_nilai_lain
-                '',                    // ppn
-                '',                    // pph
-                '',                    // grand_total
-                'Tersedia',            // status
-            ], ';');
-            fclose($FH);
-        };
-
-        return response()->stream($callback, 200, $headers);
-    }
-
-    /**
-     * Import CSV file and create tagihan rows.
-     */
-    public function importCsv(Request $request)
-    {
-        $request->validate([
-            'file' => 'required|file|mimes:csv,txt|max:5120',
-        ]);
-
-    // optional flags: create_all_periods (boolean) to create rows for every period from start..end
-    // and start_period (int) to override starting period (default 1)
-    $createAll = (bool) $request->input('create_all_periods', false);
-    $startPeriodOverride = $request->input('start_period');
-    $startPeriodOverride = is_null($startPeriodOverride) ? null : (int)$startPeriodOverride;
-
-        $file = $request->file('file');
-        $path = $file->getRealPath();
-
-        $created = 0;
-        if (($FH = fopen($path, 'r')) !== false) {
-            // read first line and handle BOM
-            $first = fgets($FH);
-            // rewind and use fgetcsv with semicolon delimiter
-            rewind($FH);
-            // If BOM present, strip it in header handling
-            $header = fgetcsv($FH, 0, ';');
-            if ($header === false) {
-                return back()->with('error', 'File CSV kosong atau tidak bisa dibaca.');
-            }
-
-            // Normalize header names and build index map
-            $header = array_map(function($h){ return trim(strtolower(str_replace("\xEF\xBB\xBF", '', $h))); }, $header);
-            $map = [];
-            foreach ($header as $i => $h) {
-                $map[$h] = $i;
-            }
-
-            // helper to find first matching header name among alternatives
-            $findIndex = function(array $alternatives) use ($map) {
-                foreach ($alternatives as $a) {
-                    $a = trim(strtolower($a));
-                    if (isset($map[$a])) return $map[$a];
-                }
-                return null;
-            };
-
-            // find likely column indexes (support aliases)
-            $vendorIdx = $findIndex(['vendor']);
-            $nomorIdx = $findIndex(['nomor_kontainer', 'nomor', 'container_number']);
-            $sizeIdx = $findIndex(['size', 'ukuran', 'ukuran_kontainer']);
-            $groupIdx = $findIndex(['group']);
-            $tanggalAwalIdx = $findIndex(['tanggal_awal', 'tanggal_mulai', 'start_date']);
-            $tanggalAkhirIdx = $findIndex(['tanggal_akhir', 'tanggal_selesai', 'end_date']);
-            $periodeIdx = $findIndex(['periode']);
-            $masaIdx = $findIndex(['masa']);
-            $tarifIdx = $findIndex(['tarif']);
-            $dppIdx = $findIndex(['dpp']);
-            $dppNilaiLainIdx = $findIndex(['dpp_nilai_lain']);
-            $ppnIdx = $findIndex(['ppn']);
-            $pphIdx = $findIndex(['pph']);
-            $grandTotalIdx = $findIndex(['grand_total']);
-            $statusIdx = $findIndex(['status']);
-
-            // helper to parse numeric values tolerant to thousand separators and commas
-            $parseNumber = function($v) {
-                $v = trim((string)($v ?? ''));
-                if ($v === '') return 0;
-                // remove currency symbols and spaces
-                $clean = preg_replace('/[^0-9,\.\-]/', '', $v);
-                if ($clean === '') return 0;
-                // if contains comma but not dot, treat comma as decimal separator
-                if (strpos($clean, ',') !== false && strpos($clean, '.') === false) {
-                    $clean = str_replace(',', '.', $clean);
-                } else {
-                    // remove thousand-separator commas
-                    $clean = str_replace(',', '', $clean);
-                }
-                return (float)$clean;
-            };
-
-            // helper to parse dates in flexible formats
-            $parseDate = function($v) {
-                $v = trim((string)($v ?? ''));
-                if ($v === '') return null;
-                // normalize Indonesian month names and two-digit years before parsing
-                $normalizeIndoMonths = function($s) {
-                    $map = [
-                        'jan' => 'Jan','januari'=>'Jan','feb'=>'Feb','februari'=>'Feb','mar'=>'Mar','maret'=>'Mar',
-                        'apr'=>'Apr','april'=>'Apr','mei'=>'May','jun'=>'Jun','juni'=>'Jun','jul'=>'Jul','juli'=>'Jul',
-                        'agu'=>'Aug','agustus'=>'Aug','sep'=>'Sep','sept'=>'Sep','september'=>'Sep','okt'=>'Oct','oktober'=>'Oct',
-                        'nov'=>'Nov','november'=>'Nov','des'=>'Dec','desember'=>'Dec'
-                    ];
-                    foreach ($map as $k => $v2) {
-                        $s = preg_replace('/\b' . preg_quote($k, '/') . '\b/i', $v2, $s);
-                    }
-                    return $s;
-                };
-
-                $normalizeTwoDigitYear = function($s) {
-                    $s = trim((string)$s);
-                    if ($s === '') return $s;
-                    // replace last token if it's exactly two digits
-                    $parts = preg_split('/([\s\/\-]+)/', $s, -1, PREG_SPLIT_DELIM_CAPTURE);
-                    if (!$parts) return $s;
-                    $lastIndex = null;
-                    for ($i = count($parts)-1; $i >= 0; $i--) {
-                        if (preg_match('/^[\s\/\-]+$/', $parts[$i])) continue;
-                        $lastIndex = $i;
-                        break;
-                    }
-                    if (!isset($lastIndex)) return $s;
-                    $last = $parts[$lastIndex];
-                    if (preg_match('/^\d{2}$/', $last)) {
-                        $y = (int)$last;
-                        $full = ($y <= 49) ? (2000 + $y) : (1900 + $y);
-                        $parts[$lastIndex] = (string)$full;
-                        return implode('', $parts);
-                    }
-                    return $s;
-                };
-
-                // apply normalizations
-                $v = $normalizeIndoMonths($v);
-                $v = $normalizeTwoDigitYear($v);
-
-                // try common formats
-                $formats = ['d M y','d M Y','d/m/Y','d-m-Y','Y-m-d','j M Y','d F Y','d M Y'];
-                foreach ($formats as $f) {
-                    try {
-                        $dt = \Carbon\Carbon::createFromFormat($f, $v);
-                        if ($dt) return $dt->toDateString();
-                    } catch (\Exception $e) {
-                        // continue
-                    }
-                }
-                try {
-                    return \Carbon\Carbon::parse($v)->toDateString();
-                } catch (\Exception $e) {
-                    return null;
-                }
-            };
-
-            // helper to compute periode (1-based) from tanggal_awal and cap by tanggal_akhir if present
-            $computePeriode = function($tanggal_awal, $tanggal_akhir = null) {
-                if (empty($tanggal_awal)) return 1;
-                try {
-                    $start = \Carbon\Carbon::parse($tanggal_awal)->startOfDay();
-                } catch (\Exception $e) {
-                    return 1;
-                }
-                $now = \Carbon\Carbon::now()->startOfDay();
-
-                // if start is in the future, we're in periode 1
-                if ($now->lt($start)) {
-                    $periode = 1;
-                } else {
-                    $months = $start->diffInMonths($now);
-                    $periode = $months + 1; // periode is 1-based
-                }
-
-                // if there's an end date, cap the periode so it doesn't go beyond the container's last period
-                if (!empty($tanggal_akhir)) {
-                    try {
-                        $end = \Carbon\Carbon::parse($tanggal_akhir)->startOfDay();
-                        // if end is before start, keep periode at 1
-                        if ($end->lt($start)) {
-                            $max = 1;
-                        } else {
-                            $max = $start->diffInMonths($end) + 1;
-                        }
-                        if ($periode > $max) $periode = $max;
-                    } catch (\Exception $e) {
-                        // ignore and keep computed periode
-                    }
-                }
-
-                return (int) max(1, $periode);
-            };
-
-            while (($row = fgetcsv($FH, 0, ';')) !== false) {
-                // skip empty rows
-                if (count(array_filter($row, fn($c)=>trim((string)$c) !== '')) === 0) continue;
-
-                $vendor = $vendorIdx !== null ? ($row[$vendorIdx] ?? null) : null;
-                $nomor = $nomorIdx !== null ? ($row[$nomorIdx] ?? null) : null;
-                $size = $sizeIdx !== null ? ($row[$sizeIdx] ?? null) : null;
-
-                if (empty($vendor) || empty($nomor)) {
-                    // skip invalid rows
-                    continue;
-                }
-                // build data using available columns
-                $tanggal_awal = $tanggalAwalIdx !== null ? $parseDate($row[$tanggalAwalIdx] ?? '') : null;
-                $tanggal_akhir = $tanggalAkhirIdx !== null ? $parseDate($row[$tanggalAkhirIdx] ?? '') : null;
-
-                $dppVal = $dppIdx !== null ? $parseNumber($row[$dppIdx] ?? '') : 0;
-                $dppNilaiLainVal = $dppNilaiLainIdx !== null ? $parseNumber($row[$dppNilaiLainIdx] ?? '') : null;
-                $ppnVal = $ppnIdx !== null ? $parseNumber($row[$ppnIdx] ?? '') : null;
-                $pphVal = $pphIdx !== null ? $parseNumber($row[$pphIdx] ?? '') : null;
-                $grandTotalVal = $grandTotalIdx !== null ? $parseNumber($row[$grandTotalIdx] ?? '') : null;
-
-                // determine group: prefer CSV value; otherwise use vendor-specific prefix without date
-                if ($groupIdx !== null && !empty($row[$groupIdx])) {
-                    $groupVal = trim($row[$groupIdx]);
-                } else {
-                    $vendorKey = strtoupper(trim($vendor));
-                    if ($vendorKey === 'ZONA') {
-                        $groupVal = 'Z001';
-                    } elseif ($vendorKey === 'DPE') {
-                        $groupVal = 'D002';
-                    } else {
-                        $groupVal = preg_replace('/\s+/', '', $vendorKey);
-                    }
-                }
-
-                $data = [
-                    'vendor' => trim($vendor),
-                    'nomor_kontainer' => trim($nomor),
-                    'size' => $size ? trim($size) : null,
-                    'group' => $groupVal,
-                    'tanggal_awal' => $tanggal_awal ?? now()->toDateString(),
-                    'tanggal_akhir' => $tanggal_akhir,
-                    // prefer explicit periode column if present and non-empty, otherwise compute
-                    'periode' => ($periodeIdx !== null && trim((string)($row[$periodeIdx] ?? '')) !== '') ? (int)trim($row[$periodeIdx]) : $computePeriode($tanggal_awal, $tanggal_akhir),
-                    // accept masa as string (e.g. '21 januari 2025 - 20 februari 2025') if provided
-                    'masa' => $masaIdx !== null ? trim((string)($row[$masaIdx] ?? '')) : null,
-                    'tarif' => $tarifIdx !== null ? trim($row[$tarifIdx] ?? 'Bulanan') : 'Bulanan',
-                    'dpp' => $dppVal,
-                    'dpp_nilai_lain' => $dppNilaiLainVal ?? round((float)$dppVal * 11 / 12, 2),
-                    'ppn' => $ppnVal ?? round((float)($dppNilaiLainVal ?? round((float)$dppVal * 11 / 12, 2)) * 0.12, 2),
-                    'pph' => $pphVal ?? round((float)$dppVal * 0.02, 2),
-                    'grand_total' => $grandTotalVal ?? round((float)$dppVal + (float)($ppnVal ?? round((float)($dppNilaiLainVal ?? round((float)$dppVal * 11 / 12, 2)) * 0.12, 2)) - (float)($pphVal ?? round((float)$dppVal * 0.02, 2)), 2),
-                    'status' => $statusIdx !== null ? trim($row[$statusIdx] ?? 'Tersedia') : 'Tersedia',
-                ];
-
-                // Compute monetary defaults if dpp present (not in minimal template)
-                if (!empty($data['dpp'])) {
-                    $data['dpp_nilai_lain'] = round((float)$data['dpp'] * 11 / 12, 2);
-                    $data['ppn'] = round((float)$data['dpp_nilai_lain'] * 0.12, 2);
-                    $data['pph'] = round((float)$data['dpp'] * 0.02, 2);
-                    $data['grand_total'] = round((float)$data['dpp'] + $data['ppn'] - $data['pph'], 2);
-                }
-
-                // Decide creating single row or expanding into monthly periods up to the end date
-                $computedStart = (int)($data['periode'] ?? 1);
-                if (!is_null($startPeriodOverride) && $startPeriodOverride > 0) {
-                    $computedStart = $startPeriodOverride;
-                }
-
-                // compute maximum period based on tanggal_akhir (if present) or computePeriode using now
-                $maxPeriod = $computePeriode($data['tanggal_awal'], $data['tanggal_akhir']);
-                if ($maxPeriod < $computedStart) $maxPeriod = $computedStart;
-
-                // Expand into per-period rows when either createAll flag set, or the computed maxPeriod indicates multiple periods
-                if ($createAll || $maxPeriod > $computedStart) {
-                    for ($p = $computedStart; $p <= $maxPeriod; $p++) {
-                        // compute period-specific start/end preserving day-of-month
-                        try {
-                            $baseStart = \Carbon\Carbon::parse($data['tanggal_awal'])->startOfDay();
-                        } catch (\Exception $e) {
-                            $baseStart = \Carbon\Carbon::now()->startOfDay();
-                        }
-                        // addMonthsNoOverflow preserves day-of-month where possible
-                        $periodStart = $baseStart->copy()->addMonthsNoOverflow($p - 1);
-                        // period end = periodStart +1 month -1 day, cap by tanggal_akhir
-                        $periodEnd = $periodStart->copy()->addMonthsNoOverflow(1)->subDay();
-                        if (!empty($data['tanggal_akhir'])) {
-                            try {
-                                $endCap = \Carbon\Carbon::parse($data['tanggal_akhir'])->startOfDay();
-                                if ($periodEnd->gt($endCap)) $periodEnd = $endCap;
-                            } catch (\Exception $e) {
-                                // ignore
-                            }
-                        }
-
-                        $daysInPeriod = $periodStart->diffInDays($periodEnd) + 1;
-                        $daysInFullMonth = $periodStart->daysInMonth;
-
-                        // determine tarif label (Bulanan if covers full month and pricelist not explicitly harian)
-                        $tarifLabel = ($daysInPeriod >= $daysInFullMonth) ? 'Bulanan' : 'Harian';
-
-                        // Pricelist lookup with fallbacks (vendor+size with date, then size-only with date, then ignore-dates vendor+size latest, then size-only latest)
-                        $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                ->where('vendor', $data['vendor'])
-                                ->where(function($q) use ($periodStart) {
-                                    $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
-                                      ->where(function($q2) use ($periodStart){
-                                          $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir', '>=', $periodStart->toDateString());
-                                      });
-                                })
-                                ->orderBy('tanggal_harga_awal', 'desc')
-                                ->first();
-
-                        if (!$pr) {
-                            $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                    ->where(function($q) use ($periodStart) {
-                                        $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
-                                          ->where(function($q2) use ($periodStart){
-                                              $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir', '>=', $periodStart->toDateString());
-                                          });
-                                    })
-                                    ->orderBy('tanggal_harga_awal', 'desc')
-                                    ->first();
-                        }
-
-                        if (!$pr) {
-                            // ignore dates fallback: latest vendor+size
-                            $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                    ->where('vendor', $data['vendor'])
-                                    ->orderBy('tanggal_harga_awal', 'desc')
-                                    ->first();
-                        }
-                        if (!$pr) {
-                            // size-only latest
-                            $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                    ->orderBy('tanggal_harga_awal', 'desc')
-                                    ->first();
-                        }
-
-                        $dppComputed = (float)($data['dpp'] ?? 0);
-                        $computedTarifFromPricelist = $tarifLabel;
-                        if ($pr) {
-                            $harga = (float) $pr->harga;
-                            $prTarif = strtolower((string)$pr->tarif);
-                            if (strpos($prTarif, 'harian') !== false) {
-                                // pricelist is daily price
-                                $dppComputed = round($harga * $daysInPeriod, 2);
-                                $computedTarifFromPricelist = 'Harian';
-                            } else {
-                                // pricelist is monthly price; if partial month, prorate by days
-                                if ($daysInPeriod >= $daysInFullMonth) {
-                                    $dppComputed = round($harga, 2);
-                                    $computedTarifFromPricelist = 'Bulanan';
-                                } else {
-                                    $dppComputed = round($harga * ($daysInPeriod / $daysInFullMonth), 2);
-                                    $computedTarifFromPricelist = 'Harian';
-                                }
-                            }
-                        }
-
-                        $rowData = array_merge($data, [
-                            'periode' => $p,
-                            'tanggal_awal' => $periodStart->toDateString(),
-                            'tanggal_akhir' => $periodEnd->toDateString(),
-                            'masa' => strtolower($periodStart->locale('id')->isoFormat('D MMMM YYYY')) . ' - ' . strtolower($periodEnd->locale('id')->isoFormat('D MMMM YYYY')),
-                            'tarif' => $computedTarifFromPricelist,
-                            'dpp' => $dppComputed,
-                            'dpp_nilai_lain' => round($dppComputed * 11 / 12, 2),
-                            'ppn' => round((round($dppComputed * 11 / 12, 2)) * 0.12, 2),
-                            'pph' => round($dppComputed * 0.02, 2),
-                            'grand_total' => round($dppComputed + round((round($dppComputed * 11 / 12, 2)) * 0.12, 2) - round($dppComputed * 0.02, 2), 2),
-                        ]);
-
-                        $attrs = [
-                            'vendor' => $data['vendor'],
-                            'nomor_kontainer' => $data['nomor_kontainer'],
-                            'tanggal_awal' => $rowData['tanggal_awal'],
-                            'periode' => $p,
-                        ];
-
-                        \App\Models\DaftarTagihanKontainerSewa::firstOrCreate($attrs, array_merge($attrs, $rowData));
-                        $created++;
-                    }
-                } else {
-                    // Idempotent create: avoid duplicates by vendor+nomor+tanggal_awal
-                    // include periode in uniqueness attrs so imports for different periods create separate rows
-                    // compute period start/end for this single periode and fill pricing similarly
-                    try {
-                        $baseStart = \Carbon\Carbon::parse($data['tanggal_awal'])->startOfDay();
-                    } catch (\Exception $e) {
-                        $baseStart = \Carbon\Carbon::now()->startOfDay();
-                    }
-                    $periodStart = $baseStart->copy()->addMonthsNoOverflow($computedStart - 1);
-                    $periodEnd = $periodStart->copy()->addMonthsNoOverflow(1)->subDay();
-                    if (!empty($data['tanggal_akhir'])) {
-                        try {
-                            $endCap = \Carbon\Carbon::parse($data['tanggal_akhir'])->startOfDay();
-                            if ($periodEnd->gt($endCap)) $periodEnd = $endCap;
-                        } catch (\Exception $e) {
-                        }
-                    }
-
-                    $daysInPeriod = $periodStart->diffInDays($periodEnd) + 1;
-                    $daysInFullMonth = $periodStart->daysInMonth;
-
-                    $tarifLabel = ($daysInPeriod >= $daysInFullMonth) ? 'Bulanan' : 'Harian';
-
-                    $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                ->where('vendor', $data['vendor'])
-                                ->where(function($q) use ($periodStart) {
-                                    $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
-                                      ->where(function($q2) use ($periodStart){
-                                          $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir', '>=', $periodStart->toDateString());
-                                      });
-                                })
-                                ->orderBy('tanggal_harga_awal', 'desc')
-                                ->first();
-                    if (!$pr) {
-                        $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                    ->where(function($q) use ($periodStart) {
-                                        $q->where('tanggal_harga_awal', '<=', $periodStart->toDateString())
-                                          ->where(function($q2) use ($periodStart){
-                                              $q2->whereNull('tanggal_harga_akhir')->orWhere('tanggal_harga_akhir', '>=', $periodStart->toDateString());
-                                          });
-                                    })
-                                    ->orderBy('tanggal_harga_awal', 'desc')
-                                    ->first();
-                    }
-                    if (!$pr) {
-                        $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                    ->where('vendor', $data['vendor'])
-                                    ->orderBy('tanggal_harga_awal', 'desc')
-                                    ->first();
-                    }
-                    if (!$pr) {
-                        $pr = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
-                                    ->orderBy('tanggal_harga_awal', 'desc')
-                                    ->first();
-                    }
-
-                    $dppComputed = (float)($data['dpp'] ?? 0);
-                    $computedTarifFromPricelist = $tarifLabel;
-                    if ($pr) {
-                        $harga = (float) $pr->harga;
-                        $prTarif = strtolower((string)$pr->tarif);
-                        if (strpos($prTarif, 'harian') !== false) {
-                            $dppComputed = round($harga * $daysInPeriod, 2);
-                            $computedTarifFromPricelist = 'Harian';
-                        } else {
-                            if ($daysInPeriod >= $daysInFullMonth) {
-                                $dppComputed = round($harga, 2);
-                                $computedTarifFromPricelist = 'Bulanan';
-                            } else {
-                                $dppComputed = round($harga * ($daysInPeriod / $daysInFullMonth), 2);
-                                $computedTarifFromPricelist = 'Harian';
-                            }
-                        }
-                    }
-
-                    $rowData = array_merge($data, [
-                        'periode' => $computedStart,
-                        'tanggal_awal' => $periodStart->toDateString(),
-                        'tanggal_akhir' => $periodEnd->toDateString(),
-                        'masa' => strtolower($periodStart->locale('id')->isoFormat('D MMMM YYYY')) . ' - ' . strtolower($periodEnd->locale('id')->isoFormat('D MMMM YYYY')),
-                        'tarif' => $computedTarifFromPricelist,
-                        'dpp' => $dppComputed,
-                        'dpp_nilai_lain' => round($dppComputed * 11 / 12, 2),
-                        'ppn' => round((round($dppComputed * 11 / 12, 2)) * 0.12, 2),
-                        'pph' => round($dppComputed * 0.02, 2),
-                        'grand_total' => round($dppComputed + round((round($dppComputed * 11 / 12, 2)) * 0.12, 2) - round($dppComputed * 0.02, 2), 2),
-                    ]);
-
-                    $attrs = [
-                        'vendor' => $data['vendor'],
-                        'nomor_kontainer' => $data['nomor_kontainer'],
-                        'tanggal_awal' => $rowData['tanggal_awal'],
-                        'periode' => $computedStart,
-                    ];
-
-                    \App\Models\DaftarTagihanKontainerSewa::firstOrCreate($attrs, array_merge($attrs, $rowData));
-                    $created++;
-                }
-            }
-            fclose($FH);
-        }
-
-        return redirect()->route('daftar-tagihan-kontainer-sewa.index')->with('success', "Import selesai. Baris dibuat: {$created}");
-    }
-
-    /**
-     * Import CSV with automatic grouping based on vendor and start date
-     * Groups follow TK1YYMMXXXXXXX format
-     */
-    public function importWithGrouping(Request $request)
-    {
-        $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:10240'
-        ]);
-
-        try {
-            $file = $request->file('csv_file');
-
-            // Ensure imports directory exists
-            $importsDir = storage_path('app/imports');
-            if (!is_dir($importsDir)) {
-                mkdir($importsDir, 0755, true);
-            }
-
-            // Generate unique filename
-            $filename = 'import_' . time() . '_' . uniqid() . '.csv';
-            $fullPath = $importsDir . DIRECTORY_SEPARATOR . $filename;
-
-            // Try to move uploaded file directly
-            if (!move_uploaded_file($file->getPathname(), $fullPath)) {
-                // Fallback: use Laravel's storage method
-                $path = $file->storeAs('imports', $filename);
-                $fullPath = storage_path('app/' . $path);
-
-                // Final verification
-                if (!file_exists($fullPath)) {
-                    throw new \Exception('Failed to store uploaded file. Please check storage permissions.');
-                }
-            }
-
-            // Read and parse CSV
-            $csvData = [];
-            if (($handle = fopen($fullPath, 'r')) !== false) {
-                $header = fgetcsv($handle, 0, ';'); // Using semicolon delimiter
-                if (!$header) {
-                    fclose($handle);
-                    throw new \Exception('Invalid CSV format');
-                }
-
-                while (($row = fgetcsv($handle, 0, ';')) !== false) {
-                    if (count($row) === count($header)) {
-                        $csvData[] = array_combine($header, $row);
-                    }
-                }
-                fclose($handle);
-            }
-
-            if (empty($csvData)) {
-                throw new \Exception('No valid data found in CSV');
-            }
-
-            // Group data by vendor and start date (same logic as in index method)
-            $groups = [];
-            foreach ($csvData as $row) {
-                $vendor = trim($row['vendor'] ?? '');
-                $tanggalAwal = trim($row['tanggal_awal'] ?? '');
-
-                // Create unique group key: vendor + date
-                $groupKey = $vendor . '_' . $tanggalAwal;
-
-                if (!isset($groups[$groupKey])) {
-                    $groups[$groupKey] = [
-                        'vendor' => $vendor,
-                        'tanggal_awal' => $tanggalAwal,
-                        'items' => []
-                    ];
-                }
-
-                $groups[$groupKey]['items'][] = $row;
-            }
-
-            // Generate group codes and process data
-            $groupCounter = 1;
-            $created = [];
-            $model = config('models.daftar_tagihan_kontainer_sewa', \App\Models\DaftarTagihanKontainerSewa::class);
-
-            foreach ($groups as $groupKey => $groupData) {
-                $tanggalAwal = $groupData['tanggal_awal'];
-
-                // Generate group code: TK1YYMMXXXXXXX
-                try {
-                    $date = \Carbon\Carbon::parse($tanggalAwal);
-                    $year = $date->format('y'); // 2-digit year
-                    $month = $date->format('m'); // 2-digit month
-                } catch (\Exception $e) {
-                    // Fallback to current date if parsing fails
-                    $year = date('y');
-                    $month = date('m');
-                }
-
-                $runningNumber = str_pad($groupCounter, 7, '0', STR_PAD_LEFT);
-                $groupCode = 'TK1' . $year . $month . $runningNumber;
-
-                // Process all items in this group
-                foreach ($groupData['items'] as $row) {
-                    $parseNumber = function($v) {
-                        $v = trim((string)($v ?? ''));
-                        if ($v === '') return 0;
-                        $clean = preg_replace('/[^\d.,\-]/', '', $v);
-                        if (strpos($clean, ',') !== false && strpos($clean, '.') === false) {
-                            $clean = str_replace(',', '.', $clean);
-                        } else {
-                            $clean = str_replace(',', '', $clean);
-                        }
-                        return (float)$clean;
-                    };
-
-                    $parseDate = function($v) {
-                        $v = trim((string)($v ?? ''));
-                        if ($v === '') return null;
-                        try {
-                            return \Carbon\Carbon::parse($v)->toDateString();
-                        } catch (\Exception $e) {
-                            return null;
-                        }
-                    };
-
-                    $tanggalAwal = $parseDate($row['tanggal_awal'] ?? '');
-                    $tanggalAkhir = $parseDate($row['tanggal_akhir'] ?? '');
-                    $dppVal = $parseNumber($row['dpp'] ?? '');
-
-                    $data = [
-                        'vendor' => trim($row['vendor'] ?? ''),
-                        'nomor_kontainer' => trim($row['nomor_kontainer'] ?? ''),
-                        'size' => trim($row['size'] ?? ''),
-                        'group' => $groupCode, // Use generated group code
-                        'tanggal_awal' => $tanggalAwal ?? now()->toDateString(),
-                        'tanggal_akhir' => $tanggalAkhir,
-                        'periode' => (int)($row['periode'] ?? 1),
-                        'masa' => trim($row['masa'] ?? ''),
-                        'tarif' => trim($row['tarif'] ?? 'Bulanan'),
-                        'dpp' => $dppVal,
-                        'dpp_nilai_lain' => $parseNumber($row['dpp_nilai_lain'] ?? '') ?: round($dppVal * 11 / 12, 2),
-                        'ppn' => $parseNumber($row['ppn'] ?? '') ?: round(($parseNumber($row['dpp_nilai_lain'] ?? '') ?: round($dppVal * 11 / 12, 2)) * 0.12, 2),
-                        'pph' => $parseNumber($row['pph'] ?? '') ?: round($dppVal * 0.02, 2),
-                        'grand_total' => $parseNumber($row['grand_total'] ?? '') ?: 0,
-                        'status' => trim($row['status'] ?? 'Tersedia'),
-                    ];
-
-                    // Calculate grand total if not provided
-                    if (!$data['grand_total']) {
-                        $data['grand_total'] = round($data['dpp'] + $data['ppn'] - $data['pph'], 2);
-                    }
-
-                    $created[] = $model::create($data);
-                }
-
-                $groupCounter++;
-            }
-
-            // Clean up uploaded file
-            try {
-                if (isset($fullPath) && file_exists($fullPath)) {
-                    unlink($fullPath);
-                }
-            } catch (\Exception $cleanupError) {
-                // Log cleanup error but don't fail the import
-                \Illuminate\Support\Facades\Log::warning('Failed to cleanup temporary import file: ' . $cleanupError->getMessage());
-            }
-
-            return redirect()->route('daftar-tagihan-kontainer-sewa.index')
-                ->with('success', "Successfully imported " . count($created) . " records in " . count($groups) . " groups");
-
-        } catch (\Exception $e) {
-            // Clean up file on error
-            try {
-                if (isset($fullPath) && file_exists($fullPath)) {
-                    unlink($fullPath);
-                }
-            } catch (\Exception $cleanupError) {
-                // Ignore cleanup errors on exception
-            }
-
-            return redirect()->route('daftar-tagihan-kontainer-sewa.index')
-                ->with('error', 'Import failed: ' . $e->getMessage());
-        }
-    }
-
-    /**
      * Show the form for creating a new resource.
      */
     public function create()
     {
         return view('daftar-tagihan-kontainer-sewa.create');
     }
+
+
 
     /**
      * Show the form for creating a new group.
@@ -1367,7 +626,7 @@ class DaftarTagihanKontainerSewaController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Log::error('Error getting groups: ' . $e->getMessage());
+            Log::error('Error getting groups: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -1421,7 +680,7 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            \Log::error('Error deleting groups: ' . $e->getMessage());
+            Log::error('Error deleting groups: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
@@ -1465,6 +724,1140 @@ class DaftarTagihanKontainerSewaController extends Controller
                 'success' => false,
                 'message' => 'Gagal menghapus group: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Show import page
+     */
+    public function importPage()
+    {
+        return view('daftar-tagihan-kontainer-sewa.import');
+    }
+
+    /**
+     * Handle CSV import (basic import endpoint)
+     */
+    public function importCsv(Request $request)
+    {
+        // Validate file upload
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
+        ]);
+
+        try {
+            $file = $request->file('csv_file');
+
+            // Use default import options for basic import
+            $options = [
+                'validate_only' => false,
+                'skip_duplicates' => true,
+                'update_existing' => false,
+            ];
+
+            // Process the CSV import using existing method
+            $results = $this->processCsvImport($file, $options);
+
+            // Log the import activity
+            Log::info('CSV Import completed', [
+                'user_id' => Auth::id(),
+                'filename' => $file->getClientOriginalName(),
+                'imported' => $results['imported_count'],
+                'errors' => count($results['errors']),
+            ]);
+
+            // Handle response based on request type
+            if ($request->expectsJson()) {
+                return response()->json($results);
+            }
+
+            // Redirect with success/error messages
+            if ($results['success']) {
+                return redirect()
+                    ->route('daftar-tagihan-kontainer-sewa.index')
+                    ->with('success', "Import berhasil! {$results['imported_count']} data berhasil diimpor.");
+            } else {
+                return redirect()
+                    ->back()
+                    ->withErrors(['csv_file' => 'Import gagal: ' . implode(', ', $results['errors'])])
+                    ->withInput();
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Import CSV failed', [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+            ]);
+
+            return redirect()
+                ->back()
+                ->withErrors(['csv_file' => 'Terjadi kesalahan saat import: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Export data tagihan to CSV
+     */
+    public function export(Request $request)
+    {
+        try {
+            $query = DaftarTagihanKontainerSewa::query();
+
+            // Exclude GROUP_SUMMARY records
+            $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
+                  ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
+
+            // Apply same filters as index page
+            if ($request->filled('vendor')) {
+                $query->where('vendor', $request->input('vendor'));
+            }
+
+            if ($request->filled('size')) {
+                $query->where('size', $request->input('size'));
+            }
+
+            if ($request->filled('periode')) {
+                $query->where('periode', $request->input('periode'));
+            }
+
+            if ($request->filled('status')) {
+                $status = $request->input('status');
+                if ($status === 'ongoing') {
+                    $query->whereNull('tanggal_akhir');
+                } elseif ($status === 'selesai') {
+                    $query->whereNotNull('tanggal_akhir');
+                }
+            }
+
+            if ($request->filled('status_pranota')) {
+                $statusPranota = $request->input('status_pranota');
+                if ($statusPranota === 'null') {
+                    $query->whereNull('status_pranota');
+                } else {
+                    $query->where('status_pranota', $statusPranota);
+                }
+            }
+
+            // Apply search if provided
+            if ($request->filled('q')) {
+                $searchTerm = $request->input('q');
+                $query->where(function ($q) use ($searchTerm) {
+                    $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
+                      ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                      ->orWhere('group', 'LIKE', '%' . $searchTerm . '%');
+                });
+            }
+
+            $query->orderBy('nomor_kontainer')->orderBy('periode');
+
+            // Get all matching records
+            $tagihans = $query->get();
+
+            $filename = 'export_tagihan_kontainer_sewa_' . date('Y-m-d_His') . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+
+            $callback = function() use ($tagihans) {
+                $file = fopen('php://output', 'w');
+
+                // Add BOM for UTF-8
+                fputs($file, "\xEF\xBB\xBF");
+
+                // Write header row
+                fputcsv($file, [
+                    'Group',
+                    'Vendor',
+                    'Nomor Kontainer',
+                    'Size',
+                    'Tanggal Awal',
+                    'Tanggal Akhir',
+                    'Periode',
+                    'Masa',
+                    'Tarif',
+                    'Status',
+                    'DPP',
+                    'Adjustment',
+                    'DPP Nilai Lain',
+                    'PPN',
+                    'PPH',
+                    'Grand Total',
+                    'Status Pranota',
+                    'Pranota ID'
+                ], ';');
+
+                // Write data rows
+                foreach ($tagihans as $tagihan) {
+                    fputcsv($file, [
+                        $tagihan->group ?? '',
+                        $tagihan->vendor ?? '',
+                        $tagihan->nomor_kontainer ?? '',
+                        $tagihan->size ?? '',
+                        $tagihan->tanggal_awal ? Carbon::parse($tagihan->tanggal_awal)->format('d-m-Y') : '',
+                        $tagihan->tanggal_akhir ? Carbon::parse($tagihan->tanggal_akhir)->format('d-m-Y') : '',
+                        $tagihan->periode ?? '',
+                        $tagihan->masa ?? '',
+                        $tagihan->tarif ?? '',
+                        $tagihan->status ?? '',
+                        $tagihan->dpp ?? 0,
+                        $tagihan->adjustment ?? 0,
+                        $tagihan->dpp_nilai_lain ?? 0,
+                        $tagihan->ppn ?? 0,
+                        $tagihan->pph ?? 0,
+                        $tagihan->grand_total ?? 0,
+                        $tagihan->status_pranota ?? '',
+                        $tagihan->pranota_id ?? ''
+                    ], ';');
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+
+        } catch (\Exception $e) {
+            Log::error('Error exporting data: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengexport data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export template for import (CSV format)
+     */
+    public function exportTemplate(Request $request)
+    {
+        try {
+            $format = $request->get('format', 'standard'); // standard or dpe
+            $filename = 'template_import_tagihan_kontainer_sewa_' . $format . '_' . date('Y-m-d') . '.csv';
+
+            $headers = [
+                'Content-Type' => 'text/csv',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            ];
+
+            $callback = function() use ($format) {
+                $file = fopen('php://output', 'w');
+
+                // Add BOM for UTF-8
+                fputs($file, "\xEF\xBB\xBF");
+
+                if ($format === 'dpe') {
+                    // DPE Format Template (Auto Group Format)
+                    fputcsv($file, [
+                        'vendor',
+                        'nomor_kontainer',
+                        'size',
+                        'group',
+                        'tanggal_awal',
+                        'tanggal_akhir',
+                        'periode',
+                        'tarif',
+                        'status'
+                    ], ';');
+
+                    // Sample data for DPE format
+                    fputcsv($file, [
+                        'DPE',
+                        'CCLU3836629',
+                        '20',
+                        '',
+                        '2025-01-21',
+                        '2025-02-20',
+                        '1',
+                        'Bulanan',
+                        'Tersedia'
+                    ], ';');
+
+                    fputcsv($file, [
+                        'DPE',
+                        'CCLU3836629',
+                        '20',
+                        '',
+                        '2025-02-21',
+                        '2025-03-20',
+                        '2',
+                        'Bulanan',
+                        'Tersedia'
+                    ], ';');
+
+                    fputcsv($file, [
+                        'DPE',
+                        'CBHU4077764',
+                        '20',
+                        '',
+                        '2025-01-21',
+                        '2025-02-20',
+                        '1',
+                        'Bulanan',
+                        'Tersedia'
+                    ], ';');
+
+                    fputcsv($file, [
+                        'DPE',
+                        'RXTU4540180',
+                        '40',
+                        '',
+                        '2025-03-04',
+                        '2025-04-03',
+                        '1',
+                        'Bulanan',
+                        'Tersedia'
+                    ], ';');
+                } else {
+                    // Standard Format Template
+                    fputcsv($file, [
+                        'vendor',
+                        'nomor_kontainer',
+                        'size',
+                        'group',
+                        'tanggal_awal',
+                        'tanggal_akhir',
+                        'periode',
+                        'tarif',
+                        'status'
+                    ]);
+
+                    // Write sample data
+                    fputcsv($file, [
+                        'ZONA',
+                        'ZONA001234',
+                        '20',
+                        'GROUP001',
+                        '2024-01-01',
+                        '2024-01-31',
+                        '1',
+                        'Bulanan',
+                        'ongoing'
+                    ]);
+
+                    fputcsv($file, [
+                        'DPE',
+                        'DPE567890',
+                        '40',
+                        'GROUP002',
+                        '2024-01-01',
+                        '2024-01-31',
+                        '1',
+                        'Bulanan',
+                        'selesai'
+                    ]);
+                }
+
+                fclose($file);
+            };
+
+            return response()->stream($callback, 200, $headers);
+
+        } catch (\Exception $e) {
+            Log::error('Error generating export template: ' . $e->getMessage());
+
+            return redirect()->back()->with('error', 'Gagal mengunduh template: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process import file (CSV format)
+     */
+    public function processImport(Request $request)
+    {
+        // Validate request
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max, CSV only
+            'validate_only' => 'boolean',
+            'skip_duplicates' => 'boolean',
+            'update_existing' => 'boolean',
+        ]);
+
+        try {
+            $file = $request->file('import_file');
+
+            // Prepare import options
+            $options = [
+                'validate_only' => $request->boolean('validate_only'),
+                'skip_duplicates' => $request->boolean('skip_duplicates'),
+                'update_existing' => $request->boolean('update_existing'),
+            ];
+
+            // Process CSV import
+            $results = $this->processCsvImport($file, $options);
+
+            // Log import activity
+            Log::info('Import processed', [
+                'user_id' => Auth::id(),
+                'filename' => $file->getClientOriginalName(),
+                'results' => $results,
+            ]);
+
+            // Return JSON response for AJAX requests
+            if ($request->expectsJson()) {
+                return response()->json($results);
+            }
+
+            // Handle redirect for non-AJAX requests
+            if ($results['success']) {
+                $message = $options['validate_only']
+                    ? 'Validasi berhasil. Data siap untuk diimport.'
+                    : "Import berhasil. {$results['imported_count']} data berhasil diimport";
+
+                if ($results['updated_count'] > 0) {
+                    $message .= ", {$results['updated_count']} data berhasil diupdate";
+                }
+
+                if ($results['skipped_count'] > 0) {
+                    $message .= ", {$results['skipped_count']} data diskip (duplikat)";
+                }
+
+                return redirect()->route('daftar-tagihan-kontainer-sewa.index')->with('success', $message);
+            } else {
+                $errorMessage = 'Import gagal. ' . count($results['errors']) . ' error ditemukan.';
+                return redirect()->back()->with('error', $errorMessage);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Import failed', [
+                'user_id' => Auth::id(),
+                'filename' => $request->file('import_file')->getClientOriginalName(),
+                'error' => $e->getMessage()
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Import gagal: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Import gagal: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Process CSV import
+     */
+    private function processCsvImport($file, $options)
+    {
+        $results = [
+            'success' => true,
+            'imported_count' => 0,
+            'updated_count' => 0,
+            'skipped_count' => 0,
+            'errors' => [],
+            'warnings' => [],
+            'validate_only' => $options['validate_only'],
+        ];
+
+        $handle = fopen($file->getPathname(), 'r');
+        if (!$handle) {
+            throw new \Exception('Tidak dapat membaca file CSV');
+        }
+
+        $headers = [];
+        $rowNumber = 0;
+
+        // Detect CSV delimiter
+        $firstLine = fgets($handle);
+        rewind($handle);
+        $delimiter = (substr_count($firstLine, ';') > substr_count($firstLine, ',')) ? ';' : ',';
+
+        while (($row = fgetcsv($handle, 1000, $delimiter)) !== false) {
+            $rowNumber++;
+
+            try {
+                // First row is header
+                if ($rowNumber === 1) {
+                    $headers = array_map('trim', $row);
+
+                    // Remove BOM from the first header if present
+                    if (!empty($headers[0])) {
+                        $headers[0] = str_replace("\xEF\xBB\xBF", "", $headers[0]); // Remove UTF-8 BOM
+                        $headers[0] = preg_replace('/^\x{FEFF}/u', '', $headers[0]); // Remove Unicode BOM
+                    }
+
+                    // Clean all headers from BOM and excess whitespace
+                    $headers = array_map(function($header) {
+                        // Remove BOM characters
+                        $cleaned = str_replace("\xEF\xBB\xBF", "", $header);
+                        $cleaned = preg_replace('/^\x{FEFF}/u', '', $cleaned);
+                        $cleaned = preg_replace('/^[\x{FEFF}\x{EF}\x{BB}\x{BF}]+/u', '', $cleaned);
+                        // Trim whitespace and remove quotes
+                        $cleaned = trim($cleaned);
+                        $cleaned = trim($cleaned, '"\''); // Remove surrounding quotes
+                        return $cleaned;
+                    }, $headers);
+
+                    // Map headers dari format CSV Anda ke format sistem
+                    $headerMapping = [
+                        'Group' => 'group',
+                        'Kontainer' => 'nomor_kontainer',
+                        'Nomor Kontainer' => 'nomor_kontainer', // Support "Nomor Kontainer" variant
+                        'Awal' => 'tanggal_awal',
+                        'Tanggal Awal' => 'tanggal_awal', // Support "Tanggal Awal" variant
+                        'Akhir' => 'tanggal_akhir',
+                        'Tanggal Akhir' => 'tanggal_akhir', // Support "Tanggal Akhir" variant
+                        'Ukuran' => 'size',
+                        'Harga' => 'tarif',
+                        'Periode' => 'periode_input',
+                        'Status' => 'status_type',
+                        'Hari' => 'hari',
+                        'DPP' => 'dpp',
+                        'Keterangan' => 'keterangan',
+                        'QTY Disc' => 'qty_disc',
+                        'adjustment' => 'adjustment',
+                        'Pembulatan' => 'pembulatan',
+                        'ppn' => 'ppn',
+                        'pph' => 'pph',
+                        'grand_total' => 'grand_total',
+                        'No.InvoiceVendor' => 'no_invoice_vendor',
+                        'Tgl.InvVendor' => 'tgl_invoice_vendor',
+                        'No.Bank' => 'no_bank',
+                        'Tgl.Bank' => 'tgl_bank'
+                    ];
+
+                    // Check if this CSV has the expected DPE format or standard format
+                    // Clean headers for BOM and check
+                    $cleanedHeaders = array_map(function($header) {
+                        return preg_replace('/^[\x{FEFF}\x{EF}\x{BB}\x{BF}]+/u', '', $header);
+                    }, $headers);
+
+                    // Check for DPE format with columns: Group, Kontainer, Awal, Akhir, Ukuran
+                    // Support both "Kontainer" and "Nomor Kontainer" variants
+                    $dpeExpectedHeaders = ['Group', 'Kontainer', 'Awal', 'Akhir', 'Ukuran'];
+                    $dpeExpectedHeadersVariant = ['Group', 'Nomor Kontainer', 'Tanggal Awal', 'Tanggal Akhir', 'Size'];
+                    $hasDpeFormat = count(array_intersect($dpeExpectedHeaders, $cleanedHeaders)) >= 3 ||
+                                   count(array_intersect($dpeExpectedHeadersVariant, $cleanedHeaders)) >= 3;
+
+                    // Check for standard format with columns: vendor, nomor_kontainer, size, tanggal_awal, tanggal_akhir
+                    $standardRequiredHeaders = ['vendor', 'nomor_kontainer', 'size', 'tanggal_awal', 'tanggal_akhir'];
+                    $hasStandardFormat = count(array_intersect($standardRequiredHeaders, $cleanedHeaders)) >= 5;
+
+                    if (!$hasDpeFormat && !$hasStandardFormat) {
+                        throw new \Exception('Header tidak sesuai format. Expected: ' . implode(', ', $standardRequiredHeaders) .
+                                          ' atau format DPE: ' . implode(', ', $dpeExpectedHeaders) .
+                                          '. Headers yang ditemukan: ' . implode(', ', $cleanedHeaders));
+                    }
+                    continue;
+                }
+
+                // Skip empty rows
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+
+                // Map row data to associative array using cleaned headers
+                $data = [];
+                foreach ($headers as $index => $header) {
+                    $value = isset($row[$index]) ? trim($row[$index]) : '';
+                    // Clean BOM from values as well
+                    $value = str_replace("\xEF\xBB\xBF", "", $value);
+                    $value = preg_replace('/^\x{FEFF}/u', '', $value);
+
+                    // Headers are already cleaned during header processing
+                    $data[$header] = $value;
+                }
+
+                // Clean and validate data
+                $cleanedData = $this->cleanImportData($data, $rowNumber, $headers);
+
+                // Check for duplicates
+                $existing = $this->findExistingRecord($cleanedData);
+
+                if ($existing) {
+                    if ($options['skip_duplicates'] && !$options['update_existing']) {
+                        $results['skipped_count']++;
+                        $results['warnings'][] = "Baris {$rowNumber}: Data sudah ada (Kontainer: {$cleanedData['nomor_kontainer']}, Periode: {$cleanedData['periode']}) - diskip";
+                        continue;
+                    } elseif ($options['update_existing']) {
+                        if (!$options['validate_only']) {
+                            $existing->update($cleanedData);
+                        }
+                        $results['updated_count']++;
+                        continue;
+                    }
+                }
+
+                // If validation only, don't save
+                if (!$options['validate_only']) {
+                    DaftarTagihanKontainerSewa::create($cleanedData);
+                }
+
+                $results['imported_count']++;
+
+            } catch (\Exception $e) {
+                $results['errors'][] = [
+                    'row' => $rowNumber,
+                    'message' => $e->getMessage(),
+                    'data' => $row
+                ];
+                $results['success'] = false;
+            }
+        }
+
+        fclose($handle);
+
+        $results['total_processed'] = $results['imported_count'] + $results['updated_count'] + $results['skipped_count'];
+
+        return $results;
+    }
+
+    /**
+     * Clean and validate import data
+     */
+    private function cleanImportData($data, $rowNumber, $headers = [])
+    {
+        // Detect if this is DPE format CSV - check for cleaned headers
+        $cleanedHeaders = array_map(function($header) {
+            return preg_replace('/^[\x{FEFF}\x{EF}\x{BB}\x{BF}]+/u', '', $header);
+        }, $headers);
+
+        // Check for DPE format (has 'Group' and 'Kontainer'/'Nomor Kontainer' columns)
+        $isDpeFormat = in_array('Group', $cleanedHeaders) &&
+                      (in_array('Kontainer', $cleanedHeaders) || in_array('Nomor Kontainer', $cleanedHeaders));
+
+        if ($isDpeFormat) {
+            // Handle DPE format (Group, Kontainer, Awal, Akhir, Ukuran, Harga)
+            $cleaned = $this->cleanDpeFormatData($data, $rowNumber);
+        } else {
+            // Handle standard format (vendor, nomor_kontainer, size, tanggal_awal, tanggal_akhir)
+            $vendor = $this->cleanVendor($data['vendor'] ?? '');
+            $size = $this->cleanSize($data['size'] ?? '');
+
+            // Parse tanggal
+            $tanggalAwal = $this->parseDate($data['tanggal_awal'] ?? '');
+            $tanggalAkhir = $this->parseDate($data['tanggal_akhir'] ?? '');
+
+            // Ambil periode LANGSUNG dari CSV (tidak dihitung dari tanggal)
+            $periodeFromCsv = isset($data['periode']) ? (int)trim($data['periode']) : 0;
+
+            // Gunakan periode dari CSV
+            $jumlahHari = $periodeFromCsv;
+
+            // Jika periode tidak ada di CSV, baru hitung dari tanggal sebagai fallback
+            if ($jumlahHari == 0 && $tanggalAwal && $tanggalAkhir) {
+                $startDate = \Carbon\Carbon::parse($tanggalAwal);
+                $endDate = \Carbon\Carbon::parse($tanggalAkhir);
+                $jumlahHari = $startDate->diffInDays($endDate) + 1;
+            }
+
+            // Get tarif type from CSV (Bulanan/Harian)
+            $tarifText = trim($data['tarif'] ?? '');
+            $tarifType = strtolower($tarifText);
+
+            // Determine tarif_nominal (tarif per hari numerik) based on vendor and size
+            $tarifNominal = 0;
+            if ($vendor === 'DPE') {
+                $tarifNominal = ($size == '20') ? 25000 : 35000;
+            } else if ($vendor === 'ZONA') {
+                $tarifNominal = ($size == '20') ? 20000 : 30000;
+            }
+
+            // If tarif in CSV is a number, use that as tarif_nominal
+            if (is_numeric($tarifText)) {
+                $tarifNominal = $this->cleanNumber($tarifText);
+                $tarifText = 'Custom'; // Mark as custom tarif
+            } else if (!in_array($tarifType, ['bulanan', 'harian', 'monthly', 'daily', ''])) {
+                // Try to parse as number if not empty and not bulanan/harian
+                $numericValue = $this->cleanNumber($tarifText);
+                if ($numericValue > 0) {
+                    $tarifNominal = $numericValue;
+                    $tarifText = 'Custom';
+                }
+            }
+
+            // Normalize tarif text
+            if (in_array($tarifType, ['bulanan', 'monthly'])) {
+                $tarifText = 'Bulanan';
+            } else if (in_array($tarifType, ['harian', 'daily'])) {
+                $tarifText = 'Harian';
+            }
+
+            $cleaned = [
+                'vendor' => $vendor,
+                'nomor_kontainer' => strtoupper(trim($data['nomor_kontainer'] ?? '')),
+                'size' => $size,
+                'tanggal_awal' => $tanggalAwal,
+                'tanggal_akhir' => $tanggalAkhir,
+                'tarif' => $tarifText, // Store text: "Bulanan" or "Harian"
+                'periode' => $jumlahHari, // Ambil dari CSV atau calculated
+                'group' => trim($data['group'] ?? ''),
+                'status' => $this->cleanStatus($data['status'] ?? 'ongoing'),
+                'status_pranota' => null,
+                'pranota_id' => null,
+                // Store tarifNominal in temporary key for calculation only
+                '_tarif_for_calculation' => $tarifNominal,
+            ];
+        }
+
+        // Common validation and processing
+        // Validate vendor field (should be set by cleanDpeFormatData for DPE format)
+        if (empty($cleaned['vendor'])) {
+            throw new \Exception('Vendor wajib diisi');
+        }
+
+        if (empty($cleaned['nomor_kontainer'])) {
+            throw new \Exception('Nomor kontainer wajib diisi');
+        }
+
+        if (empty($cleaned['tanggal_awal']) || empty($cleaned['tanggal_akhir'])) {
+            throw new \Exception('Tanggal awal dan tanggal akhir wajib diisi');
+        }
+
+        // Validate tanggal
+        $startDate = Carbon::parse($cleaned['tanggal_awal']);
+        $endDate = Carbon::parse($cleaned['tanggal_akhir']);
+
+        if ($endDate->lt($startDate)) {
+            throw new \Exception('Tanggal akhir tidak boleh lebih awal dari tanggal awal');
+        }
+
+        // Jika periode belum diset (dari cleanImportData), hitung dari tanggal sebagai fallback
+        if (!isset($cleaned['periode']) || $cleaned['periode'] == 0) {
+            $cleaned['periode'] = $startDate->diffInDays($endDate) + 1;
+        }
+
+        // Format masa: "Periode 1", "Periode 2", dst (atau "X Hari" jika > 12)
+        if ($cleaned['periode'] <= 12) {
+            $cleaned['masa'] = 'Periode ' . $cleaned['periode'];
+        } else {
+            $cleaned['masa'] = $cleaned['periode'] . ' Hari';
+        }
+
+        // Remove empty group
+        if (empty($cleaned['group']) || $cleaned['group'] === '-') {
+            $cleaned['group'] = null;
+        }
+
+        // Calculate financial data (skip if DPE format with existing financial data)
+        if (!$isDpeFormat || (!isset($cleaned['dpp']) || $cleaned['dpp'] == 0)) {
+            $financialData = $this->calculateFinancialData($cleaned);
+            $cleaned = array_merge($cleaned, $financialData);
+        } else {
+            // For DPE format with existing financial data, ensure dpp_nilai_lain is set
+            if (!isset($cleaned['dpp_nilai_lain']) || $cleaned['dpp_nilai_lain'] == 0) {
+                $cleaned['dpp_nilai_lain'] = round(($cleaned['dpp'] ?? 0) * 11/12, 2);
+            }
+        }
+
+        // Remove temporary calculation key before validation and saving
+        if (isset($cleaned['_tarif_for_calculation'])) {
+            unset($cleaned['_tarif_for_calculation']);
+        }
+
+        // Validate business rules
+        $this->validateBusinessRules($cleaned, $rowNumber, $isDpeFormat);
+
+        return $cleaned;
+    }
+
+    /**
+     * Clean DPE format data
+     */
+    private function cleanDpeFormatData($data, $rowNumber)
+    {
+        // Helper function to get value with possible BOM in key
+        $getValue = function($key) use ($data) {
+            // First try exact match
+            if (isset($data[$key])) {
+                return $data[$key];
+            }
+
+            // Then try with possible BOM variations
+            $bomVariations = [
+                "\xEF\xBB\xBF" . $key,    // UTF-8 BOM
+                "\u{FEFF}" . $key,        // Unicode BOM (if supported)
+            ];
+
+            foreach ($bomVariations as $bomKey) {
+                if (isset($data[$bomKey])) {
+                    return $data[$bomKey];
+                }
+            }
+
+            // Finally search through all keys for one that ends with our target
+            foreach (array_keys($data) as $dataKey) {
+                // Remove any BOM characters and check if it matches
+                $cleanKey = preg_replace('/^[\x{FEFF}\x{EF}\x{BB}\x{BF}]+/u', '', $dataKey);
+                if ($cleanKey === $key) {
+                    return $data[$dataKey];
+                }
+
+                // Also check if original key ends with target (loose matching)
+                if (strlen($dataKey) >= strlen($key) && substr($dataKey, -strlen($key)) === $key) {
+                    return $data[$dataKey];
+                }
+            }
+
+            return '';
+        };
+
+        // Parse data dari format DPE CSV
+        // Determine vendor - bisa dari kolom 'vendor' atau 'Vendor', jika kosong default DPE
+        $vendor = $getValue('Vendor') ?: ($getValue('vendor') ?: 'DPE');
+        // Clean empty vendor (jika hanya whitespace atau kosong)
+        $vendor = trim($vendor);
+        if (empty($vendor)) {
+            $vendor = 'DPE'; // Default ke DPE jika kosong
+        }
+
+        // Get size - support "Ukuran", "Size", "size"
+        $size = $this->cleanSize($getValue('Size') ?: ($getValue('Ukuran') ?: $getValue('size')));
+
+        // Get tarif text from 'Tarif' column (Bulanan/Harian)
+        $tarifText = $getValue('Tarif') ?: $getValue('tarif');
+        $tarifText = trim($tarifText);
+
+        // Normalize tarif text to Bulanan/Harian
+        $tarifLower = strtolower($tarifText);
+        if (in_array($tarifLower, ['bulanan', 'monthly', 'bulan'])) {
+            $tarifText = 'Bulanan';
+        } else if (in_array($tarifLower, ['harian', 'daily', 'hari'])) {
+            $tarifText = 'Harian';
+        } else if (empty($tarifText)) {
+            // Default ke Bulanan jika kosong
+            $tarifText = 'Bulanan';
+        }
+        // If it's already "Bulanan" or "Harian", keep as is
+
+        // Get periode from CSV (Periode column)
+        $periodeValue = $getValue('Periode') ?: $getValue('periode');
+        $periode = !empty($periodeValue) ? (int)trim($periodeValue) : 0;
+
+        $cleaned = [
+            'vendor' => strtoupper(trim($vendor)),
+            'nomor_kontainer' => strtoupper(trim($getValue('Nomor Kontainer') ?: ($getValue('Kontainer') ?: $getValue('nomor_kontainer')))),
+            'size' => $size,
+            'tanggal_awal' => $this->parseDpeDate($getValue('Tanggal Awal') ?: ($getValue('Awal') ?: $getValue('tanggal_awal'))),
+            'tanggal_akhir' => $this->parseDpeDate($getValue('Tanggal Akhir') ?: ($getValue('Akhir') ?: $getValue('tanggal_akhir'))),
+            'tarif' => $tarifText, // Text: Bulanan atau Harian
+            'periode' => $periode, // Periode dari CSV
+            'group' => trim($getValue('Group') ?: $getValue('group')),
+            'status' => $this->cleanDpeStatus($getValue('Status') ?: $getValue('status') ?: 'ongoing'),
+            'status_pranota' => null,
+            'pranota_id' => null,
+            'keterangan' => trim($getValue('Keterangan')),
+        ];
+
+        // Ambil nilai finansial dari CSV jika tersedia
+        $dppValue = $getValue('DPP');
+        if (!empty($dppValue)) {
+            $cleaned['dpp'] = $this->cleanDpeNumber($dppValue);
+        } else {
+            $cleaned['dpp'] = 0;
+        }
+
+        $adjustmentValue = trim($getValue('adjustment'));
+        if (!empty($adjustmentValue)) {
+            $cleaned['adjustment'] = $this->cleanDpeNumber($adjustmentValue);
+        } else {
+            $cleaned['adjustment'] = 0;
+        }
+
+        // Hitung DPP yang sudah disesuaikan dengan adjustment
+        $adjustedDpp = $cleaned['dpp'] + $cleaned['adjustment'];
+
+        // Ambil PPN dari CSV, jika tidak ada hitung dari DPP (12%)
+        $ppnValue = $getValue('ppn');
+        if (!empty($ppnValue)) {
+            $cleaned['ppn'] = $this->cleanDpeNumber($ppnValue);
+        } else {
+            // Hitung PPN 12% dari adjusted DPP
+            $cleaned['ppn'] = round($adjustedDpp * 0.12, 2);
+        }
+
+        // Ambil PPH dari CSV, jika tidak ada hitung dari DPP (2%)
+        $pphValue = $getValue('pph');
+        if (!empty($pphValue)) {
+            $cleaned['pph'] = $this->cleanDpeNumber($pphValue);
+        } else {
+            // Hitung PPH 2% dari adjusted DPP
+            $cleaned['pph'] = round($adjustedDpp * 0.02, 2);
+        }
+
+        // Ambil Grand Total dari CSV, jika tidak ada hitung dari komponen
+        $grandTotalValue = $getValue('grand_total');
+        if (!empty($grandTotalValue)) {
+            $cleaned['grand_total'] = $this->cleanDpeNumber($grandTotalValue);
+        } else {
+            // Hitung Grand Total = DPP + PPN - PPH
+            $cleaned['grand_total'] = round($adjustedDpp + $cleaned['ppn'] - $cleaned['pph'], 2);
+        }
+
+        // Hitung DPP Nilai Lain jika belum ada (11/12 dari adjusted DPP)
+        if (!isset($cleaned['dpp_nilai_lain']) || empty($cleaned['dpp_nilai_lain'])) {
+            $cleaned['dpp_nilai_lain'] = round($adjustedDpp * 11 / 12, 2);
+        }
+
+        // Data tambahan dari DPE
+        $noInvoiceVendor = $getValue('No.InvoiceVendor');
+        if (!empty($noInvoiceVendor)) {
+            $cleaned['no_invoice_vendor'] = trim($noInvoiceVendor);
+        }
+
+        $tglInvVendor = $getValue('Tgl.InvVendor');
+        if (!empty($tglInvVendor)) {
+            $cleaned['tgl_invoice_vendor'] = $this->parseDpeDate($tglInvVendor);
+        }
+
+        $noBank = $getValue('No.Bank');
+        if (!empty($noBank)) {
+            $cleaned['no_bank'] = trim($noBank);
+        }
+
+        $tglBank = $getValue('Tgl.Bank');
+        if (!empty($tglBank)) {
+            $cleaned['tgl_bank'] = $this->parseDpeDate($tglBank);
+        }
+
+        return $cleaned;
+    }
+
+    /**
+     * Helper methods for DPE data cleaning
+     */
+    private function parseDpeDate($date)
+    {
+        if (empty($date) || trim($date) === '') {
+            return null;
+        }
+
+        try {
+            // Handle DPE date formats: "21-01-2025", "30 Jan 25", etc.
+            $date = trim($date);
+
+            // Format: "21-01-2025"
+            if (preg_match('/(\d{1,2})-(\d{1,2})-(\d{4})/', $date, $matches)) {
+                return Carbon::createFromDate($matches[3], $matches[2], $matches[1])->format('Y-m-d');
+            }
+
+            // Format: "30 Jan 25"
+            if (preg_match('/(\d{1,2})\s+(\w{3})\s+(\d{2})/', $date, $matches)) {
+                $year = '20' . $matches[3];
+                $monthMap = [
+                    'Jan' => '01', 'Feb' => '02', 'Mar' => '03', 'Apr' => '04',
+                    'May' => '05', 'Jun' => '06', 'Jul' => '07', 'Aug' => '08',
+                    'Sep' => '09', 'Oct' => '10', 'Nov' => '11', 'Dec' => '12'
+                ];
+                $month = $monthMap[$matches[2]] ?? '01';
+                return Carbon::createFromDate($year, $month, $matches[1])->format('Y-m-d');
+            }
+
+            // Try Carbon parse as last resort
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            throw new \Exception("Format tanggal tidak valid: {$date}");
+        }
+    }
+
+    private function cleanDpeNumber($value)
+    {
+        if (empty($value) || trim($value) === '' || trim($value) === '-') {
+            return 0;
+        }
+
+        // Handle negative values with comma format
+        $value = trim($value);
+        $isNegative = false;
+
+        if (strpos($value, '-') !== false) {
+            $isNegative = true;
+            $value = str_replace('-', '', $value);
+        }
+
+        // Remove currency symbols, spaces, and formatting
+        $cleaned = preg_replace('/[^\d.,]/', '', $value);
+        $cleaned = str_replace(',', '', $cleaned); // Remove thousands separator
+
+        $result = (float) $cleaned;
+        return $isNegative ? -$result : $result;
+    }
+
+    private function cleanDpeStatus($status)
+    {
+        $status = strtolower(trim($status));
+
+        if (in_array($status, ['bulanan', 'monthly'])) {
+            return 'ongoing'; // Map bulanan ke ongoing
+        }
+
+        if (in_array($status, ['harian', 'daily'])) {
+            return 'ongoing'; // Map harian ke ongoing
+        }
+
+        if (in_array($status, ['tersedia', 'available', 'ongoing', 'active'])) {
+            return 'ongoing';
+        }
+
+        if (in_array($status, ['selesai', 'completed', 'done', 'finished'])) {
+            return 'selesai';
+        }
+
+        return 'ongoing';
+    }
+
+    /**
+     * Helper methods for data cleaning
+     */
+    private function cleanVendor($vendor)
+    {
+        $vendor = strtoupper(trim($vendor));
+
+        if (in_array($vendor, ['ZONA', 'PT ZONA', 'PT. ZONA'])) {
+            return 'ZONA';
+        }
+
+        if (in_array($vendor, ['DPE', 'PT DPE', 'PT. DPE'])) {
+            return 'DPE';
+        }
+
+        return $vendor;
+    }
+
+    private function cleanSize($size)
+    {
+        $size = trim($size);
+
+        if (in_array($size, ['20', '20ft', '20 ft', '20\''])) {
+            return '20';
+        }
+
+        if (in_array($size, ['40', '40ft', '40 ft', '40\''])) {
+            return '40';
+        }
+
+        return (string) $size;
+    }
+
+    private function cleanStatus($status)
+    {
+        $status = strtolower(trim($status));
+
+        if (in_array($status, ['ongoing', 'active', 'aktif', 'berjalan', 'tersedia', 'available'])) {
+            return 'ongoing';
+        }
+
+        if (in_array($status, ['selesai', 'completed', 'done', 'finished'])) {
+            return 'selesai';
+        }
+
+        return 'ongoing';
+    }
+
+    private function parseDate($date)
+    {
+        if (empty($date)) {
+            return null;
+        }
+
+        try {
+            // Handle various date formats
+            $formats = ['Y-m-d', 'd/m/Y', 'd-m-Y', 'm/d/Y', 'Y/m/d'];
+
+            foreach ($formats as $format) {
+                try {
+                    return Carbon::createFromFormat($format, $date)->format('Y-m-d');
+                } catch (\Exception $e) {
+                    continue;
+                }
+            }
+
+            // Try Carbon parse as last resort
+            return Carbon::parse($date)->format('Y-m-d');
+        } catch (\Exception $e) {
+            throw new \Exception("Format tanggal tidak valid: {$date}");
+        }
+    }
+
+    private function cleanNumber($value)
+    {
+        if (empty($value)) {
+            return 0;
+        }
+
+        // Remove currency symbols and formatting
+        $cleaned = preg_replace('/[^\d.,\-]/', '', $value);
+        $cleaned = str_replace(',', '.', $cleaned);
+
+        return (float) $cleaned;
+    }
+
+    private function findExistingRecord($data)
+    {
+        return DaftarTagihanKontainerSewa::where('nomor_kontainer', $data['nomor_kontainer'])
+            ->where('periode', $data['periode'])
+            ->first();
+    }
+
+    private function calculateFinancialData($data)
+    {
+        // Use temporary calculation value if available, otherwise get from master pricelist
+        $tarifNominal = $data['_tarif_for_calculation'] ?? 0;
+        $periode = $data['periode'];
+
+        // Get master pricelist if available and no tarif provided
+        if ($tarifNominal == 0) {
+            $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $data['size'])
+                ->where('vendor', $data['vendor'])
+                ->first();
+
+            if ($masterPricelist) {
+                $tarifNominal = $masterPricelist->tarif;
+            }
+        }
+
+        // If still no tarif, use default based on vendor and size
+        if ($tarifNominal == 0) {
+            if ($data['vendor'] === 'DPE') {
+                $tarifNominal = ($data['size'] == '20') ? 25000 : 35000;
+            } else if ($data['vendor'] === 'ZONA') {
+                $tarifNominal = ($data['size'] == '20') ? 20000 : 30000;
+            }
+        }
+
+        // Calculate DPP
+        $dpp = $tarifNominal * $periode;
+
+        // Calculate PPN (11% of DPP)
+        $ppn = $dpp * 0.11;
+
+        // Calculate PPH (2% of DPP)
+        $pph = $dpp * 0.02;
+
+        // Grand Total = DPP + PPN - PPH
+        $grand_total = $dpp + $ppn - $pph;
+
+        return [
+            'dpp' => $dpp,
+            'adjustment' => 0,
+            'dpp_nilai_lain' => 0,
+            'ppn' => $ppn,
+            'pph' => $pph,
+            'grand_total' => $grand_total,
+        ];
+    }
+
+    private function validateBusinessRules($data, $rowNumber, $isDpeFormat = false)
+    {
+        // Check vendor
+        if (!in_array($data['vendor'], ['ZONA', 'DPE'])) {
+            throw new \Exception("Vendor tidak didukung: {$data['vendor']}. Harus ZONA atau DPE");
+        }
+
+        // Check size
+        if (!in_array($data['size'], ['20', '40'])) {
+            throw new \Exception("Ukuran kontainer tidak valid: {$data['size']}. Harus 20 atau 40");
+        }
+
+        // Check periode (jumlah hari)
+        if (isset($data['periode']) && $data['periode'] > 365) {
+            throw new \Exception("Periode terlalu lama ({$data['periode']} hari). Maksimal 365 hari");
+        }
+
+        // Check container number
+        if (strlen($data['nomor_kontainer']) < 4) {
+            throw new \Exception("Nomor kontainer terlalu pendek: {$data['nomor_kontainer']}");
         }
     }
 }
