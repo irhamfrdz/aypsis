@@ -57,8 +57,26 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
 
             // Priority 1: Dot notation patterns (highest priority)
             if (strpos($permissionName, '.') !== false && !$processed) {
+                // Handle complex 4-part permissions: master.module.action.subaction
+                if (preg_match('/^master\.([^.]+)\.([^.]+)\.([^.]+)$/', $permissionName, $matches)) {
+                    $module = 'master-' . $matches[1];
+                    $action = $matches[2];
+                    $subaction = $matches[3];
+                    
+                    // Combine action and subaction for matrix
+                    if ($action === 'import' && $subaction === 'store') {
+                        $finalAction = 'import';
+                    } elseif ($action === 'print' && $subaction === 'single') {
+                        $finalAction = 'print';
+                    } else {
+                        $finalAction = $action . '_' . $subaction;
+                    }
+                    
+                    $matrixPermissions[$module][$finalAction] = true;
+                    $processed = true;
+                }
                 // Master module pattern: master.module.action
-                if (preg_match($patterns['dot_master'], $permissionName, $matches)) {
+                elseif (preg_match($patterns['dot_master'], $permissionName, $matches)) {
                     $module = 'master-' . $matches[1];
                     $action = $actionMap[$matches[2]] ?? $matches[2];
                     $matrixPermissions[$module][$action] = true;

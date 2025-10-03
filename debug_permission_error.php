@@ -137,6 +137,20 @@ try {
         'permissions with special characters' => "SELECT name FROM permissions WHERE name REGEXP '[^a-zA-Z0-9._-]'"
     ];
     
+    // Special analysis for the multi-dot permissions found
+    echo "  🔍 Analyzing multi-dot permissions:\n";
+    $multiDotPermissions = DB::select("SELECT name FROM permissions WHERE LENGTH(name) - LENGTH(REPLACE(name, '.', '')) > 2");
+    foreach ($multiDotPermissions as $perm) {
+        echo "    - {$perm->name}\n";
+        
+        // Analyze the structure
+        $parts = explode('.', $perm->name);
+        if (count($parts) == 4) {
+            echo "      → Pattern: {$parts[0]}.{$parts[1]}.{$parts[2]}.{$parts[3]}\n";
+            echo "      → Suggested fix: {$parts[0]}-{$parts[1]}-{$parts[2]}-{$parts[3]}\n";
+        }
+    }
+    
     foreach ($problematicPatterns as $description => $query) {
         $results = DB::select($query);
         if (count($results) > 0) {

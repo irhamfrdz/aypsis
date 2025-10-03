@@ -294,6 +294,31 @@ class UserController extends Controller
             // Pattern 1: module.submodule.action (e.g., master.karyawan.index) - HIGHEST PRIORITY
             if (strpos($permissionName, '.') !== false) {
                 $parts = explode('.', $permissionName);
+                
+                // Handle 4-part permissions: master.karyawan.import.store
+                if (count($parts) == 4 && $parts[0] === 'master') {
+                    $module = $parts[0] . '-' . $parts[1]; // master-karyawan
+                    $action = $parts[2]; // import
+                    $subaction = $parts[3]; // store
+                    
+                    // Initialize module array if not exists
+                    if (!isset($matrixPermissions[$module])) {
+                        $matrixPermissions[$module] = [];
+                    }
+                    
+                    // Map combined actions to matrix actions
+                    if ($action === 'import' && $subaction === 'store') {
+                        $matrixPermissions[$module]['import'] = true;
+                    } elseif ($action === 'print' && $subaction === 'single') {
+                        $matrixPermissions[$module]['print'] = true;
+                    } else {
+                        // Generic handling for other 4-part permissions
+                        $matrixPermissions[$module][$action] = true;
+                    }
+                    
+                    continue; // Skip other patterns
+                }
+                
                 if (count($parts) >= 3 && $parts[0] === 'master') {
                     // For master.karyawan.index format
                     $module = $parts[0] . '-' . $parts[1]; // master-karyawan
@@ -968,7 +993,7 @@ class UserController extends Controller
                             $subModule = $moduleParts[1]; // karyawan
 
                             // DIRECT FIX: Handle master-karyawan permissions explicitly
-                            if ($module === 'master-karyawan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                            if ($module === 'master-karyawan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'import'])) {
                                 // Map action to correct permission name
                                 $actionMap = [
                                     'view' => 'master-karyawan-view',
@@ -976,7 +1001,8 @@ class UserController extends Controller
                                     'update' => 'master-karyawan-update',
                                     'delete' => 'master-karyawan-delete',
                                     'print' => 'master-karyawan-print',
-                                    'export' => 'master-karyawan-export'
+                                    'export' => 'master-karyawan-export',
+                                    'import' => 'master-karyawan-import'
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -986,6 +1012,23 @@ class UserController extends Controller
                                         $permissionIds[] = $directPermission->id;
                                         $found = true;
                                         continue; // Skip to next action
+                                    }
+                                    
+                                    // Fallback: Try 4-dot format for import and print actions
+                                    if ($action === 'import') {
+                                        $fourDotPermission = Permission::where('name', 'master.karyawan.import.store')->first();
+                                        if ($fourDotPermission) {
+                                            $permissionIds[] = $fourDotPermission->id;
+                                            $found = true;
+                                            continue;
+                                        }
+                                    } elseif ($action === 'print') {
+                                        $fourDotPermission = Permission::where('name', 'master.karyawan.print.single')->first();
+                                        if ($fourDotPermission) {
+                                            $permissionIds[] = $fourDotPermission->id;
+                                            $found = true;
+                                            continue;
+                                        }
                                     }
                                 }
                             }
