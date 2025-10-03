@@ -49,19 +49,25 @@ php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
 
-# 8. Optimize application
-echo "⚡ 8. Optimizing application..."
+# 8. Fix multi-dot permissions if they exist
+echo "🔧 8. Checking and fixing multi-dot permissions..."
+php debug_permission_error.php | grep -A 10 "PROBLEMATIC PERMISSIONS"
+# Uncomment the next line if multi-dot permissions are found:
+# php fix_multi_dot_permissions.php
+
+# 9. Optimize application
+echo "⚡ 9. Optimizing application..."
     php artisan config:cache
     php artisan route:cache
     php artisan view:cache
 
-# 9. Set proper permissions
-echo "🔐 9. Setting proper permissions..."
+# 10. Set proper permissions
+echo "🔐 10. Setting proper permissions..."
 chmod -R 755 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-# 10. Disable maintenance mode
-echo "✅ 10. Disabling maintenance mode..."
+# 11. Disable maintenance mode
+echo "✅ 11. Disabling maintenance mode..."
 php artisan up
 
 echo ""

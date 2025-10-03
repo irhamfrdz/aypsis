@@ -1192,25 +1192,32 @@ class DaftarTagihanKontainerSewaController extends Controller
                     // Map headers dari format CSV Anda ke format sistem
                     $headerMapping = [
                         'Group' => 'group',
+                        'Vendor' => 'vendor',
                         'Kontainer' => 'nomor_kontainer',
                         'Nomor Kontainer' => 'nomor_kontainer', // Support "Nomor Kontainer" variant
+                        'Size' => 'size',
                         'Awal' => 'tanggal_awal',
                         'Tanggal Awal' => 'tanggal_awal', // Support "Tanggal Awal" variant
                         'Akhir' => 'tanggal_akhir',
                         'Tanggal Akhir' => 'tanggal_akhir', // Support "Tanggal Akhir" variant
                         'Ukuran' => 'size',
                         'Harga' => 'tarif',
+                        'Tarif' => 'tarif',
                         'Periode' => 'periode_input',
+                        'Masa' => 'masa',
                         'Status' => 'status_type',
                         'Hari' => 'hari',
                         'DPP' => 'dpp',
+                        'Adjustment' => 'adjustment',
+                        'DPP Nilai Lain' => 'dpp_nilai_lain',
+                        'PPN' => 'ppn',
+                        'PPH' => 'pph',
+                        'Grand Total' => 'grand_total',
+                        'Status Pranota' => 'status_pranota',
+                        'Pranota ID' => 'pranota_id',
                         'Keterangan' => 'keterangan',
                         'QTY Disc' => 'qty_disc',
-                        'adjustment' => 'adjustment',
                         'Pembulatan' => 'pembulatan',
-                        'ppn' => 'ppn',
-                        'pph' => 'pph',
-                        'grand_total' => 'grand_total',
                         'No.InvoiceVendor' => 'no_invoice_vendor',
                         'Tgl.InvVendor' => 'tgl_invoice_vendor',
                         'No.Bank' => 'no_bank',
@@ -1227,8 +1234,10 @@ class DaftarTagihanKontainerSewaController extends Controller
                     // Support both "Kontainer" and "Nomor Kontainer" variants
                     $dpeExpectedHeaders = ['Group', 'Kontainer', 'Awal', 'Akhir', 'Ukuran'];
                     $dpeExpectedHeadersVariant = ['Group', 'Nomor Kontainer', 'Tanggal Awal', 'Tanggal Akhir', 'Size'];
+                    $dpeExpectedHeadersVariant2 = ['Group', 'Vendor', 'Nomor Kontainer', 'Size', 'Tanggal Awal', 'Tanggal Akhir'];
                     $hasDpeFormat = count(array_intersect($dpeExpectedHeaders, $cleanedHeaders)) >= 3 ||
-                                   count(array_intersect($dpeExpectedHeadersVariant, $cleanedHeaders)) >= 3;
+                                   count(array_intersect($dpeExpectedHeadersVariant, $cleanedHeaders)) >= 3 ||
+                                   count(array_intersect($dpeExpectedHeadersVariant2, $cleanedHeaders)) >= 4;
 
                     // Check for standard format with columns: vendor, nomor_kontainer, size, tanggal_awal, tanggal_akhir
                     $standardRequiredHeaders = ['vendor', 'nomor_kontainer', 'size', 'tanggal_awal', 'tanggal_akhir'];
@@ -1236,7 +1245,7 @@ class DaftarTagihanKontainerSewaController extends Controller
 
                     if (!$hasDpeFormat && !$hasStandardFormat) {
                         throw new \Exception('Header tidak sesuai format. Expected: ' . implode(', ', $standardRequiredHeaders) .
-                                          ' atau format DPE: ' . implode(', ', $dpeExpectedHeaders) .
+                                          ' atau format DPE: ' . implode(', ', $dpeExpectedHeadersVariant2) .
                                           '. Headers yang ditemukan: ' . implode(', ', $cleanedHeaders));
                     }
                     continue;
@@ -1548,7 +1557,7 @@ class DaftarTagihanKontainerSewaController extends Controller
             $cleaned['dpp'] = 0;
         }
 
-        $adjustmentValue = trim($getValue('adjustment'));
+        $adjustmentValue = trim($getValue('Adjustment') ?: $getValue('adjustment'));
         if (!empty($adjustmentValue)) {
             $cleaned['adjustment'] = $this->cleanDpeNumber($adjustmentValue);
         } else {
@@ -1558,17 +1567,17 @@ class DaftarTagihanKontainerSewaController extends Controller
         // Hitung DPP yang sudah disesuaikan dengan adjustment
         $adjustedDpp = $cleaned['dpp'] + $cleaned['adjustment'];
 
-        // Ambil PPN dari CSV, jika tidak ada hitung dari DPP (12%)
-        $ppnValue = $getValue('ppn');
+        // Ambil PPN dari CSV, jika tidak ada hitung dari DPP (11%)
+        $ppnValue = $getValue('PPN') ?: $getValue('ppn');
         if (!empty($ppnValue)) {
             $cleaned['ppn'] = $this->cleanDpeNumber($ppnValue);
         } else {
-            // Hitung PPN 12% dari adjusted DPP
-            $cleaned['ppn'] = round($adjustedDpp * 0.12, 2);
+            // Hitung PPN 11% dari adjusted DPP
+            $cleaned['ppn'] = round($adjustedDpp * 0.11, 2);
         }
 
         // Ambil PPH dari CSV, jika tidak ada hitung dari DPP (2%)
-        $pphValue = $getValue('pph');
+        $pphValue = $getValue('PPH') ?: $getValue('pph');
         if (!empty($pphValue)) {
             $cleaned['pph'] = $this->cleanDpeNumber($pphValue);
         } else {
@@ -1577,7 +1586,7 @@ class DaftarTagihanKontainerSewaController extends Controller
         }
 
         // Ambil Grand Total dari CSV, jika tidak ada hitung dari komponen
-        $grandTotalValue = $getValue('grand_total');
+        $grandTotalValue = $getValue('Grand Total') ?: $getValue('grand_total');
         if (!empty($grandTotalValue)) {
             $cleaned['grand_total'] = $this->cleanDpeNumber($grandTotalValue);
         } else {
@@ -1585,8 +1594,12 @@ class DaftarTagihanKontainerSewaController extends Controller
             $cleaned['grand_total'] = round($adjustedDpp + $cleaned['ppn'] - $cleaned['pph'], 2);
         }
 
-        // Hitung DPP Nilai Lain jika belum ada (11/12 dari adjusted DPP)
-        if (!isset($cleaned['dpp_nilai_lain']) || empty($cleaned['dpp_nilai_lain'])) {
+        // Ambil DPP Nilai Lain dari CSV atau hitung (11/12 dari adjusted DPP)
+        $dppNilaiLainValue = $getValue('DPP Nilai Lain') ?: $getValue('dpp_nilai_lain');
+        if (!empty($dppNilaiLainValue)) {
+            $cleaned['dpp_nilai_lain'] = $this->cleanDpeNumber($dppNilaiLainValue);
+        } else {
+            // Hitung DPP Nilai Lain (11/12 dari adjusted DPP)
             $cleaned['dpp_nilai_lain'] = round($adjustedDpp * 11 / 12, 2);
         }
 
@@ -1624,12 +1637,15 @@ class DaftarTagihanKontainerSewaController extends Controller
         }
 
         try {
-            // Handle DPE date formats: "21-01-2025", "30 Jan 25", etc.
+            // Handle DPE date formats: "21-01-2025", "21/01/2025", "30 Jan 25", etc.
             $date = trim($date);
 
-            // Format: "21-01-2025"
-            if (preg_match('/(\d{1,2})-(\d{1,2})-(\d{4})/', $date, $matches)) {
-                return Carbon::createFromDate($matches[3], $matches[2], $matches[1])->format('Y-m-d');
+            // Format: "21-01-2025" or "21/01/2025" (DD-MM-YYYY or DD/MM/YYYY)
+            if (preg_match('/(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})/', $date, $matches)) {
+                $day = $matches[1];
+                $month = $matches[2];
+                $year = $matches[3];
+                return Carbon::createFromDate($year, $month, $day)->format('Y-m-d');
             }
 
             // Format: "30 Jan 25"
