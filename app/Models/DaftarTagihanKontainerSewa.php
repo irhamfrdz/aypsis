@@ -68,11 +68,39 @@ class DaftarTagihanKontainerSewa extends Model
     }
 
     /**
-     * Get the pranota that this tagihan belongs to
+     * Get the pranota that this tagihan belongs to (legacy Pranota table)
      */
     public function pranota()
     {
         return $this->belongsTo(Pranota::class, 'pranota_id');
+    }
+
+    /**
+     * Get the pranota kontainer sewa that this tagihan belongs to
+     */
+    public function pranotaKontainerSewa()
+    {
+        return $this->belongsTo(PranotaTagihanKontainerSewa::class, 'pranota_id');
+    }
+
+    /**
+     * Get the actual pranota record (checks both tables)
+     * Returns either Pranota or PranotaTagihanKontainerSewa
+     */
+    public function getPranotaRecordAttribute()
+    {
+        if (!$this->pranota_id) {
+            return null;
+        }
+
+        // First try PranotaTagihanKontainerSewa
+        $pranotaKontainerSewa = PranotaTagihanKontainerSewa::find($this->pranota_id);
+        if ($pranotaKontainerSewa) {
+            return $pranotaKontainerSewa;
+        }
+
+        // Fallback to regular Pranota
+        return Pranota::find($this->pranota_id);
     }
 
     /**

@@ -14,7 +14,7 @@
 private function convertPermissionsToMatrixLite(array $permissionNames): array
 {
     $matrixPermissions = [];
-    
+
     // Limit processing untuk mencegah timeout
     if (count($permissionNames) > 1000) {
         error_log("WARNING: Too many permissions (" . count($permissionNames) . ") - using fallback mode");
@@ -34,7 +34,7 @@ private function convertPermissionsToMatrixLite(array $permissionNames): array
     // Simple pattern matching only - avoid complex regex and nested loops
     foreach ($permissionNames as $permissionName) {
         if (!is_string($permissionName)) continue;
-        
+
         // Pattern 1: master.module.action (highest priority)
         if (preg_match('/^master\.([^.]+)\.(.+)$/', $permissionName, $matches)) {
             $module = 'master-' . $matches[1];
@@ -42,38 +42,38 @@ private function convertPermissionsToMatrixLite(array $permissionNames): array
             $matrixPermissions[$module][$action] = true;
             continue;
         }
-        
+
         // Pattern 2: module-action
         if (preg_match('/^([^-]+)-(.+)$/', $permissionName, $matches)) {
             $module = $matches[1];
             $action = $matches[2];
-            
+
             // Special cases
             if ($module === 'master' && strpos($action, '-') !== false) {
                 $parts = explode('-', $action, 2);
                 $module = 'master-' . $parts[0];
                 $action = $parts[1];
             }
-            
+
             $action = $action === 'index' ? 'view' : $action;
             $matrixPermissions[$module][$action] = true;
             continue;
         }
-        
+
         // Pattern 3: Special permissions
         $specialPermissions = [
             'dashboard' => ['system', 'dashboard'],
             'login' => ['auth', 'login'],
             'logout' => ['auth', 'logout'],
         ];
-        
+
         if (isset($specialPermissions[$permissionName])) {
             $module = $specialPermissions[$permissionName][0];
             $action = $specialPermissions[$permissionName][1];
             $matrixPermissions[$module][$action] = true;
             continue;
         }
-        
+
         // Fallback: simple module
         if (strpos($permissionName, '-') === false && strpos($permissionName, '.') === false) {
             $matrixPermissions[$permissionName]['view'] = true;
@@ -91,7 +91,7 @@ private function convertMatrixPermissionsToIdsLite(array $matrixPermissions): ar
 {
     // Cache permissions to avoid multiple DB queries
     static $permissionCache = null;
-    
+
     if ($permissionCache === null) {
         // Get only commonly used permissions to reduce memory usage
         $commonPermissions = DB::table('permissions')
@@ -102,7 +102,7 @@ private function convertMatrixPermissionsToIdsLite(array $matrixPermissions): ar
                       ->orWhere('name', 'IN', ['dashboard', 'login', 'logout']);
             })
             ->get();
-            
+
         $permissionCache = [];
         foreach ($commonPermissions as $perm) {
             $permissionCache[$perm->name] = $perm->id;
@@ -110,13 +110,13 @@ private function convertMatrixPermissionsToIdsLite(array $matrixPermissions): ar
     }
 
     $permissionIds = [];
-    
+
     foreach ($matrixPermissions as $module => $actions) {
         if (!is_array($actions)) continue;
-        
+
         foreach ($actions as $action => $value) {
             if ($value == '1' || $value === true) {
-                
+
                 // Handle system module
                 if ($module === 'system' && $action === 'dashboard') {
                     if (isset($permissionCache['dashboard'])) {
@@ -124,18 +124,18 @@ private function convertMatrixPermissionsToIdsLite(array $matrixPermissions): ar
                     }
                     continue;
                 }
-                
+
                 // Try common patterns
                 $patterns = [
                     $module . '-' . $action,
                     $module . '.' . $action,
                 ];
-                
+
                 if ($action === 'view') {
                     $patterns[] = $module . '-index';
                     $patterns[] = $module . '.index';
                 }
-                
+
                 foreach ($patterns as $pattern) {
                     if (isset($permissionCache[$pattern])) {
                         $permissionIds[] = $permissionCache[$pattern];

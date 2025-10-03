@@ -104,7 +104,7 @@ echo "🔄 PHP-FPM PROCESS CHECK:"
 php_processes=$(pgrep php-fpm | wc -l)
 if [ "$php_processes" -gt 0 ]; then
     print_status "OK" "$php_processes PHP-FPM processes running"
-    
+
     # Check for zombie processes
     zombie_count=$(ps aux | grep php-fpm | grep -c '<defunct>')
     if [ "$zombie_count" -gt 0 ]; then
@@ -120,7 +120,7 @@ echo ""
 echo "🧪 LARAVEL APPLICATION TEST:"
 if [ -f "artisan" ]; then
     print_status "INFO" "Found Laravel artisan"
-    
+
     # Test database connection
     if timeout 10 php artisan migrate:status > /dev/null 2>&1; then
         print_status "OK" "Database connection working"
@@ -128,7 +128,7 @@ if [ -f "artisan" ]; then
         print_status "ERROR" "Database connection failed"
         echo "  💡 Check .env database settings"
     fi
-    
+
     # Test cache
     if php artisan config:cache > /dev/null 2>&1; then
         print_status "OK" "Config cache successful"

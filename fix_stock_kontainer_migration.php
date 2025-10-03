@@ -29,7 +29,7 @@ try {
     // Periksa kolom yang ada
     echo "📋 Memeriksa kolom yang ada di tabel stock_kontainers:\n";
     $columns = Schema::getColumnListing('stock_kontainers');
-    
+
     foreach ($columns as $column) {
         echo "  ✓ {$column}\n";
     }
@@ -38,7 +38,7 @@ try {
     // Periksa kolom yang bermasalah
     $problematicColumns = ['kondisi', 'lokasi', 'harga_sewa_per_hari', 'harga_sewa_per_bulan', 'pemilik'];
     $existingProblematicColumns = [];
-    
+
     echo "🔍 Memeriksa kolom yang akan dihapus:\n";
     foreach ($problematicColumns as $column) {
         if (Schema::hasColumn('stock_kontainers', $column)) {
@@ -76,19 +76,19 @@ try {
         foreach ($foundProblematicMigrations as $migration) {
             echo "  🔄 {$migration->migration}\n";
         }
-        
+
         echo "\n🔧 Membersihkan record migrasi bermasalah...\n";
         $deleted = DB::table('migrations')
             ->whereIn('migration', $problematicMigrations)
             ->delete();
-        
+
         echo "✅ Berhasil menghapus {$deleted} record migrasi bermasalah.\n\n";
     }
 
     // Manual cleanup jika kolom masih ada
     if (!empty($existingProblematicColumns)) {
         echo "🔧 Membersihkan kolom yang bermasalah secara manual...\n";
-        
+
         foreach ($existingProblematicColumns as $column) {
             try {
                 DB::statement("ALTER TABLE stock_kontainers DROP COLUMN IF EXISTS `{$column}`");

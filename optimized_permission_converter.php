@@ -13,7 +13,7 @@
 function convertPermissionsToMatrixOptimized(array $permissionNames): array
 {
     $matrixPermissions = [];
-    
+
     // Pre-compile regex patterns for better performance
     static $patterns = null;
     if ($patterns === null) {
@@ -24,7 +24,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
             'dash_general' => '/^([^-]+)-(.+)$/',
         ];
     }
-    
+
     // Action mapping cache
     static $actionMap = [
         'index' => 'view',
@@ -45,7 +45,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
     // Process permissions in batches to avoid memory issues
     $batchSize = 100;
     $batches = array_chunk($permissionNames, $batchSize);
-    
+
     foreach ($batches as $batch) {
         foreach ($batch as $permissionName) {
             // Skip if not a string
@@ -62,7 +62,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
                     $module = 'master-' . $matches[1];
                     $action = $matches[2];
                     $subaction = $matches[3];
-                    
+
                     // Combine action and subaction for matrix
                     if ($action === 'import' && $subaction === 'store') {
                         $finalAction = 'import';
@@ -71,7 +71,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
                     } else {
                         $finalAction = $action . '_' . $subaction;
                     }
-                    
+
                     $matrixPermissions[$module][$finalAction] = true;
                     $processed = true;
                 }
@@ -86,7 +86,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
                 elseif (preg_match($patterns['dot_general'], $permissionName, $matches)) {
                     $module = $matches[1];
                     $action = $actionMap[$matches[2]] ?? $matches[2];
-                    
+
                     // Special handling for specific modules
                     if ($module === 'admin' || $module === 'profile' || $module === 'supir' || $module === 'approval') {
                         $matrixPermissions[$module][$action] = true;
@@ -108,7 +108,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
                 elseif (preg_match($patterns['dash_general'], $permissionName, $matches)) {
                     $module = $matches[1];
                     $action = $matches[2];
-                    
+
                     // Handle complex module names
                     $complexModules = [
                         'tagihan-kontainer-sewa' => 'tagihan-kontainer-sewa',
@@ -117,7 +117,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
                         'pembayaran-pranota-cat' => 'pembayaran-pranota-cat',
                         'perbaikan-kontainer' => 'perbaikan-kontainer',
                     ];
-                    
+
                     // Check if this is a complex module
                     foreach ($complexModules as $pattern => $moduleKey) {
                         if (strpos($permissionName, $pattern . '-') === 0) {
@@ -126,7 +126,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
                             break;
                         }
                     }
-                    
+
                     $mappedAction = $actionMap[$action] ?? $action;
                     $matrixPermissions[$module][$mappedAction] = true;
                     $processed = true;
@@ -143,7 +143,7 @@ function convertPermissionsToMatrixOptimized(array $permissionNames): array
                     'storage-local' => ['storage' => 'local'],
                     'user-approval' => ['user-approval' => 'view'],
                 ];
-                
+
                 if (isset($specialPermissions[$permissionName])) {
                     foreach ($specialPermissions[$permissionName] as $module => $action) {
                         $matrixPermissions[$module][$action] = true;
@@ -187,13 +187,13 @@ function convertMatrixPermissionsToIdsOptimized(array $matrixPermissions): array
     }
 
     $permissionIds = [];
-    
+
     foreach ($matrixPermissions as $module => $actions) {
         if (!is_array($actions)) continue;
 
         foreach ($actions as $action => $value) {
             if ($value == '1' || $value === true) {
-                
+
                 // Handle system module
                 if ($module === 'system' && $action === 'dashboard') {
                     if (isset($permissionCache['dashboard'])) {
@@ -204,13 +204,13 @@ function convertMatrixPermissionsToIdsOptimized(array $matrixPermissions): array
 
                 // Generate possible permission name patterns
                 $possibleNames = [];
-                
+
                 // Pattern 1: module-action
                 $possibleNames[] = $module . '-' . $action;
-                
-                // Pattern 2: module.action  
+
+                // Pattern 2: module.action
                 $possibleNames[] = str_replace('-', '.', $module) . '.' . $action;
-                
+
                 // Pattern 3: Action variations
                 $actionVariations = [
                     'view' => ['view', 'index', 'show'],
@@ -218,14 +218,14 @@ function convertMatrixPermissionsToIdsOptimized(array $matrixPermissions): array
                     'update' => ['update', 'edit'],
                     'delete' => ['delete', 'destroy'],
                 ];
-                
+
                 if (isset($actionVariations[$action])) {
                     foreach ($actionVariations[$action] as $variation) {
                         $possibleNames[] = $module . '-' . $variation;
                         $possibleNames[] = str_replace('-', '.', $module) . '.' . $variation;
                     }
                 }
-                
+
                 // Look for matching permissions in cache
                 foreach ($possibleNames as $permName) {
                     if (isset($permissionCache[$permName])) {

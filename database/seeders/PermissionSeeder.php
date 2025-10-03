@@ -11,7 +11,7 @@ class PermissionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
+     *
      * Seeder ini mencakup semua permission yang digunakan dalam UserController.php
      * dengan berbagai format naming convention (dot notation, dash notation, dll)
      */
@@ -19,10 +19,10 @@ class PermissionSeeder extends Seeder
     {
         // Nonaktifkan foreign key checks sementara
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        
+
         // Clear existing permissions (optional - uncomment if you want to start fresh)
         // Permission::truncate();
-        
+
         // Aktifkan kembali foreign key checks
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
@@ -1674,7 +1674,7 @@ class PermissionSeeder extends Seeder
             foreach (array_chunk($newPermissions, 100) as $chunk) {
                 Permission::insert($chunk);
             }
-            
+
             $this->command->info('✅ Successfully seeded ' . count($newPermissions) . ' new permissions!');
         } else {
             $this->command->info('ℹ️ All permissions already exist in the database.');

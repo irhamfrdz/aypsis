@@ -872,7 +872,11 @@
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center ">
                             @if($tagihan->pranota_id)
                                 @php
-                                    $pranota = \App\Models\Pranota::find($tagihan->pranota_id);
+                                    // Try to find in PranotaTagihanKontainerSewa first, then fallback to Pranota
+                                    $pranota = \App\Models\PranotaTagihanKontainerSewa::find($tagihan->pranota_id);
+                                    if (!$pranota) {
+                                        $pranota = \App\Models\Pranota::find($tagihan->pranota_id);
+                                    }
                                 @endphp
                                 @if($pranota)
                                     <div class="flex flex-col items-center space-y-1">
