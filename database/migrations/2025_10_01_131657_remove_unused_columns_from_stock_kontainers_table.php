@@ -13,12 +13,19 @@ return new class extends Migration
     {
         Schema::table('stock_kontainers', function (Blueprint $table) {
             // Hapus kolom yang tidak diperlukan sesuai dengan perubahan form
-            $table->dropColumn([
-                'kondisi',
-                'harga_sewa_per_hari',
-                'harga_sewa_per_bulan',
-                'pemilik'
-            ]);
+            // Check if columns exist before dropping them
+            if (Schema::hasColumn('stock_kontainers', 'kondisi')) {
+                $table->dropColumn('kondisi');
+            }
+            if (Schema::hasColumn('stock_kontainers', 'harga_sewa_per_hari')) {
+                $table->dropColumn('harga_sewa_per_hari');
+            }
+            if (Schema::hasColumn('stock_kontainers', 'harga_sewa_per_bulan')) {
+                $table->dropColumn('harga_sewa_per_bulan');
+            }
+            if (Schema::hasColumn('stock_kontainers', 'pemilik')) {
+                $table->dropColumn('pemilik');
+            }
         });
     }
 
