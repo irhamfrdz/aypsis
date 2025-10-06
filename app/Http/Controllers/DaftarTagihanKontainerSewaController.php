@@ -44,12 +44,18 @@ class DaftarTagihanKontainerSewaController extends Controller
         if ($request->filled('q')) {
             $searchTerm = $request->input('q');
 
-            // First, check if search term matches a container number
-            $foundContainer = DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')->first();
+            // Find all containers that match the search term
+            $matchingContainers = DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                ->whereNotNull('group')
+                ->where('group', '!=', '')
+                ->get();
 
-            if ($foundContainer && $foundContainer->group) {
-                // If container found and has a group, search by that group to show all containers in the same group
-                $query->where('group', $foundContainer->group);
+            if ($matchingContainers->isNotEmpty()) {
+                // Collect all unique groups from matching containers
+                $groups = $matchingContainers->pluck('group')->unique()->toArray();
+
+                // Search by all these groups to show all containers in the related groups
+                $query->whereIn('group', $groups);
             } else {
                 // Otherwise, do regular search
                 $query->where(function ($q) use ($searchTerm) {

@@ -18,7 +18,7 @@ return new class extends Migration
             } catch (\Exception $e) {
                 // Foreign key might not exist, continue
             }
-            
+
             // Drop unnecessary columns that don't match the form
             $columnsToDrop = ['metode_pembayaran', 'referensi_pembayaran', 'status', 'approved_by', 'approved_at'];
             foreach ($columnsToDrop as $column) {
@@ -26,7 +26,7 @@ return new class extends Migration
                     $table->dropColumn($column);
                 }
             }
-            
+
             // Rename/modify existing columns to match form
             if (Schema::hasColumn('pembayaran_aktivitas_lainnya', 'total_nominal')) {
                 $table->renameColumn('total_nominal', 'total_pembayaran');
@@ -34,13 +34,13 @@ return new class extends Migration
             if (Schema::hasColumn('pembayaran_aktivitas_lainnya', 'keterangan')) {
                 $table->renameColumn('keterangan', 'aktivitas_pembayaran');
             }
-            
+
             // Add new required column for bank selection
             if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'pilih_bank')) {
                 $table->foreignId('pilih_bank')->after('tanggal_pembayaran')
                       ->constrained('akun_coa')->onDelete('cascade');
             }
-                  
+
             // Modify aktivitas_pembayaran to be required (not nullable)
             $table->text('aktivitas_pembayaran')->nullable(false)->change();
         });
@@ -57,7 +57,7 @@ return new class extends Migration
                 $table->dropForeign(['pilih_bank']);
                 $table->dropColumn('pilih_bank');
             }
-            
+
             // Rename columns back
             if (Schema::hasColumn('pembayaran_aktivitas_lainnya', 'total_pembayaran')) {
                 $table->renameColumn('total_pembayaran', 'total_nominal');
@@ -65,7 +65,7 @@ return new class extends Migration
             if (Schema::hasColumn('pembayaran_aktivitas_lainnya', 'aktivitas_pembayaran')) {
                 $table->renameColumn('aktivitas_pembayaran', 'keterangan');
             }
-            
+
             // Add back the dropped columns
             if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'metode_pembayaran')) {
                 $table->enum('metode_pembayaran', ['cash', 'transfer', 'check', 'credit_card'])
@@ -85,7 +85,7 @@ return new class extends Migration
             if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'approved_at')) {
                 $table->timestamp('approved_at')->nullable()->after('approved_by');
             }
-            
+
             // Make keterangan nullable again
             $table->text('keterangan')->nullable()->change();
         });

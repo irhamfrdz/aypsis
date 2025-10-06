@@ -906,7 +906,7 @@ Route::middleware([
                // Update adjustment endpoint
                Route::patch('daftar-tagihan-kontainer-sewa/{id}/adjustment', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateAdjustment'])
                     ->name('daftar-tagihan-kontainer-sewa.adjustment.update')
-                    ->middleware('can:tagihan-kontainer-sewa-edit');
+                    ->middleware('can:tagihan-kontainer-sewa-update');
 
                // Individual routes with specific middleware instead of resource
                Route::get('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'index'])
@@ -1004,7 +1004,7 @@ Route::middleware([
 // Profile Management Routes (for all authenticated users)
 Route::middleware(['auth'])->group(function () {
     Route::prefix('profile')->group(function () {
-        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show')->middleware('can:profile-view');
+        Route::get('/', [\App\Http\Controllers\ProfileController::class, 'show'])->name('profile.show');
         Route::get('/edit', [\App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit')->middleware('can:profile-update');
         Route::put('/account', [\App\Http\Controllers\ProfileController::class, 'updateAccount'])->name('profile.update.account')->middleware('can:profile-update');
         Route::put('/personal', [\App\Http\Controllers\ProfileController::class, 'updatePersonal'])->name('profile.update.personal')->middleware('can:profile-update');

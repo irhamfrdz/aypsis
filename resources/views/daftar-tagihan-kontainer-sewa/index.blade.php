@@ -300,8 +300,12 @@
                 @php
                     // Check if we're in group search mode
                     $searchTerm = request('q');
-                    $foundContainer = \App\Models\DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')->first();
-                    $isGroupSearch = $foundContainer && $foundContainer->group;
+                    $matchingContainers = \App\Models\DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                        ->whereNotNull('group')
+                        ->where('group', '!=', '')
+                        ->get();
+                    $relatedGroups = $matchingContainers->pluck('group')->unique();
+                    $isGroupSearch = $relatedGroups->isNotEmpty();
                 @endphp
 
                 @if($isGroupSearch)
@@ -311,7 +315,11 @@
                         </svg>
                         <div class="text-sm">
                             <span class="font-medium text-blue-800">Mode Pencarian Grup:</span>
-                            <span class="text-blue-700">Menampilkan semua kontainer dalam grup "{{ $foundContainer->group }}" yang terkait dengan "{{ $searchTerm }}"</span>
+                            @if($relatedGroups->count() === 1)
+                                <span class="text-blue-700">Menampilkan semua kontainer dalam grup "{{ $relatedGroups->first() }}" yang terkait dengan "{{ $searchTerm }}"</span>
+                            @else
+                                <span class="text-blue-700">Menampilkan kontainer dari {{ $relatedGroups->count() }} grup yang terkait dengan "{{ $searchTerm }}": {{ $relatedGroups->join(', ') }}</span>
+                            @endif
                         </div>
                         <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" class="ml-auto text-blue-600 hover:text-blue-800">
                             <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -2634,7 +2642,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
     console.log('editAdjustment called:', { tagihanId, currentAdjustment });
 
     // Check permission for updating tagihan
-    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-edit'))
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
         showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit adjustment. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
         return;
     @endif
