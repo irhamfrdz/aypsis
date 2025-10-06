@@ -62,7 +62,7 @@
                             <option value="">-- Pilih Bank --</option>
                             @foreach($akunCoa as $akun)
                                 <option value="{{ $akun->nama_akun }}" data-kode="{{ $akun->kode_nomor ?? '000' }}" {{ old('bank') == $akun->nama_akun ? 'selected' : '' }}>
-                                    {{ $akun->nama_akun }}
+                                    {{ $akun->nomor_akun }} - {{ $akun->nama_akun }}
                                 </option>
                             @endforeach
                         </select>
