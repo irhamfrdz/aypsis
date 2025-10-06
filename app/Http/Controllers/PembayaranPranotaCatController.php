@@ -6,6 +6,7 @@ use App\Models\PembayaranPranotaCat;
 use App\Models\PembayaranPranotaCatItem;
 use App\Models\PranotaTagihanCat;
 use App\Models\Coa;
+use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
@@ -14,6 +15,12 @@ use Illuminate\Support\Facades\Auth;
 
 class PembayaranPranotaCatController extends Controller
 {
+    protected $coaTransactionService;
+
+    public function __construct(CoaTransactionService $coaTransactionService)
+    {
+        $this->coaTransactionService = $coaTransactionService;
+    }
     public function index()
     {
         // Get all pembayaran_pranota_cat
@@ -59,8 +66,15 @@ class PembayaranPranotaCatController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get akun_coa data for bank selection
-        $akunCoa = Coa::orderBy('nama_akun')->get();
+        // Get Bank/Kas accounts only, sorted by account number
+        $akunCoa = Coa::where(function($query) {
+                $query->where('tipe_akun', 'Kas/Bank')
+                      ->orWhere('tipe_akun', 'Bank/Kas')
+                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+            })
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
+            ->get();
 
         return view('pembayaran-pranota-cat.create', compact('pranotaList', 'akunCoa'));
     }
@@ -184,6 +198,28 @@ class PembayaranPranotaCatController extends Controller
                 $pranota->update(['status' => 'paid']);
                 Log::info('Pranota status updated', ['pranota_id' => $pranota->id]);
             }
+
+            // Catat transaksi menggunakan double-entry COA
+            $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
+            $tanggalTransaksi = $request->tanggal_kas;
+            
+            $keterangan = "Pembayaran Pranota CAT Kontainer - " . $request->nomor_pembayaran;
+            if ($request->keterangan) {
+                $keterangan .= " | " . $request->keterangan;
+            }
+            if ($request->alasan_penyesuaian) {
+                $keterangan .= " | Penyesuaian: " . $request->alasan_penyesuaian;
+            }
+
+            // Catat transaksi double-entry: Biaya CAT Kontainer (Debit) dan Bank (Kredit)
+            $this->coaTransactionService->recordDoubleEntry(
+                ['nama_akun' => 'Biaya CAT Kontainer', 'jumlah' => $totalSetelahPenyesuaian],
+                ['nama_akun' => $request->bank, 'jumlah' => $totalSetelahPenyesuaian],
+                $tanggalTransaksi,
+                $request->nomor_pembayaran,
+                'Pembayaran Pranota CAT Kontainer',
+                $keterangan
+            );
 
             DB::commit();
             Log::info('Transaction committed successfully');
