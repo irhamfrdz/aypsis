@@ -184,7 +184,7 @@ class PembayaranPranotaKontainerController extends Controller
             // Catat transaksi menggunakan double-entry
             $totalAkhir = ($totalPembayaran + $penyesuaian) - $dpAmount;
             $tanggalTransaksi = \Carbon\Carbon::createFromFormat('d/m/Y', $request->tanggal_kas)->format('Y-m-d');
-            
+
             $keterangan = "Pembayaran Pranota Kontainer - " . $request->nomor_pembayaran;
             if ($request->keterangan) {
                 $keterangan .= " | " . $request->keterangan;
@@ -327,7 +327,7 @@ class PembayaranPranotaKontainerController extends Controller
                 if ($biayaSewaKontainerCoa) {
                     $biayaSewaKontainerCoa->saldo += $difference;
                     $biayaSewaKontainerCoa->save();
-                    
+
                     Log::info('Biaya Sewa Kontainer COA Updated on Edit', [
                         'old_total' => $oldTotal,
                         'new_total' => $newTotal,
@@ -543,20 +543,20 @@ class PembayaranPranotaKontainerController extends Controller
 
             foreach ($pembayaran->items as $item) {
                 $pranota = $item->pranota;
-                
+
                 // Add pranota to list (avoid duplicates)
                 if ($pranota && !in_array($pranota->id, $pranotaIds)) {
                     $pranotaIds[] = $pranota->id;
-                    
+
                     // Get tagihan items (tagihanKontainerSewaItems adalah method, bukan relasi)
                     $tagihanItems = $pranota->tagihanKontainerSewaItems();
-                    
+
                     // Count tagihan for this pranota
                     $jumlahTagihan = $tagihanItems->count();
-                    
+
                     // Calculate total amount for this pranota (gunakan 'grand_total' bukan 'total_biaya')
                     $totalAmount = $tagihanItems->sum('grand_total');
-                    
+
                     $pranotaList[] = [
                         'no_invoice' => $pranota->no_invoice,
                         'tanggal_pranota' => $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') : null,

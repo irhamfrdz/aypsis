@@ -88,11 +88,10 @@
             font-size: 8px !important;
         }
 
-        /* Print header styling */
-        .print-header-visible {
+        /* Print header styling - force display */
+        .print-only {
             display: block !important;
-            text-align: center;
-            margin-bottom: 20px;
+            visibility: visible !important;
         }
 
         /* Summary cards adjustment */
@@ -205,12 +204,12 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <button type="button" onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 no-print">
+                    <a href="{{ route('master-coa-ledger-print', ['coa' => $coa->id]) }}{{ request()->has('dari_tanggal') || request()->has('sampai_tanggal') ? '?' . http_build_query(request()->only(['dari_tanggal', 'sampai_tanggal'])) : '' }}" target="_blank" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                         </svg>
                         Print
-                    </button>
+                    </a>
                     <a href="{{ route('master-coa-index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 no-print">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>

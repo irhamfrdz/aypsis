@@ -72,16 +72,16 @@ class ReportTagihanController extends Controller
 
         // Calculate summary
         $totalTagihan = $tagihanSewa->count() + $tagihanCat->count() + $tagihanPerbaikan->count();
-        $totalNilai = $tagihanSewa->sum('total_tagihan') + 
-                      $tagihanCat->sum('biaya_cat') + 
+        $totalNilai = $tagihanSewa->sum('total_tagihan') +
+                      $tagihanCat->sum('biaya_cat') +
                       $tagihanPerbaikan->sum('total_biaya');
 
-        $totalPaid = $tagihanSewa->where('status', 'paid')->count() + 
-                     $tagihanCat->where('status', 'paid')->count() + 
+        $totalPaid = $tagihanSewa->where('status', 'paid')->count() +
+                     $tagihanCat->where('status', 'paid')->count() +
                      $tagihanPerbaikan->where('status', 'sudah_dibayar')->count();
 
-        $totalUnpaid = $tagihanSewa->where('status', 'unpaid')->count() + 
-                       $tagihanCat->where('status', 'unpaid')->count() + 
+        $totalUnpaid = $tagihanSewa->where('status', 'unpaid')->count() +
+                       $tagihanCat->where('status', 'unpaid')->count() +
                        $tagihanPerbaikan->where('status', 'belum_dibayar')->count();
 
         return view('report.tagihan.index', compact(

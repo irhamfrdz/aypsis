@@ -549,6 +549,10 @@ Route::middleware([
          ->name('master-coa-ledger')
          ->middleware('can:master-coa-view')
          ->where(['coa' => '[0-9]+']);
+    Route::get('master/coa/{coa}/ledger/print', [\App\Http\Controllers\MasterCoaController::class, 'ledgerPrint'])
+         ->name('master-coa-ledger-print')
+         ->middleware('can:master-coa-view')
+         ->where(['coa' => '[0-9]+']);
 
     // Master pekerjaan routes - HYBRID: Resource + additional routes with permissions
     Route::resource('master/pekerjaan', PekerjaanController::class)->names('master.pekerjaan')->middleware([

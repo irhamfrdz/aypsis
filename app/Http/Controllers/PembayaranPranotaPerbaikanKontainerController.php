@@ -169,7 +169,7 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
 
             // Catat transaksi menggunakan double-entry COA
             $tanggalTransaksi = $request->tanggal_kas;
-            
+
             $keterangan = "Pembayaran Pranota Perbaikan Kontainer - " . $request->nomor_pembayaran;
             if ($request->alasan_penyesuaian) {
                 $keterangan .= " | " . $request->alasan_penyesuaian;

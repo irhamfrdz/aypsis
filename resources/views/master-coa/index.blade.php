@@ -42,14 +42,14 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
                     <h3 class="text-lg font-medium text-gray-900">Daftar COA</h3>
-                    
+
                     <!-- Search Form -->
                     <form method="GET" action="{{ route('master-coa-index') }}" class="flex items-center space-x-2">
                         <div class="relative">
-                            <input type="text" 
-                                   name="search" 
+                            <input type="text"
+                                   name="search"
                                    value="{{ request('search') }}"
-                                   placeholder="Cari nomor, nama, atau tipe akun..." 
+                                   placeholder="Cari nomor, nama, atau tipe akun..."
                                    class="w-80 pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                 <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -57,8 +57,8 @@
                                 </svg>
                             </div>
                         </div>
-                        
-                        <select name="tipe_akun" 
+
+                        <select name="tipe_akun"
                                 class="border border-gray-300 rounded-lg text-sm px-4 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                             <option value="">Semua Tipe</option>
                             @foreach($tipeAkuns as $tipe)
@@ -67,17 +67,17 @@
                                 </option>
                             @endforeach
                         </select>
-                        
-                        <button type="submit" 
+
+                        <button type="submit"
                                 class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-lg text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
                             Cari
                         </button>
-                        
+
                         @if(request('search') || request('tipe_akun'))
-                            <a href="{{ route('master-coa-index') }}" 
+                            <a href="{{ route('master-coa-index') }}"
                                class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>

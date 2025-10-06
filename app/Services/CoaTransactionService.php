@@ -11,7 +11,7 @@ class CoaTransactionService
 {
     /**
      * Catat transaksi ke buku besar COA
-     * 
+     *
      * @param string $namaAkun Nama akun COA
      * @param float $debit Jumlah debit
      * @param float $kredit Jumlah kredit
@@ -31,7 +31,7 @@ class CoaTransactionService
         ?string $keterangan = null
     ): ?CoaTransaction {
         $coa = Coa::where('nama_akun', $namaAkun)->first();
-        
+
         if (!$coa) {
             \Log::warning("COA tidak ditemukan: {$namaAkun}");
             return null;
@@ -62,7 +62,7 @@ class CoaTransactionService
 
     /**
      * Catat transaksi ganda (double entry)
-     * 
+     *
      * @param array $debitAccount ['nama_akun' => string, 'jumlah' => float]
      * @param array $kreditAccount ['nama_akun' => string, 'jumlah' => float]
      * @param string $tanggalTransaksi
@@ -80,7 +80,7 @@ class CoaTransactionService
         ?string $keterangan = null
     ): bool {
         DB::beginTransaction();
-        
+
         try {
             // Catat transaksi debit
             $this->recordTransaction(
@@ -115,28 +115,28 @@ class CoaTransactionService
 
     /**
      * Hapus transaksi dan kembalikan saldo
-     * 
+     *
      * @param string $nomorReferensi
      * @return bool
      */
     public function deleteTransactionByReference(string $nomorReferensi): bool
     {
         DB::beginTransaction();
-        
+
         try {
             $transactions = CoaTransaction::where('nomor_referensi', $nomorReferensi)->get();
-            
+
             foreach ($transactions as $transaction) {
                 $coa = $transaction->coa;
-                
+
                 // Kembalikan saldo (reverse transaksi)
                 $coa->saldo = $coa->saldo - $transaction->debit + $transaction->kredit;
                 $coa->save();
-                
+
                 // Hapus transaksi
                 $transaction->delete();
             }
-            
+
             DB::commit();
             return true;
         } catch (\Exception $e) {

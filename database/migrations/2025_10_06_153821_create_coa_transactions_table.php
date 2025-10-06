@@ -23,7 +23,7 @@ return new class extends Migration
             $table->decimal('saldo', 15, 2)->default(0); // Running balance setelah transaksi
             $table->foreignId('created_by')->nullable()->constrained('users');
             $table->timestamps();
-            
+
             // Indexes untuk performa
             $table->index('coa_id');
             $table->index('tanggal_transaksi');

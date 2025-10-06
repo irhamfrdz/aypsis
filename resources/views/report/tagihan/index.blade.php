@@ -3,156 +3,10 @@
 @section('title', 'Report Tagihan')
 @section('page_title', 'Report Tagihan')
 
-@push('styles')
-<style>
-    @media print {
-        /* Hide elements not needed in print */
-        .no-print, 
-        nav, 
-        .sidebar,
-        header,
-        footer,
-        button:not(.print-show) {
-            display: none !important;
-        }
-
-        /* Reset page margins */
-        @page {
-            margin: 1cm;
-            size: landscape;
-        }
-
-        body {
-            background: white !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-        .container {
-            max-width: 100% !important;
-            padding: 0 !important;
-            margin: 0 !important;
-        }
-
-        /* Remove shadows and borders from cards */
-        .bg-white {
-            box-shadow: none !important;
-            border: 1px solid #e5e7eb !important;
-        }
-
-        /* Show print header */
-        .print-header {
-            display: block !important;
-            margin-bottom: 20px;
-            padding-bottom: 10px;
-            border-bottom: 2px solid #000;
-        }
-
-        /* Table styling for print */
-        table {
-            width: 100% !important;
-            border-collapse: collapse !important;
-            page-break-inside: auto;
-        }
-
-        tr {
-            page-break-inside: avoid;
-            page-break-after: auto;
-        }
-
-        thead {
-            display: table-header-group;
-        }
-
-        th, td {
-            border: 1px solid #ddd !important;
-            padding: 8px !important;
-            font-size: 10px !important;
-        }
-
-        th {
-            background-color: #f3f4f6 !important;
-            font-weight: bold !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        /* Summary cards for print */
-        .print-summary {
-            display: flex !important;
-            margin-bottom: 20px;
-        }
-
-        .print-summary > div {
-            flex: 1;
-            border: 1px solid #ddd;
-            padding: 10px;
-            margin-right: 10px;
-        }
-
-        /* Hide shadows and rounded corners */
-        * {
-            box-shadow: none !important;
-            border-radius: 0 !important;
-        }
-
-        /* Ensure colors print correctly */
-        .bg-green-100 {
-            background-color: #d1fae5 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .bg-yellow-100 {
-            background-color: #fef3c7 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .bg-blue-100 {
-            background-color: #dbeafe !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        .bg-red-100 {
-            background-color: #fee2e2 !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-        }
-
-        /* Page break control */
-        .print-section {
-            page-break-after: auto;
-            page-break-inside: avoid;
-        }
-
-        /* Typography adjustments */
-        h2, h3 {
-            page-break-after: avoid;
-        }
-    }
-
-    /* Hide print header on screen */
-    .print-header {
-        display: none;
-    }
-</style>
-@endpush
-
 @section('content')
 <div class="container mx-auto px-4 py-6">
-    <!-- Print Header (hanya muncul saat print) -->
-    <div class="print-header">
-        <div style="text-align: center; margin-bottom: 10px;">
-            <h1 style="font-size: 18px; font-weight: bold; margin: 0;">LAPORAN TAGIHAN</h1>
-            <p style="font-size: 12px; margin: 5px 0;">Periode: {{ \Carbon\Carbon::parse($startDate)->format('d/m/Y') }} s/d {{ \Carbon\Carbon::parse($endDate)->format('d/m/Y') }}</p>
-            <p style="font-size: 10px; margin: 5px 0;">Dicetak: {{ now()->format('d/m/Y H:i:s') }}</p>
-        </div>
-    </div>
-
     <!-- Debug Info (remove after testing) -->
-    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4 no-print">
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
         <div class="flex">
             <div class="flex-shrink-0">
                 <i class="fas fa-info-circle text-blue-400"></i>
@@ -173,7 +27,7 @@
     </div>
 
     <!-- Filter Section -->
-    <div class="bg-white rounded-lg shadow-md p-6 mb-6 no-print">
+    <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Filter Report</h2>
         <form method="GET" action="{{ route('report.tagihan.index') }}" class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Tanggal Mulai -->
@@ -230,10 +84,10 @@
     </div>
 
     <!-- Summary Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 print-summary">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-purple-100 text-purple-600 no-print">
+                <div class="p-3 rounded-full bg-purple-100 text-purple-600">
                     <i class="fas fa-file-invoice text-2xl"></i>
                 </div>
                 <div class="ml-4">
@@ -245,7 +99,7 @@
 
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-blue-100 text-blue-600 no-print">
+                <div class="p-3 rounded-full bg-blue-100 text-blue-600">
                     <i class="fas fa-money-bill-wave text-2xl"></i>
                 </div>
                 <div class="ml-4">
@@ -269,7 +123,7 @@
 
         <div class="bg-white rounded-lg shadow p-6">
             <div class="flex items-center">
-                <div class="p-3 rounded-full bg-red-100 text-red-600 no-print">
+                <div class="p-3 rounded-full bg-red-100 text-red-600">
                     <i class="fas fa-clock text-2xl"></i>
                 </div>
                 <div class="ml-4">
@@ -282,10 +136,10 @@
 
     <!-- Tagihan Sewa Kontainer -->
     @if($jenisTagihan === 'all' || $jenisTagihan === 'sewa')
-    <div class="bg-white rounded-lg shadow-md mb-6 print-section">
+    <div class="bg-white rounded-lg shadow-md mb-6">
         <div class="bg-purple-50 px-6 py-4 border-b border-purple-200">
             <h3 class="text-lg font-semibold text-purple-800">
-                <i class="fas fa-truck mr-2 no-print"></i>Tagihan Sewa Kontainer
+                <i class="fas fa-truck mr-2"></i>Tagihan Sewa Kontainer
             </h3>
         </div>
         <div class="overflow-x-auto">
@@ -339,10 +193,10 @@
 
     <!-- Tagihan CAT Kontainer -->
     @if($jenisTagihan === 'all' || $jenisTagihan === 'cat')
-    <div class="bg-white rounded-lg shadow-md mb-6 print-section">
+    <div class="bg-white rounded-lg shadow-md mb-6">
         <div class="bg-blue-50 px-6 py-4 border-b border-blue-200">
             <h3 class="text-lg font-semibold text-blue-800">
-                <i class="fas fa-paint-brush mr-2 no-print"></i>Tagihan CAT Kontainer
+                <i class="fas fa-paint-brush mr-2"></i>Tagihan CAT Kontainer
             </h3>
         </div>
         <div class="overflow-x-auto">
@@ -392,10 +246,10 @@
 
     <!-- Tagihan Perbaikan Kontainer -->
     @if($jenisTagihan === 'all' || $jenisTagihan === 'perbaikan')
-    <div class="bg-white rounded-lg shadow-md mb-6 print-section">
+    <div class="bg-white rounded-lg shadow-md mb-6">
         <div class="bg-orange-50 px-6 py-4 border-b border-orange-200">
             <h3 class="text-lg font-semibold text-orange-800">
-                <i class="fas fa-tools mr-2 no-print"></i>Tagihan Perbaikan Kontainer
+                <i class="fas fa-tools mr-2"></i>Tagihan Perbaikan Kontainer
             </h3>
         </div>
         <div class="overflow-x-auto">

@@ -202,7 +202,7 @@ class PembayaranPranotaCatController extends Controller
             // Catat transaksi menggunakan double-entry COA
             $totalSetelahPenyesuaian = $totalPembayaran + $penyesuaian;
             $tanggalTransaksi = $request->tanggal_kas;
-            
+
             $keterangan = "Pembayaran Pranota CAT Kontainer - " . $request->nomor_pembayaran;
             if ($request->keterangan) {
                 $keterangan .= " | " . $request->keterangan;

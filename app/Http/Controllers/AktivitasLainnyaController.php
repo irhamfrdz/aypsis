@@ -60,7 +60,7 @@ class AktivitasLainnyaController extends Controller
         $vendors = VendorBengkel::where('status', 'active')->get();
         $statusOptions = AktivitasLainnya::getStatusOptions();
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
-        
+
         // Get Bank/Kas accounts from COA (support multiple formats)
         $bankAccounts = Coa::where(function($query) {
                 $query->where('tipe_akun', 'Kas/Bank')
@@ -143,7 +143,7 @@ class AktivitasLainnyaController extends Controller
         $vendors = VendorBengkel::where('status', 'active')->get();
         $statusOptions = AktivitasLainnya::getStatusOptions();
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
-        
+
         // Get Bank/Kas accounts from COA (support multiple formats)
         $bankAccounts = Coa::where(function($query) {
                 $query->where('tipe_akun', 'Kas/Bank')
@@ -336,7 +336,7 @@ class AktivitasLainnyaController extends Controller
     private function recordCoaTransaction(AktivitasLainnya $aktivitas)
     {
         $coa = Coa::find($aktivitas->akun_coa_id);
-        
+
         if (!$coa) {
             Log::warning("COA tidak ditemukan untuk aktivitas: {$aktivitas->nomor_aktivitas}");
             return;
@@ -345,7 +345,7 @@ class AktivitasLainnyaController extends Controller
         // Tentukan debit/kredit berdasarkan tipe transaksi
         $debit = 0;
         $kredit = 0;
-        
+
         if ($aktivitas->tipe_transaksi === 'debit') {
             // Debit = Pemasukan, menambah saldo bank
             $debit = $aktivitas->nominal;
