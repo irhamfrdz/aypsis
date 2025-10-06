@@ -1167,7 +1167,7 @@ Route::middleware(['auth'])->group(function() {
          ->middleware('can:pranota-kontainer-sewa-edit');
     Route::put('pranota-kontainer-sewa/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'update'])
          ->name('pranota-kontainer-sewa.update')
-         ->middleware('can:pranota-kontainer-sewa-edit');
+         ->middleware('can:pranota-kontainer-sewa-update');
     Route::get('pranota-kontainer-sewa/{pranota}/print', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'print'])
          ->name('pranota-kontainer-sewa.print')
          ->middleware('can:pranota-kontainer-sewa-print');
