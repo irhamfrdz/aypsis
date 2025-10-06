@@ -46,8 +46,10 @@ class PembayaranPranotaKontainerController extends Controller
             ->orderBy('created_at', 'desc')
             ->get();
 
-        // Get akun_coa data for bank selection
-        $akunCoa = Coa::orderBy('nama_akun')->get();
+        // Get akun_coa data for bank selection - only kas/bank type
+        $akunCoa = Coa::where('tipe_akun', 'kas/bank')
+            ->orderBy('nama_akun')
+            ->get();
 
         return view('pembayaran-pranota-kontainer.create', compact('pranotaList', 'akunCoa'));
     }
@@ -76,8 +78,10 @@ class PembayaranPranotaKontainerController extends Controller
         $nomorPembayaran = PembayaranPranotaKontainer::generateNomorPembayaran();
         $totalPembayaran = $pranotaList->sum('total_amount');
 
-        // Get akun_coa data for bank selection
-        $akunCoa = Coa::orderBy('nama_akun')->get();
+        // Get akun_coa data for bank selection - only kas/bank type
+        $akunCoa = Coa::where('tipe_akun', 'kas/bank')
+            ->orderBy('nama_akun')
+            ->get();
 
         return view('pembayaran-pranota-kontainer.payment-form', compact('pranotaList', 'nomorPembayaran', 'totalPembayaran', 'akunCoa'));
     }
