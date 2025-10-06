@@ -545,6 +545,10 @@ Route::middleware([
     Route::post('master/coa/import', [\App\Http\Controllers\MasterCoaController::class, 'import'])
          ->name('master-coa-import')
          ->middleware('can:master-coa-create');
+    Route::get('master/coa/{coa}/ledger', [\App\Http\Controllers\MasterCoaController::class, 'ledger'])
+         ->name('master-coa-ledger')
+         ->middleware('can:master-coa-view')
+         ->where(['coa' => '[0-9]+']);
 
     // Master pekerjaan routes - HYBRID: Resource + additional routes with permissions
     Route::resource('master/pekerjaan', PekerjaanController::class)->names('master.pekerjaan')->middleware([

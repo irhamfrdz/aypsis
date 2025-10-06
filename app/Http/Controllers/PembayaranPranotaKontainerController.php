@@ -6,6 +6,7 @@ use App\Models\PembayaranPranotaKontainer;
 use App\Models\PembayaranPranotaKontainerItem;
 use App\Models\PranotaTagihanKontainerSewa;
 use App\Models\Coa;
+use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
@@ -13,6 +14,12 @@ use Illuminate\Support\Facades\Log;
 
 class PembayaranPranotaKontainerController extends Controller
 {
+    protected $coaTransactionService;
+
+    public function __construct(CoaTransactionService $coaTransactionService)
+    {
+        $this->coaTransactionService = $coaTransactionService;
+    }
     /**
      * Display a listing of payments
      */
@@ -164,41 +171,24 @@ class PembayaranPranotaKontainerController extends Controller
                 $pranota->update(['status' => 'paid']);
             }
 
-            // Update saldo pada Master COA untuk bank yang dipilih
-            $bankCoa = Coa::where('nama_akun', $request->bank)->first();
-            if ($bankCoa) {
-                $totalAkhir = ($totalPembayaran + $penyesuaian) - $dpAmount;
-                
-                // Untuk transaksi Debit: saldo bank berkurang (pengeluaran)
-                // Untuk transaksi Kredit: saldo bank bertambah (penerimaan)
-                if ($request->jenis_transaksi === 'Debit') {
-                    $bankCoa->saldo -= $totalAkhir;
-                } else {
-                    $bankCoa->saldo += $totalAkhir;
-                }
-                
-                $bankCoa->save();
-                
-                Log::info('COA Balance Updated', [
-                    'bank' => $request->bank,
-                    'jenis_transaksi' => $request->jenis_transaksi,
-                    'amount' => $totalAkhir,
-                    'new_balance' => $bankCoa->saldo
-                ]);
+            // Catat transaksi menggunakan double-entry
+            $totalAkhir = ($totalPembayaran + $penyesuaian) - $dpAmount;
+            $tanggalTransaksi = \Carbon\Carbon::createFromFormat('d/m/Y', $request->tanggal_kas)->format('Y-m-d');
+            
+            $keterangan = "Pembayaran Pranota Kontainer - " . $request->nomor_pembayaran;
+            if ($request->keterangan) {
+                $keterangan .= " | " . $request->keterangan;
             }
 
-            // Update saldo Biaya Sewa Kontainer di Master COA
-            $biayaSewaKontainerCoa = Coa::where('nama_akun', 'Biaya Sewa Kontainer')->first();
-            if ($biayaSewaKontainerCoa) {
-                // Biaya bertambah di sisi debit (pengeluaran perusahaan)
-                $biayaSewaKontainerCoa->saldo += ($totalPembayaran + $penyesuaian) - $dpAmount;
-                $biayaSewaKontainerCoa->save();
-                
-                Log::info('Biaya Sewa Kontainer COA Updated', [
-                    'amount_added' => ($totalPembayaran + $penyesuaian) - $dpAmount,
-                    'new_balance' => $biayaSewaKontainerCoa->saldo
-                ]);
-            }
+            // Catat transaksi double-entry: Biaya Sewa Kontainer (Debit) dan Bank (Kredit)
+            $this->coaTransactionService->recordDoubleEntry(
+                ['nama_akun' => 'Biaya Sewa Kontainer', 'jumlah' => $totalAkhir],
+                ['nama_akun' => $request->bank, 'jumlah' => $totalAkhir],
+                $tanggalTransaksi,
+                $request->nomor_pembayaran,
+                'Pembayaran Pranota Kontainer',
+                $keterangan
+            );
 
             // Update nomor terakhir after successful payment creation
             // Extract the running number from the nomor_pembayaran (last 6 digits)
@@ -381,40 +371,8 @@ class PembayaranPranotaKontainerController extends Controller
                 }
             }
 
-            // Reverse saldo pada Master COA untuk bank yang dipilih
-            $bankCoa = Coa::where('nama_akun', $pembayaran->bank)->first();
-            if ($bankCoa) {
-                $totalAkhir = $pembayaran->total_tagihan_setelah_penyesuaian;
-                
-                // Reverse transaksi: kebalikan dari saat pembayaran dibuat
-                if ($pembayaran->jenis_transaksi === 'Debit') {
-                    $bankCoa->saldo += $totalAkhir; // Kembalikan saldo
-                } else {
-                    $bankCoa->saldo -= $totalAkhir; // Kurangi saldo
-                }
-                
-                $bankCoa->save();
-                
-                Log::info('COA Balance Reversed on Delete', [
-                    'bank' => $pembayaran->bank,
-                    'jenis_transaksi' => $pembayaran->jenis_transaksi,
-                    'amount' => $totalAkhir,
-                    'new_balance' => $bankCoa->saldo
-                ]);
-            }
-
-            // Reverse saldo Biaya Sewa Kontainer di Master COA
-            $biayaSewaKontainerCoa = Coa::where('nama_akun', 'Biaya Sewa Kontainer')->first();
-            if ($biayaSewaKontainerCoa) {
-                // Kurangi biaya karena pembayaran dibatalkan
-                $biayaSewaKontainerCoa->saldo -= $pembayaran->total_tagihan_setelah_penyesuaian;
-                $biayaSewaKontainerCoa->save();
-                
-                Log::info('Biaya Sewa Kontainer COA Reversed on Delete', [
-                    'amount_removed' => $pembayaran->total_tagihan_setelah_penyesuaian,
-                    'new_balance' => $biayaSewaKontainerCoa->saldo
-                ]);
-            }
+            // Hapus transaksi COA berdasarkan nomor referensi
+            $this->coaTransactionService->deleteTransactionByReference($pembayaran->nomor_pembayaran);
 
             // Delete payment items first
             $pembayaran->items()->delete();

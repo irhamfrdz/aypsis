@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Coa extends Model
 {
@@ -15,4 +16,16 @@ class Coa extends Model
         'tipe_akun',
         'saldo'
     ];
+
+    protected $casts = [
+        'saldo' => 'decimal:2'
+    ];
+
+    /**
+     * Relasi ke transaksi COA
+     */
+    public function transactions(): HasMany
+    {
+        return $this->hasMany(CoaTransaction::class, 'coa_id');
+    }
 }

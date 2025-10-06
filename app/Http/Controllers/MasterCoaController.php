@@ -166,4 +166,41 @@ class MasterCoaController extends Controller
             return redirect()->route('master-coa-index')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Tampilkan buku besar (ledger) untuk akun COA tertentu
+     */
+    public function ledger(Request $request, Coa $coa)
+    {
+        $query = $coa->transactions()->orderBy('tanggal_transaksi', 'asc')->orderBy('id', 'asc');
+
+        // Filter by date range
+        if ($request->has('dari_tanggal') && !empty($request->dari_tanggal)) {
+            $query->where('tanggal_transaksi', '>=', $request->dari_tanggal);
+        }
+
+        if ($request->has('sampai_tanggal') && !empty($request->sampai_tanggal)) {
+            $query->where('tanggal_transaksi', '<=', $request->sampai_tanggal);
+        }
+
+        $transactions = $query->paginate(50);
+
+        // Calculate saldo awal (sebelum filter tanggal)
+        $saldoAwal = 0;
+        if ($request->has('dari_tanggal') && !empty($request->dari_tanggal)) {
+            $transaksiSebelumnya = $coa->transactions()
+                ->where('tanggal_transaksi', '<', $request->dari_tanggal)
+                ->orderBy('tanggal_transaksi', 'desc')
+                ->orderBy('id', 'desc')
+                ->first();
+            
+            $saldoAwal = $transaksiSebelumnya ? $transaksiSebelumnya->saldo : 0;
+        }
+
+        // Calculate totals for filtered period
+        $totalDebit = $transactions->sum('debit');
+        $totalKredit = $transactions->sum('kredit');
+
+        return view('master-coa.ledger', compact('coa', 'transactions', 'saldoAwal', 'totalDebit', 'totalKredit'));
+    }
 }
