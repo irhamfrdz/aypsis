@@ -179,9 +179,15 @@
                                    id="file"
                                    accept=".csv,.xlsx,.xls"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
-                            <p class="mt-1 text-sm text-gray-500">
-                                Format: CSV dengan separator titik koma (;). Header: nomor_akun, nama_akun, tipe_akun, saldo
-                            </p>
+                            <div class="mt-2 text-xs text-gray-600 bg-blue-50 p-3 rounded-md">
+                                <p class="font-semibold mb-1">Format File:</p>
+                                <ul class="list-disc list-inside space-y-1">
+                                    <li>CSV dengan separator titik koma (;)</li>
+                                    <li>Header: nomor_akun;nama_akun;tipe_akun;saldo</li>
+                                    <li>Tipe akun akan otomatis dikonversi ke uppercase</li>
+                                    <li>Contoh: COA001;Biaya Admin;Aktiva Tetap;0</li>
+                                </ul>
+                            </div>
                         </div>
                         <div class="flex justify-end space-x-3">
                             <button type="button" onclick="closeImportModal()" class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200">

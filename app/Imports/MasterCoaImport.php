@@ -59,8 +59,14 @@ class MasterCoaImport
         // Clean the data
         $nomor_akun = trim($row[0] ?? '');
         $nama_akun = trim($row[1] ?? '');
-        $tipe_akun = trim($row[2] ?? '');
+        $tipe_akun = strtoupper(trim($row[2] ?? '')); // Convert to uppercase to match database
         $saldo = trim($row[3] ?? '');
+
+        // Convert saldo to numeric, handle common separators
+        if (!empty($saldo)) {
+            // Remove thousand separators (. or ,) and replace decimal comma with dot
+            $saldo = str_replace(['.', ','], ['', '.'], $saldo);
+        }
 
         // Validate row data
         $validator = Validator::make([
