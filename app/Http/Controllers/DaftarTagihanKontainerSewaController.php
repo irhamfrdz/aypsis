@@ -299,25 +299,25 @@ class DaftarTagihanKontainerSewaController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(DaftarTagihanKontainerSewa $daftarTagihanKontainerSewa)
+    public function show(DaftarTagihanKontainerSewa $tagihan)
     {
-        $item = $daftarTagihanKontainerSewa;
+        $item = $tagihan;
         return view('daftar-tagihan-kontainer-sewa.show', compact('item'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(DaftarTagihanKontainerSewa $daftarTagihanKontainerSewa)
+    public function edit(DaftarTagihanKontainerSewa $tagihan)
     {
-        $item = $daftarTagihanKontainerSewa;
+        $item = $tagihan;
         return view('daftar-tagihan-kontainer-sewa.edit', compact('item'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(Request $request, DaftarTagihanKontainerSewa $daftarTagihanKontainerSewa)
+    public function update(Request $request, DaftarTagihanKontainerSewa $tagihan)
     {
         $data = $this->validateData($request);
 
@@ -343,7 +343,7 @@ class DaftarTagihanKontainerSewaController extends Controller
             $data['grand_total'] = round((float)($data['dpp'] ?? 0) + (float)($data['ppn'] ?? 0) - (float)($data['pph'] ?? 0), 2);
         }
 
-        $daftarTagihanKontainerSewa->update($data);
+        $tagihan->update($data);
 
         return redirect()->route('daftar-tagihan-kontainer-sewa.index')->with('success', 'Tagihan kontainer berhasil diperbarui.');
     }
@@ -351,9 +351,9 @@ class DaftarTagihanKontainerSewaController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(DaftarTagihanKontainerSewa $daftarTagihanKontainerSewa)
+    public function destroy(DaftarTagihanKontainerSewa $tagihan)
     {
-        $daftarTagihanKontainerSewa->delete();
+        $tagihan->delete();
         return redirect()->route('daftar-tagihan-kontainer-sewa.index')->with('success', 'Tagihan kontainer berhasil dihapus.');
     }
 
