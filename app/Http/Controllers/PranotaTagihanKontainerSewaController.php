@@ -818,12 +818,13 @@ class PranotaTagihanKontainerSewaController extends Controller
             $noInvoice = $pranota->no_invoice;
 
             // Get all related tagihan items to update their status
-            $tagihanItems = DaftarTagihanKontainerSewa::where('no_pranota_tagihan', $noInvoice)->get();
+            // Use pranota_id instead of no_pranota_tagihan
+            $tagihanItems = DaftarTagihanKontainerSewa::where('pranota_id', $id)->get();
 
             // Reset tagihan items status
             foreach ($tagihanItems as $tagihan) {
                 $tagihan->status_pranota = null;
-                $tagihan->no_pranota_tagihan = null;
+                $tagihan->pranota_id = null;
                 $tagihan->save();
             }
 
@@ -888,12 +889,13 @@ class PranotaTagihanKontainerSewaController extends Controller
                     $noInvoice = $pranota->no_invoice;
 
                     // Get all related tagihan items
-                    $tagihanItems = DaftarTagihanKontainerSewa::where('no_pranota_tagihan', $noInvoice)->get();
+                    // Use pranota_id instead of no_pranota_tagihan
+                    $tagihanItems = DaftarTagihanKontainerSewa::where('pranota_id', $pranotaId)->get();
 
                     // Reset tagihan items status
                     foreach ($tagihanItems as $tagihan) {
                         $tagihan->status_pranota = null;
-                        $tagihan->no_pranota_tagihan = null;
+                        $tagihan->pranota_id = null;
                         $tagihan->save();
                     }
 
