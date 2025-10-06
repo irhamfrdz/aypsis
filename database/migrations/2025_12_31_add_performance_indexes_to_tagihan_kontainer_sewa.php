@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -29,15 +30,21 @@ return new class extends Migration
             ];
 
             foreach ($indexes as $indexName => $columns) {
-                try {
+                // Check if index already exists
+                $exists = DB::select("
+                    SELECT COUNT(*) as count
+                    FROM information_schema.statistics
+                    WHERE table_schema = DATABASE()
+                    AND table_name = 'daftar_tagihan_kontainer_sewa'
+                    AND index_name = ?
+                ", [$indexName]);
+
+                if ($exists[0]->count == 0) {
                     if (is_array($columns)) {
                         $table->index($columns, $indexName);
                     } else {
                         $table->index($columns, $indexName);
                     }
-                } catch (\Exception $e) {
-                    // Index might already exist, skip
-                    continue;
                 }
             }
         });
@@ -66,11 +73,17 @@ return new class extends Migration
             ];
 
             foreach ($indexNames as $indexName) {
-                try {
+                // Check if index exists before dropping
+                $exists = DB::select("
+                    SELECT COUNT(*) as count
+                    FROM information_schema.statistics
+                    WHERE table_schema = DATABASE()
+                    AND table_name = 'daftar_tagihan_kontainer_sewa'
+                    AND index_name = ?
+                ", [$indexName]);
+
+                if ($exists[0]->count > 0) {
                     $table->dropIndex($indexName);
-                } catch (\Exception $e) {
-                    // Index might not exist, skip
-                    continue;
                 }
             }
         });
