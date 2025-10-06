@@ -75,15 +75,6 @@
         </div>
     </details>
 
-    @if($user->registration_reason)
-        <details class="mb-4 border rounded">
-            <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Alasan Registrasi</summary>
-            <div class="p-4 text-sm">
-                <p class="text-gray-800 whitespace-pre-wrap">{{ $user->registration_reason }}</p>
-            </div>
-        </details>
-    @endif
-
     @if($user->karyawan)
         <details class="mb-4 border rounded">
             <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Pribadi</summary>
