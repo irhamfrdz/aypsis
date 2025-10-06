@@ -49,13 +49,13 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                 <p class="text-xs font-medium text-gray-500 uppercase">Total Debit</p>
                 <p class="mt-2 text-2xl font-bold text-green-600">
-                    Rp {{ number_format($totalDebit, 2, ',', '.') }}
+                    Rp {{ number_format(abs($totalDebit), 2, ',', '.') }}
                 </p>
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
                 <p class="text-xs font-medium text-gray-500 uppercase">Total Kredit</p>
                 <p class="mt-2 text-2xl font-bold text-red-600">
-                    Rp {{ number_format($totalKredit, 2, ',', '.') }}
+                    Rp {{ number_format(abs($totalKredit), 2, ',', '.') }}
                 </p>
             </div>
             <div class="bg-white rounded-lg shadow-sm border border-blue-200 p-4 bg-blue-50">
@@ -162,15 +162,15 @@
                                     {{ $transaction->keterangan ?? '-' }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-semibold text-green-600">
-                                    @if($transaction->debit > 0)
-                                        Rp {{ number_format($transaction->debit, 2, ',', '.') }}
+                                    @if($transaction->debit != 0)
+                                        Rp {{ number_format(abs($transaction->debit), 2, ',', '.') }}
                                     @else
                                         -
                                     @endif
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-right text-sm font-semibold text-red-600">
-                                    @if($transaction->kredit > 0)
-                                        Rp {{ number_format($transaction->kredit, 2, ',', '.') }}
+                                    @if($transaction->kredit != 0)
+                                        Rp {{ number_format(abs($transaction->kredit), 2, ',', '.') }}
                                     @else
                                         -
                                     @endif
@@ -194,10 +194,10 @@
                                     <strong>Total</strong>
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm text-green-700">
-                                    Rp {{ number_format($totalDebit, 2, ',', '.') }}
+                                    Rp {{ number_format(abs($totalDebit), 2, ',', '.') }}
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm text-red-700">
-                                    Rp {{ number_format($totalKredit, 2, ',', '.') }}
+                                    Rp {{ number_format(abs($totalKredit), 2, ',', '.') }}
                                 </td>
                                 <td class="px-4 py-3 text-right text-sm text-blue-900">
                                     Rp {{ number_format($coa->saldo, 2, ',', '.') }}

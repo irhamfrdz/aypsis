@@ -103,6 +103,28 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label for="tipe_transaksi">Tipe Transaksi <span class="text-danger">*</span></label>
+                                    <select class="form-control @error('tipe_transaksi') is-invalid @enderror"
+                                            id="tipe_transaksi"
+                                            name="tipe_transaksi"
+                                            required>
+                                        <option value="">Pilih Tipe Transaksi</option>
+                                        <option value="debit" {{ old('tipe_transaksi') == 'debit' ? 'selected' : '' }}>Debit (Pemasukan)</option>
+                                        <option value="kredit" {{ old('tipe_transaksi', 'kredit') == 'kredit' ? 'selected' : '' }}>Kredit (Pengeluaran)</option>
+                                    </select>
+                                    @error('tipe_transaksi')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">
+                                        Debit untuk pemasukan/pendapatan, Kredit untuk pengeluaran/biaya
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
                                     <label for="nominal">Nominal <span class="text-danger">*</span></label>
                                     <div class="input-group">
                                         <div class="input-group-prepend">

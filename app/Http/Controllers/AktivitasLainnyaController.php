@@ -72,6 +72,7 @@ class AktivitasLainnyaController extends Controller
             'deskripsi_aktivitas' => 'required|string|max:1000',
             'kategori' => 'required|in:operasional,maintenance,administrasi,transport,lainnya',
             'vendor_id' => 'nullable|exists:vendor_bengkel,id',
+            'tipe_transaksi' => 'required|in:debit,kredit',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:1000'
         ]);
@@ -84,6 +85,7 @@ class AktivitasLainnyaController extends Controller
             $aktivitas->deskripsi_aktivitas = $request->deskripsi_aktivitas;
             $aktivitas->kategori = $request->kategori;
             $aktivitas->vendor_id = $request->vendor_id;
+            $aktivitas->tipe_transaksi = $request->tipe_transaksi;
             $aktivitas->nominal = $request->nominal;
             $aktivitas->status = 'draft';
             $aktivitas->keterangan = $request->keterangan;
@@ -147,6 +149,7 @@ class AktivitasLainnyaController extends Controller
             'deskripsi_aktivitas' => 'required|string|max:1000',
             'kategori' => 'required|in:operasional,maintenance,administrasi,transport,lainnya',
             'vendor_id' => 'nullable|exists:vendor_bengkel,id',
+            'tipe_transaksi' => 'required|in:debit,kredit',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:1000'
         ]);
@@ -157,6 +160,7 @@ class AktivitasLainnyaController extends Controller
             $aktivitasLainnya->deskripsi_aktivitas = $request->deskripsi_aktivitas;
             $aktivitasLainnya->kategori = $request->kategori;
             $aktivitasLainnya->vendor_id = $request->vendor_id;
+            $aktivitasLainnya->tipe_transaksi = $request->tipe_transaksi;
             $aktivitasLainnya->nominal = $request->nominal;
             $aktivitasLainnya->keterangan = $request->keterangan;
             $aktivitasLainnya->save();

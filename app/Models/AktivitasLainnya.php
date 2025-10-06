@@ -17,6 +17,7 @@ class AktivitasLainnya extends Model
         'deskripsi_aktivitas',
         'kategori',
         'vendor_id',
+        'tipe_transaksi',
         'nominal',
         'status',
         'keterangan',
