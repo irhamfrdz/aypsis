@@ -168,7 +168,7 @@ class PranotaTagihanKontainerSewaController extends Controller
             'keterangan' => $request->keterangan,
         ]);
 
-        return redirect()->route('pranota.index')->with('success', 'Pranota berhasil diperbarui.');
+        return redirect()->route('pranota-kontainer-sewa.index')->with('success', 'Pranota berhasil diperbarui.');
     }
 
     /**
