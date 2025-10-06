@@ -89,19 +89,27 @@
         }
 
         /* Print header styling */
-        .print-header {
+        .print-header-visible {
+            display: block !important;
             text-align: center;
             margin-bottom: 20px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 10px;
         }
 
         /* Summary cards adjustment */
         .grid {
             display: grid !important;
             grid-template-columns: repeat(4, 1fr) !important;
-            gap: 10px !important;
-            margin-bottom: 15px !important;
+            gap: 5px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .grid > div {
+            padding: 8px !important;
+            border: 1px solid #000 !important;
+        }
+
+        .grid p {
+            margin: 0 !important;
         }
 
         /* Table styling for print */
@@ -157,25 +165,27 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
 
         <!-- Print Header (only visible when printing) -->
-        <div class="hidden print:block print-header mb-6">
-            <h1 class="text-2xl font-bold text-gray-900">BUKU BESAR (LEDGER)</h1>
-            <p class="text-sm text-gray-600 mt-2">
+        <div style="display: none;" class="print-header-visible">
+            <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 10px;">BUKU BESAR (LEDGER)</h1>
+            <div style="text-align: center; font-size: 10px; margin-bottom: 5px;">
                 <strong>Nomor Akun:</strong> {{ $coa->nomor_akun }} | 
                 <strong>Nama Akun:</strong> {{ $coa->nama_akun }} | 
                 <strong>Tipe:</strong> {{ $coa->tipe_akun }}
-            </p>
+            </div>
             @if(request('dari_tanggal') || request('sampai_tanggal'))
-                <p class="text-xs text-gray-500 mt-1">
+                <div style="text-align: center; font-size: 9px; margin-bottom: 5px;">
                     Periode: {{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : 'Awal' }} 
                     s/d 
                     {{ request('sampai_tanggal') ? \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') : 'Sekarang' }}
-                </p>
+                </div>
             @endif
-            <p class="text-xs text-gray-500">Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
+            <div style="text-align: center; font-size: 8px; margin-bottom: 15px; border-bottom: 2px solid #000; padding-bottom: 10px;">
+                Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}
+            </div>
         </div>
 
         <!-- Header Section -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6 no-print">
             <div class="flex items-center justify-between">
                 <div>
                     <h1 class="text-2xl font-bold text-gray-900">Buku Besar (Ledger)</h1>
@@ -231,7 +241,7 @@
                     Rp {{ number_format(abs($totalKredit), 2, ',', '.') }}
                 </p>
             </div>
-            <div class="bg-white rounded-lg shadow-sm border border-blue-200 p-4 bg-blue-50">
+            <div class="bg-blue-50 rounded-lg shadow-sm border border-blue-200 p-4">
                 <p class="text-xs font-medium text-blue-700 uppercase">Saldo Akhir</p>
                 <p class="mt-2 text-2xl font-bold text-blue-900">
                     Rp {{ number_format($coa->saldo, 2, ',', '.') }}
@@ -270,7 +280,7 @@
 
         <!-- Ledger Table -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-            <div class="px-6 py-4 border-b border-gray-200">
+            <div class="px-6 py-4 border-b border-gray-200 no-print">
                 <h3 class="text-lg font-medium text-gray-900">Transaksi</h3>
             </div>
 
