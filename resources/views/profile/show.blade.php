@@ -3,536 +3,365 @@
 @section('title', 'Profil Saya')
 
 @section('content')
-<div class="min-h-screen bg-gray-50">
-    <div class="container mx-auto px-4 py-8 max-w-6xl">
-        {{-- Header --}}
-        <div class="mb-8">
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div>
-                    <div class="flex items-center gap-3 mb-2">
-                        <div class="h-10 w-10 rounded-lg bg-blue-600 flex items-center justify-center">
-                            <i class="fas fa-user-circle text-white text-lg"></i>
-                        </div>
-                        <div>
-                            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900">Profil Saya</h1>
-                        </div>
-                    </div>
-                    <p class="text-gray-600 text-sm sm:text-base">Kelola informasi profil dan pengaturan akun Anda</p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Alerts --}}
-        @if(session('success'))
-            <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded-lg mb-6 flex items-center">
-                <i class="fas fa-check-circle mr-3 text-green-600"></i>
-                {{ session('success') }}
-            </div>
-        @endif
-
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {{-- Profile Card --}}
-            <div class="lg:col-span-1">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    <div class="p-6 text-center bg-gradient-to-br from-blue-50 to-indigo-50">
-                        {{-- Avatar --}}
-                        <div class="mb-6">
-                            <div class="w-24 h-24 rounded-full mx-auto flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 shadow-lg">
-                                <i class="fas fa-user text-white text-3xl"></i>
-                            </div>
-                        </div>
-
-                        <h3 class="text-xl font-bold text-gray-900 mb-1">{{ $user->karyawan->nama_lengkap ?? $user->name }}</h3>
-                        <p class="text-gray-600 text-sm mb-4">{{ $user->username }}</p>
-
-                        {{-- Status Badge --}}
-                        @if($user->status === 'approved')
-                            <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 border border-green-200">
-                                <i class="fas fa-check-circle mr-2"></i>Akun Aktif
-                            </div>
-                        @elseif($user->status === 'pending')
-                            <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                <i class="fas fa-clock mr-2"></i>Menunggu Persetujuan
-                            </div>
-                        @else
-                            <div class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 border border-red-200">
-                                <i class="fas fa-times-circle mr-2"></i>Tidak Aktif
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- Quick Info --}}
-                    <div class="p-6 border-t border-gray-200">
-                        <h4 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                            <i class="fas fa-info-circle mr-2 text-blue-600"></i>
-                            Informasi Akun
-                        </h4>
-                        <div class="space-y-3">
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 text-sm">Bergabung</span>
-                                <span class="font-medium text-sm">{{ $user->created_at ? $user->created_at->format('d/m/Y') : '-' }}</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span class="text-gray-600 text-sm">Terakhir Update</span>
-                                <span class="font-medium text-sm">{{ $user->updated_at ? $user->updated_at->format('d/m/Y') : '-' }}</span>
-                            </div>
-                            @if($user->karyawan)
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm">NIK</span>
-                                    <span class="font-medium text-sm">{{ $user->karyawan->nik ?: '-' }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm">No. HP</span>
-                                    <span class="font-medium text-sm">{{ $user->karyawan->no_hp ?: '-' }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm">Divisi</span>
-                                    <span class="font-medium text-sm">{{ $user->karyawan->divisi ?: '-' }}</span>
-                                </div>
-                                <div class="flex justify-between items-center">
-                                    <span class="text-gray-600 text-sm">Pekerjaan</span>
-                                    <span class="font-medium text-sm">{{ $user->karyawan->pekerjaan ?: '-' }}</span>
-                                </div>
-                            @endif
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            {{-- Detail Information --}}
-            <div class="lg:col-span-2">
-                <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-                    {{-- Tab Navigation --}}
-                    <div class="border-b border-gray-200 bg-gray-50">
-                        <nav class="flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
-                            <button onclick="showProfileTab('account')" id="tab-account" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
-                                <i class="fas fa-user-cog mr-2"></i>Data Akun
-                            </button>
-                            @if($user->karyawan)
-                                <button onclick="showProfileTab('basic')" id="tab-basic" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
-                                    <i class="fas fa-user mr-2"></i>Informasi Dasar
-                                </button>
-                                <button onclick="showProfileTab('address')" id="tab-address" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
-                                    <i class="fas fa-map-marker-alt mr-2"></i>Alamat
-                                </button>
-                                <button onclick="showProfileTab('work')" id="tab-work" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
-                                    <i class="fas fa-briefcase mr-2"></i>Pekerjaan
-                                </button>
-                                <button onclick="showProfileTab('bank')" id="tab-bank" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
-                                    <i class="fas fa-university mr-2"></i>Bank & Pajak
-                                </button>
-                                <button onclick="showProfileTab('verification')" id="tab-verification" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
-                                    <i class="fas fa-check-circle mr-2"></i>Verifikasi
-                                </button>
-                            @endif
-                            <button onclick="showProfileTab('security')" id="tab-security" class="border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm transition-all duration-200 flex items-center">
-                                <i class="fas fa-shield-alt mr-2"></i>Keamanan
-                            </button>
-                        </nav>
-                    </div>
-
-                    {{-- Account Info Tab Content --}}
-                    <div id="account-tab" class="profile-tab-content p-8">
-                        <div class="mb-6">
-                            <h4 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                                <i class="fas fa-user-circle mr-3 text-blue-600"></i>
-                                Informasi Akun
-                            </h4>
-                            <p class="text-gray-600">Informasi dasar akun pengguna sistem</p>
-                        </div>
-
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div class="space-y-2">
-                                <label class="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
-                                <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->name }}</div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="block text-sm font-semibold text-gray-700">Username</label>
-                                <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->username }}</div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="block text-sm font-semibold text-gray-700">Status Akun</label>
-                                <div class="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    @if($user->status === 'approved')
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-green-100 text-green-800 border border-green-200">
-                                            <i class="fas fa-check mr-2"></i>Disetujui
-                                        </span>
-                                    @elseif($user->status === 'pending')
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                            <i class="fas fa-clock mr-2"></i>Pending
-                                        </span>
-                                    @else
-                                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold bg-red-100 text-red-800 border border-red-200">
-                                            <i class="fas fa-times mr-2"></i>Ditolak
-                                        </span>
-                                    @endif
-                                </div>
-                            </div>
-                            <div class="space-y-2">
-                                <label class="block text-sm font-semibold text-gray-700">Tanggal Bergabung</label>
-                                <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                    <div class="font-medium">{{ $user->created_at ? $user->created_at->format('d/m/Y H:i:s') : '-' }}</div>
-                                    <div class="text-sm text-gray-500 mt-1">{{ $user->created_at ? $user->created_at->diffForHumans() : '-' }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        @if($user->registration_reason)
-                            <div class="mt-8 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                                <label class="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                                    <i class="fas fa-comment-alt mr-2 text-blue-600"></i>
-                                    Alasan Registrasi
-                                </label>
-                                <div class="text-base text-gray-900 bg-white p-4 rounded-lg border border-blue-200 leading-relaxed">
-                                    {{ $user->registration_reason }}
-                                </div>
-                            </div>
-                        @endif
-                    </div>
-
-                    {{-- Personal Info Tab Content --}}
-                    @if($user->karyawan)
-                        {{-- Basic Info Tab Content --}}
-                        <div id="basic-tab" class="profile-tab-content p-8 hidden">
-                            <div class="mb-6">
-                                <h4 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                                    <i class="fas fa-user mr-3 text-green-600"></i>
-                                    Informasi Dasar
-                                </h4>
-                                <p class="text-gray-600">Informasi dasar karyawan</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">NIK</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->nik ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Nama Lengkap</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->nama_lengkap ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Nama Panggilan</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->nama_panggilan ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Email</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->email ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">No. HP</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->no_hp ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Tempat Lahir</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->tempat_lahir ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Tanggal Lahir</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        {{ $user->karyawan->tanggal_lahir ? \Carbon\Carbon::parse($user->karyawan->tanggal_lahir)->format('d/m/Y') : '-' }}
-                                    </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Jenis Kelamin</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        {{ $user->karyawan->jenis_kelamin ? ($user->karyawan->jenis_kelamin == 'L' ? 'Laki-laki' : 'Perempuan') : '-' }}
-                                    </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Agama</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->agama ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Status Perkawinan</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->status_perkawinan ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">KTP</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->ktp ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">KK</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->kk ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">PLAT</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->plat ?: '-' }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Address Tab Content --}}
-                        <div id="address-tab" class="profile-tab-content p-8 hidden">
-                            <div class="mb-6">
-                                <h4 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                                    <i class="fas fa-map-marker-alt mr-3 text-blue-600"></i>
-                                    Alamat
-                                </h4>
-                                <p class="text-gray-600">Informasi alamat lengkap karyawan</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Alamat</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->alamat ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">RT/RW</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->rt_rw ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Kelurahan</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->kelurahan ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Kecamatan</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->kecamatan ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Kabupaten</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->kabupaten ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Provinsi</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->provinsi ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Kode Pos</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->kode_pos ?: '-' }}</div>
-                                </div>
-                            </div>
-                            @if($user->karyawan->alamat_lengkap)
-                                <div class="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-6">
-                                    <label class="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                                        <i class="fas fa-map-marker-alt mr-2 text-blue-600"></i>
-                                        Alamat Lengkap
-                                    </label>
-                                    <div class="text-base text-gray-900 bg-white p-4 rounded-lg border border-blue-200 leading-relaxed">
-                                        {{ $user->karyawan->alamat_lengkap }}
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-
-                        {{-- Work Tab Content --}}
-                        <div id="work-tab" class="profile-tab-content p-8 hidden">
-                            <div class="mb-6">
-                                <h4 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                                    <i class="fas fa-briefcase mr-3 text-purple-600"></i>
-                                    Informasi Pekerjaan
-                                </h4>
-                                <p class="text-gray-600">Informasi pekerjaan dan riwayat kerja karyawan</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Divisi</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->divisi ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Pekerjaan</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->pekerjaan ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Cabang</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->cabang ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Tanggal Masuk</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        {{ $user->karyawan->tanggal_masuk ? \Carbon\Carbon::parse($user->karyawan->tanggal_masuk)->format('d/m/Y') : '-' }}
-                                    </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Tanggal Berhenti</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        {{ $user->karyawan->tanggal_berhenti ? \Carbon\Carbon::parse($user->karyawan->tanggal_berhenti)->format('d/m/Y') : '-' }}
-                                    </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Tanggal Masuk Sebelumnya</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        {{ $user->karyawan->tanggal_masuk_sebelumnya ? \Carbon\Carbon::parse($user->karyawan->tanggal_masuk_sebelumnya)->format('d/m/Y') : '-' }}
-                                    </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Tanggal Berhenti Sebelumnya</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        {{ $user->karyawan->tanggal_berhenti_sebelumnya ? \Carbon\Carbon::parse($user->karyawan->tanggal_berhenti_sebelumnya)->format('d/m/Y') : '-' }}
-                                    </div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">NIK Supervisor</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->nik_supervisor ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Supervisor</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->supervisor ?: '-' }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Bank Tab Content --}}
-                        <div id="bank-tab" class="profile-tab-content p-8 hidden">
-                            <div class="mb-6">
-                                <h4 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                                    <i class="fas fa-university mr-3 text-indigo-600"></i>
-                                    Informasi Bank & Pajak
-                                </h4>
-                                <p class="text-gray-600">Informasi rekening bank dan data pajak karyawan</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Nama Bank</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->nama_bank ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Bank Cabang</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->bank_cabang ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Akun Bank</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->akun_bank ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Atas Nama</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->atas_nama ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Status Pajak</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->status_pajak ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">JKN</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->jkn ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">No. Ketenagakerjaan</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->no_ketenagakerjaan ?: '-' }}</div>
-                                </div>
-                            </div>
-                        </div>
-
-                        {{-- Verification Tab Content --}}
-                        <div id="verification-tab" class="profile-tab-content p-8 hidden">
-                            <div class="mb-6">
-                                <h4 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                                    <i class="fas fa-check-circle mr-3 text-teal-600"></i>
-                                    Verifikasi & Catatan
-                                </h4>
-                                <p class="text-gray-600">Status verifikasi dan catatan tambahan karyawan</p>
-                            </div>
-
-                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Status Verifikasi</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->verification_status ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Diverifikasi Oleh</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">{{ $user->karyawan->verified_by ?: '-' }}</div>
-                                </div>
-                                <div class="space-y-2">
-                                    <label class="block text-sm font-semibold text-gray-700">Tanggal Verifikasi</label>
-                                    <div class="text-base text-gray-900 bg-gray-50 p-4 rounded-lg border border-gray-200">
-                                        {{ $user->karyawan->verified_at ? \Carbon\Carbon::parse($user->karyawan->verified_at)->format('d/m/Y H:i:s') : '-' }}
-                                    </div>
-                                </div>
-                            </div>
-                            @if($user->karyawan->catatan)
-                                <div class="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-                                    <label class="flex items-center text-sm font-semibold text-gray-700 mb-3">
-                                        <i class="fas fa-sticky-note mr-2 text-yellow-600"></i>
-                                        Catatan
-                                    </label>
-                                    <div class="text-base text-gray-900 bg-white p-4 rounded-lg border border-yellow-200 leading-relaxed">
-                                        {{ $user->karyawan->catatan }}
-                                    </div>
-                                </div>
-                            @endif
-                        </div>
-                    @endif
-
-                    {{-- Security Tab Content --}}
-                    <div id="security-tab" class="profile-tab-content p-8 hidden">
-                        <div class="mb-6">
-                            <h4 class="text-xl font-bold text-gray-900 mb-2 flex items-center">
-                                <i class="fas fa-shield-alt mr-3 text-purple-600"></i>
-                                Keamanan Akun
-                            </h4>
-                            <p class="text-gray-600">Pengaturan keamanan dan privasi akun</p>
-                        </div>
-
-                        <div class="space-y-6">
-                            {{-- Password Section --}}
-                            <div class="bg-purple-50 border border-purple-200 rounded-lg p-6">
-                                <div class="flex items-center justify-between mb-4">
-                                    <div>
-                                        <h5 class="text-lg font-semibold text-gray-900 flex items-center">
-                                            <i class="fas fa-key mr-2 text-purple-600"></i>
-                                            Kata Sandi
-                                        </h5>
-                                        <p class="text-gray-600 text-sm">Terakhir diubah: {{ $user->updated_at ? $user->updated_at->format('d/m/Y') : '-' }}</p>
-                                    </div>
-                                </div>
-                                <div class="text-sm text-purple-800">
-                                    Pastikan kata sandi Anda kuat dan unik untuk menjaga keamanan akun.
-                                </div>
-                            </div>
-
-                            {{-- Login History Placeholder --}}
-                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-6">
-                                <h5 class="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                                    <i class="fas fa-history mr-2 text-gray-600"></i>
-                                    Aktivitas Login
-                                </h5>
-                                <div class="text-center py-8">
-                                    <i class="fas fa-clock text-gray-400 text-3xl mb-4"></i>
-                                    <p class="text-gray-500">Riwayat login akan ditampilkan di sini</p>
-                                    <p class="text-gray-400 text-sm">Fitur ini akan segera tersedia</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<div class="max-w-4xl mx-auto p-6 bg-white shadow-md rounded-lg">
+    <div class="flex justify-between items-center mb-6">
+        <h2 class="text-2xl font-bold text-gray-800">Profil Saya</h2>
+        <div class="flex items-center space-x-3">
+            <a href="{{ route('profile.edit') }}" class="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-2 px-4 rounded-lg">
+                Edit
+            </a>
+            <a href="{{ route('dashboard') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-2 px-4 rounded-lg">
+                Kembali
+            </a>
         </div>
     </div>
+
+    @php
+        $formatDate = function($value, $format = 'd/M/Y') {
+            if (empty($value)) return '-';
+            // If it's a Carbon/DateTime instance, format directly
+            if ($value instanceof \Illuminate\Support\Carbon || $value instanceof \DateTimeInterface) {
+                try { return $value->format($format); } catch (\Throwable $e) { /* fallthrough */ }
+            }
+            // Try to parse string values
+            try {
+                $ts = strtotime((string)$value);
+                if ($ts === false || $ts === -1) return '-';
+                return date($format, $ts);
+            } catch (\Throwable $e) {
+                return '-';
+            }
+        };
+    @endphp
+
+    <details open class="mb-4 border rounded">
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Akun</summary>
+        <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+            <div>
+                <p class="font-semibold text-gray-600">Nama Lengkap</p>
+                <p class="text-gray-800">{{ $user->name ?? '-' }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Username</p>
+                <p class="text-gray-800">{{ $user->username ?? '-' }}</p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Email</p>
+                <p class="text-gray-800">{{ $user->email ?? '-' }}
+                    @if(!empty($user->email))
+                        <button onclick="navigator.clipboard.writeText('{{ $user->email }}')" class="ml-2 text-xs text-gray-500">Salin</button>
+                    @endif
+                </p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Status Akun</p>
+                <p class="text-gray-800">
+                    @if($user->status === 'approved')
+                        Aktif
+                    @elseif($user->status === 'pending')
+                        Menunggu Persetujuan
+                    @else
+                        Tidak Aktif
+                    @endif
+                </p>
+            </div>
+
+            <div>
+                <p class="font-semibold text-gray-600">Tanggal Bergabung</p>
+                <p class="text-gray-800">{{ $formatDate($user->created_at, 'd/M/Y H:i') }}</p>
+            </div>
+            <div>
+                <p class="font-semibold text-gray-600">Terakhir Update</p>
+                <p class="text-gray-800">{{ $formatDate($user->updated_at, 'd/M/Y H:i') }}</p>
+            </div>
+        </div>
+    </details>
+
+    @if($user->registration_reason)
+        <details class="mb-4 border rounded">
+            <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Alasan Registrasi</summary>
+            <div class="p-4 text-sm">
+                <p class="text-gray-800 whitespace-pre-wrap">{{ $user->registration_reason }}</p>
+            </div>
+        </details>
+    @endif
+
+    @if($user->karyawan)
+        <details class="mb-4 border rounded">
+            <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Pribadi</summary>
+            <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+                <div>
+                    <p class="font-semibold text-gray-600">NIK</p>
+                    <p class="text-gray-800">{{ $user->karyawan->nik ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Nama Lengkap</p>
+                    <p class="text-gray-800">{{ $user->karyawan->nama_lengkap ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Nama Panggilan</p>
+                    <p class="text-gray-800">{{ $user->karyawan->nama_panggilan ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Email</p>
+                    <p class="text-gray-800">{{ $user->karyawan->email ?? '-' }}
+                        @if(!empty($user->karyawan->email))
+                            <button onclick="navigator.clipboard.writeText('{{ $user->karyawan->email }}')" class="ml-2 text-xs text-gray-500">Salin</button>
+                        @endif
+                    </p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Tanggal Lahir</p>
+                    <p class="text-gray-800">{{ $formatDate($user->karyawan->tanggal_lahir, 'd/M/Y') }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Tempat Lahir</p>
+                    <p class="text-gray-800">{{ $user->karyawan->tempat_lahir ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Jenis Kelamin</p>
+                    <p class="text-gray-800">{{ $user->karyawan->jenis_kelamin_label ?? ($user->karyawan->jenis_kelamin ?? '-') }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Agama</p>
+                    <p class="text-gray-800">{{ $user->karyawan->agama ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Status Pernikahan</p>
+                    <p class="text-gray-800">{{ $user->karyawan->status_perkawinan ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">No HP</p>
+                    <p class="text-gray-800">{{ $user->karyawan->no_hp ?? '-' }}
+                        @if(!empty($user->karyawan->no_hp))
+                            <button onclick="navigator.clipboard.writeText('{{ $user->karyawan->no_hp }}')" class="ml-2 text-xs text-gray-500">Salin</button>
+                        @endif
+                    </p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Nomor KTP</p>
+                    <p class="text-gray-800">{{ $user->karyawan->ktp ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Nomor KK</p>
+                    <p class="text-gray-800">{{ $user->karyawan->kk ?? '-' }}</p>
+                </div>
+            </div>
+        </details>
+
+        <details class="mb-4 border rounded">
+            <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Alamat</summary>
+            <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+                <div>
+                    <p class="font-semibold text-gray-600">Alamat</p>
+                    <p class="text-gray-800">{{ $user->karyawan->alamat ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">RT / RW</p>
+                    <p class="text-gray-800">{{ $user->karyawan->rt_rw ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Kelurahan</p>
+                    <p class="text-gray-800">{{ $user->karyawan->kelurahan ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Kecamatan</p>
+                    <p class="text-gray-800">{{ $user->karyawan->kecamatan ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Kabupaten</p>
+                    <p class="text-gray-800">{{ $user->karyawan->kabupaten ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Provinsi</p>
+                    <p class="text-gray-800">{{ $user->karyawan->provinsi ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Kode Pos</p>
+                    <p class="text-gray-800">{{ $user->karyawan->kode_pos ?? '-' }}</p>
+                </div>
+                <div class="col-span-2">
+                    <p class="font-semibold text-gray-600">Alamat Lengkap</p>
+                    <p class="text-gray-800">{{ $user->karyawan->alamat_lengkap ?? '-' }}</p>
+                </div>
+            </div>
+        </details>
+
+        <details class="mb-4 border rounded">
+            <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Pekerjaan & Riwayat</summary>
+            <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+                <div>
+                    <p class="font-semibold text-gray-600">Divisi</p>
+                    <p class="text-gray-800">{{ $user->karyawan->divisi ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Pekerjaan</p>
+                    <p class="text-gray-800">{{ $user->karyawan->pekerjaan ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Tanggal Masuk</p>
+                    <p class="text-gray-800">{{ $formatDate($user->karyawan->tanggal_masuk, 'd/M/Y') }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Tanggal Berhenti</p>
+                    <p class="text-gray-800">{{ $formatDate($user->karyawan->tanggal_berhenti, 'd/M/Y') }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Tanggal Masuk (Sebelumnya)</p>
+                    <p class="text-gray-800">{{ $formatDate($user->karyawan->tanggal_masuk_sebelumnya, 'd/M/Y') }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Tanggal Berhenti (Sebelumnya)</p>
+                    <p class="text-gray-800">{{ $formatDate($user->karyawan->tanggal_berhenti_sebelumnya, 'd/M/Y') }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">NIK Supervisor</p>
+                    <p class="text-gray-800">{{ $user->karyawan->nik_supervisor ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Supervisor</p>
+                    <p class="text-gray-800">{{ $user->karyawan->supervisor ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Kantor Cabang AYP</p>
+                    <p class="text-gray-800">{{ $user->karyawan->cabang ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Nomor Plat</p>
+                    <p class="text-gray-800">{{ $user->karyawan->plat ?? '-' }}</p>
+                </div>
+            </div>
+        </details>
+
+        <details class="mb-4 border rounded">
+            <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Bank</summary>
+            <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+                <div>
+                    <p class="font-semibold text-gray-600">Nama Bank</p>
+                    <p class="text-gray-800">{{ $user->karyawan->nama_bank ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Cabang Bank</p>
+                    <p class="text-gray-800">{{ $user->karyawan->bank_cabang ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">Nomor Rekening</p>
+                    <p class="text-gray-800">{{ $user->karyawan->akun_bank ?? '-' }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">Atas Nama</p>
+                    <p class="text-gray-800">{{ $user->karyawan->atas_nama ?? '-' }}</p>
+                </div>
+            </div>
+        </details>
+
+        <details class="mb-4 border rounded">
+            <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Pajak & JKN</summary>
+            <div class="p-4 grid grid-cols-2 gap-6 text-sm">
+                <div>
+                    <p class="font-semibold text-gray-600">Status Pajak</p>
+                    <p class="text-gray-800">{{ $user->karyawan->status_pajak_label ?? ($user->karyawan->status_pajak ?? '-') }}</p>
+                </div>
+                <div>
+                    <p class="font-semibold text-gray-600">JKN</p>
+                    <p class="text-gray-800">{{ $user->karyawan->jkn ?? '-' }}</p>
+                </div>
+
+                <div>
+                    <p class="font-semibold text-gray-600">BP Jamsostek</p>
+                    <p class="text-gray-800">{{ $user->karyawan->no_ketenagakerjaan ?? '-' }}</p>
+                </div>
+            </div>
+        </details>
+
+        @if($user->karyawan->catatan)
+            <div class="mt-6">
+                <p class="font-semibold text-gray-600">Catatan</p>
+                <div class="mt-2 p-3 bg-gray-50 border rounded text-gray-800 min-h-[80px] whitespace-pre-wrap">
+                    {{ $user->karyawan->catatan }}
+                </div>
+            </div>
+        @endif
+    @endif
 </div>
 
-@push('scripts')
+<style>
+    /* Prepare content for smooth height transitions */
+    details > div {
+        overflow: hidden;
+        will-change: height;
+        height: 0; /* JS will initialize correctly */
+    }
+</style>
+
 <script>
-function showProfileTab(tabName) {
-    // Hide all tab contents
-    document.querySelectorAll('.profile-tab-content').forEach(tab => {
-        tab.classList.add('hidden');
+    document.addEventListener('DOMContentLoaded', function() {
+        function initDetails(d) {
+            var summary = d.querySelector('summary');
+            var content = d.querySelector('div');
+            if (!summary || !content) return;
+
+            // Initialize height based on open state
+            if (d.hasAttribute('open')) {
+                content.style.height = content.scrollHeight + 'px';
+            } else {
+                content.style.height = '0px';
+            }
+
+            // Prevent native toggle; implement smooth animation
+            summary.addEventListener('click', function(e) {
+                e.preventDefault();
+                if (d.hasAttribute('open')) {
+                    // collapse
+                    // set fixed height then transition to 0
+                    content.style.height = content.scrollHeight + 'px';
+                    // force reflow
+                    void content.offsetHeight;
+                    content.style.transition = 'height 240ms ease';
+                    content.style.height = '0px';
+                    d.removeAttribute('open');
+                    content.addEventListener('transitionend', function cb() {
+                        content.style.transition = '';
+                        content.removeEventListener('transitionend', cb);
+                    });
+                } else {
+                    // expand
+                    // from 0 to scrollHeight, then set to auto
+                    content.style.height = '0px';
+                    d.setAttribute('open', '');
+                    // force reflow
+                    void content.offsetHeight;
+                    var target = content.scrollHeight + 'px';
+                    content.style.transition = 'height 240ms ease';
+                    content.style.height = target;
+                    content.addEventListener('transitionend', function cb() {
+                        // allow natural height after animation
+                        if (d.hasAttribute('open')) {
+                            content.style.height = 'auto';
+                        }
+                        content.style.transition = '';
+                        content.removeEventListener('transitionend', cb);
+                    });
+                }
+            });
+        }
+
+        document.querySelectorAll('details').forEach(function(d) { initDetails(d); });
     });
-
-    // Show selected tab
-    document.getElementById(tabName + '-tab').classList.remove('hidden');
-
-    // Update tab buttons
-    document.querySelectorAll('[id^="tab-"]').forEach(btn => {
-        btn.classList.remove('border-blue-500', 'text-blue-600');
-        btn.classList.add('border-transparent', 'text-gray-500');
-    });
-
-    document.getElementById('tab-' + tabName).classList.add('border-blue-500', 'text-blue-600');
-    document.getElementById('tab-' + tabName).classList.remove('border-transparent', 'text-gray-500');
-}
-
-// Initialize
-document.addEventListener('DOMContentLoaded', function() {
-    // Check if user has karyawan data, if not show account tab
-    @if($user->karyawan)
-        showProfileTab('basic');
-    @else
-        showProfileTab('account');
-    @endif
-});
 </script>
-@endpush
 
 @endsection
