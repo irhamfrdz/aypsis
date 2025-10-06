@@ -1352,3 +1352,16 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
     Route::post('/{pembayaranAktivitasLainnya}/reject', [PembayaranAktivitasLainnyaController::class, 'reject'])->name('reject')
          ->middleware('can:pembayaran-aktivitas-lainnya-approve');
 });
+
+// Report Routes
+Route::middleware(['auth'])->prefix('report')->name('report.')->group(function () {
+    // Report Tagihan
+    Route::get('/tagihan', [App\Http\Controllers\ReportTagihanController::class, 'index'])->name('tagihan.index');
+    Route::get('/tagihan/export', [App\Http\Controllers\ReportTagihanController::class, 'export'])->name('tagihan.export');
+
+    // Report Pranota (to be implemented)
+    // Route::get('/pranota', [App\Http\Controllers\ReportPranotaController::class, 'index'])->name('pranota.index');
+
+    // Report Pembayaran (to be implemented)
+    // Route::get('/pembayaran', [App\Http\Controllers\ReportPembayaranController::class, 'index'])->name('pembayaran.index');
+});
