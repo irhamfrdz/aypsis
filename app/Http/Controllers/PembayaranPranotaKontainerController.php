@@ -54,8 +54,13 @@ class PembayaranPranotaKontainerController extends Controller
             ->get();
 
         // Get akun_coa data for bank selection - only kas/bank type
-        $akunCoa = Coa::where('tipe_akun', 'kas/bank')
-            ->orderBy('nama_akun')
+        $akunCoa = Coa::where(function($query) {
+                $query->where('tipe_akun', 'Kas/Bank')
+                      ->orWhere('tipe_akun', 'Bank/Kas')
+                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+            })
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
         return view('pembayaran-pranota-kontainer.create', compact('pranotaList', 'akunCoa'));
@@ -86,8 +91,13 @@ class PembayaranPranotaKontainerController extends Controller
         $totalPembayaran = $pranotaList->sum('total_amount');
 
         // Get akun_coa data for bank selection - only kas/bank type
-        $akunCoa = Coa::where('tipe_akun', 'kas/bank')
-            ->orderBy('nama_akun')
+        $akunCoa = Coa::where(function($query) {
+                $query->where('tipe_akun', 'Kas/Bank')
+                      ->orWhere('tipe_akun', 'Bank/Kas')
+                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+            })
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
         return view('pembayaran-pranota-kontainer.payment-form', compact('pranotaList', 'nomorPembayaran', 'totalPembayaran', 'akunCoa'));
