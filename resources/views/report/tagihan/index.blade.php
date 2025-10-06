@@ -146,33 +146,35 @@
             <table class="min-w-full divide-y divide-gray-200">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Tagihan</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kontainer</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Customer</th>
-                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Kontainer</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Grand Total</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($tagihanSewa as $tagihan)
                     <tr class="hover:bg-gray-50">
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $tagihan->nomor_tagihan ?? '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $tagihan->nomor_kontainer ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ \Carbon\Carbon::parse($tagihan->tanggal_tagihan)->format('d/m/Y') }}
+                            {{ \Carbon\Carbon::parse($tagihan->tanggal_awal)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($tagihan->tanggal_akhir)->format('d/m/Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $tagihan->kontainer->nomor_kontainer ?? '-' }}
+                            {{ $tagihan->vendor ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $tagihan->customer->nama ?? '-' }}
+                            {{ $tagihan->size ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                            Rp {{ number_format($tagihan->total_tagihan, 0, ',', '.') }}
+                            Rp {{ number_format($tagihan->grand_total ?? 0, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             @if($tagihan->status === 'paid')
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lunas</span>
+                            @elseif($tagihan->status === 'approved')
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Disetujui</span>
                             @else
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Belum Bayar</span>
                             @endif
@@ -212,18 +214,20 @@
                     @forelse($tagihanCat as $tagihan)
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            {{ $tagihan->kontainer->nomor_kontainer ?? $tagihan->nomor_kontainer ?? '-' }}
+                            {{ $tagihan->nomor_kontainer ?? '-' }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ \Carbon\Carbon::parse($tagihan->tanggal_cat)->format('d/m/Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $tagihan->vendor ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
-                            Rp {{ number_format($tagihan->biaya_cat, 0, ',', '.') }}
+                            Rp {{ number_format($tagihan->realisasi_biaya ?? $tagihan->estimasi_biaya ?? 0, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm">
                             @if($tagihan->status === 'paid')
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">Lunas</span>
+                            @elseif($tagihan->status === 'approved')
+                                <span class="px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">Disetujui</span>
                             @else
                                 <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">Belum Bayar</span>
                             @endif
@@ -269,7 +273,7 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             @if($tagihan->perbaikanKontainers->isNotEmpty())
-                                {{ $tagihan->perbaikanKontainers->first()->kontainer->nomor_kontainer ?? '-' }}
+                                {{ $tagihan->perbaikanKontainers->first()->nomor_kontainer ?? '-' }}
                             @else
                                 -
                             @endif

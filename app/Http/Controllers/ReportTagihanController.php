@@ -26,7 +26,7 @@ class ReportTagihanController extends Controller
 
         // Get Tagihan Sewa Kontainer
         if ($jenisTagihan === 'all' || $jenisTagihan === 'sewa') {
-            $query = DaftarTagihanKontainerSewa::with(['kontainer', 'customer'])
+            $query = DaftarTagihanKontainerSewa::query()
                 ->where(function($q) use ($startDate, $endDate) {
                     $q->whereBetween('tanggal_awal', [$startDate, $endDate])
                       ->orWhereBetween('tanggal_akhir', [$startDate, $endDate])
@@ -42,7 +42,7 @@ class ReportTagihanController extends Controller
 
         // Get Tagihan CAT
         if ($jenisTagihan === 'all' || $jenisTagihan === 'cat') {
-            $query = TagihanCat::with(['kontainer'])
+            $query = TagihanCat::query()
                 ->where(function($q) use ($startDate, $endDate) {
                     $q->whereBetween('tanggal_cat', [$startDate, $endDate])
                       ->orWhereBetween('created_at', [$startDate, $endDate]);
