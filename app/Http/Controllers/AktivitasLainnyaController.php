@@ -61,8 +61,13 @@ class AktivitasLainnyaController extends Controller
         $statusOptions = AktivitasLainnya::getStatusOptions();
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
         
-        // Get Bank/Kas accounts from COA
-        $bankAccounts = Coa::where('tipe_akun', 'Kas/Bank')
+        // Get Bank/Kas accounts from COA (support multiple formats)
+        $bankAccounts = Coa::where(function($query) {
+                $query->where('tipe_akun', 'Kas/Bank')
+                      ->orWhere('tipe_akun', 'Bank/Kas')
+                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+            })
             ->orderBy('nomor_akun')
             ->get();
 
@@ -139,8 +144,13 @@ class AktivitasLainnyaController extends Controller
         $statusOptions = AktivitasLainnya::getStatusOptions();
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
         
-        // Get Bank/Kas accounts from COA
-        $bankAccounts = Coa::where('tipe_akun', 'Kas/Bank')
+        // Get Bank/Kas accounts from COA (support multiple formats)
+        $bankAccounts = Coa::where(function($query) {
+                $query->where('tipe_akun', 'Kas/Bank')
+                      ->orWhere('tipe_akun', 'Bank/Kas')
+                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+            })
             ->orderBy('nomor_akun')
             ->get();
 
