@@ -41,6 +41,28 @@
         </div>
     </form>
 
+    <!-- Filter Tanggal untuk Print -->
+    <div class="mb-6 bg-white p-4 rounded-lg border border-indigo-200 shadow-sm">
+        <h3 class="text-lg font-semibold text-indigo-800 mb-3">Print Berdasarkan Tanggal</h3>
+        <form action="{{ route('pranota-supir.print.by-date') }}" method="GET" target="_blank" class="flex flex-wrap items-end gap-4">
+            <div>
+                <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
+                <input type="date" id="start_date" name="start_date" value="{{ request('start_date', date('Y-m-01')) }}"
+                       class="border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div>
+                <label for="end_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                <input type="date" id="end_date" name="end_date" value="{{ request('end_date', date('Y-m-d')) }}"
+                       class="border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500">
+            </div>
+            <div>
+                <button type="submit" class="inline-flex items-center px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition shadow">
+                    🖨️ Print Berdasarkan Tanggal
+                </button>
+            </div>
+        </form>
+    </div>
+
     <!-- Tabel Daftar Pranota -->
     <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200">

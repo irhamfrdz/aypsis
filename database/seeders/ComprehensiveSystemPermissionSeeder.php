@@ -454,6 +454,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
             $pranotaKontainerSewaPermissions = [
                 ['name' => 'pranota-kontainer-sewa-view', 'description' => 'Melihat Pranota Kontainer Sewa'],
                 ['name' => 'pranota-kontainer-sewa-create', 'description' => 'Membuat Pranota Kontainer Sewa'],
+                ['name' => 'pranota-kontainer-sewa-edit', 'description' => 'Edit Pranota Kontainer Sewa'],
                 ['name' => 'pranota-kontainer-sewa-update', 'description' => 'Mengupdate Pranota Kontainer Sewa'],
                 ['name' => 'pranota-kontainer-sewa-delete', 'description' => 'Menghapus Pranota Kontainer Sewa'],
                 ['name' => 'pranota-kontainer-sewa-print', 'description' => 'Print Pranota Kontainer Sewa'],

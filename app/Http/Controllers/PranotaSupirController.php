@@ -106,6 +106,36 @@ class PranotaSupirController extends Controller
     }
 
     /**
+     * Print multiple pranota berdasarkan rentang tanggal.
+     */
+    public function printByDate(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        // Ambil semua pranota dalam rentang tanggal
+        $pranotas = PranotaSupir::with(['permohonans.supir', 'permohonans.krani', 'permohonans.kontainers'])
+            ->whereBetween('tanggal_pranota', [$startDate, $endDate])
+            ->orderBy('tanggal_pranota', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        if ($pranotas->isEmpty()) {
+            return redirect()->back()->with('warning', 'Tidak ada pranota supir ditemukan dalam rentang tanggal tersebut.');
+        }
+
+        // Preload kegiatan map
+        $kegiatanMap = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
+
+        return view('pranota-supir.print-by-date', compact('pranotas', 'kegiatanMap', 'startDate', 'endDate'));
+    }
+
+    /**
      * Menyimpan pranota baru ke database.
      */
     public function store(Request $request)

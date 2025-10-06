@@ -559,6 +559,7 @@ class UserController extends Controller
                 $actionMap = [
                     'view' => 'view',
                     'create' => 'create',
+                    'edit' => 'edit',
                     'update' => 'update',
                     'delete' => 'delete',
                     'print' => 'print',
@@ -2063,6 +2064,7 @@ class UserController extends Controller
                         $actionMap = [
                             'view' => 'pranota-kontainer-sewa-view',
                             'create' => 'pranota-kontainer-sewa-create',
+                            'edit' => 'pranota-kontainer-sewa-edit',
                             'update' => 'pranota-kontainer-sewa-update',
                             'delete' => 'pranota-kontainer-sewa-delete',
                             'print' => 'pranota-kontainer-sewa-print',

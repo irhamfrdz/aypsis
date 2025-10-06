@@ -389,6 +389,36 @@ class PermohonanController extends Controller
     }
 
     /**
+     * Print multiple permohonan memos berdasarkan rentang tanggal.
+     */
+    public function printByDate(Request $request)
+    {
+        $request->validate([
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+        ]);
+
+        $startDate = $request->start_date;
+        $endDate = $request->end_date;
+
+        // Ambil semua permohonan dalam rentang tanggal
+        $permohonans = Permohonan::with(['supir', 'krani', 'kontainers'])
+            ->whereBetween('tanggal_memo', [$startDate, $endDate])
+            ->orderBy('tanggal_memo', 'asc')
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        if ($permohonans->isEmpty()) {
+            return redirect()->back()->with('warning', 'Tidak ada permohonan ditemukan dalam rentang tanggal tersebut.');
+        }
+
+        // Ambil data kegiatan untuk semua permohonan
+        $kegiatanMap = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
+
+        return view('permohonan.print-by-date', compact('permohonans', 'kegiatanMap', 'startDate', 'endDate'));
+    }
+
+    /**
      * Export permohonan list to CSV.
      */
     public function export(Request $request)

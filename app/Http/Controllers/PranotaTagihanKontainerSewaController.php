@@ -141,6 +141,37 @@ class PranotaTagihanKontainerSewaController extends Controller
     }
 
     /**
+     * Show the form for editing pranota kontainer sewa
+     */
+    public function edit(PranotaTagihanKontainerSewa $pranota)
+    {
+        $tagihanItems = $pranota->tagihanKontainerSewaItems();
+        return view('pranota.edit', compact('pranota', 'tagihanItems'));
+    }
+
+    /**
+     * Update pranota kontainer sewa
+     */
+    public function update(Request $request, PranotaTagihanKontainerSewa $pranota)
+    {
+        $request->validate([
+            'supplier' => 'nullable|string|max:255',
+            'no_invoice_vendor' => 'nullable|string|max:255',
+            'tgl_invoice_vendor' => 'nullable|date',
+            'keterangan' => 'nullable|string|max:1000',
+        ]);
+
+        $pranota->update([
+            'supplier' => $request->supplier,
+            'no_invoice_vendor' => $request->no_invoice_vendor,
+            'tgl_invoice_vendor' => $request->tgl_invoice_vendor,
+            'keterangan' => $request->keterangan,
+        ]);
+
+        return redirect()->route('pranota.index')->with('success', 'Pranota berhasil diperbarui.');
+    }
+
+    /**
      * Bulk create from tagihan kontainer sewa
      */
     public function bulkCreateFromTagihanKontainerSewa(Request $request)

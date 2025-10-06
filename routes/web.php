@@ -652,6 +652,11 @@ Route::middleware([
          ->name('permohonan.print')
          ->middleware('can:permohonan-memo-print');
 
+    // Print permohonan by date range
+    Route::get('permohonan/print/by-date', [PermohonanController::class, 'printByDate'])
+         ->name('permohonan.print.by-date')
+         ->middleware('can:permohonan-memo-print');
+
     // Bulk delete permohonan (declare before resource routes)
     Route::delete('permohonan/bulk-delete', [PermohonanController::class, 'bulkDelete'])
          ->name('permohonan.bulk-delete')
@@ -711,6 +716,11 @@ Route::middleware([
         // Additional granular routes
         Route::get('/{pranotaSupir}/print', [PranotaSupirController::class, 'print'])
             ->name('print')
+            ->middleware('can:pranota-supir-print');
+
+        // Print pranota by date range
+        Route::get('/print/by-date', [PranotaSupirController::class, 'printByDate'])
+            ->name('print.by-date')
             ->middleware('can:pranota-supir-print');
     });
 
@@ -1152,6 +1162,12 @@ Route::middleware(['auth'])->group(function() {
     Route::get('pranota-kontainer-sewa/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'show'])
          ->name('pranota-kontainer-sewa.show')
          ->middleware('can:pranota-kontainer-sewa-view');
+    Route::get('pranota-kontainer-sewa/{pranota}/edit', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'edit'])
+         ->name('pranota-kontainer-sewa.edit')
+         ->middleware('can:pranota-kontainer-sewa-edit');
+    Route::put('pranota-kontainer-sewa/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'update'])
+         ->name('pranota-kontainer-sewa.update')
+         ->middleware('can:pranota-kontainer-sewa-edit');
     Route::get('pranota-kontainer-sewa/{pranota}/print', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'print'])
          ->name('pranota-kontainer-sewa.print')
          ->middleware('can:pranota-kontainer-sewa-print');
