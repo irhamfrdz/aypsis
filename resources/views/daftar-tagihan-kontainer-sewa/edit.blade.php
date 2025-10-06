@@ -211,7 +211,7 @@ console.log('Page:', 'Edit Tagihan Kontainer Sewa');
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== DOM CONTENT LOADED ===');
-    
+
     // Currency formatting function
     function formatCurrency(value) {
         // Remove non-numeric characters except decimal point
@@ -308,9 +308,9 @@ document.addEventListener('DOMContentLoaded', function() {
     currencyInputs.forEach(input => {
         const fieldName = input.getAttribute('data-currency');
         const hiddenInput = document.getElementById(fieldName + '_hidden');
-        
+
         console.log(`Currency field initialized: ${fieldName} = "${input.value}"`);
-        
+
         if (!hiddenInput) {
             console.error(`Hidden input not found for ${fieldName}`);
             return;
@@ -322,21 +322,21 @@ document.addEventListener('DOMContentLoaded', function() {
         // Update hidden input whenever display input changes
         function updateHiddenInput() {
             const displayValue = input.value.trim();
-            
+
             if (displayValue === '' || displayValue === null || displayValue === undefined) {
                 hiddenInput.value = '0';
                 return;
             }
-            
+
             // Convert formatted value to numeric
             let cleanValue = displayValue;
             cleanValue = cleanValue.replace(/Rp\s*/gi, '').trim();
             cleanValue = cleanValue.replace(/\./g, ''); // Remove thousands separator
             cleanValue = cleanValue.replace(/,/g, '.'); // Replace comma with dot
-            
+
             const numericValue = parseFloat(cleanValue);
             hiddenInput.value = isNaN(numericValue) ? '0' : numericValue.toString();
-            
+
             console.log(`Updated ${fieldName}: "${displayValue}" -> ${hiddenInput.value}`);
         }
 
@@ -353,7 +353,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     this.value = newValue;
                     this.setSelectionRange(newValue.length, newValue.length);
                 }
-                
+
                 updateHiddenInput();
             }, doneTypingInterval);
         });
@@ -377,10 +377,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 const formattedValue = formatCurrency(currentValue);
                 this.value = formattedValue;
             }
-            
+
             updateHiddenInput();
         });
-        
+
         // Initialize hidden input value on page load
         updateHiddenInput();
     });
@@ -399,16 +399,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     form.addEventListener('submit', function(e) {
         console.log('\n\n=== FORM SUBMISSION STARTED ===');
-        
+
         // Update all hidden inputs one last time before submit
         currencyInputs.forEach(input => {
             const fieldName = input.getAttribute('data-currency');
             const hiddenInput = document.getElementById(fieldName + '_hidden');
-            
+
             if (!hiddenInput) return;
-            
+
             const displayValue = input.value.trim();
-            
+
             if (displayValue === '' || displayValue === null || displayValue === undefined) {
                 hiddenInput.value = '0';
             } else {
@@ -416,16 +416,16 @@ document.addEventListener('DOMContentLoaded', function() {
                 cleanValue = cleanValue.replace(/Rp\s*/gi, '').trim();
                 cleanValue = cleanValue.replace(/\./g, '');
                 cleanValue = cleanValue.replace(/,/g, '.');
-                
+
                 const numericValue = parseFloat(cleanValue);
                 hiddenInput.value = isNaN(numericValue) ? '0' : numericValue.toString();
             }
-            
+
             console.log(`Final ${fieldName}: display="${displayValue}" -> hidden="${hiddenInput.value}"`);
         });
-        
+
         console.log('All hidden inputs updated. Form will submit normally.');
-        
+
         // Show loading state
         if (submitButton) {
             submitButton.disabled = true;
@@ -437,7 +437,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 Menyimpan...
             `;
         }
-        
+
         // Let the form submit naturally
     });    // Auto-calculate Grand Total when other values change
     function calculateGrandTotal() {
@@ -459,7 +459,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         grandTotalDisplay.value = formatCurrency(grandTotal);
         grandTotalHidden.value = grandTotal.toString();
-        
+
         console.log(`Grand Total calculated: ${grandTotal}`);
     }
 

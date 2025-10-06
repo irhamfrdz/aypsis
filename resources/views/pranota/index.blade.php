@@ -47,7 +47,7 @@
                     </label>
                     <span id="selectedCount" class="text-sm text-gray-500">0 pranota dipilih</span>
                 </div>
-                
+
                 <!-- Bulk Delete Button -->
                 <div id="bulkActionsContainer" class="hidden">
                     @can('pranota-kontainer-sewa-delete')
@@ -297,11 +297,11 @@ function updateSelection() {
 // Confirm delete single pranota
 function confirmDelete(event, pranotaNo) {
     event.preventDefault();
-    
+
     if (confirm(`Apakah Anda yakin ingin menghapus pranota "${pranotaNo}"?\n\nTindakan ini tidak dapat dibatalkan!`)) {
         event.target.submit();
     }
-    
+
     return false;
 }
 
@@ -309,15 +309,15 @@ function confirmDelete(event, pranotaNo) {
 function bulkDelete() {
     const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
     const selectedCount = checkboxes.length;
-    
+
     if (selectedCount === 0) {
         alert('Pilih minimal 1 pranota untuk dihapus.');
         return;
     }
-    
+
     const pranotaNumbers = Array.from(checkboxes).map(cb => cb.dataset.noInvoice).join(', ');
     const confirmMessage = `Apakah Anda yakin ingin menghapus ${selectedCount} pranota?\n\nPranota yang akan dihapus:\n${pranotaNumbers}\n\nTindakan ini tidak dapat dibatalkan!`;
-    
+
     if (confirm(confirmMessage)) {
         const pranotaIds = Array.from(checkboxes).map(cb => cb.value);
         document.getElementById('bulkDeleteIds').value = JSON.stringify(pranotaIds);
