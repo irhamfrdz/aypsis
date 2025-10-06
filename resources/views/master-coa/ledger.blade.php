@@ -146,8 +146,12 @@
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                     {{ $transaction->tanggal_transaksi->format('d/m/Y') }}
                                 </td>
-                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-indigo-600">
-                                    {{ $transaction->nomor_referensi }}
+                                <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
+                                    <button type="button" 
+                                            onclick="showTransactionDetail('{{ $transaction->nomor_referensi }}')"
+                                            class="text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer">
+                                        {{ $transaction->nomor_referensi }}
+                                    </button>
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
@@ -212,4 +216,221 @@
 
     </div>
 </div>
+
+<!-- Modal Detail Transaksi -->
+<div id="detailModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <!-- Header Modal -->
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Detail Transaksi</h3>
+                <button type="button" onclick="closeDetailModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Loading -->
+            <div id="detailLoading" class="text-center py-8">
+                <svg class="animate-spin h-8 w-8 text-indigo-600 mx-auto mb-2" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                <p class="text-gray-600">Memuat detail transaksi...</p>
+            </div>
+
+            <!-- Content -->
+            <div id="detailContent" class="hidden">
+                <!-- Info Pembayaran -->
+                <div class="bg-gray-50 rounded-lg p-4 mb-4">
+                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div>
+                            <p class="text-xs text-gray-500">Nomor Pembayaran</p>
+                            <p class="text-sm font-semibold text-gray-900" id="detailNomorPembayaran">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Tanggal Pembayaran</p>
+                            <p class="text-sm font-semibold text-gray-900" id="detailTanggal">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Bank</p>
+                            <p class="text-sm font-semibold text-gray-900" id="detailBank">-</p>
+                        </div>
+                        <div>
+                            <p class="text-xs text-gray-500">Total Pembayaran</p>
+                            <p class="text-sm font-semibold text-green-600" id="detailTotal">-</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daftar Pranota -->
+                <div class="mb-4">
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Daftar Pranota</h4>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Pranota</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Jumlah Tagihan</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailPranotaTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Data akan diisi oleh JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Daftar Tagihan -->
+                <div>
+                    <h4 class="text-sm font-semibold text-gray-800 mb-2">Detail Tagihan Kontainer</h4>
+                    <div class="overflow-x-auto max-h-96">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">No. Kontainer</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Ukuran</th>
+                                    <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">Periode</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tarif</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Lama</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">DPP</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">PPN</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">PPH</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody id="detailTagihanTable" class="bg-white divide-y divide-gray-200">
+                                <!-- Data akan diisi oleh JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Error -->
+            <div id="detailError" class="hidden text-center py-8">
+                <svg class="w-12 h-12 text-red-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                <p class="text-red-600" id="detailErrorMessage">Gagal memuat detail transaksi</p>
+            </div>
+
+            <!-- Footer -->
+            <div class="mt-4 flex justify-end">
+                <button type="button" onclick="closeDetailModal()" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    Tutup
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function showTransactionDetail(nomorReferensi) {
+    // Show modal
+    document.getElementById('detailModal').classList.remove('hidden');
+    document.getElementById('detailLoading').classList.remove('hidden');
+    document.getElementById('detailContent').classList.add('hidden');
+    document.getElementById('detailError').classList.add('hidden');
+
+    // Fetch data dari API endpoint
+    fetch(`/api/pembayaran-pranota-kontainer/detail/${encodeURIComponent(nomorReferensi)}`)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log('Response data:', data); // Debug
+            document.getElementById('detailLoading').classList.add('hidden');
+            
+            if (data.success) {
+                displayTransactionDetail(data.data);
+                document.getElementById('detailContent').classList.remove('hidden');
+            } else {
+                showError(data.message || 'Gagal memuat detail transaksi');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            document.getElementById('detailLoading').classList.add('hidden');
+            showError('Terjadi kesalahan saat mengambil detail pembayaran: ' + error.message);
+        });
+}
+
+function displayTransactionDetail(data) {
+    // Set info pembayaran
+    document.getElementById('detailNomorPembayaran').textContent = data.nomor_pembayaran;
+    document.getElementById('detailTanggal').textContent = data.tanggal_pembayaran;
+    document.getElementById('detailBank').textContent = data.bank;
+    document.getElementById('detailTotal').textContent = 'Rp ' + parseFloat(data.total_tagihan_setelah_penyesuaian).toLocaleString('id-ID');
+
+    // Render pranota table
+    const pranotaTable = document.getElementById('detailPranotaTable');
+    pranotaTable.innerHTML = '';
+    
+    if (data.pranota_list && data.pranota_list.length > 0) {
+        data.pranota_list.forEach(pranota => {
+            const row = `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm text-gray-900">${pranota.no_invoice}</td>
+                    <td class="px-4 py-2 text-sm text-gray-500">${pranota.tanggal_pranota || '-'}</td>
+                    <td class="px-4 py-2 text-sm text-right text-gray-900">${pranota.jumlah_tagihan} item</td>
+                    <td class="px-4 py-2 text-sm text-right font-semibold text-gray-900">Rp ${parseFloat(pranota.total_amount).toLocaleString('id-ID')}</td>
+                </tr>
+            `;
+            pranotaTable.innerHTML += row;
+        });
+    } else {
+        pranotaTable.innerHTML = '<tr><td colspan="4" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada data pranota</td></tr>';
+    }
+
+    // Render tagihan table
+    const tagihanTable = document.getElementById('detailTagihanTable');
+    tagihanTable.innerHTML = '';
+    
+    if (data.tagihan_list && data.tagihan_list.length > 0) {
+        data.tagihan_list.forEach(tagihan => {
+            const row = `
+                <tr class="hover:bg-gray-50">
+                    <td class="px-4 py-2 text-sm text-gray-900">${tagihan.nomor_kontainer}</td>
+                    <td class="px-4 py-2 text-sm text-gray-500">${tagihan.ukuran_kontainer}</td>
+                    <td class="px-4 py-2 text-sm text-center text-gray-500">${tagihan.periode}</td>
+                    <td class="px-4 py-2 text-sm text-gray-500">${tagihan.tanggal_mulai} - ${tagihan.tanggal_akhir || 'Ongoing'}</td>
+                    <td class="px-4 py-2 text-sm text-gray-500">${tagihan.tarif}</td>
+                    <td class="px-4 py-2 text-sm text-right text-gray-900">${tagihan.lama_hari} hari</td>
+                    <td class="px-4 py-2 text-sm text-right text-gray-900">Rp ${parseFloat(tagihan.dpp).toLocaleString('id-ID')}</td>
+                    <td class="px-4 py-2 text-sm text-right text-gray-900">Rp ${parseFloat(tagihan.ppn).toLocaleString('id-ID')}</td>
+                    <td class="px-4 py-2 text-sm text-right text-gray-900">Rp ${parseFloat(tagihan.pph).toLocaleString('id-ID')}</td>
+                    <td class="px-4 py-2 text-sm text-right font-semibold text-gray-900">Rp ${parseFloat(tagihan.total_biaya).toLocaleString('id-ID')}</td>
+                </tr>
+            `;
+            tagihanTable.innerHTML += row;
+        });
+    } else {
+        tagihanTable.innerHTML = '<tr><td colspan="10" class="px-4 py-4 text-center text-sm text-gray-500">Tidak ada data tagihan</td></tr>';
+    }
+}
+
+function showError(message) {
+    document.getElementById('detailError').classList.remove('hidden');
+    document.getElementById('detailErrorMessage').textContent = message;
+}
+
+function closeDetailModal() {
+    document.getElementById('detailModal').classList.add('hidden');
+}
+
+// Close modal when clicking outside
+document.getElementById('detailModal')?.addEventListener('click', function(e) {
+    if (e.target === this) {
+        closeDetailModal();
+    }
+});
+</script>
 @endsection

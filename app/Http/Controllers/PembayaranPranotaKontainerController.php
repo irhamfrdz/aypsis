@@ -504,4 +504,103 @@ class PembayaranPranotaKontainerController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get payment detail by nomor pembayaran (for transaction detail modal)
+     */
+    public function getDetailByNomor($nomorPembayaran)
+    {
+        try {
+            $pembayaran = PembayaranPranotaKontainer::with([
+                'pembuatPembayaran',
+                'penyetujuPembayaran',
+                'items.pranota'
+            ])
+            ->where('nomor_pembayaran', $nomorPembayaran)
+            ->first();
+
+            if (!$pembayaran) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Pembayaran tidak ditemukan'
+                ], 404);
+            }
+
+            // Group pranota and collect tagihan
+            $pranotaList = [];
+            $tagihanList = [];
+            $pranotaIds = [];
+
+            foreach ($pembayaran->items as $item) {
+                $pranota = $item->pranota;
+                
+                // Add pranota to list (avoid duplicates)
+                if ($pranota && !in_array($pranota->id, $pranotaIds)) {
+                    $pranotaIds[] = $pranota->id;
+                    
+                    // Get tagihan items (tagihanKontainerSewaItems adalah method, bukan relasi)
+                    $tagihanItems = $pranota->tagihanKontainerSewaItems();
+                    
+                    // Count tagihan for this pranota
+                    $jumlahTagihan = $tagihanItems->count();
+                    
+                    // Calculate total amount for this pranota (gunakan 'grand_total' bukan 'total_biaya')
+                    $totalAmount = $tagihanItems->sum('grand_total');
+                    
+                    $pranotaList[] = [
+                        'no_invoice' => $pranota->no_invoice,
+                        'tanggal_pranota' => $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/m/Y') : null,
+                        'jumlah_tagihan' => $jumlahTagihan,
+                        'total_amount' => $totalAmount
+                    ];
+
+                    // Collect all tagihan for this pranota
+                    foreach ($tagihanItems as $tagihan) {
+                        // Calculate lama hari from tanggal_awal and tanggal_akhir
+                        $lamaHari = null;
+                        if ($tagihan->tanggal_awal && $tagihan->tanggal_akhir) {
+                            $startDate = \Carbon\Carbon::parse($tagihan->tanggal_awal);
+                            $endDate = \Carbon\Carbon::parse($tagihan->tanggal_akhir);
+                            $lamaHari = $startDate->diffInDays($endDate);
+                        }
+
+                        $tagihanList[] = [
+                            'nomor_kontainer' => $tagihan->nomor_kontainer,
+                            'ukuran_kontainer' => $tagihan->size ?? 'N/A', // Kolom 'size' bukan 'ukuran_kontainer'
+                            'periode' => $tagihan->periode ?? '-',
+                            'tanggal_mulai' => $tagihan->tanggal_awal ? \Carbon\Carbon::parse($tagihan->tanggal_awal)->format('d/m/Y') : null,
+                            'tanggal_akhir' => $tagihan->tanggal_akhir ? \Carbon\Carbon::parse($tagihan->tanggal_akhir)->format('d/m/Y') : null,
+                            'tarif' => $tagihan->tarif ?? 'N/A',
+                            'lama_hari' => $lamaHari ?? 0,
+                            'dpp' => $tagihan->dpp ?? 0,
+                            'ppn' => $tagihan->ppn ?? 0,
+                            'pph' => $tagihan->pph ?? 0,
+                            'total_biaya' => $tagihan->grand_total ?? 0 // Kolom 'grand_total' bukan 'total_biaya'
+                        ];
+                    }
+                }
+            }
+
+            $data = [
+                'nomor_pembayaran' => $pembayaran->nomor_pembayaran,
+                'tanggal_pembayaran' => \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y'),
+                'bank' => $pembayaran->bank ?? '-', // bank adalah string nama akun, bukan relasi
+                'total_tagihan_setelah_penyesuaian' => $pembayaran->total_tagihan_setelah_penyesuaian,
+                'pranota_list' => $pranotaList,
+                'tagihan_list' => $tagihanList
+            ];
+
+            return response()->json([
+                'success' => true,
+                'data' => $data
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error getting payment detail: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat mengambil detail pembayaran'
+            ], 500);
+        }
+    }
 }

@@ -1003,6 +1003,10 @@ Route::middleware([
                          ->middleware('can:pembayaran-pranota-kontainer-print');
                });
 
+               // API route for transaction detail modal
+               Route::get('/api/pembayaran-pranota-kontainer/detail/{nomorPembayaran}', [PembayaranPranotaKontainerController::class, 'getDetailByNomor'])
+                    ->middleware(['auth', 'can:pembayaran-pranota-kontainer-view']);
+
 });
 
 // Profile Management Routes (for all authenticated users)
