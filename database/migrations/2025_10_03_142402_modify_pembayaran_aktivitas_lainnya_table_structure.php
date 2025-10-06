@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class ModifyPembayaranAktivitasLainnyaTableStructure extends Migration
+class ModifyPembayaranAktivitasLainnyaTableStructure142402 extends Migration
 {
     /**
      * Run the migrations.
@@ -15,8 +15,12 @@ class ModifyPembayaranAktivitasLainnyaTableStructure extends Migration
     public function up()
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
-            // Drop foreign key constraint first before dropping the column
-            $table->dropForeign(['approved_by']);
+            // Drop foreign key constraint first before dropping the column (if exists)
+            try {
+                $table->dropForeign(['approved_by']);
+            } catch (\Exception $e) {
+                // Foreign key might not exist, continue
+            }
             
             // Drop unnecessary columns that don't match the form
             $table->dropColumn([
