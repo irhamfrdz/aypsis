@@ -47,7 +47,28 @@
                     </label>
                     <span id="selectedCount" class="text-sm text-gray-500">0 pranota dipilih</span>
                 </div>
+                
+                <!-- Bulk Delete Button -->
+                <div id="bulkActionsContainer" class="hidden">
+                    @can('pranota-kontainer-sewa-delete')
+                    <button type="button"
+                            onclick="bulkDelete()"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Hapus Terpilih
+                    </button>
+                    @endcan
+                </div>
             </div>
+
+            <!-- Bulk Delete Form (Hidden) -->
+            <form id="bulkDeleteForm" action="{{ route('pranota-kontainer-sewa.bulk-delete') }}" method="POST" style="display: none;">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="pranota_ids" id="bulkDeleteIds">
+            </form>
 
             <!-- Table -->
             <div class="table-container overflow-x-auto max-h-screen">
@@ -154,6 +175,24 @@
                                         </svg>
                                     </a>
                                     @endcan
+
+                                    <!-- Delete Button -->
+                                    @can('pranota-kontainer-sewa-delete')
+                                    <form action="{{ route('pranota-kontainer-sewa.destroy', $pranota->id) }}"
+                                          method="POST"
+                                          class="inline-block"
+                                          onsubmit="return confirmDelete(event, '{{ $pranota->no_invoice }}')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit"
+                                                class="text-red-600 hover:text-red-900"
+                                                title="Hapus Pranota">
+                                            <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                    @endcan
                                 </div>
                             </td>
                         </tr>
@@ -222,7 +261,15 @@ function updateSelection() {
         `${selectedCount} pranota dipilih (Total: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)})` :
         '0 pranota dipilih';
 
-
+    // Show/hide bulk actions container
+    const bulkActionsContainer = document.getElementById('bulkActionsContainer');
+    if (bulkActionsContainer) {
+        if (selectedCount > 0) {
+            bulkActionsContainer.classList.remove('hidden');
+        } else {
+            bulkActionsContainer.classList.add('hidden');
+        }
+    }
 
     // Update select all checkboxes
     const allCheckboxes = document.querySelectorAll('.pranota-checkbox');
@@ -244,6 +291,37 @@ function updateSelection() {
         selectAll.checked = false;
         selectAllHeader.indeterminate = true;
         selectAllHeader.checked = false;
+    }
+}
+
+// Confirm delete single pranota
+function confirmDelete(event, pranotaNo) {
+    event.preventDefault();
+    
+    if (confirm(`Apakah Anda yakin ingin menghapus pranota "${pranotaNo}"?\n\nTindakan ini tidak dapat dibatalkan!`)) {
+        event.target.submit();
+    }
+    
+    return false;
+}
+
+// Bulk delete function
+function bulkDelete() {
+    const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
+    const selectedCount = checkboxes.length;
+    
+    if (selectedCount === 0) {
+        alert('Pilih minimal 1 pranota untuk dihapus.');
+        return;
+    }
+    
+    const pranotaNumbers = Array.from(checkboxes).map(cb => cb.dataset.noInvoice).join(', ');
+    const confirmMessage = `Apakah Anda yakin ingin menghapus ${selectedCount} pranota?\n\nPranota yang akan dihapus:\n${pranotaNumbers}\n\nTindakan ini tidak dapat dibatalkan!`;
+    
+    if (confirm(confirmMessage)) {
+        const pranotaIds = Array.from(checkboxes).map(cb => cb.value);
+        document.getElementById('bulkDeleteIds').value = JSON.stringify(pranotaIds);
+        document.getElementById('bulkDeleteForm').submit();
     }
 }
 

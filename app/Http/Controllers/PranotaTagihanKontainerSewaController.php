@@ -805,4 +805,148 @@ class PranotaTagihanKontainerSewaController extends Controller
             return redirect()->back()->with('error', 'Gagal import CSV: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Delete a single pranota kontainer sewa
+     */
+    public function destroy($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $pranota = PranotaTagihanKontainerSewa::findOrFail($id);
+            $noInvoice = $pranota->no_invoice;
+
+            // Get all related tagihan items to update their status
+            $tagihanItems = DaftarTagihanKontainerSewa::where('no_pranota_tagihan', $noInvoice)->get();
+
+            // Reset tagihan items status
+            foreach ($tagihanItems as $tagihan) {
+                $tagihan->status_pranota = null;
+                $tagihan->no_pranota_tagihan = null;
+                $tagihan->save();
+            }
+
+            // Delete the pranota
+            $pranota->delete();
+
+            DB::commit();
+
+            Log::info("Pranota deleted successfully", [
+                'pranota_id' => $id,
+                'no_invoice' => $noInvoice,
+                'tagihan_count' => $tagihanItems->count(),
+                'user_id' => auth()->id()
+            ]);
+
+            return redirect()->route('pranota-kontainer-sewa.index')
+                ->with('success', "Pranota {$noInvoice} berhasil dihapus dan " . $tagihanItems->count() . " tagihan dikembalikan ke status belum masuk pranota.");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to delete pranota', [
+                'pranota_id' => $id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk delete multiple pranota kontainer sewa
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'pranota_ids' => 'required|json'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $pranotaIds = json_decode($request->pranota_ids, true);
+
+            if (empty($pranotaIds) || !is_array($pranotaIds)) {
+                throw new \Exception('ID Pranota tidak valid');
+            }
+
+            $deletedCount = 0;
+            $totalTagihanReset = 0;
+            $errors = [];
+
+            foreach ($pranotaIds as $pranotaId) {
+                try {
+                    $pranota = PranotaTagihanKontainerSewa::find($pranotaId);
+
+                    if (!$pranota) {
+                        $errors[] = "Pranota ID {$pranotaId} tidak ditemukan";
+                        continue;
+                    }
+
+                    $noInvoice = $pranota->no_invoice;
+
+                    // Get all related tagihan items
+                    $tagihanItems = DaftarTagihanKontainerSewa::where('no_pranota_tagihan', $noInvoice)->get();
+
+                    // Reset tagihan items status
+                    foreach ($tagihanItems as $tagihan) {
+                        $tagihan->status_pranota = null;
+                        $tagihan->no_pranota_tagihan = null;
+                        $tagihan->save();
+                    }
+
+                    $totalTagihanReset += $tagihanItems->count();
+
+                    // Delete the pranota
+                    $pranota->delete();
+                    $deletedCount++;
+
+                    Log::info("Pranota deleted in bulk operation", [
+                        'pranota_id' => $pranotaId,
+                        'no_invoice' => $noInvoice,
+                        'tagihan_count' => $tagihanItems->count()
+                    ]);
+
+                } catch (\Exception $e) {
+                    $errors[] = "Gagal menghapus pranota ID {$pranotaId}: " . $e->getMessage();
+                    Log::error('Bulk delete failed for pranota', [
+                        'pranota_id' => $pranotaId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+
+            DB::commit();
+
+            $message = "{$deletedCount} pranota berhasil dihapus";
+            if ($totalTagihanReset > 0) {
+                $message .= " dan {$totalTagihanReset} tagihan dikembalikan ke status belum masuk pranota";
+            }
+
+            if (!empty($errors)) {
+                $message .= ". Namun ada " . count($errors) . " error: " . implode(', ', $errors);
+            }
+
+            Log::info("Bulk delete completed", [
+                'deleted_count' => $deletedCount,
+                'tagihan_reset_count' => $totalTagihanReset,
+                'error_count' => count($errors),
+                'user_id' => auth()->id()
+            ]);
+
+            return redirect()->route('pranota-kontainer-sewa.index')
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Bulk delete operation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
+        }
+    }
 }

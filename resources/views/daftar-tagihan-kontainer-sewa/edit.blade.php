@@ -99,11 +99,12 @@
                             <div class="relative">
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
-                                       name="dpp"
+                                       id="dpp_display"
                                        value="{{ old('dpp', number_format($item->dpp ?? 0, 2, ',', '.')) }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
                                        placeholder="0,00"
-                                       data-currency />
+                                       data-currency="dpp" />
+                                <input type="hidden" name="dpp" id="dpp_hidden" value="{{ old('dpp', $item->dpp ?? 0) }}" />
                             </div>
                             <div class="mt-0.5 text-xs text-gray-400 text-right">
                                 Original: {{ number_format($item->dpp ?? 0, 2, ',', '.') }}
@@ -114,11 +115,12 @@
                             <div class="relative">
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
-                                       name="dpp_nilai_lain"
+                                       id="dpp_nilai_lain_display"
                                        value="{{ old('dpp_nilai_lain', number_format($item->dpp_nilai_lain ?? 0, 2, ',', '.')) }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
                                        placeholder="0,00"
-                                       data-currency />
+                                       data-currency="dpp_nilai_lain" />
+                                <input type="hidden" name="dpp_nilai_lain" id="dpp_nilai_lain_hidden" value="{{ old('dpp_nilai_lain', $item->dpp_nilai_lain ?? 0) }}" />
                             </div>
                             <div class="mt-0.5 text-xs text-gray-400 text-right">
                                 Original: {{ number_format($item->dpp_nilai_lain ?? 0, 2, ',', '.') }}
@@ -130,11 +132,12 @@
                             <div class="relative">
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
-                                       name="ppn"
+                                       id="ppn_display"
                                        value="{{ old('ppn', number_format($item->ppn ?? 0, 2, ',', '.')) }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
                                        placeholder="0,00"
-                                       data-currency />
+                                       data-currency="ppn" />
+                                <input type="hidden" name="ppn" id="ppn_hidden" value="{{ old('ppn', $item->ppn ?? 0) }}" />
                             </div>
                             <div class="mt-0.5 text-xs text-gray-400 text-right">
                                 Original: {{ number_format($item->ppn ?? 0, 2, ',', '.') }}
@@ -145,11 +148,12 @@
                             <div class="relative">
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
-                                       name="pph"
+                                       id="pph_display"
                                        value="{{ old('pph', number_format($item->pph ?? 0, 2, ',', '.')) }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
                                        placeholder="0,00"
-                                       data-currency />
+                                       data-currency="pph" />
+                                <input type="hidden" name="pph" id="pph_hidden" value="{{ old('pph', $item->pph ?? 0) }}" />
                             </div>
                             <div class="mt-0.5 text-xs text-gray-400 text-right">
                                 Original: {{ number_format($item->pph ?? 0, 2, ',', '.') }}
@@ -161,11 +165,12 @@
                             <div class="relative">
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold z-10 text-xs">Rp</span>
                                 <input type="text"
-                                       name="grand_total"
+                                       id="grand_total_display"
                                        value="{{ old('grand_total', number_format($item->grand_total ?? 0, 2, ',', '.')) }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12 bg-yellow-50 border-yellow-200 font-bold"
                                        placeholder="0,00"
-                                       data-currency />
+                                       data-currency="grand_total" />
+                                <input type="hidden" name="grand_total" id="grand_total_hidden" value="{{ old('grand_total', $item->grand_total ?? 0) }}" />
                             </div>
                             <div class="mt-0.5 text-xs text-gray-400 text-right">
                                 Original: {{ number_format($item->grand_total ?? 0, 2, ',', '.') }}
@@ -201,7 +206,12 @@
 
 @push('scripts')
 <script>
+console.log('=== SCRIPT LOADED ===');
+console.log('Page:', 'Edit Tagihan Kontainer Sewa');
+
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('=== DOM CONTENT LOADED ===');
+    
     // Currency formatting function
     function formatCurrency(value) {
         // Remove non-numeric characters except decimal point
@@ -232,25 +242,103 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to get numeric value from formatted string
     function getNumericValue(formattedValue) {
-        if (!formattedValue || formattedValue === '') return '0';
-        // Remove dots (thousands separator) and replace comma with dot (decimal separator)
-        let numericValue = formattedValue.toString().replace(/\./g, '').replace(',', '.');
-        // Parse as float and return as string to avoid scientific notation
-        let number = parseFloat(numericValue) || 0;
+        // Handle null, undefined, or empty values
+        if (formattedValue === null || formattedValue === undefined || formattedValue === '') {
+            return '0';
+        }
+
+        // Convert to string and trim whitespace
+        let stringValue = formattedValue.toString().trim();
+
+        // If empty after trim, return 0
+        if (stringValue === '' || stringValue === '0' || stringValue === '0,00' || stringValue === '0.00') {
+            return '0';
+        }
+
+        // Remove currency symbols and extra spaces
+        stringValue = stringValue.replace(/Rp\s*/gi, '').trim();
+
+        // Remove all non-numeric characters except dots, commas, and minus sign
+        stringValue = stringValue.replace(/[^\d,.,-]/g, '');
+
+        // Handle Indonesian format: dots are thousands separator, comma is decimal separator
+        // Count dots and commas to determine format
+        const dotCount = (stringValue.match(/\./g) || []).length;
+        const commaCount = (stringValue.match(/,/g) || []).length;
+
+        // Indonesian format: 1.234.567,89 (dots for thousands, comma for decimal)
+        if (dotCount > 0 && commaCount <= 1) {
+            // Remove dots (thousands separator)
+            stringValue = stringValue.replace(/\./g, '');
+            // Replace comma with dot (decimal separator)
+            stringValue = stringValue.replace(',', '.');
+        }
+        // US format: 1,234,567.89 (commas for thousands, dot for decimal)
+        else if (commaCount > 1 && dotCount <= 1) {
+            // Remove commas (thousands separator)
+            stringValue = stringValue.replace(/,/g, '');
+            // Dot is already decimal separator
+        }
+        // Simple format with single comma (assume decimal)
+        else if (commaCount === 1 && dotCount === 0) {
+            stringValue = stringValue.replace(',', '.');
+        }
+        // Simple format with single dot (assume decimal)
+        // No changes needed
+
+        // Parse as float
+        let number = parseFloat(stringValue);
+
+        // If parsing failed, return 0
+        if (isNaN(number) || !isFinite(number)) {
+            console.warn('Failed to parse numeric value:', formattedValue, '-> returning 0');
+            return '0';
+        }
+
+        // Return as string to avoid scientific notation
         return number.toString();
     }
 
     // Initialize currency formatting for all currency inputs
     const currencyInputs = document.querySelectorAll('[data-currency]');
 
-    // Store original names for later reference
-    currencyInputs.forEach(input => {
-        input.setAttribute('data-original-name', input.name);
-    });
+    console.log('=== Initializing Currency Inputs ===');
+    console.log('Found', currencyInputs.length, 'currency inputs');
 
     currencyInputs.forEach(input => {
+        const fieldName = input.getAttribute('data-currency');
+        const hiddenInput = document.getElementById(fieldName + '_hidden');
+        
+        console.log(`Currency field initialized: ${fieldName} = "${input.value}"`);
+        
+        if (!hiddenInput) {
+            console.error(`Hidden input not found for ${fieldName}`);
+            return;
+        }
+
         let typingTimer;
         const doneTypingInterval = 1000; // 1 second
+
+        // Update hidden input whenever display input changes
+        function updateHiddenInput() {
+            const displayValue = input.value.trim();
+            
+            if (displayValue === '' || displayValue === null || displayValue === undefined) {
+                hiddenInput.value = '0';
+                return;
+            }
+            
+            // Convert formatted value to numeric
+            let cleanValue = displayValue;
+            cleanValue = cleanValue.replace(/Rp\s*/gi, '').trim();
+            cleanValue = cleanValue.replace(/\./g, ''); // Remove thousands separator
+            cleanValue = cleanValue.replace(/,/g, '.'); // Replace comma with dot
+            
+            const numericValue = parseFloat(cleanValue);
+            hiddenInput.value = isNaN(numericValue) ? '0' : numericValue.toString();
+            
+            console.log(`Updated ${fieldName}: "${displayValue}" -> ${hiddenInput.value}`);
+        }
 
         // Format on input - with delay to avoid interrupting typing
         input.addEventListener('input', function() {
@@ -263,9 +351,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (newValue !== oldValue) {
                     this.value = newValue;
-                    // Set cursor to end after formatting
                     this.setSelectionRange(newValue.length, newValue.length);
                 }
+                
+                updateHiddenInput();
             }, doneTypingInterval);
         });
 
@@ -281,89 +370,105 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Format on blur - only if value changed
         input.addEventListener('blur', function() {
-            clearTimeout(typingTimer); // Cancel delayed formatting
+            clearTimeout(typingTimer);
 
             const currentValue = this.value.trim();
             if (currentValue && currentValue !== '') {
                 const formattedValue = formatCurrency(currentValue);
                 this.value = formattedValue;
             }
+            
+            updateHiddenInput();
         });
+        
+        // Initialize hidden input value on page load
+        updateHiddenInput();
     });
 
-    // Form submission - convert formatted values back to numeric
+    // Form submission handler - just for logging and final check
     const form = document.querySelector('form');
     const submitButton = form.querySelector('button[type="submit"]');
 
-    form.addEventListener('submit', function(e) {
-        // Show loading state
-        submitButton.disabled = true;
-        submitButton.innerHTML = `
-            <svg class="animate-spin w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-            </svg>
-            Menyimpan...
-        `;
+    console.log('Form found:', form);
+    console.log('Submit button found:', submitButton);
 
-        // Debug: Log original values
-        console.log('Converting currency values:');
-
-        // Convert currency inputs to numeric values for submission
-        currencyInputs.forEach(input => {
-            const originalValue = input.value;
-            const numericValue = getNumericValue(originalValue);
-
-            console.log(`Field ${input.name}: "${originalValue}" -> "${numericValue}"`);
-
-            // Validate that the numeric value is valid
-            if (isNaN(parseFloat(numericValue))) {
-                console.error(`Invalid numeric value for ${input.name}: ${numericValue}`);
-                e.preventDefault();
-                alert(`Nilai ${input.name} tidak valid. Silakan periksa kembali.`);
-
-                // Restore button state
-                submitButton.disabled = false;
-                submitButton.innerHTML = `
-                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                    </svg>
-                    Simpan Perubahan
-                `;
-                return;
-            }
-
-            // Directly set the input value to numeric format
-            input.value = numericValue;
-        });
-    });
-
-    // Auto-calculate Grand Total when other values change
-    function calculateGrandTotal() {
-        const dppInput = document.querySelector('[name="dpp"]') || document.querySelector('[data-original-name="dpp"]');
-        const dppNilaiLainInput = document.querySelector('[name="dpp_nilai_lain"]') || document.querySelector('[data-original-name="dpp_nilai_lain"]');
-        const ppnInput = document.querySelector('[name="ppn"]') || document.querySelector('[data-original-name="ppn"]');
-        const pphInput = document.querySelector('[name="pph"]') || document.querySelector('[data-original-name="pph"]');
-        const grandTotalInput = document.querySelector('[name="grand_total"]') || document.querySelector('[data-original-name="grand_total"]');
-
-        if (!dppInput || !dppNilaiLainInput || !ppnInput || !pphInput || !grandTotalInput) return;
-
-        const dpp = parseFloat(getNumericValue(dppInput.value)) || 0;
-        const dppNilaiLain = parseFloat(getNumericValue(dppNilaiLainInput.value)) || 0;
-        const ppn = parseFloat(getNumericValue(ppnInput.value)) || 0;
-        const pph = parseFloat(getNumericValue(pphInput.value)) || 0;
-
-        const grandTotal = dpp + dppNilaiLain + ppn - pph;
-
-        grandTotalInput.value = formatCurrency(grandTotal);
+    if (!form) {
+        console.error('CRITICAL: Form not found!');
+        return;
     }
 
-    // Add event listeners for auto-calculation
-    ['dpp', 'dpp_nilai_lain', 'ppn', 'pph'].forEach(fieldName => {
-        const field = document.querySelector(`[name="${fieldName}"]`) || document.querySelector(`[data-original-name="${fieldName}"]`);
-        if (field) {
-            field.addEventListener('input', calculateGrandTotal);
-            field.addEventListener('blur', calculateGrandTotal);
+    form.addEventListener('submit', function(e) {
+        console.log('\n\n=== FORM SUBMISSION STARTED ===');
+        
+        // Update all hidden inputs one last time before submit
+        currencyInputs.forEach(input => {
+            const fieldName = input.getAttribute('data-currency');
+            const hiddenInput = document.getElementById(fieldName + '_hidden');
+            
+            if (!hiddenInput) return;
+            
+            const displayValue = input.value.trim();
+            
+            if (displayValue === '' || displayValue === null || displayValue === undefined) {
+                hiddenInput.value = '0';
+            } else {
+                let cleanValue = displayValue;
+                cleanValue = cleanValue.replace(/Rp\s*/gi, '').trim();
+                cleanValue = cleanValue.replace(/\./g, '');
+                cleanValue = cleanValue.replace(/,/g, '.');
+                
+                const numericValue = parseFloat(cleanValue);
+                hiddenInput.value = isNaN(numericValue) ? '0' : numericValue.toString();
+            }
+            
+            console.log(`Final ${fieldName}: display="${displayValue}" -> hidden="${hiddenInput.value}"`);
+        });
+        
+        console.log('All hidden inputs updated. Form will submit normally.');
+        
+        // Show loading state
+        if (submitButton) {
+            submitButton.disabled = true;
+            submitButton.innerHTML = `
+                <svg class="animate-spin w-5 h-5 mr-2 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Menyimpan...
+            `;
+        }
+        
+        // Let the form submit naturally
+    });    // Auto-calculate Grand Total when other values change
+    function calculateGrandTotal() {
+        const dppHidden = document.getElementById('dpp_hidden');
+        const dppNilaiLainHidden = document.getElementById('dpp_nilai_lain_hidden');
+        const ppnHidden = document.getElementById('ppn_hidden');
+        const pphHidden = document.getElementById('pph_hidden');
+        const grandTotalDisplay = document.getElementById('grand_total_display');
+        const grandTotalHidden = document.getElementById('grand_total_hidden');
+
+        if (!dppHidden || !ppnHidden || !pphHidden || !grandTotalDisplay || !grandTotalHidden) return;
+
+        const dpp = parseFloat(dppHidden.value) || 0;
+        const ppn = parseFloat(ppnHidden.value) || 0;
+        const pph = parseFloat(pphHidden.value) || 0;
+
+        // Formula: DPP + PPN - PPH (tidak termasuk DPP Nilai Lain)
+        const grandTotal = dpp + ppn - pph;
+
+        grandTotalDisplay.value = formatCurrency(grandTotal);
+        grandTotalHidden.value = grandTotal.toString();
+        
+        console.log(`Grand Total calculated: ${grandTotal}`);
+    }
+
+    // Add event listeners for auto-calculation on display inputs
+    ['dpp', 'ppn', 'pph'].forEach(fieldName => {
+        const displayInput = document.getElementById(fieldName + '_display');
+        if (displayInput) {
+            displayInput.addEventListener('input', calculateGrandTotal);
+            displayInput.addEventListener('blur', calculateGrandTotal);
         }
     });
 

@@ -1192,6 +1192,9 @@ Route::middleware(['auth'])->group(function() {
     Route::delete('pranota-kontainer-sewa/{pranota}', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'destroy'])
          ->name('pranota-kontainer-sewa.destroy')
          ->middleware('can:pranota-kontainer-sewa-delete');
+    Route::delete('pranota-kontainer-sewa-bulk-delete', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkDelete'])
+         ->name('pranota-kontainer-sewa.bulk-delete')
+         ->middleware('can:pranota-kontainer-sewa-delete');
 
                // Pranota Sewa routes
                Route::prefix('pranota')->name('pranota.')->group(function () {

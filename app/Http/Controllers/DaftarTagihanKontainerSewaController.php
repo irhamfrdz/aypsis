@@ -265,7 +265,7 @@ class DaftarTagihanKontainerSewaController extends Controller
         $data = $this->validateData($request);
 
         // Fill missing numeric fields with 0 to avoid null numeric issues
-        foreach (['tarif','dpp','ppn','pph','grand_total'] as $n) {
+        foreach (['dpp','ppn','pph','grand_total'] as $n) {
             if (!isset($data[$n]) || $data[$n] === null || $data[$n] === '') {
                 $data[$n] = 0;
             }
@@ -321,7 +321,7 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         $data = $this->validateData($request);
 
-        foreach (['tarif','dpp','ppn','pph','grand_total'] as $n) {
+        foreach (['dpp','ppn','pph','grand_total'] as $n) {
             if (!isset($data[$n]) || $data[$n] === null || $data[$n] === '') {
                 $data[$n] = 0;
             }
@@ -371,7 +371,7 @@ class DaftarTagihanKontainerSewaController extends Controller
             'tanggal_akhir' => 'nullable|date|after_or_equal:tanggal_awal',
             'periode' => 'nullable|integer|min:1',
             'masa' => 'nullable|string|max:255',
-            'tarif' => 'nullable|numeric',
+            'tarif' => 'nullable|string|max:50', // Changed from numeric to string - tarif can be "harian" or "bulanan"
             'dpp' => 'nullable|numeric',
             'dpp_nilai_lain' => 'nullable|numeric',
             'ppn' => 'nullable|numeric',
