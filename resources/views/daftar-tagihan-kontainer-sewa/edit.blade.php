@@ -243,6 +243,11 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize currency formatting for all currency inputs
     const currencyInputs = document.querySelectorAll('[data-currency]');
 
+    // Store original names for later reference
+    currencyInputs.forEach(input => {
+        input.setAttribute('data-original-name', input.name);
+    });
+
     currencyInputs.forEach(input => {
         let typingTimer;
         const doneTypingInterval = 1000; // 1 second
@@ -303,62 +308,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Debug: Log original values
         console.log('Converting currency values:');
-        
+
         // Convert currency inputs to numeric values for submission
         currencyInputs.forEach(input => {
-            console.log(`Field ${input.name}: "${input.value}" -> "${getNumericValue(input.value)}"`);
-            
-            if (input.value && input.value.trim() !== '') {
-                const numericValue = getNumericValue(input.value);
-                
-                // Validate that the numeric value is valid
-                if (isNaN(parseFloat(numericValue))) {
-                    console.error(`Invalid numeric value for ${input.name}: ${numericValue}`);
-                    e.preventDefault();
-                    alert(`Nilai ${input.name} tidak valid. Silakan periksa kembali.`);
-                    
-                    // Restore button state
-                    submitButton.disabled = false;
-                    submitButton.innerHTML = `
-                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
-                        </svg>
-                        Simpan Perubahan
-                    `;
-                    return;
-                }
-                
-                // Create hidden input with numeric value
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = input.name;
-                hiddenInput.value = numericValue;
-                
-                // Remove original input from form submission
-                input.removeAttribute('name');
-                
-                // Add hidden input to form
-                form.appendChild(hiddenInput);
-            } else {
-                // For empty values, ensure we send 0
-                const hiddenInput = document.createElement('input');
-                hiddenInput.type = 'hidden';
-                hiddenInput.name = input.name;
-                hiddenInput.value = '0';
-                
-                input.removeAttribute('name');
-                form.appendChild(hiddenInput);
+            const originalValue = input.value;
+            const numericValue = getNumericValue(originalValue);
+
+            console.log(`Field ${input.name}: "${originalValue}" -> "${numericValue}"`);
+
+            // Validate that the numeric value is valid
+            if (isNaN(parseFloat(numericValue))) {
+                console.error(`Invalid numeric value for ${input.name}: ${numericValue}`);
+                e.preventDefault();
+                alert(`Nilai ${input.name} tidak valid. Silakan periksa kembali.`);
+
+                // Restore button state
+                submitButton.disabled = false;
+                submitButton.innerHTML = `
+                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Simpan Perubahan
+                `;
+                return;
             }
+
+            // Directly set the input value to numeric format
+            input.value = numericValue;
         });
     });
 
     // Auto-calculate Grand Total when other values change
     function calculateGrandTotal() {
-        const dppInput = document.querySelector('[name="dpp"]');
-        const dppNilaiLainInput = document.querySelector('[name="dpp_nilai_lain"]');
-        const ppnInput = document.querySelector('[name="ppn"]');
-        const pphInput = document.querySelector('[name="pph"]');
-        
+        const dppInput = document.querySelector('[name="dpp"]') || document.querySelector('[data-original-name="dpp"]');
+        const dppNilaiLainInput = document.querySelector('[name="dpp_nilai_lain"]') || document.querySelector('[data-original-name="dpp_nilai_lain"]');
+        const ppnInput = document.querySelector('[name="ppn"]') || document.querySelector('[data-original-name="ppn"]');
+        const pphInput = document.querySelector('[name="pph"]') || document.querySelector('[data-original-name="pph"]');
+        const grandTotalInput = document.querySelector('[name="grand_total"]') || document.querySelector('[data-original-name="grand_total"]');
+
+        if (!dppInput || !dppNilaiLainInput || !ppnInput || !pphInput || !grandTotalInput) return;
+
         const dpp = parseFloat(getNumericValue(dppInput.value)) || 0;
         const dppNilaiLain = parseFloat(getNumericValue(dppNilaiLainInput.value)) || 0;
         const ppn = parseFloat(getNumericValue(ppnInput.value)) || 0;
@@ -366,12 +355,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         const grandTotal = dpp + dppNilaiLain + ppn - pph;
 
-        document.querySelector('[name="grand_total"]').value = formatCurrency(grandTotal);
+        grandTotalInput.value = formatCurrency(grandTotal);
     }
 
     // Add event listeners for auto-calculation
     ['dpp', 'dpp_nilai_lain', 'ppn', 'pph'].forEach(fieldName => {
-        const field = document.querySelector(`[name="${fieldName}"]`);
+        const field = document.querySelector(`[name="${fieldName}"]`) || document.querySelector(`[data-original-name="${fieldName}"]`);
         if (field) {
             field.addEventListener('input', calculateGrandTotal);
             field.addEventListener('blur', calculateGrandTotal);
