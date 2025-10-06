@@ -139,6 +139,33 @@
                         <div class="row">
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label for="akun_coa_id">Akun Bank/Kas <span class="text-danger">*</span></label>
+                                    <select class="form-control @error('akun_coa_id') is-invalid @enderror"
+                                            id="akun_coa_id"
+                                            name="akun_coa_id"
+                                            {{ $aktivitas->status === 'paid' ? 'disabled' : '' }}
+                                            required>
+                                        <option value="">Pilih Akun Bank/Kas</option>
+                                        @foreach($bankAccounts as $bank)
+                                            <option value="{{ $bank->id }}" {{ old('akun_coa_id', $aktivitas->akun_coa_id) == $bank->id ? 'selected' : '' }}>
+                                                {{ $bank->nomor_akun }} - {{ $bank->nama_akun }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @if($aktivitas->status === 'paid')
+                                        <input type="hidden" name="akun_coa_id" value="{{ $aktivitas->akun_coa_id }}">
+                                    @endif
+                                    @error('akun_coa_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">
+                                        Pilih akun bank/kas yang akan terpengaruh oleh transaksi ini
+                                    </small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label for="tipe_transaksi">Tipe Transaksi <span class="text-danger">*</span></label>
                                     <select class="form-control @error('tipe_transaksi') is-invalid @enderror"
                                             id="tipe_transaksi"

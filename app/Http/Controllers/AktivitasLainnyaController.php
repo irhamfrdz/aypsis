@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\AktivitasLainnya;
 use App\Models\VendorBengkel;
+use App\Models\Coa;
+use App\Models\CoaTransaction;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -58,8 +60,13 @@ class AktivitasLainnyaController extends Controller
         $vendors = VendorBengkel::where('status', 'active')->get();
         $statusOptions = AktivitasLainnya::getStatusOptions();
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
+        
+        // Get Bank/Kas accounts from COA
+        $bankAccounts = Coa::where('tipe_akun', 'Kas/Bank')
+            ->orderBy('nomor_akun')
+            ->get();
 
-        return view('aktivitas-lainnya.create', compact('vendors', 'statusOptions', 'kategoriOptions'));
+        return view('aktivitas-lainnya.create', compact('vendors', 'statusOptions', 'kategoriOptions', 'bankAccounts'));
     }
 
     /**
@@ -72,6 +79,7 @@ class AktivitasLainnyaController extends Controller
             'deskripsi_aktivitas' => 'required|string|max:1000',
             'kategori' => 'required|in:operasional,maintenance,administrasi,transport,lainnya',
             'vendor_id' => 'nullable|exists:vendor_bengkel,id',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'tipe_transaksi' => 'required|in:debit,kredit',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:1000'
@@ -85,6 +93,7 @@ class AktivitasLainnyaController extends Controller
             $aktivitas->deskripsi_aktivitas = $request->deskripsi_aktivitas;
             $aktivitas->kategori = $request->kategori;
             $aktivitas->vendor_id = $request->vendor_id;
+            $aktivitas->akun_coa_id = $request->akun_coa_id;
             $aktivitas->tipe_transaksi = $request->tipe_transaksi;
             $aktivitas->nominal = $request->nominal;
             $aktivitas->status = 'draft';
@@ -129,8 +138,13 @@ class AktivitasLainnyaController extends Controller
         $vendors = VendorBengkel::where('status', 'active')->get();
         $statusOptions = AktivitasLainnya::getStatusOptions();
         $kategoriOptions = AktivitasLainnya::getKategoriOptions();
+        
+        // Get Bank/Kas accounts from COA
+        $bankAccounts = Coa::where('tipe_akun', 'Kas/Bank')
+            ->orderBy('nomor_akun')
+            ->get();
 
-        return view('aktivitas-lainnya.edit', compact('aktivitasLainnya', 'vendors', 'statusOptions', 'kategoriOptions'));
+        return view('aktivitas-lainnya.edit', compact('aktivitasLainnya', 'vendors', 'statusOptions', 'kategoriOptions', 'bankAccounts'));
     }
 
     /**
@@ -149,6 +163,7 @@ class AktivitasLainnyaController extends Controller
             'deskripsi_aktivitas' => 'required|string|max:1000',
             'kategori' => 'required|in:operasional,maintenance,administrasi,transport,lainnya',
             'vendor_id' => 'nullable|exists:vendor_bengkel,id',
+            'akun_coa_id' => 'required|exists:akun_coa,id',
             'tipe_transaksi' => 'required|in:debit,kredit',
             'nominal' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string|max:1000'
@@ -160,6 +175,7 @@ class AktivitasLainnyaController extends Controller
             $aktivitasLainnya->deskripsi_aktivitas = $request->deskripsi_aktivitas;
             $aktivitasLainnya->kategori = $request->kategori;
             $aktivitasLainnya->vendor_id = $request->vendor_id;
+            $aktivitasLainnya->akun_coa_id = $request->akun_coa_id;
             $aktivitasLainnya->tipe_transaksi = $request->tipe_transaksi;
             $aktivitasLainnya->nominal = $request->nominal;
             $aktivitasLainnya->keterangan = $request->keterangan;
@@ -251,10 +267,13 @@ class AktivitasLainnyaController extends Controller
             $aktivitasLainnya->approved_at = now();
             $aktivitasLainnya->save();
 
+            // Catat transaksi ke COA (single entry pada bank yang dipilih)
+            $this->recordCoaTransaction($aktivitasLainnya);
+
             DB::commit();
 
             return redirect()->route('aktivitas-lainnya.index')
-                ->with('success', 'Aktivitas berhasil diapprove');
+                ->with('success', 'Aktivitas berhasil diapprove dan transaksi COA tercatat');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -298,5 +317,64 @@ class AktivitasLainnyaController extends Controller
             return redirect()->back()
                 ->with('error', 'Gagal reject aktivitas: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Catat transaksi ke COA saat aktivitas diapprove
+     * Single entry pada akun bank/kas yang dipilih
+     */
+    private function recordCoaTransaction(AktivitasLainnya $aktivitas)
+    {
+        $coa = Coa::find($aktivitas->akun_coa_id);
+        
+        if (!$coa) {
+            Log::warning("COA tidak ditemukan untuk aktivitas: {$aktivitas->nomor_aktivitas}");
+            return;
+        }
+
+        // Tentukan debit/kredit berdasarkan tipe transaksi
+        $debit = 0;
+        $kredit = 0;
+        
+        if ($aktivitas->tipe_transaksi === 'debit') {
+            // Debit = Pemasukan, menambah saldo bank
+            $debit = $aktivitas->nominal;
+        } else {
+            // Kredit = Pengeluaran, mengurangi saldo bank
+            $kredit = $aktivitas->nominal;
+        }
+
+        // Hitung saldo baru
+        $saldoBaru = $coa->saldo + $debit - $kredit;
+
+        // Buat keterangan transaksi
+        $keterangan = "{$aktivitas->deskripsi_aktivitas}";
+        if ($aktivitas->vendor) {
+            $keterangan .= " (Vendor: {$aktivitas->vendor->nama})";
+        }
+
+        // Catat transaksi ke COA
+        CoaTransaction::create([
+            'coa_id' => $coa->id,
+            'tanggal_transaksi' => $aktivitas->tanggal_aktivitas,
+            'nomor_referensi' => $aktivitas->nomor_aktivitas,
+            'jenis_transaksi' => 'Aktivitas Lainnya',
+            'keterangan' => $keterangan,
+            'debit' => $debit,
+            'kredit' => $kredit,
+            'saldo' => $saldoBaru,
+            'created_by' => Auth::id()
+        ]);
+
+        // Update saldo di master COA
+        $coa->saldo = $saldoBaru;
+        $coa->save();
+
+        Log::info("COA Transaction recorded for aktivitas: {$aktivitas->nomor_aktivitas}", [
+            'coa' => $coa->nama_akun,
+            'debit' => $debit,
+            'kredit' => $kredit,
+            'saldo_baru' => $saldoBaru
+        ]);
     }
 }

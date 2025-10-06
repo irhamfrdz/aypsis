@@ -103,6 +103,31 @@
 
                             <div class="col-md-6">
                                 <div class="form-group">
+                                    <label for="akun_coa_id">Akun Bank/Kas <span class="text-danger">*</span></label>
+                                    <select class="form-control @error('akun_coa_id') is-invalid @enderror"
+                                            id="akun_coa_id"
+                                            name="akun_coa_id"
+                                            required>
+                                        <option value="">Pilih Akun Bank/Kas</option>
+                                        @foreach($bankAccounts as $bank)
+                                            <option value="{{ $bank->id }}" {{ old('akun_coa_id') == $bank->id ? 'selected' : '' }}>
+                                                {{ $bank->nomor_akun }} - {{ $bank->nama_akun }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    @error('akun_coa_id')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <small class="form-text text-muted">
+                                        Pilih akun bank/kas yang akan terpengaruh oleh transaksi ini
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
                                     <label for="tipe_transaksi">Tipe Transaksi <span class="text-danger">*</span></label>
                                     <select class="form-control @error('tipe_transaksi') is-invalid @enderror"
                                             id="tipe_transaksi"
@@ -120,10 +145,8 @@
                                     </small>
                                 </div>
                             </div>
-                        </div>
 
-                        <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="nominal">Nominal <span class="text-danger">*</span></label>
                                     <div class="input-group">

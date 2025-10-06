@@ -17,6 +17,7 @@ class AktivitasLainnya extends Model
         'deskripsi_aktivitas',
         'kategori',
         'vendor_id',
+        'akun_coa_id',
         'tipe_transaksi',
         'nominal',
         'status',
@@ -70,6 +71,14 @@ class AktivitasLainnya extends Model
     public function vendor()
     {
         return $this->belongsTo(VendorBengkel::class, 'vendor_id');
+    }
+
+    /**
+     * Relationship dengan Akun COA
+     */
+    public function akunCoa()
+    {
+        return $this->belongsTo(Coa::class, 'akun_coa_id');
     }
 
     /**
