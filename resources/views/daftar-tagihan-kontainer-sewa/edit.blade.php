@@ -232,7 +232,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Function to get numeric value from formatted string
     function getNumericValue(formattedValue) {
-        return formattedValue.replace(/\./g, '').replace(',', '.');
+        if (!formattedValue || formattedValue === '') return '0';
+        // Remove dots (thousands separator) and replace comma with dot (decimal separator)
+        let numericValue = formattedValue.toString().replace(/\./g, '').replace(',', '.');
+        // Parse as float and return as string to avoid scientific notation
+        let number = parseFloat(numericValue) || 0;
+        return number.toString();
     }
 
     // Initialize currency formatting for all currency inputs
@@ -296,28 +301,68 @@ document.addEventListener('DOMContentLoaded', function() {
             Menyimpan...
         `;
 
+        // Debug: Log original values
+        console.log('Converting currency values:');
+        
         // Convert currency inputs to numeric values for submission
         currencyInputs.forEach(input => {
-            const numericValue = getNumericValue(input.value);
-
-            // Create hidden input with numeric value
-            const hiddenInput = document.createElement('input');
-            hiddenInput.type = 'hidden';
-            hiddenInput.name = input.name;
-            hiddenInput.value = numericValue;
-
-            // Disable original input and add hidden input
-            input.disabled = true;
-            form.appendChild(hiddenInput);
+            console.log(`Field ${input.name}: "${input.value}" -> "${getNumericValue(input.value)}"`);
+            
+            if (input.value && input.value.trim() !== '') {
+                const numericValue = getNumericValue(input.value);
+                
+                // Validate that the numeric value is valid
+                if (isNaN(parseFloat(numericValue))) {
+                    console.error(`Invalid numeric value for ${input.name}: ${numericValue}`);
+                    e.preventDefault();
+                    alert(`Nilai ${input.name} tidak valid. Silakan periksa kembali.`);
+                    
+                    // Restore button state
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = `
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Simpan Perubahan
+                    `;
+                    return;
+                }
+                
+                // Create hidden input with numeric value
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = input.name;
+                hiddenInput.value = numericValue;
+                
+                // Remove original input from form submission
+                input.removeAttribute('name');
+                
+                // Add hidden input to form
+                form.appendChild(hiddenInput);
+            } else {
+                // For empty values, ensure we send 0
+                const hiddenInput = document.createElement('input');
+                hiddenInput.type = 'hidden';
+                hiddenInput.name = input.name;
+                hiddenInput.value = '0';
+                
+                input.removeAttribute('name');
+                form.appendChild(hiddenInput);
+            }
         });
     });
 
     // Auto-calculate Grand Total when other values change
     function calculateGrandTotal() {
-        const dpp = parseFloat(getNumericValue(document.querySelector('[name="dpp"]').value)) || 0;
-        const dppNilaiLain = parseFloat(getNumericValue(document.querySelector('[name="dpp_nilai_lain"]').value)) || 0;
-        const ppn = parseFloat(getNumericValue(document.querySelector('[name="ppn"]').value)) || 0;
-        const pph = parseFloat(getNumericValue(document.querySelector('[name="pph"]').value)) || 0;
+        const dppInput = document.querySelector('[name="dpp"]');
+        const dppNilaiLainInput = document.querySelector('[name="dpp_nilai_lain"]');
+        const ppnInput = document.querySelector('[name="ppn"]');
+        const pphInput = document.querySelector('[name="pph"]');
+        
+        const dpp = parseFloat(getNumericValue(dppInput.value)) || 0;
+        const dppNilaiLain = parseFloat(getNumericValue(dppNilaiLainInput.value)) || 0;
+        const ppn = parseFloat(getNumericValue(ppnInput.value)) || 0;
+        const pph = parseFloat(getNumericValue(pphInput.value)) || 0;
 
         const grandTotal = dpp + dppNilaiLain + ppn - pph;
 
