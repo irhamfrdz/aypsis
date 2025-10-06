@@ -48,7 +48,7 @@ class PranotaKontainerSewaEditPermissionSeeder extends Seeder
         $assignedCount = 0;
         foreach ($adminUsers as $user) {
             if (!$user->hasPermissionTo('pranota-kontainer-sewa-edit')) {
-                $user->givePermissionTo('pranota-kontainer-sewa-edit');
+                $user->permissions()->attach($permission->id);
                 $assignedCount++;
                 $this->command->info("✅ Assigned to user: {$user->username} ({$user->name})");
             } else {

@@ -2077,6 +2077,15 @@ class UserController extends Controller
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;
+
+                                // Special case: if user gets update permission, also give edit permission
+                                // because routes use pranota-kontainer-sewa-edit for both edit and update actions
+                                if ($action === 'update') {
+                                    $editPermission = Permission::where('name', 'pranota-kontainer-sewa-edit')->first();
+                                    if ($editPermission && !in_array($editPermission->id, $permissionIds)) {
+                                        $permissionIds[] = $editPermission->id;
+                                    }
+                                }
                             }
                         }
                     }
