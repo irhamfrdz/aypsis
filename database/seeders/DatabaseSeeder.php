@@ -37,6 +37,7 @@ class DatabaseSeeder extends Seeder
             StockKontainerSeeder::class, // Data sample untuk stock kontainer
             VendorBengkelSeeder::class, // Data sample untuk vendor bengkel
             PerbaikanKontainerSeeder::class, // Data sample untuk perbaikan kontainer
+            PranotaKontainerSewaEditPermissionSeeder::class, // Permission edit untuk pranota kontainer sewa
         ]);
     }
 }
