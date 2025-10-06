@@ -993,7 +993,15 @@
 {{-- Report Dropdown --}}
 @php
     $isReportRoute = Request::routeIs('report.tagihan.*') || Request::routeIs('report.pranota.*') || Request::routeIs('report.pembayaran.*');
-    $hasReportPermission = $user && ($user->can('report-view') || $isAdmin);
+    // Check if user has view permissions for tagihan, pranota, or pembayaran modules
+    $hasReportPermission = $user && (
+        $isAdmin ||
+        $user->can('tagihan-kontainer-view') ||
+        $user->can('pranota-tagihan-view') ||
+        $user->can('pembayaran-pranota-kontainer-view') ||
+        $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
+        $user->can('pembayaran-pranota-cat-view')
+    );
 @endphp
 @if($hasReportPermission)
 <div class="mt-4 mb-4">
