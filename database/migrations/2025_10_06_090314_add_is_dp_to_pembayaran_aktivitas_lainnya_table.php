@@ -4,7 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-class AddIsDpToPembayaranAktivitasLainnyaTable extends Migration
+class AddIsDpToPembayaranAktivitasLainnyaTable90314 extends Migration
 {
     /**
      * Run the migrations.
@@ -14,7 +14,9 @@ class AddIsDpToPembayaranAktivitasLainnyaTable extends Migration
     public function up()
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
-            $table->boolean('is_dp')->default(false)->after('aktivitas_pembayaran');
+            if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'is_dp')) {
+                $table->boolean('is_dp')->default(false)->after('aktivitas_pembayaran');
+            }
         });
     }
 
@@ -26,7 +28,9 @@ class AddIsDpToPembayaranAktivitasLainnyaTable extends Migration
     public function down()
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
-            $table->dropColumn('is_dp');
+            if (Schema::hasColumn('pembayaran_aktivitas_lainnya', 'is_dp')) {
+                $table->dropColumn('is_dp');
+            }
         });
     }
 }
