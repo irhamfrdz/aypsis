@@ -14,11 +14,32 @@ class MasterCoaController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $coas = Coa::orderBy('nomor_akun')->paginate(15);
+        $query = Coa::query();
 
-        return view('master-coa.index', compact('coas'));
+        // Search functionality
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nomor_akun', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('kode_nomor', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('nama_akun', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('tipe_akun', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        // Filter by tipe_akun
+        if ($request->has('tipe_akun') && !empty($request->tipe_akun)) {
+            $query->where('tipe_akun', $request->tipe_akun);
+        }
+
+        $coas = $query->orderBy('nomor_akun')->paginate(15)->appends($request->except('page'));
+
+        // Get unique tipe_akun for filter dropdown
+        $tipeAkuns = Coa::select('tipe_akun')->distinct()->orderBy('tipe_akun')->pluck('tipe_akun');
+
+        return view('master-coa.index', compact('coas', 'tipeAkuns'));
     }
 
     /**
