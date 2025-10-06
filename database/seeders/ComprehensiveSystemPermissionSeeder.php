@@ -10,22 +10,22 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
 {
     /**
      * Comprehensive Permission Seeder untuk Sistem AYPSIS
-     * 
+     *
      * Seeder ini dibuat berdasarkan analisis mendalam dari:
      * - UserController.php (convertMatrixPermissionsToIds method)
      * - routes/web.php (semua middleware 'can:' permissions)
      * - Struktur permission matrix di sistem
-     * 
+     *
      * JANGAN DIJALANKAN - untuk review saja
      */
     public function run()
     {
         DB::beginTransaction();
-        
+
         try {
             // Clear existing permissions (optional - uncomment if needed)
             // Permission::truncate();
-            
+
             // ========================================================================
             // 1. SYSTEM & AUTHENTICATION PERMISSIONS
             // ========================================================================
@@ -34,11 +34,11 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'dashboard', 'description' => 'Akses Dashboard Utama'],
                 ['name' => 'login', 'description' => 'Login ke Sistem'],
                 ['name' => 'logout', 'description' => 'Logout dari Sistem'],
-                
+
                 // Storage permissions
                 ['name' => 'storage-local', 'description' => 'Akses Storage Lokal'],
             ];
-            
+
             // ========================================================================
             // 2. MASTER DATA PERMISSIONS - USER MANAGEMENT
             // ========================================================================
@@ -51,10 +51,10 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-user-print', 'description' => 'Print Data User'],
                 ['name' => 'master-user-export', 'description' => 'Export Data User'],
                 ['name' => 'master-user-import', 'description' => 'Import Data User'],
-                
+
                 // Advanced user management
                 ['name' => 'master-user-bulk-manage', 'description' => 'Manajemen Bulk User'],
-                
+
                 // Dot notation variations (for backward compatibility)
                 ['name' => 'master.user.index', 'description' => 'Index Master User'],
                 ['name' => 'master.user.create', 'description' => 'Create Master User'],
@@ -64,7 +64,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master.user.update', 'description' => 'Update Master User'],
                 ['name' => 'master.user.destroy', 'description' => 'Destroy Master User'],
             ];
-            
+
             // ========================================================================
             // 3. MASTER DATA PERMISSIONS - KARYAWAN MANAGEMENT
             // ========================================================================
@@ -79,10 +79,10 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-karyawan-import', 'description' => 'Import Data Karyawan'],
                 ['name' => 'master-karyawan-template', 'description' => 'Template Data Karyawan'],
                 ['name' => 'master-karyawan-crew-checklist', 'description' => 'Crew Checklist Karyawan'],
-                
+
                 // Module-level permission
                 ['name' => 'master-karyawan', 'description' => 'Akses Master Karyawan'],
-                
+
                 // Dot notation variations
                 ['name' => 'master.karyawan.index', 'description' => 'Index Master Karyawan'],
                 ['name' => 'master.karyawan.create', 'description' => 'Create Master Karyawan'],
@@ -98,7 +98,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master.karyawan.print.single', 'description' => 'Print Single Master Karyawan'],
                 ['name' => 'master.karyawan.template', 'description' => 'Template Master Karyawan'],
             ];
-            
+
             // ========================================================================
             // 4. MASTER DATA PERMISSIONS - KONTAINER MANAGEMENT
             // ========================================================================
@@ -111,10 +111,10 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-kontainer-print', 'description' => 'Print Data Kontainer'],
                 ['name' => 'master-kontainer-export', 'description' => 'Export Data Kontainer'],
                 ['name' => 'master-kontainer-import', 'description' => 'Import Data Kontainer'],
-                
+
                 // Module-level permission
                 ['name' => 'master-kontainer', 'description' => 'Akses Master Kontainer'],
-                
+
                 // Dot notation variations
                 ['name' => 'master.kontainer.index', 'description' => 'Index Master Kontainer'],
                 ['name' => 'master.kontainer.create', 'description' => 'Create Master Kontainer'],
@@ -124,11 +124,11 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master.kontainer.update', 'description' => 'Update Master Kontainer'],
                 ['name' => 'master.kontainer.destroy', 'description' => 'Destroy Master Kontainer'],
             ];
-            
+
             // ========================================================================
             // 5. MASTER DATA PERMISSIONS - OTHER MASTERS
             // ========================================================================
-            
+
             // Master Tujuan
             $masterTujuanPermissions = [
                 ['name' => 'master-tujuan-view', 'description' => 'Melihat Data Tujuan'],
@@ -138,7 +138,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-tujuan-print', 'description' => 'Print Data Tujuan'],
                 ['name' => 'master-tujuan-export', 'description' => 'Export Data Tujuan'],
                 ['name' => 'master-tujuan', 'description' => 'Akses Master Tujuan'],
-                
+
                 ['name' => 'master.tujuan.index', 'description' => 'Index Master Tujuan'],
                 ['name' => 'master.tujuan.create', 'description' => 'Create Master Tujuan'],
                 ['name' => 'master.tujuan.store', 'description' => 'Store Master Tujuan'],
@@ -147,7 +147,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master.tujuan.update', 'description' => 'Update Master Tujuan'],
                 ['name' => 'master.tujuan.destroy', 'description' => 'Destroy Master Tujuan'],
             ];
-            
+
             // Master Kegiatan
             $masterKegiatanPermissions = [
                 ['name' => 'master-kegiatan-view', 'description' => 'Melihat Data Kegiatan'],
@@ -157,7 +157,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-kegiatan-print', 'description' => 'Print Data Kegiatan'],
                 ['name' => 'master-kegiatan-export', 'description' => 'Export Data Kegiatan'],
                 ['name' => 'master-kegiatan', 'description' => 'Akses Master Kegiatan'],
-                
+
                 ['name' => 'master.kegiatan.index', 'description' => 'Index Master Kegiatan'],
                 ['name' => 'master.kegiatan.create', 'description' => 'Create Master Kegiatan'],
                 ['name' => 'master.kegiatan.store', 'description' => 'Store Master Kegiatan'],
@@ -168,7 +168,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master.kegiatan.template', 'description' => 'Template Master Kegiatan'],
                 ['name' => 'master.kegiatan.import', 'description' => 'Import Master Kegiatan'],
             ];
-            
+
             // Master Permission
             $masterPermissionPermissions = [
                 ['name' => 'master-permission-view', 'description' => 'Melihat Data Permission'],
@@ -178,7 +178,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-permission-print', 'description' => 'Print Data Permission'],
                 ['name' => 'master-permission-export', 'description' => 'Export Data Permission'],
                 ['name' => 'master-permission', 'description' => 'Akses Master Permission'],
-                
+
                 ['name' => 'master.permission.index', 'description' => 'Index Master Permission'],
                 ['name' => 'master.permission.create', 'description' => 'Create Master Permission'],
                 ['name' => 'master.permission.store', 'description' => 'Store Master Permission'],
@@ -187,7 +187,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master.permission.update', 'description' => 'Update Master Permission'],
                 ['name' => 'master.permission.destroy', 'description' => 'Destroy Master Permission'],
             ];
-            
+
             // Master Mobil
             $masterMobilPermissions = [
                 ['name' => 'master-mobil-view', 'description' => 'Melihat Data Mobil'],
@@ -197,7 +197,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-mobil-print', 'description' => 'Print Data Mobil'],
                 ['name' => 'master-mobil-export', 'description' => 'Export Data Mobil'],
                 ['name' => 'master-mobil', 'description' => 'Akses Master Mobil'],
-                
+
                 ['name' => 'master.mobil.index', 'description' => 'Index Master Mobil'],
                 ['name' => 'master.mobil.create', 'description' => 'Create Master Mobil'],
                 ['name' => 'master.mobil.store', 'description' => 'Store Master Mobil'],
@@ -206,7 +206,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master.mobil.update', 'description' => 'Update Master Mobil'],
                 ['name' => 'master.mobil.destroy', 'description' => 'Destroy Master Mobil'],
             ];
-            
+
             // Master Bank
             $masterBankPermissions = [
                 ['name' => 'master-bank-view', 'description' => 'Melihat Data Bank'],
@@ -217,7 +217,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-bank-export', 'description' => 'Export Data Bank'],
                 ['name' => 'master-bank', 'description' => 'Akses Master Bank'],
             ];
-            
+
             // Master Divisi
             $masterDivisiPermissions = [
                 ['name' => 'master-divisi-view', 'description' => 'Melihat Data Divisi'],
@@ -228,7 +228,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-divisi-export', 'description' => 'Export Data Divisi'],
                 ['name' => 'master-divisi', 'description' => 'Akses Master Divisi'],
             ];
-            
+
             // Master Pajak
             $masterPajakPermissions = [
                 ['name' => 'master-pajak-view', 'description' => 'Melihat Data Pajak'],
@@ -239,7 +239,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-pajak-export', 'description' => 'Export Data Pajak'],
                 ['name' => 'master-pajak', 'description' => 'Akses Master Pajak'],
             ];
-            
+
             // Master Cabang
             $masterCabangPermissions = [
                 ['name' => 'master-cabang-view', 'description' => 'Melihat Data Cabang'],
@@ -250,7 +250,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-cabang-export', 'description' => 'Export Data Cabang'],
                 ['name' => 'master-cabang', 'description' => 'Akses Master Cabang'],
             ];
-            
+
             // Master COA
             $masterCoaPermissions = [
                 ['name' => 'master-coa-view', 'description' => 'Melihat Data COA'],
@@ -261,7 +261,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-coa-export', 'description' => 'Export Data COA'],
                 ['name' => 'master-coa', 'description' => 'Akses Master COA'],
             ];
-            
+
             // Master Pekerjaan
             $masterPekerjaanPermissions = [
                 ['name' => 'master-pekerjaan-view', 'description' => 'Melihat Data Pekerjaan'],
@@ -273,7 +273,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-pekerjaan-export', 'description' => 'Export Data Pekerjaan'],
                 ['name' => 'master-pekerjaan', 'description' => 'Akses Master Pekerjaan'],
             ];
-            
+
             // Master Vendor Bengkel
             $masterVendorBengkelPermissions = [
                 ['name' => 'master-vendor-bengkel-view', 'description' => 'Melihat Data Vendor Bengkel'],
@@ -283,14 +283,14 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-vendor-bengkel-print', 'description' => 'Print Data Vendor Bengkel'],
                 ['name' => 'master-vendor-bengkel-export', 'description' => 'Export Data Vendor Bengkel'],
                 ['name' => 'master-vendor-bengkel', 'description' => 'Akses Master Vendor Bengkel'],
-                
+
                 // Dot notation for special handling in UserController
                 ['name' => 'master-vendor-bengkel.view', 'description' => 'View Vendor Bengkel (Dot)'],
                 ['name' => 'master-vendor-bengkel.create', 'description' => 'Create Vendor Bengkel (Dot)'],
                 ['name' => 'master-vendor-bengkel.update', 'description' => 'Update Vendor Bengkel (Dot)'],
                 ['name' => 'master-vendor-bengkel.delete', 'description' => 'Delete Vendor Bengkel (Dot)'],
             ];
-            
+
             // Master Kode Nomor
             $masterKodeNomorPermissions = [
                 ['name' => 'master-kode-nomor-view', 'description' => 'Melihat Data Kode Nomor'],
@@ -301,7 +301,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-kode-nomor-export', 'description' => 'Export Data Kode Nomor'],
                 ['name' => 'master-kode-nomor', 'description' => 'Akses Master Kode Nomor'],
             ];
-            
+
             // Master Stock Kontainer
             $masterStockKontainerPermissions = [
                 ['name' => 'master-stock-kontainer-view', 'description' => 'Melihat Data Stock Kontainer'],
@@ -312,7 +312,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-stock-kontainer-export', 'description' => 'Export Data Stock Kontainer'],
                 ['name' => 'master-stock-kontainer', 'description' => 'Akses Master Stock Kontainer'],
             ];
-            
+
             // Master Tipe Akun
             $masterTipeAkunPermissions = [
                 ['name' => 'master-tipe-akun-view', 'description' => 'Melihat Data Tipe Akun'],
@@ -324,7 +324,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-tipe-akun-export', 'description' => 'Export Data Tipe Akun'],
                 ['name' => 'master-tipe-akun', 'description' => 'Akses Master Tipe Akun'],
             ];
-            
+
             // Master Nomor Terakhir
             $masterNomorTerakhirPermissions = [
                 ['name' => 'master-nomor-terakhir-view', 'description' => 'Melihat Data Nomor Terakhir'],
@@ -335,7 +335,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-nomor-terakhir-export', 'description' => 'Export Data Nomor Terakhir'],
                 ['name' => 'master-nomor-terakhir', 'description' => 'Akses Master Nomor Terakhir'],
             ];
-            
+
             // Master Pricelist Sewa Kontainer
             $masterPricelistSewaKontainerPermissions = [
                 ['name' => 'master-pricelist-sewa-kontainer-view', 'description' => 'Melihat Data Pricelist Sewa Kontainer'],
@@ -346,7 +346,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-pricelist-sewa-kontainer-export', 'description' => 'Export Data Pricelist Sewa Kontainer'],
                 ['name' => 'master-pricelist-sewa-kontainer', 'description' => 'Akses Master Pricelist Sewa Kontainer'],
             ];
-            
+
             // Master Pricelist Cat
             $masterPricelistCatPermissions = [
                 ['name' => 'master-pricelist-cat-view', 'description' => 'Melihat Data Pricelist Cat'],
@@ -357,14 +357,14 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'master-pricelist-cat-export', 'description' => 'Export Data Pricelist Cat'],
                 ['name' => 'master-pricelist-cat', 'description' => 'Akses Master Pricelist Cat'],
             ];
-            
+
             // ========================================================================
             // 6. BUSINESS PROCESS PERMISSIONS - PERMOHONAN
             // ========================================================================
             $permohonanPermissions = [
                 // Simple permission (legacy)
                 ['name' => 'permohonan', 'description' => 'Akses Permohonan'],
-                
+
                 // Memo-specific permissions
                 ['name' => 'permohonan-memo-view', 'description' => 'Melihat Permohonan Memo'],
                 ['name' => 'permohonan-memo-create', 'description' => 'Membuat Permohonan Memo'],
@@ -372,18 +372,18 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'permohonan-memo-delete', 'description' => 'Menghapus Permohonan Memo'],
                 ['name' => 'permohonan-memo-print', 'description' => 'Print Permohonan Memo'],
                 ['name' => 'permohonan-memo-export', 'description' => 'Export Permohonan Memo'],
-                
+
                 // General permohonan actions
                 ['name' => 'permohonan-create', 'description' => 'Membuat Permohonan'],
                 ['name' => 'permohonan-view', 'description' => 'Melihat Permohonan'],
                 ['name' => 'permohonan-edit', 'description' => 'Edit Permohonan'],
                 ['name' => 'permohonan-delete', 'description' => 'Hapus Permohonan'],
             ];
-            
+
             // ========================================================================
             // 7. BUSINESS PROCESS PERMISSIONS - PRANOTA & TAGIHAN
             // ========================================================================
-            
+
             // Pranota Supir
             $pranotaSupirPermissions = [
                 ['name' => 'pranota-supir-view', 'description' => 'Melihat Pranota Supir'],
@@ -393,7 +393,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pranota-supir-print', 'description' => 'Print Pranota Supir'],
                 ['name' => 'pranota-supir-export', 'description' => 'Export Pranota Supir'],
             ];
-            
+
             // Tagihan Kontainer
             $tagihanKontainerPermissions = [
                 ['name' => 'tagihan-kontainer-view', 'description' => 'Melihat Tagihan Kontainer'],
@@ -403,7 +403,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'tagihan-kontainer-print', 'description' => 'Print Tagihan Kontainer'],
                 ['name' => 'tagihan-kontainer-export', 'description' => 'Export Tagihan Kontainer'],
             ];
-            
+
             // Tagihan Kontainer Sewa (from routes analysis)
             $tagihanKontainerSewaPermissions = [
                 ['name' => 'tagihan-kontainer-sewa-index', 'description' => 'Index Tagihan Kontainer Sewa'],
@@ -414,11 +414,11 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'tagihan-kontainer-sewa-delete', 'description' => 'Menghapus Tagihan Kontainer Sewa'],
                 ['name' => 'tagihan-kontainer-sewa-print', 'description' => 'Print Tagihan Kontainer Sewa'],
                 ['name' => 'tagihan-kontainer-sewa-export', 'description' => 'Export Tagihan Kontainer Sewa'],
-                
+
                 // Alternative naming patterns
                 ['name' => 'tagihan-kontainer-sewa-edit', 'description' => 'Edit Tagihan Kontainer Sewa'],
             ];
-            
+
             // Tagihan CAT
             $tagihanCatPermissions = [
                 ['name' => 'tagihan-cat-view', 'description' => 'Melihat Tagihan CAT'],
@@ -428,7 +428,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'tagihan-cat-print', 'description' => 'Print Tagihan CAT'],
                 ['name' => 'tagihan-cat-export', 'description' => 'Export Tagihan CAT'],
             ];
-            
+
             // Tagihan Perbaikan Kontainer
             $tagihanPerbaikanKontainerPermissions = [
                 ['name' => 'tagihan-perbaikan-kontainer-view', 'description' => 'Melihat Tagihan Perbaikan Kontainer'],
@@ -439,7 +439,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'tagihan-perbaikan-kontainer-print', 'description' => 'Print Tagihan Perbaikan Kontainer'],
                 ['name' => 'tagihan-perbaikan-kontainer-export', 'description' => 'Export Tagihan Perbaikan Kontainer'],
             ];
-            
+
             // Pranota CAT
             $pranotaCatPermissions = [
                 ['name' => 'pranota-cat-view', 'description' => 'Melihat Pranota CAT'],
@@ -449,7 +449,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pranota-cat-print', 'description' => 'Print Pranota CAT'],
                 ['name' => 'pranota-cat-export', 'description' => 'Export Pranota CAT'],
             ];
-            
+
             // Pranota Kontainer Sewa
             $pranotaKontainerSewaPermissions = [
                 ['name' => 'pranota-kontainer-sewa-view', 'description' => 'Melihat Pranota Kontainer Sewa'],
@@ -459,7 +459,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pranota-kontainer-sewa-print', 'description' => 'Print Pranota Kontainer Sewa'],
                 ['name' => 'pranota-kontainer-sewa-export', 'description' => 'Export Pranota Kontainer Sewa'],
             ];
-            
+
             // Pranota Perbaikan Kontainer
             $pranotaPerbaikanKontainerPermissions = [
                 ['name' => 'pranota-perbaikan-kontainer-view', 'description' => 'Melihat Pranota Perbaikan Kontainer'],
@@ -469,7 +469,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pranota-perbaikan-kontainer-print', 'description' => 'Print Pranota Perbaikan Kontainer'],
                 ['name' => 'pranota-perbaikan-kontainer-export', 'description' => 'Export Pranota Perbaikan Kontainer'],
             ];
-            
+
             // General Pranota permissions
             $pranotaGeneralPermissions = [
                 ['name' => 'pranota-view', 'description' => 'Melihat Pranota'],
@@ -479,11 +479,11 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pranota-print', 'description' => 'Print Pranota'],
                 ['name' => 'pranota-export', 'description' => 'Export Pranota'],
             ];
-            
+
             // ========================================================================
             // 8. PAYMENT PERMISSIONS - PEMBAYARAN
             // ========================================================================
-            
+
             // Pembayaran Pranota Supir
             $pembayaranPranotaSupirPermissions = [
                 ['name' => 'pembayaran-pranota-supir-view', 'description' => 'Melihat Pembayaran Pranota Supir'],
@@ -493,7 +493,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pembayaran-pranota-supir-print', 'description' => 'Print Pembayaran Pranota Supir'],
                 ['name' => 'pembayaran-pranota-supir-export', 'description' => 'Export Pembayaran Pranota Supir'],
             ];
-            
+
             // Pembayaran Pranota Kontainer
             $pembayaranPranotaKontainerPermissions = [
                 ['name' => 'pembayaran-pranota-kontainer-view', 'description' => 'Melihat Pembayaran Pranota Kontainer'],
@@ -503,7 +503,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pembayaran-pranota-kontainer-print', 'description' => 'Print Pembayaran Pranota Kontainer'],
                 ['name' => 'pembayaran-pranota-kontainer-export', 'description' => 'Export Pembayaran Pranota Kontainer'],
             ];
-            
+
             // Pembayaran Pranota CAT
             $pembayaranPranotaCatPermissions = [
                 ['name' => 'pembayaran-pranota-cat-view', 'description' => 'Melihat Pembayaran Pranota CAT'],
@@ -513,7 +513,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pembayaran-pranota-cat-print', 'description' => 'Print Pembayaran Pranota CAT'],
                 ['name' => 'pembayaran-pranota-cat-export', 'description' => 'Export Pembayaran Pranota CAT'],
             ];
-            
+
             // Pembayaran Pranota Perbaikan Kontainer
             $pembayaranPranotaPerbaikanKontainerPermissions = [
                 ['name' => 'pembayaran-pranota-perbaikan-kontainer-view', 'description' => 'Melihat Pembayaran Pranota Perbaikan Kontainer'],
@@ -523,7 +523,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pembayaran-pranota-perbaikan-kontainer-print', 'description' => 'Print Pembayaran Pranota Perbaikan Kontainer'],
                 ['name' => 'pembayaran-pranota-perbaikan-kontainer-export', 'description' => 'Export Pembayaran Pranota Perbaikan Kontainer'],
             ];
-            
+
             // ========================================================================
             // 9. REPAIR & MAINTENANCE PERMISSIONS - PERBAIKAN
             // ========================================================================
@@ -535,7 +535,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'perbaikan-kontainer-print', 'description' => 'Print Perbaikan Kontainer'],
                 ['name' => 'perbaikan-kontainer-export', 'description' => 'Export Perbaikan Kontainer'],
             ];
-            
+
             // ========================================================================
             // 10. APPROVAL SYSTEM PERMISSIONS
             // ========================================================================
@@ -549,22 +549,22 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'approval-riwayat', 'description' => 'Riwayat Approval'],
                 ['name' => 'approval-print', 'description' => 'Print Approval'],
                 ['name' => 'approval-export', 'description' => 'Export Approval'],
-                
+
                 // Approval Tugas Level 1
                 ['name' => 'approval-tugas-1.view', 'description' => 'View Approval Tugas Level 1'],
                 ['name' => 'approval-tugas-1.approve', 'description' => 'Approve Tugas Level 1'],
-                
+
                 // Approval Tugas Level 2
                 ['name' => 'approval-tugas-2.view', 'description' => 'View Approval Tugas Level 2'],
                 ['name' => 'approval-tugas-2.approve', 'description' => 'Approve Tugas Level 2'],
-                
+
                 // User Approval System
                 ['name' => 'user-approval', 'description' => 'Sistem Persetujuan User'],
                 ['name' => 'user-approval-view', 'description' => 'Melihat User Approval'],
                 ['name' => 'user-approval-approve', 'description' => 'Approve User'],
                 ['name' => 'user-approval-reject', 'description' => 'Reject User'],
             ];
-            
+
             // ========================================================================
             // 11. PROFILE & USER MANAGEMENT PERMISSIONS
             // ========================================================================
@@ -576,7 +576,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'profile-delete', 'description' => 'Hapus Profil'],
                 ['name' => 'profile-destroy', 'description' => 'Destroy Profil'],
             ];
-            
+
             // ========================================================================
             // 12. DRIVER SPECIFIC PERMISSIONS - SUPIR
             // ========================================================================
@@ -588,7 +588,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'supir-update', 'description' => 'Update Data Supir'],
                 ['name' => 'supir-delete', 'description' => 'Hapus Data Supir'],
             ];
-            
+
             // ========================================================================
             // 13. ADMIN SYSTEM PERMISSIONS
             // ========================================================================
@@ -601,7 +601,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'admin-update', 'description' => 'Update Admin Data'],
                 ['name' => 'admin-delete', 'description' => 'Delete Admin Data'],
             ];
-            
+
             // ========================================================================
             // 14. SPECIAL SYSTEM PERMISSIONS (from UserController analysis)
             // ========================================================================
@@ -611,13 +611,13 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'pembayaran-pranota-tagihan-kontainer.create', 'description' => 'Create Pembayaran Pranota Tagihan Kontainer'],
                 ['name' => 'pembayaran-pranota-tagihan-kontainer.update', 'description' => 'Update Pembayaran Pranota Tagihan Kontainer'],
                 ['name' => 'pembayaran-pranota-tagihan-kontainer.delete', 'description' => 'Delete Pembayaran Pranota Tagihan Kontainer'],
-                
+
                 // Perbaikan Kontainer (dot notation from UserController)
                 ['name' => 'perbaikan-kontainer.view', 'description' => 'View Perbaikan Kontainer (Dot)'],
                 ['name' => 'perbaikan-kontainer.create', 'description' => 'Create Perbaikan Kontainer (Dot)'],
                 ['name' => 'perbaikan-kontainer.update', 'description' => 'Update Perbaikan Kontainer (Dot)'],
                 ['name' => 'perbaikan-kontainer.delete', 'description' => 'Delete Perbaikan Kontainer (Dot)'],
-                
+
                 // Tagihan Kontainer Sewa (dot notation)
                 ['name' => 'tagihan-kontainer-sewa.view', 'description' => 'View Tagihan Kontainer Sewa (Dot)'],
                 ['name' => 'tagihan-kontainer-sewa.create', 'description' => 'Create Tagihan Kontainer Sewa (Dot)'],
@@ -626,7 +626,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'tagihan-kontainer-sewa.group_create', 'description' => 'Group Create Tagihan Kontainer Sewa'],
                 ['name' => 'tagihan-kontainer-sewa.group_edit', 'description' => 'Group Edit Tagihan Kontainer Sewa'],
                 ['name' => 'tagihan-kontainer-sewa.group_delete', 'description' => 'Group Delete Tagihan Kontainer Sewa'],
-                
+
                 // Admin (dot notation from UserController)
                 ['name' => 'admin.debug', 'description' => 'Admin Debug (Dot)'],
                 ['name' => 'admin.features', 'description' => 'Admin Features (Dot)'],
@@ -634,17 +634,17 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'admin.user-approval.create', 'description' => 'Admin User Approval Create'],
                 ['name' => 'admin.user-approval.update', 'description' => 'Admin User Approval Update'],
                 ['name' => 'admin.user-approval.delete', 'description' => 'Admin User Approval Delete'],
-                
+
                 // Profile (dot notation from UserController)
                 ['name' => 'profile.show', 'description' => 'Profile Show (Dot)'],
                 ['name' => 'profile.edit', 'description' => 'Profile Edit (Dot)'],
                 ['name' => 'profile.update', 'description' => 'Profile Update (Dot)'],
                 ['name' => 'profile.destroy', 'description' => 'Profile Destroy (Dot)'],
-                
+
                 // Supir (dot notation from UserController)
                 ['name' => 'supir.dashboard', 'description' => 'Supir Dashboard (Dot)'],
                 ['name' => 'supir.checkpoint', 'description' => 'Supir Checkpoint (Dot)'],
-                
+
                 // Approval (dot notation from UserController)
                 ['name' => 'approval.dashboard', 'description' => 'Approval Dashboard (Dot)'],
                 ['name' => 'approval.mass_process', 'description' => 'Approval Mass Process (Dot)'],
@@ -655,7 +655,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 ['name' => 'approval.print', 'description' => 'Approval Print (Dot)'],
                 ['name' => 'approval.export', 'description' => 'Approval Export (Dot)'],
             ];
-            
+
             // ========================================================================
             // COMBINE ALL PERMISSIONS
             // ========================================================================
@@ -702,17 +702,17 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                 $adminPermissions,
                 $specialSystemPermissions
             );
-            
+
             // ========================================================================
             // INSERT PERMISSIONS
             // ========================================================================
             $this->command->info('Creating ' . count($allPermissions) . ' permissions...');
-            
+
             $insertedCount = 0;
             foreach ($allPermissions as $permission) {
                 // Check if permission already exists
                 $existingPermission = Permission::where('name', $permission['name'])->first();
-                
+
                 if (!$existingPermission) {
                     Permission::create([
                         'name' => $permission['name'],
@@ -728,22 +728,22 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
                     }
                 }
             }
-            
+
             DB::commit();
-            
+
             $this->command->info("✅ Successfully processed {$insertedCount} new permissions");
             $this->command->info("📊 Total permissions in system: " . Permission::count());
-            
+
             // Show summary by category
             $this->showPermissionSummary();
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             $this->command->error('❌ Error creating permissions: ' . $e->getMessage());
             throw $e;
         }
     }
-    
+
     /**
      * Show permission summary by category
      */
@@ -751,7 +751,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
     {
         $this->command->info("\n📋 Permission Summary by Category:");
         $this->command->info("==========================================");
-        
+
         $categories = [
             'System' => ['dashboard', 'login', 'logout', 'storage'],
             'Master User' => ['master-user', 'master.user'],
@@ -768,7 +768,7 @@ class ComprehensiveSystemPermissionSeeder extends Seeder
             'Supir' => ['supir'],
             'Admin' => ['admin'],
         ];
-        
+
         foreach ($categories as $category => $patterns) {
             $count = 0;
             foreach ($patterns as $pattern) {

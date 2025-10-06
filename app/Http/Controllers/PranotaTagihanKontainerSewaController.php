@@ -60,6 +60,8 @@ class PranotaTagihanKontainerSewaController extends Controller
             'tagihan_kontainer_sewa_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id',
             'keterangan' => 'nullable|string|max:255',
             'supplier' => 'nullable|string|max:255',
+            'no_invoice_vendor' => 'nullable|string|max:255',
+            'tgl_invoice_vendor' => 'nullable|date',
             'due_date' => 'nullable|date|after:today'
         ]);
 
@@ -94,6 +96,8 @@ class PranotaTagihanKontainerSewaController extends Controller
                 'total_amount' => $tagihanItems->sum('grand_total'),
                 'keterangan' => $request->keterangan ?? 'Pranota kontainer sewa untuk ' . count($request->tagihan_kontainer_sewa_ids) . ' tagihan',
                 'supplier' => $request->supplier,
+                'no_invoice_vendor' => $request->no_invoice_vendor,
+                'tgl_invoice_vendor' => $request->tgl_invoice_vendor,
                 'status' => 'unpaid',
                 'tagihan_kontainer_sewa_ids' => $request->tagihan_kontainer_sewa_ids,
                 'jumlah_tagihan' => count($request->tagihan_kontainer_sewa_ids),
@@ -183,24 +187,11 @@ class PranotaTagihanKontainerSewaController extends Controller
                 'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
             ]);
 
-            // Create corresponding Pranota record for backward compatibility with views
-            $legacyPranota = \App\Models\Pranota::create([
-                'no_invoice' => $noInvoice,
-                'total_amount' => $tagihanItems->sum('grand_total'),
-                'keterangan' => 'Pranota bulk kontainer sewa untuk ' . count($request->selected_ids) . ' tagihan',
-                'status' => 'unpaid',
-                'tagihan_ids' => $request->selected_ids,
-                'jumlah_tagihan' => count($request->selected_ids),
-                'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
-                'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
-            ]);
-
             // Update tagihan kontainer sewa items status and pranota relationship
             DaftarTagihanKontainerSewa::whereIn('id', $request->selected_ids)
                 ->update([
-                    'status' => 'paid',
                     'status_pranota' => 'included',
-                    'pranota_id' => $legacyPranota->id
+                    'pranota_id' => $pranota->id
                 ]);
 
             DB::commit();
@@ -772,7 +763,7 @@ class PranotaTagihanKontainerSewaController extends Controller
             ]);
 
             if ($imported > 0) {
-                return redirect()->route('pranota.index')->with('success', $message);
+                return redirect()->route('pranota-kontainer-sewa.index')->with('success', $message);
             } else {
                 return redirect()->back()->with('error', 'Tidak ada data yang berhasil diimport. ' . $message);
             }

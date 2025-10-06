@@ -1,0 +1,35 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    /**
+     * Run the migrations.
+     */
+    public function up(): void
+    {
+        Schema::table('stock_kontainers', function (Blueprint $table) {
+            // Check if columns exist before dropping them
+            if (Schema::hasColumn('stock_kontainers', 'kondisi')) {
+                $table->dropColumn('kondisi');
+            }
+            if (Schema::hasColumn('stock_kontainers', 'lokasi')) {
+                $table->dropColumn('lokasi');
+            }
+        });
+    }
+
+    /**
+     * Reverse the migrations.
+     */
+    public function down(): void
+    {
+        Schema::table('stock_kontainers', function (Blueprint $table) {
+            $table->string('kondisi')->default('baik')->after('keterangan');
+            $table->string('lokasi')->nullable()->after('status');
+        });
+    }
+};

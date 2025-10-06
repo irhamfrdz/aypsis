@@ -186,9 +186,33 @@
                                     class="{{ $inputClasses }}" value="0">
                             </div>
                             <div>
-                                <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir</label>
+                                <label for="total_tagihan_setelah_penyesuaian" class="{{ $labelClasses }}">Total Akhir <span id="dpLabel" class="text-green-600 hidden">(- DP)</span></label>
                                 <input type="text" name="total_tagihan_setelah_penyesuaian" id="total_tagihan_setelah_penyesuaian"
                                     class="{{ $readonlyInputClasses }} font-bold text-gray-800 bg-gray-100" readonly value="0">
+                            </div>
+                        </div>
+
+                        <!-- Detail Perhitungan DP -->
+                        <div id="dpCalculationDetail" class="hidden mt-3 p-2 bg-green-50 border border-green-200 rounded">
+                            <div class="text-xs text-gray-700">
+                                <div class="font-medium mb-1">Detail Perhitungan:</div>
+                                <div class="flex justify-between">
+                                    <span>Total Tagihan:</span>
+                                    <span id="detailTagihan">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span>Penyesuaian:</span>
+                                    <span id="detailPenyesuaian">Rp 0</span>
+                                </div>
+                                <div class="flex justify-between text-red-600">
+                                    <span>DP Terpotong:</span>
+                                    <span id="detailDPAmount">- Rp 0</span>
+                                </div>
+                                <hr class="my-1">
+                                <div class="flex justify-between font-semibold">
+                                    <span>Total yang Harus Dibayar:</span>
+                                    <span id="detailTotalAkhir">Rp 0</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -214,13 +238,105 @@
                 </div>
             </div>
 
-            {{-- Submit Button --}}
-            <div class="flex justify-end">
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
-                    Simpan Pembayaran
-                </button>
+            {{-- DP & Submit Buttons --}}
+            <div class="flex justify-between items-center">
+                <div>
+                    <!-- Tombol Pilih DP -->
+                    <button type="button" id="btnPilihDP" class="inline-flex items-center py-2 px-4 border border-yellow-300 shadow-sm text-sm font-medium rounded-md text-yellow-700 bg-yellow-50 hover:bg-yellow-100 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors">
+                        <i class="fas fa-money-bill-wave mr-2"></i>
+                        Pilih DP
+                    </button>
+
+                    <!-- Info DP yang dipilih -->
+                    <div id="selectedDPInfo" class="hidden mt-2 p-2 bg-green-50 border border-green-200 rounded-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center text-sm text-green-800">
+                                <i class="fas fa-check-circle mr-2"></i>
+                                <span id="selectedDPText">DP terpilih: </span>
+                            </div>
+                            <button type="button" id="clearDPSelection" class="text-red-600 hover:text-red-800 text-xs">
+                                <i class="fas fa-times"></i> Hapus
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div>
+                    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                        Simpan Pembayaran
+                    </button>
+                </div>
             </div>
+
+            <!-- Hidden input untuk menyimpan DP yang dipilih -->
+            <input type="hidden" id="selectedDPId" name="selected_dp_id" value="">
+            <input type="hidden" id="selectedDPAmount" name="selected_dp_amount" value="">
         </form>
+    </div>
+
+    <!-- Modal Pilih DP -->
+    <div id="dpModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+        <div class="relative top-20 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+            <div class="mt-3">
+                <!-- Header Modal -->
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Pilih Pembayaran DP</h3>
+                    <button type="button" id="closeDPModal" class="text-gray-400 hover:text-gray-600">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+
+                <!-- Loading -->
+                <div id="dpLoading" class="text-center py-8">
+                    <i class="fas fa-spinner fa-spin text-2xl text-gray-400 mb-2"></i>
+                    <p class="text-gray-600">Memuat data DP...</p>
+                </div>
+
+                <!-- Content -->
+                <div id="dpContent" class="hidden">
+                    <!-- Search -->
+                    <div class="mb-4">
+                        <input type="text" id="dpSearch" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500" placeholder="Cari berdasarkan nomor pembayaran atau aktivitas...">
+                    </div>
+
+                    <!-- Table -->
+                    <div class="overflow-x-auto max-h-96">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pilih</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktivitas</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dpTableBody" class="bg-white divide-y divide-gray-200">
+                                <!-- Data akan diisi oleh JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- No Data -->
+                    <div id="dpNoData" class="hidden text-center py-8">
+                        <i class="fas fa-inbox text-4xl text-gray-300 mb-2"></i>
+                        <p class="text-gray-600">Tidak ada pembayaran DP yang tersedia</p>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="mt-4 flex justify-end">
+                    <button type="button" id="cancelDPSelection" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-2">
+                        Batal
+                    </button>
+                    <button type="button" id="confirmDPSelection" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-gray-300 disabled:cursor-not-allowed" disabled>
+                        Pilih DP
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
 {{-- Script --}}
@@ -287,8 +403,22 @@
         function updateTotalSetelahPenyesuaian() {
             const totalPembayaran = parseFloat(totalPembayaranInput.value.replace(/\./g, '').replace(',', '.')) || 0;
             const totalPenyesuaian = parseFloat(totalPenyesuaianInput.value) || 0;
-            const totalAkhir = totalPembayaran + totalPenyesuaian;
+            const dpAmount = parseFloat(document.getElementById('selectedDPAmount').value) || 0;
+
+            // Total = (Total Pembayaran + Penyesuaian) - DP Amount
+            const totalAkhir = (totalPembayaran + totalPenyesuaian) - dpAmount;
             totalSetelahInput.value = totalAkhir.toLocaleString('id-ID');
+
+            // Update detail perhitungan jika ada DP
+            if (dpAmount > 0) {
+                document.getElementById('detailTagihan').textContent = 'Rp ' + totalPembayaran.toLocaleString('id-ID');
+                document.getElementById('detailPenyesuaian').textContent = 'Rp ' + totalPenyesuaian.toLocaleString('id-ID');
+                document.getElementById('detailDPAmount').textContent = '- Rp ' + dpAmount.toLocaleString('id-ID');
+                document.getElementById('detailTotalAkhir').textContent = 'Rp ' + totalAkhir.toLocaleString('id-ID');
+                document.getElementById('dpCalculationDetail').classList.remove('hidden');
+            } else {
+                document.getElementById('dpCalculationDetail').classList.add('hidden');
+            }
         }
 
         pranotaCheckboxes.forEach(function(checkbox) {
@@ -391,6 +521,203 @@
                 alert('⚠️ Gagal Membuat Pembayaran!\n\n{{ session('error') }}');
             }, 500);
         @endif
+
+        // ==================== DP MODAL FUNCTIONALITY ====================
+        let dpData = [];
+        let selectedDP = null;
+
+        // Open DP Modal
+        document.getElementById('btnPilihDP').addEventListener('click', function() {
+            openDPModal();
+        });
+
+        // Close DP Modal
+        document.getElementById('closeDPModal').addEventListener('click', closeDPModal);
+        document.getElementById('cancelDPSelection').addEventListener('click', closeDPModal);
+
+        // Confirm DP Selection
+        document.getElementById('confirmDPSelection').addEventListener('click', function() {
+            if (selectedDP) {
+                selectDP(selectedDP);
+                closeDPModal();
+            }
+        });
+
+        // DP Search
+        document.getElementById('dpSearch').addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            filterDPTable(searchTerm);
+        });
+
+        // Clear DP Selection
+        document.getElementById('clearDPSelection').addEventListener('click', function() {
+            clearDPSelection();
+        });
+
+        // Functions
+        function openDPModal() {
+            document.getElementById('dpModal').classList.remove('hidden');
+            document.getElementById('dpLoading').classList.remove('hidden');
+            document.getElementById('dpContent').classList.add('hidden');
+            loadDPData();
+        }
+
+        function closeDPModal() {
+            document.getElementById('dpModal').classList.add('hidden');
+            selectedDP = null;
+            document.getElementById('confirmDPSelection').disabled = true;
+        }
+
+        function loadDPData() {
+            fetch('{{ route("pembayaran-pranota-kontainer.get-available-dp") }}')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('dpLoading').classList.add('hidden');
+
+                    if (data.success) {
+                        dpData = data.data;
+                        if (dpData.length > 0) {
+                            renderDPTable(dpData);
+                            document.getElementById('dpContent').classList.remove('hidden');
+                        } else {
+                            document.getElementById('dpNoData').classList.remove('hidden');
+                        }
+                    } else {
+                        alert('Error loading DP data: ' + data.message);
+                        closeDPModal();
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('dpLoading').classList.add('hidden');
+                    alert('Error loading DP data');
+                    closeDPModal();
+                });
+        }
+
+        function renderDPTable(data) {
+            const tbody = document.getElementById('dpTableBody');
+            tbody.innerHTML = '';
+
+            data.forEach(dp => {
+                const row = document.createElement('tr');
+                row.className = 'hover:bg-gray-50 cursor-pointer';
+                row.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap">
+                        <input type="radio" name="selectedDP" value="${dp.id}" class="text-indigo-600 focus:ring-indigo-500">
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${dp.nomor_pembayaran}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dp.tanggal_pembayaran}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-semibold text-green-600">${dp.total_formatted}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dp.bank_name}</td>
+                    <td class="px-6 py-4 text-sm text-gray-500">
+                        <div class="max-w-xs truncate" title="${dp.aktivitas_pembayaran}">
+                            ${dp.aktivitas_pembayaran.substring(0, 50)}${dp.aktivitas_pembayaran.length > 50 ? '...' : ''}
+                        </div>
+                    </td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${dp.creator_name}</td>
+                `;
+
+                // Add click event to select radio
+                row.addEventListener('click', function() {
+                    const radio = row.querySelector('input[type="radio"]');
+                    radio.checked = true;
+                    selectedDP = dp;
+                    document.getElementById('confirmDPSelection').disabled = false;
+                });
+
+                // Add change event to radio
+                row.querySelector('input[type="radio"]').addEventListener('change', function() {
+                    if (this.checked) {
+                        selectedDP = dp;
+                        document.getElementById('confirmDPSelection').disabled = false;
+                    }
+                });
+
+                tbody.appendChild(row);
+            });
+        }
+
+        function filterDPTable(searchTerm) {
+            const filteredData = dpData.filter(dp =>
+                dp.nomor_pembayaran.toLowerCase().includes(searchTerm) ||
+                dp.aktivitas_pembayaran.toLowerCase().includes(searchTerm) ||
+                dp.bank_name.toLowerCase().includes(searchTerm)
+            );
+            renderDPTable(filteredData);
+        }
+
+        function selectDP(dp) {
+            // Set hidden inputs
+            document.getElementById('selectedDPId').value = dp.id;
+            document.getElementById('selectedDPAmount').value = dp.total_pembayaran;
+
+            // Show selected DP info
+            document.getElementById('selectedDPText').textContent =
+                `DP terpilih: ${dp.nomor_pembayaran} - ${dp.total_formatted}`;
+            document.getElementById('selectedDPInfo').classList.remove('hidden');
+
+            // Show DP label on total akhir
+            document.getElementById('dpLabel').classList.remove('hidden');
+
+            // Change button text
+            document.getElementById('btnPilihDP').innerHTML =
+                '<i class="fas fa-edit mr-2"></i>Ubah DP';
+
+            // Recalculate total after DP selection
+            updateTotalSetelahPenyesuaian();
+        }
+
+        function clearDPSelection() {
+            // Clear hidden inputs
+            document.getElementById('selectedDPId').value = '';
+            document.getElementById('selectedDPAmount').value = '';
+
+            // Hide selected DP info
+            document.getElementById('selectedDPInfo').classList.add('hidden');
+
+            // Hide DP label on total akhir
+            document.getElementById('dpLabel').classList.add('hidden');
+
+            // Reset button text
+            document.getElementById('btnPilihDP').innerHTML =
+                '<i class="fas fa-money-bill-wave mr-2"></i>Pilih DP';
+
+            // Recalculate total after DP removal
+            updateTotalSetelahPenyesuaian();
+        }
+    });
+</script>
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const selectedDPAmountInput = document.getElementById('selectedDPAmount');
+        const totalPembayaranInput = document.getElementById('total_pembayaran');
+        const totalPenyesuaianInput = document.getElementById('total_tagihan_penyesuaian');
+        const totalSetelahInput = document.getElementById('total_tagihan_setelah_penyesuaian');
+
+        function updateTotalSetelahPenyesuaian() {
+            const totalPembayaran = parseFloat(totalPembayaranInput.value.replace(/\./g, '').replace(',', '.')) || 0;
+            const totalPenyesuaian = parseFloat(totalPenyesuaianInput.value) || 0;
+            const dpAmount = parseFloat(selectedDPAmountInput.value) || 0;
+
+            // Total = (Total Pembayaran + Penyesuaian) - DP Amount
+            const totalAkhir = (totalPembayaran + totalPenyesuaian) - dpAmount;
+            totalSetelahInput.value = totalAkhir.toLocaleString('id-ID');
+
+            // Update detail perhitungan jika ada DP
+            if (dpAmount > 0) {
+                document.getElementById('detailTagihan').textContent = 'Rp ' + totalPembayaran.toLocaleString('id-ID');
+                document.getElementById('detailPenyesuaian').textContent = 'Rp ' + totalPenyesuaian.toLocaleString('id-ID');
+                document.getElementById('detailDPAmount').textContent = '- Rp ' + dpAmount.toLocaleString('id-ID');
+                document.getElementById('detailTotalAkhir').textContent = 'Rp ' + totalAkhir.toLocaleString('id-ID');
+                document.getElementById('dpCalculationDetail').classList.remove('hidden');
+            } else {
+                document.getElementById('dpCalculationDetail').classList.add('hidden');
+            }
+        }
+
+        // Listen to input event on hidden DP amount input
+        selectedDPAmountInput.addEventListener('input', updateTotalSetelahPenyesuaian);
     });
 </script>
 @endsection

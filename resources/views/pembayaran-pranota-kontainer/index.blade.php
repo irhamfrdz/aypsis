@@ -91,7 +91,14 @@
                                 <div class="text-sm font-medium text-gray-900">
                                     Rp {{ number_format($pembayaran->total_tagihan_setelah_penyesuaian ?? $pembayaran->total_pembayaran, 0, ',', '.') }}
                                 </div>
-                                @if($pembayaran->total_tagihan_penyesuaian != 0)
+                                @if($pembayaran->dp_amount && $pembayaran->dp_amount > 0)
+                                    <div class="text-sm text-blue-600">
+                                        Sebelum DP: Rp {{ number_format(($pembayaran->total_pembayaran + ($pembayaran->total_tagihan_penyesuaian ?? 0)), 0, ',', '.') }}
+                                    </div>
+                                    <div class="text-sm text-red-600">
+                                        DP: -Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
+                                    </div>
+                                @elseif($pembayaran->total_tagihan_penyesuaian != 0)
                                     <div class="text-sm text-gray-500">
                                         ({{ $pembayaran->total_tagihan_penyesuaian > 0 ? '+' : '' }}{{ number_format($pembayaran->total_tagihan_penyesuaian, 0, ',', '.') }})
                                     </div>

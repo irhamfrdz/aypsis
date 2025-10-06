@@ -35,7 +35,11 @@ return new class extends Migration
         ");
 
         if (!empty($uniqueIndexResult)) {
-            DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id");
+            try {
+                DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id");
+            } catch (\Exception $e) {
+                // Ignore if index doesn't exist
+            }
         }
 
         // Also try to drop other possible index names

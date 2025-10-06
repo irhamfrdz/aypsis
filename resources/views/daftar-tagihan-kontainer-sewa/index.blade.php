@@ -341,9 +341,11 @@
                 <!-- Filter by Vendor -->
                 <select name="vendor" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                     <option value="">Semua Vendor</option>
-                    @foreach(($vendors ?? ['ZONA', 'DPE']) as $vendor)
+                    <option value="DPE" {{ request('vendor') == 'DPE' ? 'selected' : '' }}>DPE</option>
+                    <option value="ZONA" {{ request('vendor') == 'ZONA' ? 'selected' : '' }}>ZONA</option>
+                    @foreach(($vendors ?? []) as $vendor)
                         <option value="{{ $vendor }}" {{ request('vendor') == $vendor ? 'selected' : '' }}>
-                            {{ $vendor }}
+                            {{ $vendor }} (Dynamic)
                         </option>
                     @endforeach
                 </select>
@@ -351,9 +353,11 @@
                 <!-- Filter by Size -->
                 <select name="size" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                     <option value="">Semua Size</option>
-                    @foreach(($sizes ?? ['20', '40']) as $size)
+                    <option value="20" {{ request('size') == '20' ? 'selected' : '' }}>20'</option>
+                    <option value="40" {{ request('size') == '40' ? 'selected' : '' }}>40'</option>
+                    @foreach(($sizes ?? []) as $size)
                         <option value="{{ $size }}" {{ request('size') == $size ? 'selected' : '' }}>
-                            {{ $size }}'
+                            {{ $size }}' (Dynamic)
                         </option>
                     @endforeach
                 </select>
@@ -381,9 +385,14 @@
                 <!-- Filter by Periode -->
                 <select name="periode" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
                     <option value="">Semua Periode</option>
+                    <option value="1" {{ request('periode') == '1' ? 'selected' : '' }}>Periode 1</option>
+                    <option value="2" {{ request('periode') == '2' ? 'selected' : '' }}>Periode 2</option>
+                    <option value="3" {{ request('periode') == '3' ? 'selected' : '' }}>Periode 3</option>
+                    <option value="4" {{ request('periode') == '4' ? 'selected' : '' }}>Periode 4</option>
+                    <option value="5" {{ request('periode') == '5' ? 'selected' : '' }}>Periode 5</option>
                     @foreach(($periodes ?? []) as $periode)
                         <option value="{{ $periode }}" {{ request('periode') == $periode ? 'selected' : '' }}>
-                            Periode {{ $periode }}
+                            Periode {{ $periode }} (Dynamic)
                         </option>
                     @endforeach
                 </select>
@@ -469,6 +478,17 @@
     @endif
     @if(session('error'))
         <div class="mb-4 p-3 bg-red-50 border border-red-100 text-red-800 rounded">{{ session('error') }}</div>
+    @endif
+
+    {{-- Debug Info --}}
+    @if(config('app.debug'))
+    <div class="mb-4 p-3 bg-yellow-50 border border-yellow-200 text-yellow-800 rounded text-xs">
+        <strong>Debug Info:</strong>
+        Vendors: {{ count($vendors ?? []) }} |
+        Sizes: {{ count($sizes ?? []) }} |
+        Periodes: {{ count($periodes ?? []) }} |
+        Status Options: {{ count($statusOptions ?? []) }}
+    </div>
     @endif
 
     <div class="max-w-full mx-auto px-4">

@@ -49,6 +49,24 @@ php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
 
+# 8. 🔥 JALANKAN SEEDER PERMISSION (BARU DITAMBAHKAN)
+echo "🔑 8. Running Permission Seeder..."
+echo "⚠️  IMPORTANT: This will add 400+ permissions to your system"
+echo "📋 Seeder will check for existing permissions and only add new ones"
+
+# Opsi 1: Jalankan seeder secara langsung
+echo "🚀 Running ComprehensiveSystemPermissionSeeder..."
+php artisan db:seed --class=ComprehensiveSystemPermissionSeeder
+
+# Opsi 2: Jika ingin lebih hati-hati, jalankan dengan dry-run dulu (uncomment line di bawah)
+# php artisan tinker --execute="app(\Database\Seeders\ComprehensiveSystemPermissionSeeder::class)->run()"
+
+# Opsi 3: Jika ingin melihat preview dulu tanpa insert ke database
+# php artisan tinker --execute="
+# \$seeder = new \Database\Seeders\ComprehensiveSystemPermissionSeeder();
+# echo 'Total permissions yang akan dibuat: ' . count(\$seeder->getAllPermissions());
+# "
+
 # 8. Fix multi-dot permissions if they exist
 echo "🔧 8. Checking and fixing multi-dot permissions..."
 php debug_permission_error.php | grep -A 10 "PROBLEMATIC PERMISSIONS"

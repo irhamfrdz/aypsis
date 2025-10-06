@@ -9,6 +9,7 @@ use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PembayaranPranotaKontainerController extends Controller
 {
@@ -17,7 +18,7 @@ class PembayaranPranotaKontainerController extends Controller
      */
     public function index()
     {
-        $pembayaranList = PembayaranPranotaKontainer::with(['pembuatPembayaran', 'penyetujuPembayaran', 'items.pranota'])
+        $pembayaranList = PembayaranPranotaKontainer::with(['pembuatPembayaran', 'penyetujuPembayaran', 'items.pranota', 'dpPayment'])
             ->orderBy('created_at', 'desc')
             ->paginate(15);
 
@@ -95,7 +96,9 @@ class PembayaranPranotaKontainerController extends Controller
             'pranota_ids.*' => 'exists:pranota_tagihan_kontainer_sewa,id',
             'total_tagihan_penyesuaian' => 'nullable|numeric',
             'alasan_penyesuaian' => 'nullable|string',
-            'keterangan' => 'nullable|string'
+            'keterangan' => 'nullable|string',
+            'selected_dp_id' => 'nullable|exists:pembayaran_aktivitas_lainnya,id',
+            'selected_dp_amount' => 'nullable|numeric'
         ]);
 
         try {
@@ -114,6 +117,16 @@ class PembayaranPranotaKontainerController extends Controller
             }
 
             $totalPembayaran = $pranotas->sum('total_amount');
+            $dpAmount = floatval($request->input('selected_dp_amount', 0));
+
+            // Debug logging untuk troubleshooting
+            Log::info('DP Calculation Debug', [
+                'total_pembayaran' => $totalPembayaran,
+                'penyesuaian' => $penyesuaian,
+                'dp_amount' => $dpAmount,
+                'selected_dp_id' => $request->input('selected_dp_id'),
+                'calculation_result' => ($totalPembayaran + $penyesuaian) - $dpAmount
+            ]);
 
             // Create pembayaran record
             $pembayaran = PembayaranPranotaKontainer::create([
@@ -124,13 +137,15 @@ class PembayaranPranotaKontainerController extends Controller
                 'tanggal_pembayaran' => now()->toDateString(),
                 'total_pembayaran' => $totalPembayaran,
                 'total_tagihan_penyesuaian' => $penyesuaian,
-                'total_tagihan_setelah_penyesuaian' => $totalPembayaran + $penyesuaian,
+                'total_tagihan_setelah_penyesuaian' => ($totalPembayaran + $penyesuaian) - $dpAmount,
                 'alasan_penyesuaian' => $request->alasan_penyesuaian,
                 'keterangan' => $request->keterangan,
                 'status' => 'approved',
                 'dibuat_oleh' => Auth::id(),
                 'disetujui_oleh' => Auth::id(),
-                'tanggal_persetujuan' => now()
+                'tanggal_persetujuan' => now(),
+                'dp_payment_id' => $request->selected_dp_id,
+                'dp_amount' => $dpAmount
             ]);
 
             // Create payment items and update pranota status
@@ -179,7 +194,8 @@ class PembayaranPranotaKontainerController extends Controller
         $pembayaran = PembayaranPranotaKontainer::with([
             'items.pranota',
             'pembuatPembayaran',
-            'penyetujuPembayaran'
+            'penyetujuPembayaran',
+            'dpPayment'
         ])->findOrFail($id);
 
         return view('pembayaran-pranota-kontainer.show', compact('pembayaran'));
@@ -193,7 +209,8 @@ class PembayaranPranotaKontainerController extends Controller
         $pembayaran = PembayaranPranotaKontainer::with([
             'items.pranota',
             'pembuatPembayaran',
-            'penyetujuPembayaran'
+            'penyetujuPembayaran',
+            'dpPayment'
         ])->findOrFail($id);
 
         return view('pembayaran-pranota-kontainer.print', compact('pembayaran'));
@@ -350,6 +367,49 @@ class PembayaranPranotaKontainerController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get available DP payments from pembayaran aktivitas lainnya
+     */
+    public function getAvailableDP()
+    {
+        try {
+            // Get DP IDs that are already used in pembayaran pranota kontainer
+            $usedDPIds = \App\Models\PembayaranPranotaKontainer::whereNotNull('dp_payment_id')
+                ->pluck('dp_payment_id')
+                ->toArray();
+
+            // Import model PembayaranAktivitasLainnya and filter out used DPs
+            $dpPayments = \App\Models\PembayaranAktivitasLainnya::where('is_dp', true)
+                ->whereNotIn('id', $usedDPIds)
+                ->with(['bank', 'creator'])
+                ->orderBy('created_at', 'desc')
+                ->get()
+                ->map(function($payment) {
+                    return [
+                        'id' => $payment->id,
+                        'nomor_pembayaran' => $payment->nomor_pembayaran,
+                        'tanggal_pembayaran' => \Carbon\Carbon::parse($payment->tanggal_pembayaran)->format('d/m/Y'),
+                        'total_pembayaran' => $payment->total_pembayaran,
+                        'total_formatted' => 'Rp ' . number_format((float)$payment->total_pembayaran, 0, ',', '.'),
+                        'bank_name' => $payment->bank->nama_akun ?? '-',
+                        'aktivitas_pembayaran' => $payment->aktivitas_pembayaran,
+                        'creator_name' => $payment->creator->username ?? '-',
+                    ];
+                });
+
+            return response()->json([
+                'success' => true,
+                'data' => $dpPayments
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error fetching DP payments: ' . $e->getMessage()
             ], 500);
         }
     }

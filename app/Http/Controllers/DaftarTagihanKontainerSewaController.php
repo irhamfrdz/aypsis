@@ -1338,29 +1338,54 @@ class DaftarTagihanKontainerSewaController extends Controller
             $tanggalAwal = $this->parseDate($data['tanggal_awal'] ?? '');
             $tanggalAkhir = $this->parseDate($data['tanggal_akhir'] ?? '');
 
-            // Ambil periode LANGSUNG dari CSV (tidak dihitung dari tanggal)
-            $periodeFromCsv = isset($data['periode']) ? (int)trim($data['periode']) : 0;
+            // Ambil periode dari CSV sebagai nomor urut periode
+            $periodeFromCsv = isset($data['periode']) ? (int)trim($data['periode']) : 1;
 
-            // Gunakan periode dari CSV
-            $jumlahHari = $periodeFromCsv;
-
-            // Jika periode tidak ada di CSV, baru hitung dari tanggal sebagai fallback
-            if ($jumlahHari == 0 && $tanggalAwal && $tanggalAkhir) {
+            // FIXED: Hitung jumlah hari dari tanggal untuk perhitungan DPP
+            $jumlahHariUntukDpp = 0;
+            if ($tanggalAwal && $tanggalAkhir) {
                 $startDate = \Carbon\Carbon::parse($tanggalAwal);
                 $endDate = \Carbon\Carbon::parse($tanggalAkhir);
-                $jumlahHari = $startDate->diffInDays($endDate) + 1;
+                $jumlahHariUntukDpp = $startDate->diffInDays($endDate) + 1;
             }
+
+            // Gunakan periode dari CSV untuk field 'periode' (nomor urut)
+            // Tapi gunakan jumlah hari untuk perhitungan DPP
+            $jumlahHari = $periodeFromCsv;
 
             // Get tarif type from CSV (Bulanan/Harian)
             $tarifText = trim($data['tarif'] ?? '');
             $tarifType = strtolower($tarifText);
 
-            // Determine tarif_nominal (tarif per hari numerik) based on vendor and size
+            // Determine tarif_nominal (tarif per hari numerik) - CHECK MASTER PRICELIST FIRST
             $tarifNominal = 0;
-            if ($vendor === 'DPE') {
-                $tarifNominal = ($size == '20') ? 25000 : 35000;
-            } else if ($vendor === 'ZONA') {
-                $tarifNominal = ($size == '20') ? 20000 : 30000;
+
+            // First priority: Check master pricelist
+            $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
+                ->where('vendor', $vendor)
+                ->first();
+
+            if ($masterPricelist) {
+                // Check if this is monthly or daily rate
+                $tarifType = strtolower($masterPricelist->tarif);
+
+                if ($tarifType === 'bulanan') {
+                    // For monthly rate, store the monthly amount and mark it
+                    $tarifNominal = $masterPricelist->harga; // Will be used as DPP directly, not multiplied by days
+                    $isBulanan = true;
+                } else {
+                    // For daily rate, use as daily tariff
+                    $tarifNominal = $masterPricelist->harga; // Will be multiplied by days later
+                    $isBulanan = false;
+                }
+            } else {
+                // Fallback: Use default tarif if no master pricelist found (daily rates)
+                if ($vendor === 'DPE') {
+                    $tarifNominal = ($size == '20') ? 25000 : 35000;
+                } else if ($vendor === 'ZONA') {
+                    $tarifNominal = ($size == '20') ? 20000 : 30000;
+                }
+                $isBulanan = false; // Fallback is always daily rate
             }
 
             // If tarif in CSV is a number, use that as tarif_nominal
@@ -1390,13 +1415,15 @@ class DaftarTagihanKontainerSewaController extends Controller
                 'tanggal_awal' => $tanggalAwal,
                 'tanggal_akhir' => $tanggalAkhir,
                 'tarif' => $tarifText, // Store text: "Bulanan" or "Harian"
-                'periode' => $jumlahHari, // Ambil dari CSV atau calculated
+                'periode' => $jumlahHari, // Nomor urut periode dari CSV
                 'group' => trim($data['group'] ?? ''),
                 'status' => $this->cleanStatus($data['status'] ?? 'ongoing'),
                 'status_pranota' => null,
                 'pranota_id' => null,
-                // Store tarifNominal in temporary key for calculation only
+                // Store tarifNominal and jumlah hari aktual untuk perhitungan DPP
                 '_tarif_for_calculation' => $tarifNominal,
+                '_jumlah_hari_for_dpp' => $jumlahHariUntukDpp, // Jumlah hari aktual untuk DPP
+                '_is_bulanan' => $isBulanan ?? false, // Mark if this is monthly rate
             ];
         }
 
@@ -1427,12 +1454,9 @@ class DaftarTagihanKontainerSewaController extends Controller
             $cleaned['periode'] = $startDate->diffInDays($endDate) + 1;
         }
 
-        // Format masa: "Periode 1", "Periode 2", dst (atau "X Hari" jika > 12)
-        if ($cleaned['periode'] <= 12) {
-            $cleaned['masa'] = 'Periode ' . $cleaned['periode'];
-        } else {
-            $cleaned['masa'] = $cleaned['periode'] . ' Hari';
-        }
+        // Format masa: Tampilkan range tanggal (tanggal awal - tanggal akhir minus 1 hari)
+        $endDateMinus1 = $endDate->copy()->subDay();
+        $cleaned['masa'] = $startDate->format('j M Y') . ' - ' . $endDateMinus1->format('j M Y');
 
         // Remove empty group
         if (empty($cleaned['group']) || $cleaned['group'] === '-') {
@@ -1450,9 +1474,12 @@ class DaftarTagihanKontainerSewaController extends Controller
             }
         }
 
-        // Remove temporary calculation key before validation and saving
+        // Remove temporary calculation keys before validation and saving
         if (isset($cleaned['_tarif_for_calculation'])) {
             unset($cleaned['_tarif_for_calculation']);
+        }
+        if (isset($cleaned['_is_bulanan'])) {
+            unset($cleaned['_is_bulanan']);
         }
 
         // Validate business rules
@@ -1810,7 +1837,10 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         // Use temporary calculation value if available, otherwise get from master pricelist
         $tarifNominal = $data['_tarif_for_calculation'] ?? 0;
-        $periode = $data['periode'];
+        $isBulanan = $data['_is_bulanan'] ?? false;
+
+        // FIXED: Gunakan jumlah hari aktual untuk perhitungan DPP, bukan nomor periode
+        $jumlahHariUntukDpp = $data['_jumlah_hari_for_dpp'] ?? $data['periode'];
 
         // Get master pricelist if available and no tarif provided
         if ($tarifNominal == 0) {
@@ -1819,21 +1849,29 @@ class DaftarTagihanKontainerSewaController extends Controller
                 ->first();
 
             if ($masterPricelist) {
-                $tarifNominal = $masterPricelist->tarif;
+                $tarifNominal = $masterPricelist->harga; // Fixed: use harga column, not tarif
+                $isBulanan = (strtolower($masterPricelist->tarif) === 'bulanan');
             }
         }
 
-        // If still no tarif, use default based on vendor and size
+        // If still no tarif, use default based on vendor and size (daily rates)
         if ($tarifNominal == 0) {
             if ($data['vendor'] === 'DPE') {
                 $tarifNominal = ($data['size'] == '20') ? 25000 : 35000;
             } else if ($data['vendor'] === 'ZONA') {
                 $tarifNominal = ($data['size'] == '20') ? 20000 : 30000;
             }
+            $isBulanan = false; // Default rates are daily
         }
 
-        // Calculate DPP
-        $dpp = $tarifNominal * $periode;
+        // Calculate DPP based on rate type (monthly vs daily)
+        if ($isBulanan) {
+            // For monthly rate: DPP = monthly rate (not multiplied by days)
+            $dpp = $tarifNominal;
+        } else {
+            // For daily rate: DPP = daily rate × actual days
+            $dpp = $tarifNominal * $jumlahHariUntukDpp;
+        }
 
         // Calculate PPN (11% of DPP)
         $ppn = $dpp * 0.11;

@@ -1163,6 +1163,69 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Aktivitas Lain-lain --}}
+                            <tr class="module-row" data-module="aktivitas-lainnya">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <span class="module-icon">📋</span>
+                                        <div>
+                                            <div class="font-semibold">Aktivitas Lain-lain</div>
+                                            <div class="text-xs text-gray-500">Pengelolaan aktivitas dan pembayaran lain-lain</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-lainnya-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-lainnya-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-lainnya-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-lainnya-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-lainnya-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-lainnya-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="aktivitas-lainnya-header-checkbox permission-checkbox" data-permission="export">
+                                </td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="aktivitas-lainnya">
+                                <td class="submodule">
+                                    <span class="module-icon">📝</span>
+                                    Aktivitas Lain-lain
+                                </td>
+                                <td><input type="checkbox" name="permissions[aktivitas-lainnya][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['view']) && $userMatrixPermissions['aktivitas-lainnya']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[aktivitas-lainnya][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['create']) && $userMatrixPermissions['aktivitas-lainnya']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[aktivitas-lainnya][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['update']) && $userMatrixPermissions['aktivitas-lainnya']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[aktivitas-lainnya][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['delete']) && $userMatrixPermissions['aktivitas-lainnya']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[aktivitas-lainnya][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['approve']) && $userMatrixPermissions['aktivitas-lainnya']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[aktivitas-lainnya][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['print']) && $userMatrixPermissions['aktivitas-lainnya']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[aktivitas-lainnya][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['aktivitas-lainnya']['export']) && $userMatrixPermissions['aktivitas-lainnya']['export']) checked @endif></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="aktivitas-lainnya">
+                                <td class="submodule">
+                                    <span class="module-icon">💰</span>
+                                    Pembayaran Aktivitas Lain-lain
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['view']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['create']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['update']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['delete']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['approve']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['print']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-aktivitas-lainnya']['export']) && $userMatrixPermissions['pembayaran-aktivitas-lainnya']['export']) checked @endif></td>
+                            </tr>
+
                         </tbody>
                     </table>
                 </div>
@@ -1350,6 +1413,7 @@
 
                 // Initialize check all user permissions
                 initializeCheckAllUser();
+                initializeCheckAllAktivitasLainnya();
 
                 // Initialize check all pembayaran permissions
                 initializeCheckAllPembayaran();
@@ -1637,6 +1701,57 @@
                     if (headerCheckbox && userCheckboxes.length > 0) {
                         const allChecked = Array.from(userCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(userCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            // Initialize checkbox handling for Aktivitas Lain-lain
+            function initializeCheckAllAktivitasLainnya() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.aktivitas-lainnya-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in aktivitas-lainnya sub-modules
+                        const aktivitasCheckboxes = document.querySelectorAll(`[data-parent="aktivitas-lainnya"] input[name*="[${permission}]"]`);
+                        aktivitasCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Aktivitas Lain-lain telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Aktivitas Lain-lain telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="aktivitas-lainnya"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateAktivitasLainnyaHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateAktivitasLainnyaHeaderCheckboxes();
+            }
+
+            function updateAktivitasLainnyaHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.aktivitas-lainnya-header-checkbox[data-permission="${permission}"]`);
+                    const aktivitasCheckboxes = document.querySelectorAll(`[data-parent="aktivitas-lainnya"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && aktivitasCheckboxes.length > 0) {
+                        const allChecked = Array.from(aktivitasCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(aktivitasCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;

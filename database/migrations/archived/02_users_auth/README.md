@@ -1,0 +1,24 @@
+# User management and authentication
+
+This folder contains migrations related to User management and authentication.
+
+## Files in this category:
+- 2025_08_17_112212_create_karyawans_table.php
+- 2025_08_17_112416_create_users_table.php
+- 2025_08_17_120546_create_roles_table.php
+- 2025_08_17_120547_create_permissions_tables.php
+- 2025_08_26_001500_drop_bpjs_jamsostek_from_karyawans.php
+- 2025_08_26_002000_add_catatan_to_karyawans.php
+- 2025_09_02_085628_add_no_ketenagakerjaan_to_karyawans_table.php
+- 2025_09_08_171213_add_registration_fields_to_users_table.php
+- 2025_09_08_171241_add_status_to_karyawans_table.php
+- 2025_09_09_000001_add_approval_system_to_users.php
+- 2025_09_09_133304_add_bank_cabang_to_karyawans_table.php
+- 2025_09_09_150455_add_missing_fields_to_karyawans_table.php
+- 2025_09_11_000001_add_user_id_to_karyawans_table.php
+- 2025_09_11_000001_change_plat_column_type_on_karyawans_table.php
+- 2025_09_11_163302_drop_name_column_from_users_table.php
+- 2025_09_15_094011_add_role_id_to_users_table.php
+- 2025_09_17_140847_add_master_pajak_permissions.php
+
+> Organized on 2025-10-03 09:46:33

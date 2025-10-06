@@ -47,17 +47,6 @@
                     </label>
                     <span id="selectedCount" class="text-sm text-gray-500">0 pranota dipilih</span>
                 </div>
-                <div class="flex space-x-2">
-                    <button id="processPembayaranBtn"
-                            class="bg-gray-400 hover:bg-gray-500 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center cursor-not-allowed opacity-50"
-                            disabled
-                            title="Fitur pembayaran belum tersedia untuk pranota kontainer sewa">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
-                        </svg>
-                        Proses Pembayaran (Coming Soon)
-                    </button>
-                </div>
             </div>
 
             <!-- Table -->
@@ -73,6 +62,8 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pranota</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Tagihan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Invoice Vendor</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Invoice Vendor</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
@@ -108,6 +99,16 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 Rp {{ number_format($pranota->total_amount, 2, ',', '.') }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                {{ $pranota->no_invoice_vendor ?? '-' }}
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                @if($pranota->tgl_invoice_vendor)
+                                    {{ $pranota->tgl_invoice_vendor->format('d/M/Y') }}
+                                @else
+                                    <span class="text-gray-500">-</span>
+                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pranota->getStatusColor() }}">
@@ -147,7 +148,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center">
+                            <td colspan="11" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
@@ -210,9 +211,7 @@ function updateSelection() {
         `${selectedCount} pranota dipilih (Total: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)})` :
         '0 pranota dipilih';
 
-    // Enable/disable process payment button
-    const processBtn = document.getElementById('processPembayaranBtn');
-    processBtn.disabled = selectedCount === 0;
+
 
     // Update select all checkboxes
     const allCheckboxes = document.querySelectorAll('.pranota-checkbox');
@@ -237,61 +236,7 @@ function updateSelection() {
     }
 }
 
-function processPembayaranBatch() {
-    const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
 
-    if (checkboxes.length === 0) {
-        alert('Silakan pilih pranota yang akan diproses pembayarannya.');
-        return;
-    }
-
-    // For now, show message that payment feature is not yet available for pranota kontainer sewa
-    alert('Fitur pembayaran untuk pranota kontainer sewa belum tersedia. Sistem pembayaran saat ini hanya mendukung pranota dari tabel pranotalist.');
-
-    // Uncomment below code when payment system is extended to support pranota_tagihan_kontainer_sewa
-    /*
-    const selectedPranota = Array.from(checkboxes).map(checkbox => ({
-        id: checkbox.value,
-        no_invoice: checkbox.dataset.noInvoice,
-        amount: parseFloat(checkbox.dataset.amount)
-    }));
-
-    const totalAmount = selectedPranota.reduce((sum, pranota) => sum + pranota.amount, 0);
-
-    const confirmation = confirm(
-        `Anda akan memproses pembayaran untuk ${selectedPranota.length} pranota:\n\n` +
-        selectedPranota.map(p => `- ${p.no_invoice} (Rp ${new Intl.NumberFormat('id-ID').format(p.amount)})`).join('\n') +
-        `\n\nTotal Amount: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}\n\n` +
-        'Lanjutkan ke halaman pembayaran?'
-    );
-
-    if (confirmation) {
-        // Create form and submit
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ route("pembayaran-pranota-kontainer.create") }}';
-
-        // Add CSRF token
-        const csrfToken = document.createElement('input');
-        csrfToken.type = 'hidden';
-        csrfToken.name = '_token';
-        csrfToken.value = '{{ csrf_token() }}';
-        form.appendChild(csrfToken);
-
-        // Add selected pranota IDs
-        selectedPranota.forEach(pranota => {
-            const input = document.createElement('input');
-            input.type = 'hidden';
-            input.name = 'pranota_ids[]';
-            input.value = pranota.id;
-            form.appendChild(input);
-        });
-
-        document.body.appendChild(form);
-        form.submit();
-    }
-    */
-}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {

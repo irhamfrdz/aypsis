@@ -140,12 +140,40 @@
             padding-top: 10px;
         }
         @media print {
-            body {
+            html, body {
+                width: 210mm;
+                height: 297mm;
+                max-width: 210mm;
+                max-height: 297mm;
+                font-size: 10px;
                 margin: 0;
-                padding: 10px;
+                padding: 5mm 5mm 5mm 5mm;
+                box-sizing: border-box;
+            }
+            .header, .info-section, .summary, .notes, .signature-section, .table {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+            }
+            .table th, .table td {
+                padding: 4px !important;
+            }
+            .summary {
+                margin-top: 10px !important;
+                padding: 8px !important;
+            }
+            .signature-section {
+                margin-top: 20px !important;
+            }
+            .signature-space {
+                height: 40px !important;
+                width: 120px !important;
             }
             .no-print {
-                display: none;
+                display: none !important;
+            }
+            /* Paksa semua elemen tetap di satu halaman */
+            body {
+                overflow: hidden !important;
             }
         }
     </style>
@@ -243,6 +271,14 @@
                     </td>
                 </tr>
             @endif
+            @if($pembayaran->dp_amount && $pembayaran->dp_amount > 0)
+                <tr>
+                    <td colspan="5" style="text-align: right;">Potongan DP:</td>
+                    <td class="number" style="color: red;">
+                        -Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
+                    </td>
+                </tr>
+            @endif
             <tr style="font-size: 14px;">
                 <td colspan="5" style="text-align: right; font-weight: bold;">TOTAL PEMBAYARAN:</td>
                 <td class="number" style="font-weight: bold; font-size: 14px;">
@@ -272,6 +308,14 @@
                     </div>
                 </div>
             @endif
+            @if($pembayaran->dp_amount && $pembayaran->dp_amount > 0)
+                <div class="summary-row">
+                    <div class="summary-label">Potongan DP:</div>
+                    <div class="summary-value" style="color: red;">
+                        -Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
+                    </div>
+                </div>
+            @endif
             <div class="summary-row final-amount">
                 <div class="summary-label">TOTAL PEMBAYARAN:</div>
                 <div class="summary-value">Rp {{ number_format($pembayaran->total_tagihan_setelah_penyesuaian ?? $pembayaran->total_pembayaran, 0, ',', '.') }}</div>
@@ -280,8 +324,16 @@
     </div>
 
     <!-- Additional Notes -->
-    @if($pembayaran->alasan_penyesuaian || $pembayaran->keterangan)
+    @if($pembayaran->alasan_penyesuaian || $pembayaran->keterangan || ($pembayaran->dp_amount && $pembayaran->dp_amount > 0))
         <div class="notes">
+            @if($pembayaran->dp_amount && $pembayaran->dp_amount > 0)
+                <p><strong>Informasi DP:</strong>
+                    Pembayaran ini menggunakan potongan Down Payment sebesar Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
+                    @if($pembayaran->dpPayment)
+                        dari {{ $pembayaran->dpPayment->nomor_pembayaran ?? 'N/A' }}
+                    @endif
+                </p>
+            @endif
             @if($pembayaran->alasan_penyesuaian)
                 <p><strong>Alasan Penyesuaian:</strong> {{ $pembayaran->alasan_penyesuaian }}</p>
             @endif

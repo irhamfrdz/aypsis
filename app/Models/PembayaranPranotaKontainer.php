@@ -25,7 +25,9 @@ class PembayaranPranotaKontainer extends Model
         'status',
         'dibuat_oleh',
         'disetujui_oleh',
-        'tanggal_persetujuan'
+        'tanggal_persetujuan',
+        'dp_payment_id',
+        'dp_amount'
     ];
 
     protected $casts = [
@@ -34,7 +36,8 @@ class PembayaranPranotaKontainer extends Model
         'tanggal_persetujuan' => 'datetime',
         'total_pembayaran' => 'decimal:2',
         'penyesuaian' => 'decimal:2',
-        'total_setelah_penyesuaian' => 'decimal:2'
+        'total_setelah_penyesuaian' => 'decimal:2',
+        'dp_amount' => 'decimal:2'
     ];
 
     /**
@@ -72,6 +75,14 @@ class PembayaranPranotaKontainer extends Model
     public function penyetujuPembayaran()
     {
         return $this->belongsTo(User::class, 'disetujui_oleh');
+    }
+
+    /**
+     * Relationship to DP payment from pembayaran aktivitas lainnya
+     */
+    public function dpPayment()
+    {
+        return $this->belongsTo(\App\Models\PembayaranAktivitasLainnya::class, 'dp_payment_id');
     }
 
     /**

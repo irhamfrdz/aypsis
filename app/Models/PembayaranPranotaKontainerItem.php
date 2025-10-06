@@ -35,6 +35,6 @@ class PembayaranPranotaKontainerItem extends Model
      */
     public function pranota()
     {
-        return $this->belongsTo(Pranota::class, 'pranota_id');
+        return $this->belongsTo(PranotaTagihanKontainerSewa::class, 'pranota_id');
     }
 }

@@ -1,4 +1,4 @@
-<?php<?php<?php<?php<?php
+<?php
 
 
 
@@ -6,7 +6,7 @@ require_once 'vendor/autoload.php';
 
 
 
-use Illuminate\Support\Facades\DB;require_once 'vendor/autoload.php';require "vendor/autoload.php";
+use Illuminate\Support\Facades\DB;
 
 
 
@@ -14,7 +14,8 @@ echo "Tables with pembayaran_pranota:" . PHP_EOL;
 
 
 
-try {use Illuminate\Support\Facades\DB;$app = require "bootstrap/app.php";require "vendor/autoload.php";require_once 'vendor/autoload.php';
+try {
+    $app = require "bootstrap/app.php";
 
     $tables = DB::select('SHOW TABLES LIKE "%pembayaran_pranota%"');
 
@@ -62,7 +63,9 @@ try {use Illuminate\Support\Facades\DB;$app = require "bootstrap/app.php";requir
 
         echo "- " . $column->Field . " (" . $column->Type . ")" . PHP_EOL;
 
-    }        echo $column->getName() . ': ' . $column->getType()->getName() . ' (' . ($column->getNotnull() ? 'NOT NULL' : 'NULL') . ")\n";try {use Illuminate\Support\Facades\DB;
+    }
+    echo $column->getName() . ': ' . $column->getType()->getName() . ' (' . ($column->getNotnull() ? 'NOT NULL' : 'NULL') . ")\n";
+    try {
 
 
 
@@ -92,9 +95,11 @@ try {use Illuminate\Support\Facades\DB;$app = require "bootstrap/app.php";requir
 
        str_contains(strtolower($tableName), 'role') ||
 
-    echo "\nStruktur tabel pranota_tagihan_kontainer_sewa:\n";       str_contains(strtolower($tableName), 'user')) {
+    if (str_contains(strtolower($tableName), 'user')) {
+        echo "\nStruktur tabel pranota_tagihan_kontainer_sewa:\n";
 
-    $columns2 = $schema->listTableColumns('pranota_tagihan_kontainer_sewa');        echo '- ' . $tableName . PHP_EOL;
+        $columns2 = $schema->listTableColumns('pranota_tagihan_kontainer_sewa');
+        echo '- ' . $tableName . PHP_EOL;
 
     foreach($columns2 as $column) {
 

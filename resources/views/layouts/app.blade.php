@@ -834,12 +834,13 @@
 
 {{-- Pembayaran Dropdown --}}
 @php
-    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*');
+    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*');
     $hasPaymentPermissions = $user && (
         $user->can('pembayaran-pranota-kontainer-view') ||
         $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
         $user->can('pembayaran-pranota-cat-view') ||
-        $user->can('pembayaran-pranota-supir-view')
+        $user->can('pembayaran-pranota-supir-view') ||
+        $user->can('pembayaran-aktivitas-lainnya-view')
     );
 @endphp
 
@@ -946,6 +947,40 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
                         </svg>
                         Bayar Pranota CAT Kontainer
+                    </a>
+                @endif
+            </div>
+        </div>
+        @endif
+
+        {{-- Aktivitas Lain-lain Sub-dropdown --}}
+        @php
+            $isAktivitasLainnyaPaymentRoute = Request::routeIs('pembayaran-aktivitas-lainnya.*');
+            $hasAktivitasLainnyaPaymentPermission = $user && $user->can('pembayaran-aktivitas-lainnya-view');
+        @endphp
+        @if($hasAktivitasLainnyaPaymentPermission)
+        <div class="mt-2 mb-2">
+            <button id="aktivitas-lainnya-payment-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasLainnyaPaymentRoute ? 'bg-red-50 text-red-700 font-medium' : '' }}">
+                <div class="flex items-center">
+                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasLainnyaPaymentRoute ? 'bg-red-100' : '' }}">
+                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasLainnyaPaymentRoute ? 'text-red-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs font-medium truncate w-full">Aktivitas Lain-lain</span>
+                </div>
+                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasLainnyaPaymentRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div id="aktivitas-lainnya-payment-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasLainnyaPaymentRoute) style="display: block;" @endif>
+                {{-- Pembayaran Aktivitas Lain-lain --}}
+                @if(Route::has('pembayaran-aktivitas-lainnya.index') && ($isAdmin || auth()->user()->can('pembayaran-aktivitas-lainnya-view')))
+                    <a href="{{ route('pembayaran-aktivitas-lainnya.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lainnya.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Bayar Aktivitas Lain-lain
                     </a>
                 @endif
             </div>
@@ -1059,6 +1094,7 @@
         setupDropdown('pembayaran-menu-toggle', 'pembayaran-menu-content');
         setupDropdown('aktivitas-supir-payment-menu-toggle', 'aktivitas-supir-payment-menu-content');
         setupDropdown('aktivitas-kontainer-payment-menu-toggle', 'aktivitas-kontainer-payment-menu-content');
+        setupDropdown('aktivitas-lainnya-payment-menu-toggle', 'aktivitas-lainnya-payment-menu-content');
 
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');

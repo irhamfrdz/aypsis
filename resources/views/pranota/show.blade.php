@@ -91,6 +91,20 @@
                                 <dt class="text-sm font-medium text-gray-500">Keterangan:</dt>
                                 <dd class="text-sm text-gray-900">{{ $pranota->keterangan ?: '-' }}</dd>
                             </div>
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">No. Invoice Vendor:</dt>
+                                <dd class="text-sm text-gray-900 font-mono">{{ $pranota->no_invoice_vendor ?: '-' }}</dd>
+                            </div>
+                            <div class="flex justify-between">
+                                <dt class="text-sm font-medium text-gray-500">Tgl Invoice Vendor:</dt>
+                                <dd class="text-sm text-gray-900">
+                                    @if($pranota->tgl_invoice_vendor)
+                                        {{ $pranota->tgl_invoice_vendor->format('d/m/Y') }}
+                                    @else
+                                        -
+                                    @endif
+                                </dd>
+                            </div>
                         </dl>
                     </div>
                 </div>

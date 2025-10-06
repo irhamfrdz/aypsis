@@ -681,6 +681,18 @@ class UserController extends Controller
                         $module = 'pembayaran-pranota-cat';
                     }
 
+                    // Special handling for aktivitas-lainnya-* permissions
+                    if (strpos($permissionName, 'aktivitas-lainnya-') === 0) {
+                        $module = 'aktivitas-lainnya';
+                        $action = str_replace('aktivitas-lainnya-', '', $permissionName);
+                    }
+
+                    // Special handling for pembayaran-aktivitas-lainnya-* permissions
+                    if (strpos($permissionName, 'pembayaran-aktivitas-lainnya-') === 0) {
+                        $module = 'pembayaran-aktivitas-lainnya';
+                        $action = str_replace('pembayaran-aktivitas-lainnya-', '', $permissionName);
+                    }
+
                     // Special handling for pranota-perbaikan-kontainer-* permissions
                     if ($module === 'pranota' && strpos($action, 'perbaikan-kontainer-') === 0) {
                         $action = str_replace('perbaikan-kontainer-', '', $action);
@@ -1975,6 +1987,50 @@ class UserController extends Controller
                                 $permissionIds[] = $permission->id;
                                 $found = true;
                                 break;
+                            }
+                        }
+                    }
+
+                    // Special handling for aktivitas-lainnya module
+                    if ($module === 'aktivitas-lainnya') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'aktivitas-lainnya-view',
+                            'create' => 'aktivitas-lainnya-create',
+                            'update' => 'aktivitas-lainnya-update',
+                            'delete' => 'aktivitas-lainnya-delete',
+                            'approve' => 'aktivitas-lainnya-approve',
+                            'print' => 'aktivitas-lainnya-print',
+                            'export' => 'aktivitas-lainnya-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-aktivitas-lainnya module
+                    if ($module === 'pembayaran-aktivitas-lainnya') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pembayaran-aktivitas-lainnya-view',
+                            'create' => 'pembayaran-aktivitas-lainnya-create',
+                            'update' => 'pembayaran-aktivitas-lainnya-update',
+                            'delete' => 'pembayaran-aktivitas-lainnya-delete',
+                            'approve' => 'pembayaran-aktivitas-lainnya-approve',
+                            'print' => 'pembayaran-aktivitas-lainnya-print',
+                            'export' => 'pembayaran-aktivitas-lainnya-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
                             }
                         }
                     }
