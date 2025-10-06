@@ -4,12 +4,21 @@ namespace App\Http\Controllers;
 
 use App\Models\PembayaranPranotaPerbaikanKontainer;
 use App\Models\PranotaPerbaikanKontainer;
+use App\Models\Coa;
+use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\DB;
 
 class PembayaranPranotaPerbaikanKontainerController extends Controller
 {
+    protected $coaTransactionService;
+
+    public function __construct(CoaTransactionService $coaTransactionService)
+    {
+        $this->coaTransactionService = $coaTransactionService;
+    }
     /**
      * Display a listing of the resource.
      */
@@ -66,7 +75,15 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
             ->with(['perbaikanKontainers.kontainer'])
             ->get();
 
-        $akunCoa = \App\Models\Coa::all();
+        // Get Bank/Kas accounts only, sorted by account number
+        $akunCoa = Coa::where(function($query) {
+                $query->where('tipe_akun', 'Kas/Bank')
+                      ->orWhere('tipe_akun', 'Bank/Kas')
+                      ->orWhere('tipe_akun', 'LIKE', '%Kas%')
+                      ->orWhere('tipe_akun', 'LIKE', '%Bank%');
+            })
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
+            ->get();
 
         return view('pembayaran-pranota-perbaikan-kontainer.create', compact('pranotaPerbaikanKontainers', 'akunCoa'));
     }
@@ -101,6 +118,8 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
         ]);
 
         try {
+            DB::beginTransaction();
+
             $pranotaIds = $request->pranota_perbaikan_kontainer_ids;
             $totalPembayaran = 0;
             $pembayaranData = [];
@@ -148,10 +167,31 @@ class PembayaranPranotaPerbaikanKontainerController extends Controller
                 }
             }
 
+            // Catat transaksi menggunakan double-entry COA
+            $tanggalTransaksi = $request->tanggal_kas;
+            
+            $keterangan = "Pembayaran Pranota Perbaikan Kontainer - " . $request->nomor_pembayaran;
+            if ($request->alasan_penyesuaian) {
+                $keterangan .= " | " . $request->alasan_penyesuaian;
+            }
+
+            // Catat transaksi double-entry: Biaya Perbaikan Kontainer (Debit) dan Bank (Kredit)
+            $this->coaTransactionService->recordDoubleEntry(
+                ['nama_akun' => 'Biaya Perbaikan Kontainer', 'jumlah' => $totalSetelahPenyesuaian],
+                ['nama_akun' => $request->bank, 'jumlah' => $totalSetelahPenyesuaian],
+                $tanggalTransaksi,
+                $request->nomor_pembayaran,
+                'Pembayaran Pranota Perbaikan Kontainer',
+                $keterangan
+            );
+
+            DB::commit();
+
             return redirect()->route('pembayaran-pranota-perbaikan-kontainer.index')
                 ->with('success', "Pembayaran berhasil dibuat untuk " . count($pranotaIds) . " pranota dengan total Rp " . number_format($totalPembayaran, 0, ',', '.'));
 
         } catch (\Exception $e) {
+            DB::rollback();
             return redirect()->back()
                 ->withInput()
                 ->with('error', 'Terjadi kesalahan saat memproses pembayaran: ' . $e->getMessage());
