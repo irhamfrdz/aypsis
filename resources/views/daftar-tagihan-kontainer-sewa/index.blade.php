@@ -2634,8 +2634,8 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
     console.log('editAdjustment called:', { tagihanId, currentAdjustment });
 
     // Check permission for updating tagihan
-    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-update'))
-        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit adjustment. Diperlukan izin "Update" pada modul Tagihan Kontainer.');
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-edit'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit adjustment. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
         return;
     @endif
 

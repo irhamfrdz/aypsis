@@ -906,7 +906,7 @@ Route::middleware([
                // Update adjustment endpoint
                Route::patch('daftar-tagihan-kontainer-sewa/{id}/adjustment', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateAdjustment'])
                     ->name('daftar-tagihan-kontainer-sewa.adjustment.update')
-                    ->middleware('can:tagihan-kontainer-sewa-update');
+                    ->middleware('can:tagihan-kontainer-sewa-edit');
 
                // Individual routes with specific middleware instead of resource
                Route::get('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'index'])
