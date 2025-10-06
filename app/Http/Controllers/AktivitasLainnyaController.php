@@ -68,7 +68,7 @@ class AktivitasLainnyaController extends Controller
                       ->orWhere('tipe_akun', 'LIKE', '%Kas%')
                       ->orWhere('tipe_akun', 'LIKE', '%Bank%');
             })
-            ->orderBy('nomor_akun')
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
         return view('aktivitas-lainnya.create', compact('vendors', 'statusOptions', 'kategoriOptions', 'bankAccounts'));
@@ -151,7 +151,7 @@ class AktivitasLainnyaController extends Controller
                       ->orWhere('tipe_akun', 'LIKE', '%Kas%')
                       ->orWhere('tipe_akun', 'LIKE', '%Bank%');
             })
-            ->orderBy('nomor_akun')
+            ->orderByRaw('CAST(nomor_akun AS UNSIGNED) ASC')
             ->get();
 
         return view('aktivitas-lainnya.edit', compact('aktivitasLainnya', 'vendors', 'statusOptions', 'kategoriOptions', 'bankAccounts'));
