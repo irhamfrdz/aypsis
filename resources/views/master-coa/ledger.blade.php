@@ -3,9 +3,176 @@
 @section('title', 'Buku Besar - ' . $coa->nama_akun)
 @section('page_title', 'Buku Besar - ' . $coa->nama_akun)
 
+@push('styles')
+<style>
+    @media print {
+        /* Hide elements that shouldn't be printed */
+        .no-print,
+        nav,
+        .sidebar,
+        aside,
+        footer,
+        button:not(.print-only),
+        .pagination {
+            display: none !important;
+        }
+
+        /* Reset page margins */
+        @page {
+            margin: 1cm;
+            size: landscape;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: white !important;
+        }
+
+        /* Make content full width */
+        .container,
+        .max-w-7xl {
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        /* Remove shadows and borders for cleaner print */
+        .shadow,
+        .shadow-sm,
+        .shadow-md,
+        .shadow-lg {
+            box-shadow: none !important;
+        }
+
+        .rounded,
+        .rounded-lg,
+        .rounded-xl {
+            border-radius: 0 !important;
+        }
+
+        /* Ensure tables fit on page */
+        table {
+            width: 100% !important;
+            page-break-inside: auto;
+            font-size: 10px !important;
+        }
+
+        tr {
+            page-break-inside: avoid;
+            page-break-after: auto;
+        }
+
+        thead {
+            display: table-header-group;
+        }
+
+        tfoot {
+            display: table-footer-group;
+        }
+
+        /* Adjust text sizes for print */
+        .text-2xl {
+            font-size: 18px !important;
+        }
+
+        .text-lg {
+            font-size: 14px !important;
+        }
+
+        .text-sm {
+            font-size: 10px !important;
+        }
+
+        .text-xs {
+            font-size: 8px !important;
+        }
+
+        /* Print header styling */
+        .print-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+        }
+
+        /* Summary cards adjustment */
+        .grid {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            gap: 10px !important;
+            margin-bottom: 15px !important;
+        }
+
+        /* Table styling for print */
+        table th {
+            background-color: #f3f4f6 !important;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+            border: 1px solid #000 !important;
+            padding: 5px !important;
+        }
+
+        table td {
+            border: 1px solid #ddd !important;
+            padding: 4px !important;
+        }
+
+        /* Color preservation */
+        .bg-yellow-50,
+        .bg-gray-100,
+        .bg-blue-50,
+        .bg-green-100,
+        .bg-red-100,
+        .text-green-600,
+        .text-red-600,
+        .text-blue-900 {
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Ensure modal doesn't print */
+        #detailModal {
+            display: none !important;
+        }
+
+        /* Remove interactive elements */
+        button[onclick*="showTransactionDetail"] {
+            color: inherit !important;
+            text-decoration: none !important;
+            pointer-events: none;
+        }
+    }
+
+    /* Print button hover effect */
+    button[onclick*="print"]:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    }
+</style>
+@endpush
+
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+
+        <!-- Print Header (only visible when printing) -->
+        <div class="hidden print:block print-header mb-6">
+            <h1 class="text-2xl font-bold text-gray-900">BUKU BESAR (LEDGER)</h1>
+            <p class="text-sm text-gray-600 mt-2">
+                <strong>Nomor Akun:</strong> {{ $coa->nomor_akun }} | 
+                <strong>Nama Akun:</strong> {{ $coa->nama_akun }} | 
+                <strong>Tipe:</strong> {{ $coa->tipe_akun }}
+            </p>
+            @if(request('dari_tanggal') || request('sampai_tanggal'))
+                <p class="text-xs text-gray-500 mt-1">
+                    Periode: {{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : 'Awal' }} 
+                    s/d 
+                    {{ request('sampai_tanggal') ? \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') : 'Sekarang' }}
+                </p>
+            @endif
+            <p class="text-xs text-gray-500">Dicetak pada: {{ now()->format('d/m/Y H:i:s') }}</p>
+        </div>
 
         <!-- Header Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
@@ -28,7 +195,13 @@
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <a href="{{ route('master-coa-index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                    <button type="button" onclick="window.print()" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 no-print">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                        </svg>
+                        Print
+                    </button>
+                    <a href="{{ route('master-coa-index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 no-print">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
                         </svg>
@@ -67,7 +240,7 @@
         </div>
 
         <!-- Filter Section -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6 no-print">
             <form method="GET" action="{{ route('master-coa-ledger', $coa) }}" class="flex items-center space-x-3">
                 <div>
                     <label class="block text-xs font-medium text-gray-700 mb-1">Dari Tanggal</label>
@@ -147,7 +320,7 @@
                                     {{ $transaction->tanggal_transaksi->format('d/m/Y') }}
                                 </td>
                                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium">
-                                    <button type="button" 
+                                    <button type="button"
                                             onclick="showTransactionDetail('{{ $transaction->nomor_referensi }}')"
                                             class="text-indigo-600 hover:text-indigo-900 hover:underline cursor-pointer">
                                         {{ $transaction->nomor_referensi }}
@@ -209,7 +382,7 @@
             </div>
 
             <!-- Pagination -->
-            <div class="px-6 py-4 border-t border-gray-200">
+            <div class="px-6 py-4 border-t border-gray-200 no-print">
                 {{ $transactions->links() }}
             </div>
         </div>
@@ -348,7 +521,7 @@ function showTransactionDetail(nomorReferensi) {
         .then(data => {
             console.log('Response data:', data); // Debug
             document.getElementById('detailLoading').classList.add('hidden');
-            
+
             if (data.success) {
                 displayTransactionDetail(data.data);
                 document.getElementById('detailContent').classList.remove('hidden');
@@ -373,7 +546,7 @@ function displayTransactionDetail(data) {
     // Render pranota table
     const pranotaTable = document.getElementById('detailPranotaTable');
     pranotaTable.innerHTML = '';
-    
+
     if (data.pranota_list && data.pranota_list.length > 0) {
         data.pranota_list.forEach(pranota => {
             const row = `
@@ -393,7 +566,7 @@ function displayTransactionDetail(data) {
     // Render tagihan table
     const tagihanTable = document.getElementById('detailTagihanTable');
     tagihanTable.innerHTML = '';
-    
+
     if (data.tagihan_list && data.tagihan_list.length > 0) {
         data.tagihan_list.forEach(tagihan => {
             const row = `
