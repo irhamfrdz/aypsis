@@ -2629,6 +2629,172 @@ window.showWarning = function(title, message, duration) {
     return showNotification('warning', title, message, duration);
 };
 
+// Function to edit adjustment
+window.editAdjustment = function(tagihanId, currentAdjustment) {
+    console.log('editAdjustment called:', { tagihanId, currentAdjustment });
+
+    // Check permission for updating tagihan
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-update'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit adjustment. Diperlukan izin "Update" pada modul Tagihan Kontainer.');
+        return;
+    @endif
+
+    // Create modal HTML for adjustment editing
+    const modalHTML = `
+        <div id="adjustmentModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between pb-4 border-b">
+                        <h3 class="text-lg font-medium text-gray-900">Edit Adjustment</h3>
+                        <button type="button" onclick="closeAdjustmentModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <form id="adjustmentForm" class="mt-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nilai Adjustment (Rp)
+                                </label>
+                                <input type="number" id="adjustment_value" name="adjustment_value"
+                                       value="${currentAdjustment}"
+                                       step="0.01"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan nilai adjustment (bisa negatif)">
+                                <p class="text-xs text-gray-500 mt-1">
+                                    Masukkan nilai positif untuk penambahan, negatif untuk pengurangan
+                                </p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Keterangan Adjustment
+                                </label>
+                                <textarea id="adjustment_note" name="adjustment_note" rows="3"
+                                          class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                          placeholder="Jelaskan alasan adjustment..."></textarea>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
+                            <button type="button" onclick="closeAdjustmentModal()"
+                                    class="btn-animated px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                    class="btn-animated px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <span class="btn-text">Simpan Adjustment</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('adjustmentModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Handle form submission
+    const form = document.getElementById('adjustmentForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const adjustmentValue = parseFloat(document.getElementById('adjustment_value').value) || 0;
+        const adjustmentNote = document.getElementById('adjustment_note').value.trim();
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const originalText = btnText.textContent;
+        btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
+        submitBtn.disabled = true;
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PATCH');
+        formData.append('adjustment', adjustmentValue);
+        formData.append('adjustment_note', adjustmentNote);
+
+        // Send AJAX request
+        fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${tagihanId}/adjustment`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    throw new Error(`Server error: ${response.status}`);
+                });
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('success', 'Adjustment Berhasil',
+                    `Adjustment sebesar Rp ${adjustmentValue.toLocaleString('id-ID')} telah disimpan.`);
+
+                // Close modal and reload page
+                closeAdjustmentModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Gagal menyimpan adjustment');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving adjustment:', error);
+            showNotification('error', 'Gagal Menyimpan', error.message || 'Terjadi kesalahan saat menyimpan adjustment');
+
+            // Reset button state
+            btnText.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+};
+
+// Function to close adjustment modal
+window.closeAdjustmentModal = function() {
+    const modal = document.getElementById('adjustmentModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
 
 </script>
 
