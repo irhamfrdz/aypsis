@@ -5,6 +5,27 @@
 
 @section('content')
 <div class="container mx-auto px-4 py-6">
+    <!-- Debug Info (remove after testing) -->
+    <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-4">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-info-circle text-blue-400"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-blue-700">
+                    <strong>Data ditemukan:</strong> 
+                    Sewa: {{ $tagihanSewa->count() }} | 
+                    CAT: {{ $tagihanCat->count() }} | 
+                    Perbaikan: {{ $tagihanPerbaikan->count() }} | 
+                    Total: {{ $totalTagihan }}
+                </p>
+                <p class="text-xs text-blue-600 mt-1">
+                    Periode: {{ $startDate }} s/d {{ $endDate }}
+                </p>
+            </div>
+        </div>
+    </div>
+
     <!-- Filter Section -->
     <div class="bg-white rounded-lg shadow-md p-6 mb-6">
         <h2 class="text-lg font-semibold text-gray-800 mb-4">Filter Report</h2>

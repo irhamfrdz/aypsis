@@ -13,9 +13,9 @@ class ReportTagihanController extends Controller
 {
     public function index(Request $request)
     {
-        // Filter parameters
-        $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
+        // Filter parameters - default to last 3 months for better data visibility
+        $startDate = $request->input('start_date', now()->subMonths(3)->format('Y-m-d'));
+        $endDate = $request->input('end_date', now()->format('Y-m-d'));
         $jenisTagihan = $request->input('jenis_tagihan', 'all'); // all, sewa, cat, perbaikan
         $status = $request->input('status', 'all'); // all, unpaid, paid, approved
 
@@ -27,7 +27,11 @@ class ReportTagihanController extends Controller
         // Get Tagihan Sewa Kontainer
         if ($jenisTagihan === 'all' || $jenisTagihan === 'sewa') {
             $query = DaftarTagihanKontainerSewa::with(['kontainer', 'customer'])
-                ->whereBetween('tanggal_awal', [$startDate, $endDate]);
+                ->where(function($q) use ($startDate, $endDate) {
+                    $q->whereBetween('tanggal_awal', [$startDate, $endDate])
+                      ->orWhereBetween('tanggal_akhir', [$startDate, $endDate])
+                      ->orWhereBetween('created_at', [$startDate, $endDate]);
+                });
 
             if ($status !== 'all') {
                 $query->where('status', $status);
@@ -39,7 +43,10 @@ class ReportTagihanController extends Controller
         // Get Tagihan CAT
         if ($jenisTagihan === 'all' || $jenisTagihan === 'cat') {
             $query = TagihanCat::with(['kontainer'])
-                ->whereBetween('tanggal_cat', [$startDate, $endDate]);
+                ->where(function($q) use ($startDate, $endDate) {
+                    $q->whereBetween('tanggal_cat', [$startDate, $endDate])
+                      ->orWhereBetween('created_at', [$startDate, $endDate]);
+                });
 
             if ($status !== 'all') {
                 $query->where('status', $status);
@@ -51,7 +58,10 @@ class ReportTagihanController extends Controller
         // Get Tagihan Perbaikan Kontainer
         if ($jenisTagihan === 'all' || $jenisTagihan === 'perbaikan') {
             $query = PranotaPerbaikanKontainer::with(['perbaikanKontainers.kontainer'])
-                ->whereBetween('tanggal_pranota', [$startDate, $endDate]);
+                ->where(function($q) use ($startDate, $endDate) {
+                    $q->whereBetween('tanggal_pranota', [$startDate, $endDate])
+                      ->orWhereBetween('created_at', [$startDate, $endDate]);
+                });
 
             if ($status !== 'all') {
                 $query->where('status', $status === 'paid' ? 'sudah_dibayar' : ($status === 'unpaid' ? 'belum_dibayar' : $status));
