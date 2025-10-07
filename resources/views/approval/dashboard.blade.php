@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Penyelesaian Tugas')
-@section('page_title', 'Daftar Tugas untuk Diselesaikan')
+@section('title', 'Approval Tugas II')
+@section('page_title', 'Dashboard Approval Tugas II - Penyelesaian Operasional')
 
 @section('content')
 <div class="space-y-6">
@@ -12,14 +12,30 @@
     @endif
 
     <div class="bg-white shadow-md rounded-lg p-6">
+        <!-- Info Panel -->
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <svg class="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
+                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
+                    </svg>
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm text-orange-700">
+                        <strong>Approval Tugas II</strong> adalah langkah penyelesaian operasional yang mengubah status kontainer, membuat record perbaikan, dan menyelesaikan proses bisnis secara lengkap.
+                    </p>
+                </div>
+            </div>
+        </div>
+
         <!-- Navigation Tabs -->
         <div class="mb-6 border-b border-gray-200">
             <nav class="flex space-x-8">
                 <a href="{{ route('approval.dashboard') }}" class="text-indigo-600 whitespace-nowrap py-2 px-1 border-b-2 border-indigo-500 font-medium text-sm">
-                    📋 Dashboard Approval
+                    📋 Dashboard Approval Tugas II
                 </a>
                 <a href="{{ route('approval.riwayat') }}" class="text-gray-500 hover:text-gray-700 whitespace-nowrap py-2 px-1 border-b-2 border-transparent font-medium text-sm">
-                    📚 Riwayat Approval
+                    📚 Riwayat Approval Tugas II
                 </a>
             </nav>
         </div>
@@ -50,6 +66,7 @@
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Checkpoint Supir</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Masa</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Approval</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -59,7 +76,7 @@
                                 <td class="px-4 py-1 font-medium text-gray-900 text-[10px]">
                                     <div class="flex items-center justify-center gap-2">
                                         @php $hasCheckpoint = $permohonan->checkpoints && $permohonan->checkpoints->count(); @endphp
-                                        <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" class="permohonan-checkbox align-middle" {{ $hasCheckpoint ? '' : 'disabled' }}>
+                                        <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" class="permohonan-checkbox align-middle" {{ ($permohonan->approved_by_system_1 && !$permohonan->approved_by_system_2) ? '' : 'disabled' }}>
                                         <span class="inline-block min-w-[110px] text-center">{{ $permohonan->nomor_memo }}</span>
                                     </div>
                                 </td>
@@ -110,28 +127,54 @@
                                         {{ $permohonan->status }}
                                     </span>
                                 </td>
+                                <td class="px-4 py-1 text-[10px] text-center">
+                                    <div class="flex flex-col gap-1">
+                                        <span class="inline-flex items-center text-xs">
+                                            @if($permohonan->approved_by_system_1)
+                                                <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                                <span class="text-green-700">Sys 1 ✓</span>
+                                            @else
+                                                <span class="w-2 h-2 bg-gray-300 rounded-full mr-1"></span>
+                                                <span class="text-gray-500">Sys 1 ✗</span>
+                                            @endif
+                                        </span>
+                                        <span class="inline-flex items-center text-xs">
+                                            @if($permohonan->approved_by_system_2)
+                                                <span class="w-2 h-2 bg-green-500 rounded-full mr-1"></span>
+                                                <span class="text-green-700">Sys 2 ✓</span>
+                                            @else
+                                                <span class="w-2 h-2 bg-gray-300 rounded-full mr-1"></span>
+                                                <span class="text-gray-500">Sys 2 ✗</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                </td>
                                 <td class="px-2 py-1 text-sm font-medium text-center text-[10px]">
-                                    @if($permohonan->checkpoints && $permohonan->checkpoints->count())
+                                    @if($permohonan->approved_by_system_1 && !$permohonan->approved_by_system_2)
                                         <a href="{{ route('approval.create', $permohonan) }}"
                                            class="inline-flex items-center justify-center px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-medium hover:bg-indigo-100 transition">
                                             Proses
                                         </a>
                                     @else
                                         <span class="inline-flex items-center justify-center px-2 py-1 bg-gray-100 text-gray-400 rounded text-xs font-medium cursor-not-allowed">
-                                            Tunggu
+                                            @if(!$permohonan->approved_by_system_1)
+                                                Menunggu Approval I
+                                            @else
+                                                Sudah Diproses
+                                            @endif
                                         </span>
                                     @endif
                                 </td>
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-6 py-1 text-center text-gray-500">
+                                <td colspan="11" class="px-6 py-1 text-center text-gray-500">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
                                         <p class="text-xs font-medium">Tidak ada tugas yang perlu diselesaikan saat ini</p>
-                                        <p class="text-xs mt-1">Semua permohonan sudah diproses</p>
+                                        <p class="text-xs mt-1">Semua permohonan sudah diproses atau menunggu approval pertama</p>
                                     </div>
                                 </td>
                             </tr>
@@ -139,7 +182,7 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="10" class="px-4 py-1 text-right">
+                            <td colspan="11" class="px-4 py-1 text-right">
                                 @if(auth()->user()->can('approval-approve'))
                                 <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H5a4 4 0 014-4h2a4 4 0 014 4v2a4 4 0 01-4 4H9z" /></svg>

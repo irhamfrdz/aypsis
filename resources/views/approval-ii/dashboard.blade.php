@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Approval Tugas II')
-@section('page_title', 'Dashboard Approval Tugas II - Persetujuan Sederhana')
+@section('title', 'Approval Tugas I')
+@section('page_title', 'Dashboard Approval Tugas I - Persetujuan Sederhana')
 
 @section('content')
 <div class="space-y-6">
@@ -22,7 +22,7 @@
                 </div>
                 <div class="ml-3">
                     <p class="text-sm text-blue-700">
-                        <strong>Approval Tugas II</strong> adalah langkah persetujuan sederhana yang hanya mengubah status memo menjadi "Selesai" dan menandai sebagai approved oleh system 2, sehingga memo dapat diproses untuk pembuatan pranota.
+                        <strong>Approval Tugas I</strong> adalah langkah persetujuan sederhana yang hanya mengubah status memo menjadi "Disetujui Sistem 1" dan menandai sebagai approved oleh system 1, sebagai tahap awal sebelum proses operasional.
                     </p>
                 </div>
             </div>
@@ -32,10 +32,10 @@
         <div class="mb-6 border-b border-gray-200">
             <nav class="flex space-x-8">
                 <a href="{{ route('approval-ii.dashboard') }}" class="text-indigo-600 whitespace-nowrap py-2 px-1 border-b-2 border-indigo-500 font-medium text-sm">
-                    📋 Dashboard Approval Tugas II
+                    📋 Dashboard Approval Tugas I
                 </a>
                 <a href="{{ route('approval-ii.riwayat') }}" class="text-gray-500 hover:text-gray-700 whitespace-nowrap py-2 px-1 border-b-2 border-transparent font-medium text-sm">
-                    📚 Riwayat Approval Tugas II
+                    📚 Riwayat Approval Tugas I
                 </a>
             </nav>
         </div>
@@ -74,7 +74,7 @@
                                 <td class="px-4 py-1 font-medium text-gray-900 text-[10px]">
                                     <div class="flex items-center justify-center gap-2">
                                         @php $hasCheckpoint = $permohonan->checkpoints && $permohonan->checkpoints->count(); @endphp
-                                        <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" class="permohonan-checkbox align-middle" {{ $hasCheckpoint ? '' : 'disabled' }}>
+                                        <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" class="permohonan-checkbox align-middle" {{ ($hasCheckpoint && !$permohonan->approved_by_system_1) ? '' : 'disabled' }}>
                                         <span class="inline-block min-w-[110px] text-center">{{ $permohonan->nomor_memo }}</span>
                                     </div>
                                 </td>
@@ -140,14 +140,18 @@
                                     </div>
                                 </td>
                                 <td class="px-2 py-1 text-sm font-medium text-center text-[10px]">
-                                    @if($permohonan->approved_by_system_1 && !$permohonan->approved_by_system_2)
+                                    @if($permohonan->checkpoints && $permohonan->checkpoints->count() && !$permohonan->approved_by_system_1)
                                         <a href="{{ route('approval-ii.create', $permohonan) }}"
                                            class="inline-flex items-center justify-center px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-medium hover:bg-green-100 transition">
                                             Setujui
                                         </a>
                                     @else
                                         <span class="inline-flex items-center justify-center px-2 py-1 bg-gray-100 text-gray-400 rounded text-xs font-medium cursor-not-allowed">
-                                            Menunggu
+                                            @if(!$permohonan->checkpoints || !$permohonan->checkpoints->count())
+                                                Tunggu Checkpoint
+                                            @else
+                                                Sudah Disetujui
+                                            @endif
                                         </span>
                                     @endif
                                 </td>
@@ -160,7 +164,7 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
                                         <p class="text-xs font-medium">Tidak ada tugas yang perlu disetujui saat ini</p>
-                                        <p class="text-xs mt-1">Semua permohonan sudah diproses atau menunggu approval pertama</p>
+                                        <p class="text-xs mt-1">Semua permohonan sudah diproses atau menunggu checkpoint supir</p>
                                     </div>
                                 </td>
                             </tr>
