@@ -24,9 +24,8 @@ class PenyelesaianIIController extends Controller
      */
     public function index()
     {
-    $query = Permohonan::whereNotIn('status', ['Dibatalkan']) // Hanya exclude yang dibatalkan
-         ->where('approved_by_system_1', true) // Sudah disetujui system 1
-         ->where('approved_by_system_2', false) // Belum disetujui system 2
+    $query = Permohonan::whereNotIn('status', ['Selesai', 'Dibatalkan'])
+         ->where('approved_by_system_1', false) // Belum disetujui system 1
          ->with(['supir', 'kontainers', 'checkpoints']);
 
         if (request('vendor')) {
@@ -412,11 +411,10 @@ class PenyelesaianIIController extends Controller
             $processed = 0;
             foreach ($permohonansToProcess as $permohonan) {
 
-                // Mark as selesai
-                $permohonan->status = 'Selesai';
-                $permohonan->approved_by_system_2 = true; // Mark as approved by Approval Tugas 2
+                // Mark as approved by system 1 (simple approval)
+                $permohonan->approved_by_system_1 = true; // Mark as approved by Approval Tugas 1
 
-                // Untuk Approval Tugas II, hanya update status memo saja
+                // Untuk Approval Tugas I, hanya update flag approval saja
                 // Tidak melakukan proses lengkap seperti update kontainer, tagihan, atau perbaikan
 
                 $permohonan->save();
@@ -513,9 +511,9 @@ class PenyelesaianIIController extends Controller
 
         DB::beginTransaction();
         try {
-            // Update status permohonan
-            $permohonan->status = ucfirst($validated['status_permohonan']); // 'Selesai' atau 'Bermasalah'
-            $permohonan->approved_by_system_2 = true; // Mark as approved by Approval Tugas 2
+            // Update status permohonan - untuk Approval Tugas 1, status tetap "Pending"
+            // $permohonan->status = ucfirst($validated['status_permohonan']); // Tidak mengubah status
+            $permohonan->approved_by_system_1 = true; // Mark as approved by Approval Tugas 1
 
             // Simpan lampiran jika ada
             if ($request->hasFile('lampiran_kembali')) {

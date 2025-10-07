@@ -24,8 +24,9 @@ class PenyelesaianController extends Controller
      */
     public function index()
     {
-    $query = Permohonan::whereNotIn('status', ['Selesai', 'Dibatalkan'])
-         ->where('approved_by_system_1', false) // Hanya tampilkan yang belum disetujui system 1
+    $query = Permohonan::whereNotIn('status', ['Dibatalkan']) // Hanya exclude yang dibatalkan
+         ->where('approved_by_system_1', true) // Sudah disetujui system 1
+         ->where('approved_by_system_2', false) // Belum disetujui system 2
          ->with(['supir', 'kontainers', 'checkpoints']);
 
         if (request('vendor')) {
@@ -413,7 +414,7 @@ class PenyelesaianController extends Controller
 
                 // Mark as selesai
                 $permohonan->status = 'Selesai';
-                $permohonan->approved_by_system_1 = true; // Mark as approved by Approval Tugas 1
+                $permohonan->approved_by_system_2 = true; // Mark as approved by Approval Tugas 2
 
                 // Update kontainer statuses
                 if ($permohonan->kontainers()->exists()) {
@@ -551,9 +552,9 @@ class PenyelesaianController extends Controller
 
         DB::beginTransaction();
         try {
-            // Update status permohonan - untuk Approval Tugas 1, status tetap "Pending"
-            // $permohonan->status = ucfirst($validated['status_permohonan']); // 'Selesai' atau 'Bermasalah'
-            $permohonan->approved_by_system_1 = true; // Mark as approved by Approval Tugas 1
+            // Update status permohonan - untuk Approval Tugas 2, ubah status ke Selesai
+            $permohonan->status = ucfirst($validated['status_permohonan']); // 'Selesai' atau 'Bermasalah'
+            $permohonan->approved_by_system_2 = true; // Mark as approved by Approval Tugas 2
 
             // Simpan lampiran jika ada
             if ($request->hasFile('lampiran_kembali')) {
