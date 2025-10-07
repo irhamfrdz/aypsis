@@ -84,7 +84,22 @@ class Kontainer extends Model
             $existingStock->update(['status' => 'inactive']);
         }
 
-        // Cek duplikasi dengan kontainers lain (selain diri sendiri)
+        // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
+        $duplicateQuery = self::where('nomor_seri_kontainer', $kontainer->nomor_seri_kontainer)
+            ->where('akhiran_kontainer', $kontainer->akhiran_kontainer)
+            ->where('status', 'active');
+        
+        if ($kontainer->exists) {
+            $duplicateQuery->where('id', '!=', $kontainer->id);
+        }
+
+        $existingWithSameSerialAndSuffix = $duplicateQuery->first();
+        if ($existingWithSameSerialAndSuffix) {
+            // Jika ada kontainer aktif dengan nomor seri dan akhiran yang sama, set yang lama ke inactive
+            $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
+        }
+
+        // Cek duplikasi nomor seri gabungan (selain validasi nomor seri + akhiran di atas)
         $query = self::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
             ->where('status', 'active');
         
@@ -94,7 +109,7 @@ class Kontainer extends Model
 
         $existingKontainer = $query->first();
         if ($existingKontainer) {
-            // Jika ada kontainer aktif lain dengan nomor yang sama, set yang lama ke inactive
+            // Jika ada kontainer aktif lain dengan nomor gabungan yang sama, set yang lama ke inactive
             $existingKontainer->update(['status' => 'inactive']);
         }
     }

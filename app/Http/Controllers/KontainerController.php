@@ -48,7 +48,7 @@ class KontainerController extends Controller
             'awalan_kontainer' => 'required|string|size:4',
             'nomor_seri_kontainer' => 'required|string|size:6',
             'akhiran_kontainer' => 'required|string|size:1',
-            'nomor_seri_gabungan' => 'required|string|size:11|unique:kontainers,nomor_seri_gabungan',
+            'nomor_seri_gabungan' => 'required|string|size:11',
             'ukuran' => 'required|in:10,20,40',
             'tipe_kontainer' => 'required|string',
             'tanggal_beli' => 'nullable|date',
@@ -65,10 +65,29 @@ class KontainerController extends Controller
             'status' => 'nullable|string|in:Tersedia,Disewa',
         ]);
 
+        // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
+        $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
+            ->where('akhiran_kontainer', $request->akhiran_kontainer)
+            ->where('status', 'active')
+            ->first();
+
+        if ($existingWithSameSerialAndSuffix) {
+            // Set kontainer yang sudah ada ke inactive
+            $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
+            
+            $warningMessage = "Kontainer dengan nomor seri {$request->nomor_seri_kontainer} dan akhiran {$request->akhiran_kontainer} sudah ada. Kontainer lama telah dinonaktifkan.";
+            session()->flash('warning', $warningMessage);
+        }
+
         // Tambahkan tanggal kondisi terakhir
         $data = $request->all();
         if ($request->filled('kondisi_kontainer')) {
             $data['tanggal_kondisi_terakhir'] = now();
+        }
+
+        // Set status default jika tidak ada
+        if (!$request->filled('status')) {
+            $data['status'] = 'active';
         }
 
         Kontainer::create($data);
@@ -108,7 +127,7 @@ class KontainerController extends Controller
             'awalan_kontainer' => 'required|string|size:4',
             'nomor_seri_kontainer' => 'required|string|size:6',
             'akhiran_kontainer' => 'required|string|size:1',
-            'nomor_seri_gabungan' => 'required|string|size:11|unique:kontainers,nomor_seri_gabungan,' . $kontainer->id,
+            'nomor_seri_gabungan' => 'required|string|size:11',
             'ukuran' => 'required|in:10,20,40',
             'tipe_kontainer' => 'required|string',
             'tanggal_beli' => 'nullable|date',
@@ -124,6 +143,21 @@ class KontainerController extends Controller
             'keterangan2' => 'nullable|string',
             'status' => 'nullable|string|in:Tersedia,Disewa',
         ]);
+
+        // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer (selain diri sendiri)
+        $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
+            ->where('akhiran_kontainer', $request->akhiran_kontainer)
+            ->where('status', 'active')
+            ->where('id', '!=', $kontainer->id)
+            ->first();
+
+        if ($existingWithSameSerialAndSuffix) {
+            // Set kontainer yang sudah ada ke inactive
+            $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
+            
+            $warningMessage = "Kontainer lain dengan nomor seri {$request->nomor_seri_kontainer} dan akhiran {$request->akhiran_kontainer} sudah ada. Kontainer lama telah dinonaktifkan.";
+            session()->flash('warning', $warningMessage);
+        }
 
         $data = $request->all();
 

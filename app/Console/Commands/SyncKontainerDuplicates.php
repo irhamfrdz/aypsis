@@ -92,6 +92,39 @@ class SyncKontainerDuplicates extends Command
             }
         }
 
+        // Cari duplikasi dalam kontainers sendiri berdasarkan nomor_seri_kontainer + akhiran_kontainer
+        $kontainerSerialDuplicates = DB::select("
+            SELECT nomor_seri_kontainer, akhiran_kontainer, COUNT(*) as count
+            FROM kontainers 
+            WHERE nomor_seri_kontainer IS NOT NULL 
+            AND akhiran_kontainer IS NOT NULL
+            AND status = 'active'
+            GROUP BY nomor_seri_kontainer, akhiran_kontainer
+            HAVING COUNT(*) > 1
+        ");
+
+        if (!empty($kontainerSerialDuplicates)) {
+            $this->info('Found ' . count($kontainerSerialDuplicates) . ' duplicate serial+suffix combinations in kontainers:');
+            
+            foreach ($kontainerSerialDuplicates as $duplicate) {
+                $this->line("Processing kontainer serial duplicates: {$duplicate->nomor_seri_kontainer}-{$duplicate->akhiran_kontainer}");
+                
+                // Ambil yang terbaru, set yang lama ke inactive
+                $kontainers = Kontainer::where('nomor_seri_kontainer', $duplicate->nomor_seri_kontainer)
+                    ->where('akhiran_kontainer', $duplicate->akhiran_kontainer)
+                    ->where('status', 'active')
+                    ->orderBy('created_at', 'desc')
+                    ->get();
+                
+                // Skip yang pertama (terbaru), set yang lain ke inactive
+                $kontainers->skip(1)->each(function ($kontainer) {
+                    $kontainer->update(['status' => 'inactive']);
+                });
+                
+                $this->info("  → " . ($kontainers->count() - 1) . " old kontainer entries with same serial+suffix set to inactive");
+            }
+        }
+
         // Cari duplikasi dalam kontainers sendiri
         $kontainerDuplicates = DB::select("
             SELECT nomor_seri_gabungan, COUNT(*) as count

@@ -44,6 +44,21 @@
 </div>
 @endif
 
+@if (session('warning'))
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-md mb-4" role="alert">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+            </svg>
+        </div>
+        <div class="ml-3">
+            <p class="text-sm font-medium">{{session('warning')}}</p>
+        </div>
+    </div>
+</div>
+@endif
+
 {{-- Rows Per Page Selection --}}
 @include('components.rows-per-page', [
     'routeName' => 'master.kontainer.index',
@@ -95,7 +110,7 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     @php
-                        // Normalize status - hanya ada 2 status: Tersedia dan Disewa
+                        // Normalize status dengan dukungan untuk 'active'/'inactive'
                         $displayStatus = 'Tersedia'; // Default
                         $statusClass = 'bg-green-100 text-green-800'; // Default: Hijau untuk Tersedia
 
@@ -104,8 +119,13 @@
                             $displayStatus = 'Disewa';
                             $statusClass = 'bg-yellow-100 text-yellow-800'; // Kuning untuk Disewa
                         }
+                        // Jika status inactive, maka "Nonaktif"
+                        elseif ($kontainer->status === 'inactive') {
+                            $displayStatus = 'Nonaktif';
+                            $statusClass = 'bg-red-100 text-red-800'; // Merah untuk Nonaktif
+                        }
                         // Semua status lainnya dianggap "Tersedia"
-                        // (Tersedia, available, dikembalikan, dll)
+                        // (Tersedia, available, active, dikembalikan, dll)
                     @endphp
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
                         {{ $displayStatus }}
