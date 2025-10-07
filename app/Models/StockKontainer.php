@@ -22,7 +22,6 @@ class StockKontainer extends Model
         'tanggal_masuk',
         'tanggal_keluar',
         'keterangan',
-        'nomor_seri',
         'tahun_pembuatan'
     ];
 

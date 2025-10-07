@@ -261,14 +261,14 @@ Route::middleware([
         Route::get('kontainer/create', [KontainerController::class, 'create'])
              ->name('kontainer.create')
              ->middleware('can:master-kontainer-create');
-             
+
         // Master kontainer import/export routes (MUST BE BEFORE {kontainer} routes)
         Route::get('kontainer/download-template', [KontainerImportController::class, 'downloadTemplate'])
              ->name('kontainer.download-template');
         Route::post('kontainer/import', [KontainerImportController::class, 'import'])
              ->name('kontainer.import')
              ->middleware('can:master-kontainer-create');
-             
+
         Route::post('kontainer', [KontainerController::class, 'store'])
              ->name('kontainer.store')
              ->middleware('can:master-kontainer-create');
@@ -603,6 +603,14 @@ Route::middleware([
              'index' => 'can:master-kode-nomor-view',
              'show' => 'can:master-kode-nomor-view'
          ]);
+
+    // Stock Kontainer Import/Export routes (must be BEFORE resource routes)
+    Route::get('master/stock-kontainer/template', [App\Http\Controllers\StockKontainerImportController::class, 'downloadTemplate'])
+         ->name('master.stock-kontainer.template');
+
+    Route::post('master/stock-kontainer/import', [App\Http\Controllers\StockKontainerImportController::class, 'import'])
+         ->name('master.stock-kontainer.import')
+         ->middleware('can:master-stock-kontainer-create');
 
     // 📊 Stock Kontainer (Container Stock) Management with permissions
     Route::resource('master/stock-kontainer', \App\Http\Controllers\StockKontainerController::class)

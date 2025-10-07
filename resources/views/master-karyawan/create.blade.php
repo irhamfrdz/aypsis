@@ -20,7 +20,7 @@
         </div>
     @endif
 
-    @if ($errors->any())
+    @if ($errors && is_object($errors) && $errors->any())
         <div class="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 rounded-md" role="alert">
             <p class="font-bold">Terdapat kesalahan dalam formulir:</p>
             <ul class="list-disc list-inside mt-2">
@@ -38,27 +38,24 @@
         </div>
 
         @php
-            // Choose appropriate store route:
-            // - If the current user has no linked karyawan, prefer the onboarding route
-            //   so the middleware doesn't block the POST (karyawan.store).
-            // - Otherwise, if the user is admin and master store exists, use it.
+            // Choose appropriate store route based on current context
             $formAction = null;
             try {
                 $user = auth()->user();
-                $hasKaryawan = $user && !empty($user->karyawan_id);
 
-                if (!$hasKaryawan && \Illuminate\Support\Facades\Route::has('karyawan.store')) {
-                    $formAction = route('karyawan.store');
-                } elseif ($user && method_exists($user, 'hasRole') && $user->hasRole('admin') && \Illuminate\Support\Facades\Route::has('master.karyawan.store')) {
-                    $formAction = route('master.karyawan.store');
-                } elseif (\Illuminate\Support\Facades\Route::has('karyawan.store')) {
-                    $formAction = route('karyawan.store');
-                } elseif (\Illuminate\Support\Facades\Route::has('master.karyawan.store')) {
+                // Check if we're in the master context based on current route
+                $currentRoute = request()->route();
+                $routeName = $currentRoute ? $currentRoute->getName() : '';
+
+                if (str_contains($routeName, 'master.')) {
+                    // We're in master context, use master karyawan store route
                     $formAction = route('master.karyawan.store');
                 } else {
-                    $formAction = route('dashboard');
+                    // We're in regular context, use regular karyawan store route
+                    $formAction = route('karyawan.store');
                 }
             } catch (\Exception $e) {
+                // Fallback to dashboard if all routes fail
                 $formAction = route('dashboard');
             }
         @endphp
@@ -369,7 +366,18 @@
         </fieldset>
 
         <div class="flex justify-end mt-8">
-            <a href="{{ route('master.karyawan.index') }}" class="inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
+            @php
+                // Determine cancel route based on current context
+                $currentRoute = request()->route();
+                $routeName = $currentRoute ? $currentRoute->getName() : '';
+
+                if (str_contains($routeName, 'master.')) {
+                    $cancelRoute = route('master.karyawan.index');
+                } else {
+                    $cancelRoute = route('dashboard');
+                }
+            @endphp
+            <a href="{{ $cancelRoute }}" class="inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
                 Batal
             </a>
             <button type="submit" class="inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">

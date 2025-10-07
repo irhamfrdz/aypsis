@@ -56,33 +56,33 @@ try {
             $errors[] = "Baris dengan data tidak lengkap: " . implode(';', $data);
             continue;
         }
-        
+
         [$awalan, $seri, $akhiran, $ukuran, $vendor] = $data;
-        
+
         // Validate data
         if (strlen($awalan) !== 4) {
             $errors[] = "Awalan kontainer harus 4 karakter: {$awalan}";
             continue;
         }
-        
+
         if (strlen($seri) !== 6) {
             $errors[] = "Nomor seri harus 6 karakter: {$seri}";
             continue;
         }
-        
+
         if (strlen($akhiran) !== 1) {
             $errors[] = "Akhiran harus 1 karakter: {$akhiran}";
             continue;
         }
-        
+
         $nomorGabungan = $awalan . $seri . $akhiran;
-        
+
         // Check if already exists
         if (Kontainer::where('nomor_seri_gabungan', $nomorGabungan)->exists()) {
             $errors[] = "Nomor kontainer sudah ada: {$nomorGabungan}";
             continue;
         }
-        
+
         // Create kontainer
         $kontainer = Kontainer::create([
             'awalan_kontainer' => $awalan,
@@ -94,23 +94,23 @@ try {
             'vendor' => $vendor,
             'status' => 'Tersedia'
         ]);
-        
+
         $currentNumber = $importedCount + 1;
         echo "4.{$currentNumber}. Import berhasil: {$nomorGabungan} - {$ukuran}ft - {$vendor}\n";
         $importedCount++;
     }
-    
+
     DB::commit();
     echo "\n=== HASIL IMPORT ===\n";
     echo "Total data berhasil diimport: {$importedCount}\n";
-    
+
     if (!empty($errors)) {
         echo "Error yang terjadi:\n";
         foreach ($errors as $error) {
             echo "- {$error}\n";
         }
     }
-    
+
 } catch (Exception $e) {
     DB::rollback();
     echo "ERROR saat import: " . $e->getMessage() . "\n";
