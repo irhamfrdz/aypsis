@@ -95,7 +95,8 @@ class KontainerImportController extends Controller
                 'updated' => 0,
                 'errors' => 0,
                 'skipped' => 0,
-                'error_details' => []
+                'error_details' => [],
+                'warnings' => []
             ];
 
             DB::beginTransaction();
@@ -158,7 +159,20 @@ class KontainerImportController extends Controller
                     // Generate nomor seri gabungan
                     $nomorSeriGabungan = $awalanKontainer . $nomorSeri . $akhiranKontainer;
 
-                    // Check if kontainer already exists
+                    // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
+                    $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $nomorSeri)
+                        ->where('akhiran_kontainer', $akhiranKontainer)
+                        ->where('status', 'active')
+                        ->first();
+
+                    if ($existingWithSameSerialAndSuffix) {
+                        // Set kontainer yang sudah ada ke inactive
+                        $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
+                        
+                        $stats['warnings'][] = "Baris {$rowNumber}: Kontainer dengan nomor seri {$nomorSeri} dan akhiran {$akhiranKontainer} sudah ada. Kontainer lama telah dinonaktifkan.";
+                    }
+
+                    // Check if kontainer already exists (berdasarkan nomor seri gabungan)
                     $existingKontainer = Kontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)->first();
 
                     if ($existingKontainer) {
@@ -182,7 +196,7 @@ class KontainerImportController extends Controller
                             'ukuran' => $ukuran,
                             'tipe_kontainer' => 'Dry Container', // Default value
                             'vendor' => $vendor,
-                            'status' => 'Tersedia', // Default value
+                            'status' => 'active', // Default value - akan divalidasi oleh model jika ada konflik
                             'created_at' => now(),
                             'updated_at' => now()
                         ]);
@@ -213,6 +227,11 @@ class KontainerImportController extends Controller
                     $errorDetails .= ' dan ' . (count($stats['error_details']) - 3) . ' error lainnya';
                 }
                 $message .= ". Error detail: " . $errorDetails;
+            }
+
+            // Show warnings for duplicate serial+suffix
+            if (!empty($stats['warnings'])) {
+                session()->flash('warning', implode(' ', $stats['warnings']));
             }
 
             return redirect()->route('master.kontainer.index')->with('success', $message);
