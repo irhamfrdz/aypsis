@@ -414,6 +414,13 @@ Route::middleware([
              ->middleware('can:master-pricelist-sewa-kontainer-delete');
 
         // Master pricelist cat routes - CONVERTED TO RESOURCE (7 routes → 1 line) with permissions
+        // Import/Export routes (must be BEFORE resource routes)
+        Route::get('pricelist-cat/template', [App\Http\Controllers\MasterPricelistCatImportController::class, 'downloadTemplate'])
+             ->name('pricelist-cat.template');
+        Route::post('pricelist-cat/import', [App\Http\Controllers\MasterPricelistCatImportController::class, 'import'])
+             ->name('pricelist-cat.import')
+             ->middleware('can:master-pricelist-cat-create');
+             
         Route::resource('pricelist-cat', PricelistCatController::class)->middleware([
             'index' => 'can:master-pricelist-cat-view',
             'show' => 'can:master-pricelist-cat-view',
