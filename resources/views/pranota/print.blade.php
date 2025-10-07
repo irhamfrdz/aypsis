@@ -96,13 +96,13 @@
         .table th {
             background-color: #f8f9fa;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 10px;
             text-align: center;
             white-space: nowrap;
         }
 
         .table td {
-            font-size: 11px;
+            font-size: 10px;
             white-space: nowrap;
         }
 
@@ -138,16 +138,15 @@
 
         .table .col-nomor {
             text-align: center;
-            font-family: 'Courier New', monospace;
+            font-family: Arial, sans-serif;
             font-size: 10px;
         }
 
         .masa-display {
             display: inline-block;
-            padding: 2px 6px;
-            background-color: #f3f4f6;
-            border-radius: 3px;
-            border: 1px solid #d1d5db;
+            padding: 0;
+            background-color: transparent;
+            border: none;
             font-weight: 500;
             font-size: 10px;
         }
@@ -213,12 +212,52 @@
         }
 
         @media print {
+            @page {
+                size: 165mm 215mm; /* Setengah Folio portrait */
+                margin: 8mm;
+            }
+
             body {
-                font-size: 11px;
+                font-size: 9px;
+                width: 149mm;
             }
 
             .container {
-                padding: 10px;
+                padding: 6px;
+                max-width: 100%;
+            }
+
+            .header {
+                margin-bottom: 12px;
+                padding-bottom: 8px;
+            }
+
+            .header h1 {
+                font-size: 16px;
+                margin-bottom: 3px;
+            }
+
+            .header h2 {
+                font-size: 12px;
+                margin-bottom: 5px;
+            }
+
+            .header div strong {
+                font-size: 11px;
+            }
+
+            .header div span {
+                font-size: 9px;
+            }
+
+            .info-section {
+                margin-bottom: 12px;
+                font-size: 8px;
+            }
+
+            .info-label {
+                width: 80px;
+                font-size: 8px;
             }
 
             .no-print {
@@ -227,30 +266,61 @@
 
             .table {
                 page-break-inside: avoid;
+                margin-bottom: 12px;
             }
 
             .table th,
             .table td {
-                padding: 6px 4px;
+                padding: 2px 1px;
+                font-size: 10px;
+            }
+
+            .table th {
                 font-size: 10px;
             }
 
             .masa-display {
-                padding: 1px 4px;
-                font-size: 9px;
+                padding: 0;
+                font-size: 10px;
             }
 
             .masa-display small {
-                font-size: 7px;
+                font-size: 5px;
             }
 
             .col-vendor {
-                max-width: 100px;
-                font-size: 9px;
+                max-width: 60px;
+                font-size: 10px;
             }
 
             .col-nomor {
+                font-size: 10px;
+            }
+
+            .summary {
+                margin-top: 12px;
                 font-size: 8px;
+            }
+
+            .summary-label {
+                width: 100px;
+            }
+
+            .total-amount {
+                font-size: 10px;
+                padding-top: 6px;
+                margin-top: 6px;
+            }
+
+            .footer {
+                margin-top: 15px;
+                padding-top: 8px;
+                font-size: 7px;
+            }
+
+            .status-badge {
+                font-size: 7px;
+                padding: 1px 6px;
             }
         }
     </style>
@@ -259,9 +329,11 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
+            <div style="text-align: left; margin-bottom: 15px;">
+                <strong style="font-size: 14px;">PT. ALEXINDO YAKINPRIMA</strong><br>
+                <span style="font-size: 11px;">Jalan Pluit Raya No.8 Blok B No.12</span>
+            </div>
             <h1>PRANOTA TAGIHAN KONTAINER</h1>
-            <h2>No. {{ $pranota->no_invoice }}</h2>
-            <p>Tanggal: {{ $pranota->tanggal_pranota->format('d/m/Y') }}</p>
         </div>
 
         <!-- Info Section -->
@@ -273,38 +345,25 @@
                 </div>
                 <div class="info-item">
                     <span class="info-label">Tanggal Pranota:</span>
-                    <span>{{ $pranota->tanggal_pranota->format('d/m/Y') }}</span>
+                    <span>{{ $pranota->tanggal_pranota->format('d-M-y') }}</span>
                 </div>
+                @php
+                    $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
+                @endphp
+                @if($vendorList->isNotEmpty())
                 <div class="info-item">
-                    <span class="info-label">Due Date:</span>
-                    <span>
-                        @if($pranota->due_date)
-                            {{ $pranota->due_date->format('d/m/Y') }}
-                        @else
-                            -
-                        @endif
-                    </span>
+                    <span class="info-label">Vendor:</span>
+                    <span>{{ $vendorList->implode(', ') }}</span>
                 </div>
+                @endif
+                @if($pranota->no_invoice_vendor)
+                <div class="info-item">
+                    <span class="info-label">Invoice Vendor:</span>
+                    <span>{{ $pranota->no_invoice_vendor }}</span>
+                </div>
+                @endif
             </div>
             <div class="info-right">
-                <div class="info-item">
-                    <span class="info-label">Status:</span>
-                    <span class="status-badge status-{{ $pranota->status }}">
-                        @if($pranota->status == 'unpaid')
-                            Belum Lunas
-                        @elseif($pranota->status == 'sent')
-                            Terkirim
-                        @elseif($pranota->status == 'paid')
-                            Lunas
-                        @elseif($pranota->status == 'cancelled')
-                            Dibatalkan
-                        @endif
-                    </span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Jumlah Tagihan:</span>
-                    <span>{{ $pranota->jumlah_tagihan }} item</span>
-                </div>
                 <div class="info-item">
                     <span class="info-label">Keterangan:</span>
                     <span>{{ $pranota->keterangan ?: '-' }}</span>
@@ -317,76 +376,84 @@
             <thead>
                 <tr>
                     <th style="width: 5%;">No</th>
-                    <th style="width: 15%;">Vendor</th>
-                    <th style="width: 15%;">No. Kontainer</th>
+                    <th style="width: 18%;">No. Kontainer</th>
                     <th style="width: 8%;">Size</th>
-                    <th style="width: 10%;">Periode</th>
                     <th style="width: 10%;">Masa</th>
-                    <th style="width: 12%;">Tarif</th>
-                    <th style="width: 12%;">DPP</th>
-                    <th style="width: 13%;">Grand Total</th>
+                    <th style="width: 13%;">DPP</th>
+                    <th style="width: 10%;">Adjustment</th>
+                    <th style="width: 9%;">PPN</th>
+                    <th style="width: 9%;">PPH</th>
+                    <th style="width: 18%;">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($tagihanItems as $index => $item)
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="col-vendor">{{ $item->vendor }}</td>
                     <td class="col-nomor">{{ $item->nomor_kontainer }}</td>
                     <td class="text-center">{{ $item->size }}</td>
-                    <td class="col-periode">{{ $item->periode }}</td>
                     <td class="col-masa">
                         @if($item->masa)
                             <span class="masa-display">
-                                {{ $item->masa }}
-                                @if(strpos($item->masa, 'bulan') === false && strpos($item->masa, 'hari') === false && is_numeric($item->masa))
-                                    <small>hari</small>
-                                @endif
+                                @php
+                                    // Check if masa contains date range format like "22 Jan 2025 - 20 Feb 2025"
+                                    if(strpos($item->masa, ' - ') !== false) {
+                                        $dates = explode(' - ', $item->masa);
+                                        if(count($dates) == 2) {
+                                            try {
+                                                $startDate = \Carbon\Carbon::parse($dates[0])->format('d-M-y');
+                                                $endDate = \Carbon\Carbon::parse($dates[1])->format('d-M-y');
+                                                echo $startDate . ' - ' . $endDate;
+                                            } catch (Exception $e) {
+                                                echo $item->masa;
+                                            }
+                                        } else {
+                                            echo $item->masa;
+                                        }
+                                    } else {
+                                        echo $item->masa;
+                                        if(strpos($item->masa, 'bulan') === false && strpos($item->masa, 'hari') === false && is_numeric($item->masa)) {
+                                            echo '<small> hari</small>';
+                                        }
+                                    }
+                                @endphp
                             </span>
                         @else
                             <span class="masa-display">-</span>
                         @endif
                     </td>
-                    <td class="col-tarif">
-                        @if($item->tarif)
-                            @if(strtolower($item->tarif) == 'harian')
-                                <span class="masa-display tarif-harian">Harian</span>
-                            @elseif(strtolower($item->tarif) == 'bulanan')
-                                <span class="masa-display tarif-bulanan">Bulanan</span>
-                            @else
-                                <span class="masa-display">{{ $item->tarif }}</span>
-                            @endif
-                        @else
-                            <span class="masa-display">-</span>
-                        @endif
-                    </td>
-                    <td class="text-right">Rp {{ number_format($item->dpp ?? 0, 2, ',', '.') }}</td>
-                    <td class="text-right">Rp {{ number_format($item->grand_total ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->dpp ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->adjustment ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->ppn ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->pph ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->grand_total ?? 0, 2, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
                     <td colspan="9" class="text-center">Tidak ada tagihan ditemukan</td>
                 </tr>
                 @endforelse
+                <!-- Total Row -->
+                <tr style="background-color: #f8f9fa; font-weight: bold;">
+                    <td class="text-center">TOTAL</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}</td>
+                </tr>
             </tbody>
         </table>
 
         <!-- Summary -->
         <div class="summary">
-            <div class="summary-item">
-                <span class="summary-label">Subtotal:</span>
-                <span>Rp {{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}</span>
-            </div>
-            <div class="summary-item total-amount">
+            <div class="summary-item total-amount" style="margin-top: 15px;">
                 <span class="summary-label">TOTAL AMOUNT:</span>
                 <span>Rp {{ number_format((float)$pranota->total_amount, 2, ',', '.') }}</span>
             </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="footer">
-            <p>Dokumen ini dicetak pada {{ now()->format('d/m/Y H:i:s') }}</p>
-            <p>Sistem Pranota Tagihan Kontainer - {{ config('app.name') }}</p>
         </div>
     </div>
 

@@ -46,7 +46,7 @@ php artisan migrate --force
 echo "🧹 7. Clearing application caches..."
 php artisan config:clear
 php artisan cache:clear
-php artisan route:clear      # ⚠️ PENTING: Clear route cache agar Report Tagihan muncul!
+php artisan route:clear
 php artisan view:clear
 
 # 8. 🔥 JALANKAN SEEDER PERMISSION (BARU DITAMBAHKAN)

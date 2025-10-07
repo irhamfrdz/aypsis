@@ -1790,6 +1790,28 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
     const today = new Date().toISOString().split('T')[0];
     tanggalPranota.value = today;
 
+    // Calculate container statistics for default keterangan
+    const containerStats = {};
+    data.sizes.forEach((size, index) => {
+        const cleanSize = size.replace(/[^0-9]/g, ''); // Extract number only (20ft -> 20)
+        const sizeKey = cleanSize + 'ft';
+        containerStats[sizeKey] = (containerStats[sizeKey] || 0) + 1;
+    });
+
+    // Generate default keterangan
+    let defaultKeterangan = 'Pranota ';
+    const statParts = [];
+    Object.entries(containerStats).forEach(([size, count]) => {
+        statParts.push(`${count} kontainer ${size}`);
+    });
+    defaultKeterangan += statParts.join(' dan ');
+
+    // Set default keterangan
+    const keteranganField = document.getElementById('keterangan');
+    if (keteranganField) {
+        keteranganField.value = defaultKeterangan;
+    }
+
     // Get nomor pranota elements
     const nomorPranotaDisplay = document.getElementById('nomor_pranota_display');
 

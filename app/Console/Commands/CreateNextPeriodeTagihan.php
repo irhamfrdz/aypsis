@@ -4,6 +4,8 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\DaftarTagihanKontainerSewa;
+use App\Models\Coa;
+use App\Models\CoaTransaction;
 use Carbon\Carbon;
 
 class CreateNextPeriodeTagihan extends Command
@@ -124,6 +126,9 @@ class CreateNextPeriodeTagihan extends Command
                     if ($row->wasRecentlyCreated) {
                         $created++;
                         $this->line("Created periode={$periode} for container {$container->nomor_kontainer} (vendor {$container->vendor})");
+
+                        // Record debit to COA007 for new periode
+                        $this->recordCoaTransaction($row, $periode);
                     }
                 }
 
@@ -152,5 +157,128 @@ class CreateNextPeriodeTagihan extends Command
         $endStr = $end->format('j') . ' ' . $months[(int)$end->format('n')] . ' ' . $end->format('Y');
 
         return $startStr . ' - ' . $endStr;
+    }
+
+    /**
+     * Record COA transaction (debit) for new periode
+     */
+    private function recordCoaTransaction($tagihan, $periode)
+    {
+        try {
+            // Find COA007 account
+            $coa = Coa::where('nomor_akun', 'COA007')->first();
+
+            if (!$coa) {
+                $this->error("COA007 account not found. Skipping COA transaction for {$tagihan->nomor_kontainer}");
+                return;
+            }
+
+            // Calculate debit amount (using grand_total from tagihan)
+            $debitAmount = (float) ($tagihan->grand_total ?? 0);
+
+            if ($debitAmount <= 0) {
+                $this->line("Skipping COA transaction for {$tagihan->nomor_kontainer} - zero amount");
+                return;
+            }
+
+            // Create debit transaction
+            $transaksi = CoaTransaction::create([
+                'coa_id' => $coa->id,
+                'tanggal_transaksi' => Carbon::now()->format('Y-m-d'),
+                'keterangan' => "Tagihan periode {$periode} - Kontainer {$tagihan->nomor_kontainer} ({$tagihan->vendor})",
+                'debit' => $debitAmount,
+                'kredit' => 0,
+                'saldo' => 0, // Will be calculated below
+                'jenis_transaksi' => 'tagihan_kontainer_sewa',
+                'nomor_referensi' => "TKS-{$tagihan->nomor_kontainer}-P{$periode}",
+                'created_by' => 1, // Default admin user ID
+                'created_at' => Carbon::now(),
+                'updated_at' => Carbon::now()
+            ]);
+
+            // Update saldo
+            $this->updateCoaSaldo($coa->id, $transaksi->id);
+
+            $this->line("  → COA007 debit recorded: Rp " . number_format($debitAmount, 2, ',', '.') . " for periode {$periode}");
+
+        } catch (\Exception $e) {
+            $this->error("Failed to record COA transaction for {$tagihan->nomor_kontainer}: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update COA saldo after transaction
+     */
+    private function updateCoaSaldo($coaId, $transaksiId)
+    {
+        try {
+            // Get all transactions for this COA up to current transaction, ordered by date and ID
+            $transaksi = CoaTransaction::findOrFail($transaksiId);
+
+            // Calculate running saldo
+            $previousSaldo = CoaTransaction::where('coa_id', $coaId)
+                ->where(function($query) use ($transaksi) {
+                    $query->where('tanggal_transaksi', '<', $transaksi->tanggal_transaksi)
+                          ->orWhere(function($q) use ($transaksi) {
+                              $q->where('tanggal_transaksi', '=', $transaksi->tanggal_transaksi)
+                                ->where('id', '<', $transaksi->id);
+                          });
+                })
+                ->orderBy('tanggal_transaksi', 'desc')
+                ->orderBy('id', 'desc')
+                ->value('saldo') ?? 0;
+
+            // Calculate new saldo: previous + debit - kredit
+            $newSaldo = $previousSaldo + $transaksi->debit - $transaksi->kredit;
+
+            // Update current transaction saldo
+            $transaksi->update(['saldo' => $newSaldo]);
+
+            // Update subsequent transactions saldo if any
+            $this->updateSubsequentSaldos($coaId, $transaksi->tanggal_transaksi, $transaksi->id);
+
+        } catch (\Exception $e) {
+            $this->error("Failed to update COA saldo: " . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update saldos for transactions after the current one
+     */
+    private function updateSubsequentSaldos($coaId, $fromDate, $fromId)
+    {
+        try {
+            $subsequentTransactions = CoaTransaction::where('coa_id', $coaId)
+                ->where(function($query) use ($fromDate, $fromId) {
+                    $query->where('tanggal_transaksi', '>', $fromDate)
+                          ->orWhere(function($q) use ($fromDate, $fromId) {
+                              $q->where('tanggal_transaksi', '=', $fromDate)
+                                ->where('id', '>', $fromId);
+                          });
+                })
+                ->orderBy('tanggal_transaksi', 'asc')
+                ->orderBy('id', 'asc')
+                ->get();
+
+            $runningSaldo = CoaTransaction::where('coa_id', $coaId)
+                ->where(function($query) use ($fromDate, $fromId) {
+                    $query->where('tanggal_transaksi', '<', $fromDate)
+                          ->orWhere(function($q) use ($fromDate, $fromId) {
+                              $q->where('tanggal_transaksi', '=', $fromDate)
+                                ->where('id', '<=', $fromId);
+                          });
+                })
+                ->orderBy('tanggal_transaksi', 'desc')
+                ->orderBy('id', 'desc')
+                ->value('saldo') ?? 0;
+
+            foreach ($subsequentTransactions as $transaction) {
+                $runningSaldo = $runningSaldo + $transaction->debit - $transaction->kredit;
+                $transaction->update(['saldo' => $runningSaldo]);
+            }
+
+        } catch (\Exception $e) {
+            $this->error("Failed to update subsequent saldos: " . $e->getMessage());
+        }
     }
 }

@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KontainerController;
+use App\Http\Controllers\KontainerImportController;
 use App\Http\Controllers\DivisiController;
 use App\Http\Controllers\PajakController;
 use App\Http\Controllers\CabangController;
@@ -204,20 +205,17 @@ Route::middleware([
              ->name('karyawan.export-excel')
              ->middleware('can:master-karyawan-export');
 
-        // Download CSV template for import
+        // Download CSV template for import (no special permission needed)
         Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
-             ->name('karyawan.template')
-             ->middleware('can:master-karyawan-template');
+             ->name('karyawan.template');
 
-        // Download Excel template for import
+        // Download Excel template for import (no special permission needed)
         Route::get('karyawan/excel-template', [KaryawanController::class, 'downloadExcelTemplate'])
-             ->name('karyawan.excel-template')
-             ->middleware('can:master-karyawan-template');
+             ->name('karyawan.excel-template');
 
-        // Download simple Excel template for import (headers only)
+        // Download simple Excel template for import (headers only, no special permission needed)
         Route::get('karyawan/simple-excel-template', [KaryawanController::class, 'downloadSimpleExcelTemplate'])
-             ->name('karyawan.simple-excel-template')
-             ->middleware('can:master-karyawan-template');
+             ->name('karyawan.simple-excel-template');
 
         // Crew checklist for ABK employees
         Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
@@ -263,6 +261,14 @@ Route::middleware([
         Route::get('kontainer/create', [KontainerController::class, 'create'])
              ->name('kontainer.create')
              ->middleware('can:master-kontainer-create');
+             
+        // Master kontainer import/export routes (MUST BE BEFORE {kontainer} routes)
+        Route::get('kontainer/download-template', [KontainerImportController::class, 'downloadTemplate'])
+             ->name('kontainer.download-template');
+        Route::post('kontainer/import', [KontainerImportController::class, 'import'])
+             ->name('kontainer.import')
+             ->middleware('can:master-kontainer-create');
+             
         Route::post('kontainer', [KontainerController::class, 'store'])
              ->name('kontainer.store')
              ->middleware('can:master-kontainer-create');

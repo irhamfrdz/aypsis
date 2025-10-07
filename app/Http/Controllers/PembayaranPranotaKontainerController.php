@@ -253,7 +253,13 @@ class PembayaranPranotaKontainerController extends Controller
             'dpPayment'
         ])->findOrFail($id);
 
-        return view('pembayaran-pranota-kontainer.print', compact('pembayaran'));
+        // Get COA transactions related to this payment
+        $coaTransactions = \App\Models\CoaTransaction::with('coa')
+            ->where('nomor_referensi', $pembayaran->nomor_pembayaran)
+            ->orderBy('id', 'asc')
+            ->get();
+
+        return view('pembayaran-pranota-kontainer.print', compact('pembayaran', 'coaTransactions'));
     }
 
     /**

@@ -20,6 +20,7 @@ class Kontainer extends Model
         'nomor_seri_gabungan',
         'ukuran',
         'tipe_kontainer',
+        'vendor',
         'tanggal_beli',
         'tanggal_jual',
         'keterangan',
