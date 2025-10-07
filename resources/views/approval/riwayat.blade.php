@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Riwayat Approval')
-@section('page_title', 'Riwayat Permohonan yang Telah Diproses')
+@section('title', 'Riwayat Approval Tugas II')
+@section('page_title', 'Riwayat Permohonan yang Telah Disetujui - Approval Tugas II')
 
 @section('content')
 <div class="space-y-6">
@@ -15,17 +15,17 @@
         <!-- Navigation Tabs -->
         <div class="mb-6 border-b border-gray-200">
             <nav class="flex space-x-8">
-                <a href="{{ route('approval.dashboard') }}" class="text-gray-500 hover:text-gray-700 whitespace-nowrap py-2 px-1 border-b-2 border-transparent font-medium text-sm">
-                    📋 Dashboard Approval
+                <a href="{{ route('approval-ii.dashboard') }}" class="text-gray-500 hover:text-gray-700 whitespace-nowrap py-2 px-1 border-b-2 border-transparent font-medium text-sm">
+                    📋 Dashboard Approval Tugas II
                 </a>
-                <a href="{{ route('approval.riwayat') }}" class="text-indigo-600 whitespace-nowrap py-2 px-1 border-b-2 border-indigo-500 font-medium text-sm">
-                    📚 Riwayat Approval
+                <a href="{{ route('approval-ii.riwayat') }}" class="text-indigo-600 whitespace-nowrap py-2 px-1 border-b-2 border-indigo-500 font-medium text-sm">
+                    📚 Riwayat Approval Tugas II
                 </a>
             </nav>
         </div>
 
         <!-- Filter Form -->
-        <form method="GET" action="{{ route('approval.riwayat') }}" class="mb-6 bg-gray-50 p-4 rounded-lg">
+        <form method="GET" action="{{ route('approval-ii.riwayat') }}" class="mb-6 bg-gray-50 p-4 rounded-lg">
             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                 <!-- Filter Vendor -->
                 <div>
@@ -88,7 +88,7 @@
                     🔍 Filter
                 </button>
                 @if(request()->hasAny(['vendor', 'status', 'kegiatan', 'tanggal_dari', 'tanggal_sampai']))
-                    <a href="{{ route('approval.riwayat') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition text-sm">
+                    <a href="{{ route('approval-ii.riwayat') }}" class="px-4 py-2 bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 transition text-sm">
                         ✖️ Reset Filter
                     </a>
                 @endif
@@ -307,7 +307,7 @@
                                     <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak Ada Data</h3>
                                     <p class="text-sm text-gray-500 mb-4">Tidak ada riwayat permohonan yang ditemukan.</p>
                                     @if(request()->hasAny(['vendor', 'status', 'kegiatan', 'tanggal_dari', 'tanggal_sampai']))
-                                        <a href="{{ route('approval.riwayat') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
+                                        <a href="{{ route('approval-ii.riwayat') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-indigo-600 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
                                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
                                             </svg>
@@ -324,7 +324,7 @@
 
         <!-- Pagination -->
         <div class="mt-4">
-            @include('components.modern-pagination', ['paginator' => $permohonans, 'routeName' => 'approval.riwayat'])
+            @include('components.modern-pagination', ['paginator' => $permohonans, 'routeName' => 'approval-ii.riwayat'])
         </div>
     </div>
 </div>

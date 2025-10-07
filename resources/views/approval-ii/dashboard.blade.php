@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Approval Tugas I')
-@section('page_title', 'Dashboard Approval Tugas I - Persetujuan Sederhana')
+@section('title', 'Approval Tugas II')
+@section('page_title', 'Dashboard Approval Tugas II - Penyelesaian Operasional')
 
 @section('content')
 <div class="space-y-6">
@@ -13,16 +13,16 @@
 
     <div class="bg-white shadow-md rounded-lg p-6">
         <!-- Info Panel -->
-        <div class="bg-blue-50 border-l-4 border-blue-400 p-4 mb-6">
+        <div class="bg-orange-50 border-l-4 border-orange-400 p-4 mb-6">
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <svg class="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <svg class="h-5 w-5 text-orange-400" viewBox="0 0 20 20" fill="currentColor">
                         <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" />
                     </svg>
                 </div>
                 <div class="ml-3">
-                    <p class="text-sm text-blue-700">
-                        <strong>Approval Tugas I</strong> adalah langkah persetujuan sederhana yang hanya mengubah status memo menjadi "Disetujui Sistem 1" dan menandai sebagai approved oleh system 1, sebagai tahap awal sebelum proses operasional.
+                    <p class="text-sm text-orange-700">
+                        <strong>Approval Tugas II</strong> adalah langkah penyelesaian operasional yang mengubah status kontainer, membuat record perbaikan, dan menyelesaikan proses bisnis secara lengkap.
                     </p>
                 </div>
             </div>
@@ -32,10 +32,10 @@
         <div class="mb-6 border-b border-gray-200">
             <nav class="flex space-x-8">
                 <a href="{{ route('approval-ii.dashboard') }}" class="text-indigo-600 whitespace-nowrap py-2 px-1 border-b-2 border-indigo-500 font-medium text-sm">
-                    📋 Dashboard Approval Tugas I
+                    📋 Dashboard Approval Tugas II
                 </a>
                 <a href="{{ route('approval-ii.riwayat') }}" class="text-gray-500 hover:text-gray-700 whitespace-nowrap py-2 px-1 border-b-2 border-transparent font-medium text-sm">
-                    📚 Riwayat Approval Tugas I
+                    📚 Riwayat Approval Tugas II
                 </a>
             </nav>
         </div>
@@ -60,9 +60,11 @@
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Memo</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
+                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Checkpoint</th>
+                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
+                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Checkpoint Supir</th>
+                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Masa</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Approval</th>
                         <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -74,7 +76,7 @@
                                 <td class="px-4 py-1 font-medium text-gray-900 text-[10px]">
                                     <div class="flex items-center justify-center gap-2">
                                         @php $hasCheckpoint = $permohonan->checkpoints && $permohonan->checkpoints->count(); @endphp
-                                        <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" class="permohonan-checkbox align-middle" {{ ($hasCheckpoint && !$permohonan->approved_by_system_1) ? '' : 'disabled' }}>
+                                        <input type="checkbox" name="permohonan_ids[]" value="{{ $permohonan->id }}" class="permohonan-checkbox align-middle" {{ ($permohonan->approved_by_system_1 && !$permohonan->approved_by_system_2) ? '' : 'disabled' }}>
                                         <span class="inline-block min-w-[110px] text-center">{{ $permohonan->nomor_memo }}</span>
                                     </div>
                                 </td>
@@ -83,31 +85,39 @@
                                     $kegiatanLabel = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)->value('nama_kegiatan') ?? (isset($permohonan->kegiatan) ? ucfirst($permohonan->kegiatan) : '-');
                                 @endphp
                                 <td class="px-4 py-1 text-[10px]">{{ $kegiatanLabel }}</td>
+                                <td class="px-4 py-1 text-[10px]">{{ $permohonan->tujuan }}</td>
+                                <td class="px-4 py-1 text-[10px]">{{ $permohonan->vendor_perusahaan ?? '-' }}</td>
                                 <td class="px-4 py-1 text-[10px]">
                                     @if ($permohonan->kontainers && $permohonan->kontainers->count())
-                                        <div class="flex flex-wrap gap-1">
-                                            @foreach($permohonan->kontainers->take(2) as $kontainer)
-                                                <span class="inline-block bg-blue-100 text-blue-800 text-[9px] px-1 py-0.5 rounded">
-                                                    {{ $kontainer->nomor_kontainer }}
-                                                </span>
+                                        <div>
+                                            <span class="block text-[10px] text-gray-700">{{ $permohonan->kontainers->map(function($k) { return $k->nomor_kontainer; })->implode(', ') }}</span>
+                                            {{-- send container data (size) along with the permohonan when processing mass approvals --}}
+                                            @foreach($permohonan->kontainers as $k)
+                                                <input type="hidden" name="kontainers[{{ $permohonan->id }}][{{ $k->nomor_kontainer }}][nomor]" value="{{ $k->nomor_kontainer }}" />
+                                                <input type="hidden" name="kontainers[{{ $permohonan->id }}][{{ $k->nomor_kontainer }}][size]" value="{{ $k->ukuran ?? '' }}" />
                                             @endforeach
-                                            @if($permohonan->kontainers->count() > 2)
-                                                <span class="inline-block bg-gray-100 text-gray-600 text-[9px] px-1 py-0.5 rounded">
-                                                    +{{ $permohonan->kontainers->count() - 2 }}
-                                                </span>
-                                            @endif
                                         </div>
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
                                 </td>
-                                <td class="px-4 py-1 text-[10px]">{{ $permohonan->vendor_perusahaan ?? '-' }}</td>
                                 <td class="px-4 py-1 text-[10px]">
                                     @php
                                         $lastCheckpoint = $permohonan->checkpoints?->sortByDesc('tanggal_checkpoint')->first();
                                     @endphp
                                     @if ($lastCheckpoint)
                                         <span class="block text-[10px] text-gray-700">{{ \Carbon\Carbon::parse($lastCheckpoint->tanggal_checkpoint)->format('d-m-Y') }}</span>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                                <td class="px-4 py-1 text-[10px]">
+                                    @if ($lastCheckpoint)
+                                        @php
+                                            $start = \Carbon\Carbon::parse($lastCheckpoint->tanggal_checkpoint)->locale('id')->isoFormat('D MMMM YYYY');
+                                            $end = \Carbon\Carbon::parse($lastCheckpoint->tanggal_checkpoint)->addMonth()->subDay()->locale('id')->isoFormat('D MMMM YYYY');
+                                        @endphp
+                                        <span class="block text-[10px] text-gray-700">{{ $start }} - {{ $end }}</span>
                                     @else
                                         <span class="text-gray-400">-</span>
                                     @endif
@@ -140,17 +150,17 @@
                                     </div>
                                 </td>
                                 <td class="px-2 py-1 text-sm font-medium text-center text-[10px]">
-                                    @if($permohonan->checkpoints && $permohonan->checkpoints->count() && !$permohonan->approved_by_system_1)
+                                    @if($permohonan->approved_by_system_1 && !$permohonan->approved_by_system_2)
                                         <a href="{{ route('approval-ii.create', $permohonan) }}"
-                                           class="inline-flex items-center justify-center px-2 py-1 bg-green-50 text-green-700 rounded text-xs font-medium hover:bg-green-100 transition">
-                                            Setujui
+                                           class="inline-flex items-center justify-center px-2 py-1 bg-indigo-50 text-indigo-700 rounded text-xs font-medium hover:bg-indigo-100 transition">
+                                            Proses
                                         </a>
                                     @else
                                         <span class="inline-flex items-center justify-center px-2 py-1 bg-gray-100 text-gray-400 rounded text-xs font-medium cursor-not-allowed">
-                                            @if(!$permohonan->checkpoints || !$permohonan->checkpoints->count())
-                                                Tunggu Checkpoint
+                                            @if(!$permohonan->approved_by_system_1)
+                                                Menunggu Approval I
                                             @else
-                                                Sudah Disetujui
+                                                Sudah Diproses
                                             @endif
                                         </span>
                                     @endif
@@ -158,13 +168,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-1 text-center text-gray-500">
+                                <td colspan="11" class="px-6 py-1 text-center text-gray-500">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
-                                        <p class="text-xs font-medium">Tidak ada tugas yang perlu disetujui saat ini</p>
-                                        <p class="text-xs mt-1">Semua permohonan sudah diproses atau menunggu checkpoint supir</p>
+                                        <p class="text-xs font-medium">Tidak ada tugas yang perlu diselesaikan saat ini</p>
+                                        <p class="text-xs mt-1">Semua permohonan sudah diproses atau menunggu approval pertama</p>
                                     </div>
                                 </td>
                             </tr>
@@ -172,11 +182,11 @@
                     </tbody>
                     <tfoot>
                         <tr>
-                            <td colspan="9" class="px-4 py-1 text-right">
+                            <td colspan="11" class="px-4 py-1 text-right">
                                 @if(auth()->user()->can('approval-approve'))
-                                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-green-600 hover:bg-green-700 text-white font-semibold rounded-md shadow transition">
+                                <button type="submit" class="inline-flex items-center gap-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-md shadow transition">
                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2a4 4 0 00-4-4H5a4 4 0 014-4h2a4 4 0 014 4v2a4 4 0 01-4 4H9z" /></svg>
-                                    Setujui Masal
+                                    Proses Masal
                                 </button>
                                 @endif
                             </td>

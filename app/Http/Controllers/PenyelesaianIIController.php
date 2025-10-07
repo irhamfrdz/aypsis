@@ -1,7 +1,7 @@
 <?php
 
-// File: app/Http/Controllers/PenyelesaianIIController.php
-// Controller BARU untuk halaman dasbor penyelesaian tugas II (duplicate dari PenyelesaianController).
+// File: app/Http/Controllers/PenyelesaianController.php
+// Controller BARU untuk halaman dasbor penyelesaian tugas.
 
 namespace App\Http\Controllers;
 
@@ -24,8 +24,9 @@ class PenyelesaianIIController extends Controller
      */
     public function index()
     {
-    $query = Permohonan::whereNotIn('status', ['Selesai', 'Dibatalkan'])
-         ->where('approved_by_system_1', false) // Belum disetujui system 1
+    $query = Permohonan::whereNotIn('status', ['Dibatalkan']) // Hanya exclude yang dibatalkan
+         ->where('approved_by_system_1', true) // Sudah disetujui system 1
+         ->where('approved_by_system_2', false) // Belum disetujui system 2
          ->with(['supir', 'kontainers', 'checkpoints']);
 
         if (request('vendor')) {
@@ -319,7 +320,7 @@ class PenyelesaianIIController extends Controller
                 // Add vendor_bengkel if provided in request
                 if ($request && $request->has('vendor_bengkel') && !empty($request->vendor_bengkel)) {
                     $perbaikanData['vendor_bengkel'] = $request->vendor_bengkel;
-                    Log::debug('PenyelesaianIIController: vendor_bengkel set', [
+                    Log::debug('PenyelesaianController: vendor_bengkel set', [
                         'vendor_bengkel_value' => $request->vendor_bengkel
                     ]);
                 }
@@ -332,7 +333,7 @@ class PenyelesaianIIController extends Controller
                 // Add estimasi perbaikan (description) to estimasi_kerusakan_kontainer if provided
                 if ($request && $request->has('estimasi_perbaikan') && !empty($request->estimasi_perbaikan)) {
                     $perbaikanData['estimasi_kerusakan_kontainer'] = $request->estimasi_perbaikan;
-                    Log::debug('PenyelesaianIIController: estimasi_kerusakan_kontainer set with description', [
+                    Log::debug('PenyelesaianController: estimasi_kerusakan_kontainer set with description', [
                         'estimasi_perbaikan_value' => $request->estimasi_perbaikan
                     ]);
                 }
@@ -344,7 +345,7 @@ class PenyelesaianIIController extends Controller
                     $biayaNumeric = (float) $biayaClean;
                     if ($biayaNumeric > 0) {
                         $perbaikanData['estimasi_biaya_perbaikan'] = $biayaNumeric;
-                        Log::debug('PenyelesaianIIController: estimasi_biaya_perbaikan set with amount', [
+                        Log::debug('PenyelesaianController: estimasi_biaya_perbaikan set with amount', [
                             'original_value' => $request->total_biaya_perbaikan,
                             'cleaned_value' => $biayaClean,
                             'numeric_value' => $biayaNumeric
@@ -387,7 +388,7 @@ class PenyelesaianIIController extends Controller
      */
     public function massProcess(Request $request)
     {
-        Log::debug('PenyelesaianIIController: massProcess entry', ['request' => $request->all()]);
+        Log::debug('PenyelesaianController: massProcess entry', ['request' => $request->all()]);
 
         $validated = $request->validate([
             'permohonan_ids' => 'required|array|min:1',
@@ -401,7 +402,7 @@ class PenyelesaianIIController extends Controller
 
     // Diagnostic: log kontainers payload shape (if any)
     $kontainersPayload = $request->input('kontainers', []);
-    Log::debug('PenyelesaianIIController: kontainers payload', ['kontainers' => $kontainersPayload]);
+    Log::debug('PenyelesaianController: kontainers payload', ['kontainers' => $kontainersPayload]);
 
     // Note: tests expect mass processing to proceed even if checkpoints are not present.
     // Previous behavior aborted when any permohonan lacked checkpoints; allow processing anyway.
@@ -411,11 +412,50 @@ class PenyelesaianIIController extends Controller
             $processed = 0;
             foreach ($permohonansToProcess as $permohonan) {
 
-                // Mark as approved by system 1 (simple approval)
-                $permohonan->approved_by_system_1 = true; // Mark as approved by Approval Tugas 1
+                // Mark as selesai
+                $permohonan->status = 'Selesai';
+                $permohonan->approved_by_system_2 = true; // Mark as approved by Approval Tugas 2
 
-                // Untuk Approval Tugas I, hanya update flag approval saja
-                // Tidak melakukan proses lengkap seperti update kontainer, tagihan, atau perbaikan
+                // Update kontainer statuses
+                if ($permohonan->kontainers()->exists()) {
+                    // Determine if this permohonan represents a 'tarik kontainer sewa' (return)
+                    $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
+                        ->value('nama_kegiatan') ?? ($permohonan->kegiatan ?? '');
+                    $kegiatanLower = strtolower($kegiatanName);
+                    $isReturnSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false)
+                        || (stripos($kegiatanLower, 'pengambilan') !== false)
+                        || ($kegiatanLower === 'pengambilan');
+
+                    // Use the earliest checkpoint date (tanggal mulai checkpoint supir) if available
+                    $startCheckpoint = null;
+                    if ($permohonan->checkpoints && $permohonan->checkpoints->count()) {
+                        $startCheckpoint = $permohonan->checkpoints->min('tanggal_checkpoint');
+                    }
+                    // Normalize to Y-m-d string for grouping
+                    $doneDate = $startCheckpoint ? (\Carbon\Carbon::parse($startCheckpoint)->toDateString()) : now()->toDateString();
+
+                    foreach ($permohonan->kontainers as $kontainer) {
+                        if ($isReturnSewa && in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
+                            // mark returned: set finish date and mark as dikembalikan
+                            $kontainer->tanggal_selesai_sewa = $doneDate;
+                            $kontainer->status = 'dikembalikan';
+
+                            // Update existing daftar_tagihan_kontainer_sewa records with tanggal_akhir
+                            $this->updateTagihanTanggalAkhir($kontainer->nomor_kontainer, $permohonan->vendor_perusahaan, $doneDate);
+                        } else {
+                            // default behavior: make available
+                            $kontainer->status = 'Tersedia';
+                        }
+                        $kontainer->save();
+                    }
+                }
+
+                // Create or merge daftar tagihan entries for this permohonan.
+                // Use the same doneDate used for kontainer updates so grouping is consistent.
+                $this->createOrUpdateTagihan($permohonan, $doneDate, $kontainersPayload);
+
+                // Create perbaikan kontainer records if this is a perbaikan kegiatan
+                $this->createPerbaikanKontainer($permohonan, $doneDate);
 
                 $permohonan->save();
                 $processed++;
@@ -468,7 +508,7 @@ class PenyelesaianIIController extends Controller
             // Get vendor bengkel options for dropdown
             $vendorBengkelOptions = \App\Models\VendorBengkel::orderBy('nama_bengkel')->get();
 
-            return view('approval-ii.checkpoint2-perbaikan', compact(
+            return view('approval.checkpoint2-perbaikan', compact(
                 'permohonan',
                 'kontainerPerbaikan',
                 'totalPerbaikan',
@@ -479,7 +519,7 @@ class PenyelesaianIIController extends Controller
         }
 
         // Use the regular view for non-repair containers
-        return view('approval-ii.checkpoint2-create', compact('permohonan'));
+        return view('approval.checkpoint2-create', compact('permohonan'));
     }
 
     /**
@@ -488,7 +528,7 @@ class PenyelesaianIIController extends Controller
     public function store(Request $request, Permohonan $permohonan)
     {
     // Debug: log incoming request and permohonan id (debug level)
-    Log::debug('PenyelesaianIIController: store entry', [
+    Log::debug('PenyelesaianController: store entry', [
             'permohonan_id' => $permohonan->id,
             'request' => $request->all(),
         ]);
@@ -506,14 +546,15 @@ class PenyelesaianIIController extends Controller
             // Validasi untuk estimasi perbaikan dan total biaya
             'estimasi_perbaikan' => 'nullable|string|max:1000',
             'total_biaya_perbaikan' => 'nullable|numeric|min:0',
-            // Removed vendor_bengkel validation for simplified approval
+            // Validasi untuk vendor/bengkel
+            'vendor_bengkel' => 'required|string|max:255',
         ]);
 
         DB::beginTransaction();
         try {
-            // Update status permohonan - untuk Approval Tugas 1, status tetap "Pending"
-            // $permohonan->status = ucfirst($validated['status_permohonan']); // Tidak mengubah status
-            $permohonan->approved_by_system_1 = true; // Mark as approved by Approval Tugas 1
+            // Update status permohonan - untuk Approval Tugas 2, ubah status ke Selesai
+            $permohonan->status = ucfirst($validated['status_permohonan']); // 'Selesai' atau 'Bermasalah'
+            $permohonan->approved_by_system_2 = true; // Mark as approved by Approval Tugas 2
 
             // Simpan lampiran jika ada
             if ($request->hasFile('lampiran_kembali')) {
@@ -537,22 +578,88 @@ class PenyelesaianIIController extends Controller
                 $permohonan->catatan = $permohonan->catatan . "\n\n[Total Biaya Perbaikan]: " . $biayaFormatted;
             }
 
-            // Untuk Approval Tugas II, hanya update status memo saja
-            // Tidak melakukan proses lengkap seperti update kontainer, tagihan, atau perbaikan
+                // Logika untuk sewa dan status kontainer
+            if ($validated['status_permohonan'] === 'selesai') {
+                if ($permohonan->kontainers()->exists()) {
+                    // Determine if this permohonan represents a 'tarik kontainer sewa' (return)
+                    $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
+                        ->value('nama_kegiatan') ?? ($permohonan->kegiatan ?? '');
+                    $kegiatanLower = strtolower($kegiatanName);
+                    $isReturnSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false)
+                        || (stripos($kegiatanLower, 'pengambilan') !== false)
+                        || ($kegiatanLower === 'pengambilan');
+
+                    // Use the earliest checkpoint date if available
+                    $startCheckpoint = null;
+                    if ($permohonan->checkpoints && $permohonan->checkpoints->count()) {
+                        $startCheckpoint = $permohonan->checkpoints->min('tanggal_checkpoint');
+                    }
+                    $doneDate = $startCheckpoint ? Carbon::parse($startCheckpoint)->toDateString() : now()->toDateString();
+
+                    foreach ($permohonan->kontainers as $kontainer) {
+                        // Check for tarik kontainer sewa
+                        if ($isReturnSewa && in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
+                            // mark returned: set finish date and mark as dikembalikan
+                            $kontainer->tanggal_selesai_sewa = $doneDate;
+                            $kontainer->status = 'dikembalikan';
+
+                            // Update existing daftar_tagihan_kontainer_sewa records with tanggal_akhir
+                            $this->updateTagihanTanggalAkhir($kontainer->nomor_kontainer, $permohonan->vendor_perusahaan, $doneDate);
+                        }
+                        // Jika ini adalah tugas pengiriman dan tanggal sewa diisi, set status ke 'Disewa'
+                        elseif ($permohonan->kegiatan == 'pengiriman' && !empty($validated['tanggal_masuk_sewa'])) {
+                            $kontainer->status = 'Disewa';
+                            $kontainer->tanggal_masuk_sewa = $validated['tanggal_masuk_sewa'];
+                            $kontainer->tanggal_selesai_sewa = $validated['tanggal_selesai_sewa'] ?? null;
+                        } else {
+                            $kontainer->status = 'Tersedia';
+                        }
+                        $kontainer->save();
+                    }
+                }
+
+                // After kontainer status updates, create daftar tagihan entries.
+                // Prefer checkpoint date if available, otherwise today.
+                $startCheckpoint = null;
+                if ($permohonan->checkpoints && $permohonan->checkpoints->count()) {
+                    $startCheckpoint = $permohonan->checkpoints->min('tanggal_checkpoint');
+                }
+                $dateForTagihan = $startCheckpoint ? Carbon::parse($startCheckpoint)->toDateString() : now()->toDateString();
+                $this->createOrUpdateTagihan($permohonan, $dateForTagihan, $request->input('kontainers'));
+
+                // Create perbaikan kontainer records if this is a perbaikan kegiatan
+                $createdPerbaikanCount = $this->createPerbaikanKontainer($permohonan, $dateForTagihan, $request);
+
+            }
 
             $permohonan->save();
 
             DB::commit();
 
-            // Simple success message untuk Approval Tugas II
-            $successMessage = 'Permohonan berhasil diselesaikan pada Approval Tugas II!';
+            // Prepare success message with perbaikan info if any were created
+            $successMessage = 'Permohonan berhasil diselesaikan!';
+            if (isset($createdPerbaikanCount) && $createdPerbaikanCount > 0) {
+                $successMessage .= " {$createdPerbaikanCount} record perbaikan kontainer telah dibuat dengan nomor tagihan otomatis.";
+
+                // Get the latest perbaikan records to show tagihan numbers
+                $latestPerbaikans = \App\Models\PerbaikanKontainer::where('created_by', Auth::id() ?? 1)
+                    ->whereDate('created_at', today())
+                    ->orderBy('created_at', 'desc')
+                    ->take($createdPerbaikanCount)
+                    ->pluck('nomor_tagihan')
+                    ->toArray();
+
+                if (!empty($latestPerbaikans)) {
+                    $successMessage .= " Nomor tagihan: " . implode(', ', $latestPerbaikans);
+                }
+            }
 
             return redirect()->route('approval-ii.dashboard')->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
             // Log the exception for test/debug visibility
-            Log::error('PenyelesaianIIController: exception', ['message' => $e->getMessage(), 'exception' => $e]);
+            Log::error('PenyelesaianController: exception', ['message' => $e->getMessage(), 'exception' => $e]);
             return back()->with('error', 'Gagal menyimpan: ' . $e->getMessage());
         }
     }

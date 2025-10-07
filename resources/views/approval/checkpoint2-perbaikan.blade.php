@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('title', 'Approval Perbaikan Kontainer')
-@section('page_title', 'Approval Perbaikan Kontainer')
+@section('title', 'Approval Tugas II - Perbaikan Kontainer')
+@section('page_title', 'Approval Tugas II - Perbaikan Kontainer')
 
 @section('content')
-<div class="max-w-4xl mx-auto px-4 py-4 space-y-4">
+<div class="max-w-2xl mx-auto px-4 py-4 space-y-4">
 
     {{-- Notifikasi --}}
     @if(session('success'))
@@ -19,15 +19,31 @@
         </div>
     @endif
 
+    {{-- Info Panel --}}
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <svg class="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                </svg>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm text-yellow-700">
+                    <strong>Perhatian:</strong> Approval Tugas II sekarang hanya melakukan persetujuan sederhana dan tidak lagi menangani perbaikan kontainer. Perbaikan kontainer akan ditangani secara terpisah.
+                </p>
+            </div>
+        </div>
+    </div>
+
     {{-- Header --}}
     <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4">
         <div class="flex items-center justify-between">
             <div>
-                <h1 class="text-xl font-bold text-gray-900">Approval Perbaikan Kontainer</h1>
+                <h1 class="text-xl font-bold text-gray-900">Approval Tugas II - Persetujuan Sederhana</h1>
                 <p class="text-sm text-gray-600">{{ $permohonan->nomor_memo }}</p>
             </div>
-            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                Approval
+            <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                Approval Sederhana
             </span>
         </div>
     </div>
@@ -52,159 +68,102 @@
                 <span class="text-gray-600">Kontainer:</span>
                 <div class="font-medium">{{ $kontainerPerbaikan ? $kontainerPerbaikan->count() : 0 }} unit</div>
             </div>
-        </div>
-    </div>
-
-    {{-- Detail Kontainer Perbaikan --}}
-    @if($kontainerPerbaikan && $kontainerPerbaikan->count())
-    <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4">
-        <h3 class="text-sm font-semibold text-gray-800 mb-3">Detail Kontainer Perbaikan</h3>
-        <div class="space-y-3">
-            @foreach($kontainerPerbaikan as $kontainer)
-            <div class="border border-gray-200 rounded-lg p-3">
-                <div class="flex items-center justify-between mb-2">
-                    <div class="flex items-center space-x-2">
-                        <span class="font-semibold text-gray-900">{{ $kontainer->nomor_kontainer }}</span>
-                        <span class="text-xs px-2 py-1 rounded-full {{ $kontainer->status == 'active' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800' }}">
-                            {{ $kontainer->status }}
+            @if($permohonan->kontainers && $permohonan->kontainers->count())
+            <div class="col-span-4 mt-2">
+                <span class="text-gray-600">Nomor Kontainer:</span>
+                <div class="mt-1">
+                    @foreach($permohonan->kontainers as $kontainer)
+                        <span class="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded mr-1 mb-1">
+                            {{ $kontainer->nomor_kontainer }}
                         </span>
-                    </div>
-                    <span class="text-sm text-gray-600">{{ $kontainer->ukuran ?? 'N/A' }}</span>
-                </div>
-
-                @if($kontainer->perbaikanKontainers && $kontainer->perbaikanKontainers->count())
-                <div class="space-y-2">
-                    @foreach($kontainer->perbaikanKontainers as $perbaikan)
-                    <div class="bg-gray-50 rounded p-2 flex items-center justify-between">
-                        <div class="flex-1">
-                            <div class="flex items-center space-x-2 mb-1">
-                                <span class="text-sm font-medium">{{ $perbaikan->nomor_tagihan ?? 'N/A' }}</span>
-                                <span class="text-xs px-1.5 py-0.5 rounded-full
-                                    {{ $perbaikan->status_perbaikan === 'sudah_dibayar' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                    {{ $perbaikan->status_label }}
-                                </span>
-                            </div>
-                            <p class="text-xs text-gray-600">{{ $perbaikan->deskripsi_perbaikan }}</p>
-                        </div>
-                        <div class="text-right ml-2">
-                            <div class="text-sm font-bold text-green-600">
-                                Rp {{ number_format($perbaikan->biaya_perbaikan ?? 0, 0, ',', '.') }}
-                            </div>
-                        </div>
-                    </div>
                     @endforeach
                 </div>
-                @endif
             </div>
-            @endforeach
+            @endif
         </div>
     </div>
-    @endif
 
-    {{-- Riwayat Checkpoint --}}
+    {{-- Checkpoints Info --}}
     @if($permohonan->checkpoints && $permohonan->checkpoints->count())
-    <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4">
-        <h3 class="text-sm font-semibold text-gray-800 mb-3">Riwayat Checkpoint</h3>
-        <div class="space-y-2 max-h-32 overflow-y-auto">
+    <div class="bg-blue-50 rounded-lg p-4 mb-6">
+        <h4 class="text-md font-semibold text-blue-800 mb-3">Riwayat Checkpoint</h4>
+        <div class="space-y-2">
             @foreach($permohonan->checkpoints->sortBy('tanggal_checkpoint') as $checkpoint)
-            <div class="flex items-center justify-between py-1">
-                <div class="flex items-center space-x-2">
-                    <div class="w-2 h-2 rounded-full {{ $checkpoint->status == 'completed' ? 'bg-green-500' : 'bg-yellow-500' }}"></div>
-                    <span class="text-sm">{{ $checkpoint->keterangan ?? 'Checkpoint' }}</span>
+            <div class="flex items-center justify-between bg-white p-3 rounded border">
+                <div>
+                    <span class="font-medium">{{ \Carbon\Carbon::parse($checkpoint->tanggal_checkpoint)->format('d M Y H:i') }}</span>
+                    <span class="text-gray-600 ml-2">{{ $checkpoint->keterangan ?? 'Checkpoint' }}</span>
                 </div>
-                <div class="text-right">
-                    <div class="text-xs text-gray-500">{{ \Carbon\Carbon::parse($checkpoint->tanggal_checkpoint)->format('d/m H:i') }}</div>
-                    <span class="text-xs px-1.5 py-0.5 rounded-full
-                        {{ $checkpoint->status == 'completed' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                        {{ $checkpoint->status }}
-                    </span>
-                </div>
+                <span class="px-2 py-1 bg-green-100 text-green-800 text-xs rounded">{{ $checkpoint->status }}</span>
             </div>
             @endforeach
         </div>
     </div>
     @endif
 
-    {{-- Form Approval --}}
-    <div class="bg-white shadow-sm rounded-lg border border-gray-200 p-4">
-        <h3 class="text-sm font-semibold text-gray-800 mb-3">Form Approval</h3>
-        <form action="{{ route('approval.store', $permohonan) }}" method="POST" enctype="multipart/form-data" id="approvalForm" class="space-y-4">
-            @csrf
+    {{-- Approval Form --}}
+    <form action="{{ route('approval-ii.store', $permohonan) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        @csrf
 
-            {{-- Status Approval --}}
-            <div>
-                <label class="block text-sm font-medium text-gray-700 mb-2">
-                    Status Approval <span class="text-red-500">*</span>
-                </label>
-                <div class="grid grid-cols-2 gap-3">
-                    <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-green-300 hover:bg-green-50 transition-all">
-                        <input type="radio" name="status_permohonan" value="selesai" class="mr-2" required>
-                        <div>
-                            <div class="font-medium text-gray-900 text-sm">Selesai</div>
-                            <div class="text-xs text-gray-600">Perbaikan telah selesai</div>
-                        </div>
-                    </label>
+        {{-- Status Selection --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Persetujuan Approval Tugas II</h4>
+            <p class="text-sm text-gray-600 mb-4">Approval ini hanya akan mengubah status memo menjadi "Selesai" dan menandai sebagai approved oleh system 2, sehingga memo dapat diproses untuk pembuatan pranota.</p>
 
-                    <label class="flex items-center p-3 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-red-300 hover:bg-red-50 transition-all">
-                        <input type="radio" name="status_permohonan" value="bermasalah" class="mr-2">
-                        <div>
-                            <div class="font-medium text-gray-900 text-sm">Bermasalah</div>
-                            <div class="text-xs text-gray-600">Ada masalah dalam perbaikan</div>
-                        </div>
-                    </label>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Status Persetujuan *</label>
+                    <div class="space-y-2">
+                        <label class="flex items-center">
+                            <input type="radio" name="status_permohonan" value="selesai" class="mr-2" required checked>
+                            <span class="text-green-700 font-medium">✅ Setujui & Selesaikan</span>
+                            <span class="text-gray-600 ml-2">- Setujui permohonan dan ubah status menjadi "Selesai"</span>
+                        </label>
+                    </div>
                 </div>
-                <div id="statusError" class="mt-2 text-sm text-red-600 hidden">Harap pilih status approval.</div>
             </div>
+        </div>
 
-            {{-- Vendor/Bengkel --}}
-            <div>
-                <label for="vendor_bengkel" class="block text-sm font-medium text-gray-700 mb-2">
-                    Vendor/Bengkel <span class="text-red-500">*</span>
-                </label>
-                <select id="vendor_bengkel" name="vendor_bengkel" required
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm">
-                    <option value="">Pilih Vendor/Bengkel...</option>
-                    @foreach($vendorBengkelOptions as $vendor)
-                    <option value="{{ $vendor->nama_bengkel }}">{{ $vendor->nama_bengkel }}</option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-gray-500 mt-1">Pilih vendor atau bengkel yang melakukan perbaikan</p>
+        {{-- Catatan --}}
+        <div class="bg-white border border-gray-200 rounded-lg p-6">
+            <h4 class="text-lg font-semibold text-gray-800 mb-4">Catatan Persetujuan (Opsional)</h4>
+
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Catatan</label>
+                    <textarea name="catatan_karyawan" rows="3" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Tambahkan catatan jika diperlukan..."></textarea>
+                </div>
             </div>
+        </div>
 
-            {{-- Catatan --}}
-            <div>
-                <label for="catatan_karyawan" class="block text-sm font-medium text-gray-700 mb-2">
-                    Catatan Karyawan
-                </label>
-                <textarea id="catatan_karyawan" name="catatan_karyawan" rows="2"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm resize-none"
-                    placeholder="Tambahkan catatan..."></textarea>
-            </div>
+        {{-- Submit Buttons --}}
+        <div class="flex justify-between items-center pt-6 border-t border-gray-200">
+            <a href="{{ route('approval-ii.dashboard') }}" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">
+                ← Kembali ke Dashboard
+            </a>
 
-            {{-- File Upload --}}
-            <div>
-                <label for="lampiran_kembali" class="block text-sm font-medium text-gray-700 mb-2">
-                    Lampiran <span class="text-gray-500">(Opsional)</span>
-                </label>
-                <input id="lampiran_kembali" name="lampiran_kembali" type="file" accept=".pdf,.jpg,.jpeg,.png"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm">
-                <p class="text-xs text-gray-500 mt-1">PDF, JPG, JPEG, PNG hingga 2MB</p>
-            </div>
-
-            {{-- Action Buttons --}}
-            <div class="flex items-center justify-between pt-4 border-t border-gray-200">
-                <a href="{{ route('approval.dashboard') }}"
-                    class="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
-                    Kembali
-                </a>
-                <button type="submit"
-                    class="px-4 py-2 border border-transparent rounded-lg text-sm font-medium text-white bg-purple-600 hover:bg-purple-700">
-                    Approve & Selesaikan
+            <div class="flex space-x-3">
+                <button type="button" onclick="window.history.back()" class="px-6 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 transition">
+                    Batal
+                </button>
+                <button type="submit" class="px-6 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 transition">
+                    ✅ Setujui & Selesaikan
                 </button>
             </div>
-        </form>
-    </div>
-
+        </div>
+    </form>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Form validation
+    const form = document.querySelector('form');
+    form.addEventListener('submit', function(e) {
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '⏳ Memproses...';
+    });
+});
+</script>
 @endsection
