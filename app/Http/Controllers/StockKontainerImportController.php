@@ -27,9 +27,9 @@ class StockKontainerImportController extends Controller
 
             // CSV content - header template dengan format yang jelas
             $csvData = [
-                ['Nomor Kontainer (11 karakter, contoh: ABCD123456X)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
-                ['ABCD123456X', '20', 'Dry Container', 'available', '2020', 'Contoh data - hapus baris ini'],
-                ['EFGH789012Y', '40', 'Reefer Container', 'rented', '2021', 'Contoh data - hapus baris ini']
+                ['Awalan Kontainer (4 karakter)', 'Nomor Seri Kontainer (6 digit)', 'Akhiran Kontainer (1 digit)', 'Nomor Seri Gabungan (11 karakter)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
+                ['ABCD', '123456', 'X', 'ABCD123456X', '20', 'Dry Container', 'available', '2020', 'Contoh data - hapus baris ini'],
+                ['EFGH', '789012', 'Y', 'EFGH789012Y', '40', 'Reefer Container', 'rented', '2021', 'Contoh data - hapus baris ini']
             ];
 
             $callback = function() use ($csvData) {
@@ -90,14 +90,19 @@ class StockKontainerImportController extends Controller
 
             // Validate header format - terima format lama dan baru
             $expectedHeaders = [
+                // Format lama
                 ['Nomor Kontainer', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
-                ['Nomor Kontainer (11 karakter, contoh: ABCD123456X)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan']
+                ['Nomor Kontainer (11 karakter, contoh: ABCD123456X)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
+                // Format baru
+                ['Awalan Kontainer (4 karakter)', 'Nomor Seri Kontainer (6 digit)', 'Akhiran Kontainer (1 digit)', 'Nomor Seri Gabungan (11 karakter)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan']
             ];
             
             $headerValid = false;
-            foreach ($expectedHeaders as $expectedHeader) {
+            $isNewFormat = false;
+            foreach ($expectedHeaders as $index => $expectedHeader) {
                 if ($header === $expectedHeader) {
                     $headerValid = true;
+                    $isNewFormat = ($index === 2); // format baru (index 2)
                     break;
                 }
             }
@@ -121,43 +126,92 @@ class StockKontainerImportController extends Controller
                 $rowNumber = $rowIndex + 2; // +2 because we removed header and start from 1
 
                 // Skip empty rows atau contoh data
-                if (empty(array_filter($row)) || (isset($row[5]) && strpos(strtolower($row[5]), 'contoh data') !== false)) {
+                if (empty(array_filter($row)) || 
+                    (isset($row[8]) && strpos(strtolower($row[8]), 'contoh data') !== false) ||
+                    (isset($row[5]) && strpos(strtolower($row[5]), 'contoh data') !== false)) {
                     continue;
                 }
 
                 // Validate row has enough columns
-                if (count($row) < 6) {
+                $minColumns = $isNewFormat ? 9 : 6;
+                if (count($row) < $minColumns) {
                     $stats['errors']++;
                     $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap";
                     continue;
                 }
 
                 try {
-                    $nomorKontainer = trim($row[0]);
-                    $ukuran = trim($row[1]);
-                    $tipeKontainer = trim($row[2]);
-                    $status = trim($row[3]);
-                    $tahunPembuatan = trim($row[4]);
-                    $keterangan = trim($row[5]);
+                    if ($isNewFormat) {
+                        // Format baru: Awalan, Nomor Seri, Akhiran, Nomor Gabungan, Ukuran, Tipe, Status, Tahun, Keterangan
+                        $awalan = trim($row[0]);
+                        $nomor_seri = trim($row[1]);
+                        $akhiran = trim($row[2]);
+                        $nomorKontainer = trim($row[3]);
+                        $ukuran = trim($row[4]);
+                        $tipeKontainer = trim($row[5]);
+                        $status = trim($row[6]);
+                        $tahunPembuatan = trim($row[7]);
+                        $keterangan = trim($row[8]);
 
-                    // Validation
+                        // Validasi komponen kontainer
+                        if (strlen($awalan) != 4) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Awalan kontainer harus 4 karakter";
+                            continue;
+                        }
+                        if (strlen($nomor_seri) != 6 || !is_numeric($nomor_seri)) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Nomor seri kontainer harus 6 digit angka";
+                            continue;
+                        }
+                        if (strlen($akhiran) != 1) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Akhiran kontainer harus 1 karakter";
+                            continue;
+                        }
+
+                        // Validasi konsistensi nomor gabungan
+                        $expectedGabungan = $awalan . $nomor_seri . $akhiran;
+                        if ($nomorKontainer !== $expectedGabungan) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Nomor gabungan ({$nomorKontainer}) tidak sesuai dengan komponen ({$expectedGabungan})";
+                            continue;
+                        }
+                    } else {
+                        // Format lama: Nomor Kontainer, Ukuran, Tipe, Status, Tahun, Keterangan  
+                        $nomorKontainer = trim($row[0]);
+                        $ukuran = trim($row[1]);
+                        $tipeKontainer = trim($row[2]);
+                        $status = trim($row[3]);
+                        $tahunPembuatan = trim($row[4]);
+                        $keterangan = trim($row[5]);
+
+                        // Validasi format nomor kontainer (harus 11 karakter)
+                        if (strlen($nomorKontainer) != 11) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer harus 11 karakter (format: ABCD123456X)";
+                            continue;
+                        }
+
+                        // Parse nomor kontainer
+                        $awalan = substr($nomorKontainer, 0, 4);
+                        $nomor_seri = substr($nomorKontainer, 4, 6);
+                        $akhiran = substr($nomorKontainer, 10, 1);
+                    }
+
+                    // Validasi umum setelah parsing
                     if (empty($nomorKontainer)) {
                         $stats['errors']++;
                         $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer tidak boleh kosong";
                         continue;
                     }
 
-                    // Validasi format nomor kontainer (harus 11 karakter)
+                    // Validasi format nomor gabungan (harus 11 karakter)
                     if (strlen($nomorKontainer) != 11) {
                         $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer harus 11 karakter (format: ABCD123456X)";
+                        $stats['error_details'][] = "Baris {$rowNumber}: Nomor gabungan kontainer harus 11 karakter";
                         continue;
                     }
-
-                    // Parse nomor kontainer
-                    $awalan = substr($nomorKontainer, 0, 4);
-                    $nomor_seri = substr($nomorKontainer, 4, 6);
-                    $akhiran = substr($nomorKontainer, 10, 1);
 
                     // Validate status
                     $validStatuses = ['available', 'rented', 'maintenance', 'damaged', 'inactive'];
