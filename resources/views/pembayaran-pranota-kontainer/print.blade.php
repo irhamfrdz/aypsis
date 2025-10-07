@@ -245,35 +245,6 @@
         </div>
     </div>
 
-    <!-- Pranota Invoice Information -->
-    <div style="margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd;">
-        <strong>Informasi Invoice:</strong>
-        <table style="width: 100%; margin-top: 8px; font-size: 11px;">
-            <thead>
-                <tr style="background-color: #e9ecef;">
-                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 5%;">No</th>
-                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 20%;">Nomor Invoice</th>
-                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 20%;">Nomor Invoice Vendor</th>
-                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 15%;">Tanggal Invoice</th>
-                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 40%;">Keterangan</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach($pembayaran->items as $index => $item)
-                    <tr>
-                        <td style="padding: 5px; border: 1px solid #dee2e6; text-align: center;">{{ $index + 1 }}</td>
-                        <td style="padding: 5px; border: 1px solid #dee2e6;">{{ $item->pranota->no_invoice ?? '-' }}</td>
-                        <td style="padding: 5px; border: 1px solid #dee2e6;">{{ $item->pranota->no_invoice_vendor ?? '-' }}</td>
-                        <td style="padding: 5px; border: 1px solid #dee2e6;">
-                            {{ $item->pranota && $item->pranota->tanggal_pranota ? \Carbon\Carbon::parse($item->pranota->tanggal_pranota)->format('d/m/Y') : '-' }}
-                        </td>
-                        <td style="padding: 5px; border: 1px solid #dee2e6;">{{ $item->pranota->keterangan ?? '-' }}</td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-
     <!-- Periode Information -->
     <div style="margin-bottom: 10px; padding: 8px; background-color: #fff3cd; border: 1px solid #ffc107;">
         <strong>Informasi Periode:</strong><br>
