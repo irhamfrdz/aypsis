@@ -4,7 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\DB;
-use Exception;
 
 return new class extends Migration
 {
@@ -63,7 +62,7 @@ return new class extends Migration
             // Buat unique constraint pada nomor_seri_gabungan jika belum ada
             try {
                 $table->unique('nomor_seri_gabungan');
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 // Index mungkin sudah ada, abaikan error
             }
         });
@@ -96,7 +95,7 @@ return new class extends Migration
             // Hapus unique constraint jika ada
             try {
                 $table->dropUnique(['nomor_seri_gabungan']);
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 // Index mungkin tidak ada, abaikan error
             }
             
@@ -117,7 +116,7 @@ return new class extends Migration
             // Kembalikan unique constraint ke nomor_kontainer
             try {
                 $table->unique('nomor_kontainer');
-            } catch (Exception $e) {
+            } catch (\Exception $e) {
                 // Index mungkin sudah ada, abaikan error
             }
         });
