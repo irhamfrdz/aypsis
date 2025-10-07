@@ -286,6 +286,13 @@ Route::middleware([
              ->middleware('can:master-kontainer-delete');
 
         // Master tujuan routes - CONVERTED TO RESOURCE (7 routes → 1 line) with permissions
+        // Import/Export routes (must be BEFORE resource routes)
+        Route::get('tujuan/template', [App\Http\Controllers\MasterTujuanImportController::class, 'downloadTemplate'])
+             ->name('tujuan.template');
+        Route::post('tujuan/import', [App\Http\Controllers\MasterTujuanImportController::class, 'import'])
+             ->name('tujuan.import')
+             ->middleware('can:master-tujuan-create');
+             
         Route::resource('tujuan', TujuanController::class)->middleware([
             'index' => 'can:master-tujuan-view',
             'show' => 'can:master-tujuan-view'
