@@ -247,13 +247,14 @@
         <thead>
             <tr>
                 <th style="width: 5%;">No</th>
-                <th style="width: 18%;">Nomor Kontainer</th>
-                <th style="width: 10%;">Size</th>
-                <th style="width: 15%;">Periode Sewa</th>
-                <th style="width: 10%;">Lama (Hari)</th>
-                <th style="width: 12%;">Tarif/Hari</th>
-                <th style="width: 15%;">DPP</th>
-                <th style="width: 15%;">Total</th>
+                <th style="width: 15%;">Nomor Kontainer</th>
+                <th style="width: 8%;">Size</th>
+                <th style="width: 18%;">Periode Sewa</th>
+                <th style="width: 8%;">Lama</th>
+                <th style="width: 10%;">Tarif</th>
+                <th style="width: 12%;">Harga Sewa</th>
+                <th style="width: 12%;">DPP</th>
+                <th style="width: 12%;">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -261,8 +262,8 @@
             @foreach($pembayaran->items as $item)
                 @if($item->pranota)
                     @php
-                        // Get tagihan items from pranota
-                        $tagihanItems = $item->pranota->getTagihanItems();
+                        // Get tagihan items from pranota (PranotaTagihanKontainerSewa model)
+                        $tagihanItems = $item->pranota->tagihanKontainerSewaItems();
                     @endphp
                     @foreach($tagihanItems as $tagihan)
                         <tr>
@@ -274,15 +275,23 @@
                                 -
                                 {{ $tagihan->tanggal_akhir ? \Carbon\Carbon::parse($tagihan->tanggal_akhir)->format('d/m/Y') : '-' }}
                             </td>
-                            <td style="text-align: center; font-size: 10px;">{{ $tagihan->periode ?? '-' }}</td>
-                            <td class="number" style="font-size: 10px;">
-                                Rp {{ number_format($tagihan->tarif ?? 0, 0, ',', '.') }}
+                            <td style="text-align: center; font-size: 10px;">
+                                {{ $tagihan->periode ?? '-' }} {{ $tagihan->masa ? ucfirst($tagihan->masa) : '' }}
+                            </td>
+                            <td style="text-align: center; font-size: 10px;">
+                                {{ $tagihan->tarif ?? '-' }}
                             </td>
                             <td class="number" style="font-size: 10px;">
-                                Rp {{ number_format($tagihan->dpp ?? 0, 0, ',', '.') }}
+                                @php
+                                    $hargaSewa = ($tagihan->dpp ?? 0) - ($tagihan->dpp_nilai_lain ?? 0);
+                                @endphp
+                                Rp {{ number_format((float)$hargaSewa, 0, ',', '.') }}
                             </td>
                             <td class="number" style="font-size: 10px;">
-                                Rp {{ number_format($tagihan->grand_total ?? 0, 0, ',', '.') }}
+                                Rp {{ number_format((float)($tagihan->dpp ?? 0), 0, ',', '.') }}
+                            </td>
+                            <td class="number" style="font-size: 10px;">
+                                Rp {{ number_format((float)($tagihan->grand_total ?? 0), 0, ',', '.') }}
                             </td>
                         </tr>
                     @endforeach
@@ -291,12 +300,12 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="7" style="text-align: right;">Subtotal:</td>
+                <td colspan="8" style="text-align: right;">Subtotal:</td>
                 <td class="number">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</td>
             </tr>
             @if($pembayaran->total_tagihan_penyesuaian != 0)
                 <tr>
-                    <td colspan="7" style="text-align: right;">Penyesuaian:</td>
+                    <td colspan="8" style="text-align: right;">Penyesuaian:</td>
                     <td class="number" style="color: {{ $pembayaran->total_tagihan_penyesuaian >= 0 ? 'green' : 'red' }};">
                         {{ $pembayaran->total_tagihan_penyesuaian >= 0 ? '+' : '' }}Rp {{ number_format($pembayaran->total_tagihan_penyesuaian, 0, ',', '.') }}
                     </td>
@@ -304,14 +313,14 @@
             @endif
             @if($pembayaran->dp_amount && $pembayaran->dp_amount > 0)
                 <tr>
-                    <td colspan="7" style="text-align: right;">Potongan DP:</td>
+                    <td colspan="8" style="text-align: right;">Potongan DP:</td>
                     <td class="number" style="color: red;">
                         -Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
                     </td>
                 </tr>
             @endif
             <tr style="font-size: 14px;">
-                <td colspan="7" style="text-align: right; font-weight: bold;">TOTAL PEMBAYARAN:</td>
+                <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL PEMBAYARAN:</td>
                 <td class="number" style="font-weight: bold; font-size: 14px;">
                     Rp {{ number_format($pembayaran->total_tagihan_setelah_penyesuaian ?? $pembayaran->total_pembayaran, 0, ',', '.') }}
                 </td>
