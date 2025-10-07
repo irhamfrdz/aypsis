@@ -67,14 +67,14 @@
         <h1 style="font-size:18px;margin:0;text-align:center;font-weight:bold;">BUKU BESAR (LEDGER)</h1>
         <div style="text-align:center;margin-top:4px;">
             <div style="font-size:11px;color:#333;">
-                <strong>Nomor Akun:</strong> {{ $coa->nomor_akun }} | 
-                <strong>Nama Akun:</strong> {{ $coa->nama_akun }} | 
+                <strong>Nomor Akun:</strong> {{ $coa->nomor_akun }} |
+                <strong>Nama Akun:</strong> {{ $coa->nama_akun }} |
                 <strong>Tipe:</strong> {{ $coa->tipe_akun }}
             </div>
             @if(request('dari_tanggal') || request('sampai_tanggal'))
                 <div style="font-size:10px;color:#666;margin-top:2px;">
-                    Periode: {{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : 'Awal' }} 
-                    s/d 
+                    Periode: {{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : 'Awal' }}
+                    s/d
                     {{ request('sampai_tanggal') ? \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') : 'Sekarang' }}
                 </div>
             @endif

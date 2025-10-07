@@ -167,14 +167,14 @@
         <div style="display: none;" class="print-header-visible">
             <h1 style="text-align: center; font-size: 18px; font-weight: bold; margin-bottom: 10px;">BUKU BESAR (LEDGER)</h1>
             <div style="text-align: center; font-size: 10px; margin-bottom: 5px;">
-                <strong>Nomor Akun:</strong> {{ $coa->nomor_akun }} | 
-                <strong>Nama Akun:</strong> {{ $coa->nama_akun }} | 
+                <strong>Nomor Akun:</strong> {{ $coa->nomor_akun }} |
+                <strong>Nama Akun:</strong> {{ $coa->nama_akun }} |
                 <strong>Tipe:</strong> {{ $coa->tipe_akun }}
             </div>
             @if(request('dari_tanggal') || request('sampai_tanggal'))
                 <div style="text-align: center; font-size: 9px; margin-bottom: 5px;">
-                    Periode: {{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : 'Awal' }} 
-                    s/d 
+                    Periode: {{ request('dari_tanggal') ? \Carbon\Carbon::parse(request('dari_tanggal'))->format('d/m/Y') : 'Awal' }}
+                    s/d
                     {{ request('sampai_tanggal') ? \Carbon\Carbon::parse(request('sampai_tanggal'))->format('d/m/Y') : 'Sekarang' }}
                 </div>
             @endif

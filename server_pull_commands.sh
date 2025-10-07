@@ -42,11 +42,11 @@ echo "🗄️ 6. Checking migration status..."
 echo "🗄️ 6c. Running database migrations..."
 php artisan migrate --force
 
-# 7. Clear all caches
+# 7. Clear all caches (PENTING untuk Report Tagihan menu)
 echo "🧹 7. Clearing application caches..."
 php artisan config:clear
 php artisan cache:clear
-php artisan route:clear
+php artisan route:clear      # ⚠️ PENTING: Clear route cache agar Report Tagihan muncul!
 php artisan view:clear
 
 # 8. 🔥 JALANKAN SEEDER PERMISSION (BARU DITAMBAHKAN)
