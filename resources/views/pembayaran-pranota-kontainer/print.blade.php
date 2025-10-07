@@ -205,6 +205,22 @@
                 <div class="info-value">#{{ $pembayaran->nomor_cetakan }}</div>
             </div>
             <div class="info-row">
+                <div class="info-label">Nomor Invoice:</div>
+                <div class="info-value">
+                    @foreach($pembayaran->items as $index => $item)
+                        {{ $item->pranota->no_invoice ?? '-' }}{{ !$loop->last ? ', ' : '' }}
+                    @endforeach
+                </div>
+            </div>
+            <div class="info-row">
+                <div class="info-label">Nomor Invoice Vendor:</div>
+                <div class="info-value">
+                    @foreach($pembayaran->items as $index => $item)
+                        {{ $item->pranota->no_invoice_vendor ?? '-' }}{{ !$loop->last ? ', ' : '' }}
+                    @endforeach
+                </div>
+            </div>
+            <div class="info-row">
                 <div class="info-label">Tanggal Pembayaran:</div>
                 <div class="info-value">{{ \Carbon\Carbon::parse($pembayaran->tanggal_pembayaran)->format('d/m/Y') }}</div>
             </div>
@@ -229,17 +245,62 @@
         </div>
     </div>
 
-    <!-- Pranota Invoice List -->
-    <div style="margin-bottom: 15px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd;">
-        <strong>Daftar Nomor Invoice:</strong><br>
-        @foreach($pembayaran->items as $index => $item)
-            {{ $index + 1 }}. {{ $item->pranota->no_invoice ?? 'N/A' }}
-            @if($item->pranota && $item->pranota->no_external)
-                (Ext: {{ $item->pranota->no_external }})
-            @endif
-            - {{ $item->pranota ? \Carbon\Carbon::parse($item->pranota->tanggal_pranota)->format('d/m/Y') : 'N/A' }}
-            @if(!$loop->last), @endif
-        @endforeach
+    <!-- Pranota Invoice Information -->
+    <div style="margin-bottom: 10px; padding: 10px; background-color: #f9f9f9; border: 1px solid #ddd;">
+        <strong>Informasi Invoice:</strong>
+        <table style="width: 100%; margin-top: 8px; font-size: 11px;">
+            <thead>
+                <tr style="background-color: #e9ecef;">
+                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 5%;">No</th>
+                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 20%;">Nomor Invoice</th>
+                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 20%;">Nomor Invoice Vendor</th>
+                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 15%;">Tanggal Invoice</th>
+                    <th style="padding: 5px; border: 1px solid #dee2e6; width: 40%;">Keterangan</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($pembayaran->items as $index => $item)
+                    <tr>
+                        <td style="padding: 5px; border: 1px solid #dee2e6; text-align: center;">{{ $index + 1 }}</td>
+                        <td style="padding: 5px; border: 1px solid #dee2e6;">{{ $item->pranota->no_invoice ?? '-' }}</td>
+                        <td style="padding: 5px; border: 1px solid #dee2e6;">{{ $item->pranota->no_invoice_vendor ?? '-' }}</td>
+                        <td style="padding: 5px; border: 1px solid #dee2e6;">
+                            {{ $item->pranota && $item->pranota->tanggal_pranota ? \Carbon\Carbon::parse($item->pranota->tanggal_pranota)->format('d/m/Y') : '-' }}
+                        </td>
+                        <td style="padding: 5px; border: 1px solid #dee2e6;">{{ $item->pranota->keterangan ?? '-' }}</td>
+                    </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Periode Information -->
+    <div style="margin-bottom: 10px; padding: 8px; background-color: #fff3cd; border: 1px solid #ffc107;">
+        <strong>Informasi Periode:</strong><br>
+        @php
+            $periodeInfo = [];
+            foreach($pembayaran->items as $item) {
+                if($item->pranota) {
+                    $tagihanItems = $item->pranota->tagihanKontainerSewaItems();
+                    foreach($tagihanItems as $tagihan) {
+                        if($tagihan->periode) {
+                            $key = $tagihan->periode . ' ' . ucfirst($tagihan->masa ?? 'Hari');
+                            if(!isset($periodeInfo[$key])) {
+                                $periodeInfo[$key] = 0;
+                            }
+                            $periodeInfo[$key]++;
+                        }
+                    }
+                }
+            }
+        @endphp
+        @if(count($periodeInfo) > 0)
+            @foreach($periodeInfo as $periodeLabel => $count)
+                {{ $periodeLabel }}: {{ $count }} kontainer{{ !$loop->last ? ', ' : '' }}
+            @endforeach
+        @else
+            Tidak ada data periode
+        @endif
     </div>
 
     <!-- Container Details Table -->
@@ -247,14 +308,12 @@
         <thead>
             <tr>
                 <th style="width: 5%;">No</th>
-                <th style="width: 15%;">Nomor Kontainer</th>
+                <th style="width: 18%;">Nomor Kontainer</th>
                 <th style="width: 8%;">Size</th>
-                <th style="width: 18%;">Periode Sewa</th>
-                <th style="width: 8%;">Lama</th>
-                <th style="width: 10%;">Tarif</th>
-                <th style="width: 12%;">Harga Sewa</th>
-                <th style="width: 12%;">DPP</th>
-                <th style="width: 12%;">Total</th>
+                <th style="width: 22%;">Masa Sewa</th>
+                <th style="width: 12%;">Tarif</th>
+                <th style="width: 15%;">DPP</th>
+                <th style="width: 20%;">Total</th>
             </tr>
         </thead>
         <tbody>
@@ -276,16 +335,7 @@
                                 {{ $tagihan->tanggal_akhir ? \Carbon\Carbon::parse($tagihan->tanggal_akhir)->format('d/m/Y') : '-' }}
                             </td>
                             <td style="text-align: center; font-size: 10px;">
-                                {{ $tagihan->periode ?? '-' }} {{ $tagihan->masa ? ucfirst($tagihan->masa) : '' }}
-                            </td>
-                            <td style="text-align: center; font-size: 10px;">
                                 {{ $tagihan->tarif ?? '-' }}
-                            </td>
-                            <td class="number" style="font-size: 10px;">
-                                @php
-                                    $hargaSewa = ($tagihan->dpp ?? 0) - ($tagihan->dpp_nilai_lain ?? 0);
-                                @endphp
-                                Rp {{ number_format((float)$hargaSewa, 0, ',', '.') }}
                             </td>
                             <td class="number" style="font-size: 10px;">
                                 Rp {{ number_format((float)($tagihan->dpp ?? 0), 0, ',', '.') }}
@@ -300,12 +350,12 @@
         </tbody>
         <tfoot>
             <tr>
-                <td colspan="8" style="text-align: right;">Subtotal:</td>
+                <td colspan="6" style="text-align: right;">Subtotal:</td>
                 <td class="number">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</td>
             </tr>
             @if($pembayaran->total_tagihan_penyesuaian != 0)
                 <tr>
-                    <td colspan="8" style="text-align: right;">Penyesuaian:</td>
+                    <td colspan="6" style="text-align: right;">Penyesuaian:</td>
                     <td class="number" style="color: {{ $pembayaran->total_tagihan_penyesuaian >= 0 ? 'green' : 'red' }};">
                         {{ $pembayaran->total_tagihan_penyesuaian >= 0 ? '+' : '' }}Rp {{ number_format($pembayaran->total_tagihan_penyesuaian, 0, ',', '.') }}
                     </td>
@@ -313,14 +363,14 @@
             @endif
             @if($pembayaran->dp_amount && $pembayaran->dp_amount > 0)
                 <tr>
-                    <td colspan="8" style="text-align: right;">Potongan DP:</td>
+                    <td colspan="6" style="text-align: right;">Potongan DP:</td>
                     <td class="number" style="color: red;">
                         -Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
                     </td>
                 </tr>
             @endif
             <tr style="font-size: 14px;">
-                <td colspan="8" style="text-align: right; font-weight: bold;">TOTAL PEMBAYARAN:</td>
+                <td colspan="6" style="text-align: right; font-weight: bold;">TOTAL PEMBAYARAN:</td>
                 <td class="number" style="font-weight: bold; font-size: 14px;">
                     Rp {{ number_format($pembayaran->total_tagihan_setelah_penyesuaian ?? $pembayaran->total_pembayaran, 0, ',', '.') }}
                 </td>
