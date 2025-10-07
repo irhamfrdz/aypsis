@@ -39,6 +39,56 @@ class StockKontainer extends Model
     ];
 
     /**
+     * Boot the model and add event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($stockKontainer) {
+            self::validateNomorSeriUniqueness($stockKontainer);
+        });
+
+        static::updating(function ($stockKontainer) {
+            self::validateNomorSeriUniqueness($stockKontainer);
+        });
+    }
+
+    /**
+     * Validate nomor seri kontainer uniqueness across stock_kontainers and kontainers
+     */
+    private static function validateNomorSeriUniqueness($stockKontainer)
+    {
+        if (empty($stockKontainer->nomor_seri_gabungan)) {
+            return;
+        }
+
+        // Cek duplikasi dengan tabel kontainers
+        $existingKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $stockKontainer->nomor_seri_gabungan)
+            ->where('status', 'active')
+            ->first();
+
+        if ($existingKontainer) {
+            // Jika ada kontainer aktif dengan nomor yang sama, set stock kontainer ke inactive
+            $stockKontainer->status = 'inactive';
+        }
+
+        // Cek duplikasi dengan stock_kontainers lain (selain diri sendiri)
+        $query = self::where('nomor_seri_gabungan', $stockKontainer->nomor_seri_gabungan)
+            ->where('status', 'active');
+        
+        if ($stockKontainer->exists) {
+            $query->where('id', '!=', $stockKontainer->id);
+        }
+
+        $existingStock = $query->first();
+        if ($existingStock) {
+            // Jika ada stock kontainer aktif lain dengan nomor yang sama, set yang lama ke inactive
+            $existingStock->update(['status' => 'inactive']);
+        }
+    }
+
+    /**
      * Get the status badge color for the kontainer.
      */
     public function getStatusBadgeAttribute()

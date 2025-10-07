@@ -245,13 +245,8 @@ class StockKontainerImportController extends Controller
                             'updated_at' => now()
                         ];
 
-                        // Cek duplikasi dengan tabel kontainers
-                        $existingKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                        if ($existingKontainer) {
-                            $updateData['status'] = 'inactive';
-                        } else {
-                            $updateData['status'] = $status ? strtolower($status) : $existingStock->status;
-                        }
+                        // Status akan diatur otomatis oleh model validation
+                        $updateData['status'] = $status ? strtolower($status) : ($existingStock->status ?: 'available');
 
                         $existingStock->update($updateData);
                         $stats['updated']++;
@@ -266,18 +261,12 @@ class StockKontainerImportController extends Controller
                             'tipe_kontainer' => $tipeKontainer,
                             'tahun_pembuatan' => $tahunPembuatan,
                             'keterangan' => $keterangan,
+                            'status' => $status ? strtolower($status) : 'available',
                             'created_at' => now(),
                             'updated_at' => now()
                         ];
 
-                        // Cek duplikasi dengan tabel kontainers
-                        $existingKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
-                        if ($existingKontainer) {
-                            $createData['status'] = 'inactive';
-                            $stats['warnings'][] = "Nomor kontainer {$nomorKontainer} sudah ada di master kontainer, status diset inactive";
-                        } else {
-                            $createData['status'] = $status ? strtolower($status) : 'available';
-                        }
+                        // Status akan diatur otomatis oleh model validation jika ada duplikasi
 
                         StockKontainer::create($createData);
                         $stats['success']++;

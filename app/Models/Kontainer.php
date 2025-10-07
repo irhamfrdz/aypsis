@@ -49,6 +49,56 @@ class Kontainer extends Model
         'tanggal_selesai_sewa' => 'date',
     ];
 
+    /**
+     * Boot the model and add event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($kontainer) {
+            self::validateNomorSeriUniqueness($kontainer);
+        });
+
+        static::updating(function ($kontainer) {
+            self::validateNomorSeriUniqueness($kontainer);
+        });
+    }
+
+    /**
+     * Validate nomor seri kontainer uniqueness across kontainers and stock_kontainers
+     */
+    private static function validateNomorSeriUniqueness($kontainer)
+    {
+        if (empty($kontainer->nomor_seri_gabungan)) {
+            return;
+        }
+
+        // Cek duplikasi dengan tabel stock_kontainers
+        $existingStock = \App\Models\StockKontainer::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
+            ->where('status', 'active')
+            ->first();
+
+        if ($existingStock) {
+            // Jika ada stock kontainer aktif dengan nomor yang sama, set stock kontainer ke inactive
+            $existingStock->update(['status' => 'inactive']);
+        }
+
+        // Cek duplikasi dengan kontainers lain (selain diri sendiri)
+        $query = self::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
+            ->where('status', 'active');
+        
+        if ($kontainer->exists) {
+            $query->where('id', '!=', $kontainer->id);
+        }
+
+        $existingKontainer = $query->first();
+        if ($existingKontainer) {
+            // Jika ada kontainer aktif lain dengan nomor yang sama, set yang lama ke inactive
+            $existingKontainer->update(['status' => 'inactive']);
+        }
+    }
+
     // Relasi ke permohonan melalui pivot
     public function permohonans()
     {
