@@ -259,31 +259,32 @@
         <tbody>
             @php $no = 1; @endphp
             @foreach($pembayaran->items as $item)
-                @if($item->pranota && $item->pranota->items)
-                    @foreach($item->pranota->items as $pranotaItem)
-                        @if($pranotaItem->daftarTagihanKontainerSewa)
-                            @php $tagihan = $pranotaItem->daftarTagihanKontainerSewa; @endphp
-                            <tr>
-                                <td style="text-align: center;">{{ $no++ }}</td>
-                                <td style="font-size: 10px;">{{ $tagihan->nomor_kontainer ?? '-' }}</td>
-                                <td style="text-align: center; font-size: 10px;">{{ $tagihan->size ?? '-' }}</td>
-                                <td style="font-size: 9px;">
-                                    {{ $tagihan->tanggal_awal ? \Carbon\Carbon::parse($tagihan->tanggal_awal)->format('d/m/Y') : '-' }}
-                                    -
-                                    {{ $tagihan->tanggal_akhir ? \Carbon\Carbon::parse($tagihan->tanggal_akhir)->format('d/m/Y') : '-' }}
-                                </td>
-                                <td style="text-align: center; font-size: 10px;">{{ $tagihan->periode ?? '-' }}</td>
-                                <td class="number" style="font-size: 10px;">
-                                    Rp {{ number_format($tagihan->tarif ?? 0, 0, ',', '.') }}
-                                </td>
-                                <td class="number" style="font-size: 10px;">
-                                    Rp {{ number_format($tagihan->dpp ?? 0, 0, ',', '.') }}
-                                </td>
-                                <td class="number" style="font-size: 10px;">
-                                    Rp {{ number_format($tagihan->grand_total ?? 0, 0, ',', '.') }}
-                                </td>
-                            </tr>
-                        @endif
+                @if($item->pranota)
+                    @php
+                        // Get tagihan items from pranota
+                        $tagihanItems = $item->pranota->getTagihanItems();
+                    @endphp
+                    @foreach($tagihanItems as $tagihan)
+                        <tr>
+                            <td style="text-align: center;">{{ $no++ }}</td>
+                            <td style="font-size: 10px;">{{ $tagihan->nomor_kontainer ?? '-' }}</td>
+                            <td style="text-align: center; font-size: 10px;">{{ $tagihan->size ?? '-' }}</td>
+                            <td style="font-size: 9px;">
+                                {{ $tagihan->tanggal_awal ? \Carbon\Carbon::parse($tagihan->tanggal_awal)->format('d/m/Y') : '-' }}
+                                -
+                                {{ $tagihan->tanggal_akhir ? \Carbon\Carbon::parse($tagihan->tanggal_akhir)->format('d/m/Y') : '-' }}
+                            </td>
+                            <td style="text-align: center; font-size: 10px;">{{ $tagihan->periode ?? '-' }}</td>
+                            <td class="number" style="font-size: 10px;">
+                                Rp {{ number_format($tagihan->tarif ?? 0, 0, ',', '.') }}
+                            </td>
+                            <td class="number" style="font-size: 10px;">
+                                Rp {{ number_format($tagihan->dpp ?? 0, 0, ',', '.') }}
+                            </td>
+                            <td class="number" style="font-size: 10px;">
+                                Rp {{ number_format($tagihan->grand_total ?? 0, 0, ',', '.') }}
+                            </td>
+                        </tr>
                     @endforeach
                 @endif
             @endforeach
