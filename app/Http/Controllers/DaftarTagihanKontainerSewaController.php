@@ -1025,7 +1025,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                         'periode',
                         'tarif',
                         'status'
-                    ]);
+                    ], ';');
 
                     // Write sample data
                     fputcsv($file, [
@@ -1038,7 +1038,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                         '1',
                         'Bulanan',
                         'ongoing'
-                    ]);
+                    ], ';');
 
                     fputcsv($file, [
                         'DPE',
@@ -1050,7 +1050,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                         '1',
                         'Bulanan',
                         'selesai'
-                    ]);
+                    ], ';');
                 }
 
                 fclose($file);

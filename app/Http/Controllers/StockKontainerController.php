@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\StockKontainer;
 use Illuminate\Http\Request;
-use Illuminate\Validation\Rule;
 
 class StockKontainerController extends Controller
 {
@@ -46,19 +45,42 @@ class StockKontainerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nomor_kontainer' => 'required|string|unique:stock_kontainers,nomor_kontainer',
+            'awalan_kontainer' => 'required|string|size:4',
+            'nomor_seri_kontainer' => 'required|string|size:6',
+            'akhiran_kontainer' => 'required|string|size:1',
             'ukuran' => 'nullable|string|in:20ft,40ft',
             'tipe_kontainer' => 'nullable|string',
-            'status' => 'required|string|in:available,rented,maintenance,damaged',
-            'lokasi' => 'nullable|string',
+            'status' => 'required|string|in:available,rented,maintenance,damaged,inactive',
             'tanggal_masuk' => 'nullable|date',
             'tanggal_keluar' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'nomor_seri' => 'nullable|string',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
         ]);
 
-        StockKontainer::create($request->all());
+        // Gabungkan nomor seri
+        $nomorSeriGabungan = $request->awalan_kontainer . $request->nomor_seri_kontainer . $request->akhiran_kontainer;
+        
+        // Validasi unique untuk nomor seri gabungan di stock_kontainers
+        $existingStock = StockKontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)->first();
+        if ($existingStock) {
+            return back()->withErrors(['nomor_seri_gabungan' => 'Nomor kontainer sudah ada di stock kontainer.'])->withInput();
+        }
+
+        // Cek apakah nomor kontainer sudah ada di tabel kontainers
+        $existingKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)->first();
+        $status = $request->status;
+        
+        if ($existingKontainer) {
+            // Jika ada duplikasi, set status menjadi inactive
+            $status = 'inactive';
+            session()->flash('warning', 'Nomor kontainer sudah ada di master kontainer. Status diset menjadi inactive untuk menghindari duplikasi.');
+        }
+
+        $data = $request->all();
+        $data['nomor_seri_gabungan'] = $nomorSeriGabungan;
+        $data['status'] = $status;
+
+        StockKontainer::create($data);
 
         return redirect()->route('master.stock-kontainer.index')
             ->with('success', 'Stock kontainer berhasil ditambahkan.');
@@ -86,19 +108,44 @@ class StockKontainerController extends Controller
     public function update(Request $request, StockKontainer $stockKontainer)
     {
         $request->validate([
-            'nomor_kontainer' => ['required', 'string', Rule::unique('stock_kontainers')->ignore($stockKontainer->id)],
+            'awalan_kontainer' => 'required|string|size:4',
+            'nomor_seri_kontainer' => 'required|string|size:6',
+            'akhiran_kontainer' => 'required|string|size:1',
             'ukuran' => 'nullable|string|in:20ft,40ft',
             'tipe_kontainer' => 'nullable|string',
-            'status' => 'required|string|in:available,rented,maintenance,damaged',
-            'lokasi' => 'nullable|string',
+            'status' => 'required|string|in:available,rented,maintenance,damaged,inactive',
             'tanggal_masuk' => 'nullable|date',
             'tanggal_keluar' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'nomor_seri' => 'nullable|string',
             'tahun_pembuatan' => 'nullable|integer|min:1900|max:' . (date('Y') + 1),
         ]);
 
-        $stockKontainer->update($request->all());
+        // Gabungkan nomor seri
+        $nomorSeriGabungan = $request->awalan_kontainer . $request->nomor_seri_kontainer . $request->akhiran_kontainer;
+        
+        // Validasi unique untuk nomor seri gabungan (kecuali untuk record yang sedang diupdate)
+        $existingStock = StockKontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)
+                                      ->where('id', '!=', $stockKontainer->id)
+                                      ->first();
+        if ($existingStock) {
+            return back()->withErrors(['nomor_seri_gabungan' => 'Nomor kontainer sudah ada di stock kontainer.'])->withInput();
+        }
+
+        // Cek apakah nomor kontainer sudah ada di tabel kontainers
+        $existingKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)->first();
+        $status = $request->status;
+        
+        if ($existingKontainer && $request->status !== 'inactive') {
+            // Jika ada duplikasi dan user tidak sengaja memilih inactive, paksa jadi inactive
+            $status = 'inactive';
+            session()->flash('warning', 'Nomor kontainer sudah ada di master kontainer. Status diset menjadi inactive untuk menghindari duplikasi.');
+        }
+
+        $data = $request->all();
+        $data['nomor_seri_gabungan'] = $nomorSeriGabungan;
+        $data['status'] = $status;
+
+        $stockKontainer->update($data);
 
         return redirect()->route('master.stock-kontainer.index')
             ->with('success', 'Stock kontainer berhasil diperbarui.');

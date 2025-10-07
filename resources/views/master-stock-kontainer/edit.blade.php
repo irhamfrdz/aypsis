@@ -27,12 +27,56 @@
             @endphp
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Nomor Kontainer - Split menjadi 3 field -->
                 <div class="md:col-span-2">
-                    <label for="nomor_kontainer" class="block text-sm font-medium text-gray-700">Nomor Kontainer</label>
-                    <input type="text" name="nomor_kontainer" id="nomor_kontainer" value="{{ old('nomor_kontainer', $stockKontainer->nomor_kontainer) }}" class="{{ $inputClasses }}" required>
-                    @error('nomor_kontainer')
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Nomor Kontainer</label>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div>
+                            <label for="awalan_kontainer" class="block text-xs text-gray-500 mb-1">Awalan (4 karakter)</label>
+                            <input type="text" name="awalan_kontainer" id="awalan_kontainer" 
+                                   value="{{ old('awalan_kontainer', $stockKontainer->awalan_kontainer) }}" 
+                                   class="{{ $inputClasses }}" 
+                                   required 
+                                   maxlength="4" 
+                                   placeholder="ABCD"
+                                   style="text-transform: uppercase;">
+                            @error('awalan_kontainer')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="nomor_seri_kontainer" class="block text-xs text-gray-500 mb-1">Nomor Seri (6 digit)</label>
+                            <input type="text" name="nomor_seri_kontainer" id="nomor_seri_kontainer" 
+                                   value="{{ old('nomor_seri_kontainer', $stockKontainer->nomor_seri_kontainer) }}" 
+                                   class="{{ $inputClasses }}" 
+                                   required 
+                                   maxlength="6" 
+                                   pattern="[0-9]{6}"
+                                   placeholder="123456">
+                            @error('nomor_seri_kontainer')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
+                            <label for="akhiran_kontainer" class="block text-xs text-gray-500 mb-1">Akhiran (1 karakter)</label>
+                            <input type="text" name="akhiran_kontainer" id="akhiran_kontainer" 
+                                   value="{{ old('akhiran_kontainer', $stockKontainer->akhiran_kontainer) }}" 
+                                   class="{{ $inputClasses }}" 
+                                   required 
+                                   maxlength="1" 
+                                   pattern="[0-9A-Z]{1}"
+                                   placeholder="7"
+                                   style="text-transform: uppercase;">
+                            @error('akhiran_kontainer')
+                                <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                    @error('nomor_seri_gabungan')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-xs text-gray-500">Format: 4 huruf + 6 angka + 1 huruf/angka (contoh: ABCD123456-7)</p>
+                    <p class="mt-1 text-sm text-indigo-600 font-medium">Current: {{ $stockKontainer->nomor_kontainer }}</p>
                 </div>
 
                 <div>
@@ -71,10 +115,16 @@
                         <option value="rented" {{ old('status', $stockKontainer->status) == 'rented' ? 'selected' : '' }}>Disewa</option>
                         <option value="maintenance" {{ old('status', $stockKontainer->status) == 'maintenance' ? 'selected' : '' }}>Perbaikan</option>
                         <option value="damaged" {{ old('status', $stockKontainer->status) == 'damaged' ? 'selected' : '' }}>Rusak</option>
+                        <option value="inactive" {{ old('status', $stockKontainer->status) == 'inactive' ? 'selected' : '' }}>Non-Aktif</option>
                     </select>
                     @error('status')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
+                    @if($stockKontainer->hasDuplicateInKontainers())
+                        <p class="mt-1 text-xs text-yellow-600 bg-yellow-50 p-2 rounded">
+                            ⚠️ Nomor kontainer ini sudah ada di master kontainer. Status akan otomatis diset "Non-Aktif" jika bukan inactive.
+                        </p>
+                    @endif
                 </div>
 
 

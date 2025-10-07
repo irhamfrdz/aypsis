@@ -68,14 +68,9 @@ class CheckpointController extends Controller
                 || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
             $isAntarSewa = stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'sewa') !== false;
 
-            // Untuk kegiatan perbaikan kontainer, antar sewa, atau vendor tertentu, supir menginput nomor kontainer sebagai string (nomor lengkap)
-            if ($isPerbaikanKontainer || $isAntarSewa || in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
-                // Accept free-text nomor kontainer (string) and ensure distinct
-                $rules['nomor_kontainer.*'] = ['required', 'string', 'distinct'];
-            } else {
-                // Setiap nomor kontainer harus unik dan berupa id kontainer
-                $rules['nomor_kontainer.*'] = ['required', 'integer', 'distinct', 'exists:kontainers,id'];
-            }
+            // Untuk semua kegiatan, supir menginput nomor kontainer sebagai string (nomor_seri_gabungan)
+            // Karena form selalu mengirim nomor_seri_gabungan, bukan ID
+            $rules['nomor_kontainer.*'] = ['required', 'string', 'distinct'];
         }
 
         $validated = $request->validate($rules);
@@ -98,73 +93,53 @@ class CheckpointController extends Controller
                 $isAntarSewa = stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'sewa') !== false;
                 $isAntarKontainerPerbaikan = (stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'kontainer') !== false && stripos($kegiatanLower, 'perbaikan') !== false);
 
-                // Jika kegiatan perbaikan kontainer, antar sewa, atau vendor menerima input nomor kontainer bebas, cari atau buat kontainer berdasarkan nomor_seri_gabungan
-                if ($isPerbaikanKontainer || $isAntarSewa || in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
-                    foreach ($validated['nomor_kontainer'] as $nomor) {
-                        // Preserve the raw input (trimmed) so what supir types is what we store/display.
-                        $nomorRaw = trim($nomor);
-                        // Also compute a normalized lookup key (uppercase, no spaces) to find existing records
-                        $nomorLookup = strtoupper(str_replace(' ', '', $nomorRaw));
+                // Untuk semua kegiatan, sekarang kita selalu menerima nomor_seri_gabungan (string)
+                // Cari atau buat kontainer berdasarkan nomor_seri_gabungan
+                foreach ($validated['nomor_kontainer'] as $nomor) {
+                    // Preserve the raw input (trimmed) so what supir types is what we store/display.
+                    $nomorRaw = trim($nomor);
+                    // Also compute a normalized lookup key (uppercase, no spaces) to find existing records
+                    $nomorLookup = strtoupper(str_replace(' ', '', $nomorRaw));
 
-                        // Try to find by exact raw stored serial first, then by normalized form
-                        $kontainer = Kontainer::firstWhere('nomor_seri_gabungan', $nomorRaw)
-                            ?? Kontainer::firstWhere('nomor_seri_gabungan', $nomorLookup);
+                    // Try to find by exact raw stored serial first, then by normalized form
+                    $kontainer = Kontainer::firstWhere('nomor_seri_gabungan', $nomorRaw)
+                        ?? Kontainer::firstWhere('nomor_seri_gabungan', $nomorLookup);
 
-                        if (!$kontainer) {
-                            // Create minimal kontainer record but store the raw input as nomor_seri_gabungan
-                            $kontainer = Kontainer::create([
-                                'awalan_kontainer' => substr($nomorLookup, 0, 4) ?: 'UNK',
-                                'nomor_seri_kontainer' => substr($nomorLookup, 4, 6) ?: '000000',
-                                'akhiran_kontainer' => substr($nomorLookup, -1) ?: '0',
-                                'nomor_seri_gabungan' => $nomorRaw,
-                                'ukuran' => $permohonan->ukuran ?? '20',
-                                'tipe_kontainer' => 'DRY',
-                                'status' => $isReturnSewa ? 'Tersedia' : 'Digunakan',
-                            ]);
-                        } else {
-                            // Ensure stored serial matches what supir entered
-                            if ($kontainer->nomor_seri_gabungan !== $nomorRaw) {
-                                $kontainer->nomor_seri_gabungan = $nomorRaw;
-                            }
-                            if ($isReturnSewa) {
-                                // mark returned: set finish date and make available
-                                $kontainer->tanggal_selesai_sewa = $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d');
-                                $kontainer->status = 'Tersedia';
-                            } else {
-                                if ($kontainer->status !== 'Tersedia') {
-                                    throw new \Exception("Kontainer {$nomorRaw} tidak tersedia atau sedang digunakan.");
-                                }
-                                // tandai akan digunakan
-                                $kontainer->status = 'Digunakan';
-                            }
-                            $kontainer->save();
+                    if (!$kontainer) {
+                        // For non-special activities, check if this should be allowed
+                        if (!$isPerbaikanKontainer && !$isAntarSewa && !in_array($permohonan->vendor_perusahaan, ['ZONA', 'DPE', 'SOC'])) {
+                            throw new \Exception("Kontainer {$nomorRaw} tidak ditemukan dalam sistem. Pastikan nomor kontainer sudah terdaftar.");
                         }
-                        $kontainerIds[] = $kontainer->id;
-                    }
-                } else {
-                    foreach ($validated['nomor_kontainer'] as $kontainerId) {
-                        $kontainer = Kontainer::find($kontainerId);
-                        if (!$kontainer) {
-                            throw new \Exception("Kontainer tidak ditemukan.");
+
+                        // Create minimal kontainer record but store the raw input as nomor_seri_gabungan
+                        $kontainer = Kontainer::create([
+                            'awalan_kontainer' => substr($nomorLookup, 0, 4) ?: 'UNK',
+                            'nomor_seri_kontainer' => substr($nomorLookup, 4, 6) ?: '000000',
+                            'akhiran_kontainer' => substr($nomorLookup, -1) ?: '0',
+                            'nomor_seri_gabungan' => $nomorRaw,
+                            'ukuran' => $permohonan->ukuran ?? '20',
+                            'tipe_kontainer' => 'DRY',
+                            'status' => $isReturnSewa ? 'Tersedia' : 'Digunakan',
+                        ]);
+                    } else {
+                        // Ensure stored serial matches what supir entered
+                        if ($kontainer->nomor_seri_gabungan !== $nomorRaw) {
+                            $kontainer->nomor_seri_gabungan = $nomorRaw;
                         }
                         if ($isReturnSewa) {
                             // mark returned: set finish date and make available
                             $kontainer->tanggal_selesai_sewa = $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d');
                             $kontainer->status = 'Tersedia';
-                            $kontainer->save();
-                            // include id to link to this permohonan
-                            $kontainerIds[] = $kontainer->id;
                         } else {
                             if ($kontainer->status !== 'Tersedia') {
-                                throw new \Exception("Kontainer tidak tersedia atau sedang digunakan.");
+                                throw new \Exception("Kontainer {$nomorRaw} tidak tersedia atau sedang digunakan.");
                             }
-                            // collect ids to mark as Digunakan after validation
-                            $kontainerIds[] = $kontainer->id;
+                            // tandai akan digunakan
+                            $kontainer->status = 'Digunakan';
                         }
+                        $kontainer->save();
                     }
-                    if (!$isReturnSewa && !empty($kontainerIds)) {
-                        Kontainer::whereIn('id', $kontainerIds)->update(['status' => 'Digunakan']);
-                    }
+                    $kontainerIds[] = $kontainer->id;
                 }
 
                 // Hubungkan kontainer ke permohonan
@@ -175,8 +150,8 @@ class CheckpointController extends Controller
                     foreach ($validated['nomor_kontainer'] as $nomor) {
                         $nomorRaw = trim($nomor);
 
-                        // Cari stock kontainer berdasarkan nomor kontainer
-                        $stockKontainer = \App\Models\StockKontainer::where('nomor_kontainer', $nomorRaw)->first();
+                        // Cari stock kontainer berdasarkan nomor seri gabungan
+                        $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorRaw)->first();
 
                         if ($stockKontainer) {
                             if ($isAntarKontainerPerbaikan) {

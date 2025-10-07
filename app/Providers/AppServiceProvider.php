@@ -8,6 +8,10 @@ use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Pagination\Paginator;
 use App\Models\User;
+use App\Models\Kontainer;
+use App\Models\StockKontainer;
+use App\Observers\KontainerObserver;
+use App\Observers\StockKontainerObserver;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -27,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
         // Set default pagination view to use Tailwind CSS
         Paginator::defaultView('pagination::tailwind');
         Paginator::defaultSimpleView('pagination::simple-tailwind');
+
+        // Register observers
+        Kontainer::observe(KontainerObserver::class);
+        StockKontainer::observe(StockKontainerObserver::class);
 
         // Gunakan try-catch atau cek Schema untuk menghindari error saat migrasi awal
         try {

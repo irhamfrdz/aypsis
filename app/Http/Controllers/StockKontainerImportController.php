@@ -25,9 +25,11 @@ class StockKontainerImportController extends Controller
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ];
 
-            // CSV content - hanya header template
+            // CSV content - header template dengan format yang jelas
             $csvData = [
-                ['Nomor Kontainer', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan']
+                ['Nomor Kontainer (11 karakter, contoh: ABCD123456X)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
+                ['ABCD123456X', '20', 'Dry Container', 'available', '2020', 'Contoh data - hapus baris ini'],
+                ['EFGH789012Y', '40', 'Reefer Container', 'rented', '2021', 'Contoh data - hapus baris ini']
             ];
 
             $callback = function() use ($csvData) {
@@ -86,9 +88,21 @@ class StockKontainerImportController extends Controller
 
             $header = array_shift($csvData); // Remove header row
 
-            // Validate header format
-            $expectedHeader = ['Nomor Kontainer', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'];
-            if ($header !== $expectedHeader) {
+            // Validate header format - terima format lama dan baru
+            $expectedHeaders = [
+                ['Nomor Kontainer', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan'],
+                ['Nomor Kontainer (11 karakter, contoh: ABCD123456X)', 'Ukuran', 'Tipe Kontainer', 'Status', 'Tahun Pembuatan', 'Keterangan']
+            ];
+            
+            $headerValid = false;
+            foreach ($expectedHeaders as $expectedHeader) {
+                if ($header === $expectedHeader) {
+                    $headerValid = true;
+                    break;
+                }
+            }
+            
+            if (!$headerValid) {
                 return back()->with('error', 'Format header CSV tidak sesuai template. Gunakan template yang telah disediakan.');
             }
 
@@ -97,7 +111,8 @@ class StockKontainerImportController extends Controller
                 'updated' => 0,
                 'errors' => 0,
                 'skipped' => 0,
-                'error_details' => []
+                'error_details' => [],
+                'warnings' => []
             ];
 
             DB::beginTransaction();
@@ -105,8 +120,8 @@ class StockKontainerImportController extends Controller
             foreach ($csvData as $rowIndex => $row) {
                 $rowNumber = $rowIndex + 2; // +2 because we removed header and start from 1
 
-                // Skip empty rows
-                if (empty(array_filter($row))) {
+                // Skip empty rows atau contoh data
+                if (empty(array_filter($row)) || (isset($row[5]) && strpos(strtolower($row[5]), 'contoh data') !== false)) {
                     continue;
                 }
 
@@ -132,11 +147,23 @@ class StockKontainerImportController extends Controller
                         continue;
                     }
 
+                    // Validasi format nomor kontainer (harus 11 karakter)
+                    if (strlen($nomorKontainer) != 11) {
+                        $stats['errors']++;
+                        $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer harus 11 karakter (format: ABCD123456X)";
+                        continue;
+                    }
+
+                    // Parse nomor kontainer
+                    $awalan = substr($nomorKontainer, 0, 4);
+                    $nomor_seri = substr($nomorKontainer, 4, 6);
+                    $akhiran = substr($nomorKontainer, 10, 1);
+
                     // Validate status
-                    $validStatuses = ['available', 'rented', 'maintenance', 'damaged'];
+                    $validStatuses = ['available', 'rented', 'maintenance', 'damaged', 'inactive'];
                     if (!empty($status) && !in_array(strtolower($status), $validStatuses)) {
                         $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Status harus salah satu dari: available, rented, maintenance, damaged";
+                        $stats['error_details'][] = "Baris {$rowNumber}: Status harus salah satu dari: available, rented, maintenance, damaged, inactive";
                         continue;
                     }
 
@@ -148,31 +175,57 @@ class StockKontainerImportController extends Controller
                     }
 
                     // Check if stock kontainer already exists
-                    $existingStock = StockKontainer::where('nomor_kontainer', $nomorKontainer)->first();
+                    $existingStock = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
 
                     if ($existingStock) {
                         // Update existing
-                        $existingStock->update([
+                        $updateData = [
+                            'awalan_kontainer' => $awalan,
+                            'nomor_seri_kontainer' => $nomor_seri,
+                            'akhiran_kontainer' => $akhiran,
+                            'nomor_seri_gabungan' => $nomorKontainer,
                             'ukuran' => $ukuran ?: $existingStock->ukuran,
                             'tipe_kontainer' => $tipeKontainer ?: $existingStock->tipe_kontainer,
-                            'status' => $status ? strtolower($status) : $existingStock->status,
                             'tahun_pembuatan' => $tahunPembuatan ?: $existingStock->tahun_pembuatan,
                             'keterangan' => $keterangan ?: $existingStock->keterangan,
                             'updated_at' => now()
-                        ]);
+                        ];
+
+                        // Cek duplikasi dengan tabel kontainers
+                        $existingKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                        if ($existingKontainer) {
+                            $updateData['status'] = 'inactive';
+                        } else {
+                            $updateData['status'] = $status ? strtolower($status) : $existingStock->status;
+                        }
+
+                        $existingStock->update($updateData);
                         $stats['updated']++;
                     } else {
                         // Create new
-                        StockKontainer::create([
-                            'nomor_kontainer' => $nomorKontainer,
+                        $createData = [
+                            'awalan_kontainer' => $awalan,
+                            'nomor_seri_kontainer' => $nomor_seri,
+                            'akhiran_kontainer' => $akhiran,
+                            'nomor_seri_gabungan' => $nomorKontainer,
                             'ukuran' => $ukuran,
                             'tipe_kontainer' => $tipeKontainer,
-                            'status' => $status ? strtolower($status) : 'available',
                             'tahun_pembuatan' => $tahunPembuatan,
                             'keterangan' => $keterangan,
                             'created_at' => now(),
                             'updated_at' => now()
-                        ]);
+                        ];
+
+                        // Cek duplikasi dengan tabel kontainers
+                        $existingKontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                        if ($existingKontainer) {
+                            $createData['status'] = 'inactive';
+                            $stats['warnings'][] = "Nomor kontainer {$nomorKontainer} sudah ada di master kontainer, status diset inactive";
+                        } else {
+                            $createData['status'] = $status ? strtolower($status) : 'available';
+                        }
+
+                        StockKontainer::create($createData);
                         $stats['success']++;
                     }
 

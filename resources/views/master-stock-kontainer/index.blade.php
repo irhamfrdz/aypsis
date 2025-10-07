@@ -16,6 +16,7 @@
             <option value="rented" {{ request('status') == 'rented' ? 'selected' : '' }}>Disewa</option>
             <option value="maintenance" {{ request('status') == 'maintenance' ? 'selected' : '' }}>Perbaikan</option>
             <option value="damaged" {{ request('status') == 'damaged' ? 'selected' : '' }}>Rusak</option>
+            <option value="inactive" {{ request('status') == 'inactive' ? 'selected' : '' }}>Non-Aktif</option>
         </select>
 
         <!-- Search -->
@@ -125,6 +126,9 @@
                             @case('damaged')
                                 Rusak
                                 @break
+                            @case('inactive')
+                                Non-Aktif
+                                @break
                             @default
                                 {{ ucfirst(str_replace('_', ' ', $stockKontainer->status)) }}
                         @endswitch
@@ -201,10 +205,12 @@
                             <p class="font-medium">Panduan Import:</p>
                             <ul class="mt-1 list-disc list-inside text-xs">
                                 <li>Download template CSV terlebih dahulu</li>
-                                <li>Isi data sesuai format yang disediakan</li>
-                                <li>Status: available, rented, maintenance, damaged</li>
+                                <li>Nomor kontainer: 11 karakter (format: ABCD123456X)</li>
+                                <li>Status: available, rented, maintenance, damaged, inactive</li>
                                 <li>Tahun pembuatan: angka antara 1900 - {{ date('Y') }}</li>
+                                <li>Hapus baris contoh data sebelum import</li>
                                 <li>Data yang sudah ada akan diperbarui</li>
+                                <li>Duplikasi dengan master kontainer akan diset inactive</li>
                             </ul>
                         </div>
                     </div>
