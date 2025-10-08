@@ -85,7 +85,7 @@
     @endif
 
     <!-- Approval Form -->
-    <form action="{{ route('approval.store', $permohonan) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+    <form action="{{ route('approval-ii.store', $permohonan) }}" method="POST" enctype="multipart/form-data" class="space-y-6">
         @csrf
 
         <!-- Status Selection -->
@@ -147,7 +147,7 @@
 
         <!-- Submit Buttons -->
         <div class="flex justify-between items-center pt-6 border-t border-gray-200">
-            <a href="{{ route('approval.dashboard') }}" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">
+            <a href="{{ route('approval-ii.dashboard') }}" class="px-6 py-2 bg-gray-500 text-white rounded-md hover:bg-gray-600 transition">
                 ← Kembali ke Dashboard
             </a>
 
@@ -194,6 +194,8 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form validation
     const form = document.querySelector('form');
     form.addEventListener('submit', function(e) {
+        console.log('Form submit triggered');
+
         const statusSelected = document.querySelector('input[name="status_permohonan"]:checked');
         if (!statusSelected) {
             e.preventDefault();
@@ -201,10 +203,16 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        console.log('Status selected:', statusSelected.value);
+        console.log('Form action:', form.action);
+
         // Show loading state
         const submitBtn = form.querySelector('button[type="submit"]');
         submitBtn.disabled = true;
         submitBtn.innerHTML = '⏳ Menyimpan...';
+
+        // Let form submit continue
+        console.log('Form submitting...');
     });
 });
 </script>

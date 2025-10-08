@@ -23,9 +23,13 @@ echo "📥 4. Pulling latest changes from git..."
 git fetch origin
 git pull origin main
 
-# 5. Update composer dependencies jika ada perubahan
-echo "📦 5. Updating composer dependencies..."
-composer install --no-dev --optimize-autoloader
+# 5. Fix composer dependencies dengan SSL handling
+echo "📦 5. Fixing composer dependencies..."
+composer config disable-tls true
+composer config secure-http false
+rm -rf composer.lock vendor/
+composer update --no-dev --lock
+composer install --no-dev --optimize-autoloader --no-interaction
 
 # 6. Check migration status first
 echo "🗄️ 6. Checking migration status..."
