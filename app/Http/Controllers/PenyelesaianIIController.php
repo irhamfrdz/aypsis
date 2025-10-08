@@ -508,7 +508,7 @@ class PenyelesaianIIController extends Controller
             // Get vendor bengkel options for dropdown
             $vendorBengkelOptions = \App\Models\VendorBengkel::orderBy('nama_bengkel')->get();
 
-            return view('approval.checkpoint2-perbaikan', compact(
+            return view('approval-ii.checkpoint2-perbaikan', compact(
                 'permohonan',
                 'kontainerPerbaikan',
                 'totalPerbaikan',
@@ -519,7 +519,7 @@ class PenyelesaianIIController extends Controller
         }
 
         // Use the regular view for non-repair containers
-        return view('approval.checkpoint2-create', compact('permohonan'));
+        return view('approval-ii.checkpoint2-create', compact('permohonan'));
     }
 
     /**
@@ -546,8 +546,8 @@ class PenyelesaianIIController extends Controller
             // Validasi untuk estimasi perbaikan dan total biaya
             'estimasi_perbaikan' => 'nullable|string|max:1000',
             'total_biaya_perbaikan' => 'nullable|numeric|min:0',
-            // Validasi untuk vendor/bengkel
-            'vendor_bengkel' => 'required|string|max:255',
+            // Validasi untuk vendor/bengkel - buat optional karena tidak ada di form
+            'vendor_bengkel' => 'nullable|string|max:255',
         ]);
 
         DB::beginTransaction();

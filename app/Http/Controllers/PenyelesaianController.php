@@ -468,7 +468,7 @@ class PenyelesaianController extends Controller
             // Get vendor bengkel options for dropdown
             $vendorBengkelOptions = \App\Models\VendorBengkel::orderBy('nama_bengkel')->get();
 
-            return view('approval-ii.checkpoint2-perbaikan', compact(
+            return view('approval.checkpoint2-perbaikan', compact(
                 'permohonan',
                 'kontainerPerbaikan',
                 'totalPerbaikan',
@@ -479,7 +479,7 @@ class PenyelesaianController extends Controller
         }
 
         // Use the regular view for non-repair containers
-        return view('approval-ii.checkpoint2-create', compact('permohonan'));
+        return view('approval.checkpoint2-create', compact('permohonan'));
     }
 
     /**
@@ -488,7 +488,7 @@ class PenyelesaianController extends Controller
     public function store(Request $request, Permohonan $permohonan)
     {
     // Debug: log incoming request and permohonan id (debug level)
-    Log::debug('PenyelesaianIIController: store entry', [
+    Log::debug('PenyelesaianController: store entry', [
             'permohonan_id' => $permohonan->id,
             'request' => $request->all(),
         ]);
@@ -511,8 +511,8 @@ class PenyelesaianController extends Controller
 
         DB::beginTransaction();
         try {
-            // Update status permohonan - untuk Approval Tugas 1, status tetap "Pending"
-            // $permohonan->status = ucfirst($validated['status_permohonan']); // Tidak mengubah status
+            // Update status permohonan - untuk Approval Tugas 1, ubah status menjadi "Disetujui Sistem 1"
+            $permohonan->status = 'Disetujui Sistem 1'; // Ubah status dari Pending
             $permohonan->approved_by_system_1 = true; // Mark as approved by Approval Tugas 1
 
             // Simpan lampiran jika ada
@@ -537,15 +537,15 @@ class PenyelesaianController extends Controller
                 $permohonan->catatan = $permohonan->catatan . "\n\n[Total Biaya Perbaikan]: " . $biayaFormatted;
             }
 
-            // Untuk Approval Tugas II, hanya update status memo saja
+            // Untuk Approval Tugas I, hanya update approved_by_system_1 saja
             // Tidak melakukan proses lengkap seperti update kontainer, tagihan, atau perbaikan
 
             $permohonan->save();
 
             DB::commit();
 
-            // Simple success message untuk Approval Tugas II
-            $successMessage = 'Permohonan berhasil diselesaikan pada Approval Tugas II!';
+            // Simple success message untuk Approval Tugas I
+            $successMessage = 'Permohonan berhasil disetujui pada Approval Tugas I!';
 
             return redirect()->route('approval.dashboard')->with('success', $successMessage);
 
