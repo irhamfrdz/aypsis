@@ -36,7 +36,7 @@ class KontainerObserver
         $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
                                        ->where('status', 'inactive')
                                        ->first();
-        
+
         if ($stockKontainer) {
             $stockKontainer->update(['status' => 'available']);
             Log::info("Kontainer {$kontainer->nomor_seri_gabungan} deleted, stock kontainer reactivated");
@@ -52,7 +52,7 @@ class KontainerObserver
         $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
                                        ->where('status', '!=', 'inactive')
                                        ->first();
-        
+
         if ($stockKontainer) {
             $stockKontainer->update(['status' => 'inactive']);
             Log::info("Kontainer {$kontainer->nomor_seri_gabungan} {$action}, duplicate stock kontainer set to inactive");

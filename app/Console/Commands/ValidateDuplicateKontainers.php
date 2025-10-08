@@ -33,9 +33,9 @@ class ValidateDuplicateKontainers extends Command
         // Find duplicates
         $duplicates = DB::select("
             SELECT sk.nomor_seri_gabungan, sk.status as stock_status, k.status as kontainer_status
-            FROM stock_kontainers sk 
+            FROM stock_kontainers sk
             INNER JOIN kontainers k ON sk.nomor_seri_gabungan = k.nomor_seri_gabungan
-            WHERE sk.nomor_seri_gabungan IS NOT NULL 
+            WHERE sk.nomor_seri_gabungan IS NOT NULL
             AND k.nomor_seri_gabungan IS NOT NULL
         ");
 
@@ -45,7 +45,7 @@ class ValidateDuplicateKontainers extends Command
         }
 
         $this->warn('🔍 Found ' . count($duplicates) . ' duplicate kontainer numbers:');
-        
+
         $headers = ['Nomor Kontainer', 'Stock Status', 'Kontainer Status', 'Action Needed'];
         $rows = [];
 
@@ -63,19 +63,19 @@ class ValidateDuplicateKontainers extends Command
 
         if ($this->option('fix')) {
             $this->info('🔧 Fixing duplicates...');
-            
+
             $fixed = 0;
             foreach ($duplicates as $duplicate) {
                 if ($duplicate->stock_status !== 'inactive') {
                     DB::table('stock_kontainers')
                         ->where('nomor_seri_gabungan', $duplicate->nomor_seri_gabungan)
                         ->update(['status' => 'inactive']);
-                    
+
                     $this->line("  ✓ {$duplicate->nomor_seri_gabungan} - Stock kontainer set to inactive");
                     $fixed++;
                 }
             }
-            
+
             $this->info("✅ Fixed {$fixed} duplicate records.");
         } else {
             $this->info('💡 Use --fix option to automatically set duplicate stock_kontainers to inactive status.');

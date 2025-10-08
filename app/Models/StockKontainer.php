@@ -77,7 +77,7 @@ class StockKontainer extends Model
         // Cek duplikasi dengan stock_kontainers lain (selain diri sendiri)
         $query = self::where('nomor_seri_gabungan', $stockKontainer->nomor_seri_gabungan)
             ->where('status', 'active');
-        
+
         if ($stockKontainer->exists) {
             $query->where('id', '!=', $stockKontainer->id);
         }

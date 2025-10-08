@@ -50,7 +50,7 @@ class KontainerController extends Controller
         $perPage = $request->input('per_page', 15); // Default 15 jika tidak ada parameter
         $kontainers = $query->latest()->paginate($perPage);
         $kontainers->appends($request->query());
-        
+
         return view('master-kontainer.index', compact('kontainers', 'vendors'));
     }
 
@@ -109,7 +109,7 @@ class KontainerController extends Controller
         if ($existingWithSameSerialAndSuffix) {
             // Set kontainer yang sudah ada ke inactive
             $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
-            
+
             $warningMessage = "Kontainer dengan nomor seri {$request->nomor_seri_kontainer} dan akhiran {$request->akhiran_kontainer} sudah ada. Kontainer lama telah dinonaktifkan.";
             session()->flash('warning', $warningMessage);
         }
@@ -189,7 +189,7 @@ class KontainerController extends Controller
         if ($existingWithSameSerialAndSuffix) {
             // Set kontainer yang sudah ada ke inactive
             $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
-            
+
             $warningMessage = "Kontainer lain dengan nomor seri {$request->nomor_seri_kontainer} dan akhiran {$request->akhiran_kontainer} sudah ada. Kontainer lama telah dinonaktifkan.";
             session()->flash('warning', $warningMessage);
         }

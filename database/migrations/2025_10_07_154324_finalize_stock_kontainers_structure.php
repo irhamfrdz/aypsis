@@ -38,7 +38,7 @@ return new class extends Migration
                         $awalan = substr($stock->nomor_kontainer, 0, 4);
                         $nomor_seri = substr($stock->nomor_kontainer, 4, 6);
                         $akhiran = substr($stock->nomor_kontainer, 10, 1);
-                        
+
                         DB::table('stock_kontainers')
                             ->where('id', $stock->id)
                             ->update([
@@ -51,14 +51,14 @@ return new class extends Migration
                 }
             });
         }
-        
+
         // Setelah data dimigrasikan dan kolom ada, hapus kolom lama dan buat unique constraint
         Schema::table('stock_kontainers', function (Blueprint $table) {
             // Cek apakah kolom nomor_kontainer masih ada sebelum menghapus
             if (Schema::hasColumn('stock_kontainers', 'nomor_kontainer')) {
                 $table->dropColumn('nomor_kontainer');
             }
-            
+
             // Buat unique constraint pada nomor_seri_gabungan jika belum ada
             try {
                 $table->unique('nomor_seri_gabungan');
@@ -79,7 +79,7 @@ return new class extends Migration
                 $table->string('nomor_kontainer')->nullable()->after('id');
             }
         });
-        
+
         // Migrasi data kembali dari format baru ke nomor_kontainer
         DB::table('stock_kontainers')->whereNotNull('nomor_seri_gabungan')->orderBy('id')->chunk(100, function ($stockKontainers) {
             foreach ($stockKontainers as $stock) {
@@ -90,7 +90,7 @@ return new class extends Migration
                     ]);
             }
         });
-        
+
         Schema::table('stock_kontainers', function (Blueprint $table) {
             // Hapus unique constraint jika ada
             try {
@@ -98,7 +98,7 @@ return new class extends Migration
             } catch (\Exception $e) {
                 // Index mungkin tidak ada, abaikan error
             }
-            
+
             // Hapus kolom baru jika ada
             if (Schema::hasColumn('stock_kontainers', 'nomor_seri_gabungan')) {
                 $table->dropColumn('nomor_seri_gabungan');
@@ -112,7 +112,7 @@ return new class extends Migration
             if (Schema::hasColumn('stock_kontainers', 'awalan_kontainer')) {
                 $table->dropColumn('awalan_kontainer');
             }
-            
+
             // Kembalikan unique constraint ke nomor_kontainer
             try {
                 $table->unique('nomor_kontainer');

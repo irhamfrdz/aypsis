@@ -51,7 +51,7 @@ class Kernel extends ConsoleKernel
     $schedule->command('tagihan:create-next-periode')->dailyAt('03:00');
     // Update ongoing container periods daily at 01:00
     $schedule->command('kontainer:update-periods')->dailyAt('01:00');
-    
+
     // Validate and fix duplicate kontainers daily at 04:00
     $schedule->command('kontainer:validate-duplicates --fix')
              ->dailyAt('04:00')

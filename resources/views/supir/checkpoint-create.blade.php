@@ -186,7 +186,7 @@
                                                     <option value="">-- Pilih Kontainer {{ $permohonan->ukuran }}ft #{{ $i + 1 }} --</option>
                                                     @foreach($kontainerList as $kontainer)
                                                         <option value="{{ $kontainer->nomor_seri_gabungan }}">
-                                                            {{ $kontainer->nomor_seri_gabungan }} 
+                                                            {{ $kontainer->nomor_seri_gabungan }}
                                                             @if($kontainer->ukuran)
                                                                 ({{ $kontainer->ukuran }}ft)
                                                             @endif

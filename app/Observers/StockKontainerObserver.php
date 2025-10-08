@@ -37,10 +37,10 @@ class StockKontainerObserver
         }
 
         $existingKontainer = Kontainer::where('nomor_seri_gabungan', $stockKontainer->nomor_seri_gabungan)->first();
-        
+
         if ($existingKontainer && $stockKontainer->status !== 'inactive') {
             $stockKontainer->status = 'inactive';
-            
+
             Log::info("Auto-set stock kontainer {$stockKontainer->nomor_seri_gabungan} to inactive due to duplicate in kontainers table", [
                 'stock_kontainer_id' => $stockKontainer->id,
                 'existing_kontainer_id' => $existingKontainer->id

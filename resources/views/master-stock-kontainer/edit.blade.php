@@ -33,11 +33,11 @@
                     <div class="grid grid-cols-3 gap-2">
                         <div>
                             <label for="awalan_kontainer" class="block text-xs text-gray-500 mb-1">Awalan (4 karakter)</label>
-                            <input type="text" name="awalan_kontainer" id="awalan_kontainer" 
-                                   value="{{ old('awalan_kontainer', $stockKontainer->awalan_kontainer) }}" 
-                                   class="{{ $inputClasses }}" 
-                                   required 
-                                   maxlength="4" 
+                            <input type="text" name="awalan_kontainer" id="awalan_kontainer"
+                                   value="{{ old('awalan_kontainer', $stockKontainer->awalan_kontainer) }}"
+                                   class="{{ $inputClasses }}"
+                                   required
+                                   maxlength="4"
                                    placeholder="ABCD"
                                    style="text-transform: uppercase;">
                             @error('awalan_kontainer')
@@ -46,11 +46,11 @@
                         </div>
                         <div>
                             <label for="nomor_seri_kontainer" class="block text-xs text-gray-500 mb-1">Nomor Seri (6 digit)</label>
-                            <input type="text" name="nomor_seri_kontainer" id="nomor_seri_kontainer" 
-                                   value="{{ old('nomor_seri_kontainer', $stockKontainer->nomor_seri_kontainer) }}" 
-                                   class="{{ $inputClasses }}" 
-                                   required 
-                                   maxlength="6" 
+                            <input type="text" name="nomor_seri_kontainer" id="nomor_seri_kontainer"
+                                   value="{{ old('nomor_seri_kontainer', $stockKontainer->nomor_seri_kontainer) }}"
+                                   class="{{ $inputClasses }}"
+                                   required
+                                   maxlength="6"
                                    pattern="[0-9]{6}"
                                    placeholder="123456">
                             @error('nomor_seri_kontainer')
@@ -59,11 +59,11 @@
                         </div>
                         <div>
                             <label for="akhiran_kontainer" class="block text-xs text-gray-500 mb-1">Akhiran (1 karakter)</label>
-                            <input type="text" name="akhiran_kontainer" id="akhiran_kontainer" 
-                                   value="{{ old('akhiran_kontainer', $stockKontainer->akhiran_kontainer) }}" 
-                                   class="{{ $inputClasses }}" 
-                                   required 
-                                   maxlength="1" 
+                            <input type="text" name="akhiran_kontainer" id="akhiran_kontainer"
+                                   value="{{ old('akhiran_kontainer', $stockKontainer->akhiran_kontainer) }}"
+                                   class="{{ $inputClasses }}"
+                                   required
+                                   maxlength="1"
                                    pattern="[0-9A-Z]{1}"
                                    placeholder="7"
                                    style="text-transform: uppercase;">

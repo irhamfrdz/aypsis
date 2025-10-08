@@ -30,25 +30,25 @@ class ValidateDuplicateKontainersJob implements ShouldQueue
             // Find duplicates
             $duplicates = DB::select("
                 SELECT sk.nomor_seri_gabungan, sk.status as stock_status, k.status as kontainer_status
-                FROM stock_kontainers sk 
+                FROM stock_kontainers sk
                 INNER JOIN kontainers k ON sk.nomor_seri_gabungan = k.nomor_seri_gabungan
-                WHERE sk.nomor_seri_gabungan IS NOT NULL 
+                WHERE sk.nomor_seri_gabungan IS NOT NULL
                 AND k.nomor_seri_gabungan IS NOT NULL
                 AND sk.status != 'inactive'
             ");
 
             if (!empty($duplicates)) {
                 $fixed = 0;
-                
+
                 foreach ($duplicates as $duplicate) {
                     DB::table('stock_kontainers')
                         ->where('nomor_seri_gabungan', $duplicate->nomor_seri_gabungan)
                         ->update(['status' => 'inactive']);
-                    
+
                     $fixed++;
                     Log::info("Auto-fixed duplicate: {$duplicate->nomor_seri_gabungan} - Stock kontainer set to inactive");
                 }
-                
+
                 Log::info("Duplicate validation job completed: {$fixed} duplicates fixed");
             } else {
                 Log::info('Duplicate validation job completed: No duplicates found');

@@ -92,7 +92,7 @@ class KontainerImportController extends Controller
                 ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor'],
                 ['Awalan Kontainer (4 karakter)', 'Nomor Seri (6 digit)', 'Akhiran (1 karakter)', 'Ukuran', 'Vendor']
             ];
-            
+
             $headerValid = false;
             foreach ($expectedHeaders as $expectedHeader) {
                 if ($header === $expectedHeader) {
@@ -100,16 +100,16 @@ class KontainerImportController extends Controller
                     break;
                 }
             }
-            
+
             if (!$headerValid) {
                 $headerReceived = implode(', ', $header);
                 $headerExpected = implode(', ', $expectedHeaders[0]);
-                
+
                 $errorMessage = "Format header CSV tidak sesuai template.\n\n";
                 $errorMessage .= "Header yang diterima: " . $headerReceived . "\n";
                 $errorMessage .= "Header yang diharapkan: " . $headerExpected . "\n\n";
                 $errorMessage .= "Silakan download template terbaru dan pastikan format header sesuai.";
-                
+
                 return back()->with('error', $errorMessage);
             }
 
@@ -191,7 +191,7 @@ class KontainerImportController extends Controller
                     if ($existingWithSameSerialAndSuffix) {
                         // Set kontainer yang sudah ada ke inactive
                         $existingWithSameSerialAndSuffix->update(['status' => 'inactive']);
-                        
+
                         $stats['warnings'][] = "Baris {$rowNumber}: Kontainer dengan nomor seri {$nomorSeri} dan akhiran {$akhiranKontainer} sudah ada. Kontainer lama telah dinonaktifkan.";
                     }
 

@@ -292,7 +292,7 @@ Route::middleware([
         Route::post('tujuan/import', [App\Http\Controllers\MasterTujuanImportController::class, 'import'])
              ->name('tujuan.import')
              ->middleware('can:master-tujuan-create');
-             
+
         Route::resource('tujuan', TujuanController::class)->middleware([
             'index' => 'can:master-tujuan-view',
             'show' => 'can:master-tujuan-view'
@@ -377,7 +377,7 @@ Route::middleware([
         Route::post('mobil/import', [App\Http\Controllers\MasterMobilImportController::class, 'import'])
              ->name('mobil.import')
              ->middleware('can:master-mobil-create');
-             
+
         Route::resource('mobil', MobilController::class)->middleware([
             'index' => 'can:master-mobil-view',
             'show' => 'can:master-mobil-view',
@@ -428,7 +428,7 @@ Route::middleware([
         Route::post('pricelist-cat/import', [App\Http\Controllers\MasterPricelistCatImportController::class, 'import'])
              ->name('pricelist-cat.import')
              ->middleware('can:master-pricelist-cat-create');
-             
+
         Route::resource('pricelist-cat', PricelistCatController::class)->middleware([
             'index' => 'can:master-pricelist-cat-view',
             'show' => 'can:master-pricelist-cat-view',
@@ -607,7 +607,7 @@ Route::middleware([
     Route::post('master/vendor-bengkel/import', [VendorBengkelController::class, 'import'])
          ->name('master.vendor-bengkel.import')
          ->middleware('can:master-vendor-bengkel-create');
-    
+
     Route::resource('master/vendor-bengkel', VendorBengkelController::class)
          ->names('master.vendor-bengkel')
          ->middleware([

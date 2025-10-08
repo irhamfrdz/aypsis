@@ -145,7 +145,7 @@ class VendorBengkelController extends Controller
                 'Spesialis motor sport',
                 'Lokasi strategis, harga terjangkau'
             ], ';');
-            
+
             fputcsv($file, [
                 'VB002',
                 'Vendor Spare Part ABC',

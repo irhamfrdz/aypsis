@@ -3,29 +3,34 @@
 ## Issues Found and Fixed
 
 ### 1. **Template Header was Outdated**
-- **Problem**: CSV template used generic "Nomor Kontainer" header
-- **Fix**: Updated to "Nomor Kontainer (11 karakter, contoh: ABCD123456X)" for clarity
+
+-   **Problem**: CSV template used generic "Nomor Kontainer" header
+-   **Fix**: Updated to "Nomor Kontainer (11 karakter, contoh: ABCD123456X)" for clarity
 
 ### 2. **Missing Example Data**
-- **Problem**: Template had no example data to guide users
-- **Fix**: Added 2 example rows with proper format:
-  - `ABCD123456X, 20, Dry Container, available, 2020, Contoh data - hapus baris ini`
-  - `EFGH789012Y, 40, Reefer Container, rented, 2021, Contoh data - hapus baris ini`
+
+-   **Problem**: Template had no example data to guide users
+-   **Fix**: Added 2 example rows with proper format:
+    -   `ABCD123456X, 20, Dry Container, available, 2020, Contoh data - hapus baris ini`
+    -   `EFGH789012Y, 40, Reefer Container, rented, 2021, Contoh data - hapus baris ini`
 
 ### 3. **Status Validation Incomplete**
-- **Problem**: Import validation missing `inactive` status
-- **Fix**: Added `inactive` to valid statuses list
+
+-   **Problem**: Import validation missing `inactive` status
+-   **Fix**: Added `inactive` to valid statuses list
 
 ### 4. **Import Guidance Unclear**
-- **Problem**: Modal instructions too vague about container number format
-- **Fix**: Updated guidance to include:
-  - Specific 11-character format requirement
-  - Instruction to remove example data
-  - Information about duplicate detection and auto-inactive status
+
+-   **Problem**: Modal instructions too vague about container number format
+-   **Fix**: Updated guidance to include:
+    -   Specific 11-character format requirement
+    -   Instruction to remove example data
+    -   Information about duplicate detection and auto-inactive status
 
 ### 5. **Header Validation Too Strict**
-- **Problem**: Import would fail if header was updated
-- **Fix**: Accept both old and new header formats for backward compatibility
+
+-   **Problem**: Import would fail if header was updated
+-   **Fix**: Accept both old and new header formats for backward compatibility
 
 ## Current Template Structure
 
@@ -47,10 +52,10 @@
 
 ## Validation Rules
 
-- **Container Number**: Exactly 11 characters (ABCD123456X format)
-- **Status**: available, rented, maintenance, damaged, inactive
-- **Year**: 1900 to current year
-- **Duplicate Detection**: Auto-inactive if exists in kontainers table
+-   **Container Number**: Exactly 11 characters (ABCD123456X format)
+-   **Status**: available, rented, maintenance, damaged, inactive
+-   **Year**: 1900 to current year
+-   **Duplicate Detection**: Auto-inactive if exists in kontainers table
 
 ## Benefits
 
@@ -63,14 +68,15 @@
 ## Files Modified
 
 1. `app/Http/Controllers/StockKontainerImportController.php`
-   - Updated template generation with examples
-   - Enhanced header validation
-   - Added inactive status support
-   - Improved example data filtering
+
+    - Updated template generation with examples
+    - Enhanced header validation
+    - Added inactive status support
+    - Improved example data filtering
 
 2. `resources/views/master-stock-kontainer/index.blade.php`
-   - Updated import guidance modal
-   - Added container number format instructions
-   - Included duplicate detection information
+    - Updated import guidance modal
+    - Added container number format instructions
+    - Included duplicate detection information
 
 The CSV template is now **correctly structured** and **user-friendly** with comprehensive validation and guidance.

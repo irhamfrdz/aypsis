@@ -32,49 +32,49 @@ echo "Mencari nomor seri yang kehilangan leading zeros...\n\n";
 
 foreach ($csvData as $index => $row) {
     $rowNumber = $index + 2; // +2 karena mulai dari baris 2 (setelah header)
-    
+
     // Pastikan baris memiliki kolom yang cukup
     if (count($row) < 4) {
         $errorCount++;
         $fixedData[] = $row; // Tetap simpan baris yang error
         continue;
     }
-    
+
     $awalan = trim($row[0]);
     $nomorSeriSaatIni = trim($row[1]);
     $akhiran = trim($row[2]);
     $nomorGabungan = trim($row[3]);
-    
+
     // Skip jika nomor gabungan kosong atau tidak valid
     if (empty($nomorGabungan) || strlen($nomorGabungan) != 11) {
         $errorCount++;
         $fixedData[] = $row; // Tetap simpan baris yang error
         continue;
     }
-    
+
     // Extract komponen dari nomor gabungan
     $awalanFromGabungan = substr($nomorGabungan, 0, 4);
     $nomorSeriFromGabungan = substr($nomorGabungan, 4, 6);
     $akhiranFromGabungan = substr($nomorGabungan, 10, 1);
-    
+
     // Cek konsistensi dan perbaiki jika perlu
     $needsFix = false;
     $originalRow = $row;
-    
+
     // Perbaiki awalan jika perlu
     if ($awalan != $awalanFromGabungan) {
         echo "Baris $rowNumber: Memperbaiki awalan '$awalan' menjadi '$awalanFromGabungan'\n";
         $row[0] = $awalanFromGabungan;
         $needsFix = true;
     }
-    
+
     // Perbaiki nomor seri jika perlu (ini yang paling penting untuk leading zeros)
     if ($nomorSeriSaatIni != $nomorSeriFromGabungan) {
         echo "Baris $rowNumber: Memperbaiki nomor seri '$nomorSeriSaatIni' menjadi '$nomorSeriFromGabungan'\n";
         echo "  -> Nomor gabungan: $nomorGabungan\n";
         $row[1] = $nomorSeriFromGabungan;
         $needsFix = true;
-        
+
         // Simpan info untuk laporan
         $problemRows[] = [
             'baris' => $rowNumber,
@@ -83,18 +83,18 @@ foreach ($csvData as $index => $row) {
             'nomor_seri_baru' => $nomorSeriFromGabungan
         ];
     }
-    
+
     // Perbaiki akhiran jika perlu
     if ($akhiran != $akhiranFromGabungan) {
         echo "Baris $rowNumber: Memperbaiki akhiran '$akhiran' menjadi '$akhiranFromGabungan'\n";
         $row[2] = $akhiranFromGabungan;
         $needsFix = true;
     }
-    
+
     if ($needsFix) {
         $fixedCount++;
     }
-    
+
     $fixedData[] = $row;
 }
 
@@ -105,25 +105,25 @@ $forcedCount = 0;
 
 foreach ($csvData as $index => $row) {
     $rowNumber = $index + 2;
-    
+
     if (count($row) >= 4) {
         $nomorGabungan = trim($row[3]);
-        
+
         if (!empty($nomorGabungan) && strlen($nomorGabungan) == 11) {
             // Extract komponen dari nomor gabungan
             $awalanFromGabungan = substr($nomorGabungan, 0, 4);
             $nomorSeriFromGabungan = substr($nomorGabungan, 4, 6);
             $akhiranFromGabungan = substr($nomorGabungan, 10, 1);
-            
+
             // Paksa update semua komponen
             $row[0] = $awalanFromGabungan;   // awalan
             $row[1] = $nomorSeriFromGabungan; // nomor seri (dengan leading zeros)
             $row[2] = $akhiranFromGabungan;   // akhiran
-            
+
             $forcedCount++;
         }
     }
-    
+
     $forcedData[] = $row;
 }
 

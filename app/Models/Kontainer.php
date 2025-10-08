@@ -88,7 +88,7 @@ class Kontainer extends Model
         $duplicateQuery = self::where('nomor_seri_kontainer', $kontainer->nomor_seri_kontainer)
             ->where('akhiran_kontainer', $kontainer->akhiran_kontainer)
             ->where('status', 'active');
-        
+
         if ($kontainer->exists) {
             $duplicateQuery->where('id', '!=', $kontainer->id);
         }
@@ -102,7 +102,7 @@ class Kontainer extends Model
         // Cek duplikasi nomor seri gabungan (selain validasi nomor seri + akhiran di atas)
         $query = self::where('nomor_seri_gabungan', $kontainer->nomor_seri_gabungan)
             ->where('status', 'active');
-        
+
         if ($kontainer->exists) {
             $query->where('id', '!=', $kontainer->id);
         }

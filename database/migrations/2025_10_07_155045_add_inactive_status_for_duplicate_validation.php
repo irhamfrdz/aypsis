@@ -14,24 +14,24 @@ return new class extends Migration
     {
         // Cek duplikasi nomor kontainer antara stock_kontainers dan kontainers
         $duplicates = DB::select("
-            SELECT sk.nomor_seri_gabungan 
-            FROM stock_kontainers sk 
+            SELECT sk.nomor_seri_gabungan
+            FROM stock_kontainers sk
             INNER JOIN kontainers k ON sk.nomor_seri_gabungan = k.nomor_seri_gabungan
-            WHERE sk.nomor_seri_gabungan IS NOT NULL 
+            WHERE sk.nomor_seri_gabungan IS NOT NULL
             AND k.nomor_seri_gabungan IS NOT NULL
         ");
 
         if (!empty($duplicates)) {
             echo "Ditemukan " . count($duplicates) . " nomor kontainer yang duplikat antara stock_kontainers dan kontainers:\n";
-            
+
             foreach ($duplicates as $duplicate) {
                 echo "- " . $duplicate->nomor_seri_gabungan . "\n";
-                
+
                 // Set status stock_kontainer menjadi 'inactive' untuk duplikat
                 DB::table('stock_kontainers')
                     ->where('nomor_seri_gabungan', $duplicate->nomor_seri_gabungan)
                     ->update(['status' => 'inactive']);
-                    
+
                 echo "  → Stock kontainer set to inactive\n";
             }
         } else {

@@ -30,10 +30,10 @@ class CheckpointController extends Controller
         // Get kegiatan name from master kegiatan if available
         $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
                         ->value('nama_kegiatan') ?? $permohonan->kegiatan;
-        
+
         $kegiatanLower = strtolower($kegiatanName);
-        $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false && 
-                                stripos($kegiatanLower, 'kontainer') !== false && 
+        $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false &&
+                                stripos($kegiatanLower, 'kontainer') !== false &&
                                 stripos($kegiatanLower, 'sewa') !== false);
 
         // Filter kontainer berdasarkan kegiatan dan ukuran
@@ -49,7 +49,7 @@ class CheckpointController extends Controller
                 // Untuk vendor ini, filter kontainer approved/tagihan group jika tarik sewa
                 $isTarikSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false)
                     || (stripos($kegiatanLower, 'pengambilan') !== false);
-                
+
                 if ($isTarikSewa) {
                     $kontainerList = Kontainer::where('grup_tagihan', 'approved')
                                             ->where('ukuran', $permohonan->ukuran)

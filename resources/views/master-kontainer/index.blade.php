@@ -16,9 +16,9 @@
                 <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
                     Cari Kontainer
                 </label>
-                <input type="text" 
-                       id="search" 
-                       name="search" 
+                <input type="text"
+                       id="search"
+                       name="search"
                        value="{{ request('search') }}"
                        placeholder="Cari nomor kontainer..."
                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
@@ -29,8 +29,8 @@
                 <label for="vendor" class="block text-sm font-medium text-gray-700 mb-1">
                     Vendor
                 </label>
-                <select id="vendor" 
-                        name="vendor" 
+                <select id="vendor"
+                        name="vendor"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     <option value="">Semua Vendor</option>
                     @if(isset($vendors))
@@ -48,8 +48,8 @@
                 <label for="ukuran" class="block text-sm font-medium text-gray-700 mb-1">
                     Ukuran
                 </label>
-                <select id="ukuran" 
-                        name="ukuran" 
+                <select id="ukuran"
+                        name="ukuran"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     <option value="">Semua Ukuran</option>
                     <option value="20" {{ request('ukuran') == '20' ? 'selected' : '' }}>20ft</option>
@@ -62,8 +62,8 @@
                 <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
                     Status
                 </label>
-                <select id="status" 
-                        name="status" 
+                <select id="status"
+                        name="status"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     <option value="">Semua Status</option>
                     <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
@@ -74,14 +74,14 @@
 
             {{-- Filter Buttons --}}
             <div class="flex space-x-2">
-                <button type="submit" 
+                <button type="submit"
                         class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                     </svg>
                     Filter
                 </button>
-                <a href="{{ route('master.kontainer.index') }}" 
+                <a href="{{ route('master.kontainer.index') }}"
                    class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -96,7 +96,7 @@
             <div class="pt-3 border-t border-gray-200">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-sm font-medium text-gray-700">Filter aktif:</span>
-                    
+
                     @if(request('search'))
                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                             Pencarian: "{{ request('search') }}"
@@ -210,7 +210,7 @@
 @if($kontainers->count() > 0)
     <div class="mb-4 flex justify-between items-center">
         <div class="text-sm text-gray-600">
-            Menampilkan {{ $kontainers->firstItem() }} sampai {{ $kontainers->lastItem() }} 
+            Menampilkan {{ $kontainers->firstItem() }} sampai {{ $kontainers->lastItem() }}
             dari {{ $kontainers->total() }} kontainer
             @if(request('search') || request('vendor') || request('ukuran') || request('status'))
                 (difilter)
@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterForm = document.querySelector('form[action*="master.kontainer.index"]');
     if (filterForm) {
         const filterSelects = filterForm.querySelectorAll('select[name="vendor"], select[name="ukuran"], select[name="status"]');
-        
+
         filterSelects.forEach(select => {
             select.addEventListener('change', function() {
                 filterForm.submit();

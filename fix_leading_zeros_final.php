@@ -32,31 +32,31 @@ echo "Mencari nomor seri yang kehilangan leading zeros...\n\n";
 
 foreach ($csvData as $index => $row) {
     $rowNumber = $index + 2;
-    
+
     if (count($row) < 4) {
         $fixedData[] = $row;
         continue;
     }
-    
+
     $awalan = trim($row[0]);
     $nomorSeriSaatIni = trim($row[1]);
     $akhiran = trim($row[2]);
     $nomorGabungan = trim($row[3]);
-    
+
     // Skip jika data tidak valid
     if (empty($nomorGabungan) || strlen($nomorGabungan) != 11) {
         $fixedData[] = $row;
         continue;
     }
-    
+
     // Extract dari nomor gabungan
     $awalanFromGabungan = substr($nomorGabungan, 0, 4);
     $nomorSeriFromGabungan = substr($nomorGabungan, 4, 6);
     $akhiranFromGabungan = substr($nomorGabungan, 10, 1);
-    
+
     // Cek apakah nomor seri kehilangan leading zeros
     $needsFixing = false;
-    
+
     // Cek jika nomor seri saat ini kurang dari 6 digit
     if (strlen($nomorSeriSaatIni) < 6) {
         echo "Baris $rowNumber: Nomor seri '$nomorSeriSaatIni' terlalu pendek (panjang: " . strlen($nomorSeriSaatIni) . ")\n";
@@ -77,7 +77,7 @@ foreach ($csvData as $index => $row) {
         // Untuk nomor < 100000, pastikan ada leading zeros
         $nomorAsInteger = intval($nomorSeriSaatIni);
         $nomorWithLeadingZeros = str_pad($nomorAsInteger, 6, '0', STR_PAD_LEFT);
-        
+
         if ($nomorWithLeadingZeros != $nomorSeriSaatIni) {
             echo "Baris $rowNumber: Menambahkan leading zeros\n";
             echo "  -> Dari: '$nomorSeriSaatIni' menjadi: '$nomorWithLeadingZeros'\n";
@@ -85,11 +85,11 @@ foreach ($csvData as $index => $row) {
             $needsFixing = true;
         }
     }
-    
+
     if ($needsFixing) {
         $fixedCount++;
     }
-    
+
     $fixedData[] = $row;
 }
 
@@ -99,12 +99,12 @@ if (($handle = fopen($outputFile, 'w')) !== FALSE) {
         fputcsv($handle, $row, ';');
     }
     fclose($handle);
-    
+
     echo "\n=== HASIL PERBAIKAN ===\n";
     echo "Total baris diproses: $totalRows\n";
     echo "Baris yang diperbaiki: $fixedCount\n";
     echo "File hasil disimpan: $outputFile\n\n";
-    
+
     if ($fixedCount > 0) {
         echo "✅ CSV berhasil diperbaiki!\n";
         echo "File yang sudah diperbaiki: $outputFile\n";
@@ -113,7 +113,7 @@ if (($handle = fopen($outputFile, 'w')) !== FALSE) {
         echo "✅ Tidak ada masalah leading zeros ditemukan.\n";
         echo "File CSV Anda sudah dalam format yang benar.\n";
     }
-    
+
 } else {
     echo "❌ Gagal menyimpan file output: $outputFile\n";
 }

@@ -32,11 +32,11 @@
                     <div class="grid grid-cols-3 gap-2">
                         <div>
                             <label for="awalan_kontainer" class="block text-xs text-gray-500 mb-1">Awalan (4 karakter)</label>
-                            <input type="text" name="awalan_kontainer" id="awalan_kontainer" 
-                                   value="{{ old('awalan_kontainer') }}" 
-                                   class="{{ $inputClasses }}" 
-                                   required 
-                                   maxlength="4" 
+                            <input type="text" name="awalan_kontainer" id="awalan_kontainer"
+                                   value="{{ old('awalan_kontainer') }}"
+                                   class="{{ $inputClasses }}"
+                                   required
+                                   maxlength="4"
                                    placeholder="ABCD"
                                    style="text-transform: uppercase;">
                             @error('awalan_kontainer')
@@ -45,11 +45,11 @@
                         </div>
                         <div>
                             <label for="nomor_seri_kontainer" class="block text-xs text-gray-500 mb-1">Nomor Seri (6 digit)</label>
-                            <input type="text" name="nomor_seri_kontainer" id="nomor_seri_kontainer" 
-                                   value="{{ old('nomor_seri_kontainer') }}" 
-                                   class="{{ $inputClasses }}" 
-                                   required 
-                                   maxlength="6" 
+                            <input type="text" name="nomor_seri_kontainer" id="nomor_seri_kontainer"
+                                   value="{{ old('nomor_seri_kontainer') }}"
+                                   class="{{ $inputClasses }}"
+                                   required
+                                   maxlength="6"
                                    pattern="[0-9]{6}"
                                    placeholder="123456">
                             @error('nomor_seri_kontainer')
@@ -58,11 +58,11 @@
                         </div>
                         <div>
                             <label for="akhiran_kontainer" class="block text-xs text-gray-500 mb-1">Akhiran (1 karakter)</label>
-                            <input type="text" name="akhiran_kontainer" id="akhiran_kontainer" 
-                                   value="{{ old('akhiran_kontainer') }}" 
-                                   class="{{ $inputClasses }}" 
-                                   required 
-                                   maxlength="1" 
+                            <input type="text" name="akhiran_kontainer" id="akhiran_kontainer"
+                                   value="{{ old('akhiran_kontainer') }}"
+                                   class="{{ $inputClasses }}"
+                                   required
+                                   maxlength="1"
                                    pattern="[0-9A-Z]{1}"
                                    placeholder="7"
                                    style="text-transform: uppercase;">
@@ -164,33 +164,33 @@
         const awalanInput = document.getElementById('awalan_kontainer');
         const nomorSeriInput = document.getElementById('nomor_seri_kontainer');
         const akhiranInput = document.getElementById('akhiran_kontainer');
-        
+
         // Auto uppercase untuk awalan dan akhiran
         awalanInput.addEventListener('input', function() {
             this.value = this.value.toUpperCase().replace(/[^A-Z]/g, '');
             updatePreview();
         });
-        
+
         akhiranInput.addEventListener('input', function() {
             this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
             updatePreview();
         });
-        
+
         // Only numbers untuk nomor seri
         nomorSeriInput.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
             updatePreview();
         });
-        
+
         // Function untuk update preview
         function updatePreview() {
             const awalan = awalanInput.value;
             const nomorSeri = nomorSeriInput.value;
             const akhiran = akhiranInput.value;
-            
+
             if (awalan && nomorSeri && akhiran) {
                 const fullNumber = awalan + nomorSeri + akhiran;
-                
+
                 // Update preview di bawah field
                 let previewElement = document.getElementById('nomor-preview');
                 if (!previewElement) {
@@ -202,27 +202,27 @@
                 previewElement.textContent = 'Preview: ' + fullNumber;
             }
         }
-        
+
         // Validasi form sebelum submit
         document.querySelector('form').addEventListener('submit', function(e) {
             const awalan = awalanInput.value;
             const nomorSeri = nomorSeriInput.value;
             const akhiran = akhiranInput.value;
-            
+
             if (awalan.length !== 4) {
                 e.preventDefault();
                 alert('Awalan kontainer harus 4 karakter');
                 awalanInput.focus();
                 return;
             }
-            
+
             if (nomorSeri.length !== 6) {
                 e.preventDefault();
                 alert('Nomor seri kontainer harus 6 digit');
                 nomorSeriInput.focus();
                 return;
             }
-            
+
             if (akhiran.length !== 1) {
                 e.preventDefault();
                 alert('Akhiran kontainer harus 1 karakter');

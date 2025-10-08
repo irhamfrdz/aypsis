@@ -74,7 +74,7 @@
                             $last = $paginator->lastPage();
                             $start = max(1, $current - 2);
                             $end = min($last, $current + 2);
-                            
+
                             // Pastikan kita selalu menampilkan 5 link (jika memungkinkan)
                             if ($end - $start < 4) {
                                 if ($start == 1) {
