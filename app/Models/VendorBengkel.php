@@ -10,8 +10,10 @@ class VendorBengkel extends Model
     protected $table = 'vendor_bengkel';
 
     protected $fillable = [
+        'kode',
         'nama_bengkel',
         'keterangan',
+        'catatan',
         'created_by',
         'updated_by'
     ];

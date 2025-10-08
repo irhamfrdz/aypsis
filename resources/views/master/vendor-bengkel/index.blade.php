@@ -123,8 +123,10 @@
                 <thead class="bg-gray-50">
                     <tr>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Bengkel/Vendor</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </tr>
                 </thead>
@@ -135,6 +137,11 @@
                             {{ $vendorBengkel->firstItem() + $index }}
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap">
+                            <div class="text-sm font-mono text-gray-900">
+                                {{ $vendor->kode ?: '-' }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-4 whitespace-nowrap">
                             <div class="text-sm font-medium text-gray-900">
                                 {{ $vendor->nama_bengkel }}
                             </div>
@@ -142,6 +149,11 @@
                         <td class="px-4 py-4">
                             <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $vendor->keterangan }}">
                                 {{ $vendor->keterangan ? Str::limit($vendor->keterangan, 50) : '-' }}
+                            </div>
+                        </td>
+                        <td class="px-4 py-4">
+                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $vendor->catatan }}">
+                                {{ $vendor->catatan ? Str::limit($vendor->catatan, 50) : '-' }}
                             </div>
                         </td>
                         <td class="px-4 py-4 whitespace-nowrap text-sm font-medium">
@@ -168,7 +180,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="4" class="px-4 py-8 text-center text-gray-500">
+                        <td colspan="6" class="px-4 py-8 text-center text-gray-500">
                             <div class="flex flex-col items-center">
                                 <svg class="w-12 h-12 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -216,12 +228,14 @@
                     <h4 class="text-sm font-medium text-blue-800 mb-2">Format CSV yang Diharapkan:</h4>
                     <p class="text-xs text-blue-700 mb-2">File CSV menggunakan pemisah titik koma (;) untuk menghindari masalah dengan koma dalam data. Template hanya berisi header kolom.</p>
                     <div class="text-xs text-blue-700 font-mono bg-white p-2 rounded border">
-                        nama_bengkel;keterangan
+                        kode;nama_bengkel;keterangan;catatan
                     </div>
                     <div class="mt-2 text-xs text-blue-600">
                         <strong>Catatan:</strong><br>
+                        - kode: kode unik vendor/bengkel (opsional)<br>
                         - nama_bengkel: wajib diisi<br>
-                        - keterangan: deskripsi vendor/bengkel (opsional)
+                        - keterangan: deskripsi singkat (opsional)<br>
+                        - catatan: catatan tambahan (opsional)
                     </div>
                 </div>
 

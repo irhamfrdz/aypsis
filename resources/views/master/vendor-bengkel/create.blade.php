@@ -25,6 +25,20 @@
             <form action="{{ route('master.vendor-bengkel.store') }}" method="POST" class="space-y-6">
                 @csrf
 
+                <!-- Kode -->
+                <div>
+                    <label for="kode" class="block text-sm font-medium text-gray-700 mb-2">
+                        Kode Vendor/Bengkel
+                    </label>
+                    <input type="text" id="kode" name="kode"
+                           value="{{ old('kode') }}"
+                           class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                           placeholder="Contoh: VB001, VENDOR-ABC">
+                    @error('kode')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
                 <!-- Nama Bengkel/Vendor -->
                 <div>
                     <label for="nama_bengkel" class="block text-sm font-medium text-gray-700 mb-2">
@@ -45,10 +59,23 @@
                     <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-2">
                         Keterangan
                     </label>
-                    <textarea id="keterangan" name="keterangan" rows="4"
+                    <textarea id="keterangan" name="keterangan" rows="3"
                               class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                              placeholder="Deskripsi atau keterangan tambahan...">{{ old('keterangan') }}</textarea>
+                              placeholder="Deskripsi singkat vendor/bengkel...">{{ old('keterangan') }}</textarea>
                     @error('keterangan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Catatan -->
+                <div>
+                    <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
+                        Catatan
+                    </label>
+                    <textarea id="catatan" name="catatan" rows="4"
+                              class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                              placeholder="Catatan tambahan, alamat, kontak, atau informasi lainnya...">{{ old('catatan') }}</textarea>
+                    @error('catatan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

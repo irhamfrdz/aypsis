@@ -21,8 +21,10 @@ class VendorBengkelController extends Controller
         if ($request->has('search') && !empty($request->search)) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nama_bengkel', 'like', "%{$search}%")
-                  ->orWhere('keterangan', 'like', "%{$search}%");
+                $q->where('kode', 'like', "%{$search}%")
+                  ->orWhere('nama_bengkel', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%")
+                  ->orWhere('catatan', 'like', "%{$search}%");
             });
         }
 
@@ -45,8 +47,10 @@ class VendorBengkelController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
+            'kode' => 'nullable|string|max:50|unique:vendor_bengkel,kode',
             'nama_bengkel' => 'required|string|max:255|unique:vendor_bengkel,nama_bengkel',
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
+            'catatan' => 'nullable|string|max:2000'
         ]);
 
         $validated['created_by'] = Auth::id();
@@ -80,8 +84,10 @@ class VendorBengkelController extends Controller
     public function update(Request $request, VendorBengkel $vendorBengkel): RedirectResponse
     {
         $validated = $request->validate([
+            'kode' => 'nullable|string|max:50|unique:vendor_bengkel,kode,' . $vendorBengkel->id,
             'nama_bengkel' => 'required|string|max:255|unique:vendor_bengkel,nama_bengkel,' . $vendorBengkel->id,
-            'keterangan' => 'nullable|string|max:1000'
+            'keterangan' => 'nullable|string|max:1000',
+            'catatan' => 'nullable|string|max:2000'
         ]);
 
         $validated['updated_by'] = Auth::id();
@@ -126,8 +132,25 @@ class VendorBengkelController extends Controller
 
             // Header row with semicolon delimiter
             fputcsv($file, [
+                'kode',
                 'nama_bengkel',
-                'keterangan'
+                'keterangan',
+                'catatan'
+            ], ';');
+
+            // Sample data
+            fputcsv($file, [
+                'VB001',
+                'Bengkel Motor Jaya',
+                'Spesialis motor sport',
+                'Lokasi strategis, harga terjangkau'
+            ], ';');
+            
+            fputcsv($file, [
+                'VB002',
+                'Vendor Spare Part ABC',
+                'Distributor spare part original',
+                'Supplier terpercaya dengan garansi resmi'
             ], ';');
 
             fclose($file);
@@ -160,16 +183,25 @@ class VendorBengkelController extends Controller
 
         foreach ($data as $row) {
             try {
-                if (count($row) < 1) { // Minimum required fields
+                if (count($row) < 2) { // Minimum required fields (kode bisa kosong, nama_bengkel wajib)
                     $errors[] = "Baris {$rowNumber}: Data tidak lengkap";
                     $rowNumber++;
                     continue;
                 }
 
                 $vendorData = [
-                    'nama_bengkel' => trim($row[0] ?? ''),
-                    'keterangan' => trim($row[1] ?? ''),
+                    'kode' => trim($row[0] ?? ''),
+                    'nama_bengkel' => trim($row[1] ?? ''),
+                    'keterangan' => trim($row[2] ?? ''),
+                    'catatan' => trim($row[3] ?? ''),
                 ];
+
+                // Clean empty values to null
+                foreach ($vendorData as $key => $value) {
+                    if (empty($value)) {
+                        $vendorData[$key] = null;
+                    }
+                }
 
                 // Validate required fields
                 if (empty($vendorData['nama_bengkel'])) {
@@ -178,13 +210,22 @@ class VendorBengkelController extends Controller
                     continue;
                 }
 
-                // Check for duplicates
+                // Check for duplicates by nama_bengkel
                 $existing = VendorBengkel::where('nama_bengkel', $vendorData['nama_bengkel'])->first();
-
                 if ($existing) {
                     $errors[] = "Baris {$rowNumber}: Vendor/Bengkel dengan nama '{$vendorData['nama_bengkel']}' sudah ada";
                     $rowNumber++;
                     continue;
+                }
+
+                // Check for duplicate kode if provided
+                if (!empty($vendorData['kode'])) {
+                    $existingKode = VendorBengkel::where('kode', $vendorData['kode'])->first();
+                    if ($existingKode) {
+                        $errors[] = "Baris {$rowNumber}: Kode '{$vendorData['kode']}' sudah digunakan";
+                        $rowNumber++;
+                        continue;
+                    }
                 }
 
                 VendorBengkel::create($vendorData);
