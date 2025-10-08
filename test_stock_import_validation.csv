@@ -1,0 +1,5 @@
+Awalan Kontainer (4 karakter);Nomor Seri Kontainer (6 digit);Akhiran Kontainer (1 digit);Nomor Seri Gabungan (11 karakter);Ukuran;Tipe Kontainer;Status;Tahun Pembuatan;Keterangan
+ABCD;123456;X;ABCD123456X;20;Dry Container;available;2020;Test kontainer 1
+ABCD;123456;Y;ABCD123456Y;20;Dry Container;available;2021;Test kontainer 2 - seri sama akhiran beda
+ABCD;123456;X;ABCD123456X;40;Reefer Container;available;2022;Test kontainer 3 - duplikat penuh (akan auto nonaktif)
+EFGH;789012;Z;EFGH789012Z;20;Dry Container;available;2023;Test kontainer 4

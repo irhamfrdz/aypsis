@@ -12,11 +12,46 @@ class KontainerController extends Controller
      *
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
+        $query = Kontainer::query();
+
+        // Search functionality
+        if ($search = $request->get('search')) {
+            $query->where('nomor_seri_gabungan', 'like', '%' . $search . '%')
+                  ->orWhere('awalan_kontainer', 'like', '%' . $search . '%')
+                  ->orWhere('nomor_seri_kontainer', 'like', '%' . $search . '%')
+                  ->orWhere('akhiran_kontainer', 'like', '%' . $search . '%');
+        }
+
+        // Vendor filter
+        if ($vendor = $request->get('vendor')) {
+            $query->where('vendor', $vendor);
+        }
+
+        // Ukuran filter
+        if ($ukuran = $request->get('ukuran')) {
+            $query->where('ukuran', $ukuran);
+        }
+
+        // Status filter
+        if ($status = $request->get('status')) {
+            $query->where('status', $status);
+        }
+
+        // Get distinct vendors for filter dropdown
+        $vendors = Kontainer::distinct()
+                           ->whereNotNull('vendor')
+                           ->where('vendor', '!=', '')
+                           ->orderBy('vendor')
+                           ->pluck('vendor');
+
         // Menggunakan paginasi untuk performa yang lebih baik
-        $kontainers = Kontainer::latest()->paginate(15);
-        return view('master-kontainer.index', compact('kontainers'));
+        $perPage = $request->input('per_page', 15); // Default 15 jika tidak ada parameter
+        $kontainers = $query->latest()->paginate($perPage);
+        $kontainers->appends($request->query());
+        
+        return view('master-kontainer.index', compact('kontainers', 'vendors'));
     }
 
     /**

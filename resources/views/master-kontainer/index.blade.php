@@ -7,6 +7,145 @@
 
 <h2 class="text-xl font-bold text-gray-800 mb-4">Daftar Kontainer Sewa</h2>
 
+{{-- Search and Filter Section --}}
+<div class="mb-6 bg-white p-4 rounded-lg shadow-sm border">
+    <form method="GET" action="{{ route('master.kontainer.index') }}" class="space-y-4">
+        <div class="flex flex-wrap gap-4 items-end">
+            {{-- Search Input --}}
+            <div class="flex-1 min-w-64">
+                <label for="search" class="block text-sm font-medium text-gray-700 mb-1">
+                    Cari Kontainer
+                </label>
+                <input type="text" 
+                       id="search" 
+                       name="search" 
+                       value="{{ request('search') }}"
+                       placeholder="Cari nomor kontainer..."
+                       class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+            </div>
+
+            {{-- Vendor Filter --}}
+            <div class="min-w-48">
+                <label for="vendor" class="block text-sm font-medium text-gray-700 mb-1">
+                    Vendor
+                </label>
+                <select id="vendor" 
+                        name="vendor" 
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="">Semua Vendor</option>
+                    @if(isset($vendors))
+                        @foreach($vendors as $vendor)
+                            <option value="{{ $vendor }}" {{ request('vendor') == $vendor ? 'selected' : '' }}>
+                                {{ $vendor }}
+                            </option>
+                        @endforeach
+                    @endif
+                </select>
+            </div>
+
+            {{-- Ukuran Filter --}}
+            <div class="min-w-32">
+                <label for="ukuran" class="block text-sm font-medium text-gray-700 mb-1">
+                    Ukuran
+                </label>
+                <select id="ukuran" 
+                        name="ukuran" 
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="">Semua Ukuran</option>
+                    <option value="20" {{ request('ukuran') == '20' ? 'selected' : '' }}>20ft</option>
+                    <option value="40" {{ request('ukuran') == '40' ? 'selected' : '' }}>40ft</option>
+                </select>
+            </div>
+
+            {{-- Status Filter --}}
+            <div class="min-w-36">
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-1">
+                    Status
+                </label>
+                <select id="status" 
+                        name="status" 
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="">Semua Status</option>
+                    <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
+                    <option value="Disewa" {{ request('status') == 'Disewa' ? 'selected' : '' }}>Disewa</option>
+                    <option value="Digunakan" {{ request('status') == 'Digunakan' ? 'selected' : '' }}>Digunakan</option>
+                </select>
+            </div>
+
+            {{-- Filter Buttons --}}
+            <div class="flex space-x-2">
+                <button type="submit" 
+                        class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Filter
+                </button>
+                <a href="{{ route('master.kontainer.index') }}" 
+                   class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                    </svg>
+                    Reset
+                </a>
+            </div>
+        </div>
+
+        {{-- Active Filters Display --}}
+        @if(request('search') || request('vendor') || request('ukuran') || request('status'))
+            <div class="pt-3 border-t border-gray-200">
+                <div class="flex flex-wrap items-center gap-2">
+                    <span class="text-sm font-medium text-gray-700">Filter aktif:</span>
+                    
+                    @if(request('search'))
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            Pencarian: "{{ request('search') }}"
+                            <a href="{{ request()->fullUrlWithQuery(['search' => '']) }}" class="ml-1 text-blue-600 hover:text-blue-800">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                    @endif
+
+                    @if(request('vendor'))
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                            Vendor: {{ request('vendor') }}
+                            <a href="{{ request()->fullUrlWithQuery(['vendor' => '']) }}" class="ml-1 text-green-600 hover:text-green-800">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                    @endif
+
+                    @if(request('ukuran'))
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                            Ukuran: {{ request('ukuran') }}ft
+                            <a href="{{ request()->fullUrlWithQuery(['ukuran' => '']) }}" class="ml-1 text-purple-600 hover:text-purple-800">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                    @endif
+
+                    @if(request('status'))
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                            Status: {{ request('status') }}
+                            <a href="{{ request()->fullUrlWithQuery(['status' => '']) }}" class="ml-1 text-yellow-600 hover:text-yellow-800">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                    @endif
+                </div>
+            </div>
+        @endif
+    </form>
+</div>
+
 <div class="mb-4 flex justify-between items-center">
     <div class="flex space-x-3">
         <!-- Download Template Button -->
@@ -67,6 +206,26 @@
     'entityNamePlural' => 'kontainer'
 ])
 
+{{-- Results Summary --}}
+@if($kontainers->count() > 0)
+    <div class="mb-4 flex justify-between items-center">
+        <div class="text-sm text-gray-600">
+            Menampilkan {{ $kontainers->firstItem() }} sampai {{ $kontainers->lastItem() }} 
+            dari {{ $kontainers->total() }} kontainer
+            @if(request('search') || request('vendor') || request('ukuran') || request('status'))
+                (difilter)
+            @endif
+        </div>
+        @if(request('search') || request('vendor') || request('ukuran') || request('status'))
+            <div class="text-sm">
+                <a href="{{ route('master.kontainer.index') }}" class="text-indigo-600 hover:text-indigo-800">
+                    Lihat semua kontainer
+                </a>
+            </div>
+        @endif
+    </div>
+@endif
+
 <div class="overflow-x-auto shadow-md sm:rounded-lg table-container">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
@@ -81,6 +240,10 @@
 
                 <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Tipe
+                </th>
+
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Vendor
                 </th>
 
                 <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -106,6 +269,10 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm text-gray-500">{{$kontainer->tipe_kontainer}}</div>
+                </td>
+
+                <td class="px-4 py-2 whitespace-nowrap text-center">
+                    <div class="text-sm text-gray-500">{{$kontainer->vendor ?? '-'}}</div>
                 </td>
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
@@ -146,7 +313,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="5" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data kontainer.</td>
+                <td colspan="6" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data kontainer.</td>
             </tr>
             @endforelse
         </tbody>
@@ -203,12 +370,18 @@
                                             <h4 class="text-sm font-medium text-blue-800">Format File CSV:</h4>
                                             <div class="mt-1 text-sm text-blue-700">
                                                 <ul class="list-disc pl-5 space-y-1">
-                                                    <li>Kolom 1: Nomor Seri Gabungan</li>
-                                                    <li>Kolom 2: Ukuran (20, 40)</li>
-                                                    <li>Kolom 3: Tipe Kontainer (DRY, REEFER)</li>
-                                                    <li>Kolom 4: Vendor/Pemilik</li>
-                                                    <li>Kolom 5: Status (Tersedia/Disewa)</li>
+                                                    <li>Kolom 1: Awalan Kontainer (4 karakter, contoh: ALLU)</li>
+                                                    <li>Kolom 2: Nomor Seri (6 digit, contoh: 220209)</li>
+                                                    <li>Kolom 3: Akhiran (1 karakter, contoh: 7)</li>
+                                                    <li>Kolom 4: Ukuran (20 atau 40)</li>
+                                                    <li>Kolom 5: Vendor/Pemilik</li>
                                                 </ul>
+                                                <p class="mt-2 text-xs text-blue-600 font-medium">
+                                                    Nomor Seri Gabungan akan dibuat otomatis: Awalan + Nomor Seri + Akhiran
+                                                </p>
+                                                <p class="mt-1 text-xs text-green-600 font-medium">
+                                                    Status kontainer akan diset ke "Tersedia" secara otomatis
+                                                </p>
                                             </div>
                                         </div>
                                     </div>
@@ -243,72 +416,123 @@
 @endsection
 
 <script>
-// Import Modal Functions
-function openImportModal() {
-    document.getElementById('importModal').classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-}
-
-function closeImportModal() {
-    document.getElementById('importModal').classList.add('hidden');
-    document.body.style.overflow = 'auto';
-
-    // Reset form
-    document.getElementById('importForm').reset();
-
-    // Reset button state
-    const submitBtn = document.querySelector('#importForm button[type="submit"]');
-    const uploadText = submitBtn.querySelector('.upload-text');
-    const uploadLoading = submitBtn.querySelector('.upload-loading');
-
-    uploadText.classList.remove('hidden');
-    uploadLoading.classList.add('hidden');
-    submitBtn.disabled = false;
-}
-
-// Handle form submission
-document.getElementById('importForm').addEventListener('submit', function(e) {
-    const submitBtn = this.querySelector('button[type="submit"]');
-    const uploadText = submitBtn.querySelector('.upload-text');
-    const uploadLoading = submitBtn.querySelector('.upload-loading');
-
-    // Show loading state
-    uploadText.classList.add('hidden');
-    uploadLoading.classList.remove('hidden');
-    submitBtn.disabled = true;
-});
-
-// Close modal when clicking outside
-document.getElementById('importModal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeImportModal();
-    }
-});
-
-// Close modal with Escape key
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape' && !document.getElementById('importModal').classList.contains('hidden')) {
-        closeImportModal();
-    }
-});
-
-// File input validation
-document.getElementById('excel_file').addEventListener('change', function(e) {
-    const file = e.target.files[0];
-    if (file) {
-        const fileSize = file.size / 1024 / 1024; // Size in MB
-        const allowedTypes = ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/vnd.ms-excel'];
-
-        if (fileSize > 5) {
-            alert('File terlalu besar! Maksimal 5MB.');
-            e.target.value = '';
-            return;
+document.addEventListener('DOMContentLoaded', function() {
+    // Import Modal Functions
+    function openImportModal() {
+        const modal = document.getElementById('importModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
         }
+    }
 
-        if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
-            alert('Format file tidak didukung! Gunakan file .csv');
-            e.target.value = '';
-            return;
+    function closeImportModal() {
+        const modal = document.getElementById('importModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+
+            // Reset form
+            const form = document.getElementById('importForm');
+            if (form) {
+                form.reset();
+            }
+
+            // Reset button state
+            const submitBtn = document.querySelector('#importForm button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text');
+                const uploadLoading = submitBtn.querySelector('.upload-loading');
+
+                if (uploadText) uploadText.classList.remove('hidden');
+                if (uploadLoading) uploadLoading.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    // Make functions global for onclick handlers
+    window.openImportModal = openImportModal;
+    window.closeImportModal = closeImportModal;
+
+    // Handle form submission
+    const importForm = document.getElementById('importForm');
+    if (importForm) {
+        importForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text');
+                const uploadLoading = submitBtn.querySelector('.upload-loading');
+
+                // Show loading state
+                if (uploadText) uploadText.classList.add('hidden');
+                if (uploadLoading) uploadLoading.classList.remove('hidden');
+                submitBtn.disabled = true;
+            }
+        });
+    }
+
+    // Close modal when clicking outside
+    const importModal = document.getElementById('importModal');
+    if (importModal) {
+        importModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImportModal();
+            }
+        });
+    }
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        const modal = document.getElementById('importModal');
+        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
+            closeImportModal();
+        }
+    });
+
+    // File input validation
+    const fileInput = document.getElementById('excel_file');
+    if (fileInput) {
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileSize = file.size / 1024 / 1024; // Size in MB
+
+                if (fileSize > 5) {
+                    alert('File terlalu besar! Maksimal 5MB.');
+                    e.target.value = '';
+                    return;
+                }
+
+                if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                    alert('Format file tidak didukung! Gunakan file .csv');
+                    e.target.value = '';
+                    return;
+                }
+            }
+        });
+    }
+
+    // Auto-submit filter form when filter selections change
+    const filterForm = document.querySelector('form[action*="master.kontainer.index"]');
+    if (filterForm) {
+        const filterSelects = filterForm.querySelectorAll('select[name="vendor"], select[name="ukuran"], select[name="status"]');
+        
+        filterSelects.forEach(select => {
+            select.addEventListener('change', function() {
+                filterForm.submit();
+            });
+        });
+
+        // Handle Enter key in search input
+        const searchInput = filterForm.querySelector('input[name="search"]');
+        if (searchInput) {
+            searchInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    filterForm.submit();
+                }
+            });
         }
     }
 });

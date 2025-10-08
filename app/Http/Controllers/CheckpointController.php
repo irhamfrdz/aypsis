@@ -27,8 +27,46 @@ class CheckpointController extends Controller
             abort(403, 'Anda tidak memiliki akses ke permohonan ini.');
         }
 
-        // Ambil semua kontainer dari tabel kontainers
-        $kontainerList = Kontainer::all();
+        // Get kegiatan name from master kegiatan if available
+        $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
+                        ->value('nama_kegiatan') ?? $permohonan->kegiatan;
+        
+        $kegiatanLower = strtolower($kegiatanName);
+        $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false && 
+                                stripos($kegiatanLower, 'kontainer') !== false && 
+                                stripos($kegiatanLower, 'sewa') !== false);
+
+        // Filter kontainer berdasarkan kegiatan dan ukuran
+        if ($isAntarKontainerSewa) {
+            // Untuk antar kontainer sewa, filter berdasarkan ukuran dan status tersedia
+            $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
+                                    ->where('status', 'Tersedia')
+                                    ->orderBy('nomor_seri_gabungan')
+                                    ->get();
+        } else {
+            // Untuk kegiatan lain, ambil kontainer sesuai vendor dan kondisi lainnya
+            if (in_array($permohonan->vendor_perusahaan, ['ZONA','DPE','SOC'])) {
+                // Untuk vendor ini, filter kontainer approved/tagihan group jika tarik sewa
+                $isTarikSewa = (stripos($kegiatanLower, 'tarik') !== false && stripos($kegiatanLower, 'sewa') !== false)
+                    || (stripos($kegiatanLower, 'pengambilan') !== false);
+                
+                if ($isTarikSewa) {
+                    $kontainerList = Kontainer::where('grup_tagihan', 'approved')
+                                            ->where('ukuran', $permohonan->ukuran)
+                                            ->orderBy('nomor_seri_gabungan')
+                                            ->get();
+                } else {
+                    $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
+                                            ->orderBy('nomor_seri_gabungan')
+                                            ->get();
+                }
+            } else {
+                // Untuk vendor lain, filter berdasarkan ukuran
+                $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
+                                        ->orderBy('nomor_seri_gabungan')
+                                        ->get();
+            }
+        }
 
         // Ambil semua stock kontainer dari master stock kontainer
         $stockKontainers = \App\Models\StockKontainer::all();

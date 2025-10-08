@@ -1,0 +1,6 @@
+Awalan Kontainer (4 karakter);Nomor Seri Kontainer (6 digit);Akhiran Kontainer (1 digit);Nomor Seri Gabungan (11 karakter);Ukuran;Tipe Kontainer;Status;Tahun Pembuatan (opsional);Keterangan (opsional)
+AYPU;003386;0;AYPU0033860;20;Dry Container;available;;
+AYPU;003387;0;AYPU0033870;20;Dry Container;available;2020;
+AYPU;003389;0;AYPU0033890;20;Dry Container;available;;Test kontainer
+EFGH;123456;5;EFGH1234565;40;Reefer Container;available;2021;Test dengan tahun
+XYZU;789012;9;XYZU7890129;20;Dry Container;maintenance;;Test tanpa tahun

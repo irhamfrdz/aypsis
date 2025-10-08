@@ -25,9 +25,12 @@ class KontainerImportController extends Controller
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ];
 
-            // CSV content - hanya header template
+            // CSV content - template dengan contoh data
             $csvData = [
-                ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor']
+                ['Awalan Kontainer (4 karakter)', 'Nomor Seri (6 digit)', 'Akhiran (1 karakter)', 'Ukuran', 'Vendor'],
+                ['ALLU', '220209', '7', '20', 'PT. ZONA LINTAS SAMUDERA'],
+                ['AMFU', '313132', '7', '20', 'PT. ZONA LINTAS SAMUDERA'],
+                ['AMFU', '315369', '2', '20', 'PT. ZONA LINTAS SAMUDERA']
             ];
 
             $callback = function() use ($csvData) {
@@ -84,10 +87,30 @@ class KontainerImportController extends Controller
 
             $header = array_shift($csvData); // Remove header row
 
-            // Validate header format
-            $expectedHeader = ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor'];
-            if ($header !== $expectedHeader) {
-                return back()->with('error', 'Format header CSV tidak sesuai template. Gunakan template yang telah disediakan.');
+            // Validate header format - dengan fleksibilitas untuk format yang berbeda
+            $expectedHeaders = [
+                ['Awalan Kontainer', 'Nomor Seri', 'Akhiran', 'Ukuran', 'Vendor'],
+                ['Awalan Kontainer (4 karakter)', 'Nomor Seri (6 digit)', 'Akhiran (1 karakter)', 'Ukuran', 'Vendor']
+            ];
+            
+            $headerValid = false;
+            foreach ($expectedHeaders as $expectedHeader) {
+                if ($header === $expectedHeader) {
+                    $headerValid = true;
+                    break;
+                }
+            }
+            
+            if (!$headerValid) {
+                $headerReceived = implode(', ', $header);
+                $headerExpected = implode(', ', $expectedHeaders[0]);
+                
+                $errorMessage = "Format header CSV tidak sesuai template.\n\n";
+                $errorMessage .= "Header yang diterima: " . $headerReceived . "\n";
+                $errorMessage .= "Header yang diharapkan: " . $headerExpected . "\n\n";
+                $errorMessage .= "Silakan download template terbaru dan pastikan format header sesuai.";
+                
+                return back()->with('error', $errorMessage);
             }
 
             $stats = [
@@ -181,8 +204,11 @@ class KontainerImportController extends Controller
                             'awalan_kontainer' => $awalanKontainer,
                             'nomor_seri_kontainer' => $nomorSeri,
                             'akhiran_kontainer' => $akhiranKontainer,
+                            'nomor_seri_gabungan' => $nomorSeriGabungan,
                             'ukuran' => $ukuran,
                             'vendor' => $vendor,
+                            'tipe_kontainer' => 'Dry Container', // Default
+                            'status' => 'Tersedia',
                             'updated_at' => now()
                         ]);
                         $stats['updated']++;
@@ -194,9 +220,9 @@ class KontainerImportController extends Controller
                             'akhiran_kontainer' => $akhiranKontainer,
                             'nomor_seri_gabungan' => $nomorSeriGabungan,
                             'ukuran' => $ukuran,
-                            'tipe_kontainer' => 'Dry Container', // Default value
                             'vendor' => $vendor,
-                            'status' => 'active', // Default value - akan divalidasi oleh model jika ada konflik
+                            'tipe_kontainer' => 'Dry Container', // Default value
+                            'status' => 'Tersedia', // Default value - akan divalidasi oleh model jika ada konflik
                             'created_at' => now(),
                             'updated_at' => now()
                         ]);

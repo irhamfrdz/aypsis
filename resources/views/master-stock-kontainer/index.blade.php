@@ -66,6 +66,20 @@
 </div>
 @endif
 
+@if (session('warning'))
+<div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded-md mb-4" role="alert">
+    <strong class="font-bold">Peringatan!</strong>
+    <span class="block sm:inline">{{ session('warning') }}</span>
+</div>
+@endif
+
+@if (session('error'))
+<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-md mb-4" role="alert">
+    <strong class="font-bold">Error!</strong>
+    <span class="block sm:inline">{{ session('error') }}</span>
+</div>
+@endif
+
 {{-- Rows Per Page Selection --}}
 @include('components.rows-per-page', [
     'routeName' => 'master.stock-kontainer.index',
@@ -207,7 +221,8 @@
                                 <li>Download template CSV terlebih dahulu</li>
                                 <li>Nomor kontainer: 11 karakter (format: ABCD123456X)</li>
                                 <li>Status: available, rented, maintenance, damaged, inactive</li>
-                                <li>Tahun pembuatan: angka antara 1900 - {{ date('Y') }}</li>
+                                <li>Tahun pembuatan: opsional, angka antara 1900 - {{ date('Y') }} (boleh kosong)</li>
+                                <li>Keterangan: opsional (boleh kosong)</li>
                                 <li>Hapus baris contoh data sebelum import</li>
                                 <li>Data yang sudah ada akan diperbarui</li>
                                 <li>Duplikasi dengan master kontainer akan diset inactive</li>

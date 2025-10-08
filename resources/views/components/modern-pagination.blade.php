@@ -67,20 +67,59 @@
                         </a>
                     @endif
 
-                    {{-- Page Numbers --}}
+                    {{-- Page Numbers dengan Smart Range --}}
                     <div class="flex items-center">
-                        @foreach($paginator->getUrlRange(1, $paginator->lastPage()) as $page => $url)
-                            @if($page == $paginator->currentPage())
+                        @php
+                            $current = $paginator->currentPage();
+                            $last = $paginator->lastPage();
+                            $start = max(1, $current - 2);
+                            $end = min($last, $current + 2);
+                            
+                            // Pastikan kita selalu menampilkan 5 link (jika memungkinkan)
+                            if ($end - $start < 4) {
+                                if ($start == 1) {
+                                    $end = min($last, $start + 4);
+                                } else {
+                                    $start = max(1, $end - 4);
+                                }
+                            }
+                        @endphp
+
+                        {{-- First page link jika current page > 3 --}}
+                        @if($start > 1)
+                            <a href="{{ $paginator->url(1) }}"
+                               class="px-3 py-1 hover:bg-blue-50 text-gray-700 hover:text-blue-600 font-medium border-r border-gray-200 transition-colors duration-200 text-xs">
+                                1
+                            </a>
+                            @if($start > 2)
+                                <div class="px-2 py-1 text-gray-400 border-r border-gray-200 text-xs">...</div>
+                            @endif
+                        @endif
+
+                        {{-- Main page range --}}
+                        @for($page = $start; $page <= $end; $page++)
+                            @if($page == $current)
                                 <div class="px-3 py-1 bg-blue-600 text-white font-semibold border-r border-blue-500 text-xs">
                                     {{ $page }}
                                 </div>
                             @else
-                                <a href="{{ $url }}"
+                                <a href="{{ $paginator->url($page) }}"
                                    class="px-3 py-1 hover:bg-blue-50 text-gray-700 hover:text-blue-600 font-medium border-r border-gray-200 transition-colors duration-200 text-xs">
                                     {{ $page }}
                                 </a>
                             @endif
-                        @endforeach
+                        @endfor
+
+                        {{-- Last page link jika current page < last-2 --}}
+                        @if($end < $last)
+                            @if($end < $last - 1)
+                                <div class="px-2 py-1 text-gray-400 border-r border-gray-200 text-xs">...</div>
+                            @endif
+                            <a href="{{ $paginator->url($last) }}"
+                               class="px-3 py-1 hover:bg-blue-50 text-gray-700 hover:text-blue-600 font-medium border-r border-gray-200 transition-colors duration-200 text-xs">
+                                {{ $last }}
+                            </a>
+                        @endif
                     </div>
 
                     {{-- Next Button --}}

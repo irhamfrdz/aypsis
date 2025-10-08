@@ -36,6 +36,7 @@ class StockKontainer extends Model
     protected $casts = [
         'tanggal_masuk' => 'date',
         'tanggal_keluar' => 'date',
+        'tahun_pembuatan' => 'integer',
     ];
 
     /**
