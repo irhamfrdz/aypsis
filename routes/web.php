@@ -592,6 +592,14 @@ Route::middleware([
          ->middleware('can:master-pekerjaan-create');
 
     // 🔧 Master Vendor Bengkel (Workshop Vendor) - HYBRID: Resource + additional routes with permissions
+    // Specific routes MUST come before resource routes to avoid conflicts
+    Route::get('master/vendor-bengkel/export-template', [VendorBengkelController::class, 'exportTemplate'])
+         ->name('master.vendor-bengkel.export-template')
+         ->middleware('can:master-vendor-bengkel-view');
+    Route::post('master/vendor-bengkel/import', [VendorBengkelController::class, 'import'])
+         ->name('master.vendor-bengkel.import')
+         ->middleware('can:master-vendor-bengkel-create');
+    
     Route::resource('master/vendor-bengkel', VendorBengkelController::class)
          ->names('master.vendor-bengkel')
          ->middleware([
@@ -603,12 +611,6 @@ Route::middleware([
              'update' => 'can:master-vendor-bengkel-update',
              'destroy' => 'can:master-vendor-bengkel-delete'
          ]);
-    Route::get('master/vendor-bengkel/export-template', [VendorBengkelController::class, 'exportTemplate'])
-         ->name('master.vendor-bengkel.export-template')
-         ->middleware('can:master-vendor-bengkel-view');
-    Route::post('master/vendor-bengkel/import', [VendorBengkelController::class, 'import'])
-         ->name('master.vendor-bengkel.import')
-         ->middleware('can:master-vendor-bengkel-create');
 
     // 🔢 Kode Nomor (Number Code) Management with permissions
     Route::resource('master/kode-nomor', \App\Http\Controllers\KodeNomorController::class)
