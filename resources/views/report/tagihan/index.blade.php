@@ -148,8 +148,12 @@
                     <tr>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">No. Kontainer</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Masa</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Size</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">DPP</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">PPN</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">PPH</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Grand Total</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     </tr>
@@ -159,6 +163,9 @@
                     <tr class="hover:bg-gray-50">
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $tagihan->nomor_kontainer ?? '-' }}</td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {{ $tagihan->periode ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ \Carbon\Carbon::parse($tagihan->tanggal_awal)->format('d/m/Y') }} - {{ \Carbon\Carbon::parse($tagihan->tanggal_akhir)->format('d/m/Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
@@ -166,6 +173,15 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $tagihan->size ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->dpp ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->ppn ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->pph ?? 0, 0, ',', '.') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                             Rp {{ number_format($tagihan->grand_total ?? 0, 0, ',', '.') }}
@@ -182,7 +198,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data tagihan sewa</td>
+                        <td colspan="10" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data tagihan sewa</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -206,6 +222,9 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kontainer</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal CAT</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">DPP</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">PPN</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">PPH</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Biaya</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     </tr>
@@ -220,6 +239,15 @@
                             {{ \Carbon\Carbon::parse($tagihan->tanggal_cat)->format('d/m/Y') }}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $tagihan->vendor ?? '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->dpp ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->ppn ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->pph ?? 0, 0, ',', '.') }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                             Rp {{ number_format($tagihan->realisasi_biaya ?? $tagihan->estimasi_biaya ?? 0, 0, ',', '.') }}
                         </td>
@@ -235,7 +263,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="5" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data tagihan CAT</td>
+                        <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data tagihan CAT</td>
                     </tr>
                     @endforelse
                 </tbody>
@@ -260,6 +288,9 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Kontainer</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Teknisi</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">DPP</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">PPN</th>
+                        <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">PPH</th>
                         <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase">Total Biaya</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                     </tr>
@@ -279,6 +310,15 @@
                             @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $tagihan->nama_teknisi ?? '-' }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->dpp ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->ppn ?? 0, 0, ',', '.') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-900">
+                            Rp {{ number_format($tagihan->pph ?? 0, 0, ',', '.') }}
+                        </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-right font-semibold text-gray-900">
                             Rp {{ number_format($tagihan->total_biaya, 0, ',', '.') }}
                         </td>
@@ -292,7 +332,7 @@
                     </tr>
                     @empty
                     <tr>
-                        <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data tagihan perbaikan</td>
+                        <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">Tidak ada data tagihan perbaikan</td>
                     </tr>
                     @endforelse
                 </tbody>

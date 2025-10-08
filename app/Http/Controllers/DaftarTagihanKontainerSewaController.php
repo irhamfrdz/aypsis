@@ -372,6 +372,7 @@ class DaftarTagihanKontainerSewaController extends Controller
             'periode' => 'nullable|integer|min:1',
             'masa' => 'nullable|string|max:255',
             'tarif' => 'nullable|string|max:50', // Changed from numeric to string - tarif can be "harian" or "bulanan"
+            'adjustment' => 'nullable|numeric',
             'dpp' => 'nullable|numeric',
             'dpp_nilai_lain' => 'nullable|numeric',
             'ppn' => 'nullable|numeric',
@@ -1888,9 +1889,12 @@ class DaftarTagihanKontainerSewaController extends Controller
         // Grand Total = DPP + PPN - PPH
         $grand_total = $dpp + $ppn - $pph;
 
+        // Preserve existing adjustment if already set, otherwise set to 0
+        $adjustment = isset($data['adjustment']) ? $data['adjustment'] : 0;
+        
         return [
             'dpp' => $dpp,
-            'adjustment' => 0,
+            'adjustment' => $adjustment,
             'dpp_nilai_lain' => 0,
             'ppn' => $ppn,
             'pph' => $pph,
