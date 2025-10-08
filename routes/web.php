@@ -370,6 +370,14 @@ Route::middleware([
              ->middleware('can:master-permission-view');
 
         // Master mobil routes - CONVERTED TO RESOURCE (7 routes → 1 line) with permissions
+        // Specific routes MUST come before resource routes to avoid conflicts
+        Route::get('mobil/template', [App\Http\Controllers\MasterMobilImportController::class, 'downloadTemplate'])
+             ->name('mobil.template')
+             ->middleware('can:master-mobil-view');
+        Route::post('mobil/import', [App\Http\Controllers\MasterMobilImportController::class, 'import'])
+             ->name('mobil.import')
+             ->middleware('can:master-mobil-create');
+             
         Route::resource('mobil', MobilController::class)->middleware([
             'index' => 'can:master-mobil-view',
             'show' => 'can:master-mobil-view',
