@@ -27,10 +27,10 @@ class MasterTujuanImportController extends Controller
 
             // CSV content dengan header dan contoh data
             $csvData = [
-                ['Cabang', 'Wilayah', 'Dari', 'Ke', 'Uang Jalan 20ft', 'Uang Jalan 40ft', 'Antar Lokasi 20ft', 'Antar Lokasi 40ft'],
-                ['Jakarta', 'Jakarta Timur', 'Tanjung Priok', 'Bekasi', '150000', '200000', '100000', '150000'],
-                ['Jakarta', 'Jakarta Barat', 'Soekarno Hatta', 'Tangerang', '175000', '225000', '125000', '175000'],
-                ['Surabaya', 'Surabaya Utara', 'Tanjung Perak', 'Gresik', '120000', '180000', '80000', '120000']
+                ['Cabang', 'Wilayah', 'Dari', 'Ke', 'Uang Jalan 20ft', 'Ongkos Truk 20ft', 'Uang Jalan 40ft', 'Ongkos Truk 40ft', 'Antar Lokasi 20ft', 'Antar Lokasi 40ft'],
+                ['Jakarta', 'Jakarta Timur', 'Tanjung Priok', 'Bekasi', '150000', '80000', '200000', '120000', '100000', '150000'],
+                ['Jakarta', 'Jakarta Barat', 'Soekarno Hatta', 'Tangerang', '175000', '90000', '225000', '130000', '125000', '175000'],
+                ['Surabaya', 'Surabaya Utara', 'Tanjung Perak', 'Gresik', '120000', '70000', '180000', '110000', '80000', '120000']
             ];
 
             $callback = function() use ($csvData) {
@@ -93,7 +93,7 @@ class MasterTujuanImportController extends Controller
             $header = array_shift($csvData); // Remove header row
 
             // Validate header format
-            $expectedHeader = ['Cabang', 'Wilayah', 'Dari', 'Ke', 'Uang Jalan 20ft', 'Uang Jalan 40ft', 'Antar Lokasi 20ft', 'Antar Lokasi 40ft'];
+            $expectedHeader = ['Cabang', 'Wilayah', 'Dari', 'Ke', 'Uang Jalan 20ft', 'Ongkos Truk 20ft', 'Uang Jalan 40ft', 'Ongkos Truk 40ft', 'Antar Lokasi 20ft', 'Antar Lokasi 40ft'];
             if ($header !== $expectedHeader) {
                 return back()->with('error', 'Format header CSV tidak sesuai template. Gunakan template yang telah disediakan.');
             }
@@ -118,7 +118,7 @@ class MasterTujuanImportController extends Controller
                 }
 
                 // Validate row has enough columns
-                if (count($row) < 8) {
+                if (count($row) < 10) {
                     $stats['errors']++;
                     $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap";
                     continue;
@@ -130,9 +130,11 @@ class MasterTujuanImportController extends Controller
                     $dari = trim($row[2]);
                     $ke = trim($row[3]);
                     $uangJalan20 = trim($row[4]);
-                    $uangJalan40 = trim($row[5]);
-                    $antar20 = trim($row[6]);
-                    $antar40 = trim($row[7]);
+                    $ongkosTruk20 = trim($row[5]);
+                    $uangJalan40 = trim($row[6]);
+                    $ongkosTruk40 = trim($row[7]);
+                    $antar20 = trim($row[8]);
+                    $antar40 = trim($row[9]);
 
                     // Validation
                     if (empty($cabang) || empty($wilayah) || empty($dari) || empty($ke)) {
@@ -144,7 +146,9 @@ class MasterTujuanImportController extends Controller
                     // Validate numeric fields
                     $numericFields = [
                         'Uang Jalan 20ft' => $uangJalan20,
+                        'Ongkos Truk 20ft' => $ongkosTruk20,
                         'Uang Jalan 40ft' => $uangJalan40,
+                        'Ongkos Truk 40ft' => $ongkosTruk40,
                         'Antar Lokasi 20ft' => $antar20,
                         'Antar Lokasi 40ft' => $antar40
                     ];
@@ -159,7 +163,9 @@ class MasterTujuanImportController extends Controller
 
                     // Clean numeric values
                     $uangJalan20 = !empty($uangJalan20) ? (int)str_replace(',', '', $uangJalan20) : 0;
+                    $ongkosTruk20 = !empty($ongkosTruk20) ? (int)str_replace(',', '', $ongkosTruk20) : 0;
                     $uangJalan40 = !empty($uangJalan40) ? (int)str_replace(',', '', $uangJalan40) : 0;
+                    $ongkosTruk40 = !empty($ongkosTruk40) ? (int)str_replace(',', '', $ongkosTruk40) : 0;
                     $antar20 = !empty($antar20) ? (int)str_replace(',', '', $antar20) : 0;
                     $antar40 = !empty($antar40) ? (int)str_replace(',', '', $antar40) : 0;
 
@@ -176,7 +182,9 @@ class MasterTujuanImportController extends Controller
                         'dari' => $dari,
                         'ke' => $ke,
                         'uang_jalan_20' => $uangJalan20,
+                        'ongkos_truk_20' => $ongkosTruk20,
                         'uang_jalan_40' => $uangJalan40,
+                        'ongkos_truk_40' => $ongkosTruk40,
                         'antar_20' => $antar20,
                         'antar_40' => $antar40,
                         'updated_at' => now()

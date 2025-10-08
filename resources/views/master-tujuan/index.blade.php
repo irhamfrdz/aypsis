@@ -52,7 +52,9 @@
                             <th class="py-3 px-4">Dari</th>
                             <th class="py-3 px-4">Ke</th>
                             <th class="py-3 px-4">UJ 20ft</th>
+                            <th class="py-3 px-4">Ongkos Truk 20ft</th>
                             <th class="py-3 px-4">UJ 40ft</th>
+                            <th class="py-3 px-4">Ongkos Truk 40ft</th>
                             <th class="py-3 px-4">Antarlokasi 20ft</th>
                             <th class="py-3 px-4">Antarlokasi 40ft</th>
                             <th class="py-3 px-4">Aksi</th>
@@ -67,7 +69,9 @@
                                 <td class="py-3 px-4">{{ $tujuan->dari }}</td>
                                 <td class="py-3 px-4">{{ $tujuan->ke }}</td>
                                 <td class="py-3 px-4">Rp {{ number_format($tujuan->uang_jalan_20 ?? 0, 0, ',', '.') }}</td>
+                                <td class="py-3 px-4">Rp {{ number_format($tujuan->ongkos_truk_20 ?? 0, 0, ',', '.') }}</td>
                                 <td class="py-3 px-4">Rp {{ number_format($tujuan->uang_jalan_40 ?? 0, 0, ',', '.') }}</td>
+                                <td class="py-3 px-4">Rp {{ number_format($tujuan->ongkos_truk_40 ?? 0, 0, ',', '.') }}</td>
                                 <td class="py-3 px-4">Rp {{ number_format($tujuan->antar_20 ?? 0, 0, ',', '.') }}</td>
                                 <td class="py-3 px-4">Rp {{ number_format($tujuan->antar_40 ?? 0, 0, ',', '.') }}</td>
 
@@ -129,7 +133,7 @@
                                     <li>Download template CSV terlebih dahulu</li>
                                     <li>Isi data sesuai format yang disediakan</li>
                                     <li>Cabang, Wilayah, Dari, Ke wajib diisi</li>
-                                    <li>Uang jalan dan antar: angka tanpa titik/koma</li>
+                                    <li>UJ, Ongkos Truk, Antar: angka tanpa titik/koma</li>
                                     <li>Hapus baris contoh data sebelum import</li>
                                     <li>Data yang sudah ada akan diperbarui</li>
                                 </ul>
