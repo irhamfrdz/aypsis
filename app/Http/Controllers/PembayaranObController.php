@@ -254,6 +254,31 @@ class PembayaranObController extends Controller
     }
 
     /**
+     * Print the specified pembayaran OB.
+     */
+    public function print(string $id)
+    {
+        $pembayaran = PembayaranOb::with(['kasBankAkun', 'pembuatPembayaran', 'penyetujuPembayaran'])
+                                  ->findOrFail($id);
+
+        // Get supir data
+        $supirList = Karyawan::whereIn('id', $pembayaran->supir_ids ?? [])->get();
+
+        // Get DP data if exists
+        $dpData = null;
+        if ($pembayaran->pembayaran_dp_ob_id) {
+            $dpData = \App\Models\PembayaranDpOb::find($pembayaran->pembayaran_dp_ob_id);
+        }
+
+        return view('pembayaran-ob.print', [
+            'title' => 'Print Pembayaran OB',
+            'pembayaran' => $pembayaran,
+            'supirList' => $supirList,
+            'dpData' => $dpData
+        ]);
+    }
+
+    /**
      * Show the form for editing the specified resource.
      */
     public function edit(string $id)
@@ -399,16 +424,7 @@ class PembayaranObController extends Controller
         }
     }
 
-    /**
-     * Print pembayaran OB
-     */
-    public function print(string $id)
-    {
-        return view('pembayaran-ob.print', [
-            'title' => 'Print Pembayaran OB',
-            'id' => $id
-        ]);
-    }
+
 
     /**
      * Approve pembayaran OB

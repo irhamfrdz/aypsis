@@ -170,6 +170,13 @@
                                             </a>
                                             @endcan
 
+                                            @can('pembayaran-ob-view')
+                                            <a href="{{ route('pembayaran-ob.print', $pembayaran->id) }}"
+                                               class="text-purple-600 hover:text-purple-900" title="Print" target="_blank">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                            @endcan
+
                                             @can('pembayaran-ob-edit')
                                             <a href="{{ route('pembayaran-ob.edit', $pembayaran->id) }}"
                                                class="text-green-600 hover:text-green-900" title="Edit">
