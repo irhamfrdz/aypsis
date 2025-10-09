@@ -34,20 +34,64 @@ class PermohonanController extends Controller
     {
         $queryBuilder = Permohonan::with(['supir', 'krani'])->latest();
 
-        if ($request->filled('query')) {
-            $query = $request->input('query');
-            $queryBuilder->where(function ($q) use ($query) {
-                $q->where('nomor_memo', 'like', "%{$query}%")
-                  ->orWhereHas('supir', function ($subq) use ($query) {
-                      $subq->where('nama_panggilan', 'like', "%{$query}%");
+        // Enhanced search functionality
+        if ($request->filled('search')) {
+            $searchTerm = $request->input('search');
+            $queryBuilder->where(function ($q) use ($searchTerm) {
+                $q->where('nomor_memo', 'like', "%{$searchTerm}%")
+                  ->orWhere('kegiatan', 'like', "%{$searchTerm}%")
+                  ->orWhere('vendor_perusahaan', 'like', "%{$searchTerm}%")
+                  ->orWhere('dari', 'like', "%{$searchTerm}%")
+                  ->orWhere('ke', 'like', "%{$searchTerm}%")
+                  ->orWhere('catatan', 'like', "%{$searchTerm}%")
+                  ->orWhere('alasan_adjustment', 'like', "%{$searchTerm}%")
+                  ->orWhereHas('supir', function ($subq) use ($searchTerm) {
+                      $subq->where('nama_panggilan', 'like', "%{$searchTerm}%")
+                           ->orWhere('nama_lengkap', 'like', "%{$searchTerm}%");
+                  })
+                  ->orWhereHas('krani', function ($subq) use ($searchTerm) {
+                      $subq->where('nama_panggilan', 'like', "%{$searchTerm}%")
+                           ->orWhere('nama_lengkap', 'like', "%{$searchTerm}%");
                   });
             });
         }
 
-    $permohonans = $queryBuilder->paginate(10)->appends($request->query());
-    // Preload kegiatan map to show human-readable kegiatan name in the index view
-    $kegiatanMap = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
-    return view('permohonan.index', compact('permohonans', 'kegiatanMap'));
+        // Date range filter
+        if ($request->filled('date_from')) {
+            $queryBuilder->whereDate('tanggal_memo', '>=', $request->input('date_from'));
+        }
+
+        if ($request->filled('date_to')) {
+            $queryBuilder->whereDate('tanggal_memo', '<=', $request->input('date_to'));
+        }
+
+        // Kegiatan filter
+        if ($request->filled('kegiatan')) {
+            $queryBuilder->where('kegiatan', $request->input('kegiatan'));
+        }
+
+        // Status filter
+        if ($request->filled('status')) {
+            $queryBuilder->where('status', $request->input('status'));
+        }
+
+        // Amount minimum filter
+        if ($request->filled('amount_min')) {
+            $queryBuilder->where('total_harga_setelah_adj', '>=', $request->input('amount_min'));
+        }
+
+        // Get rows per page from request, default to 10
+        $perPage = $request->input('per_page', 10);
+
+        $permohonans = $queryBuilder->paginate($perPage)->appends($request->query());
+
+        // Preload kegiatan map to show human-readable kegiatan name in the index view
+        $kegiatanMap = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
+
+        // Get kegiatan list for filter dropdown
+        $kegiatanList = MasterKegiatan::pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
+
+        return view('permohonan.index', compact('permohonans', 'kegiatanMap', 'kegiatanList'));
     }
 
     /**

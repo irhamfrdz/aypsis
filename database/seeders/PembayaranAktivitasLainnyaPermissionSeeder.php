@@ -34,7 +34,7 @@ class PembayaranAktivitasLainnyaPermissionSeeder extends Seeder
                 'name' => 'pembayaran-aktivitas-lainnya-delete',
                 'description' => 'Menghapus pembayaran aktivitas lainnya'
             ],
-            
+
             // Additional permissions based on routes
             [
                 'name' => 'pembayaran-aktivitas-lainnya-export',
@@ -65,7 +65,7 @@ class PembayaranAktivitasLainnyaPermissionSeeder extends Seeder
         foreach ($permissions as $permission) {
             // Check if permission already exists
             $existingPermission = Permission::where('name', $permission['name'])->first();
-            
+
             if (!$existingPermission) {
                 Permission::create([
                     'name' => $permission['name'],
@@ -73,7 +73,7 @@ class PembayaranAktivitasLainnyaPermissionSeeder extends Seeder
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                
+
                 $this->command->info("✅ Created permission: {$permission['name']}");
             } else {
                 $this->command->warn("⚠️  Permission already exists: {$permission['name']}");

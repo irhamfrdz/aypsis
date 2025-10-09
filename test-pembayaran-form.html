@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Pembayaran DP OB Form</title>
+    </head>
+    <body>
+        <h2>Test Form Pembayaran DP OB</h2>
+        <form action="/pembayaran-dp-ob/test-store" method="POST">
+            <input type="hidden" name="_token" value="{{ csrf_token() }}" />
+
+            <p>
+                <label>Nomor Pembayaran:</label><br />
+                <input
+                    type="text"
+                    name="nomor_pembayaran"
+                    value="TEST-001"
+                    required
+                />
+            </p>
+
+            <p>
+                <label>Tanggal Pembayaran:</label><br />
+                <input
+                    type="date"
+                    name="tanggal_pembayaran"
+                    value="2025-10-09"
+                    required
+                />
+            </p>
+
+            <p>
+                <label>Kas/Bank ID:</label><br />
+                <input type="number" name="kas_bank" value="1" required />
+            </p>
+
+            <p>
+                <label>Jenis Transaksi:</label><br />
+                <select name="jenis_transaksi" required>
+                    <option value="kredit">Kredit</option>
+                    <option value="debit">Debit</option>
+                </select>
+            </p>
+
+            <p>
+                <label>Supir IDs (JSON array):</label><br />
+                <input type="hidden" name="supir[]" value="1" />
+                <input type="hidden" name="supir[]" value="2" />
+                <span>Selected: 1, 2</span>
+            </p>
+
+            <p>
+                <label>Jumlah:</label><br />
+                <input type="number" name="jumlah" value="100000" required />
+            </p>
+
+            <p>
+                <label>Keterangan:</label><br />
+                <textarea name="keterangan">Test pembayaran DP</textarea>
+            </p>
+
+            <p>
+                <button type="submit">Submit Test</button>
+            </p>
+        </form>
+    </body>
+</html>

@@ -7,158 +7,244 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: 9px;
             margin: 0;
-            padding: 20px;
+            padding: 0;
             background: white;
+            width: 100vw;
+            height: 100vh;
+            box-sizing: border-box;
         }
 
         .print-container {
-            max-width: 800px;
-            margin: 0 auto;
+            max-width: 100%;
+            width: 100%;
+            height: 100vh;
+            margin: 0;
             background: white;
-            border: 2px solid #000;
+            border: 1px solid #000;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+            padding: 2mm;
         }
 
         .header {
             text-align: center;
-            border-bottom: 2px solid #000;
-            padding: 15px;
+            border-bottom: 1px solid #000;
+            padding: 1mm;
             background: #f8f9fa;
+            flex-shrink: 0;
         }
 
         .header h1 {
             margin: 0;
-            font-size: 20px;
+            font-size: 12px;
             font-weight: bold;
             text-transform: uppercase;
         }
 
         .header h2 {
-            margin: 5px 0 0 0;
-            font-size: 16px;
+            margin: 1px 0 0 0;
+            font-size: 9px;
             color: #666;
         }
 
         .memo-info {
             display: flex;
             justify-content: space-between;
-            padding: 15px;
+            padding: 2mm;
             border-bottom: 1px solid #ddd;
             background: #fff;
+            gap: 5mm;
+            flex-shrink: 0;
         }
 
         .memo-left, .memo-right {
             width: 48%;
+            flex: 1;
         }
 
         .info-row {
             display: flex;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             align-items: center;
+            padding: 1px 0;
         }
 
         .info-label {
             font-weight: bold;
-            width: 120px;
+            width: 70px;
             flex-shrink: 0;
+            font-size: 10px;
+            padding-right: 5px;
         }
 
         .info-value {
             flex: 1;
             border-bottom: 1px solid #333;
-            min-height: 18px;
-            padding-left: 5px;
+            min-height: 14px;
+            padding-left: 3px;
+            padding-top: 1px;
+            padding-bottom: 1px;
+            font-size: 10px;
         }
 
         .content-section {
-            padding: 15px;
+            padding: 1mm;
+            flex: 1;
         }
 
         .section-title {
             font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 10px;
+            font-size: 10px;
+            margin-bottom: 2px;
             text-transform: uppercase;
             border-bottom: 1px solid #333;
-            padding-bottom: 5px;
+            padding-bottom: 1px;
         }
 
-        .kontainer-table {
+        table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-top: 1mm;
+            font-size: 10px;
+            height: 100%;
         }
 
-        .kontainer-table th,
-        .kontainer-table td {
+        th, td {
             border: 1px solid #333;
-            padding: 8px;
+            padding: 1mm;
             text-align: left;
+            min-height: 15mm;
         }
 
-        .kontainer-table th {
-            background: #f0f0f0;
+        th {
+            text-align: center;
+            padding: 2px 1px;
             font-weight: bold;
+            font-size: 10px;
+            line-height: 1;
+            height: 4mm;
+            vertical-align: middle;
         }
 
         .signatures {
             display: flex;
-            justify-content: space-between;
-            margin-top: 40px;
-            padding: 20px;
+            justify-content: space-around;
+            margin-top: 2mm;
+            padding: 1mm;
+            flex-shrink: 0;
         }
 
         .signature-box {
             text-align: center;
-            width: 200px;
+            width: 120px;
+            font-size: 8px;
         }
 
         .signature-line {
             border-bottom: 1px solid #333;
-            height: 60px;
-            margin-bottom: 10px;
+            height: 25px;
+            margin-bottom: 3px;
         }
 
-        .total-section {
-            background: #f8f9fa;
-            border: 2px solid #333;
-            padding: 15px;
-            margin: 20px 0;
-        }
 
-        .total-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-
-        .total-final {
-            font-weight: bold;
-            font-size: 16px;
-            border-top: 2px solid #333;
-            padding-top: 10px;
-            margin-top: 10px;
-        }
 
         @media print {
+            @page {
+                size: 215mm 165mm;
+                margin: 3mm;
+            }
+
             body {
-                margin: 0;
-                padding: 10px;
+                margin: 0 !important;
+                padding: 0 !important;
+                font-family: Arial, sans-serif;
+                width: 209mm;
+                height: 159mm;
+                overflow: hidden;
             }
 
             .print-container {
-                border: none;
-                box-shadow: none;
+                width: 100%;
+                height: 100%;
+                max-width: none;
+                border: 1px solid #000;
+                margin: 0;
+                padding: 2mm;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
             }
 
-            .no-print {
+            .header {
+                padding: 1mm;
+                margin-bottom: 1mm;
+            }
+
+            .header h1 {
+                font-size: 14px;
+                margin-bottom: 1mm;
+            }
+
+            .header h2 {
+                font-size: 10px;
+            }
+
+            .memo-info {
+                padding: 2mm;
+                margin-bottom: 1.5mm;
+                gap: 5mm;
+            }
+
+            .content-section {
+                padding: 1mm;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+            }
+
+            table {
+                flex: 1;
+                font-size: 11px;
+            }
+
+            th, td {
+                padding: 1mm;
+                min-height: auto;
+            }
+
+            th {
+                text-align: center;
+                padding: 2px 1px;
+                font-weight: bold;
+                font-size: 10px;
+                line-height: 1;
+                height: 2.5mm;
+                max-height: 2.5mm;
+                vertical-align: middle;
+            }
+
+            .signatures {
+                margin-top: 1mm;
+                padding: 1mm;
+            }
+
+            .signature-box {
+                width: 100px;
+                font-size: 9px;
+            }
+
+            .signature-line {
+                height: 20px;
+                margin-bottom: 2mm;
+            }
+
+            .print-button {
                 display: none !important;
             }
-        }
-
-        .print-button {
+        }        .print-button {
             position: fixed;
             top: 20px;
             right: 20px;
@@ -182,7 +268,13 @@
 
     <div class="print-container">
         <!-- Header -->
-        <div class="header">
+        <div class="header" style="position: relative;">
+            <div style="position: absolute; left: 0; top: 1mm; font-size: 13px; font-weight: bold;">
+                {{ $permohonan->nomor_memo }}
+            </div>
+            <div style="position: absolute; right: 0; top: 1mm; font-size: 13px; font-weight: bold;">
+                {{ $permohonan->created_at->format('d M y') }}
+            </div>
             <h1>Memo Surat Jalan</h1>
             <h2>{{ config('app.name', 'PT. AYPSIS') }}</h2>
         </div>
@@ -191,16 +283,16 @@
         <div class="memo-info">
             <div class="memo-left">
                 <div class="info-row">
-                    <span class="info-label">Nomor Memo:</span>
-                    <span class="info-value">{{ $permohonan->nomor_memo }}</span>
-                </div>
-                <div class="info-row">
-                    <span class="info-label">Tanggal:</span>
-                    <span class="info-value">{{ $permohonan->created_at->format('d/m/Y') }}</span>
-                </div>
-                <div class="info-row">
                     <span class="info-label">Kegiatan:</span>
                     <span class="info-value">{{ $kegiatan->nama_kegiatan ?? $permohonan->kegiatan }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Customer:</span>
+                    <span class="info-value">{{ $permohonan->vendor_perusahaan ?? '-' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Tujuan:</span>
+                    <span class="info-value">{{ $permohonan->ke ?? '-' }}</span>
                 </div>
             </div>
             <div class="memo-right">
@@ -213,76 +305,63 @@
                     <span class="info-value">{{ $permohonan->krani->nama_panggilan ?? '-' }}</span>
                 </div>
                 <div class="info-row">
-                    <span class="info-label">Dari - Ke:</span>
-                    <span class="info-value">{{ $permohonan->dari ?? '-' }} - {{ $permohonan->ke ?? '-' }}</span>
+                    <span class="info-label">Plat Nomor:</span>
+                    <span class="info-value">{{ $permohonan->plat_nomor ?? '-' }}</span>
                 </div>
             </div>
         </div>
 
         <!-- Kontainer Details -->
-        <div class="content-section">
+        <div class="content-section" style="flex: 1; display: flex; flex-direction: column;">
             <div class="section-title">Detail Kontainer</div>
-            <table class="kontainer-table">
+            <table class="kontainer-table" style="flex: 1; height: 100%;"
                 <thead>
                     <tr>
-                        <th>No</th>
-                        <th>Nomor Seri Kontainer</th>
-                        <th>Ukuran</th>
-                        <th>Status</th>
-                        <th>Keterangan</th>
+                        <th style="width: 8%; text-align: center;">No</th>
+                        <th style="width: 35%; text-align: center;">Nomor Seri Kontainer</th>
+                        <th style="width: 15%; text-align: center;">Ukuran</th>
+                        <th style="width: 42%; text-align: center;">Keterangan</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @if($permohonan->kontainers && $permohonan->kontainers->count() > 0)
-                        @foreach($permohonan->kontainers as $index => $kontainer)
-                            <tr>
-                                <td>{{ $index + 1 }}</td>
-                                <td>{{ $kontainer->nomor_seri_gabungan }}</td>
-                                <td>{{ $kontainer->ukuran }}</td>
-                                <td>{{ $kontainer->status }}</td>
-                                <td>{{ $kontainer->keterangan ?? '-' }}</td>
-                            </tr>
-                        @endforeach
-                    @else
-                        <tr>
-                            <td colspan="5" style="text-align: center; color: #666;">Tidak ada kontainer terdaftar</td>
-                        </tr>
-                    @endif
+                    <!-- Empty rows for manual entry -->
+                    <tr style="height: 25%; min-height: 25mm;">
+                        <td>1</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr style="height: 25%; min-height: 25mm;">
+                        <td>2</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr style="height: 25%; min-height: 25mm;">
+                        <td>3</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
+                    <tr style="height: 25%; min-height: 25mm;">
+                        <td>4</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                        <td>&nbsp;</td>
+                    </tr>
                 </tbody>
             </table>
-
-            <div class="info-row">
-                <span class="info-label">Jumlah Kontainer:</span>
-                <span class="info-value">{{ $permohonan->jumlah_kontainer }} unit</span>
-            </div>
-        </div>
-
-        <!-- Total Biaya -->
-        <div class="total-section">
-            <div class="section-title">Rincian Biaya</div>
-            <div class="total-row">
-                <span>Total Harga Awal:</span>
-                <span>Rp. {{ number_format($permohonan->total_harga ?? 0, 0, ',', '.') }}</span>
-            </div>
-            <div class="total-row">
-                <span>Penyesuaian:</span>
-                <span>Rp. {{ number_format(($permohonan->total_harga_setelah_adj ?? 0) - ($permohonan->total_harga ?? 0), 0, ',', '.') }}</span>
-            </div>
-            <div class="total-row total-final">
-                <span>TOTAL SETELAH PENYESUAIAN:</span>
-                <span>Rp. {{ number_format($permohonan->total_harga_setelah_adj ?? 0, 0, ',', '.') }}</span>
-            </div>
         </div>
 
         <!-- Additional Info -->
-        <div class="content-section">
-            @if($permohonan->keterangan)
-                <div class="section-title">Keterangan</div>
-                <div style="border: 1px solid #ddd; padding: 10px; min-height: 60px; background: #f9f9f9;">
-                    {{ $permohonan->keterangan }}
-                </div>
-            @endif
+        @if($permohonan->keterangan)
+        <div class="content-section" style="flex-shrink: 0; padding: 1mm;">
+            <div class="section-title">Keterangan</div>
+            <div style="border: 1px solid #ddd; padding: 1mm; min-height: 8mm; background: #f9f9f9; font-size: 9px;">
+                {{ $permohonan->keterangan }}
+            </div>
         </div>
+        @endif
 
         <!-- Signatures -->
         <div class="signatures">
@@ -301,11 +380,6 @@
                 <div><strong>Diterima Oleh</strong></div>
                 <div>{{ $permohonan->supir->nama_panggilan ?? 'Supir' }}</div>
             </div>
-        </div>
-
-        <!-- Footer -->
-        <div class="content-section" style="text-align: center; font-size: 10px; color: #666; border-top: 1px solid #ddd;">
-            <p>Dicetak pada: {{ now()->format('d/m/Y H:i:s') }} | {{ config('app.name') }}</p>
         </div>
     </div>
 

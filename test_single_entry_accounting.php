@@ -18,7 +18,7 @@ echo "=== TEST SINGLE ENTRY ACCOUNTING ===\n\n";
 
 try {
     DB::beginTransaction();
-    
+
     // 1. Cek apakah akun Bank BCA ada
     $bankBCA = Coa::where('nama_akun', 'LIKE', '%BCA%')->first();
     if (!$bankBCA) {
@@ -31,23 +31,23 @@ try {
         DB::rollback();
         exit(1);
     }
-    
+
     echo "✅ Bank found: {$bankBCA->nama_akun}\n";
     echo "💰 Current balance: Rp " . number_format($bankBCA->saldo, 0, ',', '.') . "\n\n";
-    
+
     // 2. Test CoaTransactionService
     $coaService = new CoaTransactionService();
-    
+
     $testAmount = 5000000; // 5 juta
     $testNomor = 'TEST-PBY-' . date('YmdHis');
     $testTanggal = date('Y-m-d');
     $testKeterangan = 'Test Single Entry - Pembayaran Pranota Kontainer';
-    
+
     echo "🧪 Testing single entry transaction:\n";
     echo "   Bank: {$bankBCA->nama_akun}\n";
     echo "   Amount: Rp " . number_format($testAmount, 0, ',', '.') . "\n";
     echo "   Type: Kredit (mengurangi saldo bank)\n\n";
-    
+
     // 3. Record single transaction (kredit ke bank)
     $transaction = $coaService->recordTransaction(
         $bankBCA->nama_akun,        // nama_akun
@@ -58,7 +58,7 @@ try {
         'Pembayaran Pranota Kontainer', // jenis_transaksi
         $testKeterangan             // keterangan
     );
-    
+
     if ($transaction) {
         echo "✅ Transaction recorded successfully!\n";
         echo "📄 Transaction details:\n";
@@ -68,17 +68,17 @@ try {
         echo "   New Balance: Rp " . number_format($transaction->saldo, 0, ',', '.') . "\n";
         echo "   Reference: {$transaction->nomor_referensi}\n";
         echo "   Description: {$transaction->keterangan}\n\n";
-        
+
         // 4. Verify bank balance updated
         $bankBCA->refresh();
         echo "✅ Bank balance updated:\n";
         echo "   New balance: Rp " . number_format($bankBCA->saldo, 0, ',', '.') . "\n\n";
-        
+
         // 5. Check no other accounts affected (single entry only)
         $otherTransactions = CoaTransaction::where('nomor_referensi', $testNomor)
             ->where('id', '!=', $transaction->id)
             ->count();
-            
+
         if ($otherTransactions == 0) {
             echo "✅ SINGLE ENTRY CONFIRMED: Only bank account affected\n";
             echo "   No double entry created\n";
@@ -86,7 +86,7 @@ try {
         } else {
             echo "❌ ERROR: Found {$otherTransactions} other transactions (should be 0 for single entry)\n";
         }
-        
+
         echo "🎯 TEST SUMMARY:\n";
         echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
         echo "✅ Single entry accounting working correctly\n";
@@ -94,16 +94,16 @@ try {
         echo "✅ Bank balance properly reduced\n";
         echo "✅ No double entry overhead\n";
         echo "✅ Ready for production use\n\n";
-        
+
     } else {
         echo "❌ Failed to record transaction\n";
         echo "Check if bank account exists in COA\n";
     }
-    
+
     // Rollback test transaction
     DB::rollback();
     echo "🔄 Test transaction rolled back (no permanent changes)\n";
-    
+
 } catch (Exception $e) {
     DB::rollback();
     echo "❌ Error: " . $e->getMessage() . "\n";

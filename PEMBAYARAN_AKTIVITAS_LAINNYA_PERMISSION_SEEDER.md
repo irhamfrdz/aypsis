@@ -1,9 +1,11 @@
 # Pembayaran Aktivitas Lainnya Permission Seeder
 
 ## 📋 **Overview**
+
 Seeder untuk membuat permissions yang diperlukan untuk modul Pembayaran Aktivitas Lainnya dengan sistem single-entry accounting.
 
 ## 🗂️ **File Location**
+
 ```
 database/seeders/PembayaranAktivitasLainnyaPermissionSeeder.php
 ```
@@ -11,32 +13,36 @@ database/seeders/PembayaranAktivitasLainnyaPermissionSeeder.php
 ## 🔐 **Permissions Created**
 
 ### **Basic CRUD Operations:**
-| Permission Name | Description | Used For |
-|-----------------|-------------|----------|
-| `pembayaran-aktivitas-lainnya-view` | Melihat daftar pembayaran aktivitas lainnya | Index, Show methods |
-| `pembayaran-aktivitas-lainnya-create` | Membuat pembayaran aktivitas lainnya baru | Create, Store methods |
-| `pembayaran-aktivitas-lainnya-update` | Mengedit pembayaran aktivitas lainnya | Edit, Update methods |
-| `pembayaran-aktivitas-lainnya-delete` | Menghapus pembayaran aktivitas lainnya | Destroy method |
+
+| Permission Name                       | Description                                 | Used For              |
+| ------------------------------------- | ------------------------------------------- | --------------------- |
+| `pembayaran-aktivitas-lainnya-view`   | Melihat daftar pembayaran aktivitas lainnya | Index, Show methods   |
+| `pembayaran-aktivitas-lainnya-create` | Membuat pembayaran aktivitas lainnya baru   | Create, Store methods |
+| `pembayaran-aktivitas-lainnya-update` | Mengedit pembayaran aktivitas lainnya       | Edit, Update methods  |
+| `pembayaran-aktivitas-lainnya-delete` | Menghapus pembayaran aktivitas lainnya      | Destroy method        |
 
 ### **Additional Operations:**
-| Permission Name | Description | Used For |
-|-----------------|-------------|----------|
-| `pembayaran-aktivitas-lainnya-export` | Mengekspor data pembayaran aktivitas lainnya | Export functionality |
-| `pembayaran-aktivitas-lainnya-print` | Mencetak pembayaran aktivitas lainnya | Print receipts/reports |
-| `pembayaran-aktivitas-lainnya-approve` | Menyetujui pembayaran aktivitas lainnya | Approval workflow |
-| `pembayaran-aktivitas-lainnya-reject` | Menolak pembayaran aktivitas lainnya | Rejection workflow |
-| `pembayaran-aktivitas-lainnya-generate-nomor` | Generate nomor pembayaran | Auto number generation |
-| `pembayaran-aktivitas-lainnya-payment-form` | Akses form pembayaran | Payment form access |
+
+| Permission Name                               | Description                                  | Used For               |
+| --------------------------------------------- | -------------------------------------------- | ---------------------- |
+| `pembayaran-aktivitas-lainnya-export`         | Mengekspor data pembayaran aktivitas lainnya | Export functionality   |
+| `pembayaran-aktivitas-lainnya-print`          | Mencetak pembayaran aktivitas lainnya        | Print receipts/reports |
+| `pembayaran-aktivitas-lainnya-approve`        | Menyetujui pembayaran aktivitas lainnya      | Approval workflow      |
+| `pembayaran-aktivitas-lainnya-reject`         | Menolak pembayaran aktivitas lainnya         | Rejection workflow     |
+| `pembayaran-aktivitas-lainnya-generate-nomor` | Generate nomor pembayaran                    | Auto number generation |
+| `pembayaran-aktivitas-lainnya-payment-form`   | Akses form pembayaran                        | Payment form access    |
 
 ## 🚀 **How to Run**
 
 ### **On Development:**
+
 ```bash
 # Don't run in development - manual deployment to server
 # php artisan db:seed --class=PembayaranAktivitasLainnyaPermissionSeeder
 ```
 
 ### **On Server:**
+
 ```bash
 # Upload seeder file to server first
 # Then run:
@@ -46,18 +52,21 @@ php artisan db:seed --class=PembayaranAktivitasLainnyaPermissionSeeder
 ## 🎯 **Features**
 
 ### **Duplicate Prevention:**
-- ✅ Checks existing permissions before creating
-- ✅ Prevents duplicate entries
-- ✅ Shows appropriate messages for existing/new permissions
+
+-   ✅ Checks existing permissions before creating
+-   ✅ Prevents duplicate entries
+-   ✅ Shows appropriate messages for existing/new permissions
 
 ### **Error Handling:**
-- ✅ Safe to run multiple times
-- ✅ Informative console output
-- ✅ Transaction-safe operations
+
+-   ✅ Safe to run multiple times
+-   ✅ Informative console output
+-   ✅ Transaction-safe operations
 
 ## 🔄 **Integration with UserController**
 
 ### **Matrix Permission Mapping:**
+
 These permissions will be automatically mapped in the UserController's `convertMatrixPermissionsToIds()` method:
 
 ```php
@@ -76,6 +85,7 @@ These permissions will be automatically mapped in the UserController's `convertM
 ## 🛡️ **Security Considerations**
 
 ### **Permission Guards:**
+
 Each controller method should use proper permission gates:
 
 ```php
@@ -94,6 +104,7 @@ public function store(Request $request)
 ```
 
 ### **Middleware Protection:**
+
 Routes should be protected with appropriate middleware:
 
 ```php
@@ -105,6 +116,7 @@ Route::middleware(['auth', 'permission:pembayaran-aktivitas-lainnya-view'])
 ## 📊 **Usage Examples**
 
 ### **Assign Permissions to User:**
+
 ```php
 $user = User::find(1);
 
@@ -114,6 +126,7 @@ $user->permissions()->sync($permissions->pluck('id'));
 ```
 
 ### **Check Permission in Blade:**
+
 ```blade
 @can('pembayaran-aktivitas-lainnya-create')
     <a href="{{ route('pembayaran-aktivitas-lainnya.create') }}">
@@ -125,6 +138,7 @@ $user->permissions()->sync($permissions->pluck('id'));
 ## 🔧 **Customization**
 
 ### **Adding New Permissions:**
+
 To add new permissions, modify the `$permissions` array in the seeder:
 
 ```php
@@ -135,11 +149,13 @@ $permissions[] = [
 ```
 
 ### **Removing Permissions:**
+
 To remove permissions, create a separate migration or modify the seeder to handle deletions.
 
 ## 🎯 **Production Deployment**
 
 ### **Steps:**
+
 1. ✅ Upload seeder file to server
 2. ✅ Run seeder on production
 3. ✅ Assign permissions to appropriate users
@@ -147,6 +163,7 @@ To remove permissions, create a separate migration or modify the seeder to handl
 5. ✅ Update documentation
 
 ---
+
 **Created:** October 9, 2025  
 **System:** AYPSIS - Single Entry Accounting  
 **Module:** Pembayaran Aktivitas Lainnya

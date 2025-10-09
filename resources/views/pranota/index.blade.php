@@ -49,22 +49,22 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                     </svg>
                                 </div>
-                                <input type="text" 
+                                <input type="text"
                                        name="search"
-                                       id="searchInput" 
+                                       id="searchInput"
                                        value="{{ request('search') }}"
-                                       placeholder="Cari berdasarkan No. Pranota, Keterangan, No. Invoice Vendor... (Ctrl+K)" 
+                                       placeholder="Cari berdasarkan No. Pranota, Keterangan, No. Invoice Vendor... (Ctrl+K)"
                                        class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                        title="Tekan Ctrl+K untuk fokus pencarian, ESC untuk menghapus"
                                        autocomplete="off">
                             </div>
                         </div>
-                        
+
                         <!-- Filter by Status -->
                         <div class="flex items-center space-x-2">
                             <label for="statusFilter" class="text-sm font-medium text-gray-700">Status:</label>
                             <select name="status"
-                                    id="statusFilter" 
+                                    id="statusFilter"
                                     class="rounded border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     onchange="document.getElementById('searchForm').submit()">
                                 <option value="">Semua Status</option>
@@ -77,12 +77,12 @@
                         <!-- Clear Filters & Search Button -->
                         <div class="flex items-center space-x-2">
                             @if(request('search') || request('status'))
-                                <a href="{{ route('pranota-kontainer-sewa.index') }}" 
+                                <a href="{{ route('pranota-kontainer-sewa.index') }}"
                                    class="text-sm text-red-600 hover:text-red-800 font-medium">
                                     Clear Filters
                                 </a>
                             @endif
-                            <button type="submit" 
+                            <button type="submit"
                                     class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
                                 <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
@@ -108,7 +108,7 @@
                                     dengan status "<strong>{{ ucfirst(request('status')) }}</strong>"
                                 @endif
                             </span>
-                            <a href="{{ route('pranota-kontainer-sewa.index') }}" 
+                            <a href="{{ route('pranota-kontainer-sewa.index') }}"
                                class="ml-2 text-blue-600 hover:text-blue-800 font-medium underline">
                                 Tampilkan semua
                             </a>
@@ -521,7 +521,7 @@ document.addEventListener('DOMContentLoaded', function() {
             e.preventDefault();
             document.getElementById('searchInput').focus();
         }
-        
+
         // Escape to clear search
         if (e.key === 'Escape') {
             const searchInput = document.getElementById('searchInput');
@@ -536,7 +536,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
         searchInput.addEventListener('input', debounceSearch);
-        
+
         // Submit on Enter key
         searchInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -711,7 +711,7 @@ tbody tr[style*="display: none"] {
         flex-direction: column;
         gap: 1rem;
     }
-    
+
     #searchInput {
         font-size: 16px; /* Prevents zoom on iOS */
     }

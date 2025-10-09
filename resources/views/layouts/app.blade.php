@@ -834,13 +834,15 @@
 
 {{-- Pembayaran Dropdown --}}
 @php
-    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*');
+    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-dp-ob.*') || Request::routeIs('pembayaran-ob.*');
     $hasPaymentPermissions = $user && (
         $user->can('pembayaran-pranota-kontainer-view') ||
         $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
         $user->can('pembayaran-pranota-cat-view') ||
         $user->can('pembayaran-pranota-supir-view') ||
-        $user->can('pembayaran-aktivitas-lainnya-view')
+        $user->can('pembayaran-aktivitas-lainnya-view') ||
+        $user->can('pembayaran-dp-ob-view') ||
+        $user->can('pembayaran-ob-view')
     );
 @endphp
 
@@ -955,8 +957,8 @@
 
         {{-- Aktivitas Lain-lain Sub-dropdown --}}
         @php
-            $isAktivitasLainnyaPaymentRoute = Request::routeIs('pembayaran-aktivitas-lainnya.*');
-            $hasAktivitasLainnyaPaymentPermission = $user && $user->can('pembayaran-aktivitas-lainnya-view');
+            $isAktivitasLainnyaPaymentRoute = Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-dp-ob.*') || Request::routeIs('pembayaran-ob.*');
+            $hasAktivitasLainnyaPaymentPermission = $user && ($user->can('pembayaran-aktivitas-lainnya-view') || $user->can('pembayaran-dp-ob-view') || $user->can('pembayaran-ob-view'));
         @endphp
         @if($hasAktivitasLainnyaPaymentPermission)
         <div class="mt-2 mb-2">
@@ -981,6 +983,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         Bayar Aktivitas Lain-lain
+                    </a>
+                @endif
+
+                {{-- Pembayaran DP OB --}}
+                @if(Route::has('pembayaran-dp-ob.index') && ($isAdmin || auth()->user()->can('pembayaran-dp-ob-view')))
+                    <a href="{{ route('pembayaran-dp-ob.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-dp-ob.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                        </svg>
+                        Pembayaran DP OB
+                    </a>
+                @endif
+
+                {{-- Pembayaran OB --}}
+                @if(Route::has('pembayaran-ob.index') && ($isAdmin || auth()->user()->can('pembayaran-ob-view')))
+                    <a href="{{ route('pembayaran-ob.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-ob.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
+                        </svg>
+                        Pembayaran OB
                     </a>
                 @endif
             </div>

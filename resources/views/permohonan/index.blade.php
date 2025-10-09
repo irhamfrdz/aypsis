@@ -50,6 +50,130 @@
             </div>
         </div>
 
+        <!-- Search Form -->
+        <div class="mb-6 bg-white p-4 rounded-lg border border-indigo-200 shadow-sm">
+            <h3 class="text-lg font-semibold text-indigo-800 mb-3">🔍 Pencarian Permohonan</h3>
+            <form method="GET" action="{{ route('permohonan.index') }}" class="space-y-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Search Query -->
+                    <div class="lg:col-span-2">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-1">Cari (Nomor Memo, Kegiatan, Vendor, Supir, Tujuan)</label>
+                        <input type="text"
+                               id="search"
+                               name="search"
+                               value="{{ request('search') }}"
+                               placeholder="Masukkan kata kunci..."
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+
+                    <!-- Date From -->
+                    <div>
+                        <label for="date_from" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari</label>
+                        <input type="date"
+                               id="date_from"
+                               name="date_from"
+                               value="{{ request('date_from') }}"
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+
+                    <!-- Date To -->
+                    <div>
+                        <label for="date_to" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Sampai</label>
+                        <input type="date"
+                               id="date_to"
+                               name="date_to"
+                               value="{{ request('date_to') }}"
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    <!-- Kegiatan Filter -->
+                    <div>
+                        <label for="kegiatan_filter" class="block text-sm font-medium text-gray-700 mb-1">Kegiatan</label>
+                        <select id="kegiatan_filter"
+                                name="kegiatan"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="">Semua Kegiatan</option>
+                            @if(isset($kegiatanList))
+                                @foreach($kegiatanList as $kode => $nama)
+                                    <option value="{{ $kode }}" {{ request('kegiatan') == $kode ? 'selected' : '' }}>
+                                        {{ $nama }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    <!-- Status Filter -->
+                    <div>
+                        <label for="status_filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                        <select id="status_filter"
+                                name="status"
+                                class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                            <option value="">Semua Status</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                            <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                        </select>
+                    </div>
+
+                    <!-- Amount Range -->
+                    <div>
+                        <label for="amount_min" class="block text-sm font-medium text-gray-700 mb-1">Jumlah Minimum (Rp)</label>
+                        <input type="number"
+                               id="amount_min"
+                               name="amount_min"
+                               value="{{ request('amount_min') }}"
+                               placeholder="0"
+                               class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-wrap items-center gap-2 pt-2">
+                    <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition shadow text-sm">
+                        🔍 Cari
+                    </button>
+                    <a href="{{ route('permohonan.index') }}" class="inline-flex items-center px-4 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition shadow text-sm">
+                        🔄 Reset
+                    </a>
+                    @if(request()->hasAny(['search', 'date_from', 'date_to', 'kegiatan', 'status', 'amount_min']))
+                        <span class="text-sm text-green-600 font-medium">
+                            📊 {{ $permohonans->total() }} hasil ditemukan
+                        </span>
+                    @endif
+                </div>
+            </form>
+        </div>
+
+        <!-- Quick Filters -->
+        <div class="mb-6 bg-gray-50 p-4 rounded-lg border border-gray-200">
+            <h4 class="text-sm font-semibold text-gray-700 mb-3">⚡ Filter Cepat</h4>
+            <div class="flex flex-wrap gap-2">
+                <button onclick="quickFilterByDateRange(7)" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs hover:bg-blue-200 transition">
+                    📅 7 Hari Terakhir
+                </button>
+                <button onclick="quickFilterByDateRange(30)" class="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs hover:bg-blue-200 transition">
+                    📅 30 Hari Terakhir
+                </button>
+                <button onclick="quickFilterByStatus('pending')" class="px-3 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs hover:bg-yellow-200 transition">
+                    ⏳ Pending
+                </button>
+                <button onclick="quickFilterByStatus('approved')" class="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs hover:bg-green-200 transition">
+                    ✅ Approved
+                </button>
+                <button onclick="quickFilterByStatus('rejected')" class="px-3 py-1 bg-red-100 text-red-800 rounded-full text-xs hover:bg-red-200 transition">
+                    ❌ Rejected
+                </button>
+                @if(request()->hasAny(['search', 'date_from', 'date_to', 'kegiatan', 'status', 'amount_min']))
+                    <a href="{{ route('permohonan.index') }}" class="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-xs hover:bg-gray-200 transition">
+                        🔄 Reset Semua
+                    </a>
+                @endif
+            </div>
+        </div>
+
         <!-- Filter Tanggal untuk Print -->
         <div class="mb-6 bg-white p-4 rounded-lg border border-indigo-200 shadow-sm">
             <h3 class="text-lg font-semibold text-indigo-800 mb-3">Print Berdasarkan Tanggal</h3>
@@ -100,6 +224,67 @@
             </div>
         @endif
 
+        <!-- Search Results Summary -->
+        @if(request()->hasAny(['search', 'date_from', 'date_to', 'kegiatan', 'status', 'amount_min']))
+            <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h4 class="text-sm font-semibold text-blue-800">📊 Hasil Pencarian</h4>
+                        <p class="text-xs text-blue-600">
+                            Menampilkan {{ $permohonans->count() }} dari {{ $permohonans->total() }} permohonan
+                            @if(request('search'))
+                                untuk "<strong>{{ request('search') }}</strong>"
+                            @endif
+                        </p>
+                    </div>
+                    <div class="text-right">
+                        @if($permohonans->total() > 0)
+                            <p class="text-xs text-blue-600">
+                                Halaman {{ $permohonans->currentPage() }} dari {{ $permohonans->lastPage() }}
+                            </p>
+                        @endif
+                    </div>
+                </div>
+
+                <!-- Active Filters Display -->
+                <div class="mt-2 flex flex-wrap gap-1">
+                    @if(request('search'))
+                        <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            🔍 {{ request('search') }}
+                            <a href="{{ request()->fullUrlWithQuery(['search' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                        </span>
+                    @endif
+                    @if(request('date_from') || request('date_to'))
+                        <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            📅
+                            @if(request('date_from')){{ \Carbon\Carbon::parse(request('date_from'))->format('d/m/y') }}@endif
+                            @if(request('date_from') && request('date_to')) - @endif
+                            @if(request('date_to')){{ \Carbon\Carbon::parse(request('date_to'))->format('d/m/y') }}@endif
+                            <a href="{{ request()->fullUrlWithQuery(['date_from' => null, 'date_to' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                        </span>
+                    @endif
+                    @if(request('kegiatan'))
+                        <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            🏗️ {{ $kegiatanMap[request('kegiatan')] ?? request('kegiatan') }}
+                            <a href="{{ request()->fullUrlWithQuery(['kegiatan' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                        </span>
+                    @endif
+                    @if(request('status'))
+                        <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            📋 {{ ucfirst(request('status')) }}
+                            <a href="{{ request()->fullUrlWithQuery(['status' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                        </span>
+                    @endif
+                    @if(request('amount_min'))
+                        <span class="inline-flex items-center px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded-full">
+                            💰 Min: Rp {{ number_format(request('amount_min'), 0, ',', '.') }}
+                            <a href="{{ request()->fullUrlWithQuery(['amount_min' => null]) }}" class="ml-1 text-blue-600 hover:text-blue-800">×</a>
+                        </span>
+                    @endif
+                </div>
+            </div>
+        @endif
+
         {{-- Rows Per Page Selection --}}
         @include('components.rows-per-page', [
             'routeName' => 'permohonan.index',
@@ -121,6 +306,7 @@
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Memo</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Tanggal Memo</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Vendor</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Supir</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Dari - Ke</th>
                             <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Uang Jalan</th>
@@ -139,6 +325,7 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900 font-semibold">{{ $permohonan->nomor_memo }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800 text-center">{{ $permohonan->tanggal_memo ? \Carbon\Carbon::parse($permohonan->tanggal_memo)->format('d/m/Y') : '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $kegiatanMap[$permohonan->kegiatan] ?? $permohonan->kegiatan }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-indigo-800 text-center">{{ $permohonan->vendor_perusahaan ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800 text-center">{{ $permohonan->supir->nama_panggilan ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-800">{{ $permohonan->dari ?? '-' }} - {{ $permohonan->ke ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900">Rp. {{ number_format($permohonan->jumlah_uang_jalan, 0, ',', '.') }}</td>
@@ -160,7 +347,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-6 py-4 text-center text-[10px] text-gray-500">
+                                <td colspan="11" class="px-6 py-4 text-center text-[10px] text-gray-500">
                                     Tidak ada data permohonan yang ditemukan.
                                 </td>
                             </tr>
@@ -273,6 +460,84 @@ function bulkDelete() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateBulkActions();
+    initializeSearchFeatures();
 });
+
+// Search Enhancement Functions
+function initializeSearchFeatures() {
+    const searchInput = document.getElementById('search');
+    const searchForm = searchInput.closest('form');
+    let searchTimeout;
+
+    // Auto-submit search with debounce (optional - remove if not wanted)
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                // Only auto-submit if there's a search term or if clearing
+                const searchValue = searchInput.value.trim();
+                if (searchValue.length >= 3 || searchValue.length === 0) {
+                    searchForm.submit();
+                }
+            }, 500); // Wait 500ms after user stops typing
+        });
+    }
+
+    // Clear search functionality
+    const resetButton = document.querySelector('a[href*="permohonan.index"]:not([href*="?"])');
+    if (resetButton) {
+        resetButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            // Clear all form inputs
+            const inputs = searchForm.querySelectorAll('input, select');
+            inputs.forEach(input => {
+                if (input.type === 'text' || input.type === 'date' || input.type === 'number') {
+                    input.value = '';
+                } else if (input.tagName === 'SELECT') {
+                    input.selectedIndex = 0;
+                }
+            });
+            // Redirect to clean URL
+            window.location.href = '{{ route("permohonan.index") }}';
+        });
+    }
+
+    // Highlight search terms in results (optional enhancement)
+    highlightSearchTerms();
+}
+
+function highlightSearchTerms() {
+    const searchTerm = '{{ request("search") }}';
+    if (!searchTerm) return;
+
+    const tableRows = document.querySelectorAll('tbody tr');
+    tableRows.forEach(row => {
+        const cells = row.querySelectorAll('td');
+        cells.forEach(cell => {
+            if (cell.innerHTML && !cell.querySelector('input, button, form')) {
+                const regex = new RegExp(`(${searchTerm})`, 'gi');
+                cell.innerHTML = cell.innerHTML.replace(regex, '<mark class="bg-yellow-200 px-1 rounded">$1</mark>');
+            }
+        });
+    });
+}
+
+// Quick filter functions
+function quickFilterByStatus(status) {
+    const statusSelect = document.getElementById('status_filter');
+    statusSelect.value = status;
+    statusSelect.closest('form').submit();
+}
+
+function quickFilterByDateRange(days) {
+    const today = new Date();
+    const startDate = new Date();
+    startDate.setDate(today.getDate() - days);
+
+    document.getElementById('date_from').value = startDate.toISOString().split('T')[0];
+    document.getElementById('date_to').value = today.toISOString().split('T')[0];
+
+    document.getElementById('date_from').closest('form').submit();
+}
 </script>
 @endsection

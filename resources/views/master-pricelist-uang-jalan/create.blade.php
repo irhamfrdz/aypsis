@@ -11,7 +11,7 @@
             <div class="px-6 py-4 border-b border-gray-200">
                 <div class="flex items-center justify-between">
                     <h1 class="text-xl font-bold text-gray-900">Tambah Pricelist Uang Jalan</h1>
-                    <a href="{{ route('master-pricelist-uang-jalan.index') }}" 
+                    <a href="{{ route('master-pricelist-uang-jalan.index') }}"
                        class="inline-flex items-center px-4 py-2 bg-gray-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-700">
                         <i class="fas fa-arrow-left mr-2"></i>
                         Kembali
@@ -106,7 +106,7 @@
                 <!-- Pricing Information -->
                 <div class="bg-gray-50 rounded-lg p-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Tarif</h3>
-                    
+
                     <!-- Uang Jalan -->
                     <div class="mb-6">
                         <h4 class="text-md font-medium text-gray-800 mb-3">Uang Jalan</h4>
@@ -202,7 +202,7 @@
                     <div class="space-y-4">
                         <div>
                             <label for="keterangan" class="block text-sm font-medium text-gray-700 mb-1">Keterangan</label>
-                            <textarea name="keterangan" id="keterangan" rows="3" 
+                            <textarea name="keterangan" id="keterangan" rows="3"
                                       placeholder="Informasi khusus untuk rute ini..."
                                       class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 @error('keterangan') border-red-500 @enderror">{{ old('keterangan') }}</textarea>
                             @error('keterangan')
@@ -235,11 +235,11 @@
 
                 <!-- Submit Buttons -->
                 <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
-                    <a href="{{ route('master-pricelist-uang-jalan.index') }}" 
+                    <a href="{{ route('master-pricelist-uang-jalan.index') }}"
                        class="inline-flex items-center px-4 py-2 bg-gray-300 border border-transparent rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest hover:bg-gray-400 active:bg-gray-500 focus:outline-none focus:border-gray-500 focus:ring ring-gray-300 disabled:opacity-25 transition ease-in-out duration-150">
                         Batal
                     </a>
-                    <button type="submit" 
+                    <button type="submit"
                             class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
                         <i class="fas fa-save mr-2"></i>
                         Simpan Pricelist
@@ -255,7 +255,7 @@
     document.getElementById('uang_jalan_20ft').addEventListener('input', function() {
         const price20ft = parseFloat(this.value) || 0;
         const price40ft = Math.round(price20ft * 1.43); // Average multiplier from CSV data
-        
+
         const price40ftField = document.getElementById('uang_jalan_40ft');
         if (!price40ftField.value) {
             price40ftField.value = price40ft;
@@ -266,7 +266,7 @@
     document.getElementById('mel_20ft').addEventListener('input', function() {
         const mel20ft = parseFloat(this.value) || 0;
         const mel40ft = Math.round(mel20ft * 1.67); // Average multiplier
-        
+
         const mel40ftField = document.getElementById('mel_40ft');
         if (!mel40ftField.value) {
             mel40ftField.value = mel40ft;
@@ -277,7 +277,7 @@
     document.getElementById('berlaku_sampai').addEventListener('change', function() {
         const berlakuDari = document.getElementById('berlaku_dari').value;
         const berlakuSampai = this.value;
-        
+
         if (berlakuSampai && berlakuDari && berlakuSampai < berlakuDari) {
             alert('Tanggal berlaku sampai tidak boleh lebih kecil dari tanggal berlaku dari');
             this.value = '';

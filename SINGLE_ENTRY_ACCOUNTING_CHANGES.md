@@ -1,6 +1,7 @@
 # 📋 PERUBAHAN: SINGLE ENTRY ACCOUNTING - PEMBAYARAN PRANOTA KONTAINER
 
 ## 🎯 **OVERVIEW PERUBAHAN**
+
 Menghilangkan double-entry accounting dan hanya mencatat transaksi ke akun bank yang dipilih saja.
 
 ---
@@ -10,6 +11,7 @@ Menghilangkan double-entry accounting dan hanya mencatat transaksi ke akun bank 
 ### **File: `app/Http/Controllers/PembayaranPranotaKontainerController.php`**
 
 #### **❌ SEBELUM (Double Entry):**
+
 ```php
 // Catat transaksi double-entry: Biaya Sewa Kontainer (Debit) dan Bank (Kredit)
 $this->coaTransactionService->recordDoubleEntry(
@@ -23,6 +25,7 @@ $this->coaTransactionService->recordDoubleEntry(
 ```
 
 #### **✅ SESUDAH (Single Entry):**
+
 ```php
 // Catat transaksi ke akun bank (kredit - mengurangi saldo bank)
 $this->coaTransactionService->recordTransaction(
@@ -41,6 +44,7 @@ $this->coaTransactionService->recordTransaction(
 ## 📊 **DAMPAK PERUBAHAN**
 
 ### **✅ KEUNTUNGAN:**
+
 1. **Simplicity**: Lebih sederhana, tidak perlu mengelola 2 akun sekaligus
 2. **Performance**: Hanya 1 transaksi COA yang dicatat (vs 2 sebelumnya)
 3. **Flexibility**: User bisa mengelola akun biaya secara manual jika diperlukan
@@ -49,6 +53,7 @@ $this->coaTransactionService->recordTransaction(
 ### **🔍 PERBEDAAN HASIL:**
 
 #### **❌ Sebelumnya (Double Entry):**
+
 ```
 COA Transactions Created:
 1. Biaya Sewa Kontainer: +5,000,000 (Debit)
@@ -57,6 +62,7 @@ Total Records: 2
 ```
 
 #### **✅ Sekarang (Single Entry):**
+
 ```
 COA Transactions Created:
 1. Bank BCA: -5,000,000 (Kredit)
@@ -68,22 +74,25 @@ Total Records: 1
 ## 🎯 **BUSINESS LOGIC TETAP SAMA**
 
 ### **Data Pembayaran:**
-- ✅ Nomor pembayaran: Auto-generated
-- ✅ Total pembayaran: Calculated from selected pranota
-- ✅ DP integration: Mengurangi total pembayaran
-- ✅ Penyesuaian: Optional adjustment
-- ✅ Bank selection: From COA master
+
+-   ✅ Nomor pembayaran: Auto-generated
+-   ✅ Total pembayaran: Calculated from selected pranota
+-   ✅ DP integration: Mengurangi total pembayaran
+-   ✅ Penyesuaian: Optional adjustment
+-   ✅ Bank selection: From COA master
 
 ### **Status Updates:**
-- ✅ Pranota: `unpaid` → `paid`
-- ✅ Pembayaran: `approved` (auto-approved)
-- ✅ Tracking: Complete audit trail
+
+-   ✅ Pranota: `unpaid` → `paid`
+-   ✅ Pembayaran: `approved` (auto-approved)
+-   ✅ Tracking: Complete audit trail
 
 ---
 
 ## 🧪 **TESTING SCENARIOS**
 
 ### **Scenario 1: Normal Payment**
+
 ```
 Input:
 - 3 Pranota @ Rp 5,000,000 each = Rp 15,000,000
@@ -97,6 +106,7 @@ Expected Result:
 ```
 
 ### **Scenario 2: Payment with DP**
+
 ```
 Input:
 - 2 Pranota @ Rp 3,000,000 each = Rp 6,000,000
@@ -110,6 +120,7 @@ Expected Result:
 ```
 
 ### **Scenario 3: Payment with Adjustment**
+
 ```
 Input:
 - 1 Pranota @ Rp 5,000,000
@@ -127,27 +138,29 @@ Expected Result:
 ## 🚀 **DEPLOYMENT CHECKLIST**
 
 ### **✅ Pre-Deployment:**
-- [x] Code changes implemented
-- [x] Controller updated to use single entry
-- [x] Method validation (recordTransaction exists)
-- [x] Syntax check passed
+
+-   [x] Code changes implemented
+-   [x] Controller updated to use single entry
+-   [x] Method validation (recordTransaction exists)
+-   [x] Syntax check passed
 
 ### **📋 Post-Deployment Testing:**
+
 ```bash
 # Test 1: Create payment and verify only 1 COA transaction
-SELECT * FROM coa_transactions 
+SELECT * FROM coa_transactions
 WHERE nomor_referensi = 'PBY-xxxxxxxxx';
 -- Should return only 1 record (bank account)
 
 # Test 2: Verify bank balance updated correctly
-SELECT nama_akun, saldo 
-FROM coas 
+SELECT nama_akun, saldo
+FROM coas
 WHERE nama_akun = 'Bank BCA';
 -- Should show reduced balance
 
 # Test 3: Verify no "Biaya Sewa Kontainer" auto-transactions
-SELECT * FROM coa_transactions 
-WHERE jenis_transaksi = 'Pembayaran Pranota Kontainer' 
+SELECT * FROM coa_transactions
+WHERE jenis_transaksi = 'Pembayaran Pranota Kontainer'
   AND coa_id IN (SELECT id FROM coas WHERE nama_akun LIKE '%Biaya%');
 -- Should return empty (no auto biaya entries)
 ```
@@ -157,6 +170,7 @@ WHERE jenis_transaksi = 'Pembayaran Pranota Kontainer'
 ## 💡 **RECOMMENDATION**
 
 ### **Manual Biaya Entry (Optional):**
+
 Jika diperlukan tracking biaya sewa kontainer, bisa dilakukan manual entry terpisah:
 
 ```php
@@ -173,19 +187,22 @@ $this->coaTransactionService->recordTransaction(
 ```
 
 ### **Future Enhancement:**
-- Add option in settings untuk enable/disable auto biaya entry
-- Add manual journal entry feature
-- Add comprehensive accounting reports
+
+-   Add option in settings untuk enable/disable auto biaya entry
+-   Add manual journal entry feature
+-   Add comprehensive accounting reports
 
 ---
 
 ## ✅ **STATUS:**
-**READY FOR PRODUCTION** 
+
+**READY FOR PRODUCTION**
 
 Perubahan ini sudah:
-- ✅ Implemented
-- ✅ Syntax validated
-- ✅ Logic tested
-- ✅ Documentation complete
+
+-   ✅ Implemented
+-   ✅ Syntax validated
+-   ✅ Logic tested
+-   ✅ Documentation complete
 
 **Next:** Deploy dan test di server production! 🚀

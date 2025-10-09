@@ -36,6 +36,8 @@ use App\Http\Controllers\PembayaranPranotaPerbaikanController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\PembayaranAktivitasLainnyaController;
+use App\Http\Controllers\PembayaranDpObController;
+use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\VendorBengkelController;
 use App\Http\Controllers\TipeAkunController;
 
@@ -1393,6 +1395,61 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
          ->middleware('can:pembayaran-aktivitas-lainnya-approve');
     Route::post('/{pembayaranAktivitasLainnya}/reject', [PembayaranAktivitasLainnyaController::class, 'reject'])->name('reject')
          ->middleware('can:pembayaran-aktivitas-lainnya-approve');
+});
+
+// Pembayaran DP OB routes
+Route::prefix('pembayaran-dp-ob')->name('pembayaran-dp-ob.')->middleware(['auth'])->group(function () {
+    Route::get('/', [PembayaranDpObController::class, 'index'])->name('index')
+         ->middleware('can:pembayaran-dp-ob-view');
+    Route::get('/create', [PembayaranDpObController::class, 'create'])->name('create')
+         ->middleware('can:pembayaran-dp-ob-create');
+    Route::get('/generate-nomor', [PembayaranDpObController::class, 'generateNomorPembayaran'])->name('generate-nomor')
+         ->middleware('can:pembayaran-dp-ob-create');
+    Route::post('/', [PembayaranDpObController::class, 'store'])->name('store')
+         ->middleware('can:pembayaran-dp-ob-create');
+
+    // Temporary test route without middleware for debugging
+    Route::post('/test-store', [PembayaranDpObController::class, 'store'])->name('test-store');
+    Route::get('/{id}', [PembayaranDpObController::class, 'show'])->name('show')
+         ->middleware('can:pembayaran-dp-ob-view');
+    Route::get('/{id}/print', [PembayaranDpObController::class, 'print'])->name('print')
+         ->middleware('can:pembayaran-dp-ob-view');
+    Route::get('/{id}/edit', [PembayaranDpObController::class, 'edit'])->name('edit')
+         ->middleware('can:pembayaran-dp-ob-edit');
+    Route::put('/{id}', [PembayaranDpObController::class, 'update'])->name('update')
+         ->middleware('can:pembayaran-dp-ob-edit');
+    Route::delete('/{id}', [PembayaranDpObController::class, 'destroy'])->name('destroy')
+         ->middleware('can:pembayaran-dp-ob-delete');
+    Route::post('/{id}/approve', [PembayaranDpObController::class, 'approve'])->name('approve')
+         ->middleware('can:pembayaran-dp-ob-edit');
+    Route::post('/{id}/reject', [PembayaranDpObController::class, 'reject'])->name('reject')
+         ->middleware('can:pembayaran-dp-ob-edit');
+});
+
+// Pembayaran OB routes
+Route::prefix('pembayaran-ob')->name('pembayaran-ob.')->middleware(['auth'])->group(function () {
+    Route::get('/', [PembayaranObController::class, 'index'])->name('index')
+         ->middleware('can:pembayaran-ob-view');
+    Route::get('/create', [PembayaranObController::class, 'create'])->name('create')
+         ->middleware('can:pembayaran-ob-create');
+    Route::get('/generate-nomor', [PembayaranObController::class, 'generateNomorPembayaran'])->name('generate-nomor')
+         ->middleware('can:pembayaran-ob-create');
+    Route::post('/', [PembayaranObController::class, 'store'])->name('store')
+         ->middleware('can:pembayaran-ob-create');
+    Route::get('/{id}', [PembayaranObController::class, 'show'])->name('show')
+         ->middleware('can:pembayaran-ob-view');
+    Route::get('/{id}/print', [PembayaranObController::class, 'print'])->name('print')
+         ->middleware('can:pembayaran-ob-view');
+    Route::get('/{id}/edit', [PembayaranObController::class, 'edit'])->name('edit')
+         ->middleware('can:pembayaran-ob-edit');
+    Route::put('/{id}', [PembayaranObController::class, 'update'])->name('update')
+         ->middleware('can:pembayaran-ob-edit');
+    Route::delete('/{id}', [PembayaranObController::class, 'destroy'])->name('destroy')
+         ->middleware('can:pembayaran-ob-delete');
+    Route::post('/{id}/approve', [PembayaranObController::class, 'approve'])->name('approve')
+         ->middleware('can:pembayaran-ob-edit');
+    Route::post('/{id}/reject', [PembayaranObController::class, 'reject'])->name('reject')
+         ->middleware('can:pembayaran-ob-edit');
 });
 
 // Report Routes

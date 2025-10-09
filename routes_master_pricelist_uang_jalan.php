@@ -11,7 +11,7 @@ Route::prefix('master-pricelist-uang-jalan')->name('master-pricelist-uang-jalan.
     Route::get('/{masterPricelistUangJalan}/edit', [App\Http\Controllers\MasterPricelistUangJalanController::class, 'edit'])->name('edit');
     Route::put('/{masterPricelistUangJalan}', [App\Http\Controllers\MasterPricelistUangJalanController::class, 'update'])->name('update');
     Route::delete('/{masterPricelistUangJalan}', [App\Http\Controllers\MasterPricelistUangJalanController::class, 'destroy'])->name('destroy');
-    
+
     // Import & API Routes
     Route::post('/import', [App\Http\Controllers\MasterPricelistUangJalanController::class, 'importCsv'])->name('import');
     Route::get('/api/find-by-route', [App\Http\Controllers\MasterPricelistUangJalanController::class, 'findByRoute'])->name('api.find-by-route');

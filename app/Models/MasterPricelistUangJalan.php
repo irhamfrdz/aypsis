@@ -173,19 +173,19 @@ class MasterPricelistUangJalan extends Model
     public function isValid()
     {
         $now = now();
-        
+
         if ($this->status !== 'active') {
             return false;
         }
-        
+
         if ($this->berlaku_dari > $now) {
             return false;
         }
-        
+
         if ($this->berlaku_sampai && $this->berlaku_sampai < $now) {
             return false;
         }
-        
+
         return true;
     }
 
@@ -194,8 +194,8 @@ class MasterPricelistUangJalan extends Model
      */
     public function getTotalBiaya($ukuran)
     {
-        return $this->getUangJalanBySize($ukuran) + 
-               $this->getMelBySize($ukuran) + 
+        return $this->getUangJalanBySize($ukuran) +
+               $this->getMelBySize($ukuran) +
                $this->getAntarLokasiBySize($ukuran);
     }
 
@@ -207,11 +207,11 @@ class MasterPricelistUangJalan extends Model
         $query = static::active()
                       ->where('dari', 'LIKE', "%{$dari}%")
                       ->where('ke', 'LIKE', "%{$ke}%");
-        
+
         if ($ukuran) {
             // Bisa ditambahkan filter berdasarkan ukuran jika diperlukan
         }
-        
+
         return $query->first();
     }
 
@@ -237,14 +237,14 @@ class MasterPricelistUangJalan extends Model
         $lastKode = static::where('cabang', $cabang)
                           ->orderBy('kode', 'desc')
                           ->first();
-        
+
         if ($lastKode) {
             $lastNumber = (int) substr($lastKode->kode, -3);
             $newNumber = $lastNumber + 1;
         } else {
             $newNumber = 1;
         }
-        
+
         return $cabang . str_pad($newNumber, 3, '0', STR_PAD_LEFT);
     }
 }

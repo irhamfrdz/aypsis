@@ -11,11 +11,11 @@
                     <p class="text-gray-600">Detail pricelist untuk rute {{ $pricelist->dari }} - {{ $pricelist->ke }}</p>
                 </div>
                 <div>
-                    <a href="{{ route('master-pricelist-uang-jalan.edit', $pricelist) }}" 
+                    <a href="{{ route('master-pricelist-uang-jalan.edit', $pricelist) }}"
                        class="btn btn-warning mr-2">
                         <i class="fas fa-edit mr-2"></i>Edit
                     </a>
-                    <a href="{{ route('master-pricelist-uang-jalan.index') }}" 
+                    <a href="{{ route('master-pricelist-uang-jalan.index') }}"
                        class="btn btn-secondary">
                         <i class="fas fa-arrow-left mr-2"></i>Kembali
                     </a>
@@ -38,7 +38,7 @@
                                     <h6 class="font-weight-bold text-primary border-bottom pb-2">Informasi Dasar</h6>
                                 </div>
                             </div>
-                            
+
                             <div class="row">
                                 <div class="col-md-3 mb-3">
                                     <label class="font-weight-bold text-muted">Kode:</label>
@@ -60,7 +60,7 @@
                                     <h6 class="font-weight-bold text-primary border-bottom pb-2">Informasi Rute</h6>
                                 </div>
                             </div>
-                            
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="font-weight-bold text-muted">Dari:</label>
@@ -78,7 +78,7 @@
                                     <h6 class="font-weight-bold text-primary border-bottom pb-2">Informasi Tarif</h6>
                                 </div>
                             </div>
-                            
+
                             <div class="row">
                                 <div class="col-md-6 mb-3">
                                     <label class="font-weight-bold text-muted">Uang Jalan 20ft:</label>
@@ -136,7 +136,7 @@
                                     <h6 class="font-weight-bold text-primary border-bottom pb-2">Informasi Tambahan</h6>
                                 </div>
                             </div>
-                            
+
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="font-weight-bold text-muted">Liter:</label>
@@ -223,7 +223,7 @@
                             @php
                                 $now = now();
                                 $isValid = true;
-                                
+
                                 if ($pricelist->valid_from && $now < $pricelist->valid_from) {
                                     $isValid = false;
                                     $validityText = 'Belum Berlaku';
@@ -236,27 +236,27 @@
                                     $validityText = 'Berlaku';
                                     $validityClass = 'success';
                                 }
-                                
+
                                 if ($pricelist->status !== 'active') {
                                     $isValid = false;
                                     $validityText = 'Non-Aktif';
                                     $validityClass = 'secondary';
                                 }
                             @endphp
-                            
+
                             <div class="text-center">
                                 <div class="alert alert-{{ $validityClass }} mb-3">
                                     <i class="fas fa-{{ $isValid ? 'check-circle' : 'times-circle' }} mr-2"></i>
                                     <strong>{{ $validityText }}</strong>
                                 </div>
-                                
+
                                 @if($pricelist->valid_from)
                                 <div class="mb-2">
                                     <small class="text-muted">Mulai Berlaku:</small><br>
                                     <strong>{{ $pricelist->valid_from->format('d F Y') }}</strong>
                                 </div>
                                 @endif
-                                
+
                                 @if($pricelist->valid_to)
                                 <div class="mb-0">
                                     <small class="text-muted">Berakhir:</small><br>
@@ -280,7 +280,7 @@
                                 <strong>{{ $pricelist->creator ? $pricelist->creator->name : 'System' }}</strong><br>
                                 <small class="text-muted">{{ $pricelist->created_at->format('d/m/Y H:i') }}</small>
                             </div>
-                            
+
                             @if($pricelist->updated_at != $pricelist->created_at)
                             <div class="mb-0">
                                 <small class="text-muted">Diubah Oleh:</small><br>
@@ -305,31 +305,31 @@
                         <div class="card-body">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
-                                    <a href="{{ route('master-pricelist-uang-jalan.edit', $pricelist) }}" 
+                                    <a href="{{ route('master-pricelist-uang-jalan.edit', $pricelist) }}"
                                        class="btn btn-warning mr-2">
                                         <i class="fas fa-edit mr-2"></i>Edit Data
                                     </a>
-                                    
+
                                     @if($pricelist->status === 'active')
-                                        <button class="btn btn-secondary mr-2" 
+                                        <button class="btn btn-secondary mr-2"
                                                 onclick="toggleStatus('{{ $pricelist->id }}', 'inactive')">
                                             <i class="fas fa-pause mr-2"></i>Nonaktifkan
                                         </button>
                                     @else
-                                        <button class="btn btn-success mr-2" 
+                                        <button class="btn btn-success mr-2"
                                                 onclick="toggleStatus('{{ $pricelist->id }}', 'active')">
                                             <i class="fas fa-play mr-2"></i>Aktifkan
                                         </button>
                                     @endif
-                                    
-                                    <button class="btn btn-danger" 
+
+                                    <button class="btn btn-danger"
                                             onclick="deleteData('{{ $pricelist->id }}')">
                                         <i class="fas fa-trash mr-2"></i>Hapus
                                     </button>
                                 </div>
-                                
+
                                 <div>
-                                    <a href="{{ route('master-pricelist-uang-jalan.index') }}" 
+                                    <a href="{{ route('master-pricelist-uang-jalan.index') }}"
                                        class="btn btn-secondary">
                                         <i class="fas fa-arrow-left mr-2"></i>Kembali ke Daftar
                                     </a>
@@ -377,25 +377,25 @@ function toggleStatus(id, status) {
         const form = document.createElement('form');
         form.method = 'POST';
         form.action = `/master-pricelist-uang-jalan/${id}`;
-        
+
         const csrfInput = document.createElement('input');
         csrfInput.type = 'hidden';
         csrfInput.name = '_token';
         csrfInput.value = '{{ csrf_token() }}';
         form.appendChild(csrfInput);
-        
+
         const methodInput = document.createElement('input');
         methodInput.type = 'hidden';
         methodInput.name = '_method';
         methodInput.value = 'PUT';
         form.appendChild(methodInput);
-        
+
         const statusInput = document.createElement('input');
         statusInput.type = 'hidden';
         statusInput.name = 'status';
         statusInput.value = status;
         form.appendChild(statusInput);
-        
+
         // Copy all current data (hidden inputs for all fields)
         const currentData = {!! json_encode($pricelist->toArray()) !!};
         Object.keys(currentData).forEach(key => {
@@ -407,7 +407,7 @@ function toggleStatus(id, status) {
                 form.appendChild(input);
             }
         });
-        
+
         document.body.appendChild(form);
         form.submit();
     }

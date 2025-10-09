@@ -60,8 +60,8 @@ class MasterPricelistUangJalanController extends Controller
                                                ->pluck('wilayah');
 
         return view('master-pricelist-uang-jalan.index', compact(
-            'pricelistData', 
-            'cabangList', 
+            'pricelistData',
+            'cabangList',
             'wilayahList'
         ));
     }
@@ -136,7 +136,7 @@ class MasterPricelistUangJalanController extends Controller
     public function show(MasterPricelistUangJalan $masterPricelistUangJalan)
     {
         $pricelist = $masterPricelistUangJalan->load(['creator', 'updater']);
-        
+
         return view('master-pricelist-uang-jalan.show', compact('pricelist'));
     }
 
@@ -146,7 +146,7 @@ class MasterPricelistUangJalanController extends Controller
     public function edit(MasterPricelistUangJalan $masterPricelistUangJalan)
     {
         $pricelist = $masterPricelistUangJalan;
-        
+
         // Get existing cabang untuk dropdown
         $cabangList = MasterPricelistUangJalan::select('cabang')
                                               ->distinct()
@@ -245,16 +245,16 @@ class MasterPricelistUangJalanController extends Controller
             DB::beginTransaction();
 
             $handle = fopen($request->file('csv_file')->getRealPath(), 'r');
-            
+
             // Skip header
             fgetcsv($handle, 1000, ';');
-            
+
             $imported = 0;
             $errors = [];
 
             while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
                 if (count($data) < 13) continue;
-                
+
                 try {
                     // Parse data from CSV
                     $pricelistData = [
@@ -350,14 +350,14 @@ class MasterPricelistUangJalanController extends Controller
     private function parseNumber($value)
     {
         if (empty($value)) return 0;
-        
+
         // Remove spaces dan currency symbols
         $cleaned = preg_replace('/[^\d,.]/', '', $value);
-        
+
         // Convert to standard decimal format
         $cleaned = str_replace('.', '', $cleaned); // Remove thousands separator
         $cleaned = str_replace(',', '.', $cleaned); // Convert comma to decimal point
-        
+
         return (float) $cleaned;
     }
 }

@@ -107,7 +107,7 @@ class PembayaranAktivitasLainnyaController extends Controller
 
             // Single-Entry: Update saldo bank (kurangi saldo karena pengeluaran)
             $bankCoa->decrement('saldo', $totalPembayaran);
-            
+
             Log::info('Pembayaran aktivitas lainnya berhasil dibuat', [
                 'nomor_pembayaran' => $nomorPembayaran,
                 'bank_account' => $bankCoa->nama_akun,
@@ -250,7 +250,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             // Single-Entry: Kembalikan saldo bank (tambah kembali karena pembayaran dibatalkan)
             if ($bankCoa) {
                 $bankCoa->increment('saldo', $totalPembayaran);
-                
+
                 Log::info('Pembayaran aktivitas lainnya berhasil dihapus - saldo dikembalikan', [
                     'nomor_pembayaran' => $nomorPembayaran,
                     'bank_account' => $bankCoa->nama_akun,
