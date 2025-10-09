@@ -40,59 +40,82 @@
 
             <!-- Search Section -->
             <div class="mb-6">
-                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                    <div class="flex-1 max-w-md">
-                        <div class="relative">
-                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <form method="GET" action="{{ route('pranota-kontainer-sewa.index') }}" id="searchForm">
+                    <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                        <div class="flex-1 max-w-md">
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <input type="text" 
+                                       name="search"
+                                       id="searchInput" 
+                                       value="{{ request('search') }}"
+                                       placeholder="Cari berdasarkan No. Pranota, Keterangan, No. Invoice Vendor... (Ctrl+K)" 
+                                       class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                       title="Tekan Ctrl+K untuk fokus pencarian, ESC untuk menghapus"
+                                       autocomplete="off">
+                            </div>
+                        </div>
+                        
+                        <!-- Filter by Status -->
+                        <div class="flex items-center space-x-2">
+                            <label for="statusFilter" class="text-sm font-medium text-gray-700">Status:</label>
+                            <select name="status"
+                                    id="statusFilter" 
+                                    class="rounded border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                    onchange="document.getElementById('searchForm').submit()">
+                                <option value="">Semua Status</option>
+                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Dibayar</option>
+                                <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Terlambat</option>
+                            </select>
+                        </div>
+
+                        <!-- Clear Filters & Search Button -->
+                        <div class="flex items-center space-x-2">
+                            @if(request('search') || request('status'))
+                                <a href="{{ route('pranota-kontainer-sewa.index') }}" 
+                                   class="text-sm text-red-600 hover:text-red-800 font-medium">
+                                    Clear Filters
+                                </a>
+                            @endif
+                            <button type="submit" 
+                                    class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
+                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                                 </svg>
-                            </div>
-                            <input type="text" 
-                                   id="searchInput" 
-                                   placeholder="Cari berdasarkan No. Pranota, No. Invoice Vendor... (Ctrl+K)" 
-                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
-                                   title="Tekan Ctrl+K untuk fokus pencarian, ESC untuk menghapus"
-                                   autocomplete="off"
-                                   onkeyup="searchPranota()">
+                                Search
+                            </button>
                         </div>
                     </div>
-                    
-                    <!-- Filter by Status -->
-                    <div class="flex items-center space-x-2">
-                        <label for="statusFilter" class="text-sm font-medium text-gray-700">Status:</label>
-                        <select id="statusFilter" 
-                                class="rounded border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
-                                onchange="filterByStatus()">
-                            <option value="">Semua Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="paid">Dibayar</option>
-                            <option value="overdue">Terlambat</option>
-                        </select>
-                    </div>
-
-                    <!-- Clear Filters -->
-                    <button type="button" 
-                            onclick="clearFilters()" 
-                            class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
-                        Clear Filters
-                    </button>
-                </div>
+                </form>
             </div>
 
             <!-- Search Results Info -->
-            <div id="searchInfo" class="mb-4 hidden">
-                <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
-                    <p class="text-sm text-blue-800">
-                        <span id="searchResultText"></span>
-                        <button type="button" 
-                                onclick="clearFilters()" 
-                                class="ml-2 text-blue-600 hover:text-blue-800 font-medium underline">
-                            Tampilkan semua
-                        </button>
-                    </p>
+            @if(request('search') || request('status'))
+                <div class="mb-4">
+                    <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+                        <p class="text-sm text-blue-800">
+                            <span class="font-medium">
+                                Menampilkan {{ $pranotaList->total() }} hasil
+                                @if(request('search'))
+                                    untuk pencarian "<strong>{{ request('search') }}</strong>"
+                                @endif
+                                @if(request('status'))
+                                    dengan status "<strong>{{ ucfirst(request('status')) }}</strong>"
+                                @endif
+                            </span>
+                            <a href="{{ route('pranota-kontainer-sewa.index') }}" 
+                               class="ml-2 text-blue-600 hover:text-blue-800 font-medium underline">
+                                Tampilkan semua
+                            </a>
+                        </p>
+                    </div>
                 </div>
-            </div>
+            @endif
 
             <!-- Bulk Actions -->
             <div class="flex justify-between items-center mb-4">
@@ -253,46 +276,42 @@
                             </td>
                         </tr>
                         @empty
-                        <tr id="emptyState">
+                        <tr>
                             <td colspan="11" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
-                                    <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                    </svg>
-                                    <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data pranota</h3>
-                                    <p class="text-gray-500 mb-4">Mulai dengan membuat pranota pertama Anda.</p>
-                                    <a href="{{ route('pranota-kontainer-sewa.create') }}"
-                                       class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
-                                        Buat Pranota Sekarang
-                                    </a>
+                                    @if(request('search') || request('status'))
+                                        <!-- No Search Results -->
+                                        <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada hasil ditemukan</h3>
+                                        <p class="text-gray-500 mb-4">Coba ubah kata kunci pencarian atau filter yang Anda gunakan.</p>
+                                        <a href="{{ route('pranota-kontainer-sewa.index') }}"
+                                           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
+                                            Hapus Filter
+                                        </a>
+                                    @else
+                                        <!-- No Data at All -->
+                                        <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                        </svg>
+                                        <h3 class="text-lg font-medium text-gray-900 mb-2">Belum ada data pranota</h3>
+                                        <p class="text-gray-500 mb-4">Mulai dengan membuat pranota pertama Anda.</p>
+                                        <a href="{{ route('pranota-kontainer-sewa.create') }}"
+                                           class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
+                                            Buat Pranota Sekarang
+                                        </a>
+                                    @endif
                                 </div>
                             </td>
                         </tr>
                         @endforelse
-                        
-                        <!-- No Search Results State (Hidden by default) -->
-                        <tr id="noSearchResults" style="display: none;">
-                            <td colspan="11" class="px-6 py-12 text-center no-results-message">
-                                <div class="flex flex-col items-center">
-                                    <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                                    </svg>
-                                    <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada hasil ditemukan</h3>
-                                    <p class="text-gray-500 mb-4">Coba ubah kata kunci pencarian atau filter yang Anda gunakan.</p>
-                                    <button type="button" 
-                                            onclick="clearFilters()"
-                                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
-                                        Hapus Filter
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
                     </tbody>
                 </table>
             </div>
 
             <!-- Pagination -->
-            @include('components.modern-pagination', ['paginator' => $pranotaList, 'routeName' => 'pranota.index'])
+            {{ $pranotaList->appends(request()->query())->links('components.modern-pagination', ['routeName' => 'pranota-kontainer-sewa.index']) }}
         </div>
     </div>
 </div>
@@ -401,166 +420,20 @@ function bulkDelete() {
 
 
 
-// Search and Filter Functions
-function searchPranota() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    filterTable();
+// Server-side Search Functions
+function performServerSearch() {
+    document.getElementById('searchForm').submit();
 }
 
-function filterByStatus() {
-    filterTable();
+// Debounced search function
+function debounceSearch() {
+    clearTimeout(window.searchTimeout);
+    window.searchTimeout = setTimeout(performServerSearch, 1000); // 1 second delay
 }
 
-function filterTable() {
-    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
-    const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
-    const tableRows = document.querySelectorAll('tbody tr');
-    const emptyState = document.getElementById('emptyState');
-    const noSearchResults = document.getElementById('noSearchResults');
-    let visibleCount = 0;
-    let totalVisible = 0;
-    let hasData = false;
-
-    tableRows.forEach(row => {
-        // Skip empty state and no search results rows
-        if (row.querySelector('td[colspan]')) {
-            return;
-        }
-
-        hasData = true;
-        const noPranota = row.children[2]?.textContent.toLowerCase() || '';
-        const noInvoiceVendor = row.children[6]?.textContent.toLowerCase() || '';
-        const statusCell = row.children[8]?.textContent.toLowerCase() || '';
-        
-        // Determine status from the status cell content
-        let rowStatus = '';
-        if (statusCell.includes('pending') || statusCell.includes('menunggu')) {
-            rowStatus = 'pending';
-        } else if (statusCell.includes('paid') || statusCell.includes('dibayar') || statusCell.includes('lunas')) {
-            rowStatus = 'paid';
-        } else if (statusCell.includes('overdue') || statusCell.includes('terlambat') || statusCell.includes('telat')) {
-            rowStatus = 'overdue';
-        }
-
-        // Check search criteria
-        const matchesSearch = searchTerm === '' || 
-                             noPranota.includes(searchTerm) || 
-                             noInvoiceVendor.includes(searchTerm);
-        
-        const matchesStatus = statusFilter === '' || rowStatus === statusFilter;
-
-        if (matchesSearch && matchesStatus) {
-            row.style.display = '';
-            visibleCount++;
-        } else {
-            row.style.display = 'none';
-        }
-        
-        totalVisible++;
-    });
-
-    // Handle empty states
-    if (hasData) {
-        // Hide original empty state if there's data
-        if (emptyState) {
-            emptyState.style.display = 'none';
-        }
-        
-        // Show/hide no search results
-        if (noSearchResults) {
-            if (visibleCount === 0 && (searchTerm || statusFilter)) {
-                noSearchResults.style.display = '';
-            } else {
-                noSearchResults.style.display = 'none';
-            }
-        }
-    } else {
-        // Show original empty state if no data at all
-        if (emptyState) {
-            emptyState.style.display = '';
-        }
-        if (noSearchResults) {
-            noSearchResults.style.display = 'none';
-        }
-    }
-
-    // Update search info
-    updateSearchInfo(searchTerm, statusFilter, visibleCount, totalVisible);
-    
-    // Update selection after filtering
-    updateSelection();
-}
-
-function updateSearchInfo(searchTerm, statusFilter, visibleCount, totalCount) {
-    const searchInfo = document.getElementById('searchInfo');
-    const searchResultText = document.getElementById('searchResultText');
-    
-    if (searchTerm || statusFilter) {
-        let filterText = '';
-        
-        if (searchTerm && statusFilter) {
-            const statusLabel = getStatusLabel(statusFilter);
-            filterText = `Menampilkan ${visibleCount} dari ${totalCount} pranota untuk pencarian "${searchTerm}" dengan status "${statusLabel}"`;
-        } else if (searchTerm) {
-            filterText = `Menampilkan ${visibleCount} dari ${totalCount} pranota untuk pencarian "${searchTerm}"`;
-        } else if (statusFilter) {
-            const statusLabel = getStatusLabel(statusFilter);
-            filterText = `Menampilkan ${visibleCount} dari ${totalCount} pranota dengan status "${statusLabel}"`;
-        }
-        
-        searchResultText.textContent = filterText;
-        searchInfo.classList.remove('hidden');
-    } else {
-        searchInfo.classList.add('hidden');
-    }
-}
-
-function getStatusLabel(status) {
-    const statusLabels = {
-        'pending': 'Pending',
-        'paid': 'Dibayar',
-        'overdue': 'Terlambat'
-    };
-    return statusLabels[status] || status;
-}
-
-function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('statusFilter').value = '';
-    
-    // Show all data rows, hide no search results
-    const tableRows = document.querySelectorAll('tbody tr');
-    const emptyState = document.getElementById('emptyState');
-    const noSearchResults = document.getElementById('noSearchResults');
-    let hasDataRows = false;
-
-    tableRows.forEach(row => {
-        if (!row.querySelector('td[colspan]')) {
-            row.style.display = '';
-            hasDataRows = true;
-        }
-    });
-    
-    // Handle empty states
-    if (noSearchResults) {
-        noSearchResults.style.display = 'none';
-    }
-    
-    if (emptyState) {
-        emptyState.style.display = hasDataRows ? 'none' : '';
-    }
-    
-    // Hide search info
-    document.getElementById('searchInfo').classList.add('hidden');
-    
-    // Update selection
-    updateSelection();
-}
-
-// Enhanced updateSelection function to work with filtered results
+// Enhanced updateSelection function for server-side pagination
 function updateSelection() {
     const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
-    const visibleCheckboxes = document.querySelectorAll('tbody tr:not([style*="display: none"]) .pranota-checkbox:checked');
     const selectedCount = checkboxes.length;
     const totalAmount = Array.from(checkboxes).reduce((sum, checkbox) => {
         return sum + parseFloat(checkbox.dataset.amount || 0);
@@ -582,18 +455,17 @@ function updateSelection() {
         }
     }
 
-    // Update select all checkboxes (only consider visible checkboxes)
-    const allVisibleCheckboxes = document.querySelectorAll('tbody tr:not([style*="display: none"]) .pranota-checkbox');
+    // Update select all checkboxes
+    const allCheckboxes = document.querySelectorAll('.pranota-checkbox');
     const selectAll = document.getElementById('selectAll');
     const selectAllHeader = document.getElementById('selectAllHeader');
-    const visibleSelectedCount = visibleCheckboxes.length;
 
-    if (visibleSelectedCount === 0) {
+    if (selectedCount === 0) {
         selectAll.indeterminate = false;
         selectAll.checked = false;
         selectAllHeader.indeterminate = false;
         selectAllHeader.checked = false;
-    } else if (visibleSelectedCount === allVisibleCheckboxes.length && allVisibleCheckboxes.length > 0) {
+    } else if (selectedCount === allCheckboxes.length) {
         selectAll.indeterminate = false;
         selectAll.checked = true;
         selectAllHeader.indeterminate = false;
@@ -606,11 +478,11 @@ function updateSelection() {
     }
 }
 
-// Enhanced toggleAllCheckboxes to work with filtered results
+// Enhanced toggleAllCheckboxes for server-side pagination
 function toggleAllCheckboxes() {
     const selectAll = document.getElementById('selectAll');
     const selectAllHeader = document.getElementById('selectAllHeader');
-    const visibleCheckboxes = document.querySelectorAll('tbody tr:not([style*="display: none"]) .pranota-checkbox');
+    const allCheckboxes = document.querySelectorAll('.pranota-checkbox');
 
     // Sync both select all checkboxes
     if (selectAll.checked) {
@@ -624,8 +496,8 @@ function toggleAllCheckboxes() {
         selectAll.checked = selectAllHeader.checked;
     }
 
-    // Only toggle visible checkboxes
-    visibleCheckboxes.forEach(checkbox => {
+    // Toggle all checkboxes on current page
+    allCheckboxes.forEach(checkbox => {
         checkbox.checked = selectAll.checked;
     });
 
@@ -660,13 +532,17 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Add search input event listener for real-time search
+    // Add search input event listener for debounced server search
     const searchInput = document.getElementById('searchInput');
     if (searchInput) {
-        searchInput.addEventListener('input', function() {
-            // Debounce search for better performance
-            clearTimeout(window.searchTimeout);
-            window.searchTimeout = setTimeout(searchPranota, 300);
+        searchInput.addEventListener('input', debounceSearch);
+        
+        // Submit on Enter key
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                performServerSearch();
+            }
         });
     }
 
