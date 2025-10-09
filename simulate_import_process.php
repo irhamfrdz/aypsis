@@ -66,13 +66,13 @@ echo "Proses data row by row:\n";
 
 while (($row = fgetcsv($handle, 1000, ',')) !== false && $rowCount < 10) {
     $rowCount++;
-    
+
     // Clean data seperti di controller
     $cleanData = [];
-    
+
     foreach ($headerMapping as $csvHeader => $dbField) {
         $value = getValue($row, $headers, $csvHeader);
-        
+
         if ($dbField === 'adjustment') {
             $cleanData[$dbField] = cleanDpeNumber($value);
             echo "Row $rowCount - Raw adjustment: '$value' -> Clean: {$cleanData[$dbField]}\n";
@@ -91,7 +91,7 @@ while (($row = fgetcsv($handle, 1000, ',')) !== false && $rowCount < 10) {
             }
         }
     }
-    
+
     echo "Row $rowCount data:\n";
     echo "  Kontainer: " . ($cleanData['nomor_kontainer'] ?? 'N/A') . "\n";
     echo "  Adjustment: " . ($cleanData['adjustment'] ?? 'N/A') . "\n";

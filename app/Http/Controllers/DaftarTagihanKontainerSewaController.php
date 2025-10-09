@@ -1891,7 +1891,7 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         // Preserve existing adjustment if already set, otherwise set to 0
         $adjustment = isset($data['adjustment']) ? $data['adjustment'] : 0;
-        
+
         return [
             'dpp' => $dpp,
             'adjustment' => $adjustment,

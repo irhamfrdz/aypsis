@@ -48,12 +48,12 @@ echo "📊 Memproses data CSV...\n";
 
 while (($row = fgetcsv($handle, 1000, ';')) !== false) {
     $rowCount++;
-    
+
     // Skip empty rows or invalid data
     if (count($row) < 20) {
         continue;
     }
-    
+
     // Extract data from CSV
     $data = [
         'group' => trim($row[0]),
@@ -78,16 +78,16 @@ while (($row = fgetcsv($handle, 1000, ';')) !== false) {
         'no_bank' => trim($row[19]),
         'tgl_bank' => trim($row[20]),
     ];
-    
+
     // Skip jika tidak ada nomor invoice vendor atau nomor bank kosong
     if (empty($data['no_invoice_vendor']) || empty($data['no_bank']) || $data['no_bank'] === '-' || empty($data['tgl_bank'])) {
         $skipCount++;
         continue;
     }
-    
+
     // Group by invoice vendor number
     $invoiceKey = $data['no_invoice_vendor'];
-    
+
     if (!isset($invoiceGroups[$invoiceKey])) {
         $invoiceGroups[$invoiceKey] = [
             'items' => [],
@@ -99,7 +99,7 @@ while (($row = fgetcsv($handle, 1000, ';')) !== false) {
             ]
         ];
     }
-    
+
     $invoiceGroups[$invoiceKey]['items'][] = $data;
     $processedCount++;
 }
@@ -122,15 +122,15 @@ $totalDppPreview = 0;
 foreach ($invoiceGroups as $invoiceNo => $group) {
     $itemCount = count($group['items']);
     $groupDpp = 0;
-    
+
     foreach ($group['items'] as $item) {
         $dppValue = str_replace([' ', '.', ','], '', $item['dpp']);
         $groupDpp += (float)$dppValue;
     }
-    
+
     $totalDppPreview += $groupDpp;
-    
-    printf("%-20s %-12s %-12s %-15s %s\n", 
+
+    printf("%-20s %-12s %-12s %-15s %s\n",
         substr($invoiceNo, 0, 19),
         $group['invoice_info']['no_bank'],
         $group['invoice_info']['tgl_bank'],
@@ -163,13 +163,13 @@ try {
     $createdPranota = 0;
     $createdTagihan = 0;
     $errors = [];
-    
+
     foreach ($invoiceGroups as $invoiceNo => $group) {
         try {
             // Parse tanggal bank
             $tglBank = $group['invoice_info']['tgl_bank'];
             $pranotaDate = null;
-            
+
             // Try different date formats
             try {
                 if (preg_match('/(\d{1,2})\s+(\w+)\s+(\d{2})/', $tglBank, $matches)) {
@@ -187,14 +187,14 @@ try {
                 // If date parsing fails, use current date
                 $pranotaDate = date('Y-m-d');
             }
-            
+
             // Calculate total for this group
             $totalDpp = 0;
             $totalAdjustment = 0;
             $totalPpn = 0;
             $totalPph = 0;
             $totalGrandTotal = 0;
-            
+
             foreach ($group['items'] as $item) {
                 $dpp = (float)str_replace([' ', '.', ','], '', $item['dpp']);
                 $adjustment = (float)str_replace([' ', '.', ',', '-'], '', $item['adjustment']);
@@ -204,14 +204,14 @@ try {
                 $ppn = (float)str_replace([' ', '.', ','], '', $item['ppn']);
                 $pph = (float)str_replace([' ', '.', ','], '', $item['pph']);
                 $grandTotal = (float)str_replace([' ', '.', ','], '', $item['grand_total']);
-                
+
                 $totalDpp += $dpp;
                 $totalAdjustment += $adjustment;
                 $totalPpn += $ppn;
                 $totalPph += $pph;
                 $totalGrandTotal += $grandTotal;
             }
-            
+
             // Create pranota
             $pranota = PranotaTagihanKontainerSewa::create([
                 'no_invoice' => 'PRN-ZONA-' . date('Ymd') . '-' . str_pad($createdPranota + 1, 4, '0', STR_PAD_LEFT),
@@ -224,17 +224,17 @@ try {
                 'jumlah_tagihan' => count($group['items']),
                 'due_date' => $pranotaDate,
             ]);
-            
+
             $createdPranota++;
-            
+
             // Create tagihan items for this pranota
             $tagihanIds = [];
-            
+
             foreach ($group['items'] as $item) {
                 // Convert dates
                 $tanggalAwal = null;
                 $tanggalAkhir = null;
-                
+
                 try {
                     if (preg_match('/(\d{1,2})\s+(\w+)\s+(\d{2})/', $item['awal'], $matches)) {
                         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
@@ -247,7 +247,7 @@ try {
                         $year = '20' . $matches[3];
                         $tanggalAwal = "$year-$month-$day";
                     }
-                    
+
                     if (preg_match('/(\d{1,2})\s+(\w+)\s+(\d{2})/', $item['akhir'], $matches)) {
                         $day = str_pad($matches[1], 2, '0', STR_PAD_LEFT);
                         $month = $monthMap[$matches[2]] ?? '01';
@@ -259,7 +259,7 @@ try {
                     $tanggalAwal = date('Y-m-d');
                     $tanggalAkhir = date('Y-m-d');
                 }
-                
+
                 // Calculate financial values
                 $dpp = (float)str_replace([' ', '.', ','], '', $item['dpp']);
                 $adjustment = 0;
@@ -272,7 +272,7 @@ try {
                 $ppn = (float)str_replace([' ', '.', ','], '', $item['ppn']);
                 $pph = (float)str_replace([' ', '.', ','], '', $item['pph']);
                 $grandTotal = (float)str_replace([' ', '.', ','], '', $item['grand_total']);
-                
+
                 $tagihan = DaftarTagihanKontainerSewa::create([
                     'vendor' => 'ZONA',
                     'nomor_kontainer' => $item['kontainer'],
@@ -292,37 +292,37 @@ try {
                     'status_pranota' => 'included',
                     'pranota_id' => $pranota->id,
                 ]);
-                
+
                 $tagihanIds[] = $tagihan->id;
                 $createdTagihan++;
             }
-            
+
             // Update pranota with tagihan IDs
             $pranota->update([
                 'tagihan_kontainer_sewa_ids' => $tagihanIds
             ]);
-            
+
             echo "✅ Pranota #{$pranota->id} - {$pranota->no_invoice} - " . count($group['items']) . " items - Rp " . number_format($totalGrandTotal, 0) . "\n";
-            
+
         } catch (Exception $e) {
             $errors[] = "Error creating pranota for invoice $invoiceNo: " . $e->getMessage();
             echo "❌ Error for invoice $invoiceNo: " . $e->getMessage() . "\n";
         }
     }
-    
+
     DB::commit();
-    
+
     echo "\n🎉 Import selesai!\n";
     echo "📊 Pranota created: $createdPranota\n";
     echo "📊 Tagihan created: $createdTagihan\n";
-    
+
     if (!empty($errors)) {
         echo "\n⚠️  Errors encountered:\n";
         foreach ($errors as $error) {
             echo "  - $error\n";
         }
     }
-    
+
 } catch (Exception $e) {
     DB::rollback();
     echo "\n❌ Import gagal: " . $e->getMessage() . "\n";

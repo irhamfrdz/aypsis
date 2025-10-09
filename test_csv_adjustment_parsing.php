@@ -39,14 +39,14 @@ $nonZeroAdjustments = [];
 echo "Sample data dengan adjustment:\n";
 while (($row = fgetcsv($handle, 1000, ',')) !== false && $rowCount < 20) {
     $rowCount++;
-    
+
     if (isset($row[$adjustmentIndex])) {
         $adjustmentValue = trim($row[$adjustmentIndex]);
-        
+
         if (!empty($adjustmentValue) && $adjustmentValue != '0' && $adjustmentValue != '0.00') {
             $adjustmentCount++;
             $nonZeroAdjustments[] = $adjustmentValue;
-            
+
             echo "Row $rowCount: ";
             echo "Container: " . ($row[1] ?? 'N/A') . " | ";
             echo "Adjustment: '$adjustmentValue' | ";

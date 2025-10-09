@@ -37,12 +37,12 @@ echo "📊 Analyzing CSV data...\n";
 
 while (($row = fgetcsv($handle, 1000, ';')) !== false) {
     $rowCount++;
-    
+
     // Skip header row or incomplete rows
     if ($rowCount === 1 || count($row) < 20) {
         continue;
     }
-    
+
     // Extract key fields
     $group = trim($row[0] ?? '');
     $kontainer = trim($row[1] ?? '');
@@ -52,20 +52,20 @@ while (($row = fgetcsv($handle, 1000, ';')) !== false) {
     $tglBank = trim($row[20] ?? '');
     $dpp = trim($row[9] ?? '');
     $adjustment = trim($row[12] ?? '');
-    
+
     if (empty($noInvoiceVendor)) {
         $skipCount++;
         continue;
     }
-    
+
     if (empty($noBank) || $noBank === '-') {
         $noBankCount++;
         continue;
     }
-    
+
     // Clean DPP value
     $dppValue = (float)str_replace([' ', '.', ','], '', $dpp);
-    
+
     // Clean adjustment value
     $adjustmentValue = 0;
     if ($adjustment !== '-' && !empty($adjustment)) {
@@ -74,7 +74,7 @@ while (($row = fgetcsv($handle, 1000, ';')) !== false) {
             $adjustmentValue = -$adjustmentValue;
         }
     }
-    
+
     if (!isset($invoiceGroups[$noInvoiceVendor])) {
         $invoiceGroups[$noInvoiceVendor] = [
             'items' => [],
@@ -88,17 +88,17 @@ while (($row = fgetcsv($handle, 1000, ';')) !== false) {
             ]
         ];
     }
-    
+
     $invoiceGroups[$noInvoiceVendor]['items'][] = [
         'group' => $group,
         'kontainer' => $kontainer,
         'dpp' => $dppValue,
         'adjustment' => $adjustmentValue
     ];
-    
+
     $invoiceGroups[$noInvoiceVendor]['total_dpp'] += $dppValue;
     $invoiceGroups[$noInvoiceVendor]['total_adjustment'] += $adjustmentValue;
-    
+
     $processedCount++;
 }
 
@@ -117,21 +117,21 @@ echo "📦 Invoice groups to create: " . count($invoiceGroups) . "\n\n";
 if (count($invoiceGroups) > 0) {
     echo "📋 PRANOTA PREVIEW:\n";
     echo "━" . str_repeat("━", 90) . "\n";
-    printf("%-20s %-12s %-12s %-8s %-12s %-15s\n", 
+    printf("%-20s %-12s %-12s %-8s %-12s %-15s\n",
         'Invoice No', 'Bank No', 'Bank Date', 'Items', 'Total DPP', 'Adjustment');
     echo "━" . str_repeat("━", 90) . "\n";
-    
+
     $grandTotalDpp = 0;
     $grandTotalAdjustment = 0;
-    
+
     foreach ($invoiceGroups as $invoiceNo => $group) {
         $itemCount = count($group['items']);
         $totalDpp = $group['total_dpp'];
         $totalAdjustment = $group['total_adjustment'];
-        
+
         $grandTotalDpp += $totalDpp;
         $grandTotalAdjustment += $totalAdjustment;
-        
+
         printf("%-20s %-12s %-12s %-8s %-12s %-15s\n",
             substr($invoiceNo, 0, 19),
             $group['invoice_info']['no_bank'],
@@ -141,7 +141,7 @@ if (count($invoiceGroups) > 0) {
             'Rp ' . number_format($totalAdjustment, 0)
         );
     }
-    
+
     echo "━" . str_repeat("━", 90) . "\n";
     printf("%-44s %-8s %-12s %-15s\n",
         'TOTAL',
@@ -150,28 +150,28 @@ if (count($invoiceGroups) > 0) {
         'Rp ' . number_format($grandTotalAdjustment, 0)
     );
     echo "━" . str_repeat("━", 90) . "\n\n";
-    
+
     // Show detailed breakdown for first few groups
     echo "📝 DETAILED BREAKDOWN (First 3 groups):\n";
     echo "━" . str_repeat("━", 70) . "\n";
-    
+
     $count = 0;
     foreach ($invoiceGroups as $invoiceNo => $group) {
         if ($count >= 3) break;
-        
+
         echo "\n🏷️  Invoice: $invoiceNo\n";
         echo "   📅 Invoice Date: {$group['invoice_info']['tgl_inv_vendor']}\n";
         echo "   🏦 Bank: {$group['invoice_info']['no_bank']} ({$group['invoice_info']['tgl_bank']})\n";
         echo "   📦 Items (" . count($group['items']) . "):\n";
-        
+
         foreach ($group['items'] as $item) {
-            echo "      • {$item['group']} - {$item['kontainer']} | DPP: " . number_format($item['dpp'], 0) . 
+            echo "      • {$item['group']} - {$item['kontainer']} | DPP: " . number_format($item['dpp'], 0) .
                  " | Adj: " . number_format($item['adjustment'], 0) . "\n";
         }
-        
+
         $count++;
     }
-    
+
     echo "\n💡 NEXT STEPS:\n";
     echo "━" . str_repeat("━", 50) . "\n";
     echo "1. Jalankan: php import_csv_to_pranota.php\n";

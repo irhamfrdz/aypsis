@@ -73,18 +73,18 @@ $rowCount = 0;
 
 while (($row = fgetcsv($handle, 1000, ',')) !== false && !$recordFound) {
     $rowCount++;
-    
+
     $adjustmentValue = getValue($row, $headers, 'Adjustment');
-    
+
     if (!empty($adjustmentValue) && $adjustmentValue != '0' && $adjustmentValue != '0.00') {
         $recordFound = true;
-        
+
         echo "=== TESTING RECORD $rowCount DENGAN ADJUSTMENT ===\n";
         echo "Raw adjustment value: '$adjustmentValue'\n";
-        
+
         $cleanedAdjustment = cleanDpeNumber($adjustmentValue);
         echo "Cleaned adjustment value: $cleanedAdjustment\n";
-        
+
         // Prepare test data
         $testData = [
             'vendor' => getValue($row, $headers, 'Vendor'),
@@ -103,26 +103,26 @@ while (($row = fgetcsv($handle, 1000, ',')) !== false && !$recordFound) {
             'pph' => 0,
             'grand_total' => 0,
         ];
-        
+
         echo "\nData yang akan disave:\n";
         foreach ($testData as $key => $value) {
             echo "  $key: " . ($value ?? 'NULL') . "\n";
         }
-        
+
         echo "\n=== TESTING DATABASE SAVE ===\n";
         try {
             // Try to save to database
             $model = new DaftarTagihanKontainerSewa();
             $model->fill($testData);
-            
+
             echo "Model filled successfully\n";
             echo "Model adjustment attribute: " . $model->adjustment . "\n";
             echo "Model attributes: " . json_encode($model->getAttributes()) . "\n\n";
-            
+
             // Try to save (comment this out if you don't want to actually save)
             // $model->save();
             // echo "✓ Model saved successfully with ID: " . $model->id . "\n";
-            
+
         } catch (Exception $e) {
             echo "✗ Error saving model: " . $e->getMessage() . "\n";
             echo "Error trace: " . $e->getTraceAsString() . "\n";
@@ -142,7 +142,7 @@ try {
     $stmt = $pdo->prepare("DESCRIBE daftar_tagihan_kontainer_sewa");
     $stmt->execute();
     $columns = $stmt->fetchAll(PDO::FETCH_ASSOC);
-    
+
     foreach ($columns as $column) {
         if ($column['Field'] === 'adjustment') {
             echo "Adjustment column info:\n";

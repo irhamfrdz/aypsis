@@ -24,20 +24,20 @@ echo "📊 Membaca dan mengelompokkan data berdasarkan nomor invoice...\n\n";
 
 while (($row = fgetcsv($handle, 1000, ';')) !== false) {
     $rowCount++;
-    
+
     if ($rowCount === 1 || count($row) < 20) continue;
-    
+
     $noInvoiceVendor = trim($row[17] ?? '');
     $noBank = trim($row[19] ?? '');
     $tglBank = trim($row[20] ?? '');
     $kontainer = trim($row[1] ?? '');
     $group = trim($row[0] ?? '');
-    
+
     // Skip jika tidak lengkap
     if (empty($noInvoiceVendor) || empty($noBank) || $noBank === '-') {
         continue;
     }
-    
+
     // Kelompokkan berdasarkan nomor invoice vendor
     if (!isset($invoiceGroups[$noInvoiceVendor])) {
         $invoiceGroups[$noInvoiceVendor] = [
@@ -47,7 +47,7 @@ while (($row = fgetcsv($handle, 1000, ';')) !== false) {
             'containers' => []
         ];
     }
-    
+
     // Tambahkan container ke grup invoice yang sama
     $invoiceGroups[$noInvoiceVendor]['containers'][] = [
         'group' => $group,
@@ -71,14 +71,14 @@ foreach ($invoiceGroups as $invoice => $group) {
     $containerCount = count($group['containers']);
     $totalPranota++;
     $totalContainers += $containerCount;
-    
-    printf("%-25s %-15s %-12s %d containers\n", 
+
+    printf("%-25s %-15s %-12s %d containers\n",
         substr($invoice, 0, 24),
         $group['no_bank'],
         $group['tgl_bank'],
         $containerCount
     );
-    
+
     // Show first few containers for this invoice
     if ($containerCount <= 3) {
         foreach ($group['containers'] as $container) {
@@ -107,18 +107,18 @@ echo "━" . str_repeat("━", 60) . "\n";
 $count = 0;
 foreach ($invoiceGroups as $invoice => $group) {
     if ($count >= 3) break;
-    
+
     echo "\n📝 PRANOTA #" . ($count + 1) . "\n";
     echo "   📋 Invoice Vendor: $invoice\n";
     echo "   🏦 Bank: {$group['no_bank']} (Tanggal: {$group['tgl_bank']})\n";
     echo "   📦 Containers (" . count($group['containers']) . "):\n";
-    
+
     foreach ($group['containers'] as $container) {
         echo "      • {$container['group']} - {$container['container']}\n";
     }
-    
+
     echo "   ✅ Hasil: 1 Pranota dengan " . count($group['containers']) . " tagihan\n";
-    
+
     $count++;
 }
 

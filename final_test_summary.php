@@ -31,7 +31,7 @@ $adjustmentRows = 0;
 while (($row = fgetcsv($handle, 1000, ',')) !== false) {
     $totalRows++;
     $adjustmentValue = isset($row[$adjustmentIndex]) ? trim($row[$adjustmentIndex]) : '';
-    
+
     if (!empty($adjustmentValue) && $adjustmentValue != '0' && $adjustmentValue != '0.00') {
         $adjustmentRows++;
     }

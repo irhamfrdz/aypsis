@@ -33,48 +33,48 @@ function cleanDpeNumber($value) {
 
 function cleanDpeStatus($status) {
     $status = strtolower(trim($status));
-    
+
     if (in_array($status, ['active', 'aktif', 'ongoing', 'berlangsung'])) {
         return 'ongoing';
     }
-    
+
     if (in_array($status, ['complete', 'selesai', 'finished', 'done'])) {
         return 'complete';
     }
-    
+
     if (in_array($status, ['pending', 'menunggu', 'waiting'])) {
         return 'pending';
     }
-    
+
     // Default to ongoing if unrecognized
     return 'ongoing';
 }
 
 function cleanVendor($vendor) {
     $vendor = strtoupper(trim($vendor));
-    
+
     // Map common variations
     if (in_array($vendor, ['DPE', 'PT DPE', 'PT.DPE', 'PT. DPE'])) {
         return 'DPE';
     }
-    
+
     if (in_array($vendor, ['ZONA', 'PT ZONA', 'PT.ZONA', 'PT. ZONA'])) {
         return 'ZONA';
     }
-    
+
     return $vendor;
 }
 
 function cleanSize($size) {
     $size = trim($size);
-    
+
     // Extract numeric part
     preg_match('/(\d+)/', $size, $matches);
-    
+
     if (!empty($matches[1])) {
         return $matches[1];
     }
-    
+
     // Fallback
     return $size;
 }
@@ -111,14 +111,14 @@ $rowCount = 0;
 
 while (($row = fgetcsv($handle, 1000, ',')) !== false && !$recordFound) {
     $rowCount++;
-    
+
     $adjustmentValue = getValue($row, $headers, 'Adjustment');
-    
+
     if (!empty($adjustmentValue) && $adjustmentValue != '0' && $adjustmentValue != '0.00') {
         $recordFound = true;
-        
+
         echo "=== PROCESSING RECORD $rowCount ===\n\n";
-        
+
         // Simulasi cleanDpeFormatData
         echo "Step 1: Raw data extraction\n";
         $vendor = cleanVendor(getValue($row, $headers, 'Vendor'));
@@ -130,7 +130,7 @@ while (($row = fgetcsv($handle, 1000, ',')) !== false && !$recordFound) {
         $periode = getValue($row, $headers, 'Periode') ?: 1;
         $group = getValue($row, $headers, 'Group');
         $status = cleanDpeStatus(getValue($row, $headers, 'Status') ?: 'ongoing');
-        
+
         echo "  Vendor: $vendor\n";
         echo "  Container: $nomor_kontainer\n";
         echo "  Size: $size\n";
@@ -139,37 +139,37 @@ while (($row = fgetcsv($handle, 1000, ',')) !== false && !$recordFound) {
         echo "  Periode: $periode\n";
         echo "  Group: $group\n";
         echo "  Status: $status\n";
-        
+
         echo "\nStep 2: Financial data processing\n";
-        
+
         // DPP value
         $dppValue = getValue($row, $headers, 'DPP');
         $dpp = !empty($dppValue) ? cleanDpeNumber($dppValue) : 0;
         echo "  DPP raw: '$dppValue' -> clean: $dpp\n";
-        
+
         // Adjustment value - KEY POINT HERE
         $adjustmentRaw = trim(getValue($row, $headers, 'Adjustment') ?: getValue($row, $headers, 'adjustment'));
         $adjustment = !empty($adjustmentRaw) ? cleanDpeNumber($adjustmentRaw) : 0;
         echo "  Adjustment raw: '$adjustmentRaw' -> clean: $adjustment\n";
-        
+
         // Adjusted DPP
         $adjustedDpp = $dpp + $adjustment;
         echo "  Adjusted DPP: $dpp + $adjustment = $adjustedDpp\n";
-        
+
         // PPN calculation
         $ppnValue = getValue($row, $headers, 'PPN') ?: getValue($row, $headers, 'ppn');
         $ppn = !empty($ppnValue) ? cleanDpeNumber($ppnValue) : round($adjustedDpp * 0.11, 2);
         echo "  PPN: " . (empty($ppnValue) ? "calculated 11% = $ppn" : "from CSV = $ppn") . "\n";
-        
+
         // PPH calculation
         $pphValue = getValue($row, $headers, 'PPH') ?: getValue($row, $headers, 'pph');
         $pph = !empty($pphValue) ? cleanDpeNumber($pphValue) : round($adjustedDpp * 0.02, 2);
         echo "  PPH: " . (empty($pphValue) ? "calculated 2% = $pph" : "from CSV = $pph") . "\n";
-        
+
         // Grand total
         $grandTotal = $adjustedDpp + $ppn - $pph;
         echo "  Grand Total: $adjustedDpp + $ppn - $pph = $grandTotal\n";
-        
+
         echo "\nStep 3: Final cleaned data\n";
         $cleaned = [
             'vendor' => $vendor,
@@ -187,7 +187,7 @@ while (($row = fgetcsv($handle, 1000, ',')) !== false && !$recordFound) {
             'pph' => $pph,
             'grand_total' => $grandTotal,
         ];
-        
+
         foreach ($cleaned as $key => $value) {
             if ($key === 'adjustment') {
                 echo "  ★ $key: $value ← KEY FIELD\n";
@@ -195,7 +195,7 @@ while (($row = fgetcsv($handle, 1000, ',')) !== false && !$recordFound) {
                 echo "  $key: $value\n";
             }
         }
-        
+
         echo "\n=== ANALYSIS ===\n";
         if ($adjustment != 0) {
             echo "✓ Adjustment properly processed: $adjustment\n";

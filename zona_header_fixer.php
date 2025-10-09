@@ -26,7 +26,7 @@ if (!$lines) {
 // Header mapping dari lowercase ke format yang diharapkan controller
 $headerMapping = [
     'vendor' => 'Vendor',
-    'nomor_kontainer' => 'Nomor Kontainer', 
+    'nomor_kontainer' => 'Nomor Kontainer',
     'size' => 'Size',
     'tanggal_awal' => 'Tanggal Awal',
     'tanggal_akhir' => 'Tanggal Akhir',
@@ -65,7 +65,7 @@ for ($i = 1; $i < count($lines); $i++) {
     $row = str_getcsv($lines[$i], ';');
     fputcsv($outputHandle, $row, ';');
     $totalProcessed++;
-    
+
     if ($totalProcessed <= 5) {
         echo "Row $totalProcessed: " . implode(' ; ', $row) . "\n";
     }

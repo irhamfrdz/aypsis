@@ -181,7 +181,7 @@ class PembayaranPranotaKontainerController extends Controller
                 $pranota->update(['status' => 'paid']);
             }
 
-            // Catat transaksi menggunakan double-entry
+            // Catat transaksi ke akun bank yang dipilih
             $totalAkhir = ($totalPembayaran + $penyesuaian) - $dpAmount;
             $tanggalTransaksi = \Carbon\Carbon::createFromFormat('d/m/Y', $request->tanggal_kas)->format('Y-m-d');
 
@@ -190,14 +190,15 @@ class PembayaranPranotaKontainerController extends Controller
                 $keterangan .= " | " . $request->keterangan;
             }
 
-            // Catat transaksi double-entry: Biaya Sewa Kontainer (Debit) dan Bank (Kredit)
-            $this->coaTransactionService->recordDoubleEntry(
-                ['nama_akun' => 'Biaya Sewa Kontainer', 'jumlah' => $totalAkhir],
-                ['nama_akun' => $request->bank, 'jumlah' => $totalAkhir],
-                $tanggalTransaksi,
-                $request->nomor_pembayaran,
-                'Pembayaran Pranota Kontainer',
-                $keterangan
+            // Catat transaksi ke akun bank (kredit - mengurangi saldo bank)
+            $this->coaTransactionService->recordTransaction(
+                $request->bank,              // nama_akun
+                0,                          // debit (tidak ada)
+                $totalAkhir,                // kredit (mengurangi saldo bank)
+                $tanggalTransaksi,          // tanggal_transaksi
+                $request->nomor_pembayaran, // nomor_referensi
+                'Pembayaran Pranota Kontainer', // jenis_transaksi
+                $keterangan                 // keterangan
             );
 
             // Update nomor terakhir after successful payment creation

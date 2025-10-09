@@ -37,10 +37,10 @@ echo "Mengkonversi format...\n";
 
 while (($row = fgetcsv($handle, 1000, ';')) !== false) {
     $totalProcessed++;
-    
+
     // Tulis ke file output dengan delimiter comma
     fputcsv($outputHandle, $row, ',');
-    
+
     if ($totalProcessed <= 5) {
         echo "Row $totalProcessed: " . implode(' , ', $row) . "\n";
     }

@@ -31,16 +31,16 @@ try {
         'pph' => 2000,
         'grand_total' => 109000,
     ];
-    
+
     echo "Data yang akan disave:\n";
     foreach ($testData as $key => $value) {
         echo "  $key: $value\n";
     }
-    
+
     $record = DaftarTagihanKontainerSewa::create($testData);
     echo "\n✓ Record berhasil dibuat dengan ID: " . $record->id . "\n";
     echo "Adjustment tersimpan: " . $record->adjustment . "\n\n";
-    
+
     // Query untuk memverifikasi
     $saved = DaftarTagihanKontainerSewa::find($record->id);
     echo "Verifikasi dari database:\n";
@@ -48,11 +48,11 @@ try {
     echo "  Container: " . $saved->nomor_kontainer . "\n";
     echo "  Adjustment: " . $saved->adjustment . "\n";
     echo "  DPP: " . $saved->dpp . "\n";
-    
+
     // Cleanup
     $saved->delete();
     echo "\nTest record deleted\n";
-    
+
 } catch (Exception $e) {
     echo "\n✗ Error: " . $e->getMessage() . "\n";
     echo "Trace: " . $e->getTraceAsString() . "\n";
@@ -66,18 +66,18 @@ try {
         ->orderBy('created_at', 'desc')
         ->limit(10)
         ->get();
-    
+
     echo "Recent records found: " . $recentRecords->count() . "\n\n";
-    
+
     foreach ($recentRecords as $record) {
         echo "ID: {$record->id} | Container: {$record->nomor_kontainer} | ";
         echo "Adjustment: {$record->adjustment} | DPP: {$record->dpp} | ";
         echo "Created: {$record->created_at}\n";
     }
-    
+
     $adjustmentRecords = $recentRecords->where('adjustment', '!=', 0);
     echo "\nRecords dengan adjustment bukan 0: " . $adjustmentRecords->count() . "\n";
-    
+
 } catch (Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
@@ -89,30 +89,30 @@ $csvFile = 'Zona_SIAP_IMPORT_FINAL_TARIF_BENAR_COMMA.csv';
 if (file_exists($csvFile)) {
     $handle = fopen($csvFile, 'r');
     $headers = fgetcsv($handle, 1000, ',');
-    
+
     $adjustmentIndex = array_search('Adjustment', $headers);
     if ($adjustmentIndex !== false) {
         echo "Adjustment column found at index: $adjustmentIndex\n";
-        
+
         $rowCount = 0;
         $nonZeroCount = 0;
-        
+
         while (($row = fgetcsv($handle, 1000, ',')) !== false && $rowCount < 20) {
             $rowCount++;
             $adjustmentValue = isset($row[$adjustmentIndex]) ? trim($row[$adjustmentIndex]) : '';
-            
+
             if (!empty($adjustmentValue) && $adjustmentValue != '0' && $adjustmentValue != '0.00') {
                 $nonZeroCount++;
                 echo "Row $rowCount: Container {$row[1]}, Adjustment: '$adjustmentValue'\n";
             }
         }
-        
+
         echo "\nTotal rows checked: $rowCount\n";
         echo "Rows with non-zero adjustment: $nonZeroCount\n";
     } else {
         echo "Adjustment column not found in CSV\n";
     }
-    
+
     fclose($handle);
 } else {
     echo "CSV file not found\n";
