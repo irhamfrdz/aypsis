@@ -91,6 +91,9 @@ class PembayaranAktivitasLainnyaController extends Controller
                 ? $request->total_pembayaran
                 : (float) str_replace(['.', ','], ['', '.'], $request->total_pembayaran);
 
+            // Start database transaction
+            DB::beginTransaction();
+
             // Simpan pembayaran
             $pembayaran = PembayaranAktivitasLainnya::create([
                 'nomor_pembayaran' => $nomorPembayaran,
@@ -102,10 +105,25 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'created_by' => Auth::id(),
             ]);
 
+            // Single-Entry: Update saldo bank (kurangi saldo karena pengeluaran)
+            $bankCoa->decrement('saldo', $totalPembayaran);
+            
+            Log::info('Pembayaran aktivitas lainnya berhasil dibuat', [
+                'nomor_pembayaran' => $nomorPembayaran,
+                'bank_account' => $bankCoa->nama_akun,
+                'saldo_before' => $bankCoa->saldo + $totalPembayaran,
+                'saldo_after' => $bankCoa->saldo,
+                'amount' => $totalPembayaran,
+                'is_dp' => $request->has('is_dp')
+            ]);
+
+            DB::commit();
+
             return redirect()->route('pembayaran-aktivitas-lainnya.index')
-                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: ' . $pembayaran->nomor_pembayaran);
+                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: ' . $pembayaran->nomor_pembayaran . '. Saldo ' . $bankCoa->nama_akun . ' telah dikurangi sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.'));
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Failed to create pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
             return redirect()->back()
                 ->with('error', 'Gagal membuat pembayaran: ' . $e->getMessage())
@@ -160,14 +178,29 @@ class PembayaranAktivitasLainnyaController extends Controller
         ]);
 
         try {
-            // Get bank info
-            $bankCoa = Coa::find($request->pilih_bank);
+            // Get old and new bank info
+            $oldBankCoa = Coa::find($pembayaranAktivitasLainnya->pilih_bank);
+            $newBankCoa = Coa::find($request->pilih_bank);
 
             // Clean total pembayaran
             $totalPembayaran = is_numeric($request->total_pembayaran)
                 ? $request->total_pembayaran
                 : (float) str_replace(['.', ','], ['', '.'], $request->total_pembayaran);
 
+            $oldTotalPembayaran = (float) $pembayaranAktivitasLainnya->total_pembayaran;
+
+            // Start database transaction
+            DB::beginTransaction();
+
+            // Reverse old bank transaction (tambah kembali saldo lama)
+            if ($oldBankCoa) {
+                $oldBankCoa->increment('saldo', $oldTotalPembayaran);
+            }
+
+            // Apply new bank transaction (kurangi saldo baru)
+            $newBankCoa->decrement('saldo', $totalPembayaran);
+
+            // Update pembayaran record
             $pembayaranAktivitasLainnya->update([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
@@ -177,10 +210,22 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'is_dp' => $request->has('is_dp') ? true : false,
             ]);
 
+            Log::info('Pembayaran aktivitas lainnya berhasil diupdate', [
+                'nomor_pembayaran' => $request->nomor_pembayaran,
+                'old_bank' => $oldBankCoa->nama_akun ?? 'N/A',
+                'new_bank' => $newBankCoa->nama_akun,
+                'old_amount' => $oldTotalPembayaran,
+                'new_amount' => $totalPembayaran,
+                'bank_changed' => $oldBankCoa->id !== $newBankCoa->id
+            ]);
+
+            DB::commit();
+
             return redirect()->route('pembayaran-aktivitas-lainnya.index')
-                ->with('success', 'Pembayaran berhasil diupdate');
+                ->with('success', 'Pembayaran berhasil diupdate. Saldo bank telah disesuaikan.');
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Failed to update pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
             return redirect()->back()
                 ->with('error', 'Gagal mengupdate pembayaran: ' . $e->getMessage())
@@ -194,11 +239,36 @@ class PembayaranAktivitasLainnyaController extends Controller
     public function destroy(PembayaranAktivitasLainnya $pembayaranAktivitasLainnya)
     {
         try {
+            // Get bank info for reversal
+            $bankCoa = Coa::find($pembayaranAktivitasLainnya->pilih_bank);
+            $totalPembayaran = (float) $pembayaranAktivitasLainnya->total_pembayaran;
+            $nomorPembayaran = $pembayaranAktivitasLainnya->nomor_pembayaran;
+
+            // Start database transaction
+            DB::beginTransaction();
+
+            // Single-Entry: Kembalikan saldo bank (tambah kembali karena pembayaran dibatalkan)
+            if ($bankCoa) {
+                $bankCoa->increment('saldo', $totalPembayaran);
+                
+                Log::info('Pembayaran aktivitas lainnya berhasil dihapus - saldo dikembalikan', [
+                    'nomor_pembayaran' => $nomorPembayaran,
+                    'bank_account' => $bankCoa->nama_akun,
+                    'amount_restored' => $totalPembayaran,
+                    'saldo_after' => $bankCoa->saldo
+                ]);
+            }
+
+            // Delete the payment record
             $pembayaranAktivitasLainnya->delete();
+
+            DB::commit();
+
             return redirect()->route('pembayaran-aktivitas-lainnya.index')
-                ->with('success', 'Pembayaran berhasil dihapus');
+                ->with('success', 'Pembayaran berhasil dihapus dan saldo ' . ($bankCoa->nama_akun ?? 'bank') . ' telah dikembalikan sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.'));
 
         } catch (\Exception $e) {
+            DB::rollBack();
             Log::error('Failed to delete pembayaran aktivitas lainnya', ['error' => $e->getMessage()]);
             return redirect()->back()
                 ->with('error', 'Gagal menghapus pembayaran: ' . $e->getMessage());
