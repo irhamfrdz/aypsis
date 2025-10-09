@@ -38,6 +38,62 @@
                 </div>
             @endif
 
+            <!-- Search Section -->
+            <div class="mb-6">
+                <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex-1 max-w-md">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="searchInput" 
+                                   placeholder="Cari berdasarkan No. Pranota, No. Invoice Vendor... (Ctrl+K)" 
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                                   title="Tekan Ctrl+K untuk fokus pencarian, ESC untuk menghapus"
+                                   autocomplete="off"
+                                   onkeyup="searchPranota()">
+                        </div>
+                    </div>
+                    
+                    <!-- Filter by Status -->
+                    <div class="flex items-center space-x-2">
+                        <label for="statusFilter" class="text-sm font-medium text-gray-700">Status:</label>
+                        <select id="statusFilter" 
+                                class="rounded border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
+                                onchange="filterByStatus()">
+                            <option value="">Semua Status</option>
+                            <option value="pending">Pending</option>
+                            <option value="paid">Dibayar</option>
+                            <option value="overdue">Terlambat</option>
+                        </select>
+                    </div>
+
+                    <!-- Clear Filters -->
+                    <button type="button" 
+                            onclick="clearFilters()" 
+                            class="text-sm text-indigo-600 hover:text-indigo-800 font-medium">
+                        Clear Filters
+                    </button>
+                </div>
+            </div>
+
+            <!-- Search Results Info -->
+            <div id="searchInfo" class="mb-4 hidden">
+                <div class="bg-blue-50 border border-blue-200 rounded-md p-3">
+                    <p class="text-sm text-blue-800">
+                        <span id="searchResultText"></span>
+                        <button type="button" 
+                                onclick="clearFilters()" 
+                                class="ml-2 text-blue-600 hover:text-blue-800 font-medium underline">
+                            Tampilkan semua
+                        </button>
+                    </p>
+                </div>
+            </div>
+
             <!-- Bulk Actions -->
             <div class="flex justify-between items-center mb-4">
                 <div class="flex items-center space-x-4">
@@ -197,7 +253,7 @@
                             </td>
                         </tr>
                         @empty
-                        <tr>
+                        <tr id="emptyState">
                             <td colspan="11" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,6 +269,24 @@
                             </td>
                         </tr>
                         @endforelse
+                        
+                        <!-- No Search Results State (Hidden by default) -->
+                        <tr id="noSearchResults" style="display: none;">
+                            <td colspan="11" class="px-6 py-12 text-center no-results-message">
+                                <div class="flex flex-col items-center">
+                                    <svg class="h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada hasil ditemukan</h3>
+                                    <p class="text-gray-500 mb-4">Coba ubah kata kunci pencarian atau filter yang Anda gunakan.</p>
+                                    <button type="button" 
+                                            onclick="clearFilters()"
+                                            class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
+                                        Hapus Filter
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
             </div>
@@ -327,6 +401,237 @@ function bulkDelete() {
 
 
 
+// Search and Filter Functions
+function searchPranota() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    filterTable();
+}
+
+function filterByStatus() {
+    filterTable();
+}
+
+function filterTable() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+    const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
+    const tableRows = document.querySelectorAll('tbody tr');
+    const emptyState = document.getElementById('emptyState');
+    const noSearchResults = document.getElementById('noSearchResults');
+    let visibleCount = 0;
+    let totalVisible = 0;
+    let hasData = false;
+
+    tableRows.forEach(row => {
+        // Skip empty state and no search results rows
+        if (row.querySelector('td[colspan]')) {
+            return;
+        }
+
+        hasData = true;
+        const noPranota = row.children[2]?.textContent.toLowerCase() || '';
+        const noInvoiceVendor = row.children[6]?.textContent.toLowerCase() || '';
+        const statusCell = row.children[8]?.textContent.toLowerCase() || '';
+        
+        // Determine status from the status cell content
+        let rowStatus = '';
+        if (statusCell.includes('pending') || statusCell.includes('menunggu')) {
+            rowStatus = 'pending';
+        } else if (statusCell.includes('paid') || statusCell.includes('dibayar') || statusCell.includes('lunas')) {
+            rowStatus = 'paid';
+        } else if (statusCell.includes('overdue') || statusCell.includes('terlambat') || statusCell.includes('telat')) {
+            rowStatus = 'overdue';
+        }
+
+        // Check search criteria
+        const matchesSearch = searchTerm === '' || 
+                             noPranota.includes(searchTerm) || 
+                             noInvoiceVendor.includes(searchTerm);
+        
+        const matchesStatus = statusFilter === '' || rowStatus === statusFilter;
+
+        if (matchesSearch && matchesStatus) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+        
+        totalVisible++;
+    });
+
+    // Handle empty states
+    if (hasData) {
+        // Hide original empty state if there's data
+        if (emptyState) {
+            emptyState.style.display = 'none';
+        }
+        
+        // Show/hide no search results
+        if (noSearchResults) {
+            if (visibleCount === 0 && (searchTerm || statusFilter)) {
+                noSearchResults.style.display = '';
+            } else {
+                noSearchResults.style.display = 'none';
+            }
+        }
+    } else {
+        // Show original empty state if no data at all
+        if (emptyState) {
+            emptyState.style.display = '';
+        }
+        if (noSearchResults) {
+            noSearchResults.style.display = 'none';
+        }
+    }
+
+    // Update search info
+    updateSearchInfo(searchTerm, statusFilter, visibleCount, totalVisible);
+    
+    // Update selection after filtering
+    updateSelection();
+}
+
+function updateSearchInfo(searchTerm, statusFilter, visibleCount, totalCount) {
+    const searchInfo = document.getElementById('searchInfo');
+    const searchResultText = document.getElementById('searchResultText');
+    
+    if (searchTerm || statusFilter) {
+        let filterText = '';
+        
+        if (searchTerm && statusFilter) {
+            const statusLabel = getStatusLabel(statusFilter);
+            filterText = `Menampilkan ${visibleCount} dari ${totalCount} pranota untuk pencarian "${searchTerm}" dengan status "${statusLabel}"`;
+        } else if (searchTerm) {
+            filterText = `Menampilkan ${visibleCount} dari ${totalCount} pranota untuk pencarian "${searchTerm}"`;
+        } else if (statusFilter) {
+            const statusLabel = getStatusLabel(statusFilter);
+            filterText = `Menampilkan ${visibleCount} dari ${totalCount} pranota dengan status "${statusLabel}"`;
+        }
+        
+        searchResultText.textContent = filterText;
+        searchInfo.classList.remove('hidden');
+    } else {
+        searchInfo.classList.add('hidden');
+    }
+}
+
+function getStatusLabel(status) {
+    const statusLabels = {
+        'pending': 'Pending',
+        'paid': 'Dibayar',
+        'overdue': 'Terlambat'
+    };
+    return statusLabels[status] || status;
+}
+
+function clearFilters() {
+    document.getElementById('searchInput').value = '';
+    document.getElementById('statusFilter').value = '';
+    
+    // Show all data rows, hide no search results
+    const tableRows = document.querySelectorAll('tbody tr');
+    const emptyState = document.getElementById('emptyState');
+    const noSearchResults = document.getElementById('noSearchResults');
+    let hasDataRows = false;
+
+    tableRows.forEach(row => {
+        if (!row.querySelector('td[colspan]')) {
+            row.style.display = '';
+            hasDataRows = true;
+        }
+    });
+    
+    // Handle empty states
+    if (noSearchResults) {
+        noSearchResults.style.display = 'none';
+    }
+    
+    if (emptyState) {
+        emptyState.style.display = hasDataRows ? 'none' : '';
+    }
+    
+    // Hide search info
+    document.getElementById('searchInfo').classList.add('hidden');
+    
+    // Update selection
+    updateSelection();
+}
+
+// Enhanced updateSelection function to work with filtered results
+function updateSelection() {
+    const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
+    const visibleCheckboxes = document.querySelectorAll('tbody tr:not([style*="display: none"]) .pranota-checkbox:checked');
+    const selectedCount = checkboxes.length;
+    const totalAmount = Array.from(checkboxes).reduce((sum, checkbox) => {
+        return sum + parseFloat(checkbox.dataset.amount || 0);
+    }, 0);
+
+    // Update count display
+    document.getElementById('selectedCount').textContent =
+        selectedCount > 0 ?
+        `${selectedCount} pranota dipilih (Total: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)})` :
+        '0 pranota dipilih';
+
+    // Show/hide bulk actions container
+    const bulkActionsContainer = document.getElementById('bulkActionsContainer');
+    if (bulkActionsContainer) {
+        if (selectedCount > 0) {
+            bulkActionsContainer.classList.remove('hidden');
+        } else {
+            bulkActionsContainer.classList.add('hidden');
+        }
+    }
+
+    // Update select all checkboxes (only consider visible checkboxes)
+    const allVisibleCheckboxes = document.querySelectorAll('tbody tr:not([style*="display: none"]) .pranota-checkbox');
+    const selectAll = document.getElementById('selectAll');
+    const selectAllHeader = document.getElementById('selectAllHeader');
+    const visibleSelectedCount = visibleCheckboxes.length;
+
+    if (visibleSelectedCount === 0) {
+        selectAll.indeterminate = false;
+        selectAll.checked = false;
+        selectAllHeader.indeterminate = false;
+        selectAllHeader.checked = false;
+    } else if (visibleSelectedCount === allVisibleCheckboxes.length && allVisibleCheckboxes.length > 0) {
+        selectAll.indeterminate = false;
+        selectAll.checked = true;
+        selectAllHeader.indeterminate = false;
+        selectAllHeader.checked = true;
+    } else {
+        selectAll.indeterminate = true;
+        selectAll.checked = false;
+        selectAllHeader.indeterminate = true;
+        selectAllHeader.checked = false;
+    }
+}
+
+// Enhanced toggleAllCheckboxes to work with filtered results
+function toggleAllCheckboxes() {
+    const selectAll = document.getElementById('selectAll');
+    const selectAllHeader = document.getElementById('selectAllHeader');
+    const visibleCheckboxes = document.querySelectorAll('tbody tr:not([style*="display: none"]) .pranota-checkbox');
+
+    // Sync both select all checkboxes
+    if (selectAll.checked) {
+        selectAllHeader.checked = true;
+    } else {
+        selectAllHeader.checked = false;
+    }
+
+    // If triggered from header checkbox, sync with sidebar checkbox
+    if (event.target.id === 'selectAllHeader') {
+        selectAll.checked = selectAllHeader.checked;
+    }
+
+    // Only toggle visible checkboxes
+    visibleCheckboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+
+    updateSelection();
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     // Add change listeners to existing checkboxes
@@ -336,6 +641,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial update
     updateSelection();
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', function(e) {
+        // Ctrl+K or Ctrl+F to focus search
+        if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'f')) {
+            e.preventDefault();
+            document.getElementById('searchInput').focus();
+        }
+        
+        // Escape to clear search
+        if (e.key === 'Escape') {
+            const searchInput = document.getElementById('searchInput');
+            if (document.activeElement === searchInput) {
+                clearFilters();
+                searchInput.blur();
+            }
+        }
+    });
+
+    // Add search input event listener for real-time search
+    const searchInput = document.getElementById('searchInput');
+    if (searchInput) {
+        searchInput.addEventListener('input', function() {
+            // Debounce search for better performance
+            clearTimeout(window.searchTimeout);
+            window.searchTimeout = setTimeout(searchPranota, 300);
+        });
+    }
 
     // Sticky Header Enhancement
     const tableContainer = document.querySelector('.table-container');
@@ -422,6 +755,90 @@ document.addEventListener('DOMContentLoaded', function() {
 /* Custom table body font size */
 .table-body-text td {
     font-size: 10px !important;
+}
+
+/* Search and Filter Styles */
+#searchInput:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+#statusFilter:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Search Results Animation */
+#searchInfo {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Highlight search results */
+.search-highlight {
+    background-color: rgba(255, 235, 59, 0.3);
+    padding: 2px 4px;
+    border-radius: 2px;
+}
+
+/* Filter button styles */
+.filter-active {
+    background-color: rgb(59 130 246) !important;
+    color: white !important;
+}
+
+/* No results state */
+.no-results-message {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* Search input focus animation */
+#searchInput {
+    transition: all 0.3s ease;
+}
+
+#searchInput:focus {
+    transform: scale(1.02);
+}
+
+/* Table row fade animation */
+tbody tr {
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+tbody tr[style*="display: none"] {
+    opacity: 0;
+    transform: scale(0.98);
+}
+
+/* Status filter animation */
+#statusFilter {
+    transition: all 0.2s ease;
+}
+
+/* Responsive search section */
+@media (max-width: 768px) {
+    .search-section {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #searchInput {
+        font-size: 16px; /* Prevents zoom on iOS */
+    }
 }
 
 /* Enhanced Pagination Styles */
