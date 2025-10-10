@@ -16,6 +16,7 @@ class PembayaranAktivitasLainnya extends Model
         'tanggal_pembayaran',
         'total_pembayaran',
         'pilih_bank',
+        'jenis_transaksi',
         'aktivitas_pembayaran',
         'kegiatan',
         'plat_nomor',

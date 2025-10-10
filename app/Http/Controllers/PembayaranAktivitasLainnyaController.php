@@ -72,6 +72,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'nomor_pembayaran' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'pilih_bank' => 'required|exists:akun_coa,id',
+            'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
             'total_pembayaran' => 'required|numeric|min:0',
             'is_dp' => 'nullable|boolean'
@@ -109,6 +110,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
+                'jenis_transaksi' => $request->jenis_transaksi,
                 'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
                 'kegiatan' => $request->kegiatan,
                 'plat_nomor' => $request->plat_nomor,
@@ -186,6 +188,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'nomor_pembayaran' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'pilih_bank' => 'required|exists:akun_coa,id',
+            'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
             'total_pembayaran' => 'required|numeric|min:0',
             'is_dp' => 'nullable|boolean'
@@ -228,6 +231,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
+                'jenis_transaksi' => $request->jenis_transaksi,
                 'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
                 'kegiatan' => $request->kegiatan,
                 'plat_nomor' => $request->plat_nomor,

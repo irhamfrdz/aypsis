@@ -138,6 +138,31 @@
                         </div>
                     </div>
 
+                    <!-- Dropdown Debit/Kredit -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="jenis_transaksi" class="block text-xs font-medium text-gray-700 mb-1">
+                                Jenis Transaksi <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="jenis_transaksi"
+                                    name="jenis_transaksi"
+                                    required>
+                                <option value="">Pilih Jenis Transaksi</option>
+                                <option value="debit" {{ old('jenis_transaksi') == 'debit' ? 'selected' : '' }}>
+                                    <i class="fas fa-plus-circle text-green-600"></i> Debit (Pemasukan)
+                                </option>
+                                <option value="kredit" {{ old('jenis_transaksi') == 'kredit' ? 'selected' : '' }}>
+                                    <i class="fas fa-minus-circle text-red-600"></i> Kredit (Pengeluaran)
+                                </option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Pilih jenis transaksi untuk pencatatan akuntansi</p>
+                        </div>
+                        <div>
+                            <!-- Space for future fields if needed -->
+                        </div>
+                    </div>
+
                     <div class="mb-4">
                         <label for="aktivitas_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
                             Aktivitas Pembayaran <span class="text-red-500">*</span>

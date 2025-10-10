@@ -78,6 +78,34 @@
                             </div>
                         </div>
 
+                        <!-- Dropdown Jenis Transaksi -->
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="jenis_transaksi">Jenis Transaksi <span class="text-danger">*</span></label>
+                                    <select class="form-control"
+                                            id="jenis_transaksi"
+                                            name="jenis_transaksi"
+                                            {{ $pembayaranAktivitasLainnya->status === 'paid' ? 'disabled' : '' }}
+                                            required>
+                                        <option value="">Pilih Jenis Transaksi</option>
+                                        <option value="debit" {{ old('jenis_transaksi', $pembayaranAktivitasLainnya->jenis_transaksi) == 'debit' ? 'selected' : '' }}>
+                                            Debit (Pemasukan)
+                                        </option>
+                                        <option value="kredit" {{ old('jenis_transaksi', $pembayaranAktivitasLainnya->jenis_transaksi) == 'kredit' ? 'selected' : '' }}>
+                                            Kredit (Pengeluaran)
+                                        </option>
+                                    </select>
+                                    @if($pembayaranAktivitasLainnya->status === 'paid')
+                                        <input type="hidden" name="jenis_transaksi" value="{{ $pembayaranAktivitasLainnya->jenis_transaksi }}">
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <!-- Space for future fields if needed -->
+                            </div>
+                        </div>
+
                         <div class="form-group">
                             <label for="referensi_pembayaran">Referensi Pembayaran</label>
                             <input type="text"
