@@ -385,15 +385,18 @@ function updateSupirDisplay() {
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="text-gray-500 sm:text-sm">Rp</span>
                         </div>
-                        <input type="number"
+                        <input type="text"
+                               name="jumlah_display[${supirId}]"
+                               id="jumlah_display_${supirId}"
+                               value="${formatNumber(getOldJumlah(supirId))}"
+                               placeholder="0"
+                               required
+                               class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               oninput="formatCurrency(this, ${supirId})">
+                        <input type="hidden"
                                name="jumlah[${supirId}]"
                                id="jumlah_${supirId}"
-                               value="${getOldJumlah(supirId)}"
-                               placeholder="0"
-                               min="0"
-                               step="1000"
-                               required
-                               class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                               value="${getOldJumlah(supirId)}">
                     </div>
                 `;
                 jumlahInputsContainer.appendChild(inputDiv);
@@ -461,6 +464,29 @@ function getOldJumlah(supirId) {
     @endif
 }
 
+// Function untuk format number dengan pemisah ribuan
+function formatNumber(num) {
+    if (!num || num === '') return '';
+    return new Intl.NumberFormat('id-ID').format(num);
+}
+
+// Function untuk format currency input
+function formatCurrency(input, supirId) {
+    // Ambil nilai tanpa format
+    let value = input.value.replace(/[^\d]/g, '');
+    
+    // Update hidden input dengan nilai asli
+    const hiddenInput = document.getElementById(`jumlah_${supirId}`);
+    hiddenInput.value = value;
+    
+    // Format tampilan dengan pemisah ribuan
+    if (value) {
+        input.value = formatNumber(value);
+    } else {
+        input.value = '';
+    }
+}
+
 // Handle jenis transaksi selection
 document.getElementById('jenis_transaksi').addEventListener('change', function(e) {
     const jenisTransaksi = e.target.value;
@@ -486,7 +512,19 @@ document.getElementById('kas_bank').addEventListener('change', function(e) {
         // Re-generate nomor pembayaran with new COA prefix
         generateNomor();
     }
-});// Auto generate nomor on page load if field is empty
+});
+
+// Handle paste event untuk input jumlah
+document.addEventListener('paste', function(e) {
+    if (e.target.name && e.target.name.includes('jumlah_display')) {
+        setTimeout(function() {
+            const supirId = e.target.id.replace('jumlah_display_', '');
+            formatCurrency(e.target, supirId);
+        }, 10);
+    }
+});
+
+// Auto generate nomor on page load if field is empty
 document.addEventListener('DOMContentLoaded', function() {
     const nomorField = document.getElementById('nomor_pembayaran');
     if (!nomorField.value.trim()) {
