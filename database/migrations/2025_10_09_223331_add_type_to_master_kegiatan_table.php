@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('master_kegiatans', function (Blueprint $table) {
-            $table->string('type', 50)->nullable()->after('nama_kegiatan')->comment('Tipe/jenis kegiatan');
+            // Check if column doesn't exist before adding
+            if (!Schema::hasColumn('master_kegiatans', 'type')) {
+                $table->string('type', 50)->nullable()->after('nama_kegiatan')->comment('Tipe/jenis kegiatan');
+            }
         });
     }
 
