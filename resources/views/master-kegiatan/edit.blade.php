@@ -45,8 +45,12 @@
                 </div>
 
                 <div>
-                    <label for="type" class="block text-sm font-medium text-gray-700">Type</label>
-                    <input type="text" name="type" id="type" value="{{ old('type', $item->type) }}" class="{{ $inputClasses }}" maxlength="50" placeholder="Contoh: Operasional, Maintenance, dll">
+                    <label for="type" class="block text-sm font-medium text-gray-700">Type <span class="text-red-500">*</span></label>
+                    <select name="type" id="type" class="{{ $inputClasses }}" required>
+                        <option value="">-- Pilih Type --</option>
+                        <option value="kegiatan memo supir" {{ old('type', $item->type) == 'kegiatan memo supir' ? 'selected' : '' }}>Kegiatan Memo Supir</option>
+                        <option value="uang muka" {{ old('type', $item->type) == 'uang muka' ? 'selected' : '' }}>Uang Muka</option>
+                    </select>
                     @error('type')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
