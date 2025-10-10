@@ -139,6 +139,8 @@ class PembayaranDpObController extends Controller
     {
         // Debug: Log request data
         logger('Pembayaran DP OB Store Request:', $request->all());
+        logger('Jumlah data:', $request->input('jumlah'));
+        logger('Supir data:', $request->input('supir'));
 
         // Validasi input
         $validated = $request->validate([
@@ -155,6 +157,8 @@ class PembayaranDpObController extends Controller
 
         // Debug: Log validated data
         logger('Validated data:', $validated);
+        logger('Validated jumlah type: ' . gettype($validated['jumlah']));
+        logger('Validated jumlah content:', $validated['jumlah']);
 
         try {
             DB::beginTransaction();
@@ -164,10 +168,13 @@ class PembayaranDpObController extends Controller
             $jumlahPerSupirData = [];
             
             foreach ($validated['supir'] as $supirId) {
-                $jumlah = $validated['jumlah'][$supirId] ?? 0;
+                $jumlah = floatval($validated['jumlah'][$supirId] ?? 0);
                 $jumlahPerSupirData[$supirId] = $jumlah;
                 $totalPembayaran += $jumlah;
             }
+            
+            // Pastikan totalPembayaran adalah float
+            $totalPembayaran = floatval($totalPembayaran);
 
             // Simpan pembayaran DP OB
             $pembayaran = PembayaranDpOb::create([
