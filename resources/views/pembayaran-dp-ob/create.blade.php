@@ -238,23 +238,6 @@
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                                 <p class="mt-1 text-sm text-gray-500">Jumlah DP yang akan diterima oleh setiap supir yang dipilih</p>
-
-                                <!-- Total Calculation Display -->
-                                <div id="total-calculation" class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md hidden">
-                                    <div class="flex items-center justify-between">
-                                        <div>
-                                            <span class="text-sm text-blue-800">
-                                                <span id="jumlah-supir">0</span> supir ×
-                                                <span class="font-medium">Rp <span id="dp-per-supir">0</span></span>
-                                            </span>
-                                        </div>
-                                        <div>
-                                            <span class="text-sm font-semibold text-blue-900">
-                                                Total: Rp <span id="total-pembayaran">0</span>
-                                            </span>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
 
@@ -400,9 +383,6 @@ function updateSupirDisplay() {
             }
         });
     }
-
-    // Update total calculation
-    updateTotalCalculation();
 }
 
 function removeSupir(supirId) {
@@ -454,28 +434,7 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Function to update total calculation display
-function updateTotalCalculation() {
-    const jumlahSupir = selectedSupir.length;
-    const dpPerSupir = parseInt(document.getElementById('jumlah').value) || 0;
-    const totalPembayaran = jumlahSupir * dpPerSupir;
-
-    const calculationDiv = document.getElementById('total-calculation');
-    const jumlahSupirSpan = document.getElementById('jumlah-supir');
-    const dpPerSupirSpan = document.getElementById('dp-per-supir');
-    const totalPembayaranSpan = document.getElementById('total-pembayaran');
-
-    if (jumlahSupir > 0 && dpPerSupir > 0) {
-        calculationDiv.classList.remove('hidden');
-        jumlahSupirSpan.textContent = jumlahSupir;
-        dpPerSupirSpan.textContent = new Intl.NumberFormat('id-ID').format(dpPerSupir);
-        totalPembayaranSpan.textContent = new Intl.NumberFormat('id-ID').format(totalPembayaran);
-    } else {
-        calculationDiv.classList.add('hidden');
-    }
-}
-
-// Update total calculation when jumlah input changes
+// Update format display when jumlah input changes
 document.getElementById('jumlah').addEventListener('input', function(e) {
     let value = e.target.value.replace(/[^\d]/g, '');
 
@@ -485,9 +444,6 @@ document.getElementById('jumlah').addEventListener('input', function(e) {
         // Update placeholder to show formatted value
         e.target.setAttribute('title', 'Rp ' + formatted);
     }
-
-    // Update total calculation
-    updateTotalCalculation();
 });
 
 // Handle jenis transaksi selection
