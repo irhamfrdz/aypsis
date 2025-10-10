@@ -140,7 +140,23 @@ class PembayaranDpObController extends Controller
         // Debug: Log request data
         logger('Pembayaran DP OB Store Request:', $request->all());
         logger('Jumlah data:', $request->input('jumlah'));
+        logger('Jumlah display data:', $request->input('jumlah_display'));
         logger('Supir data:', $request->input('supir'));
+
+        // Pre-process jumlah data to ensure it's clean
+        $jumlahData = $request->input('jumlah', []);
+        if (!is_array($jumlahData)) {
+            return back()->withErrors(['jumlah' => 'Data jumlah harus berupa array'])->withInput();
+        }
+
+        // Clean jumlah data - remove any non-numeric values
+        $cleanJumlahData = [];
+        foreach ($jumlahData as $supirId => $jumlah) {
+            $cleanJumlahData[$supirId] = is_numeric($jumlah) ? floatval($jumlah) : 0;
+        }
+
+        // Replace jumlah in request
+        $request->merge(['jumlah' => $cleanJumlahData]);
 
         // Validasi input
         $validated = $request->validate([

@@ -477,7 +477,9 @@ function formatCurrency(input, supirId) {
     
     // Update hidden input dengan nilai asli
     const hiddenInput = document.getElementById(`jumlah_${supirId}`);
-    hiddenInput.value = value;
+    if (hiddenInput) {
+        hiddenInput.value = value || '0';
+    }
     
     // Format tampilan dengan pemisah ribuan
     if (value) {
@@ -521,6 +523,34 @@ document.addEventListener('paste', function(e) {
             const supirId = e.target.id.replace('jumlah_display_', '');
             formatCurrency(e.target, supirId);
         }, 10);
+    }
+});
+
+// Validate form before submit
+document.querySelector('form').addEventListener('submit', function(e) {
+    // Pastikan semua hidden input jumlah terisi
+    const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
+    let hasEmptyAmount = false;
+    
+    hiddenInputs.forEach(function(input) {
+        if (!input.value || input.value === '0' || input.value === '') {
+            hasEmptyAmount = true;
+        }
+    });
+    
+    if (hasEmptyAmount) {
+        e.preventDefault();
+        alert('Harap isi semua jumlah DP untuk setiap supir yang dipilih');
+        return false;
+    }
+    
+    // Debug: log form data before submit
+    console.log('Form data before submit:');
+    const formData = new FormData(this);
+    for (let [key, value] of formData.entries()) {
+        if (key.startsWith('jumlah[')) {
+            console.log(key + ': ' + value);
+        }
     }
 });
 
