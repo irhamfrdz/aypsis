@@ -252,7 +252,7 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- DP Row -->
                                         <div id="dp-reduction-row" class="items-center justify-between p-2 bg-white rounded border hidden">
                                             <div class="flex items-center justify-between">
@@ -265,7 +265,7 @@
                                                 </span>
                                             </div>
                                         </div>
-                                        
+
                                         <!-- Selisih Breakdown -->
                                         <div id="selisih-breakdown" class="hidden">
                                             <div class="text-xs text-gray-600 mb-2 font-medium">Breakdown Selisih:</div>
@@ -504,7 +504,7 @@ function updateSupirDisplay() {
                 const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
                 let dpAmount = 0;
                 let dpInfo = '';
-                
+
                 if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
                     dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
                     dpInfo = `
@@ -614,18 +614,18 @@ function autoSelectSupirFromDp(dpId) {
             const displayInput = document.getElementById(`jumlah_display_${supirId}`);
             const hiddenInput = document.getElementById(`jumlah_${supirId}`);
             const dpAmount = dpJumlahPerSupir[supirId] || 0;
-            
+
             if (displayInput && hiddenInput && dpAmount > 0) {
                 hiddenInput.value = dpAmount;
                 displayInput.value = formatNumber(dpAmount);
-                
+
                 // Update selisih display for this supir
                 updateSelisihDisplay(supirId, dpAmount);
-                
+
                 console.log(`Auto-filled supir ${supirId} dengan jumlah: Rp ${formatNumber(dpAmount)}`);
             }
         });
-        
+
         // Update calculation after auto-fill
         updateTotalCalculation();
     }, 100);
@@ -660,23 +660,23 @@ function formatNumber(num) {
 function formatCurrency(input, supirId) {
     // Ambil nilai tanpa format
     let value = input.value.replace(/[^\d]/g, '');
-    
+
     // Update hidden input dengan nilai asli
     const hiddenInput = document.getElementById(`jumlah_${supirId}`);
     if (hiddenInput) {
         hiddenInput.value = value || '0';
     }
-    
+
     // Format tampilan dengan pemisah ribuan
     if (value) {
         input.value = formatNumber(value);
     } else {
         input.value = '';
     }
-    
+
     // Calculate and display selisih untuk supir ini
     updateSelisihDisplay(supirId, parseInt(value) || 0);
-    
+
     // Update total calculation
     updateTotalCalculation();
 }
@@ -685,18 +685,18 @@ function formatCurrency(input, supirId) {
 function updateSelisihDisplay(supirId, realisasiAmount) {
     const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
     const selisihDiv = document.getElementById(`selisih_${supirId}`);
-    
+
     if (!selisihDiv) return;
-    
+
     let dpAmount = 0;
     if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
         dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
     }
-    
+
     if (dpAmount > 0 && realisasiAmount > 0) {
         const selisih = realisasiAmount - dpAmount;
         selisihDiv.classList.remove('hidden');
-        
+
         if (selisih > 0) {
             // Realisasi > DP, kurang bayar
             selisihDiv.innerHTML = `
@@ -747,19 +747,19 @@ function updateSelisihDisplay(supirId, realisasiAmount) {
 // Function to update total calculation display
 function updateTotalCalculation() {
     const jumlahSupir = selectedSupir.length;
-    
+
     // Calculate subtotal from individual inputs
     let subtotalPembayaran = 0;
     let breakdownItems = [];
     let totalKurangBayar = 0;
     let totalSisaDP = 0;
     let totalBayarPenuh = 0;
-    
+
     selectedSupir.forEach(function(supirId) {
         const hiddenInput = document.getElementById(`jumlah_${supirId}`);
         const realisasiAmount = parseInt(hiddenInput.value) || 0;
         subtotalPembayaran += realisasiAmount;
-        
+
         // Get supir info for breakdown
         const checkbox = document.querySelector(`input[value="${supirId}"]`);
         let supirName = 'Unknown';
@@ -769,14 +769,14 @@ function updateTotalCalculation() {
             const nik = label.querySelector('.text-gray-500').textContent.replace('NIK: ', '');
             supirName = `${namaLengkap}`;
         }
-        
+
         // Calculate individual breakdown
         const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
         let dpAmount = 0;
         if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
             dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
         }
-        
+
         if (dpAmount > 0 && realisasiAmount > 0) {
             const selisih = realisasiAmount - dpAmount;
             if (selisih > 0) {
@@ -834,16 +834,16 @@ function updateTotalCalculation() {
         calculationDiv.classList.remove('hidden');
         jumlahSupirSpan.textContent = jumlahSupir;
         subtotalPembayaranSpan.textContent = new Intl.NumberFormat('id-ID').format(subtotalPembayaran);
-        
+
         // Show breakdown if there are items
         if (breakdownItems.length > 0) {
             selisihBreakdownDiv.classList.remove('hidden');
             breakdownItemsDiv.innerHTML = '';
-            
+
             breakdownItems.forEach(function(item) {
                 const itemDiv = document.createElement('div');
                 itemDiv.className = 'flex items-center justify-between px-2 py-1 rounded';
-                
+
                 let iconClass, colorClass, statusText;
                 switch(item.type) {
                     case 'kurang':
@@ -867,7 +867,7 @@ function updateTotalCalculation() {
                         statusText = 'Bayar Penuh';
                         break;
                 }
-                
+
                 itemDiv.className += ` ${colorClass}`;
                 itemDiv.innerHTML = `
                     <span class="text-xs">
@@ -899,7 +899,7 @@ function updateTotalCalculation() {
         // Change color based on final total
         const finalTotalElement = totalFinalPembayaranSpan.parentElement.parentElement;
         const finalTotalLeftSpan = finalTotalElement.querySelector('span');
-        
+
         if (finalTotal < 0) {
             finalTotalElement.className = 'flex items-center justify-between border-t border-red-300 pt-2 bg-red-100 rounded px-2 py-1';
             totalFinalPembayaranSpan.className = 'text-lg font-bold text-red-900';
@@ -980,19 +980,19 @@ document.addEventListener('DOMContentLoaded', function() {
         // Pastikan semua hidden input jumlah terisi
         const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
         let hasEmptyAmount = false;
-        
+
         hiddenInputs.forEach(function(input) {
             if (!input.value || input.value === '0' || input.value === '') {
                 hasEmptyAmount = true;
             }
         });
-        
+
         if (hasEmptyAmount) {
             e.preventDefault();
             alert('Harap isi semua jumlah pembayaran untuk setiap supir yang dipilih');
             return false;
         }
-        
+
         // Debug: log form data before submit
         console.log('Form data before submit:');
         const formData = new FormData(this);

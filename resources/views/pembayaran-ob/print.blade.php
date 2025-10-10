@@ -281,11 +281,17 @@
             </thead>
             <tbody>
                 @forelse($supirList as $index => $supir)
+                @php
+                    $jumlahSupir = 0;
+                    if (is_array($pembayaran->jumlah_per_supir)) {
+                        $jumlahSupir = $pembayaran->jumlah_per_supir[$supir->id] ?? 0;
+                    }
+                @endphp
                 <tr>
                     <td class="text-center">{{ $index + 1 }}</td>
                     <td>{{ $supir->nik }}</td>
                     <td>{{ $supir->nama_lengkap }}</td>
-                    <td class="text-right">{{ number_format($pembayaran->jumlah_per_supir ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($jumlahSupir, 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
@@ -293,11 +299,17 @@
                 </tr>
                 @endforelse
                 <!-- Total Row -->
+                @php
+                    $totalFromArray = 0;
+                    if (is_array($pembayaran->jumlah_per_supir)) {
+                        $totalFromArray = array_sum($pembayaran->jumlah_per_supir);
+                    }
+                @endphp
                 <tr style="background-color: #f8f9fa; font-weight: bold;">
                     <td class="text-center">TOTAL</td>
                     <td></td>
                     <td class="text-center">{{ count($supirList) }} Supir</td>
-                    <td class="text-right">{{ number_format($pembayaran->total_pembayaran ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">Rp {{ number_format($totalFromArray > 0 ? $totalFromArray : ($pembayaran->total_pembayaran ?? 0), 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>
@@ -322,13 +334,23 @@
                 <span>Rp {{ number_format(($pembayaran->subtotal_pembayaran ?? 0) - ($dpData->total_pembayaran ?? 0), 2, ',', '.') }}</span>
             </div>
             @endif
+            @if(is_array($pembayaran->jumlah_per_supir) && count($pembayaran->jumlah_per_supir) > 0)
             <div class="summary-item">
-                <span class="summary-label">Pembayaran per Supir:</span>
-                <span>Rp {{ number_format($pembayaran->jumlah_per_supir ?? 0, 2, ',', '.') }}</span>
+                <span class="summary-label">Rata-rata per Supir:</span>
+                <span>Rp {{ number_format(array_sum($pembayaran->jumlah_per_supir) / count($pembayaran->jumlah_per_supir), 0, ',', '.') }}</span>
             </div>
+            @endif
+            @php
+                $finalTotal = 0;
+                if (is_array($pembayaran->jumlah_per_supir)) {
+                    $finalTotal = array_sum($pembayaran->jumlah_per_supir);
+                } else {
+                    $finalTotal = $pembayaran->total_pembayaran ?? 0;
+                }
+            @endphp
             <div class="summary-item total-amount" style="margin-top: 15px;">
                 <span class="summary-label">TOTAL AMOUNT:</span>
-                <span>Rp {{ number_format((float)($pembayaran->total_pembayaran ?? 0), 2, ',', '.') }}</span>
+                <span>Rp {{ number_format($finalTotal, 0, ',', '.') }}</span>
             </div>
         </div>
 
