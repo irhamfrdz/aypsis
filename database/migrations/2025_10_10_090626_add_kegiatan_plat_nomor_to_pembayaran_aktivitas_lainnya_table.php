@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
-            //
+            if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'kegiatan')) {
+                $table->string('kegiatan')->nullable()->after('aktivitas_pembayaran');
+            }
+            if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'plat_nomor')) {
+                $table->string('plat_nomor')->nullable()->after('kegiatan');
+            }
         });
     }
 
@@ -22,7 +27,12 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
-            //
+            if (Schema::hasColumn('pembayaran_aktivitas_lainnya', 'plat_nomor')) {
+                $table->dropColumn('plat_nomor');
+            }
+            if (Schema::hasColumn('pembayaran_aktivitas_lainnya', 'kegiatan')) {
+                $table->dropColumn('kegiatan');
+            }
         });
     }
 };

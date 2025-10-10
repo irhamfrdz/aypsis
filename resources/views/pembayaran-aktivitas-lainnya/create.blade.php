@@ -155,6 +155,32 @@
                         </small>
                     </div>
 
+                    <!-- Row for Kegiatan and Plat Nomor -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="kegiatan" class="block text-xs font-medium text-gray-700 mb-1">
+                                Kegiatan
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                   id="kegiatan"
+                                   name="kegiatan"
+                                   placeholder="Masukkan jenis kegiatan"
+                                   value="{{ old('kegiatan') }}">
+                        </div>
+                        <div>
+                            <label for="plat_nomor" class="block text-xs font-medium text-gray-700 mb-1">
+                                Plat Nomor
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                   id="plat_nomor"
+                                   name="plat_nomor"
+                                   placeholder="Masukkan plat nomor kendaraan"
+                                   value="{{ old('plat_nomor') }}">
+                        </div>
+                    </div>
+
                     <!-- Summary Display -->
                     <div class="bg-blue-50 border border-blue-200 rounded p-3">
                         <div class="flex justify-between items-center">

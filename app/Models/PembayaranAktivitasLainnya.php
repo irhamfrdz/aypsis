@@ -17,6 +17,8 @@ class PembayaranAktivitasLainnya extends Model
         'total_pembayaran',
         'pilih_bank',
         'aktivitas_pembayaran',
+        'kegiatan',
+        'plat_nomor',
         'is_dp',
         'created_by'
     ];

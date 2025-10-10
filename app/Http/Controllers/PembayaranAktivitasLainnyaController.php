@@ -101,6 +101,8 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
                 'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
+                'kegiatan' => $request->kegiatan,
+                'plat_nomor' => $request->plat_nomor,
                 'is_dp' => $request->has('is_dp') ? true : false,
                 'created_by' => Auth::id(),
             ]);
@@ -207,6 +209,8 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
                 'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
+                'kegiatan' => $request->kegiatan,
+                'plat_nomor' => $request->plat_nomor,
                 'is_dp' => $request->has('is_dp') ? true : false,
             ]);
 
