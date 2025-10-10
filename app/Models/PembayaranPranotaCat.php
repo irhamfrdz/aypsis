@@ -54,6 +54,18 @@ class PembayaranPranotaCat extends Model
     }
 
     /**
+     * Get the user who created this pembayaran (dummy relationship since table doesn't have creator field)
+     */
+    public function pembuatPembayaran()
+    {
+        // This table doesn't have a creator field, so return a dummy relationship
+        return $this->belongsTo(User::class, 'created_by')->withDefault([
+            'name' => 'System',
+            'id' => null
+        ]);
+    }
+
+    /**
      * Generate nomor pembayaran otomatis
      */
     public static function generateNomorPembayaran($bankCode = '000', $nomorCetakan = 1)

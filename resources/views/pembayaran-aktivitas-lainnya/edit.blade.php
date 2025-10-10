@@ -99,6 +99,33 @@
                                       placeholder="Keterangan pembayaran (opsional)">{{ old('keterangan', $pembayaran->keterangan) }}</textarea>
                         </div>
 
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="kegiatan">Kegiatan</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="kegiatan"
+                                           name="kegiatan"
+                                           value="{{ old('kegiatan', $pembayaran->kegiatan) }}"
+                                           {{ $pembayaran->status === 'paid' ? 'readonly' : '' }}
+                                           placeholder="Jenis kegiatan (opsional)">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="plat_nomor">Plat Nomor</label>
+                                    <input type="text"
+                                           class="form-control"
+                                           id="plat_nomor"
+                                           name="plat_nomor"
+                                           value="{{ old('plat_nomor', $pembayaran->plat_nomor) }}"
+                                           {{ $pembayaran->status === 'paid' ? 'readonly' : '' }}
+                                           placeholder="Nomor plat kendaraan (opsional)">
+                                </div>
+                            </div>
+                        </div>
+
                         <!-- Checkbox Bayar DP -->
                         <div class="form-group">
                             <div class="custom-control custom-checkbox">

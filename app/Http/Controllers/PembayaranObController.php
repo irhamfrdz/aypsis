@@ -78,7 +78,7 @@ class PembayaranObController extends Controller
         $dpBelumTerpakaiList = \App\Models\PembayaranDpOb::where('status', 'dp_belum_terpakai')
                                                           ->orderBy('tanggal_pembayaran', 'desc')
                                                           ->get();
-        
+
         // Load nama supir untuk setiap DP
         foreach ($dpBelumTerpakaiList as $dp) {
             $dp->supir_names = $dp->supirList()->pluck('nama_lengkap')->toArray();

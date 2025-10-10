@@ -19,6 +19,14 @@ class PembayaranPranotaSupir extends Model
     }
 
     /**
+     * Get the user who created this pembayaran
+     */
+    public function pembuatPembayaran()
+    {
+        return $this->belongsTo(User::class, 'dibuat_oleh');
+    }
+
+    /**
      * Generate nomor pembayaran berdasarkan master nomor terakhir dengan modul nomor_pembayaran
      * Format: [kode_bank]-[1 digit cetakan]-[2 digit tahun]-[2 digit bulan]-[6 digit nomor terakhir]
      * Example: TST-1-25-09-000001 (untuk Kas Kecil)

@@ -331,6 +331,10 @@ Route::middleware([
              ->name('kegiatan.import')
              ->middleware('can:master-kegiatan-view');
 
+        Route::get('kegiatan/export/csv', [MasterKegiatanController::class, 'exportCsv'])
+             ->name('kegiatan.export')
+             ->middleware('can:master-kegiatan-view');
+
         // Master permission routes (with master prefix) - granular permissions
         Route::get('permission', [PermissionController::class, 'index'])
              ->name('permission.index')
@@ -1461,6 +1465,8 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     // Report Pranota (to be implemented)
     // Route::get('/pranota', [App\Http\Controllers\ReportPranotaController::class, 'index'])->name('pranota.index');
 
-    // Report Pembayaran (to be implemented)
-    // Route::get('/pembayaran', [App\Http\Controllers\ReportPembayaranController::class, 'index'])->name('pembayaran.index');
+    // Report Pembayaran
+    Route::get('/pembayaran', [App\Http\Controllers\ReportPembayaranController::class, 'index'])->name('pembayaran.index');
+    Route::get('/pembayaran/export', [App\Http\Controllers\ReportPembayaranController::class, 'export'])->name('pembayaran.export');
+    Route::get('/pembayaran/print', [App\Http\Controllers\ReportPembayaranController::class, 'print'])->name('pembayaran.print');
 });

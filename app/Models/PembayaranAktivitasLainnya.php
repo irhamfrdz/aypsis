@@ -46,6 +46,14 @@ class PembayaranAktivitasLainnya extends Model
     }
 
     /**
+     * Alias for creator relationship to maintain consistency with other payment models
+     */
+    public function pembuatPembayaran()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
      * Relationship dengan COA Bank (pilih_bank)
      */
     public function bank()

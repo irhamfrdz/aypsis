@@ -23,9 +23,10 @@ class MasterKegiatanController extends Controller
         $request->validate([
             'kode_kegiatan' => 'required|unique:master_kegiatans,kode_kegiatan',
             'nama_kegiatan' => 'required',
+            'type' => 'nullable|string|max:50',
             'status' => 'required|in:aktif,nonaktif',
         ]);
-        MasterKegiatan::create($request->only(['kode_kegiatan','nama_kegiatan','keterangan','status']));
+        MasterKegiatan::create($request->only(['kode_kegiatan','nama_kegiatan','type','keterangan','status']));
         return redirect()->route('master.kegiatan.index')->with('success', 'Master kegiatan dibuat');
     }
 
@@ -41,9 +42,10 @@ class MasterKegiatanController extends Controller
         $request->validate([
             'kode_kegiatan' => 'required|unique:master_kegiatans,kode_kegiatan,' . $id,
             'nama_kegiatan' => 'required',
+            'type' => 'nullable|string|max:50',
             'status' => 'required|in:aktif,nonaktif',
         ]);
-        $item->update($request->only(['kode_kegiatan','nama_kegiatan','keterangan','status']));
+        $item->update($request->only(['kode_kegiatan','nama_kegiatan','type','keterangan','status']));
         return redirect()->route('master.kegiatan.index')->with('success', 'Master kegiatan diupdate');
     }
 
@@ -70,10 +72,10 @@ class MasterKegiatanController extends Controller
             fwrite($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
             // Use semicolon as delimiter for Excel regional compatibility
             $delimiter = ';';
-            // template columns: kode_kegiatan;nama_kegiatan;keterangan;status
-            fputcsv($handle, ['kode_kegiatan', 'nama_kegiatan', 'keterangan', 'status'], $delimiter);
+            // template columns: kode_kegiatan;nama_kegiatan;type;keterangan;status
+            fputcsv($handle, ['kode_kegiatan', 'nama_kegiatan', 'type', 'keterangan', 'status'], $delimiter);
             // example row
-            fputcsv($handle, ['KGT001', 'Pengiriman Lokal', 'Contoh keterangan', 'aktif'], $delimiter);
+            fputcsv($handle, ['KGT001', 'Pengiriman Lokal', 'Operasional', 'Contoh keterangan', 'aktif'], $delimiter);
             fclose($handle);
         };
 
@@ -111,7 +113,7 @@ class MasterKegiatanController extends Controller
             $header[0] = preg_replace('/^[\x{FEFF}]/u', '', $header[0]);
         }
 
-        $expected = ['kode_kegiatan', 'nama_kegiatan', 'keterangan', 'status'];
+        $expected = ['kode_kegiatan', 'nama_kegiatan', 'type', 'keterangan', 'status'];
         // normalize header lower-case and trim
         $norm = array_map(function($v){ return strtolower(trim($v)); }, (array)$header);
 
@@ -162,6 +164,7 @@ class MasterKegiatanController extends Controller
                 MasterKegiatan::create([
                     'kode_kegiatan' => $data['kode_kegiatan'],
                     'nama_kegiatan' => $data['nama_kegiatan'],
+                    'type' => $data['type'] ?? null,
                     'keterangan' => $data['keterangan'] ?? null,
                     'status' => $status,
                 ]);
@@ -179,5 +182,41 @@ class MasterKegiatanController extends Controller
         }
 
         return redirect()->route('master.kegiatan.index')->with('success', $msg);
+    }
+
+    /**
+     * Export Master Kegiatan data to CSV
+     */
+    public function exportCsv()
+    {
+        $items = MasterKegiatan::orderBy('kode_kegiatan')->get();
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="master_kegiatan_export_' . date('Y-m-d_H-i-s') . '.csv"',
+        ];
+
+        $callback = function() use ($items) {
+            $handle = fopen('php://output', 'w');
+            // Write UTF-8 BOM so Excel recognizes encoding
+            fwrite($handle, chr(0xEF) . chr(0xBB) . chr(0xBF));
+            // Use semicolon as delimiter for Excel regional compatibility
+            $delimiter = ';';
+            // Write header
+            fputcsv($handle, ['kode_kegiatan', 'nama_kegiatan', 'type', 'keterangan', 'status'], $delimiter);
+            // Write data rows
+            foreach ($items as $item) {
+                fputcsv($handle, [
+                    $item->kode_kegiatan,
+                    $item->nama_kegiatan,
+                    $item->type,
+                    $item->keterangan,
+                    $item->status,
+                ], $delimiter);
+            }
+            fclose($handle);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

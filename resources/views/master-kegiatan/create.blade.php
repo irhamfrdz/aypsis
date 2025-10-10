@@ -26,7 +26,7 @@
 
         <fieldset class="mb-6">
             <legend class="text-lg font-semibold text-gray-800 mb-4">Informasi Kegiatan</legend>
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div>
                     <label for="kode_kegiatan" class="block text-sm font-medium text-gray-700">Kode Kegiatan <span class="text-red-500">*</span></label>
                     <input type="text" name="kode_kegiatan" id="kode_kegiatan" value="{{ old('kode_kegiatan') }}" class="{{ $inputClasses }}" required maxlength="50">
@@ -44,6 +44,18 @@
                 </div>
 
                 <div>
+                    <label for="type" class="block text-sm font-medium text-gray-700">Type <span class="text-red-500">*</span></label>
+                    <select name="type" id="type" class="{{ $inputClasses }}" required>
+                        <option value="">-- Pilih Type --</option>
+                        <option value="kegiatan memo supir" {{ old('type') == 'kegiatan memo supir' ? 'selected' : '' }}>Kegiatan Memo Supir</option>
+                        <option value="uang muka" {{ old('type') == 'uang muka' ? 'selected' : '' }}>Uang Muka</option>
+                    </select>
+                    @error('type')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label for="status" class="block text-sm font-medium text-gray-700">Status <span class="text-red-500">*</span></label>
                     <select name="status" id="status" class="{{ $inputClasses }}" required>
                         <option value="">-- Pilih Status --</option>
@@ -55,7 +67,7 @@
                     @enderror
                 </div>
 
-                <div class="md:col-span-2">
+                <div class="md:col-span-2 lg:col-span-3">
                     <label for="keterangan" class="block text-sm font-medium text-gray-700">Keterangan</label>
                     <textarea name="keterangan" id="keterangan" rows="3" class="{{ $inputClasses }}">{{ old('keterangan') }}</textarea>
                     @error('keterangan')

@@ -9,6 +9,7 @@
         <h2 class="text-2xl font-bold text-gray-800">Daftar Kegiatan</h2>
         <div class="flex items-center space-x-3">
             <a href="{{ route('master.kegiatan.create') }}" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-0.5 px-2 rounded transition duration-300 text-xs">+ Tambah Kegiatan</a>
+            <a href="{{ route('master.kegiatan.export') }}" class="bg-green-600 hover:bg-green-700 text-white font-bold py-0.5 px-2 rounded transition duration-300 text-xs">Export CSV</a>
             <a href="{{ route('master.kegiatan.template') }}" class="bg-gray-200 hover:bg-gray-300 text-gray-800 font-bold py-0.5 px-2 rounded transition duration-300 text-xs">Download Template CSV</a>
             <form id="importForm" action="{{ route('master.kegiatan.import') }}" method="POST" enctype="multipart/form-data" class="inline-block">
                 @csrf
@@ -86,6 +87,7 @@
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kegiatan</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kegiatan</th>
+                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                     <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                     <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -97,6 +99,7 @@
                         <td class="px-4 py-2">{{ $items->firstItem() + $index }}</td>
                         <td class="px-4 py-2 font-mono text-[10px]">{{ $kegiatan->kode_kegiatan }}</td>
                         <td class="px-4 py-2">{{ $kegiatan->nama_kegiatan }}</td>
+                        <td class="px-4 py-2">{{ $kegiatan->type ?? '-' }}</td>
                         <td class="px-4 py-2">{{ $kegiatan->keterangan ?? '-' }}</td>
                         <td class="px-4 py-2 text-center">
                             @php $s = strtolower($kegiatan->status ?? ''); @endphp
@@ -125,7 +128,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="px-4 py-2 text-center text-gray-500 text-[10px]">Tidak ada data kegiatan yang ditemukan.</td>
+                        <td colspan="7" class="px-4 py-2 text-center text-gray-500 text-[10px]">Tidak ada data kegiatan yang ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>
