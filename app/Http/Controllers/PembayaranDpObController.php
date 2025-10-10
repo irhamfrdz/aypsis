@@ -148,7 +148,8 @@ class PembayaranDpObController extends Controller
             'jenis_transaksi' => 'required|in:debit,kredit',
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|array|min:1',
+            'jumlah.*' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string'
         ]);
 
@@ -158,9 +159,15 @@ class PembayaranDpObController extends Controller
         try {
             DB::beginTransaction();
 
-            // Hitung total pembayaran
-            $jumlahSupir = count($validated['supir']);
-            $totalPembayaran = $jumlahSupir * $validated['jumlah'];
+            // Hitung total pembayaran dari semua supir
+            $totalPembayaran = 0;
+            $jumlahPerSupirData = [];
+            
+            foreach ($validated['supir'] as $supirId) {
+                $jumlah = $validated['jumlah'][$supirId] ?? 0;
+                $jumlahPerSupirData[$supirId] = $jumlah;
+                $totalPembayaran += $jumlah;
+            }
 
             // Simpan pembayaran DP OB
             $pembayaran = PembayaranDpOb::create([
@@ -169,7 +176,7 @@ class PembayaranDpObController extends Controller
                 'kas_bank_id' => $validated['kas_bank'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'supir_ids' => $validated['supir'], // JSON array
-                'jumlah_per_supir' => $validated['jumlah'],
+                'jumlah_per_supir' => $jumlahPerSupirData, // JSON object dengan supir_id => jumlah
                 'total_pembayaran' => $totalPembayaran,
                 'keterangan' => $validated['keterangan'],
                 'status' => 'dp_belum_terpakai', // Default status DP
@@ -180,6 +187,7 @@ class PembayaranDpObController extends Controller
 
             DB::commit();
 
+            $jumlahSupir = count($validated['supir']);
             $message = "Pembayaran DP OB berhasil dibuat dengan nomor: {$pembayaran->nomor_pembayaran}. ";
             $message .= "Total supir: {$jumlahSupir}. ";
             $message .= "Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.');

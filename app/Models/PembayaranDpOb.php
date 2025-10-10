@@ -30,7 +30,7 @@ class PembayaranDpOb extends Model
         'tanggal_pembayaran' => 'date',
         'tanggal_persetujuan' => 'datetime',
         'supir_ids' => 'array', // JSON array untuk multi-select supir
-        'jumlah_per_supir' => 'decimal:2',
+        'jumlah_per_supir' => 'array', // JSON object untuk jumlah per supir (supir_id => jumlah)
         'total_pembayaran' => 'decimal:2',
     ];
 

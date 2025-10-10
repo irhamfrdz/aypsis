@@ -215,29 +215,17 @@
                                 <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih supir dari daftar karyawan aktif</p>
                             </div>
 
-                            <!-- Jumlah Pembayaran -->
-                            <div>
-                                <label for="jumlah" class="block text-sm font-medium text-gray-700 mb-2">
+                            <!-- Jumlah Pembayaran per Supir -->
+                            <div id="jumlah-container">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Jumlah DP per Supir <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">Rp</span>
-                                    </div>
-                                    <input type="number"
-                                           name="jumlah"
-                                           id="jumlah"
-                                           value="{{ old('jumlah') }}"
-                                           placeholder="0"
-                                           min="0"
-                                           step="1000"
-                                           required
-                                           class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jumlah') border-red-300 @enderror">
+                                <div id="jumlah-inputs">
+                                    <!-- Dynamic inputs akan ditambahkan di sini -->
                                 </div>
-                                @error('jumlah')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-sm text-gray-500">Jumlah DP yang akan diterima oleh setiap supir yang dipilih</p>
+                                <div id="no-supir-message" class="text-gray-500 text-sm italic">
+                                    Pilih supir terlebih dahulu untuk mengisi jumlah DP
+                                </div>
                             </div>
                         </div>
 
@@ -353,15 +341,20 @@ function toggleSupirDropdown() {
 function updateSupirDisplay() {
     const tagsContainer = document.getElementById('selected-supir-tags');
     const toggleButton = document.getElementById('supir-dropdown-toggle');
+    const jumlahInputsContainer = document.getElementById('jumlah-inputs');
+    const noSupirMessage = document.getElementById('no-supir-message');
 
     tagsContainer.innerHTML = '';
+    jumlahInputsContainer.innerHTML = '';
 
     if (selectedSupir.length === 0) {
         toggleButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Pilih Supir...';
         toggleButton.className = 'w-full text-left text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded border text-sm';
+        noSupirMessage.style.display = 'block';
     } else {
         toggleButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Tambah Supir...';
         toggleButton.className = 'w-full text-left text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded border border-blue-200 text-sm';
+        noSupirMessage.style.display = 'none';
 
         // Create tags for selected supir
         selectedSupir.forEach(function(supirId) {
@@ -380,6 +373,30 @@ function updateSupirDisplay() {
                     </button>
                 `;
                 tagsContainer.appendChild(tag);
+
+                // Create input field untuk setiap supir
+                const inputDiv = document.createElement('div');
+                inputDiv.className = 'mb-3 p-3 border border-gray-200 rounded-md bg-gray-50';
+                inputDiv.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        ${namaLengkap} (${nik}) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">Rp</span>
+                        </div>
+                        <input type="number"
+                               name="jumlah[${supirId}]"
+                               id="jumlah_${supirId}"
+                               value="${getOldJumlah(supirId)}"
+                               placeholder="0"
+                               min="0"
+                               step="1000"
+                               required
+                               class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                `;
+                jumlahInputsContainer.appendChild(inputDiv);
             }
         });
     }
@@ -434,17 +451,15 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Update format display when jumlah input changes
-document.getElementById('jumlah').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/[^\d]/g, '');
-
-    if (value) {
-        // Format with thousand separator for display only
-        let formatted = new Intl.NumberFormat('id-ID').format(value);
-        // Update placeholder to show formatted value
-        e.target.setAttribute('title', 'Rp ' + formatted);
-    }
-});
+// Function to get old jumlah value untuk supir tertentu
+function getOldJumlah(supirId) {
+    @if(old('jumlah'))
+        const oldJumlah = @json(old('jumlah'));
+        return oldJumlah[supirId] || '';
+    @else
+        return '';
+    @endif
+}
 
 // Handle jenis transaksi selection
 document.getElementById('jenis_transaksi').addEventListener('change', function(e) {
