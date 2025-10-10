@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pembayaran_dp_obs', function (Blueprint $table) {
-            $table->enum('status', ['dp_belum_terpakai', 'dp_terpakai'])->default('dp_belum_terpakai')->after('keterangan');
+            // Check if column doesn't exist before adding
+            if (!Schema::hasColumn('pembayaran_dp_obs', 'status')) {
+                $table->enum('status', ['dp_belum_terpakai', 'dp_terpakai'])->default('dp_belum_terpakai')->after('keterangan');
+            }
         });
     }
 

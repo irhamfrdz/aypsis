@@ -12,16 +12,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop existing status column if it exists with wrong ENUM values
-        try {
+        // Check if status column exists and has the correct ENUM values
+        if (Schema::hasColumn('pembayaran_dp_obs', 'status')) {
+            // Drop existing status column to recreate with correct ENUM values
             Schema::table('pembayaran_dp_obs', function (Blueprint $table) {
                 $table->dropColumn('status');
             });
-        } catch (\Exception $e) {
-            // Column might not exist
         }
 
-        // Re-add status column with correct ENUM values
+        // Add status column with correct ENUM values
         Schema::table('pembayaran_dp_obs', function (Blueprint $table) {
             $table->enum('status', ['dp_belum_terpakai', 'dp_terpakai'])
                   ->default('dp_belum_terpakai')
