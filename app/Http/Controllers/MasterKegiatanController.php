@@ -23,7 +23,7 @@ class MasterKegiatanController extends Controller
         $request->validate([
             'kode_kegiatan' => 'required|unique:master_kegiatans,kode_kegiatan',
             'nama_kegiatan' => 'required',
-            'type' => 'nullable|string|max:50',
+            'type' => 'required|string|max:50|in:kegiatan memo supir,uang muka',
             'status' => 'required|in:aktif,nonaktif',
         ]);
         MasterKegiatan::create($request->only(['kode_kegiatan','nama_kegiatan','type','keterangan','status']));
@@ -42,7 +42,7 @@ class MasterKegiatanController extends Controller
         $request->validate([
             'kode_kegiatan' => 'required|unique:master_kegiatans,kode_kegiatan,' . $id,
             'nama_kegiatan' => 'required',
-            'type' => 'nullable|string|max:50',
+            'type' => 'required|string|max:50|in:kegiatan memo supir,uang muka',
             'status' => 'required|in:aktif,nonaktif',
         ]);
         $item->update($request->only(['kode_kegiatan','nama_kegiatan','type','keterangan','status']));
