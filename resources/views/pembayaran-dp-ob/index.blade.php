@@ -143,10 +143,18 @@
                                         <div class="flex flex-wrap gap-1">
                                             @php
                                                 $supirList = \App\Models\Karyawan::whereIn('id', $pembayaran->supir_ids ?? [])->get();
+                                                $jumlahPerSupir = is_array($pembayaran->jumlah_per_supir) ? $pembayaran->jumlah_per_supir : [];
                                             @endphp
                                             @foreach($supirList->take(2) as $supir)
-                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                @php
+                                                    $amount = isset($jumlahPerSupir[$supir->id]) ? $jumlahPerSupir[$supir->id] : 0;
+                                                @endphp
+                                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800"
+                                                      title="{{ $supir->nama_lengkap }}: Rp {{ number_format($amount, 0, ',', '.') }}">
                                                     {{ $supir->nama_lengkap }}
+                                                    @if($amount > 0)
+                                                        <span class="ml-1 text-blue-600">({{ number_format($amount/1000, 0) }}k)</span>
+                                                    @endif
                                                 </span>
                                             @endforeach
                                             @if($supirList->count() > 2)
@@ -165,7 +173,16 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                                         <div class="font-medium">Rp {{ number_format($pembayaran->total_pembayaran, 0, ',', '.') }}</div>
                                         <div class="text-xs text-gray-400">
-                                            {{ count($pembayaran->supir_ids ?? []) }} supir × Rp {{ number_format($pembayaran->jumlah_per_supir, 0, ',', '.') }}
+                                            @php
+                                                $jumlahPerSupir = is_array($pembayaran->jumlah_per_supir) ? $pembayaran->jumlah_per_supir : [];
+                                                $totalSupir = count($pembayaran->supir_ids ?? []);
+                                                $avgAmount = $totalSupir > 0 ? ($pembayaran->total_pembayaran / $totalSupir) : 0;
+                                            @endphp
+                                            @if(count($jumlahPerSupir) > 0)
+                                                {{ $totalSupir }} supir (bervariasi)
+                                            @else
+                                                {{ $totalSupir }} supir × Rp {{ number_format($avgAmount, 0, ',', '.') }}
+                                            @endif
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-500">
