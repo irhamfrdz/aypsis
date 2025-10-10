@@ -161,23 +161,44 @@
                             <label for="kegiatan" class="block text-xs font-medium text-gray-700 mb-1">
                                 Kegiatan
                             </label>
-                            <input type="text" 
-                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                   id="kegiatan"
-                                   name="kegiatan"
-                                   placeholder="Masukkan jenis kegiatan"
-                                   value="{{ old('kegiatan') }}">
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="kegiatan"
+                                    name="kegiatan">
+                                <option value="">Pilih Kegiatan</option>
+                                @if(isset($masterKegiatan) && $masterKegiatan->count() > 0)
+                                    @foreach($masterKegiatan as $kegiatan)
+                                        <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                            {{ $kegiatan->nama_kegiatan }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>Tidak ada kegiatan uang muka tersedia</option>
+                                @endif
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Data dari master kegiatan bertipe "uang muka"</p>
                         </div>
-                        <div>
+                        <div id="plat_nomor_container" class="hidden">
                             <label for="plat_nomor" class="block text-xs font-medium text-gray-700 mb-1">
-                                Plat Nomor
+                                Plat Nomor <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" 
-                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                   id="plat_nomor"
-                                   name="plat_nomor"
-                                   placeholder="Masukkan plat nomor kendaraan"
-                                   value="{{ old('plat_nomor') }}">
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="plat_nomor"
+                                    name="plat_nomor">
+                                <option value="">Pilih Plat Nomor</option>
+                                @if(isset($masterMobil) && $masterMobil->count() > 0)
+                                    @foreach($masterMobil as $mobil)
+                                        <option value="{{ $mobil->plat_nomor }}" {{ old('plat_nomor') == $mobil->plat_nomor ? 'selected' : '' }}>
+                                            {{ $mobil->plat_nomor }}
+                                            @if($mobil->merk && $mobil->tipe)
+                                                - {{ $mobil->merk }} {{ $mobil->tipe }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>Tidak ada mobil tersedia</option>
+                                @endif
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Wajib dipilih untuk kegiatan KIR & STNK</p>
                         </div>
                     </div>
 
@@ -296,6 +317,18 @@ $(document).ready(function() {
             alert('Aktivitas Pembayaran minimal 5 karakter!');
             $('#aktivitas_pembayaran').focus();
             return false;
+        }
+
+        // Validation untuk plat nomor jika kegiatan KIR/STNK dipilih
+        let selectedKegiatan = $('#kegiatan').val();
+        if (selectedKegiatan && (selectedKegiatan.toLowerCase().includes('kir') || selectedKegiatan.toLowerCase().includes('stnk'))) {
+            let platNomorValue = $('#plat_nomor').val().trim();
+            if (!platNomorValue) {
+                e.preventDefault();
+                alert('Plat Nomor wajib dipilih untuk kegiatan KIR & STNK!');
+                $('#plat_nomor').focus();
+                return false;
+            }
         }
 
         // Remove number formatting before submission
@@ -452,6 +485,32 @@ $(document).ready(function() {
     if (initialBank) {
         let selectedOption = $('#pilih_bank option:selected');
         generateNomorPembayaran(initialBank, selectedOption.text());
+    }
+
+    // Handler untuk dropdown kegiatan - tampilkan plat nomor jika kegiatan mengandung "kir" atau "stnk"
+    $('#kegiatan').on('change', function() {
+        let selectedKegiatan = $(this).val().toLowerCase();
+        
+        // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
+        if (selectedKegiatan.includes('kir') || selectedKegiatan.includes('stnk')) {
+            $('#plat_nomor_container').removeClass('hidden').addClass('block');
+            $('#plat_nomor').attr('required', true);
+            
+            // Tambahkan visual indicator bahwa field ini wajib
+            $('#plat_nomor_container label span.text-red-500').removeClass('hidden');
+        } else {
+            $('#plat_nomor_container').removeClass('block').addClass('hidden');
+            $('#plat_nomor').removeAttr('required').val('');
+            
+            // Sembunyikan visual indicator required
+            $('#plat_nomor_container label span.text-red-500').addClass('hidden');
+        }
+    });
+
+    // Cek kegiatan pada saat load (untuk old input)
+    let initialKegiatan = $('#kegiatan').val();
+    if (initialKegiatan) {
+        $('#kegiatan').trigger('change');
     }
 });
 </script>

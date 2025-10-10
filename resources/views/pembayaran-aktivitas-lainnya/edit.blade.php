@@ -103,25 +103,48 @@
                             <div class="col-md-6">
                                 <div class="form-group">
                                     <label for="kegiatan">Kegiatan</label>
-                                    <input type="text"
-                                           class="form-control"
-                                           id="kegiatan"
-                                           name="kegiatan"
-                                           value="{{ old('kegiatan', $pembayaran->kegiatan) }}"
-                                           {{ $pembayaran->status === 'paid' ? 'readonly' : '' }}
-                                           placeholder="Jenis kegiatan (opsional)">
+                                    <select class="form-control"
+                                            id="kegiatan"
+                                            name="kegiatan"
+                                            {{ $pembayaranAktivitasLainnya->status === 'paid' ? 'disabled' : '' }}>
+                                        <option value="">Pilih Kegiatan</option>
+                                        @if(isset($masterKegiatan) && $masterKegiatan->count() > 0)
+                                            @foreach($masterKegiatan as $kegiatan)
+                                                <option value="{{ $kegiatan->nama_kegiatan }}" 
+                                                    {{ old('kegiatan', $pembayaranAktivitasLainnya->kegiatan) == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                                    {{ $kegiatan->nama_kegiatan }}
+                                                </option>
+                                            @endforeach
+                                        @else
+                                            <option value="" disabled>Tidak ada kegiatan uang muka tersedia</option>
+                                        @endif
+                                    </select>
+                                    <small class="form-text text-muted">Data dari master kegiatan bertipe "uang muka"</small>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-6" id="plat_nomor_container">
                                 <div class="form-group">
-                                    <label for="plat_nomor">Plat Nomor</label>
-                                    <input type="text"
-                                           class="form-control"
-                                           id="plat_nomor"
-                                           name="plat_nomor"
-                                           value="{{ old('plat_nomor', $pembayaran->plat_nomor) }}"
-                                           {{ $pembayaran->status === 'paid' ? 'readonly' : '' }}
-                                           placeholder="Nomor plat kendaraan (opsional)">
+                                    <label for="plat_nomor">Plat Nomor <span class="text-danger d-none">*</span></label>
+                                    <select class="form-control"
+                                            id="plat_nomor"
+                                            name="plat_nomor"
+                                            {{ $pembayaranAktivitasLainnya->status === 'paid' ? 'disabled' : '' }}>
+                                        <option value="">Pilih Plat Nomor</option>
+                                        @if(isset($masterMobil) && $masterMobil->count() > 0)
+                                            @foreach($masterMobil as $mobil)
+                                                <option value="{{ $mobil->plat_nomor }}" 
+                                                    {{ old('plat_nomor', $pembayaranAktivitasLainnya->plat_nomor) == $mobil->plat_nomor ? 'selected' : '' }}>
+                                                    {{ $mobil->plat_nomor }}
+                                                    @if($mobil->merk && $mobil->tipe)
+                                                        - {{ $mobil->merk }} {{ $mobil->tipe }}
+                                                    @endif
+                                                </option>
+                                            @endforeach
+                                        @else
+                                            <option value="" disabled>Tidak ada mobil tersedia</option>
+                                        @endif
+                                    </select>
+                                    <small class="form-text text-muted">Wajib dipilih untuk kegiatan KIR & STNK</small>
                                 </div>
                             </div>
                         </div>
@@ -565,6 +588,32 @@ $(document).ready(function() {
         this.style.height = 'auto';
         this.style.height = (this.scrollHeight) + 'px';
     });
+
+    // Handler untuk dropdown kegiatan - tampilkan plat nomor jika kegiatan mengandung "kir" atau "stnk"
+    $('#kegiatan').on('change', function() {
+        let selectedKegiatan = $(this).val().toLowerCase();
+        
+        // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
+        if (selectedKegiatan.includes('kir') || selectedKegiatan.includes('stnk')) {
+            $('#plat_nomor_container').show();
+            $('#plat_nomor').attr('required', true);
+            
+            // Tambahkan visual indicator bahwa field ini wajib
+            $('#plat_nomor_container label .text-danger').removeClass('d-none');
+        } else {
+            $('#plat_nomor_container').show(); // Tetap tampilkan tapi tidak wajib
+            $('#plat_nomor').removeAttr('required');
+            
+            // Sembunyikan visual indicator required
+            $('#plat_nomor_container label .text-danger').addClass('d-none');
+        }
+    });
+
+    // Cek kegiatan pada saat load (untuk old input)
+    let initialKegiatan = $('#kegiatan').val();
+    if (initialKegiatan) {
+        $('#kegiatan').trigger('change');
+    }
 });
 </script>
 @endpush

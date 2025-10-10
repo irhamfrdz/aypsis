@@ -51,7 +51,16 @@ class PembayaranAktivitasLainnyaController extends Controller
             ->orderBy('nomor_akun')
             ->get();
 
-        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts'));
+        // Fetch master kegiatan dengan type "uang muka"
+        $masterKegiatan = \App\Models\MasterKegiatan::where('type', 'uang muka')
+            ->orderBy('nama_kegiatan')
+            ->get();
+
+        // Fetch master mobil untuk dropdown plat nomor
+        $masterMobil = \App\Models\Mobil::orderBy('plat_nomor')
+            ->get();
+
+        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'masterKegiatan', 'masterMobil'));
     }
 
     /**
@@ -151,9 +160,20 @@ class PembayaranAktivitasLainnyaController extends Controller
         // Get bank accounts for dropdown
         $bankAccounts = Coa::where('tipe_akun', 'Bank/Kas')->get();
 
+        // Fetch master kegiatan dengan type "uang muka"
+        $masterKegiatan = \App\Models\MasterKegiatan::where('type', 'uang muka')
+            ->orderBy('nama_kegiatan')
+            ->get();
+
+        // Fetch master mobil untuk dropdown plat nomor
+        $masterMobil = \App\Models\Mobil::orderBy('plat_nomor')
+            ->get();
+
         return view('pembayaran-aktivitas-lainnya.edit', compact(
             'pembayaranAktivitasLainnya',
-            'bankAccounts'
+            'bankAccounts',
+            'masterKegiatan',
+            'masterMobil'
         ));
     }
 
