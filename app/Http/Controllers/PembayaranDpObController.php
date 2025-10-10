@@ -182,13 +182,13 @@ class PembayaranDpObController extends Controller
             // Hitung total pembayaran dari semua supir
             $totalPembayaran = 0;
             $jumlahPerSupirData = [];
-            
+
             foreach ($validated['supir'] as $supirId) {
                 $jumlah = floatval($validated['jumlah'][$supirId] ?? 0);
                 $jumlahPerSupirData[$supirId] = $jumlah;
                 $totalPembayaran += $jumlah;
             }
-            
+
             // Pastikan totalPembayaran adalah float
             $totalPembayaran = floatval($totalPembayaran);
 

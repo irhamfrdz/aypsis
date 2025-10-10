@@ -474,13 +474,13 @@ function formatNumber(num) {
 function formatCurrency(input, supirId) {
     // Ambil nilai tanpa format
     let value = input.value.replace(/[^\d]/g, '');
-    
+
     // Update hidden input dengan nilai asli
     const hiddenInput = document.getElementById(`jumlah_${supirId}`);
     if (hiddenInput) {
         hiddenInput.value = value || '0';
     }
-    
+
     // Format tampilan dengan pemisah ribuan
     if (value) {
         input.value = formatNumber(value);
@@ -531,19 +531,19 @@ document.querySelector('form').addEventListener('submit', function(e) {
     // Pastikan semua hidden input jumlah terisi
     const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
     let hasEmptyAmount = false;
-    
+
     hiddenInputs.forEach(function(input) {
         if (!input.value || input.value === '0' || input.value === '') {
             hasEmptyAmount = true;
         }
     });
-    
+
     if (hasEmptyAmount) {
         e.preventDefault();
         alert('Harap isi semua jumlah DP untuk setiap supir yang dipilih');
         return false;
     }
-    
+
     // Debug: log form data before submit
     console.log('Form data before submit:');
     const formData = new FormData(this);

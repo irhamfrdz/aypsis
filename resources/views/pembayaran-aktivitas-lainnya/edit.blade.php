@@ -138,7 +138,7 @@
                                         <option value="">Pilih Kegiatan</option>
                                         @if(isset($masterKegiatan) && $masterKegiatan->count() > 0)
                                             @foreach($masterKegiatan as $kegiatan)
-                                                <option value="{{ $kegiatan->nama_kegiatan }}" 
+                                                <option value="{{ $kegiatan->nama_kegiatan }}"
                                                     {{ old('kegiatan', $pembayaranAktivitasLainnya->kegiatan) == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
                                                     {{ $kegiatan->nama_kegiatan }}
                                                 </option>
@@ -160,7 +160,7 @@
                                         <option value="">Pilih Plat Nomor</option>
                                         @if(isset($masterMobil) && $masterMobil->count() > 0)
                                             @foreach($masterMobil as $mobil)
-                                                <option value="{{ $mobil->plat }}" 
+                                                <option value="{{ $mobil->plat }}"
                                                     {{ old('plat_nomor', $pembayaranAktivitasLainnya->plat_nomor) == $mobil->plat ? 'selected' : '' }}>
                                                     {{ $mobil->plat }}
                                                     @if($mobil->aktiva)
@@ -620,18 +620,18 @@ $(document).ready(function() {
     // Handler untuk dropdown kegiatan - tampilkan plat nomor jika kegiatan mengandung "kir" atau "stnk"
     $('#kegiatan').on('change', function() {
         let selectedKegiatan = $(this).val().toLowerCase();
-        
+
         // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
         if (selectedKegiatan.includes('kir') || selectedKegiatan.includes('stnk')) {
             $('#plat_nomor_container').show();
             $('#plat_nomor').attr('required', true);
-            
+
             // Tambahkan visual indicator bahwa field ini wajib
             $('#plat_nomor_container label .text-danger').removeClass('d-none');
         } else {
             $('#plat_nomor_container').show(); // Tetap tampilkan tapi tidak wajib
             $('#plat_nomor').removeAttr('required');
-            
+
             // Sembunyikan visual indicator required
             $('#plat_nomor_container label .text-danger').addClass('d-none');
         }

@@ -515,18 +515,18 @@ $(document).ready(function() {
     // Handler untuk dropdown kegiatan - tampilkan plat nomor jika kegiatan mengandung "kir" atau "stnk"
     $('#kegiatan').on('change', function() {
         let selectedKegiatan = $(this).val().toLowerCase();
-        
+
         // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
         if (selectedKegiatan.includes('kir') || selectedKegiatan.includes('stnk')) {
             $('#plat_nomor_container').removeClass('hidden').addClass('block');
             $('#plat_nomor').attr('required', true);
-            
+
             // Tambahkan visual indicator bahwa field ini wajib
             $('#plat_nomor_container label span.text-red-500').removeClass('hidden');
         } else {
             $('#plat_nomor_container').removeClass('block').addClass('hidden');
             $('#plat_nomor').removeAttr('required').val('');
-            
+
             // Sembunyikan visual indicator required
             $('#plat_nomor_container label span.text-red-500').addClass('hidden');
         }

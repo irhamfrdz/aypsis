@@ -148,6 +148,21 @@ class PembayaranObController extends Controller
      */
     public function store(Request $request)
     {
+        // Pre-process jumlah data to ensure it's clean
+        $jumlahData = $request->input('jumlah', []);
+        if (!is_array($jumlahData)) {
+            return back()->withErrors(['jumlah' => 'Data jumlah harus berupa array'])->withInput();
+        }
+
+        // Clean jumlah data - remove any non-numeric values
+        $cleanJumlahData = [];
+        foreach ($jumlahData as $supirId => $jumlah) {
+            $cleanJumlahData[$supirId] = is_numeric($jumlah) ? floatval($jumlah) : 0;
+        }
+
+        // Replace jumlah in request
+        $request->merge(['jumlah' => $cleanJumlahData]);
+
         // Validasi input
         $validated = $request->validate([
             'nomor_pembayaran' => 'required|string|max:255|unique:pembayaran_obs,nomor_pembayaran',
@@ -156,7 +171,8 @@ class PembayaranObController extends Controller
             'jenis_transaksi' => 'required|in:debit,kredit',
             'supir' => 'required|array|min:1',
             'supir.*' => 'required|exists:karyawans,id',
-            'jumlah' => 'required|numeric|min:0',
+            'jumlah' => 'required|array|min:1',
+            'jumlah.*' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
             'pembayaran_dp_ob_id' => 'nullable|exists:pembayaran_dp_obs,id'
         ]);
@@ -170,23 +186,29 @@ class PembayaranObController extends Controller
                 $nomorPembayaran = PembayaranOb::generateNomorPembayaran($validated['kas_bank']);
             }
 
-            // Hitung total pembayaran (jumlah dari input adalah total, bukan per supir)
-            $jumlahSupir = count($validated['supir']);
-            $subtotalPembayaran = $validated['jumlah']; // Total pembayaran dari input
+            // Hitung total pembayaran dari semua supir
+            $subtotalPembayaran = 0;
+            $jumlahPerSupirData = [];
+            
+            foreach ($validated['supir'] as $supirId) {
+                $jumlah = floatval($validated['jumlah'][$supirId] ?? 0);
+                $jumlahPerSupirData[$supirId] = $jumlah;
+                $subtotalPembayaran += $jumlah;
+            }
+            
+            // Pastikan subtotalPembayaran adalah float
+            $subtotalPembayaran = floatval($subtotalPembayaran);
             $totalPembayaran = $subtotalPembayaran;
-            $jumlahPerSupir = $jumlahSupir > 0 ? floor($subtotalPembayaran / $jumlahSupir) : 0;
 
             // Kurangi dengan DP jika ada yang dipilih
             $dpAmount = 0;
             if ($validated['pembayaran_dp_ob_id']) {
                 $dpOb = \App\Models\PembayaranDpOb::find($validated['pembayaran_dp_ob_id']);
                 if ($dpOb) {
-                    $dpAmount = $dpOb->total_pembayaran;
+                    $dpAmount = floatval($dpOb->total_pembayaran);
                     $totalPembayaran = $subtotalPembayaran - $dpAmount;
                     // Pastikan total tidak negatif
                     $totalPembayaran = max(0, $totalPembayaran);
-                    // Hitung ulang per supir setelah dikurangi DP
-                    $jumlahPerSupir = $jumlahSupir > 0 ? floor($totalPembayaran / $jumlahSupir) : 0;
                 }
             }
 
@@ -197,7 +219,7 @@ class PembayaranObController extends Controller
                 'kas_bank_id' => $validated['kas_bank'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'supir_ids' => $validated['supir'], // JSON array
-                'jumlah_per_supir' => $jumlahPerSupir, // Pembagian total ke supir setelah dikurangi DP
+                'jumlah_per_supir' => $jumlahPerSupirData, // JSON object dengan supir_id => jumlah
                 'subtotal_pembayaran' => $subtotalPembayaran, // Subtotal sebelum dikurangi DP
                 'dp_amount' => $dpAmount, // Jumlah DP yang digunakan
                 'total_pembayaran' => $totalPembayaran, // Total sudah dikurangi DP
@@ -219,16 +241,15 @@ class PembayaranObController extends Controller
 
             DB::commit();
 
+            $jumlahSupir = count($validated['supir']);
             $message = "Pembayaran OB berhasil dibuat dengan nomor: {$nomorPembayaran}. ";
             $message .= "Total supir: {$jumlahSupir}. ";
             if ($dpAmount > 0) {
                 $message .= "Total awal: Rp " . number_format($subtotalPembayaran, 0, ',', '.') . ". ";
                 $message .= "DP digunakan: Rp " . number_format($dpAmount, 0, ',', '.') . ". ";
-                $message .= "Total setelah DP: Rp " . number_format($totalPembayaran, 0, ',', '.') . ". ";
-                $message .= "Pembayaran per supir: Rp " . number_format($jumlahPerSupir, 0, ',', '.') . ".";
+                $message .= "Total setelah DP: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
             } else {
-                $message .= "Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.') . ". ";
-                $message .= "Pembayaran per supir: Rp " . number_format($jumlahPerSupir, 0, ',', '.') . ".";
+                $message .= "Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
             }
 
             return redirect()->route('pembayaran-ob.index')

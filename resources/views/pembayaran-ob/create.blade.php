@@ -215,42 +215,30 @@
                                 <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih supir dari daftar karyawan aktif</p>
                             </div>
 
-                            <!-- Jumlah Pembayaran -->
-                            <div>
-                                <label for="jumlah" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Total Pembayaran <span class="text-red-500">*</span>
+                            <!-- Jumlah Pembayaran per Supir -->
+                            <div id="jumlah-container">
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Jumlah Pembayaran per Supir <span class="text-red-500">*</span>
                                 </label>
-                                <div class="relative">
-                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                        <span class="text-gray-500 sm:text-sm">Rp</span>
-                                    </div>
-                                    <input type="number"
-                                           name="jumlah"
-                                           id="jumlah"
-                                           value="{{ old('jumlah') }}"
-                                           placeholder="0"
-                                           min="0"
-                                           step="1000"
-                                           required
-                                           class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jumlah') border-red-300 @enderror">
+                                <div id="jumlah-inputs">
+                                    <!-- Dynamic inputs akan ditambahkan di sini -->
                                 </div>
-                                @error('jumlah')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-sm text-gray-500">Total pembayaran yang akan dibagi ke semua supir (sebelum dikurangi DP)</p>
+                                <div id="no-supir-message" class="text-gray-500 text-sm italic">
+                                    Pilih supir terlebih dahulu untuk mengisi jumlah pembayaran
+                                </div>
 
                                 <!-- Total Calculation Display -->
-                                <div id="total-calculation" class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md hidden">
+                                <div id="total-calculation" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md hidden">
                                     <div class="space-y-2">
                                         <div class="flex items-center justify-between">
                                             <div>
                                                 <span class="text-sm text-blue-800">
-                                                    Total untuk <span id="jumlah-supir">0</span> supir
+                                                    Subtotal <span id="jumlah-supir">0</span> supir
                                                 </span>
                                             </div>
                                             <div>
                                                 <span class="text-sm font-semibold text-blue-900">
-                                                    Subtotal: Rp <span id="subtotal-pembayaran">0</span>
+                                                    Rp <span id="subtotal-pembayaran">0</span>
                                                 </span>
                                             </div>
                                         </div>
@@ -259,7 +247,7 @@
                                             <div>
                                                 <span class="text-sm text-red-600">
                                                     <i class="fas fa-minus-circle mr-1"></i>
-                                                    Penggunaan DP: <span id="dp-amount-text">Rp 0</span>
+                                                    Potongan DP: <span id="dp-amount-text">Rp 0</span>
                                                 </span>
                                             </div>
                                             <div>
@@ -385,7 +373,8 @@ const dpData = {
             supir_count: {{ count($dp->supir_ids) }},
             tanggal: '{{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }}',
             supir_names: @json($dp->supir_names ?? []),
-            supir_ids: @json($dp->supir_ids ?? [])
+            supir_ids: @json($dp->supir_ids ?? []),
+            jumlah_per_supir: @json($dp->jumlah_per_supir ?? [])
         },
     @endforeach
 };
@@ -453,6 +442,8 @@ function toggleSupirDropdown() {
 function updateSupirDisplay() {
     const tagsContainer = document.getElementById('selected-supir-tags');
     const toggleButton = document.getElementById('supir-dropdown-toggle');
+    const jumlahInputsContainer = document.getElementById('jumlah-inputs');
+    const noSupirMessage = document.getElementById('no-supir-message');
 
     // Check if elements exist
     if (!tagsContainer || !toggleButton) {
@@ -461,13 +452,16 @@ function updateSupirDisplay() {
     }
 
     tagsContainer.innerHTML = '';
+    jumlahInputsContainer.innerHTML = '';
 
     if (selectedSupir.length === 0) {
         toggleButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Pilih Supir...';
         toggleButton.className = 'w-full text-left text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded border text-sm';
+        noSupirMessage.style.display = 'block';
     } else {
         toggleButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Tambah Supir...';
         toggleButton.className = 'w-full text-left text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded border border-blue-200 text-sm';
+        noSupirMessage.style.display = 'none';
 
         // Create tags for selected supir
         selectedSupir.forEach(function(supirId) {
@@ -486,6 +480,33 @@ function updateSupirDisplay() {
                     </button>
                 `;
                 tagsContainer.appendChild(tag);
+
+                // Create input field untuk setiap supir
+                const inputDiv = document.createElement('div');
+                inputDiv.className = 'mb-3 p-3 border border-gray-200 rounded-md bg-gray-50';
+                inputDiv.innerHTML = `
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        ${namaLengkap} (${nik}) <span class="text-red-500">*</span>
+                    </label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                            <span class="text-gray-500 sm:text-sm">Rp</span>
+                        </div>
+                        <input type="text"
+                               name="jumlah_display[${supirId}]"
+                               id="jumlah_display_${supirId}"
+                               value="${formatNumber(getOldJumlah(supirId))}"
+                               placeholder="0"
+                               required
+                               class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                               oninput="formatCurrency(this, ${supirId})">
+                        <input type="hidden"
+                               name="jumlah[${supirId}]"
+                               id="jumlah_${supirId}"
+                               value="${getOldJumlah(supirId)}">
+                    </div>
+                `;
+                jumlahInputsContainer.appendChild(inputDiv);
             }
         });
     }
@@ -518,6 +539,7 @@ function autoSelectSupirFromDp(dpId) {
     }
 
     const dpSupirIds = dpData[dpId].supir_ids.map(id => String(id)); // Convert to string for comparison
+    const dpJumlahPerSupir = dpData[dpId].jumlah_per_supir || {};
 
     // Clear existing selections first
     selectedSupir = [];
@@ -538,8 +560,26 @@ function autoSelectSupirFromDp(dpId) {
         }
     });
 
-    // Update display
+    // Update display first to create input fields
     updateSupirDisplay();
+
+    // Auto-fill jumlah berdasarkan data DP setelah delay untuk memastikan input sudah dibuat
+    setTimeout(function() {
+        dpSupirIds.forEach(function(supirId) {
+            const displayInput = document.getElementById(`jumlah_display_${supirId}`);
+            const hiddenInput = document.getElementById(`jumlah_${supirId}`);
+            const dpAmount = dpJumlahPerSupir[supirId] || 0;
+            
+            if (displayInput && hiddenInput && dpAmount > 0) {
+                hiddenInput.value = dpAmount;
+                displayInput.value = formatNumber(dpAmount);
+                console.log(`Auto-filled supir ${supirId} dengan jumlah: Rp ${formatNumber(dpAmount)}`);
+            }
+        });
+        
+        // Update calculation after auto-fill
+        updateTotalCalculation();
+    }, 100);
 
     console.log(`Auto-selected supir from DP: ${dpSupirIds.join(', ')}`);
 }
@@ -551,26 +591,65 @@ function clearAutoSelectedSupir() {
     console.log('DP cleared, keeping existing supir selections');
 }
 
+// Function to get old jumlah value untuk supir tertentu
+function getOldJumlah(supirId) {
+    @if(old('jumlah'))
+        const oldJumlah = @json(old('jumlah'));
+        return oldJumlah[supirId] || '';
+    @else
+        return '';
+    @endif
+}
+
+// Function untuk format number dengan pemisah ribuan
+function formatNumber(num) {
+    if (!num || num === '') return '';
+    return new Intl.NumberFormat('id-ID').format(num);
+}
+
+// Function untuk format currency input
+function formatCurrency(input, supirId) {
+    // Ambil nilai tanpa format
+    let value = input.value.replace(/[^\d]/g, '');
+    
+    // Update hidden input dengan nilai asli
+    const hiddenInput = document.getElementById(`jumlah_${supirId}`);
+    if (hiddenInput) {
+        hiddenInput.value = value || '0';
+    }
+    
+    // Format tampilan dengan pemisah ribuan
+    if (value) {
+        input.value = formatNumber(value);
+    } else {
+        input.value = '';
+    }
+    
+    // Update total calculation
+    updateTotalCalculation();
+}
+
 // Function to update total calculation display
 function updateTotalCalculation() {
     const jumlahSupir = selectedSupir.length;
-    const totalPembayaran = parseInt(document.getElementById('jumlah').value) || 0; // Total pembayaran, bukan per supir
-    const subtotalPembayaran = totalPembayaran; // Subtotal sama dengan input total
+    
+    // Calculate subtotal from individual inputs
+    let subtotalPembayaran = 0;
+    selectedSupir.forEach(function(supirId) {
+        const hiddenInput = document.getElementById(`jumlah_${supirId}`);
+        if (hiddenInput) {
+            subtotalPembayaran += parseInt(hiddenInput.value) || 0;
+        }
+    });
 
     // Get selected DP
     const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
     let dpAmount = 0;
     let finalTotal = subtotalPembayaran;
-    let pembayaranPerSupir = 0;
 
     if (selectedDpId && dpData[selectedDpId]) {
         dpAmount = dpData[selectedDpId].total;
         finalTotal = subtotalPembayaran - dpAmount;
-    }
-
-    // Hitung pembayaran per supir setelah dikurangi DP
-    if (jumlahSupir > 0) {
-        pembayaranPerSupir = Math.floor(finalTotal / jumlahSupir);
     }
 
     const calculationDiv = document.getElementById('total-calculation');
@@ -581,7 +660,7 @@ function updateTotalCalculation() {
     const dpAmountTextSpan = document.getElementById('dp-amount-text');
     const totalFinalPembayaranSpan = document.getElementById('total-final-pembayaran');
 
-    if (jumlahSupir > 0 && totalPembayaran > 0) {
+    if (jumlahSupir > 0 && subtotalPembayaran > 0) {
         calculationDiv.classList.remove('hidden');
         jumlahSupirSpan.textContent = jumlahSupir;
         subtotalPembayaranSpan.textContent = new Intl.NumberFormat('id-ID').format(subtotalPembayaran);
@@ -598,15 +677,10 @@ function updateTotalCalculation() {
         // Update final total
         totalFinalPembayaranSpan.textContent = new Intl.NumberFormat('id-ID').format(Math.max(0, finalTotal));
 
-        // Add pembayaran per supir info in the final total text
+        // Change color based on final total
         const finalTotalElement = totalFinalPembayaranSpan.parentElement.parentElement;
         const finalTotalLeftSpan = finalTotalElement.querySelector('span');
-        finalTotalLeftSpan.innerHTML = `
-            <span class="text-sm font-bold text-blue-900">Total yang Harus Dibayar:</span><br>
-            <span class="text-xs text-blue-700">(Rp ${new Intl.NumberFormat('id-ID').format(Math.max(0, pembayaranPerSupir))} per supir)</span>
-        `;
-
-        // Change color based on final total
+        
         if (finalTotal < 0) {
             finalTotalElement.className = 'flex items-center justify-between border-t border-red-300 pt-2 bg-red-100 rounded px-2 py-1';
             totalFinalPembayaranSpan.className = 'text-lg font-bold text-red-900';
@@ -672,19 +746,42 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Update total calculation when jumlah input changes
-    document.getElementById('jumlah').addEventListener('input', function(e) {
-        let value = e.target.value.replace(/[^\d]/g, '');
-
-        if (value) {
-            // Format with thousand separator for display only
-            let formatted = new Intl.NumberFormat('id-ID').format(value);
-            // Update placeholder to show formatted value
-            e.target.setAttribute('title', 'Rp ' + formatted);
+    // Handle paste event untuk input jumlah
+    document.addEventListener('paste', function(e) {
+        if (e.target.name && e.target.name.includes('jumlah_display')) {
+            setTimeout(function() {
+                const supirId = e.target.id.replace('jumlah_display_', '');
+                formatCurrency(e.target, supirId);
+            }, 10);
         }
+    });
 
-        // Update total calculation
-        updateTotalCalculation();
+    // Validate form before submit
+    document.querySelector('form').addEventListener('submit', function(e) {
+        // Pastikan semua hidden input jumlah terisi
+        const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
+        let hasEmptyAmount = false;
+        
+        hiddenInputs.forEach(function(input) {
+            if (!input.value || input.value === '0' || input.value === '') {
+                hasEmptyAmount = true;
+            }
+        });
+        
+        if (hasEmptyAmount) {
+            e.preventDefault();
+            alert('Harap isi semua jumlah pembayaran untuk setiap supir yang dipilih');
+            return false;
+        }
+        
+        // Debug: log form data before submit
+        console.log('Form data before submit:');
+        const formData = new FormData(this);
+        for (let [key, value] of formData.entries()) {
+            if (key.startsWith('jumlah[')) {
+                console.log(key + ': ' + value);
+            }
+        }
     });
 
     // Handle jenis transaksi selection
