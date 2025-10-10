@@ -57,7 +57,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             ->get();
 
         // Fetch master mobil untuk dropdown plat nomor
-        $masterMobil = \App\Models\Mobil::orderBy('plat_nomor')
+        $masterMobil = \App\Models\Mobil::orderBy('plat')
             ->get();
 
         return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'masterKegiatan', 'masterMobil'));
@@ -166,7 +166,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             ->get();
 
         // Fetch master mobil untuk dropdown plat nomor
-        $masterMobil = \App\Models\Mobil::orderBy('plat_nomor')
+        $masterMobil = \App\Models\Mobil::orderBy('plat')
             ->get();
 
         return view('pembayaran-aktivitas-lainnya.edit', compact(

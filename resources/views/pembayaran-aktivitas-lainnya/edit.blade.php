@@ -132,11 +132,11 @@
                                         <option value="">Pilih Plat Nomor</option>
                                         @if(isset($masterMobil) && $masterMobil->count() > 0)
                                             @foreach($masterMobil as $mobil)
-                                                <option value="{{ $mobil->plat_nomor }}" 
-                                                    {{ old('plat_nomor', $pembayaranAktivitasLainnya->plat_nomor) == $mobil->plat_nomor ? 'selected' : '' }}>
-                                                    {{ $mobil->plat_nomor }}
-                                                    @if($mobil->merk && $mobil->tipe)
-                                                        - {{ $mobil->merk }} {{ $mobil->tipe }}
+                                                <option value="{{ $mobil->plat }}" 
+                                                    {{ old('plat_nomor', $pembayaranAktivitasLainnya->plat_nomor) == $mobil->plat ? 'selected' : '' }}>
+                                                    {{ $mobil->plat }}
+                                                    @if($mobil->aktiva)
+                                                        - {{ $mobil->aktiva }}
                                                     @endif
                                                 </option>
                                             @endforeach
