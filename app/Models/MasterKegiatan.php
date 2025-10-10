@@ -14,6 +14,7 @@ class MasterKegiatan extends Model
     protected $fillable = [
         'kode_kegiatan',
         'nama_kegiatan',
+        'type',
         'keterangan',
         'status',
     ];
