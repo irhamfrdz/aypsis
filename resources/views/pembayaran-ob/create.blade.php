@@ -215,52 +215,71 @@
                                 <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih supir dari daftar karyawan aktif</p>
                             </div>
 
-                            <!-- Jumlah Pembayaran per Supir -->
+                            <!-- Realisasi Pembayaran per Supir -->
                             <div id="jumlah-container">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Jumlah Pembayaran per Supir <span class="text-red-500">*</span>
+                                    Realisasi Pembayaran per Supir <span class="text-red-500">*</span>
                                 </label>
+                                <p class="text-sm text-gray-600 mb-3">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Masukkan jumlah realisasi pembayaran untuk setiap supir. Sistem akan menghitung selisih dengan DP yang dipilih.
+                                </p>
                                 <div id="jumlah-inputs">
                                     <!-- Dynamic inputs akan ditambahkan di sini -->
                                 </div>
                                 <div id="no-supir-message" class="text-gray-500 text-sm italic">
-                                    Pilih supir terlebih dahulu untuk mengisi jumlah pembayaran
+                                    Pilih supir terlebih dahulu untuk mengisi realisasi pembayaran
                                 </div>
 
                                 <!-- Total Calculation Display -->
-                                <div id="total-calculation" class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md hidden">
-                                    <div class="space-y-2">
-                                        <div class="flex items-center justify-between">
+                                <div id="total-calculation" class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg hidden">
+                                    <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                        <i class="fas fa-calculator mr-2"></i>
+                                        Ringkasan Realisasi vs DP
+                                    </h4>
+                                    <div class="space-y-3">
+                                        <!-- Total Realisasi -->
+                                        <div class="flex items-center justify-between p-2 bg-white rounded border">
                                             <div>
-                                                <span class="text-sm text-blue-800">
-                                                    Subtotal <span id="jumlah-supir">0</span> supir
+                                                <span class="text-sm text-gray-700">
+                                                    <i class="fas fa-receipt mr-1"></i>
+                                                    Total Realisasi (<span id="jumlah-supir">0</span> supir)
                                                 </span>
                                             </div>
                                             <div>
-                                                <span class="text-sm font-semibold text-blue-900">
+                                                <span class="text-sm font-semibold text-gray-900">
                                                     Rp <span id="subtotal-pembayaran">0</span>
                                                 </span>
                                             </div>
                                         </div>
-                                        <!-- DP Reduction Row -->
-                                        <div id="dp-reduction-row" class="flex items-center justify-between border-t border-blue-300 pt-2 hidden">
-                                            <div>
-                                                <span class="text-sm text-red-600">
-                                                    <i class="fas fa-minus-circle mr-1"></i>
-                                                    Potongan DP: <span id="dp-amount-text">Rp 0</span>
+                                        
+                                        <!-- DP Row -->
+                                        <div id="dp-reduction-row" class="items-center justify-between p-2 bg-white rounded border hidden">
+                                            <div class="flex items-center justify-between">
+                                                <span class="text-sm text-green-600">
+                                                    <i class="fas fa-money-bill-wave mr-1"></i>
+                                                    Total DP: <span id="dp-amount-text">Rp 0</span>
                                                 </span>
-                                            </div>
-                                            <div>
-                                                <span class="text-sm font-medium text-red-600">
-                                                    -Rp <span id="dp-amount">0</span>
+                                                <span class="text-sm font-medium text-green-600">
+                                                    Rp <span id="dp-amount">0</span>
                                                 </span>
                                             </div>
                                         </div>
+                                        
+                                        <!-- Selisih Breakdown -->
+                                        <div id="selisih-breakdown" class="hidden">
+                                            <div class="text-xs text-gray-600 mb-2 font-medium">Breakdown Selisih:</div>
+                                            <div id="breakdown-items" class="space-y-1 text-xs">
+                                                <!-- Dynamic breakdown items akan ditambahkan di sini -->
+                                            </div>
+                                        </div>
+
                                         <!-- Final Total Row -->
-                                        <div class="flex items-center justify-between border-t border-blue-300 pt-2 bg-blue-100 rounded px-2 py-1">
+                                        <div class="flex items-center justify-between border-t-2 border-blue-300 pt-3 bg-gradient-to-r from-blue-100 to-green-100 rounded-lg px-3 py-2">
                                             <div>
-                                                <span class="text-sm font-bold text-blue-900">
-                                                    Total yang Harus Dibayar:
+                                                <span class="text-sm font-bold text-gray-800">
+                                                    <i class="fas fa-hand-holding-usd mr-1"></i>
+                                                    Total Bayar (Realisasi - DP):
                                                 </span>
                                             </div>
                                             <div>
@@ -481,6 +500,28 @@ function updateSupirDisplay() {
                 `;
                 tagsContainer.appendChild(tag);
 
+                // Get DP info for this supir
+                const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
+                let dpAmount = 0;
+                let dpInfo = '';
+                
+                if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
+                    dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
+                    dpInfo = `
+                        <div class="mb-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
+                            <i class="fas fa-money-bill-wave mr-1 text-green-600"></i>
+                            <span class="text-green-700">DP: Rp ${formatNumber(dpAmount)}</span>
+                        </div>
+                    `;
+                } else {
+                    dpInfo = `
+                        <div class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
+                            <i class="fas fa-user-plus mr-1 text-yellow-600"></i>
+                            <span class="text-yellow-700">Supir Tambahan (Tanpa DP)</span>
+                        </div>
+                    `;
+                }
+
                 // Create input field untuk setiap supir
                 const inputDiv = document.createElement('div');
                 inputDiv.className = 'mb-3 p-3 border border-gray-200 rounded-md bg-gray-50';
@@ -488,6 +529,7 @@ function updateSupirDisplay() {
                     <label class="block text-sm font-medium text-gray-700 mb-2">
                         ${namaLengkap} (${nik}) <span class="text-red-500">*</span>
                     </label>
+                    ${dpInfo}
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                             <span class="text-gray-500 sm:text-sm">Rp</span>
@@ -496,7 +538,7 @@ function updateSupirDisplay() {
                                name="jumlah_display[${supirId}]"
                                id="jumlah_display_${supirId}"
                                value="${formatNumber(getOldJumlah(supirId))}"
-                               placeholder="0"
+                               placeholder="Masukkan realisasi pembayaran"
                                required
                                class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                oninput="formatCurrency(this, ${supirId})">
@@ -504,6 +546,9 @@ function updateSupirDisplay() {
                                name="jumlah[${supirId}]"
                                id="jumlah_${supirId}"
                                value="${getOldJumlah(supirId)}">
+                    </div>
+                    <div id="selisih_${supirId}" class="mt-2 text-xs hidden">
+                        <!-- Selisih akan ditampilkan di sini -->
                     </div>
                 `;
                 jumlahInputsContainer.appendChild(inputDiv);
@@ -573,6 +618,10 @@ function autoSelectSupirFromDp(dpId) {
             if (displayInput && hiddenInput && dpAmount > 0) {
                 hiddenInput.value = dpAmount;
                 displayInput.value = formatNumber(dpAmount);
+                
+                // Update selisih display for this supir
+                updateSelisihDisplay(supirId, dpAmount);
+                
                 console.log(`Auto-filled supir ${supirId} dengan jumlah: Rp ${formatNumber(dpAmount)}`);
             }
         });
@@ -625,8 +674,74 @@ function formatCurrency(input, supirId) {
         input.value = '';
     }
     
+    // Calculate and display selisih untuk supir ini
+    updateSelisihDisplay(supirId, parseInt(value) || 0);
+    
     // Update total calculation
     updateTotalCalculation();
+}
+
+// Function to update selisih display untuk supir tertentu
+function updateSelisihDisplay(supirId, realisasiAmount) {
+    const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
+    const selisihDiv = document.getElementById(`selisih_${supirId}`);
+    
+    if (!selisihDiv) return;
+    
+    let dpAmount = 0;
+    if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
+        dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
+    }
+    
+    if (dpAmount > 0 && realisasiAmount > 0) {
+        const selisih = realisasiAmount - dpAmount;
+        selisihDiv.classList.remove('hidden');
+        
+        if (selisih > 0) {
+            // Realisasi > DP, kurang bayar
+            selisihDiv.innerHTML = `
+                <div class="flex items-center justify-between p-2 bg-red-50 border border-red-200 rounded">
+                    <span class="text-red-700">
+                        <i class="fas fa-arrow-up mr-1"></i>Kurang Bayar:
+                    </span>
+                    <span class="font-semibold text-red-800">Rp ${formatNumber(selisih)}</span>
+                </div>
+            `;
+        } else if (selisih < 0) {
+            // Realisasi < DP, sisa DP
+            selisihDiv.innerHTML = `
+                <div class="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded">
+                    <span class="text-blue-700">
+                        <i class="fas fa-arrow-down mr-1"></i>Sisa DP:
+                    </span>
+                    <span class="font-semibold text-blue-800">Rp ${formatNumber(Math.abs(selisih))}</span>
+                </div>
+            `;
+        } else {
+            // Pas
+            selisihDiv.innerHTML = `
+                <div class="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded">
+                    <span class="text-green-700">
+                        <i class="fas fa-check mr-1"></i>Pas (Sesuai DP)
+                    </span>
+                    <span class="font-semibold text-green-800">Rp 0</span>
+                </div>
+            `;
+        }
+    } else if (dpAmount === 0 && realisasiAmount > 0) {
+        // Supir tambahan tanpa DP
+        selisihDiv.classList.remove('hidden');
+        selisihDiv.innerHTML = `
+            <div class="flex items-center justify-between p-2 bg-yellow-50 border border-yellow-200 rounded">
+                <span class="text-yellow-700">
+                    <i class="fas fa-user-plus mr-1"></i>Bayar Penuh:
+                </span>
+                <span class="font-semibold text-yellow-800">Rp ${formatNumber(realisasiAmount)}</span>
+            </div>
+        `;
+    } else {
+        selisihDiv.classList.add('hidden');
+    }
 }
 
 // Function to update total calculation display
@@ -635,10 +750,63 @@ function updateTotalCalculation() {
     
     // Calculate subtotal from individual inputs
     let subtotalPembayaran = 0;
+    let breakdownItems = [];
+    let totalKurangBayar = 0;
+    let totalSisaDP = 0;
+    let totalBayarPenuh = 0;
+    
     selectedSupir.forEach(function(supirId) {
         const hiddenInput = document.getElementById(`jumlah_${supirId}`);
-        if (hiddenInput) {
-            subtotalPembayaran += parseInt(hiddenInput.value) || 0;
+        const realisasiAmount = parseInt(hiddenInput.value) || 0;
+        subtotalPembayaran += realisasiAmount;
+        
+        // Get supir info for breakdown
+        const checkbox = document.querySelector(`input[value="${supirId}"]`);
+        let supirName = 'Unknown';
+        if (checkbox) {
+            const label = checkbox.closest('label');
+            const namaLengkap = label.querySelector('.font-medium').textContent;
+            const nik = label.querySelector('.text-gray-500').textContent.replace('NIK: ', '');
+            supirName = `${namaLengkap}`;
+        }
+        
+        // Calculate individual breakdown
+        const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
+        let dpAmount = 0;
+        if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
+            dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
+        }
+        
+        if (dpAmount > 0 && realisasiAmount > 0) {
+            const selisih = realisasiAmount - dpAmount;
+            if (selisih > 0) {
+                totalKurangBayar += selisih;
+                breakdownItems.push({
+                    type: 'kurang',
+                    supir: supirName,
+                    amount: selisih
+                });
+            } else if (selisih < 0) {
+                totalSisaDP += Math.abs(selisih);
+                breakdownItems.push({
+                    type: 'sisa',
+                    supir: supirName,
+                    amount: Math.abs(selisih)
+                });
+            } else {
+                breakdownItems.push({
+                    type: 'pas',
+                    supir: supirName,
+                    amount: 0
+                });
+            }
+        } else if (dpAmount === 0 && realisasiAmount > 0) {
+            totalBayarPenuh += realisasiAmount;
+            breakdownItems.push({
+                type: 'penuh',
+                supir: supirName,
+                amount: realisasiAmount
+            });
         }
     });
 
@@ -659,11 +827,62 @@ function updateTotalCalculation() {
     const dpAmountSpan = document.getElementById('dp-amount');
     const dpAmountTextSpan = document.getElementById('dp-amount-text');
     const totalFinalPembayaranSpan = document.getElementById('total-final-pembayaran');
+    const selisihBreakdownDiv = document.getElementById('selisih-breakdown');
+    const breakdownItemsDiv = document.getElementById('breakdown-items');
 
     if (jumlahSupir > 0 && subtotalPembayaran > 0) {
         calculationDiv.classList.remove('hidden');
         jumlahSupirSpan.textContent = jumlahSupir;
         subtotalPembayaranSpan.textContent = new Intl.NumberFormat('id-ID').format(subtotalPembayaran);
+        
+        // Show breakdown if there are items
+        if (breakdownItems.length > 0) {
+            selisihBreakdownDiv.classList.remove('hidden');
+            breakdownItemsDiv.innerHTML = '';
+            
+            breakdownItems.forEach(function(item) {
+                const itemDiv = document.createElement('div');
+                itemDiv.className = 'flex items-center justify-between px-2 py-1 rounded';
+                
+                let iconClass, colorClass, statusText;
+                switch(item.type) {
+                    case 'kurang':
+                        iconClass = 'fas fa-arrow-up';
+                        colorClass = 'bg-red-50 text-red-700';
+                        statusText = 'Kurang Bayar';
+                        break;
+                    case 'sisa':
+                        iconClass = 'fas fa-arrow-down';
+                        colorClass = 'bg-blue-50 text-blue-700';
+                        statusText = 'Sisa DP';
+                        break;
+                    case 'pas':
+                        iconClass = 'fas fa-check';
+                        colorClass = 'bg-green-50 text-green-700';
+                        statusText = 'Pas';
+                        break;
+                    case 'penuh':
+                        iconClass = 'fas fa-user-plus';
+                        colorClass = 'bg-yellow-50 text-yellow-700';
+                        statusText = 'Bayar Penuh';
+                        break;
+                }
+                
+                itemDiv.className += ` ${colorClass}`;
+                itemDiv.innerHTML = `
+                    <span class="text-xs">
+                        <i class="${iconClass} mr-1"></i>
+                        ${item.supir}: ${statusText}
+                    </span>
+                    <span class="text-xs font-medium">
+                        ${item.amount > 0 ? 'Rp ' + formatNumber(item.amount) : '-'}
+                    </span>
+                `;
+                breakdownItemsDiv.appendChild(itemDiv);
+            });
+        } else {
+            selisihBreakdownDiv.classList.add('hidden');
+        }
 
         // Show/hide DP reduction
         if (dpAmount > 0) {
