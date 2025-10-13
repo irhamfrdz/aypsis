@@ -45,6 +45,7 @@ use App\Http\Controllers\TipeAkunController;
 use App\Http\Controllers\PengirimController;
 use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\TermController;
+use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
 
 /*
@@ -93,6 +94,21 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->group(function () {
 // Route untuk copy permission (di luar middleware auth agar bisa digunakan di form create)
 Route::get('master/user/{user}/permissions-for-copy', [UserController::class, 'getUserPermissionsForCopy'])
      ->name('master.user.permissions-for-copy');
+
+// Test route untuk debugging menu tujuan kirim
+Route::get('test-tujuan-kirim', function () {
+    return view('test-tujuan-kirim');
+})->name('test.tujuan-kirim')->middleware('auth');
+
+// Debug sidebar route
+Route::get('debug-sidebar', function () {
+    return view('debug-sidebar');
+})->name('debug.sidebar')->middleware('auth');
+
+// Test route untuk verifikasi tujuan kirim
+Route::get('test-tujuan-kirim-route', function () {
+    return view('test-tujuan-kirim-route');
+})->name('test.tujuan-kirim.route')->middleware('auth');
 
 // Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
 Route::middleware([
@@ -340,6 +356,8 @@ Route::middleware([
         Route::get('kegiatan/export/csv', [MasterKegiatanController::class, 'exportCsv'])
              ->name('kegiatan.export')
              ->middleware('can:master-kegiatan-view');
+
+
 
         // Master tujuan kegiatan utama routes
         Route::get('tujuan-kegiatan-utama', [TujuanKegiatanUtamaController::class, 'index'])
@@ -756,6 +774,28 @@ Route::middleware([
              'edit' => 'can:master-term-update',
              'update' => 'can:master-term-update',
              'destroy' => 'can:master-term-delete'
+         ]);
+
+    // 📦 Tujuan Kirim (Shipping Destination) Management with permissions
+    Route::resource('master/tujuan-kirim', \App\Http\Controllers\MasterTujuanKirimController::class)
+         ->names([
+             'index' => 'tujuan-kirim.index',
+             'create' => 'tujuan-kirim.create',
+             'store' => 'tujuan-kirim.store',
+             'show' => 'tujuan-kirim.show',
+             'edit' => 'tujuan-kirim.edit',
+             'update' => 'tujuan-kirim.update',
+             'destroy' => 'tujuan-kirim.destroy'
+         ])
+         ->parameters(['tujuan-kirim' => 'tujuanKirim'])
+         ->middleware([
+             'index' => 'can:master-tujuan-kirim-view',
+             'create' => 'can:master-tujuan-kirim-create',
+             'store' => 'can:master-tujuan-kirim-create',
+             'show' => 'can:master-tujuan-kirim-view',
+             'edit' => 'can:master-tujuan-kirim-update',
+             'update' => 'can:master-tujuan-kirim-update',
+             'destroy' => 'can:master-tujuan-kirim-delete'
          ]);
 });
 
