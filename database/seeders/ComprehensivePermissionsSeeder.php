@@ -120,6 +120,22 @@ class ComprehensivePermissionsSeeder extends Seeder
             ['name' => 'master.kegiatan.template', 'description' => 'Template Master Kegiatan'],
             ['name' => 'master.kegiatan.import', 'description' => 'Import Master Kegiatan'],
 
+            // Master Tujuan Kegiatan Utama
+            ['name' => 'master-tujuan-kegiatan-utama', 'description' => 'Akses Master Tujuan Kegiatan Utama'],
+            ['name' => 'master-tujuan-kegiatan-utama.view', 'description' => 'Melihat Master Tujuan Kegiatan Utama'],
+            ['name' => 'master-tujuan-kegiatan-utama.create', 'description' => 'Membuat Master Tujuan Kegiatan Utama'],
+            ['name' => 'master-tujuan-kegiatan-utama.update', 'description' => 'Mengupdate Master Tujuan Kegiatan Utama'],
+            ['name' => 'master-tujuan-kegiatan-utama.delete', 'description' => 'Menghapus Master Tujuan Kegiatan Utama'],
+            ['name' => 'master-tujuan-kegiatan-utama.print', 'description' => 'Print Master Tujuan Kegiatan Utama'],
+            ['name' => 'master-tujuan-kegiatan-utama.export', 'description' => 'Export Master Tujuan Kegiatan Utama'],
+            ['name' => 'master.tujuan-kegiatan-utama.index', 'description' => 'Index Master Tujuan Kegiatan Utama'],
+            ['name' => 'master.tujuan-kegiatan-utama.create', 'description' => 'Create Master Tujuan Kegiatan Utama'],
+            ['name' => 'master.tujuan-kegiatan-utama.store', 'description' => 'Store Master Tujuan Kegiatan Utama'],
+            ['name' => 'master.tujuan-kegiatan-utama.show', 'description' => 'Show Master Tujuan Kegiatan Utama'],
+            ['name' => 'master.tujuan-kegiatan-utama.edit', 'description' => 'Edit Master Tujuan Kegiatan Utama'],
+            ['name' => 'master.tujuan-kegiatan-utama.update', 'description' => 'Update Master Tujuan Kegiatan Utama'],
+            ['name' => 'master.tujuan-kegiatan-utama.destroy', 'description' => 'Destroy Master Tujuan Kegiatan Utama'],
+
             // Master Permission
             ['name' => 'master-permission', 'description' => 'Akses Master Permission'],
             ['name' => 'master-permission.view', 'description' => 'Melihat Master Permission'],

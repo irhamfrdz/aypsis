@@ -1157,6 +1157,42 @@ class PermissionSeeder extends Seeder
             ],
 
             // ============================================
+            // PEMBAYARAN UANG MUKA PERMISSIONS
+            // ============================================
+            [
+                'name' => 'pembayaran-uang-muka',
+                'description' => 'Akses modul Pembayaran Uang Muka'
+            ],
+            [
+                'name' => 'pembayaran-uang-muka-view',
+                'description' => 'Lihat pembayaran uang muka'
+            ],
+            [
+                'name' => 'pembayaran-uang-muka-create',
+                'description' => 'Tambah pembayaran uang muka'
+            ],
+            [
+                'name' => 'pembayaran-uang-muka-update',
+                'description' => 'Update pembayaran uang muka'
+            ],
+            [
+                'name' => 'pembayaran-uang-muka-edit',
+                'description' => 'Edit pembayaran uang muka'
+            ],
+            [
+                'name' => 'pembayaran-uang-muka-delete',
+                'description' => 'Hapus pembayaran uang muka'
+            ],
+            [
+                'name' => 'pembayaran-uang-muka-print',
+                'description' => 'Cetak pembayaran uang muka'
+            ],
+            [
+                'name' => 'pembayaran-uang-muka-export',
+                'description' => 'Export pembayaran uang muka'
+            ],
+
+            // ============================================
             // PERBAIKAN KONTAINER PERMISSIONS
             // ============================================
             [

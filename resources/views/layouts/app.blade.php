@@ -264,7 +264,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*');
+                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -349,6 +349,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                     </svg>
                                     Master Kegiatan
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-tujuan-view'))
+                                <a href="{{ route('master.tujuan-kegiatan-utama.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.tujuan-kegiatan-utama.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                    Data Transportasi
                                 </a>
                             @endif
                         </div>
@@ -834,15 +842,16 @@
 
 {{-- Pembayaran Dropdown --}}
 @php
-    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-dp-ob.*') || Request::routeIs('pembayaran-ob.*');
+    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
     $hasPaymentPermissions = $user && (
         $user->can('pembayaran-pranota-kontainer-view') ||
         $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
         $user->can('pembayaran-pranota-cat-view') ||
         $user->can('pembayaran-pranota-supir-view') ||
         $user->can('pembayaran-aktivitas-lainnya-view') ||
-        $user->can('pembayaran-dp-ob-view') ||
-        $user->can('pembayaran-ob-view')
+        $user->can('pembayaran-uang-muka-view') ||
+        $user->can('pembayaran-ob-view') ||
+        $user->can('realisasi-uang-muka-view')
     );
 @endphp
 
@@ -957,8 +966,8 @@
 
         {{-- Aktivitas Lain-lain Sub-dropdown --}}
         @php
-            $isAktivitasLainnyaPaymentRoute = Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-dp-ob.*') || Request::routeIs('pembayaran-ob.*');
-            $hasAktivitasLainnyaPaymentPermission = $user && ($user->can('pembayaran-aktivitas-lainnya-view') || $user->can('pembayaran-dp-ob-view') || $user->can('pembayaran-ob-view'));
+            $isAktivitasLainnyaPaymentRoute = Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
+            $hasAktivitasLainnyaPaymentPermission = $user && ($user->can('pembayaran-aktivitas-lainnya-view') || $user->can('pembayaran-uang-muka-view') || $user->can('pembayaran-ob-view') || $user->can('realisasi-uang-muka-view'));
         @endphp
         @if($hasAktivitasLainnyaPaymentPermission)
         <div class="mt-2 mb-2">
@@ -986,13 +995,13 @@
                     </a>
                 @endif
 
-                {{-- Pembayaran DP OB --}}
-                @if(Route::has('pembayaran-dp-ob.index') && ($isAdmin || auth()->user()->can('pembayaran-dp-ob-view')))
-                    <a href="{{ route('pembayaran-dp-ob.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-dp-ob.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                {{-- Pembayaran Uang Muka --}}
+                @if(Route::has('pembayaran-uang-muka.index') && ($isAdmin || auth()->user()->can('pembayaran-uang-muka-view')))
+                    <a href="{{ route('pembayaran-uang-muka.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-uang-muka.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
                         </svg>
-                        Pembayaran DP OB
+                        Pembayaran Uang Muka
                     </a>
                 @endif
 
@@ -1003,6 +1012,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         Pembayaran OB
+                    </a>
+                @endif
+
+                {{-- Realisasi Uang Muka --}}
+                @if(Route::has('realisasi-uang-muka.index') && ($isAdmin || auth()->user()->can('realisasi-uang-muka-view')))
+                    <a href="{{ route('realisasi-uang-muka.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('realisasi-uang-muka.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Realisasi Uang Muka
                     </a>
                 @endif
             </div>

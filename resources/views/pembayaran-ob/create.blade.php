@@ -160,134 +160,158 @@
                             </div>
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Supir -->
-                            <div>
-                                <label for="supir" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Supir <span class="text-red-500">*</span>
-                                </label>
-                                <div class="relative">
-                                    <div class="border border-gray-300 rounded-md bg-white @error('supir') border-red-300 @enderror">
-                                        <div class="p-3">
-                                            <div class="flex flex-wrap gap-2 mb-2" id="selected-supir-tags">
-                                                <!-- Selected supir tags will appear here -->
-                                            </div>
-                                            <button type="button"
-                                                    id="supir-dropdown-toggle"
-                                                    class="w-full text-left text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded border text-sm">
-                                                <i class="fas fa-plus mr-2"></i>Pilih Supir...
-                                            </button>
-                                        </div>
-                                    </div>
+                        <!-- Realisasi Pembayaran per Supir (Table Format) -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Realisasi Pembayaran per Supir <span class="text-red-500">*</span>
+                            </label>
+                            <p class="text-sm text-gray-600 mb-4">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Pilih supir dan masukkan realisasi pembayaran. Sistem akan menghitung selisih dengan DP yang dipilih secara otomatis.
+                            </p>
 
-                                    <!-- Dropdown menu -->
-                                    <div id="supir-dropdown-menu" class="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg hidden">
-                                        <div class="max-h-48 overflow-y-auto">
-                                            @foreach($supirList as $supir)
-                                                <label class="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer">
-                                                    <input type="checkbox"
-                                                           name="supir[]"
-                                                           value="{{ $supir->id }}"
-                                                           class="supir-checkbox mr-3 text-blue-600"
-                                                           {{ in_array($supir->id, old('supir', [])) ? 'checked' : '' }}>
-                                                    <div class="flex-1">
-                                                        <div class="font-medium text-gray-900">{{ $supir->nama_lengkap }}</div>
-                                                        <div class="text-sm text-gray-500">NIK: {{ $supir->nik }}</div>
-                                                    </div>
-                                                </label>
-                                            @endforeach
-
-                                            @if($supirList->isEmpty())
-                                                <div class="px-3 py-2 text-gray-500 text-sm">
-                                                    Tidak ada supir aktif tersedia
-                                                </div>
-                                            @endif
-                                        </div>
-                                    </div>
+                            <!-- Control Buttons -->
+                            <div class="mb-4 flex flex-wrap gap-3">
+                                <!-- Select All Button -->
+                                <div class="p-3 bg-blue-50 border border-blue-200 rounded-md flex-1 min-w-64">
+                                    <label class="flex items-center">
+                                        <input type="checkbox" id="select-all" class="mr-2 text-blue-600">
+                                        <span class="text-sm font-medium text-blue-800">
+                                            <i class="fas fa-users mr-1"></i>
+                                            Pilih Semua Supir Aktif ({{ $supirList->count() }} supir)
+                                        </span>
+                                    </label>
                                 </div>
 
-                                @error('supir')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                @error('supir.*')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih supir dari daftar karyawan aktif</p>
+                                <!-- Add Driver Button -->
+                                <div class="flex gap-2">
+                                    <button type="button"
+                                            id="add-supir-btn"
+                                            onclick="openSupirModal()"
+                                            class="px-4 py-2 bg-green-500 hover:bg-green-600 text-white rounded-md text-sm font-medium transition duration-200">
+                                        <i class="fas fa-plus mr-1"></i>
+                                        Tambah Supir
+                                    </button>
+                                        Sembunyikan
+                                    </button>
+                                </div>
                             </div>
 
-                            <!-- Realisasi Pembayaran per Supir -->
-                            <div id="jumlah-container">
-                                <label class="block text-sm font-medium text-gray-700 mb-2">
-                                    Realisasi Pembayaran per Supir <span class="text-red-500">*</span>
-                                </label>
-                                <p class="text-sm text-gray-600 mb-3">
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Masukkan jumlah realisasi pembayaran untuk setiap supir. Sistem akan menghitung selisih dengan DP yang dipilih.
-                                </p>
-                                <div id="jumlah-inputs">
-                                    <!-- Dynamic inputs akan ditambahkan di sini -->
-                                </div>
-                                <div id="no-supir-message" class="text-gray-500 text-sm italic">
-                                    Pilih supir terlebih dahulu untuk mengisi realisasi pembayaran
-                                </div>
+                            <!-- Table -->
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200 bg-white">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                                                Pilih
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                                                NIK
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Nama Supir
+                                            </th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                                                Uang Muka
+                                            </th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-40">
+                                                Realisasi <span class="text-red-500">*</span>
+                                            </th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                                                Selisih
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">
+                                                Keterangan
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="divide-y divide-gray-200" id="supir-table-body">
+                                        @foreach($supirList as $index => $supir)
+                                        <tr class="supir-row" data-supir-id="{{ $supir->id }}" style="display: none;">
+                                            <td class="px-4 py-3">
+                                                <input type="checkbox"
+                                                       name="supir[]"
+                                                       value="{{ $supir->id }}"
+                                                       class="supir-checkbox text-blue-600 focus:ring-blue-500"
+                                                       onchange="toggleSupirRow({{ $supir->id }})">
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-900 font-medium">
+                                                {{ $supir->nik }}
+                                            </td>
+                                            <td class="px-4 py-3 text-sm text-gray-900">
+                                                {{ $supir->nama_lengkap }}
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <div class="dp-info text-sm" id="dp_{{ $supir->id }}">
+                                                    <span class="text-gray-400 italic">-</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative">
+                                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                                        <span class="text-gray-500 text-sm">Rp</span>
+                                                    </div>
+                                                    <input type="text"
+                                                           name="realisasi_display[{{ $supir->id }}]"
+                                                           id="realisasi_display_{{ $supir->id }}"
+                                                           class="realisasi-input block w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100"
+                                                           placeholder="0"
+                                                           oninput="hitungSelisih({{ $supir->id }})"
+                                                           disabled>
+                                                    <input type="hidden"
+                                                           name="jumlah[{{ $supir->id }}]"
+                                                           id="jumlah_{{ $supir->id }}"
+                                                           value="0">
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 text-center">
+                                                <div class="selisih-display" id="selisih_{{ $supir->id }}">
+                                                    <span class="text-gray-400 italic text-sm">-</span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <input type="text"
+                                                       name="keterangan[{{ $supir->id }}]"
+                                                       id="keterangan_{{ $supir->id }}"
+                                                       class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 text-sm disabled:bg-gray-100"
+                                                       placeholder="Keterangan..."
+                                                       disabled>
+                                            </td>
+                                        </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                <!-- Total Calculation Display -->
-                                <div id="total-calculation" class="mt-4 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg hidden">
-                                    <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
-                                        <i class="fas fa-calculator mr-2"></i>
-                                        Ringkasan Realisasi vs DP
-                                    </h4>
-                                    <div class="space-y-3">
-                                        <!-- Total Realisasi -->
-                                        <div class="flex items-center justify-between p-2 bg-white rounded border">
-                                            <div>
-                                                <span class="text-sm text-gray-700">
-                                                    <i class="fas fa-receipt mr-1"></i>
-                                                    Total Realisasi (<span id="jumlah-supir">0</span> supir)
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span class="text-sm font-semibold text-gray-900">
-                                                    Rp <span id="subtotal-pembayaran">0</span>
-                                                </span>
-                                            </div>
-                                        </div>
+                            @error('supir')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            @error('jumlah')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
 
-                                        <!-- DP Row -->
-                                        <div id="dp-reduction-row" class="items-center justify-between p-2 bg-white rounded border hidden">
-                                            <div class="flex items-center justify-between">
-                                                <span class="text-sm text-green-600">
-                                                    <i class="fas fa-money-bill-wave mr-1"></i>
-                                                    Total DP: <span id="dp-amount-text">Rp 0</span>
-                                                </span>
-                                                <span class="text-sm font-medium text-green-600">
-                                                    Rp <span id="dp-amount">0</span>
-                                                </span>
-                                            </div>
-                                        </div>
-
-                                        <!-- Selisih Breakdown -->
-                                        <div id="selisih-breakdown" class="hidden">
-                                            <div class="text-xs text-gray-600 mb-2 font-medium">Breakdown Selisih:</div>
-                                            <div id="breakdown-items" class="space-y-1 text-xs">
-                                                <!-- Dynamic breakdown items akan ditambahkan di sini -->
-                                            </div>
-                                        </div>
-
-                                        <!-- Final Total Row -->
-                                        <div class="flex items-center justify-between border-t-2 border-blue-300 pt-3 bg-gradient-to-r from-blue-100 to-green-100 rounded-lg px-3 py-2">
-                                            <div>
-                                                <span class="text-sm font-bold text-gray-800">
-                                                    <i class="fas fa-hand-holding-usd mr-1"></i>
-                                                    Total Bayar (Realisasi - DP):
-                                                </span>
-                                            </div>
-                                            <div>
-                                                <span class="text-lg font-bold text-blue-900">
-                                                    Rp <span id="total-final-pembayaran">0</span>
-                                                </span>
-                                            </div>
-                                        </div>
+                            <!-- Summary Section -->
+                            <div id="summary-section" class="mt-6 p-4 bg-gradient-to-r from-blue-50 to-green-50 border border-blue-200 rounded-lg hidden">
+                                <h4 class="text-sm font-bold text-gray-800 mb-3 flex items-center">
+                                    <i class="fas fa-calculator mr-2"></i>
+                                    Ringkasan Pembayaran
+                                </h4>
+                                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm">
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="text-gray-600">Total Supir</div>
+                                        <div class="text-lg font-bold text-blue-600" id="total-supir">0</div>
+                                    </div>
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="text-gray-600">Total Realisasi</div>
+                                        <div class="text-lg font-bold text-green-600" id="total-realisasi">Rp 0</div>
+                                    </div>
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="text-gray-600">Total Uang Muka</div>
+                                        <div class="text-lg font-bold text-orange-600" id="total-dp">Rp 0</div>
+                                    </div>
+                                    <div class="bg-white p-3 rounded border">
+                                        <div class="text-gray-600">Total Bayar</div>
+                                        <div class="text-lg font-bold text-purple-600" id="total-bayar">Rp 0</div>
                                     </div>
                                 </div>
                             </div>
@@ -308,58 +332,59 @@
                             @enderror
                         </div>
 
-                        <!-- DP Selection Field -->
+                        <!-- Uang Muka Selection Field -->
                         <div>
-                            <label for="pembayaran_dp_ob_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Pilih DP yang Akan Digunakan <span class="text-gray-500">(Opsional)</span>
+                            <label for="pembayaran_uang_muka_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                Pilih Uang Muka yang Akan Digunakan <span class="text-gray-500">(Opsional)</span>
                             </label>
-                            <select name="pembayaran_dp_ob_id"
-                                    id="pembayaran_dp_ob_id"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('pembayaran_dp_ob_id') border-red-300 @enderror">
-                                <option value="">-- Tidak Menggunakan DP --</option>
-                                @foreach($dpBelumTerpakaiList as $dp)
-                                    <option value="{{ $dp->id }}" {{ old('pembayaran_dp_ob_id') == $dp->id ? 'selected' : '' }}>
-                                        {{ $dp->nomor_pembayaran }} - {{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }} -
-                                        {{ count($dp->supir_ids) }} supir -
-                                        Rp {{ number_format($dp->total_pembayaran, 0, ',', '.') }}
-                                        @if($dp->keterangan)
-                                            - {{ Str::limit($dp->keterangan, 30) }}
+                            <select name="pembayaran_uang_muka_id"
+                                    id="pembayaran_uang_muka_id"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('pembayaran_uang_muka_id') border-red-300 @enderror">
+                                <option value="">-- Tidak Menggunakan Uang Muka --</option>
+                                @foreach($uangMukaBelumTerpakaiList as $uangMuka)
+                                    <option value="{{ $uangMuka->id }}" {{ old('pembayaran_uang_muka_id') == $uangMuka->id ? 'selected' : '' }}>
+                                        {{ $uangMuka->nomor_pembayaran }} - {{ \Carbon\Carbon::parse($uangMuka->tanggal_pembayaran)->format('d/m/Y') }} -
+                                        {{ $uangMuka->formatted_kegiatan }} -
+                                        {{ count($uangMuka->supir_ids) }} supir -
+                                        Rp {{ number_format($uangMuka->total_pembayaran, 0, ',', '.') }}
+                                        @if($uangMuka->keterangan)
+                                            - {{ Str::limit($uangMuka->keterangan, 30) }}
                                         @endif
                                     </option>
                                 @endforeach
                             </select>
-                            @error('pembayaran_dp_ob_id')
+                            @error('pembayaran_uang_muka_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
 
-                            <!-- DP Selection Info -->
-                            <div id="dp-selection-info" class="mt-2 p-3 bg-green-50 border border-green-200 rounded-md hidden">
+                            <!-- Uang Muka Selection Info -->
+                            <div id="uang-muka-selection-info" class="mt-2 p-3 bg-green-50 border border-green-200 rounded-md hidden">
                                 <div class="flex items-start">
                                     <div class="flex-shrink-0">
                                         <i class="fas fa-check-circle text-green-500 mt-0.5"></i>
                                     </div>
                                     <div class="ml-2">
-                                        <div class="text-sm font-medium text-green-800">DP Dipilih:</div>
+                                        <div class="text-sm font-medium text-green-800">Uang Muka Dipilih:</div>
                                         <div class="text-sm text-green-700">
-                                            <span id="selected-dp-info">-</span>
+                                            <span id="selected-uang-muka-info">-</span>
                                         </div>
                                         <div class="text-xs text-green-600 mt-1">
                                             <i class="fas fa-info-circle mr-1"></i>
-                                            DP ini akan dipotongkan dari total pembayaran dan statusnya akan berubah menjadi "Terpakai"
+                                            Uang Muka ini akan dipotongkan dari total pembayaran dan statusnya akan berubah menjadi "Terpakai"
                                         </div>
                                     </div>
                                 </div>
                             </div>
 
-                            @if($dpBelumTerpakaiList->count() > 0)
+                            @if($uangMukaBelumTerpakaiList->count() > 0)
                                 <p class="mt-1 text-sm text-gray-500">
                                     <i class="fas fa-info-circle mr-1"></i>
-                                    Pilih DP yang akan digunakan untuk pembayaran ini. DP yang dipilih akan diubah statusnya menjadi "Terpakai"
+                                    Pilih Uang Muka yang akan digunakan untuk pembayaran ini. Uang Muka yang dipilih akan diubah statusnya menjadi "Terpakai"
                                 </p>
                             @else
                                 <p class="mt-1 text-sm text-yellow-600">
                                     <i class="fas fa-exclamation-triangle mr-1"></i>
-                                    Tidak ada DP yang tersedia atau semua DP sudah terpakai
+                                    Tidak ada Uang Muka yang tersedia atau semua Uang Muka sudah terpakai
                                 </p>
                             @endif
                         </div>
@@ -383,33 +408,34 @@
 </div>
 
 <script>
-// DP Data untuk JavaScript
-const dpData = {
-    @foreach($dpBelumTerpakaiList as $dp)
-        '{{ $dp->id }}': {
-            nomor: '{{ $dp->nomor_pembayaran }}',
-            total: {{ $dp->total_pembayaran }},
-            supir_count: {{ count($dp->supir_ids) }},
-            tanggal: '{{ \Carbon\Carbon::parse($dp->tanggal_pembayaran)->format('d/m/Y') }}',
-            supir_names: @json($dp->supir_names ?? []),
-            supir_ids: @json($dp->supir_ids ?? []),
-            jumlah_per_supir: @json($dp->jumlah_per_supir ?? [])
+// Uang Muka Data untuk JavaScript
+const uangMukaData = {
+    @foreach($uangMukaBelumTerpakaiList as $uangMuka)
+        '{{ $uangMuka->id }}': {
+            nomor: '{{ $uangMuka->nomor_pembayaran }}',
+            total: {{ $uangMuka->total_pembayaran }},
+            supir_count: {{ count($uangMuka->supir_ids) }},
+            tanggal: '{{ \Carbon\Carbon::parse($uangMuka->tanggal_pembayaran)->format('d/m/Y') }}',
+            kegiatan: '{{ $uangMuka->formatted_kegiatan }}',
+            supir_names: @json($uangMuka->supir_names ?? []),
+            supir_ids: @json($uangMuka->supir_ids ?? []),
+            jumlah_per_supir: @json($uangMuka->jumlah_per_supir ?? [])
         },
     @endforeach
 };
 
+// Current selected Uang Muka data
+let currentUangMukaData = {};
+
 // Auto generate nomor pembayaran
 async function generateNomor() {
     try {
-        // Ambil kas_bank_id yang dipilih untuk generate nomor yang sesuai
         const kasBankId = document.getElementById('kas_bank').value;
-
         if (!kasBankId) {
             alert('Pilih akun Kas/Bank terlebih dahulu untuk generate nomor pembayaran');
             return;
         }
 
-        // Buat URL dengan parameter kas_bank_id
         let url = '{{ route('pembayaran-ob.generate-nomor') }}';
         url += '?kas_bank_id=' + kasBankId;
 
@@ -418,589 +444,330 @@ async function generateNomor() {
 
         if (data.nomor_pembayaran) {
             document.getElementById('nomor_pembayaran').value = data.nomor_pembayaran;
-            console.log('Nomor generated: ' + data.nomor_pembayaran);
-        } else if (data.error) {
-            console.error('Failed to generate nomor:', data.message || data.error);
-            alert('Error: ' + (data.message || data.error));
         } else {
-            console.error('Failed to generate nomor: Unexpected response format');
-            alert('Error: Unexpected response format');
+            alert('Error: ' + (data.message || data.error || 'Unexpected response format'));
         }
     } catch (error) {
         console.error('Error generating nomor:', error);
-        alert('Terjadi kesalahan saat generate nomor. Menggunakan nomor default.');
-
-        // Fallback generate nomor secara manual dengan format baru
         const today = new Date();
         const month = String(today.getMonth() + 1).padStart(2, '0');
-        const year = String(today.getFullYear()).slice(-2); // 2 digit tahun
+        const year = String(today.getFullYear()).slice(-2);
         const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
-
-        // Format: KBJ-MM-YY-NNNNNN (default COA KBJ)
         document.getElementById('nomor_pembayaran').value = `KBJ-${month}-${year}-${random}`;
     }
 }
 
+// Toggle individual supir row
+function toggleSupirRow(supirId) {
+    const checkbox = document.querySelector(`input[name="supir[]"][value="${supirId}"]`);
+    const row = document.querySelector(`.supir-row[data-supir-id="${supirId}"]`);
+    const realisasiInput = document.getElementById(`realisasi_display_${supirId}`);
+    const keteranganInput = document.getElementById(`keterangan_${supirId}`);
 
+    if (checkbox.checked) {
+        row.style.display = 'table-row';
+        realisasiInput.disabled = false;
+        realisasiInput.required = true;
+        keteranganInput.disabled = false;
 
-// Auto focus will be set up in DOMContentLoaded
-
-// Multi-select Supir Dropdown functionality
-let selectedSupir = [];
-
-// Load previously selected supir from old input (will be initialized in DOMContentLoaded)
-@if(old('supir'))
-    // Will be loaded in DOMContentLoaded
-@endif
-
-function toggleSupirDropdown() {
-    const menu = document.getElementById('supir-dropdown-menu');
-    menu.classList.toggle('hidden');
-}
-
-function updateSupirDisplay() {
-    const tagsContainer = document.getElementById('selected-supir-tags');
-    const toggleButton = document.getElementById('supir-dropdown-toggle');
-    const jumlahInputsContainer = document.getElementById('jumlah-inputs');
-    const noSupirMessage = document.getElementById('no-supir-message');
-
-    // Check if elements exist
-    if (!tagsContainer || !toggleButton) {
-        console.log('Supir display elements not found, skipping update');
-        return;
-    }
-
-    tagsContainer.innerHTML = '';
-    jumlahInputsContainer.innerHTML = '';
-
-    if (selectedSupir.length === 0) {
-        toggleButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Pilih Supir...';
-        toggleButton.className = 'w-full text-left text-gray-500 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded border text-sm';
-        noSupirMessage.style.display = 'block';
+        // Auto-fill dengan Uang Muka jika tersedia
+        const selectedUangMukaId = document.getElementById('pembayaran_uang_muka_id').value;
+        if (selectedUangMukaId && currentUangMukaData[supirId]) {
+            const uangMukaAmount = currentUangMukaData[supirId];
+            realisasiInput.value = formatNumber(uangMukaAmount);
+            document.getElementById(`jumlah_${supirId}`).value = uangMukaAmount;
+            hitungSelisih(supirId);
+        }
     } else {
-        toggleButton.innerHTML = '<i class="fas fa-plus mr-2"></i>Tambah Supir...';
-        toggleButton.className = 'w-full text-left text-blue-600 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded border border-blue-200 text-sm';
-        noSupirMessage.style.display = 'none';
+        row.style.display = 'none';
+        realisasiInput.disabled = true;
+        realisasiInput.required = false;
+        realisasiInput.value = '';
+        keteranganInput.disabled = true;
+        keteranganInput.value = '';
+        document.getElementById(`jumlah_${supirId}`).value = '0';
 
-        // Create tags for selected supir
-        selectedSupir.forEach(function(supirId) {
-            const checkbox = document.querySelector(`input[value="${supirId}"]`);
-            if (checkbox) {
-                const label = checkbox.closest('label');
-                const namaLengkap = label.querySelector('.font-medium').textContent;
-                const nik = label.querySelector('.text-gray-500').textContent.replace('NIK: ', '');
-
-                const tag = document.createElement('div');
-                tag.className = 'inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800';
-                tag.innerHTML = `
-                    ${namaLengkap} (${nik})
-                    <button type="button" onclick="removeSupir('${supirId}')" class="ml-2 text-blue-600 hover:text-blue-800">
-                        <i class="fas fa-times text-xs"></i>
-                    </button>
-                `;
-                tagsContainer.appendChild(tag);
-
-                // Get DP info for this supir
-                const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
-                let dpAmount = 0;
-                let dpInfo = '';
-
-                if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
-                    dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
-                    dpInfo = `
-                        <div class="mb-2 p-2 bg-green-50 border border-green-200 rounded text-xs">
-                            <i class="fas fa-money-bill-wave mr-1 text-green-600"></i>
-                            <span class="text-green-700">DP: Rp ${formatNumber(dpAmount)}</span>
-                        </div>
-                    `;
-                } else {
-                    dpInfo = `
-                        <div class="mb-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs">
-                            <i class="fas fa-user-plus mr-1 text-yellow-600"></i>
-                            <span class="text-yellow-700">Supir Tambahan (Tanpa DP)</span>
-                        </div>
-                    `;
-                }
-
-                // Create input field untuk setiap supir
-                const inputDiv = document.createElement('div');
-                inputDiv.className = 'mb-3 p-3 border border-gray-200 rounded-md bg-gray-50';
-                inputDiv.innerHTML = `
-                    <label class="block text-sm font-medium text-gray-700 mb-2">
-                        ${namaLengkap} (${nik}) <span class="text-red-500">*</span>
-                    </label>
-                    ${dpInfo}
-                    <div class="relative">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <span class="text-gray-500 sm:text-sm">Rp</span>
-                        </div>
-                        <input type="text"
-                               name="jumlah_display[${supirId}]"
-                               id="jumlah_display_${supirId}"
-                               value="${formatNumber(getOldJumlah(supirId))}"
-                               placeholder="Masukkan realisasi pembayaran"
-                               required
-                               class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                               oninput="formatCurrency(this, ${supirId})">
-                        <input type="hidden"
-                               name="jumlah[${supirId}]"
-                               id="jumlah_${supirId}"
-                               value="${getOldJumlah(supirId)}">
-                    </div>
-                    <div id="selisih_${supirId}" class="mt-2 text-xs hidden">
-                        <!-- Selisih akan ditampilkan di sini -->
-                    </div>
-                `;
-                jumlahInputsContainer.appendChild(inputDiv);
-            }
-        });
+        // Reset selisih display
+        document.getElementById(`selisih_${supirId}`).innerHTML = '<span class="text-gray-400 italic text-sm">-</span>';
     }
 
-    // Update total calculation
-    updateTotalCalculation();
+    updateSummary();
 }
 
-function removeSupir(supirId) {
-    const index = selectedSupir.indexOf(supirId);
-    if (index > -1) {
-        selectedSupir.splice(index, 1);
+// Buka modal untuk tambah supir
+function openSupirModal() {
+    const modal = document.getElementById('supir-modal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
 
-        // Uncheck the checkbox
-        const checkbox = document.querySelector(`input[value="${supirId}"]`);
-        if (checkbox) {
-            checkbox.checked = false;
-        }
-
-        updateSupirDisplay();
-    }
+    // Reset search
+    document.getElementById('supir-search').value = '';
+    filterSupirOptions('');
 }
 
-// These event listeners will be set up in DOMContentLoaded
+// Tutup modal supir
+function closeSupirModal() {
+    const modal = document.getElementById('supir-modal');
+    modal.classList.add('hidden');
+    document.body.style.overflow = 'auto'; // Re-enable background scrolling
+}
 
-// Function to auto-select supir dari DP yang dipilih
-function autoSelectSupirFromDp(dpId) {
-    if (!dpId || !dpData[dpId] || !dpData[dpId].supir_ids) {
-        return;
-    }
+// Filter supir options berdasarkan pencarian
+function filterSupirOptions(searchTerm) {
+    const options = document.querySelectorAll('.supir-option');
+    const term = searchTerm.toLowerCase();
 
-    const dpSupirIds = dpData[dpId].supir_ids.map(id => String(id)); // Convert to string for comparison
-    const dpJumlahPerSupir = dpData[dpId].jumlah_per_supir || {};
+    options.forEach(function(option) {
+        const namaLengkap = option.getAttribute('data-supir-nama').toLowerCase();
+        const namaPanggilan = (option.getAttribute('data-supir-panggilan') || '').toLowerCase();
+        const nik = option.getAttribute('data-supir-nik').toLowerCase();
 
-    // Clear existing selections first
-    selectedSupir = [];
-
-    // Uncheck all checkboxes first
-    document.querySelectorAll('.supir-checkbox').forEach(function(checkbox) {
-        checkbox.checked = false;
-    });
-
-    // Auto-select supir from DP
-    dpSupirIds.forEach(function(supirId) {
-        const checkbox = document.querySelector(`input[value="${supirId}"]`);
-        if (checkbox) {
-            checkbox.checked = true;
-            if (!selectedSupir.includes(supirId)) {
-                selectedSupir.push(supirId);
-            }
+        if (namaLengkap.includes(term) || namaPanggilan.includes(term) || nik.includes(term)) {
+            option.style.display = 'block';
+        } else {
+            option.style.display = 'none';
         }
     });
-
-    // Update display first to create input fields
-    updateSupirDisplay();
-
-    // Auto-fill jumlah berdasarkan data DP setelah delay untuk memastikan input sudah dibuat
-    setTimeout(function() {
-        dpSupirIds.forEach(function(supirId) {
-            const displayInput = document.getElementById(`jumlah_display_${supirId}`);
-            const hiddenInput = document.getElementById(`jumlah_${supirId}`);
-            const dpAmount = dpJumlahPerSupir[supirId] || 0;
-
-            if (displayInput && hiddenInput && dpAmount > 0) {
-                hiddenInput.value = dpAmount;
-                displayInput.value = formatNumber(dpAmount);
-
-                // Update selisih display for this supir
-                updateSelisihDisplay(supirId, dpAmount);
-
-                console.log(`Auto-filled supir ${supirId} dengan jumlah: Rp ${formatNumber(dpAmount)}`);
-            }
-        });
-
-        // Update calculation after auto-fill
-        updateTotalCalculation();
-    }, 100);
-
-    console.log(`Auto-selected supir from DP: ${dpSupirIds.join(', ')}`);
 }
 
-// Function to clear auto-selected supir
-function clearAutoSelectedSupir() {
-    // Only clear if we don't have manual selections
-    // This prevents clearing manually selected supir when no DP is selected
-    console.log('DP cleared, keeping existing supir selections');
+// Pilih supir dari modal
+function selectSupirFromModal(supirId) {
+    // Cek apakah supir sudah dipilih
+    const checkbox = document.querySelector(`input[name="supir[]"][value="${supirId}"]`);
+    if (checkbox && !checkbox.checked) {
+        checkbox.checked = true;
+        toggleSupirRow(supirId);
+
+        // Tutup modal setelah memilih
+        closeSupirModal();
+
+        // Scroll ke baris supir yang baru ditambah
+        const row = document.querySelector(`.supir-row[data-supir-id="${supirId}"]`);
+        if (row) {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+            // Highlight row sejenak
+            row.style.backgroundColor = '#fef3c7';
+            setTimeout(function() {
+                row.style.backgroundColor = '';
+            }, 2000);
+        }
+    } else {
+        alert('Supir ini sudah dipilih!');
+    }
 }
 
-// Function to get old jumlah value untuk supir tertentu
-function getOldJumlah(supirId) {
-    @if(old('jumlah'))
-        const oldJumlah = @json(old('jumlah'));
-        return oldJumlah[supirId] || '';
-    @else
-        return '';
-    @endif
+// Select/deselect all supir
+function toggleSelectAll() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const supirCheckboxes = document.querySelectorAll('input[name="supir[]"]');
+
+    supirCheckboxes.forEach(function(checkbox) {
+        checkbox.checked = selectAllCheckbox.checked;
+        toggleSupirRow(checkbox.value);
+    });
 }
 
-// Function untuk format number dengan pemisah ribuan
+// Format number dengan pemisah ribuan
 function formatNumber(num) {
     if (!num || num === '') return '';
     return new Intl.NumberFormat('id-ID').format(num);
 }
 
-// Function untuk format currency input
+// Format currency input
 function formatCurrency(input, supirId) {
-    // Ambil nilai tanpa format
     let value = input.value.replace(/[^\d]/g, '');
+    document.getElementById(`jumlah_${supirId}`).value = value || '0';
 
-    // Update hidden input dengan nilai asli
-    const hiddenInput = document.getElementById(`jumlah_${supirId}`);
-    if (hiddenInput) {
-        hiddenInput.value = value || '0';
-    }
-
-    // Format tampilan dengan pemisah ribuan
     if (value) {
         input.value = formatNumber(value);
     } else {
         input.value = '';
     }
-
-    // Calculate and display selisih untuk supir ini
-    updateSelisihDisplay(supirId, parseInt(value) || 0);
-
-    // Update total calculation
-    updateTotalCalculation();
 }
 
-// Function to update selisih display untuk supir tertentu
-function updateSelisihDisplay(supirId, realisasiAmount) {
-    const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
+// Hitung selisih untuk supir tertentu
+function hitungSelisih(supirId) {
+    const realisasiInput = document.getElementById(`realisasi_display_${supirId}`);
     const selisihDiv = document.getElementById(`selisih_${supirId}`);
 
-    if (!selisihDiv) return;
+    // Format currency
+    formatCurrency(realisasiInput, supirId);
 
-    let dpAmount = 0;
-    if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
-        dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
-    }
+    const realisasiAmount = parseInt(document.getElementById(`jumlah_${supirId}`).value) || 0;
+    const uangMukaAmount = currentUangMukaData[supirId] || 0;
 
-    if (dpAmount > 0 && realisasiAmount > 0) {
-        const selisih = realisasiAmount - dpAmount;
-        selisihDiv.classList.remove('hidden');
-
-        if (selisih > 0) {
-            // Realisasi > DP, kurang bayar
-            selisihDiv.innerHTML = `
-                <div class="flex items-center justify-between p-2 bg-red-50 border border-red-200 rounded">
-                    <span class="text-red-700">
-                        <i class="fas fa-arrow-up mr-1"></i>Kurang Bayar:
-                    </span>
-                    <span class="font-semibold text-red-800">Rp ${formatNumber(selisih)}</span>
-                </div>
-            `;
-        } else if (selisih < 0) {
-            // Realisasi < DP, sisa DP
-            selisihDiv.innerHTML = `
-                <div class="flex items-center justify-between p-2 bg-blue-50 border border-blue-200 rounded">
-                    <span class="text-blue-700">
-                        <i class="fas fa-arrow-down mr-1"></i>Sisa DP:
-                    </span>
-                    <span class="font-semibold text-blue-800">Rp ${formatNumber(Math.abs(selisih))}</span>
-                </div>
-            `;
+    if (realisasiAmount > 0) {
+        if (uangMukaAmount > 0) {
+            const selisih = realisasiAmount - uangMukaAmount;
+            if (selisih > 0) {
+                selisihDiv.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">+${formatNumber(selisih)}</span>`;
+            } else if (selisih < 0) {
+                selisihDiv.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">${formatNumber(selisih)}</span>`;
+            } else {
+                selisihDiv.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">0</span>`;
+            }
         } else {
-            // Pas
-            selisihDiv.innerHTML = `
-                <div class="flex items-center justify-between p-2 bg-green-50 border border-green-200 rounded">
-                    <span class="text-green-700">
-                        <i class="fas fa-check mr-1"></i>Pas (Sesuai DP)
-                    </span>
-                    <span class="font-semibold text-green-800">Rp 0</span>
-                </div>
-            `;
+            selisihDiv.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Penuh</span>`;
         }
-    } else if (dpAmount === 0 && realisasiAmount > 0) {
-        // Supir tambahan tanpa DP
-        selisihDiv.classList.remove('hidden');
-        selisihDiv.innerHTML = `
-            <div class="flex items-center justify-between p-2 bg-yellow-50 border border-yellow-200 rounded">
-                <span class="text-yellow-700">
-                    <i class="fas fa-user-plus mr-1"></i>Bayar Penuh:
-                </span>
-                <span class="font-semibold text-yellow-800">Rp ${formatNumber(realisasiAmount)}</span>
-            </div>
-        `;
     } else {
-        selisihDiv.classList.add('hidden');
+        selisihDiv.innerHTML = '<span class="text-gray-400 italic text-sm">-</span>';
     }
+
+    updateSummary();
 }
 
-// Function to update total calculation display
-function updateTotalCalculation() {
-    const jumlahSupir = selectedSupir.length;
+// Update Uang Muka display untuk semua supir
+function updateUangMukaDisplay() {
+    const selectedUangMukaId = document.getElementById('pembayaran_uang_muka_id').value;
 
-    // Calculate subtotal from individual inputs
-    let subtotalPembayaran = 0;
-    let breakdownItems = [];
-    let totalKurangBayar = 0;
-    let totalSisaDP = 0;
-    let totalBayarPenuh = 0;
+    // Reset currentUangMukaData
+    currentUangMukaData = {};
 
-    selectedSupir.forEach(function(supirId) {
-        const hiddenInput = document.getElementById(`jumlah_${supirId}`);
-        const realisasiAmount = parseInt(hiddenInput.value) || 0;
-        subtotalPembayaran += realisasiAmount;
+    // Update Uang Muka display untuk semua supir
+    @foreach($supirList as $supir)
+        const uangMukaDiv{{ $supir->id }} = document.getElementById('dp_{{ $supir->id }}');
+        let uangMukaAmount{{ $supir->id }} = 0;
 
-        // Get supir info for breakdown
-        const checkbox = document.querySelector(`input[value="${supirId}"]`);
-        let supirName = 'Unknown';
-        if (checkbox) {
-            const label = checkbox.closest('label');
-            const namaLengkap = label.querySelector('.font-medium').textContent;
-            const nik = label.querySelector('.text-gray-500').textContent.replace('NIK: ', '');
-            supirName = `${namaLengkap}`;
+        if (selectedUangMukaId && uangMukaData[selectedUangMukaId] && uangMukaData[selectedUangMukaId].jumlah_per_supir && uangMukaData[selectedUangMukaId].jumlah_per_supir['{{ $supir->id }}']) {
+            uangMukaAmount{{ $supir->id }} = uangMukaData[selectedUangMukaId].jumlah_per_supir['{{ $supir->id }}'];
+            currentUangMukaData['{{ $supir->id }}'] = uangMukaAmount{{ $supir->id }};
+            uangMukaDiv{{ $supir->id }}.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Rp ${formatNumber(uangMukaAmount{{ $supir->id }})}</span>`;
+        } else {
+            uangMukaDiv{{ $supir->id }}.innerHTML = '<span class="text-gray-400 italic">-</span>';
         }
 
-        // Calculate individual breakdown
-        const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
-        let dpAmount = 0;
-        if (selectedDpId && dpData[selectedDpId] && dpData[selectedDpId].jumlah_per_supir && dpData[selectedDpId].jumlah_per_supir[supirId]) {
-            dpAmount = dpData[selectedDpId].jumlah_per_supir[supirId];
+        // Update selisih jika supir sudah dipilih
+        const checkbox{{ $supir->id }} = document.querySelector(`input[name="supir[]"][value="{{ $supir->id }}"]`);
+        if (checkbox{{ $supir->id }} && checkbox{{ $supir->id }}.checked) {
+            hitungSelisih('{{ $supir->id }}');
         }
+    @endforeach
 
-        if (dpAmount > 0 && realisasiAmount > 0) {
-            const selisih = realisasiAmount - dpAmount;
-            if (selisih > 0) {
-                totalKurangBayar += selisih;
-                breakdownItems.push({
-                    type: 'kurang',
-                    supir: supirName,
-                    amount: selisih
-                });
-            } else if (selisih < 0) {
-                totalSisaDP += Math.abs(selisih);
-                breakdownItems.push({
-                    type: 'sisa',
-                    supir: supirName,
-                    amount: Math.abs(selisih)
-                });
-            } else {
-                breakdownItems.push({
-                    type: 'pas',
-                    supir: supirName,
-                    amount: 0
-                });
-            }
-        } else if (dpAmount === 0 && realisasiAmount > 0) {
-            totalBayarPenuh += realisasiAmount;
-            breakdownItems.push({
-                type: 'penuh',
-                supir: supirName,
-                amount: realisasiAmount
-            });
-        }
+    updateSummary();
+}
+
+// Update summary calculation
+function updateSummary() {
+    const selectedSupir = document.querySelectorAll('input[name="supir[]"]:checked');
+    let totalRealisasi = 0;
+    let totalDp = 0;
+
+    selectedSupir.forEach(function(checkbox) {
+        const supirId = checkbox.value;
+        const realisasiAmount = parseInt(document.getElementById(`jumlah_${supirId}`).value) || 0;
+        const uangMukaAmount = currentUangMukaData[supirId] || 0;
+
+        totalRealisasi += realisasiAmount;
+        totalDp += uangMukaAmount;
     });
 
-    // Get selected DP
-    const selectedDpId = document.getElementById('pembayaran_dp_ob_id').value;
-    let dpAmount = 0;
-    let finalTotal = subtotalPembayaran;
+    const totalBayar = totalRealisasi - totalDp;
 
-    if (selectedDpId && dpData[selectedDpId]) {
-        dpAmount = dpData[selectedDpId].total;
-        finalTotal = subtotalPembayaran - dpAmount;
-    }
-
-    const calculationDiv = document.getElementById('total-calculation');
-    const jumlahSupirSpan = document.getElementById('jumlah-supir');
-    const subtotalPembayaranSpan = document.getElementById('subtotal-pembayaran');
-    const dpReductionRow = document.getElementById('dp-reduction-row');
-    const dpAmountSpan = document.getElementById('dp-amount');
-    const dpAmountTextSpan = document.getElementById('dp-amount-text');
-    const totalFinalPembayaranSpan = document.getElementById('total-final-pembayaran');
-    const selisihBreakdownDiv = document.getElementById('selisih-breakdown');
-    const breakdownItemsDiv = document.getElementById('breakdown-items');
-
-    if (jumlahSupir > 0 && subtotalPembayaran > 0) {
-        calculationDiv.classList.remove('hidden');
-        jumlahSupirSpan.textContent = jumlahSupir;
-        subtotalPembayaranSpan.textContent = new Intl.NumberFormat('id-ID').format(subtotalPembayaran);
-
-        // Show breakdown if there are items
-        if (breakdownItems.length > 0) {
-            selisihBreakdownDiv.classList.remove('hidden');
-            breakdownItemsDiv.innerHTML = '';
-
-            breakdownItems.forEach(function(item) {
-                const itemDiv = document.createElement('div');
-                itemDiv.className = 'flex items-center justify-between px-2 py-1 rounded';
-
-                let iconClass, colorClass, statusText;
-                switch(item.type) {
-                    case 'kurang':
-                        iconClass = 'fas fa-arrow-up';
-                        colorClass = 'bg-red-50 text-red-700';
-                        statusText = 'Kurang Bayar';
-                        break;
-                    case 'sisa':
-                        iconClass = 'fas fa-arrow-down';
-                        colorClass = 'bg-blue-50 text-blue-700';
-                        statusText = 'Sisa DP';
-                        break;
-                    case 'pas':
-                        iconClass = 'fas fa-check';
-                        colorClass = 'bg-green-50 text-green-700';
-                        statusText = 'Pas';
-                        break;
-                    case 'penuh':
-                        iconClass = 'fas fa-user-plus';
-                        colorClass = 'bg-yellow-50 text-yellow-700';
-                        statusText = 'Bayar Penuh';
-                        break;
-                }
-
-                itemDiv.className += ` ${colorClass}`;
-                itemDiv.innerHTML = `
-                    <span class="text-xs">
-                        <i class="${iconClass} mr-1"></i>
-                        ${item.supir}: ${statusText}
-                    </span>
-                    <span class="text-xs font-medium">
-                        ${item.amount > 0 ? 'Rp ' + formatNumber(item.amount) : '-'}
-                    </span>
-                `;
-                breakdownItemsDiv.appendChild(itemDiv);
-            });
-        } else {
-            selisihBreakdownDiv.classList.add('hidden');
-        }
-
-        // Show/hide DP reduction
-        if (dpAmount > 0) {
-            dpReductionRow.classList.remove('hidden');
-            dpAmountSpan.textContent = new Intl.NumberFormat('id-ID').format(dpAmount);
-            dpAmountTextSpan.textContent = `Rp ${new Intl.NumberFormat('id-ID').format(dpAmount)} (${dpData[selectedDpId].nomor})`;
-        } else {
-            dpReductionRow.classList.add('hidden');
-        }
-
-        // Update final total
-        totalFinalPembayaranSpan.textContent = new Intl.NumberFormat('id-ID').format(Math.max(0, finalTotal));
-
-        // Change color based on final total
-        const finalTotalElement = totalFinalPembayaranSpan.parentElement.parentElement;
-        const finalTotalLeftSpan = finalTotalElement.querySelector('span');
-
-        if (finalTotal < 0) {
-            finalTotalElement.className = 'flex items-center justify-between border-t border-red-300 pt-2 bg-red-100 rounded px-2 py-1';
-            totalFinalPembayaranSpan.className = 'text-lg font-bold text-red-900';
-            finalTotalLeftSpan.className = 'text-sm font-bold text-red-900';
-        } else {
-            finalTotalElement.className = 'flex items-center justify-between border-t border-blue-300 pt-2 bg-blue-100 rounded px-2 py-1';
-            totalFinalPembayaranSpan.className = 'text-lg font-bold text-blue-900';
-            finalTotalLeftSpan.className = 'text-sm font-bold text-blue-900';
-        }
+    if (selectedSupir.length > 0) {
+        document.getElementById('summary-section').classList.remove('hidden');
+        document.getElementById('total-supir').textContent = selectedSupir.length;
+        document.getElementById('total-realisasi').textContent = 'Rp ' + formatNumber(totalRealisasi);
+        document.getElementById('total-dp').textContent = 'Rp ' + formatNumber(totalDp);
+        document.getElementById('total-bayar').textContent = 'Rp ' + formatNumber(Math.max(0, totalBayar));
     } else {
-        calculationDiv.classList.add('hidden');
+        document.getElementById('summary-section').classList.add('hidden');
     }
 }
 
-// These event listeners will be moved to DOMContentLoaded
 
-// Auto generate nomor on page load if field is empty
+// Initialize page
 document.addEventListener('DOMContentLoaded', function() {
+    // Auto generate nomor on page load
     const nomorField = document.getElementById('nomor_pembayaran');
     if (!nomorField.value.trim()) {
         generateNomor();
     }
 
-    // Load previously selected supir from old input
-    @if(old('supir'))
-        selectedSupir = @json(old('supir'));
-    @endif
+    // Setup select all checkbox
+    document.getElementById('select-all').addEventListener('change', toggleSelectAll);
 
-    // Initialize supir display
-    updateSupirDisplay();
-
-    // Handle supir dropdown toggle
-    document.getElementById('supir-dropdown-toggle').addEventListener('click', toggleSupirDropdown);
-
-    // Handle checkbox changes
-    document.querySelectorAll('.supir-checkbox').forEach(function(checkbox) {
+    // Setup individual supir checkboxes
+    document.querySelectorAll('input[name="supir[]"]').forEach(function(checkbox) {
         checkbox.addEventListener('change', function() {
-            const supirId = this.value;
-
-            if (this.checked) {
-                if (!selectedSupir.includes(supirId)) {
-                    selectedSupir.push(supirId);
-                }
-            } else {
-                const index = selectedSupir.indexOf(supirId);
-                if (index > -1) {
-                    selectedSupir.splice(index, 1);
-                }
-            }
-
-            updateSupirDisplay();
+            toggleSupirRow(this.value);
         });
     });
 
-    // Close dropdown when clicking outside
-    document.addEventListener('click', function(e) {
-        const dropdown = document.getElementById('supir-dropdown-menu');
-        const toggle = document.getElementById('supir-dropdown-toggle');
-        const container = dropdown.closest('.relative');
-
-        if (!container.contains(e.target)) {
-            dropdown.classList.add('hidden');
-        }
+    // Event listener untuk search supir di modal
+    document.getElementById('supir-search').addEventListener('input', function() {
+        filterSupirOptions(this.value);
     });
 
-    // Handle paste event untuk input jumlah
-    document.addEventListener('paste', function(e) {
-        if (e.target.name && e.target.name.includes('jumlah_display')) {
-            setTimeout(function() {
-                const supirId = e.target.id.replace('jumlah_display_', '');
-                formatCurrency(e.target, supirId);
-            }, 10);
-        }
-    });
-
-    // Validate form before submit
-    document.querySelector('form').addEventListener('submit', function(e) {
-        // Pastikan semua hidden input jumlah terisi
-        const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
-        let hasEmptyAmount = false;
-
-        hiddenInputs.forEach(function(input) {
-            if (!input.value || input.value === '0' || input.value === '') {
-                hasEmptyAmount = true;
-            }
+    // Event listener untuk click pada supir options
+    document.querySelectorAll('.supir-option').forEach(function(option) {
+        option.addEventListener('click', function() {
+            const supirId = this.getAttribute('data-supir-id');
+            selectSupirFromModal(supirId);
         });
+    });
 
-        if (hasEmptyAmount) {
-            e.preventDefault();
-            alert('Harap isi semua jumlah pembayaran untuk setiap supir yang dipilih');
-            return false;
+    // Close modal when clicking outside
+    document.getElementById('supir-modal').addEventListener('click', function(e) {
+        if (e.target === this) {
+            closeSupirModal();
         }
+    });
 
-        // Debug: log form data before submit
-        console.log('Form data before submit:');
-        const formData = new FormData(this);
-        for (let [key, value] of formData.entries()) {
-            if (key.startsWith('jumlah[')) {
-                console.log(key + ': ' + value);
+    // Close modal dengan ESC key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('supir-modal');
+            if (!modal.classList.contains('hidden')) {
+                closeSupirModal();
             }
         }
+    });
+
+    // Handle kas/bank selection
+    document.getElementById('kas_bank').addEventListener('change', function(e) {
+        if (e.target.value) {
+            generateNomor();
+        }
+    });
+
+    // Handle Uang Muka selection change
+    document.getElementById('pembayaran_uang_muka_id').addEventListener('change', function(e) {
+        const selectedUangMukaId = e.target.value;
+        const uangMukaInfoDiv = document.getElementById('uang-muka-selection-info');
+        const uangMukaInfoSpan = document.getElementById('selected-uang-muka-info');
+
+        if (selectedUangMukaId && uangMukaData[selectedUangMukaId]) {
+            const uangMuka = uangMukaData[selectedUangMukaId];
+            uangMukaInfoDiv.classList.remove('hidden');
+
+            // Auto-select supir dari Uang Muka
+            if (uangMuka.supir_ids && uangMuka.supir_ids.length > 0) {
+                uangMuka.supir_ids.forEach(function(supirId) {
+                    const checkbox = document.querySelector(`input[name="supir[]"][value="${supirId}"]`);
+                    if (checkbox && !checkbox.checked) {
+                        checkbox.checked = true;
+                        toggleSupirRow(supirId);
+                    }
+                });
+            }
+
+            let supirNamesText = '';
+            if (uangMuka.supir_names && uangMuka.supir_names.length > 0) {
+                supirNamesText = `<br><span class="text-xs text-green-600"><strong>Supir:</strong> ${uangMuka.supir_names.join(', ')}</span>`;
+            }
+
+            uangMukaInfoSpan.innerHTML = `
+                <strong>${uangMuka.nomor}</strong> - ${uangMuka.tanggal} - ${uangMuka.kegiatan} - ${uangMuka.supir_count} supir<br>
+                <span class="font-semibold text-green-800">Nilai Uang Muka: Rp ${new Intl.NumberFormat('id-ID').format(uangMuka.total)}</span>
+                ${supirNamesText}
+                <br><span class="text-xs text-blue-600 mt-1"><i class="fas fa-magic mr-1"></i>Supir telah dipilih otomatis dari Uang Muka ini</span>
+            `;
+        } else {
+            uangMukaInfoDiv.classList.add('hidden');
+        }
+
+        updateUangMukaDisplay();
     });
 
     // Handle jenis transaksi selection
@@ -1022,67 +789,138 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Handle kas/bank selection - regenerate nomor when changed
-    document.getElementById('kas_bank').addEventListener('change', function(e) {
-        if (e.target.value) {
-            // Re-generate nomor pembayaran with new COA prefix
-            generateNomor();
+    // Form validation
+    document.querySelector('form').addEventListener('submit', function(e) {
+        const selectedSupir = document.querySelectorAll('input[name="supir[]"]:checked');
+        if (selectedSupir.length === 0) {
+            e.preventDefault();
+            alert('Harap pilih minimal satu supir');
+            return false;
         }
-    });
 
-    // Handle DP selection change
-    document.getElementById('pembayaran_dp_ob_id').addEventListener('change', function(e) {
-        updateTotalCalculation();
-
-        // Show/hide info about selected DP
-        const selectedDpId = e.target.value;
-        const dpInfoDiv = document.getElementById('dp-selection-info');
-        const dpInfoSpan = document.getElementById('selected-dp-info');
-
-        if (selectedDpId && dpData[selectedDpId]) {
-            const dp = dpData[selectedDpId];
-            dpInfoDiv.classList.remove('hidden');
-
-            // Auto-select supir dari DP yang dipilih
-            autoSelectSupirFromDp(selectedDpId);
-
-            // Format daftar nama supir
-            let supirNamesText = '';
-            if (dp.supir_names && dp.supir_names.length > 0) {
-                supirNamesText = `<br><span class="text-xs text-green-600"><strong>Supir:</strong> ${dp.supir_names.join(', ')}</span>`;
-            }
-
-            dpInfoSpan.innerHTML = `
-                <strong>${dp.nomor}</strong> - ${dp.tanggal} - ${dp.supir_count} supir<br>
-                <span class="font-semibold text-green-800">Nilai DP: Rp ${new Intl.NumberFormat('id-ID').format(dp.total)}</span>
-                ${supirNamesText}
-                <br><span class="text-xs text-blue-600 mt-1"><i class="fas fa-magic mr-1"></i>Supir telah dipilih otomatis dari DP ini</span>
-            `;
-            console.log(`DP dipilih: ${dp.nomor} - Rp ${new Intl.NumberFormat('id-ID').format(dp.total)} - Supir: ${dp.supir_names.join(', ')}`);
-        } else {
-            dpInfoDiv.classList.add('hidden');
-
-            // Clear auto-selected supir jika tidak ada DP yang dipilih
-            clearAutoSelectedSupir();
-        }
-    });
-
-    // Auto focus next field on Enter
-    document.querySelectorAll('input, textarea').forEach(function(input, index, inputs) {
-        input.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && e.target.type !== 'textarea') {
-                e.preventDefault();
-                let nextIndex = index + 1;
-                if (nextIndex < inputs.length) {
-                    inputs[nextIndex].focus();
-                } else {
-                    // Submit form if this is the last input
-                    document.querySelector('form').submit();
-                }
+        let hasEmptyRealisasi = false;
+        selectedSupir.forEach(function(checkbox) {
+            const supirId = checkbox.value;
+            const jumlahInput = document.getElementById(`jumlah_${supirId}`);
+            if (!jumlahInput.value || jumlahInput.value === '0') {
+                hasEmptyRealisasi = true;
             }
         });
+
+        if (hasEmptyRealisasi) {
+            e.preventDefault();
+            alert('Harap isi semua realisasi pembayaran untuk supir yang dipilih');
+            return false;
+        }
     });
+
+    // Load old input if any
+    @if(old('supir'))
+        const oldSupir = @json(old('supir'));
+        oldSupir.forEach(function(supirId) {
+            const checkbox = document.querySelector(`input[name="supir[]"][value="${supirId}"]`);
+            if (checkbox) {
+                checkbox.checked = true;
+                toggleSupirRow(supirId);
+            }
+        });
+    @endif
 });
 </script>
+
+<!-- Modal Popup untuk Tambah Supir -->
+<div id="supir-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-3/4 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <!-- Modal Header -->
+        <div class="flex items-center justify-between pb-3 border-b">
+            <h3 class="text-lg font-semibold text-gray-900">
+                <i class="fas fa-user-plus mr-2 text-green-500"></i>
+                Pilih Supir untuk Ditambahkan
+            </h3>
+            <button type="button" onclick="closeSupirModal()" class="text-gray-400 hover:text-gray-600">
+                <i class="fas fa-times text-xl"></i>
+            </button>
+        </div>
+
+        <!-- Modal Body -->
+        <div class="py-4">
+            <!-- Search Box -->
+            <div class="mb-4">
+                <div class="relative">
+                    <input type="text"
+                           id="supir-search"
+                           placeholder="Cari berdasarkan nama panggilan, nama lengkap, atau NIK..."
+                           class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-gray-400"></i>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Supir List -->
+            <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                <div class="divide-y divide-gray-200">
+                    @foreach($supirList as $supir)
+                    <div class="supir-option p-4 hover:bg-blue-50 cursor-pointer border-l-4 border-transparent hover:border-blue-400 transition-all duration-200"
+                         data-supir-id="{{ $supir->id }}"
+                         data-supir-nik="{{ $supir->nik }}"
+                         data-supir-nama="{{ $supir->nama_lengkap }}"
+                         data-supir-panggilan="{{ $supir->nama_panggilan }}">
+                        <div class="flex items-center justify-between">
+                            <div class="flex items-center space-x-4">
+                                <div class="flex-shrink-0">
+                                    <div class="w-12 h-12 bg-gradient-to-br from-blue-400 to-blue-600 rounded-full flex items-center justify-center shadow-md">
+                                        <i class="fas fa-user text-white text-lg"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-1">
+                                    <div class="flex items-center space-x-2 mb-1">
+                                        <h4 class="text-base font-semibold text-gray-900">{{ $supir->nama_panggilan ?? $supir->nama_lengkap }}</h4>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            <i class="fas fa-id-card mr-1"></i>
+                                            Supir
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600 space-x-3">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-user mr-1 text-gray-400"></i>
+                                            <span class="font-medium">Nama Lengkap:</span>
+                                            <span class="ml-1 text-gray-700">{{ $supir->nama_lengkap }}</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-fingerprint mr-1 text-gray-400"></i>
+                                            <span class="font-medium">NIK:</span>
+                                            <span class="ml-1 font-mono bg-gray-100 px-2 py-0.5 rounded text-gray-800">{{ $supir->nik }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 border border-green-200">
+                                    <i class="fas fa-check-circle mr-1"></i>
+                                    Tersedia
+                                </span>
+                                <div class="text-xs text-gray-400 mt-1">
+                                    Klik untuk pilih
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal Footer -->
+        <div class="flex justify-end pt-4 border-t space-x-3">
+            <button type="button"
+                    onclick="closeSupirModal()"
+                    class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-800 rounded-md text-sm font-medium transition duration-200">
+                <i class="fas fa-times mr-1"></i>
+                Batal
+            </button>
+        </div>
+    </div>
+</div>
 
 @endsection

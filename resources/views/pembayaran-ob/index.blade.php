@@ -98,7 +98,7 @@
                                     Supir
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                    Realisasi & DP
+                                    Realisasi Uang Muka
                                 </th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Keterangan
@@ -151,27 +151,27 @@
                                                 $totalRealisasi = array_sum($jumlahPerSupirArray);
                                                 $supirCount = count($pembayaran->supir_ids ?? []);
                                             @endphp
-                                            
+
                                             @if($supirCount > 0 && $totalRealisasi > 0)
                                                 <span class="text-blue-600">
                                                     <i class="fas fa-receipt mr-1"></i>
                                                     Realisasi: Rp {{ number_format($totalRealisasi, 0, ',', '.') }}
                                                 </span>
-                                                
+
                                                 @if($pembayaran->dp_amount > 0)
                                                     <br><span class="text-green-600">
                                                         <i class="fas fa-money-bill-wave mr-1"></i>
-                                                        DP: Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
+                                                        Uang Muka: Rp {{ number_format($pembayaran->dp_amount, 0, ',', '.') }}
                                                     </span>
                                                     @php
                                                         $selisih = $totalRealisasi - $pembayaran->dp_amount;
                                                     @endphp
                                                     <br><span class="text-{{ $selisih >= 0 ? 'red' : 'blue' }}-600">
                                                         <i class="fas fa-{{ $selisih >= 0 ? 'arrow-up' : 'arrow-down' }} mr-1"></i>
-                                                        {{ $selisih >= 0 ? 'Kurang Bayar' : 'Sisa DP' }}: Rp {{ number_format(abs($selisih), 0, ',', '.') }}
+                                                        {{ $selisih >= 0 ? 'Kurang Bayar' : 'Sisa Uang Muka' }}: Rp {{ number_format(abs($selisih), 0, ',', '.') }}
                                                     </span>
                                                 @endif
-                                                
+
                                                 <br><span class="text-gray-500">
                                                     {{ $supirCount }} supir
                                                 </span>

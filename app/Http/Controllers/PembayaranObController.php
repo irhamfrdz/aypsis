@@ -74,21 +74,21 @@ class PembayaranObController extends Controller
                           ->orderBy('nomor_akun')
                           ->get();
 
-        // List DP yang belum terpakai dengan data supir
-        $dpBelumTerpakaiList = \App\Models\PembayaranDpOb::where('status', 'dp_belum_terpakai')
-                                                          ->orderBy('tanggal_pembayaran', 'desc')
-                                                          ->get();
+                // Get Uang Muka yang belum terpakai
+        $uangMukaBelumTerpakaiList = \App\Models\PembayaranUangMuka::where('status', 'uang_muka_belum_terpakai')
+                                  ->orderBy('tanggal_pembayaran', 'desc')
+                                  ->get();
 
-        // Load nama supir untuk setiap DP
-        foreach ($dpBelumTerpakaiList as $dp) {
-            $dp->supir_names = $dp->supirList()->pluck('nama_lengkap')->toArray();
+        // Enrich Uang Muka data dengan nama supir
+        foreach ($uangMukaBelumTerpakaiList as $uangMuka) {
+            $uangMuka->supir_names = $uangMuka->supirList()->pluck('nama_lengkap')->toArray();
         }
 
         return view('pembayaran-ob.create', [
-            'title' => 'Create Pembayaran OB',
+            'title' => 'Tambah Pembayaran OB',
             'supirList' => $supirList,
             'kasBankList' => $kasBankList,
-            'dpBelumTerpakaiList' => $dpBelumTerpakaiList
+            'uangMukaBelumTerpakaiList' => $uangMukaBelumTerpakaiList
         ]);
     }
 
@@ -174,7 +174,7 @@ class PembayaranObController extends Controller
             'jumlah' => 'required|array|min:1',
             'jumlah.*' => 'required|numeric|min:0',
             'keterangan' => 'nullable|string',
-            'pembayaran_dp_ob_id' => 'nullable|exists:pembayaran_dp_obs,id'
+            'pembayaran_uang_muka_id' => 'nullable|exists:pembayaran_uang_muka,id'
         ]);
 
         try {
@@ -189,24 +189,24 @@ class PembayaranObController extends Controller
             // Hitung total pembayaran dari semua supir
             $subtotalPembayaran = 0;
             $jumlahPerSupirData = [];
-            
+
             foreach ($validated['supir'] as $supirId) {
                 $jumlah = floatval($validated['jumlah'][$supirId] ?? 0);
                 $jumlahPerSupirData[$supirId] = $jumlah;
                 $subtotalPembayaran += $jumlah;
             }
-            
+
             // Pastikan subtotalPembayaran adalah float
             $subtotalPembayaran = floatval($subtotalPembayaran);
             $totalPembayaran = $subtotalPembayaran;
 
-            // Kurangi dengan DP jika ada yang dipilih
-            $dpAmount = 0;
-            if ($validated['pembayaran_dp_ob_id']) {
-                $dpOb = \App\Models\PembayaranDpOb::find($validated['pembayaran_dp_ob_id']);
-                if ($dpOb) {
-                    $dpAmount = floatval($dpOb->total_pembayaran);
-                    $totalPembayaran = $subtotalPembayaran - $dpAmount;
+            // Kurangi dengan Uang Muka jika ada yang dipilih
+            $uangMukaAmount = 0;
+            if ($validated['pembayaran_uang_muka_id']) {
+                $uangMuka = \App\Models\PembayaranUangMuka::find($validated['pembayaran_uang_muka_id']);
+                if ($uangMuka) {
+                    $uangMukaAmount = floatval($uangMuka->total_pembayaran);
+                    $totalPembayaran = $subtotalPembayaran - $uangMukaAmount;
                     // Pastikan total tidak negatif
                     $totalPembayaran = max(0, $totalPembayaran);
                 }
@@ -220,22 +220,22 @@ class PembayaranObController extends Controller
                 'jenis_transaksi' => $validated['jenis_transaksi'],
                 'supir_ids' => $validated['supir'], // JSON array
                 'jumlah_per_supir' => $jumlahPerSupirData, // JSON object dengan supir_id => jumlah
-                'subtotal_pembayaran' => $subtotalPembayaran, // Subtotal sebelum dikurangi DP
-                'dp_amount' => $dpAmount, // Jumlah DP yang digunakan
-                'total_pembayaran' => $totalPembayaran, // Total sudah dikurangi DP
+                'subtotal_pembayaran' => $subtotalPembayaran, // Subtotal sebelum dikurangi Uang Muka
+                'uang_muka_amount' => $uangMukaAmount, // Jumlah Uang Muka yang digunakan
+                'total_pembayaran' => $totalPembayaran, // Total sudah dikurangi Uang Muka
                 'keterangan' => $validated['keterangan'],
-                'pembayaran_dp_ob_id' => $validated['pembayaran_dp_ob_id'],
+                'pembayaran_uang_muka_id' => $validated['pembayaran_uang_muka_id'],
                 'status' => 'approved', // Langsung approved untuk OB
                 'dibuat_oleh' => Auth::id(),
                 'disetujui_oleh' => Auth::id(),
                 'tanggal_persetujuan' => now(),
             ]);
 
-            // Update status DP jika ada yang dipilih
-            if ($validated['pembayaran_dp_ob_id']) {
-                $dpOb = \App\Models\PembayaranDpOb::find($validated['pembayaran_dp_ob_id']);
-                if ($dpOb) {
-                    $dpOb->markAsTerpakai();
+            // Update status Uang Muka jika ada yang dipilih
+            if ($validated['pembayaran_uang_muka_id']) {
+                $uangMuka = \App\Models\PembayaranUangMuka::find($validated['pembayaran_uang_muka_id']);
+                if ($uangMuka) {
+                    $uangMuka->markAsTerpakai();
                 }
             }
 
@@ -244,10 +244,10 @@ class PembayaranObController extends Controller
             $jumlahSupir = count($validated['supir']);
             $message = "Pembayaran OB berhasil dibuat dengan nomor: {$nomorPembayaran}. ";
             $message .= "Total supir: {$jumlahSupir}. ";
-            if ($dpAmount > 0) {
+            if ($uangMukaAmount > 0) {
                 $message .= "Total awal: Rp " . number_format($subtotalPembayaran, 0, ',', '.') . ". ";
-                $message .= "DP digunakan: Rp " . number_format($dpAmount, 0, ',', '.') . ". ";
-                $message .= "Total setelah DP: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
+                $message .= "Uang Muka digunakan: Rp " . number_format($uangMukaAmount, 0, ',', '.') . ". ";
+                $message .= "Total setelah Uang Muka: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
             } else {
                 $message .= "Total pembayaran: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
             }
@@ -285,17 +285,17 @@ class PembayaranObController extends Controller
         // Get supir data
         $supirList = Karyawan::whereIn('id', $pembayaran->supir_ids ?? [])->get();
 
-        // Get DP data if exists
-        $dpData = null;
-        if ($pembayaran->pembayaran_dp_ob_id) {
-            $dpData = \App\Models\PembayaranDpOb::find($pembayaran->pembayaran_dp_ob_id);
+        // Get Uang Muka data if exists
+        $uangMukaData = null;
+        if ($pembayaran->pembayaran_uang_muka_id) {
+            $uangMukaData = \App\Models\PembayaranUangMuka::find($pembayaran->pembayaran_uang_muka_id);
         }
 
         return view('pembayaran-ob.print', [
             'title' => 'Print Pembayaran OB',
             'pembayaran' => $pembayaran,
             'supirList' => $supirList,
-            'dpData' => $dpData
+            'uangMukaData' => $uangMukaData
         ]);
     }
 

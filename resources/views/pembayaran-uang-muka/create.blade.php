@@ -70,16 +70,15 @@
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <!-- Nomor Pembayaran -->
                             <div>
-                                                                <label for="nomor_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nomor Pembayaran <span class="text-red-500">*</span>
+                                <label for="nomor_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nomor Pembayaran <span class="text-gray-400">(Opsional - Auto Generate)</span>
                                 </label>
                                 <div class="flex">
                                     <input type="text"
                                            name="nomor_pembayaran"
                                            id="nomor_pembayaran"
                                            value="{{ old('nomor_pembayaran') }}"
-                                           placeholder="KBJ1025000001"
-                                           required
+                                           placeholder="MDP-10-25-000001"
                                            class="flex-1 px-3 py-2 border border-gray-300 rounded-l-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('nomor_pembayaran') border-red-300 @enderror">
                                     <button type="button"
                                             onclick="generateNomor()"
@@ -90,7 +89,7 @@
                                 @error('nomor_pembayaran')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                <p class="mt-1 text-sm text-gray-500">Format: Kode_COA + Bulan(2) + Tahun(2) + Urutan(6). Pilih kas/bank untuk generate otomatis.</p>
+                                <p class="mt-1 text-sm text-gray-500">Format: Kode_COA-Bulan(2)-Tahun(2)-Urutan(6). Pilih kas/bank untuk generate otomatis.</p>
                             </div>
 
                             <!-- Tanggal Pembayaran -->
@@ -166,23 +165,134 @@
                                 <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">
                                     Kegiatan <span class="text-red-500">*</span>
                                 </label>
-                                <input type="text"
-                                       name="kegiatan"
-                                       id="kegiatan"
-                                       value="{{ old('kegiatan') }}"
-                                       placeholder="Masukkan nama kegiatan"
-                                       required
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kegiatan') border-red-300 @enderror">
+                                <select name="kegiatan"
+                                        id="kegiatan"
+                                        required
+                                        onchange="handleKegiatanChange()"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kegiatan') border-red-300 @enderror">
+                                    <option value="">-- Pilih Kegiatan --</option>
+                                    @foreach($kegiatanList as $kegiatan)
+                                        <option value="{{ $kegiatan->id }}"
+                                                data-nama="{{ $kegiatan->nama_kegiatan }}"
+                                                {{ old('kegiatan') == $kegiatan->id ? 'selected' : '' }}>
+                                            {{ $kegiatan->kode_kegiatan }} - {{ $kegiatan->nama_kegiatan }}
+                                        </option>
+                                    @endforeach
+                                </select>
                                 @error('kegiatan')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
-                                <p class="mt-1 text-sm text-gray-500">Nama kegiatan untuk pembayaran uang muka ini</p>
+                                <p class="mt-1 text-sm text-gray-500">Pilih kegiatan untuk pembayaran uang muka ini</p>
+                            </div>
+
+                            <!-- Mobil Field (Only for KIR & STNK) -->
+                            <div id="mobil-field" style="display: none;">
+                                <label for="mobil_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Pilih Mobil <span class="text-red-500">*</span>
+                                </label>
+                                <select name="mobil_id"
+                                        id="mobil_id"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('mobil_id') border-red-300 @enderror">
+                                    <option value="">-- Pilih Mobil --</option>
+                                    @foreach($mobilList as $mobil)
+                                        <option value="{{ $mobil->id }}" {{ old('mobil_id') == $mobil->id ? 'selected' : '' }}>
+                                            {{ $mobil->plat }}
+                                            @if($mobil->aktiva)
+                                                - {{ $mobil->aktiva }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('mobil_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">Pilih mobil untuk KIR & STNK</p>
                             </div>
                         </div>
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Supir -->
-                            <div>
+                            <!-- Penerima Field (For KIR & STNK, Amprahan, and others) -->
+                            <div id="penerima-field" style="display: none;">
+                                <label for="penerima_id" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Penerima <span class="text-red-500">*</span>
+                                </label>
+                                <select name="penerima_id"
+                                        id="penerima_id"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('penerima_id') border-red-300 @enderror">
+                                    <option value="">-- Pilih Penerima --</option>
+                                    @foreach($karyawanList as $karyawan)
+                                        <option value="{{ $karyawan->id }}" {{ old('penerima_id') == $karyawan->id ? 'selected' : '' }}>
+                                            {{ $karyawan->nama_lengkap }}
+                                            @if($karyawan->divisi)
+                                                - {{ $karyawan->divisi }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('penerima_id')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">Pilih karyawan yang menerima uang muka</p>
+                            </div>
+
+                            <!-- Jumlah Penerima (Only for Amprahan and other general activities) -->
+                            <div id="jumlah-penerima-field" style="display: none;">
+                                <label for="jumlah_penerima" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Jumlah Uang Muka <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">Rp</span>
+                                    </div>
+                                    <input type="text"
+                                           name="jumlah_penerima_display"
+                                           id="jumlah_penerima_display"
+                                           value="{{ old('jumlah_penerima') ? number_format(old('jumlah_penerima'), 0, ',', '.') : '' }}"
+                                           placeholder="0"
+                                           class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jumlah_penerima') border-red-300 @enderror"
+                                           oninput="formatCurrencyPenerima(this)">
+                                    <input type="hidden"
+                                           name="jumlah_penerima"
+                                           id="jumlah_penerima"
+                                           value="{{ old('jumlah_penerima', '') }}">
+                                </div>
+                                @error('jumlah_penerima')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">Masukkan jumlah uang muka untuk penerima</p>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <!-- Jumlah Mobil (Only for KIR & STNK) -->
+                            <div id="jumlah-mobil-field" style="display: none;">
+                                <label for="jumlah_mobil" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Jumlah Uang Muka untuk Mobil <span class="text-red-500">*</span>
+                                </label>
+                                <div class="relative">
+                                    <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                        <span class="text-gray-500 sm:text-sm">Rp</span>
+                                    </div>
+                                    <input type="text"
+                                           name="jumlah_mobil_display"
+                                           id="jumlah_mobil_display"
+                                           value="{{ old('jumlah_mobil') ? number_format(old('jumlah_mobil'), 0, ',', '.') : '' }}"
+                                           placeholder="0"
+                                           class="w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jumlah_mobil') border-red-300 @enderror"
+                                           oninput="formatCurrencyMobil(this)">
+                                    <input type="hidden"
+                                           name="jumlah_mobil"
+                                           id="jumlah_mobil"
+                                           value="{{ old('jumlah_mobil', '') }}">
+                                </div>
+                                @error('jumlah_mobil')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-sm text-gray-500">Masukkan jumlah uang muka untuk mobil</p>
+                            </div>
+
+                            <!-- Supir (Hidden for KIR & STNK) -->
+                            <div id="supir-field">
                                 <label for="supir" class="block text-sm font-medium text-gray-700 mb-2">
                                     Nama Supir <span class="text-red-500">*</span>
                                 </label>
@@ -235,7 +345,7 @@
                                 <p class="mt-1 text-sm text-gray-500">Pilih satu atau lebih supir dari daftar karyawan aktif</p>
                             </div>
 
-                            <!-- Jumlah Pembayaran per Supir -->
+                            <!-- Jumlah Pembayaran per Supir (Hidden for KIR & STNK) -->
                             <div id="jumlah-container">
                                 <label class="block text-sm font-medium text-gray-700 mb-2">
                                     Jumlah Uang Muka per Supir <span class="text-red-500">*</span>
@@ -283,37 +393,125 @@
 </div>
 
 <script>
+// Handle kegiatan change untuk show/hide fields
+        function handleKegiatanChange() {
+            const kegiatanSelect = document.getElementById('kegiatan');
+            const kegiatanText = kegiatanSelect.options[kegiatanSelect.selectedIndex].text.toLowerCase();
+
+            // Get field containers
+            const supirField = document.getElementById('supir-field');
+            const jumlahContainer = document.getElementById('jumlah-container');
+            const mobilField = document.getElementById('mobil-field');
+            const penerimaField = document.getElementById('penerima-field');
+            const jumlahMobilField = document.getElementById('jumlah-mobil-field');
+            const jumlahPenerimaField = document.getElementById('jumlah-penerima-field');
+
+            // Reset field visibility - hide all conditional fields by default
+            supirField.style.display = 'none';
+            jumlahContainer.style.display = 'none';
+            mobilField.style.display = 'none';
+            penerimaField.style.display = 'none';
+            jumlahMobilField.style.display = 'none';
+            jumlahPenerimaField.style.display = 'none';
+
+            // Show/hide fields based on kegiatan
+            if (kegiatanText.includes('kir') && kegiatanText.includes('stnk')) {
+                // For KIR & STNK, show mobil + penerima + jumlah mobil
+                mobilField.style.display = 'block';
+                penerimaField.style.display = 'block';
+                jumlahMobilField.style.display = 'block';
+            } else if (kegiatanText.includes('ob muat') || kegiatanText.includes('ob bongkar') ||
+                       kegiatanText.includes('muat') || kegiatanText.includes('bongkar')) {
+                // For OB Muat/Bongkar, show supir fields
+                supirField.style.display = 'block';
+                jumlahContainer.style.display = 'block';
+            } else if (kegiatanText.includes('amprahan') ||
+                       (!kegiatanText.includes('kir') && !kegiatanText.includes('stnk') &&
+                        !kegiatanText.includes('muat') && !kegiatanText.includes('bongkar') &&
+                        kegiatanText !== '-- pilih kegiatan --' && kegiatanText !== '')) {
+                // For Amprahan and other general activities, show penerima + jumlah penerima
+                penerimaField.style.display = 'block';
+                jumlahPenerimaField.style.display = 'block';
+            }
+        }
+
+// Format currency untuk mobil
+function formatCurrencyMobil(input) {
+    // Ambil nilai tanpa format
+    let value = input.value.replace(/[^\d]/g, '');
+
+    // Update hidden input dengan nilai asli
+    const hiddenInput = document.getElementById('jumlah_mobil');
+    if (hiddenInput) {
+        hiddenInput.value = value || '0';
+    }
+
+    // Format tampilan dengan pemisah ribuan
+    if (value) {
+        input.value = formatNumber(value);
+    } else {
+        input.value = '';
+    }
+}
+
+// Format currency untuk penerima
+function formatCurrencyPenerima(input) {
+    // Ambil nilai tanpa format
+    let value = input.value.replace(/[^\d]/g, '');
+
+    // Update hidden input dengan nilai asli
+    const hiddenInput = document.getElementById('jumlah_penerima');
+    if (hiddenInput) {
+        hiddenInput.value = value || '0';
+    }
+
+    // Format tampilan dengan pemisah ribuan
+    if (value) {
+        input.value = formatNumber(value);
+    } else {
+        input.value = '';
+    }
+}
+
 // Auto generate nomor pembayaran
 async function generateNomor() {
     try {
         // Ambil kas_bank_id yang dipilih untuk generate nomor yang sesuai
         const kasBankId = document.getElementById('kas_bank').value;
 
+        console.log('Generate nomor called, kas_bank_id:', kasBankId);
+
         if (!kasBankId) {
             alert('Pilih akun Kas/Bank terlebih dahulu untuk generate nomor pembayaran');
-            return;
+            throw new Error('Kas/Bank not selected');
         }
 
         // Buat URL dengan parameter kas_bank_id
         let url = '{{ route('pembayaran-uang-muka.generate-nomor') }}';
         url += '?kas_bank_id=' + kasBankId;
 
-        const response = await fetch(url);
-        const data = await response.json();
+        console.log('Calling URL:', url);
 
-        if (data.nomor_pembayaran) {
+        const response = await fetch(url);
+        console.log('Response status:', response.status);
+
+        const data = await response.json();
+        console.log('Response data:', data);
+
+        if (data.success && data.nomor_pembayaran) {
             document.getElementById('nomor_pembayaran').value = data.nomor_pembayaran;
-            console.log('Nomor generated: ' + data.nomor_pembayaran);
-        } else if (data.error) {
-            console.error('Failed to generate nomor:', data.message || data.error);
-            alert('Error: ' + (data.message || data.error));
+            console.log('Nomor generated successfully: ' + data.nomor_pembayaran);
+            return data.nomor_pembayaran;
+        } else if (data.message) {
+            console.error('Failed to generate nomor:', data.message);
+            throw new Error(data.message);
         } else {
-            console.error('Failed to generate nomor: Unexpected response format');
-            alert('Error: Unexpected response format');
+            console.error('Failed to generate nomor: Unexpected response format', data);
+            throw new Error('Unexpected response format');
         }
     } catch (error) {
         console.error('Error generating nomor:', error);
-        alert('Terjadi kesalahan saat generate nomor. Menggunakan nomor default.');
+        alert('Error: ' + error.message + '. Menggunakan fallback nomor.');
 
         // Fallback generate nomor secara manual dengan format baru
         const today = new Date();
@@ -321,8 +519,11 @@ async function generateNomor() {
         const year = String(today.getFullYear()).slice(-2); // 2 digit tahun
         const random = Math.floor(Math.random() * 1000000).toString().padStart(6, '0');
 
-        // Format: UM-KBJ-MM-YY-NNNNNN (default COA KBJ)
-        document.getElementById('nomor_pembayaran').value = `UM-KBJ-${month}-${year}-${random}`;
+        // Format: KBJ-MM-YY-NNNNNN (default COA KBJ)
+        const fallbackNomor = `KBJ-${month}-${year}-${random}`;
+        document.getElementById('nomor_pembayaran').value = fallbackNomor;
+        console.log('Using fallback nomor: ' + fallbackNomor);
+        return fallbackNomor;
     }
 }
 
@@ -528,12 +729,10 @@ document.getElementById('jenis_transaksi').addEventListener('change', function(e
     }
 });
 
-// Handle kas/bank selection - regenerate nomor when changed
+// Handle kas/bank selection - no longer auto-generate nomor
 document.getElementById('kas_bank').addEventListener('change', function(e) {
-    if (e.target.value) {
-        // Re-generate nomor pembayaran with new COA prefix
-        generateNomor();
-    }
+    // No auto-generation, user can manually click Auto button if needed
+    console.log('Kas/Bank changed to:', e.target.value);
 });
 
 // Handle paste event untuk input jumlah
@@ -547,42 +746,180 @@ document.addEventListener('paste', function(e) {
 });
 
 // Validate form before submit
-document.querySelector('form').addEventListener('submit', function(e) {
-    // Pastikan semua hidden input jumlah terisi
-    const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
-    let hasEmptyAmount = false;
+document.querySelector('form').addEventListener('submit', async function(e) {
+    console.log('Form submit event triggered');
 
-    hiddenInputs.forEach(function(input) {
-        if (!input.value || input.value === '0' || input.value === '') {
-            hasEmptyAmount = true;
+    // Generate nomor if empty before validation
+    const nomorField = document.getElementById('nomor_pembayaran');
+    console.log('Current nomor field value:', nomorField.value);
+
+    if (!nomorField.value.trim()) {
+        console.log('Nomor field is empty, attempting to generate...');
+        e.preventDefault(); // Prevent form submission temporarily
+
+        try {
+            const generatedNomor = await generateNomor(); // Generate nomor first
+            console.log('Nomor generated successfully:', generatedNomor);
+
+            // After nomor is generated, submit the form again
+            setTimeout(() => {
+                console.log('Resubmitting form after nomor generation');
+                this.submit(); // Resubmit form after nomor is generated
+            }, 100);
+
+            return false; // Stop current submission
+        } catch (error) {
+            console.error('Error generating nomor before submit:', error);
+            alert('Gagal generate nomor pembayaran. Silakan isi nomor secara manual atau coba lagi.');
+            return false;
         }
-    });
+    } else {
+        console.log('Nomor field has value, continuing with normal validation');
+    }
 
-    if (hasEmptyAmount) {
-        e.preventDefault();
-        alert('Harap isi semua jumlah Uang Muka untuk setiap supir yang dipilih');
-        return false;
+    const kegiatanSelect = document.getElementById('kegiatan');
+    const selectedOption = kegiatanSelect.options[kegiatanSelect.selectedIndex];
+    const namaKegiatan = selectedOption.getAttribute('data-nama') || '';
+    const kegiatanText = namaKegiatan.toLowerCase();
+
+    const isKirStnk = kegiatanText.includes('kir') && kegiatanText.includes('stnk');
+    const isObMuatBongkar = kegiatanText.includes('ob muat') || kegiatanText.includes('ob bongkar') ||
+                           kegiatanText.includes('muat') || kegiatanText.includes('bongkar');
+    const isAmprahanOrOthers = kegiatanText.includes('amprahan') ||
+                               (!kegiatanText.includes('kir') && !kegiatanText.includes('stnk') &&
+                                !kegiatanText.includes('muat') && !kegiatanText.includes('bongkar') &&
+                                kegiatanText !== '-- pilih kegiatan --' && kegiatanText !== '');
+
+    // Clear unused fields before validation
+    if (isKirStnk) {
+        // Clear supir and jumlah penerima fields for KIR & STNK
+        document.querySelectorAll('input[name^="supir"]').forEach(input => input.remove());
+        document.querySelectorAll('input[name^="jumlah["]').forEach(input => input.remove());
+        const jumlahPenerimaField = document.getElementById('jumlah_penerima');
+        if (jumlahPenerimaField) jumlahPenerimaField.value = '';
+
+        // Validate mobil fields for KIR & STNK
+        const mobilId = document.getElementById('mobil_id').value;
+        const jumlahMobil = document.getElementById('jumlah_mobil').value;
+        const penerimaId = document.getElementById('penerima_id').value;
+
+        if (!mobilId) {
+            e.preventDefault();
+            alert('Harap pilih mobil untuk KIR & STNK');
+            return false;
+        }
+
+        if (!penerimaId) {
+            e.preventDefault();
+            alert('Harap pilih penerima untuk KIR & STNK');
+            return false;
+        }
+
+        if (!jumlahMobil || jumlahMobil === '0') {
+            e.preventDefault();
+            alert('Harap isi jumlah uang muka untuk mobil');
+            return false;
+        }
+    } else if (isObMuatBongkar) {
+        // Clear mobil and penerima fields for OB Muat/Bongkar
+        const mobilField = document.getElementById('mobil_id');
+        if (mobilField) mobilField.value = '';
+        const penerimaField = document.getElementById('penerima_id');
+        if (penerimaField) penerimaField.value = '';
+        const jumlahMobilField = document.getElementById('jumlah_mobil');
+        if (jumlahMobilField) jumlahMobilField.value = '';
+        const jumlahPenerimaField = document.getElementById('jumlah_penerima');
+        if (jumlahPenerimaField) jumlahPenerimaField.value = '';
+
+        // Validate supir fields for OB Muat/Bongkar
+        const hiddenInputs = document.querySelectorAll('input[name^="jumlah["]');
+        let hasEmptyAmount = false;
+
+        if (hiddenInputs.length === 0) {
+            e.preventDefault();
+            alert('Harap pilih minimal satu supir untuk OB Muat/Bongkar');
+            return false;
+        }
+
+        hiddenInputs.forEach(function(input) {
+            if (!input.value || input.value === '0' || input.value === '') {
+                hasEmptyAmount = true;
+            }
+        });
+
+        if (hasEmptyAmount) {
+            e.preventDefault();
+            alert('Harap isi semua jumlah Uang Muka untuk setiap supir yang dipilih');
+            return false;
+        }
+    } else if (isAmprahanOrOthers) {
+        // Clear supir and mobil fields for Amprahan/Others
+        console.log('Clearing supir fields for Amprahan/Others');
+        document.querySelectorAll('input[name^="supir"]').forEach(input => {
+            console.log('Removing supir input:', input.name, input.value);
+            input.remove();
+        });
+        document.querySelectorAll('input[name^="jumlah["]').forEach(input => {
+            console.log('Removing jumlah input:', input.name, input.value);
+            input.remove();
+        });
+
+        // Clear supir checkboxes to make sure they're not checked
+        document.querySelectorAll('.supir-checkbox').forEach(checkbox => {
+            if (checkbox.checked) {
+                console.log('Unchecking supir checkbox:', checkbox.value);
+                checkbox.checked = false;
+            }
+        });
+
+        const mobilField = document.getElementById('mobil_id');
+        if (mobilField) {
+            console.log('Clearing mobil_id field');
+            mobilField.value = '';
+        }
+        const jumlahMobilField = document.getElementById('jumlah_mobil');
+        if (jumlahMobilField) {
+            console.log('Clearing jumlah_mobil field');
+            jumlahMobilField.value = '';
+        }
+
+        // Validate penerima fields for Amprahan and other activities
+        const penerimaId = document.getElementById('penerima_id').value;
+        const jumlahPenerima = document.getElementById('jumlah_penerima').value;
+
+        if (!penerimaId) {
+            e.preventDefault();
+            alert('Harap pilih penerima untuk kegiatan ini');
+            return false;
+        }
+
+        if (!jumlahPenerima || jumlahPenerima === '0') {
+            e.preventDefault();
+            alert('Harap isi jumlah uang muka untuk penerima');
+            return false;
+        }
     }
 
     // Debug: log form data before submit
     console.log('Form data before submit:');
     const formData = new FormData(this);
     for (let [key, value] of formData.entries()) {
-        if (key.startsWith('jumlah[')) {
+        if (key.startsWith('jumlah') || key === 'mobil_id' || key === 'penerima_id') {
             console.log(key + ': ' + value);
         }
     }
 });
 
-// Auto generate nomor on page load if field is empty
+// Initialize page without auto-generating nomor
 document.addEventListener('DOMContentLoaded', function() {
-    const nomorField = document.getElementById('nomor_pembayaran');
-    if (!nomorField.value.trim()) {
-        generateNomor();
-    }
+    // Don't auto-generate nomor on page load
+    // User should click Auto button manually or nomor will be generated on submit
 
     // Initialize supir display
     updateSupirDisplay();
+
+    // Handle initial kegiatan selection
+    handleKegiatanChange();
 });
 </script>
 

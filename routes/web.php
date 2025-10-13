@@ -15,6 +15,7 @@ use App\Http\Controllers\PekerjaanController;
 use App\Http\Controllers\MasterBankController;
 
 use App\Http\Controllers\TujuanController;
+use App\Http\Controllers\TujuanKegiatanUtamaController;
 use App\Http\Controllers\PermohonanController;
 use App\Http\Controllers\MasterKegiatanController;
 use App\Http\Controllers\PranotaSupirController;
@@ -36,8 +37,9 @@ use App\Http\Controllers\PembayaranPranotaPerbaikanController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\PembayaranAktivitasLainnyaController;
-use App\Http\Controllers\PembayaranDpObController;
+use App\Http\Controllers\PembayaranUangMukaController;
 use App\Http\Controllers\PembayaranObController;
+use App\Http\Controllers\RealisasiUangMukaController;
 use App\Http\Controllers\VendorBengkelController;
 use App\Http\Controllers\TipeAkunController;
 
@@ -335,6 +337,50 @@ Route::middleware([
              ->name('kegiatan.export')
              ->middleware('can:master-kegiatan-view');
 
+        // Master tujuan kegiatan utama routes
+        Route::get('tujuan-kegiatan-utama', [TujuanKegiatanUtamaController::class, 'index'])
+             ->name('tujuan-kegiatan-utama.index')
+             ->middleware('can:master-tujuan-view');
+        Route::get('tujuan-kegiatan-utama/create', [TujuanKegiatanUtamaController::class, 'create'])
+             ->name('tujuan-kegiatan-utama.create')
+             ->middleware('can:master-tujuan-create');
+        
+        // Export/Print routes for Master Tujuan Kegiatan Utama (HARUS SEBELUM RESOURCE ROUTES)
+        Route::get('tujuan-kegiatan-utama/export', [TujuanKegiatanUtamaController::class, 'export'])
+             ->name('tujuan-kegiatan-utama.export')
+             ->middleware('can:master-tujuan-export');
+        Route::get('tujuan-kegiatan-utama/print', [TujuanKegiatanUtamaController::class, 'print'])
+             ->name('tujuan-kegiatan-utama.print')
+             ->middleware('can:master-tujuan-print');
+        
+        // Template dan Import routes for Master Tujuan Kegiatan Utama (HARUS SEBELUM RESOURCE ROUTES)
+        Route::get('tujuan-kegiatan-utama/download-template', [TujuanKegiatanUtamaController::class, 'downloadTemplate'])
+             ->name('tujuan-kegiatan-utama.download-template')
+             ->middleware('can:master-tujuan-view');
+        Route::get('tujuan-kegiatan-utama/import-form', [TujuanKegiatanUtamaController::class, 'showImportForm'])
+             ->name('tujuan-kegiatan-utama.import-form')
+             ->middleware('can:master-tujuan-create');
+        Route::post('tujuan-kegiatan-utama/import', [TujuanKegiatanUtamaController::class, 'import'])
+             ->name('tujuan-kegiatan-utama.import')
+             ->middleware('can:master-tujuan-create');
+        
+        // Resource routes (HARUS SETELAH ROUTES SPESIFIK)
+        Route::post('tujuan-kegiatan-utama', [TujuanKegiatanUtamaController::class, 'store'])
+             ->name('tujuan-kegiatan-utama.store')
+             ->middleware('can:master-tujuan-create');
+        Route::get('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}', [TujuanKegiatanUtamaController::class, 'show'])
+             ->name('tujuan-kegiatan-utama.show')
+             ->middleware('can:master-tujuan-view');
+        Route::get('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}/edit', [TujuanKegiatanUtamaController::class, 'edit'])
+             ->name('tujuan-kegiatan-utama.edit')
+             ->middleware('can:master-tujuan-update');
+        Route::put('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}', [TujuanKegiatanUtamaController::class, 'update'])
+             ->name('tujuan-kegiatan-utama.update')
+             ->middleware('can:master-tujuan-update');
+        Route::delete('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}', [TujuanKegiatanUtamaController::class, 'destroy'])
+             ->name('tujuan-kegiatan-utama.destroy')
+             ->middleware('can:master-tujuan-delete');
+        
         // Master permission routes (with master prefix) - granular permissions
         Route::get('permission', [PermissionController::class, 'index'])
              ->name('permission.index')
@@ -1401,33 +1447,25 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
          ->middleware('can:pembayaran-aktivitas-lainnya-approve');
 });
 
-// Pembayaran DP OB routes
-Route::prefix('pembayaran-dp-ob')->name('pembayaran-dp-ob.')->middleware(['auth'])->group(function () {
-    Route::get('/', [PembayaranDpObController::class, 'index'])->name('index')
-         ->middleware('can:pembayaran-dp-ob-view');
-    Route::get('/create', [PembayaranDpObController::class, 'create'])->name('create')
-         ->middleware('can:pembayaran-dp-ob-create');
-    Route::get('/generate-nomor', [PembayaranDpObController::class, 'generateNomorPembayaran'])->name('generate-nomor')
-         ->middleware('can:pembayaran-dp-ob-create');
-    Route::post('/', [PembayaranDpObController::class, 'store'])->name('store')
-         ->middleware('can:pembayaran-dp-ob-create');
+// Pembayaran Uang Muka routes
+Route::prefix('pembayaran-uang-muka')->name('pembayaran-uang-muka.')->middleware(['auth'])->group(function () {
+    Route::get('/', [PembayaranUangMukaController::class, 'index'])->name('index')
+         ->middleware('can:pembayaran-uang-muka-view');
+    Route::get('/create', [PembayaranUangMukaController::class, 'create'])->name('create')
+         ->middleware('can:pembayaran-uang-muka-create');
+    Route::get('/generate-nomor', [PembayaranUangMukaController::class, 'generateNomor'])->name('generate-nomor')
+         ->middleware('can:pembayaran-uang-muka-create');
+    Route::post('/', [PembayaranUangMukaController::class, 'store'])->name('store')
+         ->middleware('can:pembayaran-uang-muka-create');
 
-    // Temporary test route without middleware for debugging
-    Route::post('/test-store', [PembayaranDpObController::class, 'store'])->name('test-store');
-    Route::get('/{id}', [PembayaranDpObController::class, 'show'])->name('show')
-         ->middleware('can:pembayaran-dp-ob-view');
-    Route::get('/{id}/print', [PembayaranDpObController::class, 'print'])->name('print')
-         ->middleware('can:pembayaran-dp-ob-view');
-    Route::get('/{id}/edit', [PembayaranDpObController::class, 'edit'])->name('edit')
-         ->middleware('can:pembayaran-dp-ob-edit');
-    Route::put('/{id}', [PembayaranDpObController::class, 'update'])->name('update')
-         ->middleware('can:pembayaran-dp-ob-edit');
-    Route::delete('/{id}', [PembayaranDpObController::class, 'destroy'])->name('destroy')
-         ->middleware('can:pembayaran-dp-ob-delete');
-    Route::post('/{id}/approve', [PembayaranDpObController::class, 'approve'])->name('approve')
-         ->middleware('can:pembayaran-dp-ob-edit');
-    Route::post('/{id}/reject', [PembayaranDpObController::class, 'reject'])->name('reject')
-         ->middleware('can:pembayaran-dp-ob-edit');
+    Route::get('/{id}', [PembayaranUangMukaController::class, 'show'])->name('show')
+         ->middleware('can:pembayaran-uang-muka-view');
+    Route::get('/{id}/edit', [PembayaranUangMukaController::class, 'edit'])->name('edit')
+         ->middleware('can:pembayaran-uang-muka-edit');
+    Route::put('/{id}', [PembayaranUangMukaController::class, 'update'])->name('update')
+         ->middleware('can:pembayaran-uang-muka-edit');
+    Route::delete('/{id}', [PembayaranUangMukaController::class, 'destroy'])->name('destroy')
+         ->middleware('can:pembayaran-uang-muka-delete');
 });
 
 // Pembayaran OB routes
@@ -1455,6 +1493,150 @@ Route::prefix('pembayaran-ob')->name('pembayaran-ob.')->middleware(['auth'])->gr
     Route::post('/{id}/reject', [PembayaranObController::class, 'reject'])->name('reject')
          ->middleware('can:pembayaran-ob-edit');
 });
+
+// Realisasi Uang Muka routes
+Route::prefix('realisasi-uang-muka')->name('realisasi-uang-muka.')->middleware(['auth'])->group(function () {
+    Route::get('/', [RealisasiUangMukaController::class, 'index'])->name('index')
+         ->middleware('can:realisasi-uang-muka-view');
+    Route::get('/create', [RealisasiUangMukaController::class, 'create'])->name('create')
+         ->middleware('can:realisasi-uang-muka-create');
+    Route::post('/generate-nomor', [RealisasiUangMukaController::class, 'generateNomor'])->name('generate-nomor')
+         ->middleware('can:realisasi-uang-muka-create');
+    Route::post('/force-generate-nomor', [RealisasiUangMukaController::class, 'forceGenerateNomor'])->name('force-generate-nomor')
+         ->middleware('can:realisasi-uang-muka-create');
+    Route::post('/', [RealisasiUangMukaController::class, 'store'])->name('store')
+         ->middleware('can:realisasi-uang-muka-create');
+    Route::get('/{id}', [RealisasiUangMukaController::class, 'show'])->name('show')
+         ->middleware('can:realisasi-uang-muka-view');
+    Route::get('/{id}/print', [RealisasiUangMukaController::class, 'print'])->name('print')
+         ->middleware('can:realisasi-uang-muka-view');
+    Route::get('/{id}/edit', [RealisasiUangMukaController::class, 'edit'])->name('edit')
+         ->middleware('can:realisasi-uang-muka-edit');
+    Route::put('/{id}', [RealisasiUangMukaController::class, 'update'])->name('update')
+         ->middleware('can:realisasi-uang-muka-edit');
+    Route::delete('/{id}', [RealisasiUangMukaController::class, 'destroy'])->name('destroy')
+         ->middleware('can:realisasi-uang-muka-delete');
+    Route::post('/{id}/approve', [RealisasiUangMukaController::class, 'approve'])->name('approve')
+         ->middleware('can:realisasi-uang-muka-edit');
+    Route::post('/{id}/reject', [RealisasiUangMukaController::class, 'reject'])->name('reject')
+         ->middleware('can:realisasi-uang-muka-edit');
+
+    // Debug route - no middleware to bypass permission issues
+    Route::post('/debug-test', [RealisasiUangMukaController::class, 'store'])->name('debug-test');
+
+});
+
+// Debug routes (outside middleware)
+Route::get('/realisasi-uang-muka/debug-simple', function() {
+    return response()->json([
+        'status' => 'success',
+        'message' => 'Debug route works!',
+        'time' => now()->toDateTimeString()
+    ]);
+})->name('realisasi-uang-muka.debug-simple');
+
+// Route to view debug logs
+Route::get('/realisasi-uang-muka/debug-logs', function() {
+    $logFile = storage_path('logs/laravel.log');
+    if (!file_exists($logFile)) {
+        return response()->json(['error' => 'Log file not found']);
+    }
+
+    // Get last 50 lines of log file
+    $lines = [];
+    $handle = fopen($logFile, 'r');
+    if ($handle) {
+        while (($line = fgets($handle)) !== false) {
+            if (strpos($line, 'RealisasiUangMuka Debug') !== false) {
+                $lines[] = $line;
+            }
+        }
+        fclose($handle);
+    }
+
+    // Return last 5 debug entries
+    $recentLogs = array_slice($lines, -5);
+
+    return response('<pre>' . implode("\n", $recentLogs) . '</pre>');
+})->name('realisasi-uang-muka.debug-logs');
+
+Route::post('/realisasi-uang-muka/debug-submit', function(\Illuminate\Http\Request $request) {
+    $input = $request->all();
+
+    $penerimaFields = [];
+    $jumlahKaryawanFields = [];
+    $supirFields = [];
+    $jumlahSupirFields = [];
+    $mobilFields = [];
+    $jumlahMobilFields = [];
+
+    foreach ($input as $key => $value) {
+        if (strpos($key, 'penerima') === 0) {
+            $penerimaFields[$key] = $value;
+        } elseif (strpos($key, 'jumlah_karyawan') === 0) {
+            $jumlahKaryawanFields[$key] = $value;
+        } elseif (strpos($key, 'supir') === 0) {
+            $supirFields[$key] = $value;
+        } elseif (strpos($key, 'jumlah') === 0 && strpos($key, 'karyawan') === false && strpos($key, 'mobil') === false) {
+            $jumlahSupirFields[$key] = $value;
+        } elseif (strpos($key, 'mobil') === 0) {
+            $mobilFields[$key] = $value;
+        } elseif (strpos($key, 'jumlah_mobil') === 0) {
+            $jumlahMobilFields[$key] = $value;
+        }
+    }
+
+    $kegiatan = null;
+    if (isset($input['kegiatan'])) {
+        $kegiatan = \App\Models\MasterKegiatan::find($input['kegiatan']);
+    }
+
+    $activityAnalysis = [];
+    if ($kegiatan) {
+        $kegiatanNama = strtolower($kegiatan->nama_kegiatan);
+        $isMobil = (stripos($kegiatanNama, 'kir') !== false && stripos($kegiatanNama, 'stnk') !== false);
+        $isSupir = (stripos($kegiatanNama, 'ob') !== false && (stripos($kegiatanNama, 'muat') !== false || stripos($kegiatanNama, 'bongkar') !== false));
+        $isPenerima = !$isMobil && !$isSupir;
+
+        $activityAnalysis = [
+            'kegiatan_id' => $kegiatan->id,
+            'kegiatan_nama' => $kegiatan->nama_kegiatan,
+            'is_mobil_based' => $isMobil,
+            'is_supir_based' => $isSupir,
+            'is_penerima_based' => $isPenerima,
+            'expected_fields' => $isPenerima ? 'penerima[] + jumlah_karyawan[]' : ($isSupir ? 'supir[] + jumlah[]' : 'mobil[] + jumlah_mobil[]')
+        ];
+    }
+
+    return response()->json([
+        'status' => 'debug_success',
+        'message' => 'Form submission reached successfully - Debug Route',
+        'method' => $request->method(),
+        'has_debug_mode' => $request->has('debug_mode'),
+        'input_count' => count($request->all()),
+        'activity_analysis' => $activityAnalysis,
+        'field_analysis' => [
+            'penerima_fields' => $penerimaFields,
+            'jumlah_karyawan_fields' => $jumlahKaryawanFields,
+            'supir_fields' => $supirFields,
+            'jumlah_supir_fields' => $jumlahSupirFields,
+            'mobil_fields' => $mobilFields,
+            'jumlah_mobil_fields' => $jumlahMobilFields
+        ],
+        'validation_prediction' => [
+            'for_penerima' => count($penerimaFields) > 0 && count($jumlahKaryawanFields) > 0,
+            'for_supir' => count($supirFields) > 0 && count($jumlahSupirFields) > 0,
+            'for_mobil' => count($mobilFields) > 0 && count($jumlahMobilFields) > 0
+        ],
+        'basic_fields' => [
+            'kegiatan' => isset($input['kegiatan']) ? $input['kegiatan'] : 'missing',
+            'nomor_pembayaran' => isset($input['nomor_pembayaran']) ? $input['nomor_pembayaran'] : 'missing',
+            'tanggal_pembayaran' => isset($input['tanggal_pembayaran']) ? $input['tanggal_pembayaran'] : 'missing',
+            'kas_bank' => isset($input['kas_bank']) ? $input['kas_bank'] : 'missing',
+            'jenis_transaksi' => isset($input['jenis_transaksi']) ? $input['jenis_transaksi'] : 'missing'
+        ]
+    ]);
+})->name('realisasi-uang-muka.debug-submit');
 
 // Report Routes
 Route::middleware(['auth'])->prefix('report')->name('report.')->group(function () {
