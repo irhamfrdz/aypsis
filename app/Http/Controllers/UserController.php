@@ -380,6 +380,8 @@ class UserController extends Controller
                     // Special handling for specific modules
                     if ($module === 'pembayaran-pranota-tagihan-kontainer') {
                         $module = 'pembayaran-pranota-tagihan-kontainer';
+                    } elseif ($module === 'pranota-tagihan-kontainer') {
+                        $module = 'pranota-tagihan-kontainer';
                     } elseif ($module === 'admin') {
                         // Handle admin permissions
                         if ($action === 'debug') {
@@ -1598,6 +1600,19 @@ class UserController extends Controller
                                 $found = true;
                                 // NOTE: Removed automatic addition of 'store' permission when 'create' is found
                                 // to prevent unwanted duplication
+                            }
+                        }
+                    }
+
+                    // Special handling for pranota-tagihan-kontainer (uses dot notation)
+                    if ($module === 'pranota-tagihan-kontainer') {
+                        foreach ($possibleActions as $dbAction) {
+                            $permissionName = 'pranota-tagihan-kontainer.' . $dbAction;
+                            $permission = Permission::where('name', $permissionName)->first();
+
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
                             }
                         }
                     }
