@@ -42,19 +42,19 @@ if ($permission) {
 } else {
     echo "❌ Permission not found in database: {$missingPermission}\n";
     echo "Creating the permission...\n";
-    
+
     $newPermission = Permission::create([
         'name' => $missingPermission,
         'description' => 'Melihat Master Tujuan Kegiatan Utama (dash format)'
     ]);
-    
+
     DB::table('user_permissions')->insert([
         'user_id' => $user->id,
         'permission_id' => $newPermission->id,
         'created_at' => now(),
         'updated_at' => now(),
     ]);
-    
+
     echo "✅ Created and assigned permission: {$missingPermission}\n";
 }
 

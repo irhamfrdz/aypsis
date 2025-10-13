@@ -140,12 +140,12 @@ class TujuanKegiatanUtamaController extends Controller
 
         $response = new \Symfony\Component\HttpFoundation\StreamedResponse(function() use ($tujuanKegiatanUtamas) {
             $handle = fopen('php://output', 'w');
-            
+
             // Header CSV dengan semua kolom transportasi
             fputcsv($handle, [
                 'ID',
                 'Kode',
-                'Cabang', 
+                'Cabang',
                 'Wilayah',
                 'Dari',
                 'Ke',
@@ -164,7 +164,7 @@ class TujuanKegiatanUtamaController extends Controller
                 'Dibuat',
                 'Diupdate'
             ]);
-            
+
             // Data transportasi
             foreach ($tujuanKegiatanUtamas as $item) {
                 fputcsv($handle, [
@@ -190,7 +190,7 @@ class TujuanKegiatanUtamaController extends Controller
                     $item->updated_at->format('Y-m-d H:i:s')
                 ]);
             }
-            
+
             fclose($handle);
         });
 
@@ -214,11 +214,11 @@ class TujuanKegiatanUtamaController extends Controller
 
         $callback = function() {
             $file = fopen('php://output', 'w');
-            
+
             // Header CSV dengan semua kolom yang diperlukan
             fputcsv($file, [
                 'kode',
-                'cabang', 
+                'cabang',
                 'wilayah',
                 'dari',
                 'ke',
@@ -235,7 +235,7 @@ class TujuanKegiatanUtamaController extends Controller
                 'antar_lokasi_40ft',
                 'aktif'
             ]);
-            
+
             // Contoh data untuk panduan user
             fputcsv($file, [
                 'JKT001',
@@ -256,7 +256,7 @@ class TujuanKegiatanUtamaController extends Controller
                 '300000',
                 '1'
             ]);
-            
+
             fclose($file);
         };
 
@@ -277,7 +277,7 @@ class TujuanKegiatanUtamaController extends Controller
 
         $file = $request->file('csv_file');
         $path = $file->getRealPath();
-        
+
         $data = [];
         $errors = [];
         $successCount = 0;
@@ -293,12 +293,12 @@ class TujuanKegiatanUtamaController extends Controller
             } else {
                 $delimiter = ';';
             }
-            
+
             $rowNumber = 1;
 
             while (($row = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
                 $rowNumber++;
-                
+
                 // Skip empty rows
                 if (count(array_filter($row)) === 0) {
                     continue;
@@ -377,7 +377,7 @@ class TujuanKegiatanUtamaController extends Controller
                     $errorCount++;
                 }
             }
-            
+
             fclose($handle);
         }
 

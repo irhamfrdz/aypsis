@@ -26,7 +26,7 @@ echo "\n3. Pranota Permission Status:\n";
 $pranotaKontainerSewaCreate = DB::table('permissions')->where('name', 'pranota-kontainer-sewa-create')->first();
 if ($pranotaKontainerSewaCreate) {
     echo "   ✓ pranota-kontainer-sewa-create EXISTS (ID: {$pranotaKontainerSewaCreate->id})\n";
-    
+
     // Check how many users have this permission
     $usersWithPerm = DB::table('user_permissions')->where('permission_id', $pranotaKontainerSewaCreate->id)->count();
     echo "     - Assigned to {$usersWithPerm} users\n";
@@ -34,11 +34,11 @@ if ($pranotaKontainerSewaCreate) {
     echo "   ✗ pranota-kontainer-sewa-create MISSING\n";
 }
 
-// Check pranota-tagihan-kontainer.create  
+// Check pranota-tagihan-kontainer.create
 $pranotaTagihanKontainerCreate = DB::table('permissions')->where('name', 'pranota-tagihan-kontainer.create')->first();
 if ($pranotaTagihanKontainerCreate) {
     echo "   ✓ pranota-tagihan-kontainer.create EXISTS (ID: {$pranotaTagihanKontainerCreate->id})\n";
-    
+
     // Check how many users have this permission
     $usersWithPerm = DB::table('user_permissions')->where('permission_id', $pranotaTagihanKontainerCreate->id)->count();
     echo "     - Assigned to {$usersWithPerm} users\n";

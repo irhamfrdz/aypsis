@@ -51,7 +51,7 @@ try {
     echo "     - MEL: Rp " . number_format($record->mel_20ft, 0, ',', '.') . "\n";
     echo "     - Ongkos Truk: Rp " . number_format($record->ongkos_truk_20ft, 0, ',', '.') . "\n";
     echo "     - Antar Lokasi: Rp " . number_format($record->antar_lokasi_20ft, 0, ',', '.') . "\n";
-    
+
     $total20ft = $record->uang_jalan_20ft + $record->mel_20ft + $record->ongkos_truk_20ft + $record->antar_lokasi_20ft;
     echo "     - Total 20ft: Rp " . number_format($total20ft, 0, ',', '.') . "\n\n";
 
@@ -60,7 +60,7 @@ try {
     echo "     - MEL: Rp " . number_format($record->mel_40ft, 0, ',', '.') . "\n";
     echo "     - Ongkos Truk: Rp " . number_format($record->ongkos_truk_40ft, 0, ',', '.') . "\n";
     echo "     - Antar Lokasi: Rp " . number_format($record->antar_lokasi_40ft, 0, ',', '.') . "\n";
-    
+
     $total40ft = $record->uang_jalan_40ft + $record->mel_40ft + $record->ongkos_truk_40ft + $record->antar_lokasi_40ft;
     echo "     - Total 40ft: Rp " . number_format($total40ft, 0, ',', '.') . "\n\n";
 

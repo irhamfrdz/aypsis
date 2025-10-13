@@ -293,23 +293,35 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
      */
     private function calculateFinancialData(array $data): array
     {
-        $tarif = $data['tarif'];
         $periode = $data['periode'];
         $size = $data['size'];
         $vendor = $data['vendor'];
+        
+        // Get tarif type from data (should be 'Harian' or 'Bulanan')
+        $tarifType = $data['tarif'] ?? 'Bulanan';
 
-        // Get master pricelist if available
-        $masterPricelist = MasterPricelistSewaKontainer::where('size', $size)
+        // Get master pricelist based on tarif type
+        $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
             ->where('vendor', $vendor)
+            ->where('tarif', $tarifType)
             ->first();
 
-        // If master pricelist exists and no tarif provided, use master tarif
-        if ($masterPricelist && $tarif == 0) {
-            $tarif = $masterPricelist->tarif;
+        // Calculate DPP based on tarif type
+        $dpp = 0;
+        
+        if ($masterPricelist) {
+            if ($tarifType === 'Harian') {
+                // For harian: calculate days and multiply by daily rate
+                $jumlahHari = $this->calculateDaysFromData($data);
+                $dpp = $masterPricelist->harga * $jumlahHari;
+            } else {
+                // For bulanan: use monthly rate * periode
+                $dpp = $masterPricelist->harga * $periode;
+            }
+        } else {
+            // Fallback: if no master pricelist found, default to 0
+            $dpp = 0;
         }
-
-        // Calculate DPP (tarif * periode)
-        $dpp = $tarif * $periode;
 
         // Calculate PPN (11% of DPP)
         $ppn = $dpp * 0.11;
@@ -321,7 +333,8 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
         $grand_total = $dpp + $ppn - $pph;
 
         return [
-            'tarif' => $tarif,
+            'tarif' => $tarifType,
+            'tarif_nominal' => $masterPricelist ? $masterPricelist->harga : 0,
             'dpp' => $dpp,
             'adjustment' => 0, // Default adjustment
             'dpp_nilai_lain' => 0, // Default nilai lain
@@ -329,6 +342,41 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
             'pph' => $pph,
             'grand_total' => $grand_total,
         ];
+    }
+
+    /**
+     * Calculate number of days from data
+     */
+    private function calculateDaysFromData(array $data): int
+    {
+        // If masa contains date range, parse it
+        if (isset($data['masa']) && strpos($data['masa'], ' - ') !== false) {
+            try {
+                $parts = explode(' - ', $data['masa']);
+                if (count($parts) === 2) {
+                    $startDate = Carbon::parse($parts[0]);
+                    $endDate = Carbon::parse($parts[1]);
+                    return $startDate->diffInDays($endDate);
+                }
+            } catch (\Exception $e) {
+                // If parsing fails, fall back to date calculation
+            }
+        }
+
+        // Fall back to tanggal_awal and tanggal_akhir
+        if (isset($data['tanggal_awal']) && isset($data['tanggal_akhir'])) {
+            try {
+                $startDate = Carbon::parse($data['tanggal_awal']);
+                $endDate = Carbon::parse($data['tanggal_akhir']);
+                return $startDate->diffInDays($endDate);
+            } catch (\Exception $e) {
+                // If all else fails, default to periode * 30 (approximate days per period)
+                return $data['periode'] * 30;
+            }
+        }
+
+        // Last resort: assume 30 days per periode
+        return $data['periode'] * 30;
     }
 
     /**

@@ -72,12 +72,10 @@
             font-size: 10px;
             font-weight: bold;
             text-transform: uppercase;
+            background-color: #ffffff;
+            color: #000000;
+            border: 1px solid #000000;
         }
-
-        .status-unpaid { background-color: #f3f4f6; color: #374151; }
-        .status-sent { background-color: #fef3c7; color: #92400e; }
-        .status-paid { background-color: #d1fae5; color: #065f46; }
-        .status-cancelled { background-color: #fee2e2; color: #991b1b; }
 
         .table {
             width: 100%;
@@ -94,7 +92,8 @@
         }
 
         .table th {
-            background-color: #f8f9fa;
+            background-color: #000000;
+            color: #ffffff;
             font-weight: bold;
             font-size: 10px;
             text-align: center;
@@ -158,24 +157,24 @@
         }
 
         .tarif-harian {
-            background-color: #fef3c7;
-            color: #92400e;
-            border-color: #f59e0b;
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #000000;
         }
 
         .tarif-bulanan {
-            background-color: #d1fae5;
-            color: #065f46;
-            border-color: #10b981;
+            background-color: #ffffff;
+            color: #000000;
+            border-color: #000000;
         }
 
         /* Responsive table adjustments */
         .table tr:nth-child(even) {
-            background-color: #f9fafb;
+            background-color: #ffffff;
         }
 
         .table tr:hover {
-            background-color: #f3f4f6;
+            background-color: #f8f8f8;
         }
 
         .summary {
@@ -196,10 +195,45 @@
         .total-amount {
             font-size: 16px;
             font-weight: bold;
-            color: #059669;
-            border-top: 2px solid #333;
+            color: #000000;
+            border-top: 2px solid #000000;
             padding-top: 10px;
             margin-top: 10px;
+        }
+
+        .signature-section {
+            margin-top: 50px;
+            text-align: center;
+        }
+
+        .signature-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        .signature-cell {
+            width: 33.33%;
+            padding: 20px;
+            text-align: center;
+            vertical-align: top;
+        }
+
+        .signature-label {
+            font-weight: bold;
+            margin-bottom: 40px;
+            font-size: 12px;
+        }
+
+        .signature-line {
+            border-bottom: 1px solid #333;
+            margin-bottom: 5px;
+            height: 1px;
+        }
+
+        .signature-name {
+            font-size: 11px;
+            margin-bottom: 5px;
         }
 
         .footer {
@@ -213,13 +247,15 @@
 
         @media print {
             @page {
-                size: 165mm 215mm; /* Setengah Folio portrait */
-                margin: 8mm;
+                size: auto; /* Use full page size */
+                margin: 2mm; /* Minimal margins for full screen */
             }
 
             body {
                 font-size: 9px;
-                width: 149mm;
+                width: 100%; /* Full width */
+                margin: 0;
+                padding: 0;
             }
 
             .container {
@@ -310,6 +346,32 @@
                 font-size: 10px;
                 padding-top: 6px;
                 margin-top: 6px;
+            }
+
+            .signature-section {
+                margin-top: 30px;
+            }
+
+            .signature-table {
+                margin-top: 10px;
+            }
+
+            .signature-cell {
+                padding: 10px 5px;
+            }
+
+            .signature-label {
+                margin-bottom: 20px;
+                font-size: 8px;
+            }
+
+            .signature-line {
+                margin-bottom: 3px;
+            }
+
+            .signature-name {
+                font-size: 7px;
+                margin-bottom: 3px;
             }
 
             .footer {
@@ -434,7 +496,7 @@
                 </tr>
                 @endforelse
                 <!-- Total Row -->
-                <tr style="background-color: #f8f9fa; font-weight: bold;">
+                <tr style="background-color: #000000; color: #ffffff; font-weight: bold;">
                     <td class="text-center">TOTAL</td>
                     <td></td>
                     <td></td>
@@ -454,6 +516,29 @@
                 <span class="summary-label">TOTAL AMOUNT:</span>
                 <span>Rp {{ number_format((float)$pranota->total_amount, 2, ',', '.') }}</span>
             </div>
+        </div>
+
+        <!-- Signature Section -->
+        <div class="signature-section">
+            <table class="signature-table">
+                <tr>
+                    <td class="signature-cell">
+                        <div class="signature-label">Dibuat Oleh</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-name">{{ $pranota->created_by ?? 'Admin' }}</div>
+                    </td>
+                    <td class="signature-cell">
+                        <div class="signature-label">Disetujui Oleh</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-name">{{ $pranota->approved_by ?? 'Manager' }}</div>
+                    </td>
+                    <td class="signature-cell">
+                        <div class="signature-label">Diterima Oleh</div>
+                        <div class="signature-line"></div>
+                        <div class="signature-name">{{ $pranota->received_by ?? '' }}</div>
+                    </td>
+                </tr>
+            </table>
         </div>
     </div>
 

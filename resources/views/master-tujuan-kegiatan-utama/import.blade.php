@@ -54,7 +54,7 @@
         <!-- Simple Import Form -->
         <form action="{{ route('master.tujuan-kegiatan-utama.import') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
             @csrf
-            
+
             <!-- File Upload Section -->
             <div class="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
                 <svg class="mx-auto h-12 w-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -64,12 +64,12 @@
                     <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-2">
                         Pilih File CSV
                     </label>
-                    <input 
-                        id="csv_file" 
-                        name="csv_file" 
-                        type="file" 
-                        accept=".csv,.txt" 
-                        required 
+                    <input
+                        id="csv_file"
+                        name="csv_file"
+                        type="file"
+                        accept=".csv,.txt"
+                        required
                         class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
                     >
                 </div>
@@ -84,7 +84,7 @@
                     </svg>
                     Download Template
                 </a>
-                
+
                 <div class="flex space-x-3">
                     <a href="{{ route('master.tujuan-kegiatan-utama.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                         Batal

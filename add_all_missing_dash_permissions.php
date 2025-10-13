@@ -38,7 +38,7 @@ $assignedCount = 0;
 
 foreach ($missingDashPermissions as $permissionName) {
     $permission = Permission::where('name', $permissionName)->first();
-    
+
     if (!$permission) {
         // Create the permission
         $permission = Permission::create([
@@ -48,7 +48,7 @@ foreach ($missingDashPermissions as $permissionName) {
         echo "✅ Created permission: {$permissionName}\n";
         $createdCount++;
     }
-    
+
     // Check if user already has this permission
     $existing = DB::table('user_permissions')
         ->where('user_id', $user->id)

@@ -27,7 +27,7 @@ $additionalPerms = [
 $grantedCount = 0;
 foreach($additionalPerms as $permName) {
     $permission = Permission::where('name', $permName)->first();
-    
+
     if ($permission) {
         // Check if admin already has this permission
         $existing = DB::table('user_permissions')

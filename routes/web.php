@@ -42,6 +42,10 @@ use App\Http\Controllers\PembayaranObController;
 use App\Http\Controllers\RealisasiUangMukaController;
 use App\Http\Controllers\VendorBengkelController;
 use App\Http\Controllers\TipeAkunController;
+use App\Http\Controllers\PengirimController;
+use App\Http\Controllers\JenisBarangController;
+use App\Http\Controllers\TermController;
+use App\Http\Controllers\OrderController;
 
 /*
 |--------------------------------------------------------------------------
@@ -344,7 +348,7 @@ Route::middleware([
         Route::get('tujuan-kegiatan-utama/create', [TujuanKegiatanUtamaController::class, 'create'])
              ->name('tujuan-kegiatan-utama.create')
              ->middleware('can:master-tujuan-create');
-        
+
         // Export/Print routes for Master Tujuan Kegiatan Utama (HARUS SEBELUM RESOURCE ROUTES)
         Route::get('tujuan-kegiatan-utama/export', [TujuanKegiatanUtamaController::class, 'export'])
              ->name('tujuan-kegiatan-utama.export')
@@ -352,7 +356,7 @@ Route::middleware([
         Route::get('tujuan-kegiatan-utama/print', [TujuanKegiatanUtamaController::class, 'print'])
              ->name('tujuan-kegiatan-utama.print')
              ->middleware('can:master-tujuan-print');
-        
+
         // Template dan Import routes for Master Tujuan Kegiatan Utama (HARUS SEBELUM RESOURCE ROUTES)
         Route::get('tujuan-kegiatan-utama/download-template', [TujuanKegiatanUtamaController::class, 'downloadTemplate'])
              ->name('tujuan-kegiatan-utama.download-template')
@@ -363,7 +367,7 @@ Route::middleware([
         Route::post('tujuan-kegiatan-utama/import', [TujuanKegiatanUtamaController::class, 'import'])
              ->name('tujuan-kegiatan-utama.import')
              ->middleware('can:master-tujuan-create');
-        
+
         // Resource routes (HARUS SETELAH ROUTES SPESIFIK)
         Route::post('tujuan-kegiatan-utama', [TujuanKegiatanUtamaController::class, 'store'])
              ->name('tujuan-kegiatan-utama.store')
@@ -380,7 +384,7 @@ Route::middleware([
         Route::delete('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}', [TujuanKegiatanUtamaController::class, 'destroy'])
              ->name('tujuan-kegiatan-utama.destroy')
              ->middleware('can:master-tujuan-delete');
-        
+
         // Master permission routes (with master prefix) - granular permissions
         Route::get('permission', [PermissionController::class, 'index'])
              ->name('permission.index')
@@ -714,10 +718,67 @@ Route::middleware([
              'index' => 'can:master-nomor-terakhir-view',
              'show' => 'can:master-nomor-terakhir-view'
          ]);
+
+    // 📦 Pengirim (Sender) Management with permissions
+    Route::resource('master/pengirim', PengirimController::class)
+         ->names('pengirim')
+         ->middleware([
+             'index' => 'can:master-pengirim-view',
+             'create' => 'can:master-pengirim-create',
+             'store' => 'can:master-pengirim-create',
+             'show' => 'can:master-pengirim-view',
+             'edit' => 'can:master-pengirim-update',
+             'update' => 'can:master-pengirim-update',
+             'destroy' => 'can:master-pengirim-delete'
+         ]);
+
+    // 📦 Jenis Barang (Item Type) Management with permissions
+    Route::resource('master/jenis-barang', JenisBarangController::class)
+         ->names('jenis-barang')
+         ->middleware([
+             'index' => 'can:master-jenis-barang-view',
+             'create' => 'can:master-jenis-barang-create',
+             'store' => 'can:master-jenis-barang-create',
+             'show' => 'can:master-jenis-barang-view',
+             'edit' => 'can:master-jenis-barang-update',
+             'update' => 'can:master-jenis-barang-update',
+             'destroy' => 'can:master-jenis-barang-delete'
+         ]);
+
+    // 📦 Term Management with permissions
+    Route::resource('master/term', TermController::class)
+         ->names('term')
+         ->middleware([
+             'index' => 'can:master-term-view',
+             'create' => 'can:master-term-create',
+             'store' => 'can:master-term-create',
+             'show' => 'can:master-term-view',
+             'edit' => 'can:master-term-update',
+             'update' => 'can:master-term-update',
+             'destroy' => 'can:master-term-delete'
+         ]);
 });
 
 // ═══════════════════════════════════════════════════════════════════════
-// 🔗 SPECIAL ROUTES (Outside Master Group)
+// � ORDER MANAGEMENT ROUTES
+// ═══════════════════════════════════════════════════════════════════════
+
+Route::middleware(['auth', 'verified'])->group(function () {
+    // 📋 Order Management with permissions
+    Route::resource('orders', OrderController::class)
+         ->middleware([
+             'index' => 'can:order-view',
+             'create' => 'can:order-create',
+             'store' => 'can:order-create',
+             'show' => 'can:order-view',
+             'edit' => 'can:order-update',
+             'update' => 'can:order-update',
+             'destroy' => 'can:order-delete'
+         ]);
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// �🔗 SPECIAL ROUTES (Outside Master Group)
     // ═══════════════════════════════════════════════════════════════════════
 
     // Route master.karyawan.index di luar group master untuk konsistensi dengan view

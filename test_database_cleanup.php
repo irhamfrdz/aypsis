@@ -17,7 +17,7 @@ $activeFields = [
     'id' => 'Primary key (auto increment)',
     'kode' => 'Kode transportasi (nullable)',
     'cabang' => 'Nama cabang (nullable)',
-    'wilayah' => 'Nama wilayah (nullable)', 
+    'wilayah' => 'Nama wilayah (nullable)',
     'dari' => 'Lokasi asal (nullable, required untuk import)',
     'ke' => 'Lokasi tujuan (nullable, required untuk import)',
     'uang_jalan_20ft' => 'Biaya uang jalan 20ft (decimal, nullable)',
@@ -82,7 +82,7 @@ echo "7. CSV Import Mapping (Updated):\n";
 $csvMapping = [
     'CSV Column' => 'Database Field',
     'Kode' => 'kode',
-    'Cabang' => 'cabang', 
+    'Cabang' => 'cabang',
     'Wilayah' => 'wilayah',
     'Dari' => 'dari (REQUIRED)',
     'Ke' => 'ke (REQUIRED)',

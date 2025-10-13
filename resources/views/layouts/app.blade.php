@@ -240,6 +240,9 @@
                     $hasMasterPermissions = $user && (
                         $user->can('master-permission-view') ||
                         $user->can('master-cabang-view') ||
+                        $user->can('master-pengirim-view') ||
+                        $user->can('master-jenis-barang-view') ||
+                        $user->can('master-term-view') ||
                         $user->can('master-coa-view') ||
                         $user->can('master-kode-nomor-view') ||
                         $user->can('master-nomor-terakhir-view') ||
@@ -264,7 +267,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');
+                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -300,6 +303,30 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                                     </svg>
                                      Cabang
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-pengirim-view'))
+                                <a href="{{ route('pengirim.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pengirim.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+                                    </svg>
+                                     Pengirim
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-jenis-barang-view'))
+                                <a href="{{ route('jenis-barang.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('jenis-barang.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                                    </svg>
+                                     Jenis Barang
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-term-view'))
+                                <a href="{{ route('term.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('term.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                    </svg>
+                                     Term
                                 </a>
                             @endif
                             @if($user && $user->can('master-coa-view'))
@@ -484,6 +511,25 @@
             </a>
         @endif
     </div>
+</div>
+@endif
+
+{{-- Order Management Section --}}
+@php
+    $isOrderRoute = Request::routeIs('orders.*');
+    $hasOrderPermissions = $user && ($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete'));
+@endphp
+
+@if($hasOrderPermissions)
+<div class="mt-4 mb-4">
+    <a href="{{ route('orders.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isOrderRoute ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
+        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isOrderRoute ? 'bg-orange-200' : 'bg-orange-50 group-hover:bg-orange-200' }}">
+            <svg class="w-4 h-4 {{ $isOrderRoute ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium menu-text">Order Management</span>
+    </a>
 </div>
 @endif
 

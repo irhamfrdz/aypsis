@@ -20,7 +20,7 @@ echo "User: {$user->username}\n\n";
 echo "=== Master Tujuan Permissions ===\n";
 $masterTujuanPerms = [
     'master-tujuan.view',
-    'master-tujuan.create', 
+    'master-tujuan.create',
     'master-tujuan.update',
     'master-tujuan.delete',
     'master-tujuan.print',
@@ -36,7 +36,7 @@ echo "\n=== Master Tujuan Kegiatan Utama Permissions ===\n";
 $masterTujuanKegiatanUtamaPerms = [
     'master-tujuan-kegiatan-utama.view',
     'master-tujuan-kegiatan-utama.create',
-    'master-tujuan-kegiatan-utama.update', 
+    'master-tujuan-kegiatan-utama.update',
     'master-tujuan-kegiatan-utama.delete',
     'master-tujuan-kegiatan-utama.print',
     'master-tujuan-kegiatan-utama.export'
