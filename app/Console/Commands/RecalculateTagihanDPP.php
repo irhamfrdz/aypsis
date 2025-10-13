@@ -14,7 +14,7 @@ class RecalculateTagihanDPP extends Command
      *
      * @var string
      */
-    protected $signature = 'tagihan:recalculate-dpp 
+    protected $signature = 'tagihan:recalculate-dpp
                             {--container= : Specific container number to recalculate}
                             {--periode= : Specific periode to recalculate}
                             {--dry-run : Show what would be changed without actually updating}';
@@ -61,7 +61,7 @@ class RecalculateTagihanDPP extends Command
             try {
                 $oldDpp = (float) $tagihan->dpp;
                 $newCalculation = $this->calculateCorrectDPP($tagihan);
-                
+
                 if (abs($newCalculation['dpp'] - $oldDpp) > 0.01) { // Use small threshold for float comparison
                     $this->line("Container: {$tagihan->nomor_kontainer}, Periode: {$tagihan->periode}");
                     $this->line("  Tarif: {$tagihan->tarif}");
@@ -115,10 +115,13 @@ class RecalculateTagihanDPP extends Command
         $size = $tagihan->size;
         $vendor = $tagihan->vendor;
 
-        // Get master pricelist based on tarif type
+        // Get master pricelist based on tarif type and effective date
+        $tagihanDate = Carbon::parse($tagihan->tanggal_awal);
         $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
             ->where('vendor', $vendor)
             ->where('tarif', $tarifType)
+            ->where('tanggal_harga_awal', '<=', $tagihanDate)
+            ->orderBy('tanggal_harga_awal', 'desc')
             ->first();
 
         $dpp = 0;
@@ -158,26 +161,27 @@ class RecalculateTagihanDPP extends Command
      */
     private function calculateDaysFromTagihan(DaftarTagihanKontainerSewa $tagihan): int
     {
-        // If masa contains date range, parse it
+        // Prioritize tanggal_awal and tanggal_akhir (actual database dates)
+        // Field 'masa' is intentionally reduced by 1 day for display purposes
+        if ($tagihan->tanggal_awal && $tagihan->tanggal_akhir) {
+            try {
+                $startDate = Carbon::parse($tagihan->tanggal_awal);
+                $endDate = Carbon::parse($tagihan->tanggal_akhir);
+                return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
+            } catch (\Exception $e) {
+                // If parsing fails, fall back to masa calculation
+            }
+        }
+
+        // Fall back to masa field (but this is less accurate as it's reduced by 1 day)
         if ($tagihan->masa && strpos($tagihan->masa, ' - ') !== false) {
             try {
                 $parts = explode(' - ', $tagihan->masa);
                 if (count($parts) === 2) {
                     $startDate = Carbon::parse($parts[0]);
                     $endDate = Carbon::parse($parts[1]);
-                    return $startDate->diffInDays($endDate);
+                    return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
                 }
-            } catch (\Exception $e) {
-                // If parsing fails, fall back to date calculation
-            }
-        }
-
-        // Fall back to tanggal_awal and tanggal_akhir
-        if ($tagihan->tanggal_awal && $tagihan->tanggal_akhir) {
-            try {
-                $startDate = Carbon::parse($tagihan->tanggal_awal);
-                $endDate = Carbon::parse($tagihan->tanggal_akhir);
-                return $startDate->diffInDays($endDate);
             } catch (\Exception $e) {
                 // If all else fails, default to periode * 30 (approximate days per period)
                 return $tagihan->periode * 30;

@@ -296,7 +296,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
         $periode = $data['periode'];
         $size = $data['size'];
         $vendor = $data['vendor'];
-        
+
         // Get tarif type from data (should be 'Harian' or 'Bulanan')
         $tarifType = $data['tarif'] ?? 'Bulanan';
 
@@ -308,7 +308,7 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
 
         // Calculate DPP based on tarif type
         $dpp = 0;
-        
+
         if ($masterPricelist) {
             if ($tarifType === 'Harian') {
                 // For harian: calculate days and multiply by daily rate
@@ -349,26 +349,27 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
      */
     private function calculateDaysFromData(array $data): int
     {
-        // If masa contains date range, parse it
+        // Prioritize tanggal_awal and tanggal_akhir (actual database dates)
+        // Field 'masa' is intentionally reduced by 1 day for display purposes
+        if (isset($data['tanggal_awal']) && isset($data['tanggal_akhir'])) {
+            try {
+                $startDate = Carbon::parse($data['tanggal_awal']);
+                $endDate = Carbon::parse($data['tanggal_akhir']);
+                return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
+            } catch (\Exception $e) {
+                // If parsing fails, fall back to masa calculation
+            }
+        }
+
+        // Fall back to masa field (but this is less accurate as it's reduced by 1 day)
         if (isset($data['masa']) && strpos($data['masa'], ' - ') !== false) {
             try {
                 $parts = explode(' - ', $data['masa']);
                 if (count($parts) === 2) {
                     $startDate = Carbon::parse($parts[0]);
                     $endDate = Carbon::parse($parts[1]);
-                    return $startDate->diffInDays($endDate);
+                    return $startDate->diffInDays($endDate) + 1; // +1 karena termasuk hari pertama
                 }
-            } catch (\Exception $e) {
-                // If parsing fails, fall back to date calculation
-            }
-        }
-
-        // Fall back to tanggal_awal and tanggal_akhir
-        if (isset($data['tanggal_awal']) && isset($data['tanggal_akhir'])) {
-            try {
-                $startDate = Carbon::parse($data['tanggal_awal']);
-                $endDate = Carbon::parse($data['tanggal_akhir']);
-                return $startDate->diffInDays($endDate);
             } catch (\Exception $e) {
                 // If all else fails, default to periode * 30 (approximate days per period)
                 return $data['periode'] * 30;
