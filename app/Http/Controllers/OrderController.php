@@ -75,7 +75,7 @@ class OrderController extends Controller
         $request->validate([
             'nomor_order' => 'required|string|unique:orders,nomor_order',
             'tanggal_order' => 'required|date',
-            'tujuan_kirim_id' => 'required|exists:master_tujuan_kirims,id',
+            'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'size_kontainer' => 'required|string|max:255',
             'unit_kontainer' => 'required|integer|min:1',
@@ -233,7 +233,7 @@ class OrderController extends Controller
         $request->validate([
             'nomor_order' => 'required|string|unique:orders,nomor_order,' . $id,
             'tanggal_order' => 'required|date',
-            'tujuan_kirim_id' => 'required|exists:master_tujuan_kirims,id',
+            'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'size_kontainer' => 'required|string|max:255',
             'unit_kontainer' => 'required|integer|min:1',

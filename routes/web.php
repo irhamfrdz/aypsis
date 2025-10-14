@@ -873,6 +873,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/orders/generate-number', [OrderController::class, 'generateOrderNumber'])
          ->name('orders.generate-number')
          ->middleware('can:order-create');
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 📋 SURAT JALAN MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+    
+    // Surat Jalan Order Selection
+    Route::get('/surat-jalan/select-order', [\App\Http\Controllers\SuratJalanController::class, 'selectOrder'])
+         ->name('surat-jalan.select-order')
+         ->middleware('can:surat-jalan-create');
+
+    // Surat Jalan Management with permissions
+    Route::resource('surat-jalan', \App\Http\Controllers\SuratJalanController::class)
+         ->middleware([
+             'index' => 'can:surat-jalan-view',
+             'create' => 'can:surat-jalan-create',
+             'store' => 'can:surat-jalan-create',
+             'show' => 'can:surat-jalan-view',
+             'edit' => 'can:surat-jalan-update',
+             'update' => 'can:surat-jalan-update',
+             'destroy' => 'can:surat-jalan-delete'
+         ]);
+
+    // AJAX route for generating surat jalan number
+    Route::get('/surat-jalan/generate-nomor', [\App\Http\Controllers\SuratJalanController::class, 'generateNomorSuratJalan'])
+         ->name('surat-jalan.generate-nomor')
+         ->middleware('can:surat-jalan-create');
 });
 
 // ═══════════════════════════════════════════════════════════════════════

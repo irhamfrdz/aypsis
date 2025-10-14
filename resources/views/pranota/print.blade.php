@@ -87,19 +87,20 @@
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 8px 6px;
+            padding: 12px 8px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
         }
 
         .table th {
-            background-color: #000000;
-            color: #ffffff;
+            background-color: #f8f9fa;
+            color: #333;
             font-weight: bold;
             font-size: 11px;
             text-align: center;
             white-space: nowrap;
+            border: 2px solid #333;
         }
 
         .table td {
@@ -173,17 +174,18 @@
 
         /* Responsive table adjustments */
         .table tr:nth-child(even) {
-            background-color: #ffffff;
+            background-color: #f8f9fa;
         }
 
         .table tr:hover {
-            background-color: #f8f8f8;
+            background-color: #e9ecef;
         }
 
         .total-row td {
-            background-color: #000000 !important;
-            color: #ffffff !important;
+            background-color: #e9ecef !important;
+            color: #333 !important;
             font-weight: bold !important;
+            border: 2px solid #333 !important;
         }
 
         .summary {
@@ -211,38 +213,43 @@
         }
 
         .signature-section {
-            margin-top: 50px;
+            margin-top: 60px;
             text-align: center;
+            page-break-inside: avoid;
         }
 
         .signature-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 20px;
+            margin-top: 30px;
         }
 
         .signature-cell {
             width: 33.33%;
-            padding: 20px;
+            padding: 40px 20px;
             text-align: center;
             vertical-align: top;
         }
 
         .signature-label {
             font-weight: bold;
-            margin-bottom: 40px;
-            font-size: 12px;
+            margin-bottom: 80px;
+            font-size: 14px;
         }
 
         .signature-line {
-            border-bottom: 1px solid #333;
-            margin-bottom: 5px;
-            height: 1px;
+            border-bottom: 2px solid #333;
+            margin-bottom: 10px;
+            height: 2px;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .signature-name {
-            font-size: 11px;
-            margin-bottom: 5px;
+            font-size: 13px;
+            margin-bottom: 10px;
+            font-weight: bold;
         }
 
         .footer {
@@ -328,8 +335,9 @@
 
             .table th {
                 font-size: 10px;
-                background-color: #000 !important;
-                color: #fff !important;
+                background-color: #f8f9fa !important;
+                color: #333 !important;
+                border: 2px solid #000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -391,29 +399,35 @@
             }
 
             .signature-section {
-                margin-top: 40px;
+                margin-top: 50px;
+                page-break-inside: avoid;
             }
 
             .signature-table {
-                margin-top: 15px;
+                margin-top: 25px;
             }
 
             .signature-cell {
-                padding: 15px 8px;
+                padding: 30px 15px;
             }
 
             .signature-label {
-                margin-bottom: 25px;
-                font-size: 10px;
+                margin-bottom: 60px;
+                font-size: 12px;
             }
 
             .signature-line {
-                margin-bottom: 5px;
+                margin-bottom: 8px;
+                border-bottom: 2px solid #000 !important;
+                width: 150px;
+                margin-left: auto;
+                margin-right: auto;
             }
 
             .signature-name {
-                font-size: 9px;
-                margin-bottom: 5px;
+                font-size: 11px;
+                margin-bottom: 8px;
+                font-weight: bold;
             }
 
             .footer {
@@ -434,9 +448,10 @@
 
             /* Total row styling for print */
             .table tr:last-child td {
-                background-color: #000 !important;
-                color: #fff !important;
+                background-color: #e9ecef !important;
+                color: #333 !important;
                 font-weight: bold !important;
+                border: 2px solid #000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
@@ -552,16 +567,16 @@
                 </tr>
                 @endforelse
                 <!-- Total Row -->
-                <tr class="total-row" style="background-color: #000000; color: #ffffff; font-weight: bold;">
-                    <td class="text-center" style="background-color: #000000; color: #ffffff; font-weight: bold;">TOTAL</td>
-                    <td style="background-color: #000000; color: #ffffff;"></td>
-                    <td style="background-color: #000000; color: #ffffff;"></td>
-                    <td style="background-color: #000000; color: #ffffff;"></td>
-                    <td class="text-right" style="background-color: #000000; color: #ffffff; font-weight: bold;">{{ number_format($tagihanItems->sum('dpp'), 2, ',', '.') }}</td>
-                    <td class="text-right" style="background-color: #000000; color: #ffffff; font-weight: bold;">{{ number_format($tagihanItems->sum('adjustment'), 2, ',', '.') }}</td>
-                    <td class="text-right" style="background-color: #000000; color: #ffffff; font-weight: bold;">{{ number_format($tagihanItems->sum('ppn'), 2, ',', '.') }}</td>
-                    <td class="text-right" style="background-color: #000000; color: #ffffff; font-weight: bold;">{{ number_format($tagihanItems->sum('pph'), 2, ',', '.') }}</td>
-                    <td class="text-right" style="background-color: #000000; color: #ffffff; font-weight: bold;">{{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}</td>
+                <tr class="total-row">
+                    <td class="text-center">TOTAL</td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>
@@ -581,17 +596,17 @@
                     <td class="signature-cell">
                         <div class="signature-label">Dibuat Oleh</div>
                         <div class="signature-line"></div>
-                        <div class="signature-name">{{ $pranota->created_by ?? 'Admin' }}</div>
+                        <div class="signature-name">&nbsp;</div>
                     </td>
                     <td class="signature-cell">
                         <div class="signature-label">Disetujui Oleh</div>
                         <div class="signature-line"></div>
-                        <div class="signature-name">{{ $pranota->approved_by ?? 'Manager' }}</div>
+                        <div class="signature-name">&nbsp;</div>
                     </td>
                     <td class="signature-cell">
                         <div class="signature-label">Diterima Oleh</div>
                         <div class="signature-line"></div>
-                        <div class="signature-name">{{ $pranota->received_by ?? '' }}</div>
+                        <div class="signature-name">&nbsp;</div>
                     </td>
                 </tr>
             </table>

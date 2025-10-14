@@ -9,11 +9,30 @@ class TujuanKegiatanUtamaController extends Controller
     /**
      * Tampilkan daftar tujuan kegiatan utama.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\View\View
      */
-    public function index()
+    public function index(Request $request)
     {
-        $tujuanKegiatanUtamas = TujuanKegiatanUtama::paginate(10);
+        $query = TujuanKegiatanUtama::query();
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('kode', 'like', "%{$search}%")
+                  ->orWhere('cabang', 'like', "%{$search}%")
+                  ->orWhere('wilayah', 'like', "%{$search}%")
+                  ->orWhere('dari', 'like', "%{$search}%")
+                  ->orWhere('ke', 'like', "%{$search}%")
+                  ->orWhere('keterangan', 'like', "%{$search}%");
+            });
+        }
+
+        // Pagination with per_page parameter
+        $perPage = $request->get('per_page', 15);
+        $tujuanKegiatanUtamas = $query->paginate($perPage)->appends($request->query());
+        
         return view('master-tujuan-kegiatan-utama.index', compact('tujuanKegiatanUtamas'));
     }
 

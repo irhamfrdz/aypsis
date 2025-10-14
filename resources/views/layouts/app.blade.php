@@ -542,6 +542,25 @@
 </div>
 @endif
 
+{{-- Surat Jalan Management Section --}}
+@php
+    $isSuratJalanRoute = Request::routeIs('surat-jalan.*');
+    $hasSuratJalanPermissions = $user && ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete'));
+@endphp
+
+@if($hasSuratJalanPermissions)
+<div class="mt-4 mb-4">
+    <a href="{{ route('surat-jalan.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isSuratJalanRoute ? 'bg-emerald-100 text-emerald-700 font-bold' : 'text-gray-700 hover:bg-emerald-100 hover:text-emerald-700' }}">
+        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isSuratJalanRoute ? 'bg-emerald-200' : 'bg-emerald-50 group-hover:bg-emerald-200' }}">
+            <svg class="w-4 h-4 {{ $isSuratJalanRoute ? 'text-emerald-700' : 'text-emerald-600 group-hover:text-emerald-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium menu-text">Surat Jalan</span>
+    </a>
+</div>
+@endif
+
 {{-- Aktiva Dropdown --}}
 @php
     $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.mobil.*');
