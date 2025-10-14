@@ -6,7 +6,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <!-- Header Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -34,7 +34,8 @@
 
             <form action="{{ route('tujuan-kirim.store') }}" method="POST" class="p-6 space-y-6">
                 @csrf
-                
+                <input type="hidden" name="popup" value="{{ request('popup') }}">
+
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Kode -->
                     <div>
@@ -44,9 +45,9 @@
                             </svg>
                             Kode <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
-                               name="kode" 
-                               id="kode" 
+                        <input type="text"
+                               name="kode"
+                               id="kode"
                                value="{{ old('kode') }}"
                                maxlength="10"
                                required
@@ -72,10 +73,10 @@
                             </svg>
                             Nama Tujuan <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
-                               name="nama_tujuan" 
-                               id="nama_tujuan" 
-                               value="{{ old('nama_tujuan') }}"
+                        <input type="text"
+                               name="nama_tujuan"
+                               id="nama_tujuan"
+                               value="{{ old('nama_tujuan', request('search')) }}"
                                maxlength="100"
                                required
                                placeholder="Contoh: Jakarta Pusat"
@@ -102,8 +103,8 @@
                             </svg>
                             Catatan
                         </label>
-                        <textarea name="catatan" 
-                                  id="catatan" 
+                        <textarea name="catatan"
+                                  id="catatan"
                                   rows="4"
                                   maxlength="500"
                                   placeholder="Masukkan catatan tambahan jika diperlukan..."
@@ -127,8 +128,8 @@
                             </svg>
                             Status <span class="text-red-500">*</span>
                         </label>
-                        <select name="status" 
-                                id="status" 
+                        <select name="status"
+                                id="status"
                                 required
                                 class="w-full px-4 py-3 border rounded-lg focus:ring-2 transition-colors duration-200 @error('status') border-red-500 focus:ring-red-500 focus:border-red-500 @else border-gray-300 focus:ring-indigo-500 focus:border-indigo-500 @enderror">
                             <option value="">Pilih Status</option>
@@ -218,7 +219,7 @@
     const catatanField = document.getElementById('catatan');
     if (catatanField) {
         const maxLength = 500;
-        
+
         // Create counter element
         const counter = document.createElement('div');
         counter.className = 'text-right text-xs text-gray-400 mt-1';
@@ -228,7 +229,7 @@
         function updateCounter() {
             const currentLength = catatanField.value.length;
             counter.textContent = `${currentLength}/${maxLength} karakter`;
-            
+
             if (currentLength > maxLength * 0.9) {
                 counter.className = 'text-right text-xs text-orange-500 mt-1';
             } else if (currentLength === maxLength) {
@@ -240,6 +241,15 @@
 
         catatanField.addEventListener('input', updateCounter);
         updateCounter(); // Initialize counter
+
+        // Auto-focus on nama_tujuan field if there's a search term
+        const namaTujuanField = document.getElementById('nama_tujuan');
+        const searchTerm = '{{ request("search") }}';
+
+        if (namaTujuanField && searchTerm) {
+            namaTujuanField.focus();
+            namaTujuanField.select();
+        }
     }
 </script>
 @endsection

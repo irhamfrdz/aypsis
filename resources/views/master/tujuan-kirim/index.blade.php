@@ -15,7 +15,23 @@
                     <p class="mt-1 text-sm text-gray-600">Kelola data tujuan pengiriman kontainer</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
+                    @can('master-tujuan-kirim-view')
+                    <a href="{{ route('tujuan-kirim.download-template') }}" class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Download Template
+                    </a>
+                    @endcan
+
                     @can('master-tujuan-kirim-create')
+                    <a href="{{ route('tujuan-kirim.import') }}" class="inline-flex items-center justify-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                        </svg>
+                        Import CSV
+                    </a>
+
                     <a href="{{ route('tujuan-kirim.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -38,6 +54,52 @@
                     </div>
                     <div class="ml-3">
                         <p class="text-sm font-medium text-green-800">{{ session('success') }}</p>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Notifikasi Import Errors -->
+        @if (session('import_errors'))
+            <div class="mb-6 bg-red-50 border border-red-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-red-800 mb-2">Error saat import:</p>
+                        <div class="max-h-32 overflow-y-auto">
+                            <ul class="text-sm text-red-700 space-y-1">
+                                @foreach (session('import_errors') as $error)
+                                    <li>• {{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        <!-- Notifikasi Import Duplicates -->
+        @if (session('import_duplicates'))
+            <div class="mb-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium text-yellow-800 mb-2">Data duplikat dilewati:</p>
+                        <div class="max-h-32 overflow-y-auto">
+                            <ul class="text-sm text-yellow-700 space-y-1">
+                                @foreach (session('import_duplicates') as $duplicate)
+                                    <li>• {{ $duplicate }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -323,22 +385,22 @@
     .table-container {
         max-height: 70vh;
     }
-    
+
     .sticky-table-header {
         position: sticky;
         top: 0;
         z-index: 10;
     }
-    
+
     @media (max-width: 768px) {
         .table-container {
             max-height: none;
         }
-        
+
         .min-w-full {
             font-size: 0.75rem;
         }
-        
+
         .px-4 {
             padding-left: 0.5rem;
             padding-right: 0.5rem;

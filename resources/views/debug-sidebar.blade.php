@@ -15,7 +15,7 @@
                         $user = Auth::user();
                         $hasKaryawan = $user && $user->karyawan;
                         $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
-                        
+
                         $hasMasterPermissions = $user && (
                             $user->can('master-permission-view') ||
                             $user->can('master-cabang-view') ||
@@ -30,10 +30,10 @@
                             $user->can('master-tujuan-kirim-view') ||
                             $user->can('master-kegiatan-view')
                         );
-                        
+
                         $showMasterSection = $isAdmin || $hasMasterPermissions;
                     @endphp
-                    
+
                     <div class="alert alert-info">
                         <h5>Status Debug:</h5>
                         <ul>
@@ -53,7 +53,7 @@
                                 <div class="alert alert-success">
                                     ✅ Master Data section AKAN MUNCUL
                                 </div>
-                                
+
                                 <h6>Menu yang akan tampil:</h6>
                                 <ul class="list-group">
                                     @if($user && $user->can('master-permission-view'))
@@ -80,7 +80,7 @@
                                 </div>
                             @endif
                         </div>
-                        
+
                         <div class="col-md-6">
                             <h5>Instruksi Troubleshooting:</h5>
                             <ol>
@@ -91,11 +91,11 @@
                                 <li><strong>Klik</strong> "Master Data" untuk expand dropdown</li>
                                 <li>Menu <strong>"Tujuan Kirim"</strong> harus muncul di dalam dropdown</li>
                             </ol>
-                            
+
                             <div class="alert alert-warning">
                                 <strong>Catatan:</strong> Jika menu "Master Data" tidak terlihat, scroll down pada sidebar karena mungkin terpotong.
                             </div>
-                            
+
                             <div class="mt-3">
                                 <a href="{{ route('tujuan-kirim.index') }}" class="btn btn-primary">
                                     <i class="fas fa-external-link-alt"></i> Test Direct Link ke Tujuan Kirim
@@ -118,31 +118,31 @@
 <script>
 function debugSidebar() {
     const output = document.getElementById('jsDebugOutput');
-    
+
     // Check if sidebar exists
     const sidebar = document.getElementById('sidebar');
     const masterToggle = document.getElementById('master-menu-toggle');
     const masterContent = document.getElementById('master-menu-content');
-    
+
     let result = '<div class="alert alert-info">';
     result += '<h6>JavaScript Debug Results:</h6>';
     result += '<ul>';
     result += '<li>Sidebar element: ' + (sidebar ? '✅ Found' : '❌ Not found') + '</li>';
     result += '<li>Master toggle button: ' + (masterToggle ? '✅ Found' : '❌ Not found') + '</li>';
     result += '<li>Master content: ' + (masterContent ? '✅ Found' : '❌ Not found') + '</li>';
-    
+
     if (masterContent) {
         const tujuanKirimLinks = masterContent.querySelectorAll('a[href*="tujuan-kirim"]');
         result += '<li>Tujuan Kirim links: ' + tujuanKirimLinks.length + ' found</li>';
-        
+
         if (tujuanKirimLinks.length > 0) {
             result += '<li>Link text: "' + tujuanKirimLinks[0].textContent.trim() + '"</li>';
             result += '<li>Link href: ' + tujuanKirimLinks[0].href + '</li>';
         }
     }
-    
+
     result += '</ul></div>';
-    
+
     output.innerHTML = result;
 }
 </script>

@@ -23,7 +23,7 @@ echo "✅ User status: {$userAdmin->status}\n\n";
 // Check all required permissions
 $requiredPermissions = [
     'master-tujuan-kirim-view',
-    'master-tujuan-kirim-create', 
+    'master-tujuan-kirim-create',
     'master-tujuan-kirim-update',
     'master-tujuan-kirim-delete'
 ];
@@ -35,10 +35,10 @@ foreach ($requiredPermissions as $permission) {
     $hasPermission = $userAdmin->can($permission);
     $status = $hasPermission ? '✅ YES' : '❌ NO';
     echo "- {$permission}: {$status}\n";
-    
+
     if (!$hasPermission) {
         $allPermissionsOk = false;
-        
+
         // Try to assign missing permission
         $perm = Permission::where('name', $permission)->first();
         if ($perm) {

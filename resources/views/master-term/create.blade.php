@@ -28,6 +28,11 @@
             <form action="{{ route('term.store') }}" method="POST" class="space-y-6">
                 @csrf
 
+                <!-- Hidden field to indicate this is from popup -->
+                @if(request('popup'))
+                    <input type="hidden" name="popup" value="1">
+                @endif
+
                 <!-- Kode Field -->
                 <div>
                     <label for="kode" class="block text-sm font-medium text-gray-700 mb-2">
@@ -46,7 +51,7 @@
                     <label for="nama_status" class="block text-sm font-medium text-gray-700 mb-2">
                         Nama Status <span class="text-red-500">*</span>
                     </label>
-                    <input type="text" name="nama_status" id="nama_status" value="{{ old('nama_status') }}" required
+                    <input type="text" name="nama_status" id="nama_status" value="{{ old('nama_status', request('search')) }}" required
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('nama_status') border-red-500 @enderror"
                            placeholder="Masukkan nama status">
                     @error('nama_status')
@@ -110,3 +115,34 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-focus on nama_status field if there's a search term
+    const namaStatusField = document.getElementById('nama_status');
+    const searchTerm = '{{ request("search") }}';
+
+    if (namaStatusField && searchTerm) {
+        namaStatusField.focus();
+        namaStatusField.select();
+    }
+
+    // Handle form submission to notify parent window
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function() {
+            // Notify parent window that a new term is being created
+            if (window.opener) {
+                window.opener.postMessage({
+                    type: 'term-creating',
+                    data: {
+                        nama_status: namaStatusField.value
+                    }
+                }, '*');
+            }
+        });
+    }
+});
+</script>
+@endpush

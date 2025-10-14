@@ -195,6 +195,7 @@ Route::middleware([
     */
 
     Route::prefix('master')->name('master.')->group(function() {
+     Route::post('pengirim-import', [App\Http\Controllers\PengirimController::class, 'import'])->name('pengirim.import.process')->middleware('can:master-pengirim-create');
 
         // ═══════════════════════════════════════════════════════════════════════
         // 👥 KARYAWAN (EMPLOYEE) MANAGEMENT
@@ -750,6 +751,19 @@ Route::middleware([
              'destroy' => 'can:master-pengirim-delete'
          ]);
 
+    // 📥 Pengirim - Download Template & Import CSV
+    Route::get('master/pengirim-download-template', [PengirimController::class, 'downloadTemplate'])
+         ->name('pengirim.download-template')
+         ->middleware('can:master-pengirim-view');
+
+    Route::get('master/pengirim-import', [PengirimController::class, 'showImport'])
+         ->name('pengirim.import')
+         ->middleware('can:master-pengirim-create');
+
+    Route::post('master/pengirim-import', [PengirimController::class, 'import'])
+         ->name('pengirim.import.process')
+         ->middleware('can:master-pengirim-create');
+
     // 📦 Jenis Barang (Item Type) Management with permissions
     Route::resource('master/jenis-barang', JenisBarangController::class)
          ->names('jenis-barang')
@@ -763,6 +777,19 @@ Route::middleware([
              'destroy' => 'can:master-jenis-barang-delete'
          ]);
 
+    // Jenis Barang import/export routes
+    Route::get('master/jenis-barang-download-template', [JenisBarangController::class, 'downloadTemplate'])
+         ->name('jenis-barang.download-template')
+         ->middleware('can:master-jenis-barang-view');
+
+    Route::get('master/jenis-barang-import', [JenisBarangController::class, 'showImportForm'])
+         ->name('jenis-barang.import-form')
+         ->middleware('can:master-jenis-barang-create');
+
+    Route::post('master/jenis-barang-import', [JenisBarangController::class, 'import'])
+         ->name('jenis-barang.import')
+         ->middleware('can:master-jenis-barang-create');
+
     // 📦 Term Management with permissions
     Route::resource('master/term', TermController::class)
          ->names('term')
@@ -775,6 +802,19 @@ Route::middleware([
              'update' => 'can:master-term-update',
              'destroy' => 'can:master-term-delete'
          ]);
+
+    // 📥 Term - Download Template & Import CSV
+    Route::get('master/term-download-template', [TermController::class, 'downloadTemplate'])
+         ->name('term.download-template')
+         ->middleware('can:master-term-view');
+
+    Route::get('master/term-import', [TermController::class, 'showImport'])
+         ->name('term.import')
+         ->middleware('can:master-term-create');
+
+    Route::post('master/term-import', [TermController::class, 'import'])
+         ->name('term.import.process')
+         ->middleware('can:master-term-create');
 
     // 📦 Tujuan Kirim (Shipping Destination) Management with permissions
     Route::resource('master/tujuan-kirim', \App\Http\Controllers\MasterTujuanKirimController::class)
@@ -797,6 +837,19 @@ Route::middleware([
              'update' => 'can:master-tujuan-kirim-update',
              'destroy' => 'can:master-tujuan-kirim-delete'
          ]);
+
+    // 📥 Tujuan Kirim - Download Template & Import CSV
+    Route::get('master/tujuan-kirim-download-template', [MasterTujuanKirimController::class, 'downloadTemplate'])
+         ->name('tujuan-kirim.download-template')
+         ->middleware('can:master-tujuan-kirim-view');
+
+    Route::get('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'showImport'])
+         ->name('tujuan-kirim.import')
+         ->middleware('can:master-tujuan-kirim-create');
+
+    Route::post('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'import'])
+         ->name('tujuan-kirim.import.process')
+         ->middleware('can:master-tujuan-kirim-create');
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -815,6 +868,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
              'update' => 'can:order-update',
              'destroy' => 'can:order-delete'
          ]);
+
+    // AJAX route for generating order number
+    Route::post('/orders/generate-number', [OrderController::class, 'generateOrderNumber'])
+         ->name('orders.generate-number')
+         ->middleware('can:order-create');
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1398,6 +1456,14 @@ Route::middleware(['auth'])->group(function() {
     Route::delete('pranota-kontainer-sewa-bulk-delete', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'bulkDelete'])
          ->name('pranota-kontainer-sewa.bulk-delete')
          ->middleware('can:pranota-kontainer-sewa-delete');
+
+    // New routes for vendor invoice grouping
+    Route::post('pranota-kontainer-sewa/create-by-vendor-invoice-group', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'createPranotaByVendorInvoiceGroup'])
+         ->name('pranota-kontainer-sewa.create-by-vendor-invoice-group')
+         ->middleware('can:pranota-kontainer-sewa-create');
+    Route::post('pranota-kontainer-sewa/preview-vendor-invoice-grouping', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'previewVendorInvoiceGrouping'])
+         ->name('pranota-kontainer-sewa.preview-vendor-invoice-grouping')
+         ->middleware('can:pranota-kontainer-sewa-view');
 
                // Pranota Sewa routes
                Route::prefix('pranota')->name('pranota.')->group(function () {

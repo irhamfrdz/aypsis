@@ -62,7 +62,16 @@ class MasterTujuanKirimController extends Controller
                 ->withInput();
         }
 
-        MasterTujuanKirim::create($request->all());
+        $tujuanKirim = MasterTujuanKirim::create($request->all());
+
+        // Check if this is a popup request
+        // Either has search parameter OR referer contains orders/create OR has popup parameter
+        if ($request->query('search') ||
+            $request->has('popup') ||
+            ($request->header('referer') && strpos($request->header('referer'), 'orders/create') !== false) ||
+            ($request->header('referer') && strpos($request->header('referer'), 'search') !== false)) {
+            return view('master-tujuan-kirim.success', compact('tujuanKirim'));
+        }
 
         return redirect()->route('tujuan-kirim.index')
             ->with('success', 'Tujuan kirim berhasil ditambahkan.');
@@ -117,5 +126,180 @@ class MasterTujuanKirimController extends Controller
 
         return redirect()->route('tujuan-kirim.index')
             ->with('success', 'Tujuan kirim berhasil dihapus.');
+    }
+
+    /**
+     * Download CSV template for import.
+     */
+    public function downloadTemplate()
+    {
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="template_tujuan_kirim.csv"',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+
+            // Write UTF-8 BOM
+            fwrite($file, "\xEF\xBB\xBF");
+
+            // Write header only (no sample data)
+            fputcsv($file, ['kode', 'nama_tujuan', 'catatan', 'status'], ';');
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
+     * Show import form.
+     */
+    public function showImport()
+    {
+        return view('master.tujuan-kirim.import');
+    }
+
+    /**
+     * Import CSV data.
+     */
+    public function import(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'csv_file' => 'required|file|mimes:csv,txt|max:2048'
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()
+                ->withErrors($validator)
+                ->withInput();
+        }
+
+        try {
+            $file = $request->file('csv_file');
+            $path = $file->getRealPath();
+
+            // Read CSV file
+            $csv = array_map(function($line) {
+                return str_getcsv($line, ';');
+            }, file($path));
+
+            // Remove header row
+            $header = array_shift($csv);
+
+            // Validate header format
+            $expectedHeader = ['kode', 'nama_tujuan', 'catatan', 'status'];
+            if (count(array_intersect($header, $expectedHeader)) < 3) {
+                return redirect()->back()
+                    ->withErrors(['csv_file' => 'Format header CSV tidak sesuai. Header yang dibutuhkan: kode, nama_tujuan, catatan, status'])
+                    ->withInput();
+            }
+
+            $imported = 0;
+            $errors = [];
+            $duplicates = [];
+
+            foreach ($csv as $index => $row) {
+                $rowNumber = $index + 2; // +2 because index starts from 0 and we removed header
+
+                // Skip empty rows
+                if (empty(array_filter($row))) {
+                    continue;
+                }
+
+                // Pad row to match header count
+                $row = array_pad($row, count($expectedHeader), '');
+
+                // Create associative array
+                $data = array_combine($expectedHeader, $row);
+
+                // Clean and validate data
+                $data['kode'] = trim($data['kode'] ?? '');
+                $data['nama_tujuan'] = trim($data['nama_tujuan'] ?? '');
+                $data['catatan'] = trim($data['catatan'] ?? '');
+                $data['status'] = trim(strtolower($data['status'] ?? ''));
+
+                // Set default status to 'active' if empty
+                if (empty($data['status'])) {
+                    $data['status'] = 'active';
+                }
+
+                // Validate required fields
+                if (empty($data['kode']) || empty($data['nama_tujuan'])) {
+                    $errors[] = "Baris {$rowNumber}: Kode dan nama tujuan wajib diisi";
+                    continue;
+                }
+
+                // Validate status (only if provided)
+                if (!empty($data['status']) && !in_array($data['status'], ['active', 'inactive'])) {
+                    $errors[] = "Baris {$rowNumber}: Status harus 'active' atau 'inactive'";
+                    continue;
+                }
+
+                // Check for duplicates in database
+                if (MasterTujuanKirim::where('kode', $data['kode'])->exists()) {
+                    $duplicates[] = "Baris {$rowNumber}: Kode '{$data['kode']}' sudah ada dalam database";
+                    continue;
+                }
+
+                // Validate length
+                if (strlen($data['kode']) > 10) {
+                    $errors[] = "Baris {$rowNumber}: Kode maksimal 10 karakter";
+                    continue;
+                }
+
+                if (strlen($data['nama_tujuan']) > 100) {
+                    $errors[] = "Baris {$rowNumber}: Nama tujuan maksimal 100 karakter";
+                    continue;
+                }
+
+                if (strlen($data['catatan']) > 500) {
+                    $errors[] = "Baris {$rowNumber}: Catatan maksimal 500 karakter";
+                    continue;
+                }
+
+                // Create record
+                try {
+                    MasterTujuanKirim::create([
+                        'kode' => $data['kode'],
+                        'nama_tujuan' => $data['nama_tujuan'],
+                        'catatan' => $data['catatan'] ?: null,
+                        'status' => $data['status']
+                    ]);
+                    $imported++;
+                } catch (\Exception $e) {
+                    $errors[] = "Baris {$rowNumber}: Gagal menyimpan data - " . $e->getMessage();
+                }
+            }
+
+            // Prepare result message
+            $message = "Import selesai. {$imported} data berhasil diimport.";
+
+            if (!empty($errors)) {
+                $message .= " " . count($errors) . " data gagal diimport.";
+            }
+
+            if (!empty($duplicates)) {
+                $message .= " " . count($duplicates) . " data duplikat dilewati.";
+            }
+
+            $sessionData = ['success' => $message];
+
+            if (!empty($errors)) {
+                $sessionData['import_errors'] = $errors;
+            }
+
+            if (!empty($duplicates)) {
+                $sessionData['import_duplicates'] = $duplicates;
+            }
+
+            return redirect()->route('tujuan-kirim.index')->with($sessionData);
+
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->withErrors(['csv_file' => 'Terjadi kesalahan saat memproses file: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 }

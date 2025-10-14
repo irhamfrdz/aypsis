@@ -6,7 +6,7 @@
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        
+
         <!-- Header Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -48,7 +48,7 @@
 
         <!-- Main Content -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            
+
             <!-- Main Information Card -->
             <div class="lg:col-span-2">
                 <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
@@ -168,7 +168,7 @@
                 </div>
             </div>
         </div>
-        
+
         <!-- Action Button -->
         <div class="mt-6 text-center">
             <a href="{{ route('tujuan-kirim.index') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200 shadow-sm">

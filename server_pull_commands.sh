@@ -53,6 +53,51 @@ php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
 
+# 7b. 🔧 PERBAIKAN DPP TAGIHAN KONTAINER (BARU DITAMBAHKAN)
+echo "💰 7b. Fixing DPP calculations..."
+echo "⚠️  IMPORTANT: This will fix incorrect DPP values in tagihan kontainer"
+
+# Fix tarif harian (Rp 42,042 × hari)
+echo "🔧 Fixing Harian DPP calculations..."
+php artisan tinker --execute="
+\$harian = \App\Models\DaftarTagihanKontainerSewa::where('tarif', 'Harian')
+    ->whereNotNull('tanggal_awal')
+    ->whereNotNull('tanggal_akhir')
+    ->get();
+
+\$fixed = 0;
+foreach (\$harian as \$tagihan) {
+    \$startDate = \Carbon\Carbon::parse(\$tagihan->tanggal_awal);
+    \$endDate = \Carbon\Carbon::parse(\$tagihan->tanggal_akhir);
+    \$days = \$startDate->diffInDays(\$endDate) + 1;
+
+    \$correctDPP = 42042 * \$days;
+
+    if (\$tagihan->dpp != \$correctDPP) {
+        \$tagihan->update(['dpp' => \$correctDPP]);
+        \$fixed++;
+    }
+}
+echo 'Fixed ' . \$fixed . ' harian DPP records';
+"
+
+# Fix tarif bulanan (Rp 1,261,261 × periode)
+echo "🔧 Fixing Bulanan DPP calculations..."
+php artisan tinker --execute="
+\$bulanan = \App\Models\DaftarTagihanKontainerSewa::where('tarif', 'Bulanan')->get();
+
+\$fixed = 0;
+foreach (\$bulanan as \$tagihan) {
+    \$correctDPP = 1261261 * \$tagihan->periode;
+
+    if (\$tagihan->dpp != \$correctDPP) {
+        \$tagihan->update(['dpp' => \$correctDPP]);
+        \$fixed++;
+    }
+}
+echo 'Fixed ' . \$fixed . ' bulanan DPP records';
+"
+
 # 8. 🔥 JALANKAN SEEDER PERMISSION (BARU DITAMBAHKAN)
 echo "🔑 8. Running Permission Seeder..."
 echo "⚠️  IMPORTANT: This will add 400+ permissions to your system"

@@ -37,9 +37,16 @@
                             <label for="nomor_order" class="block text-sm font-medium text-gray-700 mb-2">
                                 Nomor Order <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="nomor_order" id="nomor_order" value="{{ old('nomor_order') }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_order') border-red-500 @enderror"
-                                   placeholder="Masukkan nomor order">
+                            <div class="flex">
+                                <input type="text" name="nomor_order" id="nomor_order" value="{{ old('nomor_order', $nextOrderNumber ?? '') }}" required readonly
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_order') border-red-500 @enderror"
+                                       placeholder="Otomatis tergenerate">
+                                <button type="button" id="generate_nomor_order"
+                                        class="ml-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
+                                    Generate
+                                </button>
+                            </div>
+                            <p class="mt-1 text-xs text-gray-500">Format: ODS + Bulan + Tahun + Running Number (contoh: ODS1025000001)</p>
                             @error('nomor_order')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -97,26 +104,70 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Tujuan Kirim -->
                         <div>
-                            <label for="tujuan_kirim" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tujuan Kirim <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="tujuan_kirim" id="tujuan_kirim" value="{{ old('tujuan_kirim') }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_kirim') border-red-500 @enderror"
-                                   placeholder="Masukkan tujuan kirim">
-                            @error('tujuan_kirim')
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="tujuan_kirim_id" class="text-sm font-medium text-gray-700">
+                                    Tujuan Kirim <span class="text-red-500">*</span>
+                                </label>
+                                <a href="{{ route('tujuan-kirim.create') }}" id="add_tujuan_kirim_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container">
+                                    <input type="text" id="search_tujuan_kirim" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="tujuan_kirim_id" id="tujuan_kirim_id" required
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_kirim_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($tujuanKirims as $tujuanKirim)
+                                            <option value="{{ $tujuanKirim->id }}" {{ old('tujuan_kirim_id') == $tujuanKirim->id ? 'selected' : '' }}>
+                                                {{ $tujuanKirim->nama_tujuan }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            @error('tujuan_kirim_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
 
                         <!-- Tujuan Ambil -->
                         <div>
-                            <label for="tujuan_ambil" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tujuan Ambil <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="tujuan_ambil" id="tujuan_ambil" value="{{ old('tujuan_ambil') }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_ambil') border-red-500 @enderror"
-                                   placeholder="Masukkan tujuan ambil">
-                            @error('tujuan_ambil')
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="tujuan_ambil_id" class="text-sm font-medium text-gray-700">
+                                    Tujuan Ambil <span class="text-red-500">*</span>
+                                </label>
+                                <a href="{{ route('master.tujuan-kegiatan-utama.create') }}" id="add_tujuan_ambil_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-ambil">
+                                    <input type="text" id="search_tujuan_ambil" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="tujuan_ambil_id" id="tujuan_ambil_id" required
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_ambil_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($tujuanKegiatanUtamas as $tujuanKegiatanUtama)
+                                            <option value="{{ $tujuanKegiatanUtama->id }}" {{ old('tujuan_ambil_id') == $tujuanKegiatanUtama->id ? 'selected' : '' }}>
+                                                {{ $tujuanKegiatanUtama->ke }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_ambil" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            @error('tujuan_ambil_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -129,18 +180,34 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Term -->
                         <div>
-                            <label for="term_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Term
-                            </label>
-                            <select name="term_id" id="term_id"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('term_id') border-red-500 @enderror">
-                                <option value="">Pilih Term</option>
-                                @foreach($terms as $term)
-                                    <option value="{{ $term->id }}" {{ old('term_id') == $term->id ? 'selected' : '' }}>
-                                        {{ $term->kode }} - {{ $term->nama_status }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="term_id" class="text-sm font-medium text-gray-700">
+                                    Term
+                                </label>
+                                <a href="{{ route('term.create') }}" id="add_term_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-term">
+                                    <input type="text" id="search_term" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="term_id" id="term_id"
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('term_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($terms as $term)
+                                            <option value="{{ $term->id }}" {{ old('term_id') == $term->id ? 'selected' : '' }}>
+                                                {{ $term->nama_status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_term" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
                             @error('term_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -148,18 +215,34 @@
 
                         <!-- Pengirim -->
                         <div>
-                            <label for="pengirim_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Pengirim
-                            </label>
-                            <select name="pengirim_id" id="pengirim_id"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('pengirim_id') border-red-500 @enderror">
-                                <option value="">Pilih Pengirim</option>
-                                @foreach($pengirims as $pengirim)
-                                    <option value="{{ $pengirim->id }}" {{ old('pengirim_id') == $pengirim->id ? 'selected' : '' }}>
-                                        {{ $pengirim->kode }} - {{ $pengirim->nama_pengirim }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="pengirim_id" class="text-sm font-medium text-gray-700">
+                                    Pengirim
+                                </label>
+                                <a href="{{ route('pengirim.create') }}" id="add_pengirim_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-pengirim">
+                                    <input type="text" id="search_pengirim" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="pengirim_id" id="pengirim_id"
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('pengirim_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($pengirims as $pengirim)
+                                            <option value="{{ $pengirim->id }}" {{ old('pengirim_id') == $pengirim->id ? 'selected' : '' }}>
+                                                {{ $pengirim->nama_pengirim }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_pengirim" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
                             @error('pengirim_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -167,18 +250,34 @@
 
                         <!-- Jenis Barang -->
                         <div>
-                            <label for="jenis_barang_id" class="block text-sm font-medium text-gray-700 mb-2">
-                                Jenis Barang
-                            </label>
-                            <select name="jenis_barang_id" id="jenis_barang_id"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('jenis_barang_id') border-red-500 @enderror">
-                                <option value="">Pilih Jenis Barang</option>
-                                @foreach($jenisBarangs as $jenisBarang)
-                                    <option value="{{ $jenisBarang->id }}" {{ old('jenis_barang_id') == $jenisBarang->id ? 'selected' : '' }}>
-                                        {{ $jenisBarang->kode }} - {{ $jenisBarang->nama_barang }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="jenis_barang_id" class="text-sm font-medium text-gray-700">
+                                    Jenis Barang
+                                </label>
+                                <a href="{{ route('jenis-barang.create') }}" id="add_jenis_barang_link"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-jenis-barang">
+                                    <input type="text" id="search_jenis_barang" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="jenis_barang_id" id="jenis_barang_id"
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('jenis_barang_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($jenisBarangs as $jenisBarang)
+                                            <option value="{{ $jenisBarang->id }}" {{ old('jenis_barang_id') == $jenisBarang->id ? 'selected' : '' }}>
+                                                {{ $jenisBarang->nama_barang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_jenis_barang" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
                             @error('jenis_barang_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -195,9 +294,15 @@
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
                                 Size Kontainer <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="size_kontainer" id="size_kontainer" value="{{ old('size_kontainer') }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('size_kontainer') border-red-500 @enderror"
-                                   placeholder="20ft, 40ft, dll">
+                            <select name="size_kontainer" id="size_kontainer" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('size_kontainer') border-red-500 @enderror">
+                                <option value="">Pilih Size Kontainer</option>
+                                @foreach($ukuranKontainers as $ukuran)
+                                    <option value="{{ $ukuran }}" {{ old('size_kontainer') === $ukuran ? 'selected' : '' }}>
+                                        {{ $ukuran }}
+                                    </option>
+                                @endforeach
+                            </select>
                             @error('size_kontainer')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -350,3 +455,563 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle Generate Order Number button
+    const generateButton = document.getElementById('generate_nomor_order');
+    const nomorOrderInput = document.getElementById('nomor_order');
+
+    if (generateButton && nomorOrderInput) {
+        generateButton.addEventListener('click', function() {
+            // Disable button and show loading
+            generateButton.disabled = true;
+            generateButton.textContent = 'Loading...';
+
+            // Make AJAX request to generate order number
+            fetch('{{ route("orders.generate-number") }}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    nomorOrderInput.value = data.order_number;
+                    showNotification('Nomor order berhasil digenerate: ' + data.order_number, 'success');
+                } else {
+                    showNotification('Gagal generate nomor order: ' + (data.message || 'Unknown error'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Terjadi kesalahan saat generate nomor order', 'error');
+            })
+            .finally(() => {
+                // Re-enable button
+                generateButton.disabled = false;
+                generateButton.textContent = 'Generate';
+            });
+        });
+    }
+
+    // Function to create searchable dropdown
+    function createSearchableDropdown(config) {
+        const selectElement = document.getElementById(config.selectId);
+        const searchInput = document.getElementById(config.searchId);
+        const dropdownOptions = document.getElementById(config.dropdownId);
+        let originalOptions = Array.from(selectElement.options);
+
+        // Function to refresh original options (when new items are added)
+        function refreshOriginalOptions() {
+            originalOptions = Array.from(selectElement.options);
+        }
+
+        // Make refreshOriginalOptions available globally for this dropdown
+        if (config.selectId === 'term_id') {
+            window.refreshTermOptions = refreshOriginalOptions;
+        }
+
+        // Initially populate dropdown options
+        populateDropdown(originalOptions);
+
+        // Show dropdown when search input is focused or clicked
+        searchInput.addEventListener('focus', function() {
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('click', function() {
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        // Filter options based on search
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredOptions = originalOptions.filter(option => {
+                if (option.value === '') return true;
+                return option.text.toLowerCase().includes(searchTerm);
+            });
+            populateDropdown(filteredOptions);
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        // Populate dropdown with options
+        function populateDropdown(options) {
+            dropdownOptions.innerHTML = '';
+            options.forEach(option => {
+                const div = document.createElement('div');
+                div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                div.textContent = option.text;
+                div.setAttribute('data-value', option.value);
+
+                div.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    const text = this.textContent;
+
+                    // Set the select value
+                    selectElement.value = value;
+
+                    // Update search input
+                    if (value === '') {
+                        searchInput.value = '';
+                        searchInput.placeholder = 'Search...';
+                    } else {
+                        searchInput.value = text;
+                    }
+
+                    // Hide dropdown
+                    dropdownOptions.classList.add('hidden');
+
+                    // Trigger change event
+                    selectElement.dispatchEvent(new Event('change'));
+                });
+
+                dropdownOptions.appendChild(div);
+            });
+        }
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.' + config.containerClass)) {
+                dropdownOptions.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdownOptions.classList.add('hidden');
+            }
+        });
+    }
+
+    // Initialize Tujuan Kirim dropdown
+    createSearchableDropdown({
+        selectId: 'tujuan_kirim_id',
+        searchId: 'search_tujuan_kirim',
+        dropdownId: 'dropdown_options',
+        containerClass: 'dropdown-container'
+    });
+
+    // Initialize Tujuan Ambil dropdown
+    createSearchableDropdown({
+        selectId: 'tujuan_ambil_id',
+        searchId: 'search_tujuan_ambil',
+        dropdownId: 'dropdown_options_ambil',
+        containerClass: 'dropdown-container-ambil'
+    });
+
+    // Initialize Pengirim dropdown
+    createSearchableDropdown({
+        selectId: 'pengirim_id',
+        searchId: 'search_pengirim',
+        dropdownId: 'dropdown_options_pengirim',
+        containerClass: 'dropdown-container-pengirim'
+    });
+
+    // Initialize Term dropdown
+    createSearchableDropdown({
+        selectId: 'term_id',
+        searchId: 'search_term',
+        dropdownId: 'dropdown_options_term',
+        containerClass: 'dropdown-container-term'
+    });
+
+    // Initialize Jenis Barang dropdown
+    createSearchableDropdown({
+        selectId: 'jenis_barang_id',
+        searchId: 'search_jenis_barang',
+        dropdownId: 'dropdown_options_jenis_barang',
+        containerClass: 'dropdown-container-jenis-barang'
+    });
+
+    // Handle Term "Tambah" link to pass search parameter
+    const addTermLink = document.getElementById('add_term_link');
+    const searchTermInput = document.getElementById('search_term');
+
+    if (addTermLink && searchTermInput) {
+        addTermLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchTermInput.value.trim();
+            let url = "{{ route('term.create') }}";
+
+            // Add popup parameter and nama_status if available
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            // Open as popup window with specific dimensions
+            const popup = window.open(
+                url,
+                'addTerm',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            // Focus on the popup window
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }
+
+    // Handle Tujuan Kirim "Tambah" link to pass search parameter
+    const addTujuanKirimLink = document.getElementById('add_tujuan_kirim_link');
+    const searchTujuanKirimInput = document.getElementById('search_tujuan_kirim');
+    if (addTujuanKirimLink && searchTujuanKirimInput) {
+        addTujuanKirimLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchTujuanKirimInput.value.trim();
+            let url = "{{ route('tujuan-kirim.create') }}";
+
+            // Add popup parameter and nama_tujuan if available
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            // Open as popup window with specific dimensions
+            const popup = window.open(
+                url,
+                'addTujuanKirim',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            // Focus on the popup window
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }    // Handle Pengirim "Tambah" link
+    const addPengirimLink = document.getElementById('add_pengirim_link');
+    const searchPengirimInput = document.getElementById('search_pengirim');
+    if (addPengirimLink && searchPengirimInput) {
+        addPengirimLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchPengirimInput.value.trim();
+            let url = "{{ route('pengirim.create') }}";
+
+            // Add popup parameter and nama_pengirim if available
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            // Open as popup window with specific dimensions
+            const popup = window.open(
+                url,
+                'addPengirim',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            // Focus on the popup window
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }
+
+    // Handle Jenis Barang "Tambah" link
+    const addJenisBarangLink = document.getElementById('add_jenis_barang_link');
+    const searchJenisBarangInput = document.getElementById('search_jenis_barang');
+    if (addJenisBarangLink && searchJenisBarangInput) {
+        addJenisBarangLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchJenisBarangInput.value.trim();
+            let url = "{{ route('jenis-barang.create') }}";
+
+            // Add popup parameter and nama_barang if available
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            // Open as popup window with specific dimensions
+            const popup = window.open(
+                url,
+                'addJenisBarang',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            // Focus on the popup window
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }    // Auto-refresh when new items are added
+    window.addEventListener('message', function(event) {
+        console.log('Message received:', event.data); // Debug log
+
+        if (event.data.type === 'tujuan-kirim-added') {
+            // Handle Tujuan Kirim added
+            const tujuanKirimSelect = document.getElementById('tujuan_kirim_id');
+            const searchTujuanKirimInput = document.getElementById('search_tujuan_kirim');
+            const dropdownOptionsTujuanKirim = document.getElementById('dropdown_options');
+
+            if (tujuanKirimSelect && event.data.data) {
+                // Add new option to select
+                const newOption = document.createElement('option');
+                newOption.value = event.data.data.id;
+                newOption.textContent = event.data.data.nama_tujuan;
+                tujuanKirimSelect.appendChild(newOption);
+
+                // Select the new option
+                tujuanKirimSelect.value = event.data.data.id;
+
+                // Update search input to show selected value
+                if (searchTujuanKirimInput) {
+                    searchTujuanKirimInput.value = event.data.data.nama_tujuan;
+                }
+
+                // Update the dropdown options in the searchable dropdown
+                if (dropdownOptionsTujuanKirim) {
+                    const newOptionDiv = document.createElement('div');
+                    newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                    newOptionDiv.textContent = event.data.data.nama_tujuan;
+                    newOptionDiv.setAttribute('data-value', event.data.data.id);
+
+                    newOptionDiv.addEventListener('click', function() {
+                        const value = this.getAttribute('data-value');
+                        const text = this.textContent;
+                        tujuanKirimSelect.value = value;
+                        searchTujuanKirimInput.value = text;
+                        dropdownOptionsTujuanKirim.classList.add('hidden');
+                        tujuanKirimSelect.dispatchEvent(new Event('change'));
+                    });
+
+                    if (dropdownOptionsTujuanKirim.children.length > 1) {
+                        dropdownOptionsTujuanKirim.insertBefore(newOptionDiv, dropdownOptionsTujuanKirim.children[1]);
+                    } else {
+                        dropdownOptionsTujuanKirim.appendChild(newOptionDiv);
+                    }
+                }
+
+                // Hide dropdown
+                if (dropdownOptionsTujuanKirim) {
+                    dropdownOptionsTujuanKirim.classList.add('hidden');
+                }
+
+                // Trigger change event
+                tujuanKirimSelect.dispatchEvent(new Event('change'));
+
+                // Show success message
+                showNotification('Tujuan Kirim "' + event.data.data.nama_tujuan + '" berhasil ditambahkan dan dipilih!', 'success');
+            }
+        } else if (event.data.type === 'pengirim-added') {
+            // Handle Pengirim added
+            const pengirimSelect = document.getElementById('pengirim_id');
+            const searchPengirimInput = document.getElementById('search_pengirim');
+            const dropdownOptionsPengirim = document.getElementById('dropdown_options_pengirim');
+
+            if (pengirimSelect && event.data.data) {
+                // Add new option to select
+                const newOption = document.createElement('option');
+                newOption.value = event.data.data.id;
+                newOption.textContent = event.data.data.nama_pengirim;
+                pengirimSelect.appendChild(newOption);
+
+                // Select the new option
+                pengirimSelect.value = event.data.data.id;
+
+                // Update search input to show selected value
+                if (searchPengirimInput) {
+                    searchPengirimInput.value = event.data.data.nama_pengirim;
+                }
+
+                // Update the dropdown options in the searchable dropdown
+                if (dropdownOptionsPengirim) {
+                    const newOptionDiv = document.createElement('div');
+                    newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                    newOptionDiv.textContent = event.data.data.nama_pengirim;
+                    newOptionDiv.setAttribute('data-value', event.data.data.id);
+
+                    newOptionDiv.addEventListener('click', function() {
+                        const value = this.getAttribute('data-value');
+                        const text = this.textContent;
+                        pengirimSelect.value = value;
+                        searchPengirimInput.value = text;
+                        dropdownOptionsPengirim.classList.add('hidden');
+                        pengirimSelect.dispatchEvent(new Event('change'));
+                    });
+
+                    if (dropdownOptionsPengirim.children.length > 1) {
+                        dropdownOptionsPengirim.insertBefore(newOptionDiv, dropdownOptionsPengirim.children[1]);
+                    } else {
+                        dropdownOptionsPengirim.appendChild(newOptionDiv);
+                    }
+                }
+
+                // Hide dropdown
+                if (dropdownOptionsPengirim) {
+                    dropdownOptionsPengirim.classList.add('hidden');
+                }
+
+                // Trigger change event
+                pengirimSelect.dispatchEvent(new Event('change'));
+
+                // Show success message
+                showNotification('Pengirim "' + event.data.data.nama_pengirim + '" berhasil ditambahkan dan dipilih!', 'success');
+            }
+        } else if (event.data.type === 'jenis-barang-added') {
+            // Handle Jenis Barang added
+            const jenisBarangSelect = document.getElementById('jenis_barang_id');
+            const searchJenisBarangInput = document.getElementById('search_jenis_barang');
+            const dropdownOptionsJenisBarang = document.getElementById('dropdown_options_jenis_barang');
+
+            if (jenisBarangSelect && event.data.data) {
+                // Add new option to select
+                const newOption = document.createElement('option');
+                newOption.value = event.data.data.id;
+                newOption.textContent = event.data.data.nama_barang;
+                jenisBarangSelect.appendChild(newOption);
+
+                // Select the new option
+                jenisBarangSelect.value = event.data.data.id;
+
+                // Update search input to show selected value
+                if (searchJenisBarangInput) {
+                    searchJenisBarangInput.value = event.data.data.nama_barang;
+                }
+
+                // Update the dropdown options in the searchable dropdown
+                if (dropdownOptionsJenisBarang) {
+                    const newOptionDiv = document.createElement('div');
+                    newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                    newOptionDiv.textContent = event.data.data.nama_barang;
+                    newOptionDiv.setAttribute('data-value', event.data.data.id);
+
+                    newOptionDiv.addEventListener('click', function() {
+                        const value = this.getAttribute('data-value');
+                        const text = this.textContent;
+                        jenisBarangSelect.value = value;
+                        searchJenisBarangInput.value = text;
+                        dropdownOptionsJenisBarang.classList.add('hidden');
+                        jenisBarangSelect.dispatchEvent(new Event('change'));
+                    });
+
+                    if (dropdownOptionsJenisBarang.children.length > 1) {
+                        dropdownOptionsJenisBarang.insertBefore(newOptionDiv, dropdownOptionsJenisBarang.children[1]);
+                    } else {
+                        dropdownOptionsJenisBarang.appendChild(newOptionDiv);
+                    }
+                }
+
+                // Hide dropdown
+                if (dropdownOptionsJenisBarang) {
+                    dropdownOptionsJenisBarang.classList.add('hidden');
+                }
+
+                // Trigger change event
+                jenisBarangSelect.dispatchEvent(new Event('change'));
+
+                // Show success message
+                showNotification('Jenis Barang "' + event.data.data.nama_barang + '" berhasil ditambahkan dan dipilih!', 'success');
+            }
+        } else if (event.data.type === 'term-added') {
+            console.log('Processing term-added message...'); // Debug log
+            // Handle Term added
+            const termSelect = document.getElementById('term_id');
+            const searchTermInput = document.getElementById('search_term');
+            const dropdownOptionsElement = document.getElementById('dropdown_options_term');
+
+            if (termSelect && event.data.data) {
+                // Add new option to select
+                const newOption = document.createElement('option');
+                newOption.value = event.data.data.id;
+                newOption.textContent = event.data.data.nama_status;
+                termSelect.appendChild(newOption);
+
+                // Select the new option
+                termSelect.value = event.data.data.id;
+
+                // Update search input to show selected value
+                if (searchTermInput) {
+                    searchTermInput.value = event.data.data.nama_status;
+                }
+
+                // Update the dropdown options in the searchable dropdown
+                if (dropdownOptionsElement) {
+                    // Create new option div for the dropdown
+                    const newOptionDiv = document.createElement('div');
+                    newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                    newOptionDiv.textContent = event.data.data.nama_status;
+                    newOptionDiv.setAttribute('data-value', event.data.data.id);
+
+                    // Add click handler for the new option
+                    newOptionDiv.addEventListener('click', function() {
+                        const value = this.getAttribute('data-value');
+                        const text = this.textContent;
+                        termSelect.value = value;
+                        searchTermInput.value = text;
+                        dropdownOptionsElement.classList.add('hidden');
+                        termSelect.dispatchEvent(new Event('change'));
+                    });
+
+                    // Insert the new option (skip the first empty option)
+                    if (dropdownOptionsElement.children.length > 1) {
+                        dropdownOptionsElement.insertBefore(newOptionDiv, dropdownOptionsElement.children[1]);
+                    } else {
+                        dropdownOptionsElement.appendChild(newOptionDiv);
+                    }
+                }
+
+                // Refresh the original options for the searchable dropdown
+                if (window.refreshTermOptions) {
+                    window.refreshTermOptions();
+                }
+
+                // Hide dropdown
+                if (dropdownOptionsElement) {
+                    dropdownOptionsElement.classList.add('hidden');
+                }
+
+                // Trigger change event
+                termSelect.dispatchEvent(new Event('change'));
+
+                // Show success message
+                showNotification('Term "' + event.data.data.nama_status + '" berhasil ditambahkan dan dipilih!', 'success');
+
+                console.log('Term successfully added and selected'); // Debug log
+            }
+        }
+    });
+
+    // Function to show notification
+    function showNotification(message, type = 'info') {
+        const notification = document.createElement('div');
+        notification.className = `fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg ${
+            type === 'success' ? 'bg-green-500 text-white' :
+            type === 'error' ? 'bg-red-500 text-white' :
+            'bg-blue-500 text-white'
+        }`;
+        notification.textContent = message;
+
+        document.body.appendChild(notification);
+
+        // Auto-remove after 3 seconds
+        setTimeout(() => {
+            notification.remove();
+        }, 3000);
+    }
+});
+</script>
+@endpush

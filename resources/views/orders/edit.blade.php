@@ -85,20 +85,91 @@
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Tujuan</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Tujuan Kirim -->
                         <div>
-                            <label for="tujuan_kirim" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tujuan Kirim <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="tujuan_kirim" id="tujuan_kirim" value="{{ old('tujuan_kirim', $order->tujuan_kirim) }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="tujuan_kirim_id" class="text-sm font-medium text-gray-700">
+                                    Tujuan Kirim <span class="text-red-500">*</span>
+                                </label>
+                                <a href="{{ route('tujuan-kirim.create') }}" target="_blank"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container">
+                                    <input type="text" id="search_tujuan_kirim" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="tujuan_kirim_id" id="tujuan_kirim_id" required
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_kirim_id') border-red-500 @enderror">
+                                        <option value="">Select an option</option>
+                                        @foreach($tujuanKirims as $tujuanKirim)
+                                            @php
+                                                $isSelected = false;
+                                                if (old('tujuan_kirim_id')) {
+                                                    $isSelected = old('tujuan_kirim_id') == $tujuanKirim->id;
+                                                } else {
+                                                    // Check if this tujuan kirim matches the current order's tujuan_kirim
+                                                    $isSelected = $order->tujuan_kirim == $tujuanKirim->nama_tujuan;
+                                                }
+                                            @endphp
+                                            <option value="{{ $tujuanKirim->id }}" {{ $isSelected ? 'selected' : '' }}>
+                                                {{ $tujuanKirim->nama_tujuan }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            @error('tujuan_kirim_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
-                            <label for="tujuan_ambil" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tujuan Ambil <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" name="tujuan_ambil" id="tujuan_ambil" value="{{ old('tujuan_ambil', $order->tujuan_ambil) }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="tujuan_ambil_id" class="text-sm font-medium text-gray-700">
+                                    Tujuan Ambil <span class="text-red-500">*</span>
+                                </label>
+                                <a href="{{ route('master.tujuan-kegiatan-utama.create') }}" target="_blank"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-ambil">
+                                    <input type="text" id="search_tujuan_ambil" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="tujuan_ambil_id" id="tujuan_ambil_id" required
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                                        <option value="">Select an option</option>
+                                        @foreach($tujuanKegiatanUtamas as $tujuanKegiatanUtama)
+                                            @php
+                                                $isSelected = false;
+                                                if (old('tujuan_ambil_id')) {
+                                                    $isSelected = old('tujuan_ambil_id') == $tujuanKegiatanUtama->id;
+                                                } else {
+                                                    // Check if this tujuan ambil matches the current order's tujuan_ambil
+                                                    $isSelected = $order->tujuan_ambil == $tujuanKegiatanUtama->ke;
+                                                }
+                                            @endphp
+                                            <option value="{{ $tujuanKegiatanUtama->id }}" {{ $isSelected ? 'selected' : '' }}>
+                                                {{ $tujuanKegiatanUtama->ke }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_ambil" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                            @error('tujuan_ambil_id')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
                     </div>
                 </div>
@@ -109,15 +180,42 @@
                     <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <!-- Term -->
                         <div>
-                            <label for="term_id" class="block text-sm font-medium text-gray-700 mb-2">Term</label>
-                            <select name="term_id" id="term_id" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                                <option value="">Pilih Term</option>
-                                @foreach($terms as $term)
-                                    <option value="{{ $term->id }}" {{ old('term_id', $order->term_id) == $term->id ? 'selected' : '' }}>
-                                        {{ $term->kode }} - {{ $term->nama_status }}
-                                    </option>
-                                @endforeach
-                            </select>
+                            <div class="flex items-center justify-between mb-2">
+                                <label for="term_id" class="text-sm font-medium text-gray-700">
+                                    Term
+                                </label>
+                                <a href="{{ route('term.create') }}" target="_blank"
+                                   class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
+                                   title="Tambah">
+                                    Tambah
+                                </a>
+                            </div>
+                            <div class="relative">
+                                <div class="dropdown-container-term">
+                                    <input type="text" id="search_term" placeholder="Search..."
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
+                                    <select name="term_id" id="term_id"
+                                            class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500">
+                                        <option value="">Select an option</option>
+                                        @foreach($terms as $term)
+                                            @php
+                                                $isSelected = false;
+                                                if (old('term_id')) {
+                                                    $isSelected = old('term_id') == $term->id;
+                                                } else {
+                                                    $isSelected = $order->term_id == $term->id;
+                                                }
+                                            @endphp
+                                            <option value="{{ $term->id }}" {{ $isSelected ? 'selected' : '' }}>
+                                                {{ $term->nama_status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <div id="dropdown_options_term" class="absolute z-10 w-full bg-white border border-gray-300 rounded-b max-h-60 overflow-y-auto hidden">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
                         </div>
 
                         <!-- Pengirim -->
@@ -154,8 +252,18 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                         <div>
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Size Kontainer <span class="text-red-500">*</span></label>
-                            <input type="text" name="size_kontainer" id="size_kontainer" value="{{ old('size_kontainer', $order->size_kontainer) }}" required
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                            <select name="size_kontainer" id="size_kontainer" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('size_kontainer') border-red-500 @enderror">
+                                <option value="">Pilih Size Kontainer</option>
+                                @foreach($ukuranKontainers as $ukuran)
+                                    <option value="{{ $ukuran }}" {{ old('size_kontainer', $order->size_kontainer) === $ukuran ? 'selected' : '' }}>
+                                        {{ $ukuran }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('size_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
                         </div>
 
                         <div>
@@ -280,3 +388,129 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Function to create searchable dropdown
+    function createSearchableDropdown(config) {
+        const selectElement = document.getElementById(config.selectId);
+        const searchInput = document.getElementById(config.searchId);
+        const dropdownOptions = document.getElementById(config.dropdownId);
+        const originalOptions = Array.from(selectElement.options);
+
+        // Get current selected value for editing
+        const currentValue = selectElement.value;
+        const currentText = selectElement.options[selectElement.selectedIndex]?.text || '';
+
+        // Set initial search input value
+        if (currentValue && currentText !== 'Select an option') {
+            searchInput.value = currentText;
+        }
+
+        // Initially populate dropdown options
+        populateDropdown(originalOptions);
+
+        // Show dropdown when search input is focused or clicked
+        searchInput.addEventListener('focus', function() {
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        searchInput.addEventListener('click', function() {
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        // Filter options based on search
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase();
+            const filteredOptions = originalOptions.filter(option => {
+                if (option.value === '') return true;
+                return option.text.toLowerCase().includes(searchTerm);
+            });
+            populateDropdown(filteredOptions);
+            dropdownOptions.classList.remove('hidden');
+        });
+
+        // Populate dropdown with options
+        function populateDropdown(options) {
+            dropdownOptions.innerHTML = '';
+            options.forEach(option => {
+                const div = document.createElement('div');
+                div.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                div.textContent = option.text;
+                div.setAttribute('data-value', option.value);
+
+                div.addEventListener('click', function() {
+                    const value = this.getAttribute('data-value');
+                    const text = this.textContent;
+
+                    // Set the select value
+                    selectElement.value = value;
+
+                    // Update search input
+                    if (value === '') {
+                        searchInput.value = '';
+                        searchInput.placeholder = 'Search...';
+                    } else {
+                        searchInput.value = text;
+                    }
+
+                    // Hide dropdown
+                    dropdownOptions.classList.add('hidden');
+
+                    // Trigger change event
+                    selectElement.dispatchEvent(new Event('change'));
+                });
+
+                dropdownOptions.appendChild(div);
+            });
+        }
+
+        // Hide dropdown when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.' + config.containerClass)) {
+                dropdownOptions.classList.add('hidden');
+            }
+        });
+
+        // Handle keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                dropdownOptions.classList.add('hidden');
+            }
+        });
+    }
+
+    // Initialize Tujuan Kirim dropdown
+    createSearchableDropdown({
+        selectId: 'tujuan_kirim_id',
+        searchId: 'search_tujuan_kirim',
+        dropdownId: 'dropdown_options',
+        containerClass: 'dropdown-container'
+    });
+
+    // Initialize Tujuan Ambil dropdown
+    createSearchableDropdown({
+        selectId: 'tujuan_ambil_id',
+        searchId: 'search_tujuan_ambil',
+        dropdownId: 'dropdown_options_ambil',
+        containerClass: 'dropdown-container-ambil'
+    });
+
+    // Initialize Term dropdown
+    createSearchableDropdown({
+        selectId: 'term_id',
+        searchId: 'search_term',
+        dropdownId: 'dropdown_options_term',
+        containerClass: 'dropdown-container-term'
+    });
+
+    // Auto-refresh when new data is added
+    window.addEventListener('message', function(event) {
+        if (event.data.type === 'tujuan-kirim-added' || event.data.type === 'tujuan-ambil-added' || event.data.type === 'term-added') {
+            location.reload();
+        }
+    });
+});
+</script>
+@endpush

@@ -108,7 +108,7 @@ if ($permission) {
     echo "=== DATABASE CHECK ===\n";
     echo "Permission exists in DB: ✅ YES (ID: {$permission->id})\n";
     echo "User has permission in pivot: " . ($userHasPermission ? '✅ YES' : '❌ NO') . "\n";
-    
+
     if (!$userHasPermission) {
         echo "\n🔧 FIXING PERMISSION...\n";
         $user->permissions()->syncWithoutDetaching([$permission->id]);

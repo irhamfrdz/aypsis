@@ -36,13 +36,13 @@ class MasterTujuanKirimPermissionSeeder extends Seeder
         $userAdmin = User::where('username', 'user_admin')->first();
         if ($userAdmin) {
             $permissionIds = Permission::whereIn('name', array_keys($permissions))->pluck('id');
-            
+
             // Get existing permissions and merge with new ones
             $existingPermissions = $userAdmin->permissions()->pluck('id');
             $allPermissions = $existingPermissions->merge($permissionIds)->unique();
-            
+
             $userAdmin->permissions()->sync($allPermissions);
-            
+
             $this->command->info("✅ All Master Tujuan Kirim permissions assigned to user_admin");
         } else {
             $this->command->warn("⚠️ user_admin not found. Please run UserAdminSeeder first.");

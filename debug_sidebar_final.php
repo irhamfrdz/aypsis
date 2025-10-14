@@ -71,7 +71,7 @@ $hasMasterPermissions = $user && (
 
 echo "4. Has Master Permissions: " . ($hasMasterPermissions ? "✅ YES" : "❌ NO") . "\n";
 
-// Check showMasterSection condition (copy from blade)  
+// Check showMasterSection condition (copy from blade)
 $showMasterSection = $isAdmin || $hasMasterPermissions;
 echo "5. Show Master Section: " . ($showMasterSection ? "✅ YES" : "❌ NO") . "\n";
 

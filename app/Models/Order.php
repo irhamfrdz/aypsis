@@ -13,6 +13,7 @@ class Order extends Model
         'tujuan_kirim',
         'no_tiket_do',
         'tujuan_ambil',
+        'tujuan_ambil_id',
         'size_kontainer',
         'unit_kontainer',
         'tipe_kontainer',
@@ -55,5 +56,10 @@ class Order extends Model
     public function jenisBarang(): BelongsTo
     {
         return $this->belongsTo(JenisBarang::class, 'jenis_barang_id');
+    }
+
+    public function tujuanAmbil(): BelongsTo
+    {
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_ambil_id');
     }
 }

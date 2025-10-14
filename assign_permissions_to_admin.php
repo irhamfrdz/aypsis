@@ -18,7 +18,7 @@ if (!$admin) {
 
 echo "👤 Found admin user: {$admin->username} (ID: {$admin->id})\n\n";
 
-// Find tujuan-kirim permissions  
+// Find tujuan-kirim permissions
 $permissions = \App\Models\Permission::where('name', 'like', '%tujuan-kirim%')->get();
 echo "📋 Found " . $permissions->count() . " tujuan-kirim permissions:\n";
 
@@ -48,7 +48,7 @@ echo "================\n";
 $hasView = $admin->hasPermissionTo('master-tujuan-kirim-view');
 echo "Has master-tujuan-kirim-view: " . ($hasView ? "✅ YES" : "❌ NO") . "\n";
 
-$hasCreate = $admin->hasPermissionTo('master-tujuan-kirim-create');  
+$hasCreate = $admin->hasPermissionTo('master-tujuan-kirim-create');
 echo "Has master-tujuan-kirim-create: " . ($hasCreate ? "✅ YES" : "❌ NO") . "\n";
 
 $hasUpdate = $admin->hasPermissionTo('master-tujuan-kirim-update');

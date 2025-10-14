@@ -531,38 +531,77 @@ class PranotaTagihanKontainerSewaController extends Controller
             // Get header
             $header = array_shift($csv);
 
-            // Validate header - support both formats
-            $requiredColumns = ['group', 'periode'];
-            $alternateColumns = ['Group', 'Periode', 'Nomor Kontainer'];
+            // Enhanced validation with flexible column name matching
+            Log::info('CSV Header detected', ['header' => $header]);
 
-            $hasRequiredFormat = true;
-            foreach ($requiredColumns as $col) {
-                if (!in_array($col, $header)) {
-                    $hasRequiredFormat = false;
-                    break;
-                }
-            }
-
-            // If not found, check alternate format (exported format)
-            if (!$hasRequiredFormat) {
-                $hasAlternateFormat = true;
-                foreach ($alternateColumns as $col) {
-                    if (!in_array($col, $header)) {
-                        $hasAlternateFormat = false;
-                        break;
+            // Helper function to check if column exists (case-insensitive and flexible)
+            $findColumn = function($possibleNames) use ($header) {
+                foreach ($possibleNames as $name) {
+                    foreach ($header as $col) {
+                        if (strcasecmp(trim($col), trim($name)) === 0) {
+                            return true;
+                        }
                     }
                 }
+                return false;
+            };
 
-                if (!$hasAlternateFormat) {
+            // Define possible column variations
+            $groupColumns = ['group', 'Group', 'GROUP'];
+            $periodeColumns = ['periode', 'Periode', 'PERIODE'];
+            $kontainerColumns = ['nomor_kontainer', 'Nomor Kontainer', 'Nomor_Kontainer', 'NOMOR_KONTAINER', 'kontainer', 'Kontainer'];
+            $invoiceVendorColumns = ['No.InvoiceVendor', 'No InvoiceVendor', 'InvoiceVendor', 'Invoice Vendor', 'invoice_vendor'];
+            $bankColumns = ['No.Bank', 'No Bank', 'Bank', 'NoBank', 'no_bank'];
+
+            // Check for vendor invoice format first (higher priority)
+            $hasInvoiceVendor = $findColumn($invoiceVendorColumns);
+            $hasBank = $findColumn($bankColumns);
+            $hasKontainer = $findColumn($kontainerColumns);
+
+            $useVendorInvoiceGrouping = false;
+            if ($hasInvoiceVendor && $hasBank && $hasKontainer) {
+                $useVendorInvoiceGrouping = true;
+                $groupingMode = 'vendor_invoice';
+                Log::info('Using vendor invoice grouping mode');
+            } else {
+                // Check for standard group + periode format
+                $hasGroup = $findColumn($groupColumns);
+                $hasPeriode = $findColumn($periodeColumns);
+
+                if ($hasGroup && $hasPeriode && $hasKontainer) {
+                    $useVendorInvoiceGrouping = false;
+                    $groupingMode = 'group_periode';
+                    Log::info('Using standard group + periode mode');
+                } else {
+                    // Neither format found - show detailed error
+                    $availableCols = implode(', ', $header);
                     return redirect()->back()->with('error',
-                        "Format CSV tidak valid. Pastikan file memiliki kolom: 'Group', 'Periode', dan 'Nomor Kontainer' atau gunakan template yang disediakan.");
+                        "Format CSV tidak valid. Ditemukan kolom: [{$availableCols}]\n\n" .
+                        "Pastikan file memiliki salah satu dari format berikut:\n" .
+                        "1. Kolom: Group + Periode + Nomor Kontainer (atau variasi nama)\n" .
+                        "2. Kolom: No.InvoiceVendor + No.Bank + Nomor Kontainer (untuk grouping otomatis)\n\n" .
+                        "Kolom yang dicari:\n" .
+                        "- Group: group, Group, GROUP\n" .
+                        "- Periode: periode, Periode, PERIODE\n" .
+                        "- Kontainer: nomor_kontainer, Nomor Kontainer, kontainer, dll\n" .
+                        "- Invoice: No.InvoiceVendor, InvoiceVendor, dll\n" .
+                        "- Bank: No.Bank, Bank, NoBank, dll");
                 }
             }
 
-            // Map header to index
-            $colMap = array_flip($header);
+            // Create flexible column mapper
+            $getColumnValue = function($possibleNames, $row) use ($header) {
+                foreach ($possibleNames as $name) {
+                    foreach ($header as $index => $col) {
+                        if (strcasecmp(trim($col), trim($name)) === 0) {
+                            return isset($row[$index]) ? trim($row[$index]) : '';
+                        }
+                    }
+                }
+                return '';
+            };
 
-            // Group data by group and periode
+            // Group data based on detected format
             $groupedData = [];
             $notFound = [];
             $errors = [];
@@ -570,7 +609,8 @@ class PranotaTagihanKontainerSewaController extends Controller
 
             Log::info('Import CSV started', [
                 'total_rows' => count($csv),
-                'columns' => $header
+                'columns' => $header,
+                'grouping_mode' => $groupingMode
             ]);
 
             foreach ($csv as $rowIndex => $row) {
@@ -582,87 +622,143 @@ class PranotaTagihanKontainerSewaController extends Controller
                 }
 
                 try {
-                    // Support both lowercase and capitalized column names
-                    $group = isset($colMap['group']) ? trim($row[$colMap['group']] ?? '') :
-                             (isset($colMap['Group']) ? trim($row[$colMap['Group']] ?? '') : '');
-                    $periode = isset($colMap['periode']) ? trim($row[$colMap['periode']] ?? '') :
-                               (isset($colMap['Periode']) ? trim($row[$colMap['Periode']] ?? '') : '');
-                    $nomorKontainer = isset($colMap['nomor_kontainer']) ? trim($row[$colMap['nomor_kontainer']] ?? '') :
-                                     (isset($colMap['Nomor Kontainer']) ? trim($row[$colMap['Nomor Kontainer']] ?? '') : '');
-                    $keterangan = isset($colMap['keterangan']) ? trim($row[$colMap['keterangan']] ?? '') : '';
-                    $dueDate = isset($colMap['due_date']) ? trim($row[$colMap['due_date']] ?? '') : '';
+                    // Get flexible column values
+                    $keterangan = $getColumnValue(['keterangan', 'Keterangan', 'KETERANGAN'], $row);
+                    $dueDate = $getColumnValue(['due_date', 'Due Date', 'DueDate', 'tanggal_jatuh_tempo'], $row);
+                    $nomorKontainer = $getColumnValue($kontainerColumns, $row);
 
-                    // Validate required fields
-                    if (empty($group) || empty($periode)) {
-                        $errors[] = "Baris $rowNumber: Group dan Periode tidak boleh kosong";
-                        continue;
+                    if ($useVendorInvoiceGrouping) {
+                        // Vendor Invoice + Bank Number grouping mode
+                        $invoiceVendor = $getColumnValue($invoiceVendorColumns, $row);
+                        $bankNumber = $getColumnValue($bankColumns, $row);
+
+                        // Validate required fields for vendor invoice mode
+                        if (empty($invoiceVendor) || empty($bankNumber)) {
+                            $errors[] = "Baris $rowNumber: No.InvoiceVendor dan No.Bank tidak boleh kosong";
+                            continue;
+                        }
+
+                        if (empty($nomorKontainer)) {
+                            $errors[] = "Baris $rowNumber: Nomor kontainer tidak boleh kosong";
+                            continue;
+                        }
+
+                        // Use invoice vendor + bank as grouping key
+                        $groupKey = $invoiceVendor . '_' . $bankNumber;
+                        $groupLabel = "Invoice: {$invoiceVendor} | Bank: {$bankNumber}";
+
+                    } else {
+                        // Traditional Group + Periode mode
+                        $group = $getColumnValue($groupColumns, $row);
+                        $periode = $getColumnValue($periodeColumns, $row);
+
+                        // Validate required fields for group/periode mode
+                        if (empty($group) || empty($periode)) {
+                            $errors[] = "Baris $rowNumber: Group dan Periode tidak boleh kosong (ditemukan: Group='$group', Periode='$periode')";
+                            continue;
+                        }
+
+                        if (empty($nomorKontainer)) {
+                            $errors[] = "Baris $rowNumber: Nomor kontainer tidak boleh kosong";
+                            continue;
+                        }
+
+                        // Use group + periode as grouping key
+                        $groupKey = "{$group}_{$periode}";
+                        $groupLabel = "Group: {$group} | Periode: {$periode}";
                     }
 
+                    // Common validation for kontainer
                     if (empty($nomorKontainer)) {
                         $errors[] = "Baris $rowNumber: Nomor kontainer tidak boleh kosong";
                         continue;
                     }
 
-                    // Find tagihan by nomor kontainer, group, and periode
-                    // More flexible search - handle both string and integer types
-                    $query = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)
-                        ->whereNull('status_pranota');
+                    // Find tagihan by nomor kontainer
+                    if ($useVendorInvoiceGrouping) {
+                        // For vendor invoice mode, we only need the kontainer to exist
+                        // The grouping is based on invoice + bank from CSV, not database fields
+                        $tagihan = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)
+                            ->whereNull('status_pranota')
+                            ->first();
 
-                    // Add group condition if not empty
-                    if (!empty($group)) {
-                        $query->where(function($q) use ($group) {
-                            $q->where('group', $group)
-                              ->orWhere('group', (string)$group)
-                              ->orWhereRaw('CAST(`group` AS CHAR) = ?', [(string)$group]);
-                        });
-                    }
-
-                    // Add periode condition if not empty
-                    if (!empty($periode)) {
-                        $query->where(function($q) use ($periode) {
-                            $q->where('periode', $periode)
-                              ->orWhere('periode', (string)$periode)
-                              ->orWhereRaw('CAST(periode AS CHAR) = ?', [(string)$periode]);
-                        });
-                    }
-
-                    $tagihan = $query->first();
-
-                    if (!$tagihan) {
-                        // Try searching without group/periode constraint for better error message
-                        $anyTagihan = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)->first();
-                        if (!$anyTagihan) {
-                            $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer tidak ditemukan di database";
-                        } else if ($anyTagihan->status_pranota !== null) {
-                            $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer sudah masuk pranota (Group: {$anyTagihan->group}, Periode: {$anyTagihan->periode})";
-                        } else {
-                            $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer ditemukan tapi Group/Periode tidak cocok (DB: Group={$anyTagihan->group}, Periode={$anyTagihan->periode} vs CSV: Group={$group}, Periode={$periode})";
+                        if (!$tagihan) {
+                            $anyTagihan = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)->first();
+                            if (!$anyTagihan) {
+                                $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer tidak ditemukan di database";
+                            } else if ($anyTagihan->status_pranota !== null) {
+                                $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer sudah masuk pranota";
+                            }
+                            continue;
                         }
-                        continue;
+                    } else {
+                        // Traditional group + periode mode - more flexible search
+                        $query = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)
+                            ->whereNull('status_pranota');
+
+                        // Add group condition if not empty
+                        if (!empty($group)) {
+                            $query->where(function($q) use ($group) {
+                                $q->where('group', $group)
+                                  ->orWhere('group', (string)$group)
+                                  ->orWhereRaw('CAST(`group` AS CHAR) = ?', [(string)$group]);
+                            });
+                        }
+
+                        // Add periode condition if not empty
+                        if (!empty($periode)) {
+                            $query->where(function($q) use ($periode) {
+                                $q->where('periode', $periode)
+                                  ->orWhere('periode', (string)$periode)
+                                  ->orWhereRaw('CAST(periode AS CHAR) = ?', [(string)$periode]);
+                            });
+                        }
+
+                        $tagihan = $query->first();
+
+                        if (!$tagihan) {
+                            // Try searching without group/periode constraint for better error message
+                            $anyTagihan = DaftarTagihanKontainerSewa::where('nomor_kontainer', $nomorKontainer)->first();
+                            if (!$anyTagihan) {
+                                $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer tidak ditemukan di database";
+                            } else if ($anyTagihan->status_pranota !== null) {
+                                $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer sudah masuk pranota (Group: {$anyTagihan->group}, Periode: {$anyTagihan->periode})";
+                            } else {
+                                $notFound[] = "Baris $rowNumber: Kontainer $nomorKontainer ditemukan tapi Group/Periode tidak cocok (DB: Group={$anyTagihan->group}, Periode={$anyTagihan->periode} vs CSV: Group={$group}, Periode={$periode})";
+                            }
+                            continue;
+                        }
                     }
 
-                    // Group by group and periode
-                    $key = "{$group}_{$periode}";
-                    if (!isset($groupedData[$key])) {
-                        $groupedData[$key] = [
-                            'group' => $group,
-                            'periode' => $periode,
+                    // Initialize group data structure
+                    if (!isset($groupedData[$groupKey])) {
+                        $groupedData[$groupKey] = [
                             'tagihan_ids' => [],
                             'keterangan' => $keterangan,
                             'due_date' => $dueDate,
-                            'kontainers' => []
+                            'kontainers' => [],
+                            'group_label' => $groupLabel
                         ];
+
+                        // Add mode-specific fields
+                        if ($useVendorInvoiceGrouping) {
+                            $groupedData[$groupKey]['invoice_vendor'] = $invoiceVendor;
+                            $groupedData[$groupKey]['bank_number'] = $bankNumber;
+                        } else {
+                            $groupedData[$groupKey]['group'] = $group;
+                            $groupedData[$groupKey]['periode'] = $periode;
+                        }
                     }
 
-                    $groupedData[$key]['tagihan_ids'][] = $tagihan->id;
-                    $groupedData[$key]['kontainers'][] = $nomorKontainer;
+                    $groupedData[$groupKey]['tagihan_ids'][] = $tagihan->id;
+                    $groupedData[$groupKey]['kontainers'][] = $nomorKontainer;
 
                     // Use first non-empty keterangan and due_date
-                    if (empty($groupedData[$key]['keterangan']) && !empty($keterangan)) {
-                        $groupedData[$key]['keterangan'] = $keterangan;
+                    if (empty($groupedData[$groupKey]['keterangan']) && !empty($keterangan)) {
+                        $groupedData[$groupKey]['keterangan'] = $keterangan;
                     }
-                    if (empty($groupedData[$key]['due_date']) && !empty($dueDate)) {
-                        $groupedData[$key]['due_date'] = $dueDate;
+                    if (empty($groupedData[$groupKey]['due_date']) && !empty($dueDate)) {
+                        $groupedData[$groupKey]['due_date'] = $dueDate;
                     }
 
                 } catch (\Exception $e) {
@@ -725,10 +821,16 @@ class PranotaTagihanKontainerSewaController extends Controller
                     // Calculate total amount
                     $totalAmount = $tagihanItems->sum('grand_total');
 
-                    // Default keterangan
-                    $keterangan = !empty($data['keterangan'])
-                        ? $data['keterangan']
-                        : "Pranota Group {$data['group']} Periode {$data['periode']} - " . count($tagihanIds) . " kontainer (Import)";
+                    // Default keterangan based on grouping mode
+                    if (!empty($data['keterangan'])) {
+                        $keterangan = $data['keterangan'];
+                    } else {
+                        if ($useVendorInvoiceGrouping) {
+                            $keterangan = "Pranota {$data['group_label']} - " . count($tagihanIds) . " kontainer (Auto Import)";
+                        } else {
+                            $keterangan = "Pranota Group {$data['group']} Periode {$data['periode']} - " . count($tagihanIds) . " kontainer (Import)";
+                        }
+                    }
 
                     // Create pranota
                     $pranota = PranotaTagihanKontainerSewa::create([
@@ -751,20 +853,31 @@ class PranotaTagihanKontainerSewaController extends Controller
                     $imported++;
                     $totalKontainers += count($tagihanIds);
 
-                    $pranotaDetails[] = [
+                    // Build details based on grouping mode
+                    $detailData = [
                         'no_invoice' => $noInvoice,
-                        'group' => $data['group'],
-                        'periode' => $data['periode'],
                         'jumlah_kontainer' => count($tagihanIds),
                         'total_amount' => $totalAmount,
-                        'kontainers' => implode(', ', array_slice($data['kontainers'], 0, 5)) . (count($data['kontainers']) > 5 ? '...' : '')
+                        'kontainers' => implode(', ', array_slice($data['kontainers'], 0, 5)) . (count($data['kontainers']) > 5 ? '...' : ''),
+                        'grouping_mode' => $groupingMode,
+                        'group_label' => $data['group_label']
                     ];
 
+                    if ($useVendorInvoiceGrouping) {
+                        $detailData['invoice_vendor'] = $data['invoice_vendor'];
+                        $detailData['bank_number'] = $data['bank_number'];
+                    } else {
+                        $detailData['group'] = $data['group'];
+                        $detailData['periode'] = $data['periode'];
+                    }
+
+                    $pranotaDetails[] = $detailData;
+
                 } catch (\Exception $e) {
-                    $errors[] = "Group {$data['group']} Periode {$data['periode']}: " . $e->getMessage();
+                    $groupLabel = isset($data['group_label']) ? $data['group_label'] : 'Unknown Group';
+                    $errors[] = "Group {$groupLabel}: " . $e->getMessage();
                     Log::error("Import error for group", [
-                        'group' => $data['group'],
-                        'periode' => $data['periode'],
+                        'group_data' => $data,
                         'error' => $e->getMessage()
                     ]);
                 }
@@ -773,7 +886,15 @@ class PranotaTagihanKontainerSewaController extends Controller
             DB::commit();
 
             // Prepare result message
-            $message = "Import selesai: $imported pranota berhasil dibuat untuk $totalKontainers kontainer.";
+            $groupingModeText = $useVendorInvoiceGrouping ? 'Invoice Vendor + Bank Number' : 'Group + Periode';
+            $message = "Import selesai (Mode: {$groupingModeText}): $imported pranota berhasil dibuat untuk $totalKontainers kontainer.";
+
+            if ($useVendorInvoiceGrouping) {
+                // Calculate efficiency for vendor invoice grouping
+                $totalRows = count($csv);
+                $efficiency = $totalRows > 0 ? round((($totalRows - $imported) / $totalRows) * 100, 1) : 0;
+                $message .= " Efisiensi grouping: {$efficiency}% (dari {$totalRows} kontainer menjadi {$imported} pranota).";
+            }
 
             if (!empty($notFound)) {
                 $message .= " " . count($notFound) . " kontainer tidak ditemukan atau sudah masuk pranota.";
@@ -790,7 +911,10 @@ class PranotaTagihanKontainerSewaController extends Controller
                     'total_kontainers' => $totalKontainers,
                     'pranota_details' => $pranotaDetails,
                     'not_found' => $notFound,
-                    'errors' => $errors
+                    'errors' => $errors,
+                    'grouping_mode' => $groupingMode,
+                    'grouping_mode_text' => $groupingModeText,
+                    'use_vendor_invoice_grouping' => $useVendorInvoiceGrouping
                 ]
             ]);
 
@@ -951,5 +1075,233 @@ class PranotaTagihanKontainerSewaController extends Controller
 
             return redirect()->back()->with('error', 'Gagal menghapus pranota: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Mengelompokkan kontainer berdasarkan nomor invoice vendor dan nomor bank yang sama
+     * Untuk membuat pranota otomatis berdasarkan grouping
+     */
+    public function createPranotaByVendorInvoiceGroup(Request $request)
+    {
+        $request->validate([
+            'tagihan_kontainer_sewa_ids' => 'required|array|min:1',
+            'tagihan_kontainer_sewa_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            // Get selected tagihan items
+            $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $request->tagihan_kontainer_sewa_ids)
+                ->where('status_pranota', '!=', 'included') // Only include items not yet in pranota
+                ->get();
+
+            if ($tagihanItems->isEmpty()) {
+                throw new \Exception('Tidak ada tagihan kontainer sewa yang tersedia untuk dibuatkan pranota');
+            }
+
+            // Group kontainer by nomor invoice vendor and nomor bank
+            $groupedKontainer = $this->groupKontainerByVendorInvoiceAndBank($tagihanItems);
+
+            if (empty($groupedKontainer)) {
+                throw new \Exception('Tidak ada kontainer yang memiliki nomor invoice vendor dan nomor bank');
+            }
+
+            $createdPranota = [];
+            $totalProcessed = 0;
+
+            foreach ($groupedKontainer as $groupKey => $kontainerGroup) {
+                // Skip groups without both invoice vendor and bank number
+                if (empty($kontainerGroup['no_invoice_vendor']) || empty($kontainerGroup['no_bank'])) {
+                    continue;
+                }
+
+                // Generate nomor pranota untuk setiap group
+                $nomorCetakan = 1;
+                $tahun = Carbon::now()->format('y');
+                $bulan = Carbon::now()->format('m');
+
+                $nomorTerakhir = NomorTerakhir::where('modul', 'PMS')->lockForUpdate()->first();
+                if (!$nomorTerakhir) {
+                    throw new \Exception('Modul PMS tidak ditemukan di master nomor terakhir.');
+                }
+
+                $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+                $noInvoice = "PMS{$nomorCetakan}{$bulan}{$tahun}" . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+                $nomorTerakhir->nomor_terakhir = $nextNumber;
+                $nomorTerakhir->save();
+
+                // Calculate total amount for this group
+                $totalAmount = collect($kontainerGroup['items'])->sum('grand_total');
+                $itemCount = count($kontainerGroup['items']);
+
+                // Create pranota for this group
+                $pranota = PranotaTagihanKontainerSewa::create([
+                    'no_invoice' => $noInvoice,
+                    'total_amount' => $totalAmount,
+                    'keterangan' => "Pranota kontainer sewa - Invoice Vendor: {$kontainerGroup['no_invoice_vendor']}, No Bank: {$kontainerGroup['no_bank']} ({$itemCount} kontainer)",
+                    'status' => 'unpaid',
+                    'supplier' => $kontainerGroup['supplier'] ?? 'ZONA',
+                    'no_invoice_vendor' => $kontainerGroup['no_invoice_vendor'],
+                    'tgl_invoice_vendor' => $kontainerGroup['tgl_invoice_vendor'] ?? null,
+                    'no_bank' => $kontainerGroup['no_bank'],
+                    'tgl_bank' => $kontainerGroup['tgl_bank'] ?? null,
+                    'tagihan_kontainer_sewa_ids' => collect($kontainerGroup['items'])->pluck('id')->toArray(),
+                    'jumlah_tagihan' => $itemCount,
+                    'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
+                    'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
+                ]);
+
+                // Update tagihan kontainer sewa items
+                $itemIds = collect($kontainerGroup['items'])->pluck('id')->toArray();
+                DaftarTagihanKontainerSewa::whereIn('id', $itemIds)
+                    ->update([
+                        'status_pranota' => 'included',
+                        'pranota_id' => $pranota->id
+                    ]);
+
+                $createdPranota[] = [
+                    'no_invoice' => $noInvoice,
+                    'no_invoice_vendor' => $kontainerGroup['no_invoice_vendor'],
+                    'no_bank' => $kontainerGroup['no_bank'],
+                    'item_count' => $itemCount,
+                    'total_amount' => $totalAmount
+                ];
+
+                $totalProcessed += $itemCount;
+            }
+
+            DB::commit();
+
+            if (empty($createdPranota)) {
+                return redirect()->back()->with('warning', 'Tidak ada pranota yang dibuat. Pastikan kontainer memiliki nomor invoice vendor dan nomor bank yang lengkap.');
+            }
+
+            $message = count($createdPranota) . ' pranota berhasil dibuat untuk ' . $totalProcessed . ' kontainer berdasarkan grouping invoice vendor dan nomor bank:<br>';
+            foreach ($createdPranota as $pranota) {
+                $message .= "- {$pranota['no_invoice']}: Invoice Vendor {$pranota['no_invoice_vendor']}, Bank {$pranota['no_bank']} ({$pranota['item_count']} kontainer, Rp " . number_format($pranota['total_amount'], 2, ',', '.') . ")<br>";
+            }
+
+            return redirect()->back()->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Error creating pranota by vendor invoice group', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()->with('error', 'Gagal membuat pranota berdasarkan grouping: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Group kontainer by nomor invoice vendor and nomor bank
+     * Helper method for grouping logic
+     */
+    private function groupKontainerByVendorInvoiceAndBank($tagihanItems)
+    {
+        $groups = [];
+
+        foreach ($tagihanItems as $item) {
+            // Skip items without both invoice vendor and bank number
+            if (empty($item->no_invoice_vendor) || empty($item->no_bank)) {
+                continue;
+            }
+
+            // Create group key based on invoice vendor + bank number
+            $groupKey = $item->no_invoice_vendor . '|' . $item->no_bank;
+
+            if (!isset($groups[$groupKey])) {
+                $groups[$groupKey] = [
+                    'no_invoice_vendor' => $item->no_invoice_vendor,
+                    'tgl_invoice_vendor' => $item->tgl_invoice_vendor,
+                    'no_bank' => $item->no_bank,
+                    'tgl_bank' => $item->tgl_bank,
+                    'supplier' => $item->supplier ?? 'ZONA',
+                    'items' => []
+                ];
+            }
+
+            $groups[$groupKey]['items'][] = $item;
+        }
+
+        return $groups;
+    }
+
+    /**
+     * Preview grouping hasil sebelum membuat pranota
+     * Menampilkan preview bagaimana kontainer akan dikelompokkan
+     */
+    public function previewVendorInvoiceGrouping(Request $request)
+    {
+        $request->validate([
+            'tagihan_kontainer_sewa_ids' => 'required|array|min:1',
+            'tagihan_kontainer_sewa_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id'
+        ]);
+
+        // Get selected tagihan items
+        $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $request->tagihan_kontainer_sewa_ids)
+            ->where('status_pranota', '!=', 'included')
+            ->get();
+
+        if ($tagihanItems->isEmpty()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tidak ada tagihan kontainer sewa yang tersedia'
+            ]);
+        }
+
+        // Group kontainer
+        $groupedKontainer = $this->groupKontainerByVendorInvoiceAndBank($tagihanItems);
+
+        $previewData = [];
+        $totalPranota = 0;
+        $totalKontainer = 0;
+        $kontainerTanpaGroup = [];
+
+        foreach ($groupedKontainer as $groupKey => $kontainerGroup) {
+            if (!empty($kontainerGroup['no_invoice_vendor']) && !empty($kontainerGroup['no_bank'])) {
+                $totalAmount = collect($kontainerGroup['items'])->sum('grand_total');
+                $itemCount = count($kontainerGroup['items']);
+
+                $previewData[] = [
+                    'group_key' => $groupKey,
+                    'no_invoice_vendor' => $kontainerGroup['no_invoice_vendor'],
+                    'tgl_invoice_vendor' => $kontainerGroup['tgl_invoice_vendor'],
+                    'no_bank' => $kontainerGroup['no_bank'],
+                    'tgl_bank' => $kontainerGroup['tgl_bank'],
+                    'supplier' => $kontainerGroup['supplier'],
+                    'item_count' => $itemCount,
+                    'total_amount' => $totalAmount,
+                    'kontainer_list' => collect($kontainerGroup['items'])->pluck('kontainer')->toArray()
+                ];
+
+                $totalPranota++;
+                $totalKontainer += $itemCount;
+            }
+        }
+
+        // Check for items without complete grouping info
+        foreach ($tagihanItems as $item) {
+            if (empty($item->no_invoice_vendor) || empty($item->no_bank)) {
+                $kontainerTanpaGroup[] = [
+                    'kontainer' => $item->kontainer,
+                    'no_invoice_vendor' => $item->no_invoice_vendor,
+                    'no_bank' => $item->no_bank,
+                    'reason' => empty($item->no_invoice_vendor) ? 'Tidak ada nomor invoice vendor' : 'Tidak ada nomor bank'
+                ];
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'preview_data' => $previewData,
+            'summary' => [
+                'total_pranota_akan_dibuat' => $totalPranota,
+                'total_kontainer_diproses' => $totalKontainer,
+                'total_kontainer_dipilih' => $tagihanItems->count(),
+                'kontainer_tanpa_group' => $kontainerTanpaGroup
+            ]
+        ]);
     }
 }
