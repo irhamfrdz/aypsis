@@ -873,6 +873,19 @@ Route::middleware([
              'update' => 'can:master-aktivitas-update',
              'destroy' => 'can:master-aktivitas-delete'
          ]);
+
+    // 📥 Aktivitas - Download Template & Import CSV
+    Route::get('master/aktivitas-download-template', [AktivitasController::class, 'downloadTemplate'])
+         ->name('master-aktivitas.download-template')
+         ->middleware('can:master-aktivitas-view');
+
+    Route::get('master/aktivitas-import', [AktivitasController::class, 'showImportForm'])
+         ->name('master-aktivitas.import-form')
+         ->middleware('can:master-aktivitas-create');
+
+    Route::post('master/aktivitas-import', [AktivitasController::class, 'import'])
+         ->name('master-aktivitas.import')
+         ->middleware('can:master-aktivitas-create');
 });
 
 // ═══════════════════════════════════════════════════════════════════════

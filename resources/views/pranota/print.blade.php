@@ -17,12 +17,17 @@
             line-height: 1.4;
             color: #333;
             background: white;
+            min-height: 100vh;
+            position: relative;
         }
 
         .container {
-            max-width: 210mm;
+            max-width: 8.5in;
             margin: 0 auto;
-            padding: 10px;
+            padding: 5px;
+            min-height: 100vh;
+            position: relative;
+            padding-bottom: 100px;
         }
 
         .header {
@@ -221,9 +226,14 @@
         }
 
         .signature-section {
-            margin-top: 12px;
+            margin-top: auto;
             text-align: center;
             page-break-inside: avoid;
+            position: fixed;
+            bottom: 20mm;
+            left: 0;
+            right: 0;
+            width: 100%;
         }
 
         .signature-table {
@@ -271,22 +281,27 @@
 
         @media print {
             @page {
-                size: A4;
-                margin: 10mm;
+                size: 8.5in 6.5in;
+                margin: 5mm;
             }
 
             body {
-                font-size: 11px;
+                font-size: 10px;
                 width: 100%;
                 margin: 0;
                 padding: 0;
                 color: #000;
+                min-height: 100vh;
+                position: relative;
             }
 
             .container {
                 padding: 0;
                 max-width: 100%;
                 width: 100%;
+                min-height: 100vh;
+                position: relative;
+                padding-bottom: 80px;
             }
 
             .header {
@@ -295,21 +310,21 @@
             }
 
             .header h1 {
-                font-size: 16px;
-                margin-bottom: 3px;
+                font-size: 14px;
+                margin-bottom: 2px;
             }
 
             .header h2 {
-                font-size: 12px;
-                margin-bottom: 5px;
+                font-size: 10px;
+                margin-bottom: 3px;
             }
 
             .header div strong {
-                font-size: 12px;
+                font-size: 10px;
             }
 
             .header div span {
-                font-size: 10px;
+                font-size: 8px;
             }
 
             /* Header layout for print */
@@ -335,21 +350,21 @@
 
             .table {
                 page-break-inside: avoid;
-                margin-bottom: 10px;
+                margin-bottom: 5px;
                 width: 100%;
-                font-size: 9px;
+                font-size: 8px;
             }
 
             .table th,
             .table td {
-                padding: 2px 1px;
-                font-size: 9px;
+                padding: 1px;
+                font-size: 8px;
                 border: 1px solid #000;
                 word-wrap: break-word;
             }
 
             .table th {
-                font-size: 9px;
+                font-size: 8px;
                 background-color: #f8f9fa !important;
                 color: #333 !important;
                 border: 2px solid #000 !important;
@@ -380,68 +395,73 @@
 
             .masa-display {
                 padding: 0;
-                font-size: 9px;
-                line-height: 1.2;
+                font-size: 8px;
+                line-height: 1.1;
             }
 
             .masa-display small {
-                font-size: 7px;
+                font-size: 6px;
             }
 
             .col-vendor {
                 max-width: none;
-                font-size: 10px;
+                font-size: 8px;
             }
 
             .col-nomor {
-                font-size: 10px;
+                font-size: 8px;
                 font-weight: 500;
             }
 
             .summary {
-                margin-top: 8px;
-                font-size: 10px;
-            }
-
-            .summary-label {
-                width: 100px;
-            }
-
-            .total-amount {
-                font-size: 11px;
-                padding-top: 5px;
                 margin-top: 5px;
-            }
-
-            .signature-section {
-                margin-top: 15px;
-                page-break-inside: avoid;
-            }
-
-            .signature-table {
-                margin-top: 10px;
-            }
-
-            .signature-cell {
-                padding: 10px 6px;
-            }
-
-            .signature-label {
-                margin-bottom: 25px;
                 font-size: 9px;
             }
 
+            .summary-label {
+                width: 80px;
+            }
+
+            .total-amount {
+                font-size: 10px;
+                padding-top: 3px;
+                margin-top: 3px;
+            }
+
+            .signature-section {
+                margin-top: auto;
+                page-break-inside: avoid;
+                position: fixed;
+                bottom: 5mm;
+                left: 0;
+                right: 0;
+                width: 100%;
+            }
+
+            .signature-table {
+                margin-top: 5px;
+            }
+
+            .signature-cell {
+                padding: 5px 3px;
+            }
+
+            .signature-label {
+                margin-bottom: 15px;
+                font-size: 8px;
+            }
+
             .signature-line {
-                margin-bottom: 5px;
+                margin-bottom: 3px;
                 border-bottom: 2px solid #000 !important;
-                width: 120px;
+                width: 80px;
                 margin-left: auto;
                 margin-right: auto;
             }
 
             .signature-name {
-                font-size: 9px;
-                margin-bottom: 5px;
+                font-size: 8px;
+                margin-bottom: 3px;
                 font-weight: bold;
             }
 
@@ -477,6 +497,12 @@
 
             .table tr:last-child td.text-center {
                 text-align: center !important;
+            }
+
+            /* Merged cell styling for total */
+            .table tr:last-child td[colspan] {
+                text-align: center !important;
+                font-weight: bold !important;
             }
 
             /* Keterangan table for print */
@@ -610,10 +636,7 @@
                 @endforelse
                 <!-- Total Row -->
                 <tr class="total-row">
-                    <td class="text-center" style="font-weight: bold; text-align: center;">TOTAL</td>
-                    <td style="font-weight: bold;"></td>
-                    <td style="font-weight: bold;"></td>
-                    <td style="font-weight: bold;"></td>
+                    <td colspan="4" class="text-center" style="font-weight: bold; text-align: center;">TOTAL</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 0, ',', '.') }}</td>
