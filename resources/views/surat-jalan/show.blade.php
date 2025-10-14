@@ -142,21 +142,21 @@
                     <div class="grid grid-cols-3 gap-3">
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Karton</label>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                 {{ $suratJalan->karton == 'pakai' ? 'bg-green-100 text-green-800' : ($suratJalan->karton == 'tidak_pakai' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
                                 {{ $suratJalan->karton ? ucwords(str_replace('_', ' ', $suratJalan->karton)) : 'Tidak diset' }}
                             </span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Plastik</label>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                 {{ $suratJalan->plastik == 'pakai' ? 'bg-green-100 text-green-800' : ($suratJalan->plastik == 'tidak_pakai' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
                                 {{ $suratJalan->plastik ? ucwords(str_replace('_', ' ', $suratJalan->plastik)) : 'Tidak diset' }}
                             </span>
                         </div>
                         <div>
                             <label class="block text-sm font-medium text-gray-600">Terpal</label>
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
                                 {{ $suratJalan->terpal == 'pakai' ? 'bg-green-100 text-green-800' : ($suratJalan->terpal == 'tidak_pakai' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800') }}">
                                 {{ $suratJalan->terpal ? ucwords(str_replace('_', ' ', $suratJalan->terpal)) : 'Tidak diset' }}
                             </span>
@@ -246,8 +246,8 @@
                     <div class="bg-gray-50 rounded-lg p-4">
                         <h3 class="text-lg font-semibold text-gray-900 mb-3">Gambar/Dokumen</h3>
                         <div class="max-w-md">
-                            <img src="{{ asset('storage/' . $suratJalan->gambar) }}" 
-                                 alt="Surat Jalan Image" 
+                            <img src="{{ asset('storage/' . $suratJalan->gambar) }}"
+                                 alt="Surat Jalan Image"
                                  class="w-full h-auto rounded-lg shadow-sm border">
                         </div>
                     </div>
@@ -258,21 +258,21 @@
             <!-- Action Buttons -->
             <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
                 @can('surat-jalan-delete')
-                <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" 
-                      method="POST" 
+                <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}"
+                      method="POST"
                       onsubmit="return confirm('Yakin ingin menghapus surat jalan ini?')"
                       class="inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" 
+                    <button type="submit"
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
                         Hapus
                     </button>
                 </form>
                 @endcan
-                
+
                 @can('surat-jalan-update')
-                <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" 
+                <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}"
                    class="bg-yellow-600 hover:bg-yellow-700 text-white px-4 py-2 rounded-lg transition-colors duration-150">
                     Edit
                 </a>

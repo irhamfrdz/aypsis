@@ -34,31 +34,31 @@ try {
     ];
 
     echo "Step 1: Creating permissions if they don't exist...\n";
-    
+
     foreach ($permissions as $permissionData) {
         $permission = Permission::firstOrCreate(
             ['name' => $permissionData['name']],
             ['description' => $permissionData['description']]
         );
-        
+
         echo "- Permission '{$permission->name}' " . ($permission->wasRecentlyCreated ? "created" : "already exists") . "\n";
     }
 
     echo "\nStep 2: Finding admin user...\n";
-    
+
     // Find admin user (assuming username 'admin' or you can change this)
     $adminUser = User::where('username', 'admin')->first();
-    
+
     if (!$adminUser) {
         // Try to find by email if username doesn't exist
         $adminUser = User::where('email', 'admin@admin.com')->first();
     }
-    
+
     if (!$adminUser) {
         // Try to find the first user with admin role or first user
         $adminUser = User::where('role', 'admin')->first();
     }
-    
+
     if (!$adminUser) {
         echo "Error: Could not find admin user. Please check the user credentials.\n";
         echo "Available users:\n";
@@ -72,10 +72,10 @@ try {
     echo "Found admin user: {$adminUser->username} (ID: {$adminUser->id})\n";
 
     echo "\nStep 3: Assigning permissions to admin user...\n";
-    
+
     foreach ($permissions as $permissionData) {
         $permission = Permission::where('name', $permissionData['name'])->first();
-        
+
         // Check if user already has this permission
         if ($adminUser->hasPermissionTo($permission->name)) {
             echo "- Permission '{$permission->name}' already assigned to admin\n";
@@ -87,10 +87,10 @@ try {
     }
 
     echo "\nStep 4: Verifying permissions...\n";
-    
+
     // Refresh the user's permissions
     $adminUser->load('permissions');
-    
+
     foreach ($permissions as $permissionData) {
         $hasPermission = $adminUser->hasPermissionTo($permissionData['name']);
         echo "- {$permissionData['name']}: " . ($hasPermission ? "✓ GRANTED" : "✗ NOT FOUND") . "\n";

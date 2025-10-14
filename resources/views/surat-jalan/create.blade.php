@@ -36,7 +36,7 @@
                         </div>
                     </div>
                 </div>
-                <a href="{{ route('surat-jalan.select-order') }}" 
+                <a href="{{ route('surat-jalan.select-order') }}"
                    class="text-blue-600 hover:text-blue-800 text-xs font-medium">
                     Ganti Order
                 </a>
@@ -47,7 +47,7 @@
         <!-- Form -->
         <form action="{{ route('surat-jalan.store') }}" method="POST" enctype="multipart/form-data" class="p-4">
             @csrf
-            
+
             @if($selectedOrder)
                 <input type="hidden" name="order_id" value="{{ $selectedOrder->id }}">
             @endif
@@ -66,8 +66,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
-                    <input type="date" 
-                           name="tanggal_surat_jalan" 
+                    <input type="date"
+                           name="tanggal_surat_jalan"
                            value="{{ old('tanggal_surat_jalan', date('Y-m-d')) }}"
                            required
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_surat_jalan') border-red-500 @enderror">
@@ -79,13 +79,13 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Surat Jalan <span class="text-red-600">*</span></label>
                     <div class="flex">
-                        <input type="text" 
-                               name="no_surat_jalan" 
+                        <input type="text"
+                               name="no_surat_jalan"
                                value="{{ old('no_surat_jalan') }}"
                                required
                                placeholder="Contoh: SJ/2025/10/0001"
                                class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
-                        <button type="button" 
+                        <button type="button"
                                 onclick="generateNomorSuratJalan()"
                                 class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-r-lg text-sm">
                             Generate
@@ -103,8 +103,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                    <input type="text" 
-                           name="pengirim" 
+                    <input type="text"
+                           name="pengirim"
                            value="{{ old('pengirim', $selectedOrder ? $selectedOrder->pengirim->nama_pengirim ?? '' : '') }}"
                            placeholder="Nama pengirim"
                            readonly
@@ -124,8 +124,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
-                    <input type="text" 
-                           name="jenis_barang" 
+                    <input type="text"
+                           name="jenis_barang"
                            value="{{ old('jenis_barang', $selectedOrder ? $selectedOrder->jenisBarang->nama_barang ?? '' : '') }}"
                            placeholder="Jenis/nama barang"
                            readonly
@@ -140,8 +140,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
-                    <input type="text" 
-                           name="tujuan_pengambilan" 
+                    <input type="text"
+                           name="tujuan_pengambilan"
                            value="{{ old('tujuan_pengambilan', $selectedOrder ? $selectedOrder->tujuan_ambil ?? '' : '') }}"
                            placeholder="Lokasi pengambilan"
                            readonly
@@ -156,8 +156,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
-                    <input type="text" 
-                           name="tujuan_pengiriman" 
+                    <input type="text"
+                           name="tujuan_pengiriman"
                            value="{{ old('tujuan_pengiriman', $selectedOrder ? $selectedOrder->tujuan_kirim ?? '' : '') }}"
                            placeholder="Lokasi tujuan pengiriman"
                            readonly
@@ -172,8 +172,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Retur Barang</label>
-                    <input type="text" 
-                           name="retur_barang" 
+                    <input type="text"
+                           name="retur_barang"
                            value="{{ old('retur_barang') }}"
                            placeholder="Retur barang (jika ada)"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('retur_barang') border-red-500 @enderror">
@@ -184,8 +184,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Retur</label>
-                    <input type="number" 
-                           name="jumlah_retur" 
+                    <input type="number"
+                           name="jumlah_retur"
                            value="{{ old('jumlah_retur', 0) }}"
                            min="0"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_retur') border-red-500 @enderror">
@@ -201,8 +201,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
-                    <input type="text" 
-                           name="tipe_kontainer" 
+                    <input type="text"
+                           name="tipe_kontainer"
                            value="{{ old('tipe_kontainer', $selectedOrder ? $selectedOrder->tipe_kontainer ?? '' : '') }}"
                            placeholder="Tipe kontainer"
                            readonly
@@ -217,7 +217,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
-                    <select name="size" 
+                    <select name="size"
+                            onchange="updateUangJalan()"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('size') border-red-500 @enderror">
                         <option value="">Pilih Size</option>
                         @php $selectedSize = old('size', $selectedOrder ? $selectedOrder->size_kontainer ?? '' : ''); @endphp
@@ -228,12 +229,13 @@
                     @error('size')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="text-xs text-gray-500 mt-1">Uang jalan akan diperbarui berdasarkan size kontainer</p>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Seal</label>
-                    <input type="text" 
-                           name="no_seal" 
+                    <input type="text"
+                           name="no_seal"
                            value="{{ old('no_seal') }}"
                            placeholder="Nomor seal kontainer"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror">
@@ -249,7 +251,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
-                    <select name="karton" 
+                    <select name="karton"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('karton') border-red-500 @enderror">
                         <option value="">Pilih Status Karton</option>
                         <option value="pakai" {{ old('karton') == 'pakai' ? 'selected' : '' }}>Pakai</option>
@@ -262,7 +264,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
-                    <select name="plastik" 
+                    <select name="plastik"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('plastik') border-red-500 @enderror">
                         <option value="">Pilih Status Plastik</option>
                         <option value="pakai" {{ old('plastik') == 'pakai' ? 'selected' : '' }}>Pakai</option>
@@ -275,7 +277,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
-                    <select name="terpal" 
+                    <select name="terpal"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('terpal') border-red-500 @enderror">
                         <option value="">Pilih Status Terpal</option>
                         <option value="pakai" {{ old('terpal') == 'pakai' ? 'selected' : '' }}>Pakai</option>
@@ -293,14 +295,14 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                    <select name="supir" 
+                    <select name="supir"
                             id="supir-select"
                             onchange="updateNoPlat()"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
                         <option value="">Pilih Supir</option>
                         @if(isset($supirs))
                             @foreach($supirs as $supir)
-                                <option value="{{ $supir->nama_lengkap }}" 
+                                <option value="{{ $supir->nama_lengkap }}"
                                         data-plat="{{ $supir->plat }}"
                                         {{ old('supir') == $supir->nama_lengkap ? 'selected' : '' }}>
                                     {{ $supir->nama_lengkap }}
@@ -315,12 +317,12 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                    <select name="kenek" 
+                    <select name="kenek"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kenek') border-red-500 @enderror">
                         <option value="">Pilih Kenek</option>
                         @if(isset($keneks))
                             @foreach($keneks as $kenek)
-                                <option value="{{ $kenek->nama_lengkap }}" 
+                                <option value="{{ $kenek->nama_lengkap }}"
                                         {{ old('kenek') == $kenek->nama_lengkap ? 'selected' : '' }}>
                                     {{ $kenek->nama_lengkap }}
                                 </option>
@@ -335,8 +337,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Plat</label>
-                    <input type="text" 
-                           name="no_plat" 
+                    <input type="text"
+                           name="no_plat"
                            id="no-plat-input"
                            value="{{ old('no_plat') }}"
                            placeholder="Nomor plat kendaraan"
@@ -354,8 +356,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Muat</label>
-                    <input type="date" 
-                           name="tanggal_muat" 
+                    <input type="date"
+                           name="tanggal_muat"
                            value="{{ old('tanggal_muat') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_muat') border-red-500 @enderror">
                     @error('tanggal_muat')
@@ -365,8 +367,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Berangkat</label>
-                    <input type="date" 
-                           name="tanggal_berangkat" 
+                    <input type="date"
+                           name="tanggal_berangkat"
                            value="{{ old('tanggal_berangkat') }}"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_berangkat') border-red-500 @enderror">
                     @error('tanggal_berangkat')
@@ -381,23 +383,33 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Term</label>
-                    <input type="text" 
-                           name="term" 
-                           value="{{ old('term') }}"
+                    <input type="text"
+                           name="term"
+                           value="{{ old('term', $selectedOrder && $selectedOrder->term ? $selectedOrder->term->nama_status ?? '' : '') }}"
                            placeholder="Term pembayaran"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('term') border-red-500 @enderror">
+                           readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('term') border-red-500 @enderror">
                     @error('term')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    @if($selectedOrder)
+                        <p class="text-xs text-gray-500 mt-1">Data term diambil dari order yang dipilih</p>
+                        @if($selectedOrder->term)
+                            <p class="text-xs text-green-600 mt-1">Term ditemukan: {{ $selectedOrder->term->nama_status }}</p>
+                        @else
+                            <p class="text-xs text-red-600 mt-1">Term tidak ditemukan untuk order ini</p>
+                        @endif
+                    @endif
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Rit</label>
-                    <input type="number" 
-                           name="rit" 
-                           value="{{ old('rit', 0) }}"
-                           min="0"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('rit') border-red-500 @enderror">
+                    <select name="rit"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('rit') border-red-500 @enderror">
+                        <option value="">Pilih Status Rit</option>
+                        <option value="menggunakan_rit" {{ old('rit') == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
+                        <option value="tidak_menggunakan_rit" {{ old('rit') == 'tidak_menggunakan_rit' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
+                    </select>
                     @error('rit')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -405,33 +417,38 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
-                    <input type="number" 
-                           name="uang_jalan" 
-                           value="{{ old('uang_jalan') }}"
-                           step="0.01"
-                           min="0"
-                           placeholder="0.00"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('uang_jalan') border-red-500 @enderror">
+                    <input type="text"
+                           name="uang_jalan"
+                           id="uang-jalan-input"
+                           value="{{ old('uang_jalan', '0') }}"
+                           placeholder="0"
+                           readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('uang_jalan') border-red-500 @enderror">
                     @error('uang_jalan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="text-xs text-gray-500 mt-1">Uang jalan otomatis berdasarkan tujuan pengambilan (Format: 200,000)</p>
                 </div>
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Pemesanan</label>
-                    <input type="text" 
-                           name="no_pemesanan" 
-                           value="{{ old('no_pemesanan') }}"
+                    <input type="text"
+                           name="no_pemesanan"
+                           value="{{ old('no_pemesanan', $selectedOrder ? $selectedOrder->nomor_order ?? '' : '') }}"
                            placeholder="Nomor pemesanan"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_pemesanan') border-red-500 @enderror">
+                           readonly
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_pemesanan') border-red-500 @enderror">
                     @error('no_pemesanan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    @if($selectedOrder)
+                        <p class="text-xs text-gray-500 mt-1">Nomor pemesanan diambil dari nomor order yang dipilih</p>
+                    @endif
                 </div>
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
-                    <textarea name="aktifitas" 
+                    <textarea name="aktifitas"
                               rows="3"
                               placeholder="Deskripsi aktifitas atau catatan tambahan"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('aktifitas') border-red-500 @enderror">{{ old('aktifitas') }}</textarea>
@@ -442,8 +459,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Gambar/Dokumen</label>
-                    <input type="file" 
-                           name="gambar" 
+                    <input type="file"
+                           name="gambar"
                            accept="image/*"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('gambar') border-red-500 @enderror">
                     @error('gambar')
@@ -454,7 +471,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-600">*</span></label>
-                    <select name="status" 
+                    <select name="status"
                             required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status') border-red-500 @enderror">
                         <option value="draft" {{ old('status') == 'draft' ? 'selected' : '' }}>Draft</option>
@@ -470,11 +487,11 @@
 
             <!-- Submit Buttons -->
             <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
-                <a href="{{ route('surat-jalan.index') }}" 
+                <a href="{{ route('surat-jalan.index') }}"
                    class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-150">
                     Batal
                 </a>
-                <button type="submit" 
+                <button type="submit"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors duration-150">
                     Simpan
                 </button>
@@ -499,11 +516,11 @@ function generateNomorSuratJalan() {
 function updateNoPlat() {
     const supirSelect = document.getElementById('supir-select');
     const noPlatInput = document.getElementById('no-plat-input');
-    
+
     if (supirSelect.selectedIndex > 0) {
         const selectedOption = supirSelect.options[supirSelect.selectedIndex];
         const platNumber = selectedOption.getAttribute('data-plat');
-        
+
         if (platNumber) {
             noPlatInput.value = platNumber;
         } else {
@@ -513,5 +530,49 @@ function updateNoPlat() {
         noPlatInput.value = '';
     }
 }
+
+function updateUangJalan() {
+    const tujuanPengambilan = document.querySelector('input[name="tujuan_pengambilan"]').value;
+    const sizeSelect = document.querySelector('select[name="size"]');
+    const uangJalanInput = document.getElementById('uang-jalan-input');
+    
+    if (tujuanPengambilan) {
+        const size = sizeSelect ? sizeSelect.value : '';
+        
+        // Fetch uang jalan based on tujuan pengambilan and container size
+        fetch('/api/get-uang-jalan-by-tujuan', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            },
+            body: JSON.stringify({
+                tujuan: tujuanPengambilan,
+                size: size
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                uangJalanInput.value = data.uang_jalan || '0';
+            } else {
+                uangJalanInput.value = '0';
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            uangJalanInput.value = '0';
+        });
+    } else {
+        uangJalanInput.value = '0';
+    }
+}
+
+// Auto-populate uang jalan when page loads if order is selected
+@if($selectedOrder && $selectedOrder->tujuan_ambil)
+document.addEventListener('DOMContentLoaded', function() {
+    updateUangJalan();
+});
+@endif
 </script>
 @endsection

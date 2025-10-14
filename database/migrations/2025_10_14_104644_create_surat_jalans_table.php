@@ -51,7 +51,7 @@ return new class extends Migration
 
             // Foreign key constraints
             $table->foreign('input_by')->references('id')->on('users')->onDelete('set null');
-            
+
             // Indexes
             $table->index(['tanggal_surat_jalan', 'status']);
             $table->index(['no_surat_jalan']);

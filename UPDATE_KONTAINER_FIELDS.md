@@ -3,21 +3,24 @@
 ## Perubahan yang Telah Dilakukan
 
 ### ❌ Field yang Dihapus:
+
 1. **No. Kontainer**
-   - Input field untuk nomor kontainer telah dihapus dari form
-   - Validasi `'no_kontainer'` juga dihapus dari controller
-   - Database kolom tetap ada (tidak dihapus)
+    - Input field untuk nomor kontainer telah dihapus dari form
+    - Validasi `'no_kontainer'` juga dihapus dari controller
+    - Database kolom tetap ada (tidak dihapus)
 
 ### ✅ Field yang Diubah Menjadi Readonly:
+
 1. **Tipe Kontainer**
-   - Berubah dari dropdown select menjadi input text readonly
-   - Data diambil dari `$selectedOrder->tipe_kontainer`
-   - Background abu-abu (`bg-gray-50`) menunjukkan readonly
-   - Pesan informasi: "Data tipe kontainer diambil dari order yang dipilih"
+    - Berubah dari dropdown select menjadi input text readonly
+    - Data diambil dari `$selectedOrder->tipe_kontainer`
+    - Background abu-abu (`bg-gray-50`) menunjukkan readonly
+    - Pesan informasi: "Data tipe kontainer diambil dari order yang dipilih"
 
 ## Detail Perubahan
 
 ### Form (create.blade.php):
+
 ```html
 <!-- SEBELUM (Dropdown) -->
 <select name="tipe_kontainer">
@@ -27,14 +30,17 @@
 </select>
 
 <!-- SESUDAH (Readonly Input) -->
-<input type="text" 
-       name="tipe_kontainer" 
-       value="{{ $selectedOrder->tipe_kontainer ?? '' }}"
-       readonly
-       class="... bg-gray-50 text-gray-700 ...">
+<input
+    type="text"
+    name="tipe_kontainer"
+    value="{{ $selectedOrder->tipe_kontainer ?? '' }}"
+    readonly
+    class="... bg-gray-50 text-gray-700 ..."
+/>
 ```
 
 ### Controller (SuratJalanController.php):
+
 ```php
 // SEBELUM
 $request->validate([
@@ -43,7 +49,7 @@ $request->validate([
     'no_seal' => 'nullable|string|max:255',
 ]);
 
-// SESUDAH  
+// SESUDAH
 $request->validate([
     'tipe_kontainer' => 'nullable|string|max:50',
     'no_seal' => 'nullable|string|max:255',
@@ -53,7 +59,7 @@ $request->validate([
 ## Field Readonly yang Sudah Ada:
 
 1. ✅ **Pengirim** - dari `$selectedOrder->pengirim->nama_pengirim`
-2. ✅ **Jenis Barang** - dari `$selectedOrder->jenisBarang->nama_barang`  
+2. ✅ **Jenis Barang** - dari `$selectedOrder->jenisBarang->nama_barang`
 3. ✅ **Tujuan Pengambilan** - dari `$selectedOrder->tujuan_ambil`
 4. ✅ **Tujuan Pengiriman** - dari `$selectedOrder->tujuan_kirim`
 5. ✅ **Tipe Kontainer** - dari `$selectedOrder->tipe_kontainer`
@@ -61,9 +67,10 @@ $request->validate([
 ## Status: SELESAI ✅
 
 Semua perubahan yang diminta telah berhasil diimplementasikan:
-- ❌ Input nomor kontainer dihapus
-- ✅ Tipe kontainer menjadi readonly dari data order
-- ✅ Validasi controller sudah disesuaikan
-- ✅ Form tetap konsisten dengan field readonly lainnya
+
+-   ❌ Input nomor kontainer dihapus
+-   ✅ Tipe kontainer menjadi readonly dari data order
+-   ✅ Validasi controller sudah disesuaikan
+-   ✅ Form tetap konsisten dengan field readonly lainnya
 
 Form sekarang lebih streamlined dengan field yang diambil otomatis dari order yang dipilih!

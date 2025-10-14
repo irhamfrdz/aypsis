@@ -47,6 +47,7 @@ use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\AktivitasController;
 
 /*
 |--------------------------------------------------------------------------
@@ -850,6 +851,28 @@ Route::middleware([
     Route::post('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'import'])
          ->name('tujuan-kirim.import.process')
          ->middleware('can:master-tujuan-kirim-create');
+
+    // 🎯 Aktivitas Management with permissions
+    Route::resource('master/aktivitas', AktivitasController::class)
+         ->names([
+             'index' => 'master-aktivitas.index',
+             'create' => 'master-aktivitas.create',
+             'store' => 'master-aktivitas.store',
+             'show' => 'master-aktivitas.show',
+             'edit' => 'master-aktivitas.edit',
+             'update' => 'master-aktivitas.update',
+             'destroy' => 'master-aktivitas.destroy'
+         ])
+         ->parameters(['aktivitas' => 'aktivitas'])
+         ->middleware([
+             'index' => 'can:master-aktivitas-view',
+             'create' => 'can:master-aktivitas-create',
+             'store' => 'can:master-aktivitas-create',
+             'show' => 'can:master-aktivitas-view',
+             'edit' => 'can:master-aktivitas-update',
+             'update' => 'can:master-aktivitas-update',
+             'destroy' => 'can:master-aktivitas-delete'
+         ]);
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -877,7 +900,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ═══════════════════════════════════════════════════════════════════════
     // 📋 SURAT JALAN MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
-    
+
     // Surat Jalan Order Selection
     Route::get('/surat-jalan/select-order', [\App\Http\Controllers\SuratJalanController::class, 'selectOrder'])
          ->name('surat-jalan.select-order')
@@ -898,6 +921,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // AJAX route for generating surat jalan number
     Route::get('/surat-jalan/generate-nomor', [\App\Http\Controllers\SuratJalanController::class, 'generateNomorSuratJalan'])
          ->name('surat-jalan.generate-nomor')
+         ->middleware('can:surat-jalan-create');
+
+    // AJAX route for getting uang jalan by tujuan
+    Route::post('/api/get-uang-jalan-by-tujuan', [\App\Http\Controllers\SuratJalanController::class, 'getUangJalanByTujuan'])
+         ->name('surat-jalan.get-uang-jalan')
          ->middleware('can:surat-jalan-create');
 });
 

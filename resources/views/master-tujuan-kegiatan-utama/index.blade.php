@@ -183,10 +183,10 @@
                     </tbody>
                 </table>
             </div>
-            
+
             <!-- Modern Pagination -->
             @include('components.modern-pagination', [
-                'paginator' => $tujuanKegiatanUtamas, 
+                'paginator' => $tujuanKegiatanUtamas,
                 'routeName' => 'master.tujuan-kegiatan-utama.index'
             ])
         @endif

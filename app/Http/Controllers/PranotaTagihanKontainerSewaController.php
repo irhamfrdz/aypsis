@@ -179,7 +179,15 @@ class PranotaTagihanKontainerSewaController extends Controller
     {
         $request->validate([
             'selected_ids' => 'required|array|min:1',
-            'selected_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id'
+            'selected_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id',
+            'tanggal_pranota' => 'required|date',
+            'keterangan' => 'nullable|string|max:1000',
+            'no_invoice_vendor' => 'required|string|max:255',
+            'tgl_invoice_vendor' => 'required|date'
+        ], [
+            'no_invoice_vendor.required' => 'Invoice Vendor harus diisi',
+            'tgl_invoice_vendor.required' => 'Tanggal Invoice Vendor harus diisi',
+            'tanggal_pranota.required' => 'Tanggal Pranota harus diisi'
         ]);
 
         try {
@@ -211,11 +219,13 @@ class PranotaTagihanKontainerSewaController extends Controller
             $pranota = PranotaTagihanKontainerSewa::create([
                 'no_invoice' => $noInvoice,
                 'total_amount' => $tagihanItems->sum('grand_total'),
-                'keterangan' => 'Pranota bulk kontainer sewa untuk ' . count($request->selected_ids) . ' tagihan',
+                'keterangan' => $request->keterangan ?: 'Pranota bulk kontainer sewa untuk ' . count($request->selected_ids) . ' tagihan',
+                'no_invoice_vendor' => $request->no_invoice_vendor,
+                'tgl_invoice_vendor' => $request->tgl_invoice_vendor,
                 'status' => 'unpaid',
                 'tagihan_kontainer_sewa_ids' => $request->selected_ids,
                 'jumlah_tagihan' => count($request->selected_ids),
-                'tanggal_pranota' => Carbon::now()->format('Y-m-d'),
+                'tanggal_pranota' => $request->tanggal_pranota ?: Carbon::now()->format('Y-m-d'),
                 'due_date' => Carbon::now()->addDays(30)->format('Y-m-d')
             ]);
 
@@ -228,13 +238,48 @@ class PranotaTagihanKontainerSewaController extends Controller
 
             DB::commit();
 
+            // Check if request is AJAX
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Pranota kontainer sewa bulk berhasil dibuat dengan nomor: ' . $pranota->no_invoice,
+                    'nomor_pranota' => $pranota->no_invoice,
+                    'total_amount' => $pranota->total_amount,
+                    'jumlah_tagihan' => count($request->selected_ids),
+                    'no_invoice_vendor' => $pranota->no_invoice_vendor,
+                    'tgl_invoice_vendor' => $pranota->tgl_invoice_vendor
+                ]);
+            }
+
             return redirect()->back()->with('success',
                 'Pranota kontainer sewa bulk berhasil dibuat dengan nomor: ' . $pranota->no_invoice .
                 ' untuk ' . count($request->selected_ids) . ' tagihan kontainer sewa (Total: Rp ' . number_format($pranota->total_amount ?? 0, 2, ',', '.') . ')'
             );
 
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            
+            // Check if request is AJAX
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Data tidak valid',
+                    'errors' => $e->errors()
+                ], 422);
+            }
+            
+            return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollback();
+            
+            // Check if request is AJAX
+            if ($request->ajax() || $request->wantsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal membuat pranota kontainer sewa bulk: ' . $e->getMessage()
+                ], 422);
+            }
+            
             return redirect()->back()->with('error', 'Gagal membuat pranota kontainer sewa bulk: ' . $e->getMessage());
         }
     }

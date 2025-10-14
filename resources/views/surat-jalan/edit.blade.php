@@ -47,8 +47,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Surat Jalan <span class="text-red-600">*</span></label>
-                    <input type="date" 
-                           name="tanggal_surat_jalan" 
+                    <input type="date"
+                           name="tanggal_surat_jalan"
                            value="{{ old('tanggal_surat_jalan', $suratJalan->tanggal_surat_jalan?->format('Y-m-d')) }}"
                            required
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_surat_jalan') border-red-500 @enderror">
@@ -59,8 +59,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Surat Jalan <span class="text-red-600">*</span></label>
-                    <input type="text" 
-                           name="no_surat_jalan" 
+                    <input type="text"
+                           name="no_surat_jalan"
                            value="{{ old('no_surat_jalan', $suratJalan->no_surat_jalan) }}"
                            required
                            placeholder="Contoh: SJ/2025/10/0001"
@@ -73,8 +73,8 @@
                 <!-- Rest of form fields similar to create.blade.php but with old values from $suratJalan -->
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                    <input type="text" 
-                           name="pengirim" 
+                    <input type="text"
+                           name="pengirim"
                            value="{{ old('pengirim', $suratJalan->pengirim) }}"
                            placeholder="Nama pengirim"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('pengirim') border-red-500 @enderror">
@@ -85,8 +85,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Telepon</label>
-                    <input type="text" 
-                           name="telp" 
+                    <input type="text"
+                           name="telp"
                            value="{{ old('telp', $suratJalan->telp) }}"
                            placeholder="Nomor telepon"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('telp') border-red-500 @enderror">
@@ -97,7 +97,7 @@
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Alamat</label>
-                    <textarea name="alamat" 
+                    <textarea name="alamat"
                               rows="3"
                               placeholder="Alamat lengkap pengirim"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('alamat') border-red-500 @enderror">{{ old('alamat', $suratJalan->alamat) }}</textarea>
@@ -113,8 +113,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jenis Barang</label>
-                    <input type="text" 
-                           name="jenis_barang" 
+                    <input type="text"
+                           name="jenis_barang"
                            value="{{ old('jenis_barang', $suratJalan->jenis_barang) }}"
                            placeholder="Jenis/nama barang"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jenis_barang') border-red-500 @enderror">
@@ -125,8 +125,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
-                    <input type="text" 
-                           name="no_kontainer" 
+                    <input type="text"
+                           name="no_kontainer"
                            value="{{ old('no_kontainer', $suratJalan->no_kontainer) }}"
                            placeholder="Nomor kontainer"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror">
@@ -137,8 +137,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                    <input type="text" 
-                           name="supir" 
+                    <input type="text"
+                           name="supir"
                            value="{{ old('supir', $suratJalan->supir) }}"
                            placeholder="Nama supir utama"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
@@ -149,8 +149,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Plat</label>
-                    <input type="text" 
-                           name="no_plat" 
+                    <input type="text"
+                           name="no_plat"
                            value="{{ old('no_plat', $suratJalan->no_plat) }}"
                            placeholder="Nomor plat kendaraan"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_plat') border-red-500 @enderror">
@@ -161,8 +161,8 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
-                    <input type="number" 
-                           name="uang_jalan" 
+                    <input type="number"
+                           name="uang_jalan"
                            value="{{ old('uang_jalan', $suratJalan->uang_jalan) }}"
                            step="0.01"
                            min="0"
@@ -175,7 +175,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status <span class="text-red-600">*</span></label>
-                    <select name="status" 
+                    <select name="status"
                             required
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status') border-red-500 @enderror">
                         <option value="draft" {{ old('status', $suratJalan->status) == 'draft' ? 'selected' : '' }}>Draft</option>
@@ -190,7 +190,7 @@
 
                 <div class="md:col-span-2">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
-                    <textarea name="aktifitas" 
+                    <textarea name="aktifitas"
                               rows="3"
                               placeholder="Deskripsi aktifitas atau catatan tambahan"
                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('aktifitas') border-red-500 @enderror">{{ old('aktifitas', $suratJalan->aktifitas) }}</textarea>
@@ -204,13 +204,13 @@
                     @if($suratJalan->gambar)
                         <div class="mb-2 p-3 bg-gray-50 rounded-lg">
                             <p class="text-sm text-gray-600 mb-2">Gambar saat ini:</p>
-                            <img src="{{ asset('storage/' . $suratJalan->gambar) }}" 
-                                 alt="Current Image" 
+                            <img src="{{ asset('storage/' . $suratJalan->gambar) }}"
+                                 alt="Current Image"
                                  class="max-w-xs h-20 object-cover rounded border">
                         </div>
                     @endif
-                    <input type="file" 
-                           name="gambar" 
+                    <input type="file"
+                           name="gambar"
                            accept="image/*"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('gambar') border-red-500 @enderror">
                     @error('gambar')
@@ -222,11 +222,11 @@
 
             <!-- Submit Buttons -->
             <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
-                <a href="{{ route('surat-jalan.index') }}" 
+                <a href="{{ route('surat-jalan.index') }}"
                    class="bg-gray-300 hover:bg-gray-400 text-gray-700 px-4 py-2 rounded-lg transition-colors duration-150">
                     Batal
                 </a>
-                <button type="submit" 
+                <button type="submit"
                         class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg transition-colors duration-150">
                     Update
                 </button>

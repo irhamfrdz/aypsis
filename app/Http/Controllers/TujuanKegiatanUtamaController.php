@@ -32,7 +32,7 @@ class TujuanKegiatanUtamaController extends Controller
         // Pagination with per_page parameter
         $perPage = $request->get('per_page', 15);
         $tujuanKegiatanUtamas = $query->paginate($perPage)->appends($request->query());
-        
+
         return view('master-tujuan-kegiatan-utama.index', compact('tujuanKegiatanUtamas'));
     }
 

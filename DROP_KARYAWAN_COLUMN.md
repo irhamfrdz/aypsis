@@ -5,17 +5,19 @@
 ### ❌ Field Karyawan Dihapus Sepenuhnya:
 
 1. **Database Migration**
-   - ✅ Migration dibuat: `2025_10_14_113725_drop_karyawan_column_from_surat_jalans_table.php`
-   - ✅ Kolom `karyawan` dihapus dari tabel `surat_jalans`
-   - ✅ Rollback tersedia untuk menambah kembali kolom jika diperlukan
+
+    - ✅ Migration dibuat: `2025_10_14_113725_drop_karyawan_column_from_surat_jalans_table.php`
+    - ✅ Kolom `karyawan` dihapus dari tabel `surat_jalans`
+    - ✅ Rollback tersedia untuk menambah kembali kolom jika diperlukan
 
 2. **Form Create (create.blade.php)**
-   - ✅ Input field karyawan dihapus dari form
-   - ✅ Label, input, dan error handling karyawan dihapus
+
+    - ✅ Input field karyawan dihapus dari form
+    - ✅ Label, input, dan error handling karyawan dihapus
 
 3. **Controller (SuratJalanController.php)**
-   - ✅ Validasi `'karyawan' => 'nullable|string|max:255'` dihapus dari method `store()`
-   - ✅ Validasi `'karyawan' => 'nullable|string|max:255'` dihapus dari method `update()`
+    - ✅ Validasi `'karyawan' => 'nullable|string|max:255'` dihapus dari method `store()`
+    - ✅ Validasi `'karyawan' => 'nullable|string|max:255'` dihapus dari method `update()`
 
 ## Detail Migration:
 
@@ -40,16 +42,18 @@ Schema::table('surat_jalans', function (Blueprint $table) {
 ## Field Transport yang Tersisa:
 
 Setelah menghapus karyawan, bagian Informasi Transport sekarang berisi:
-- ✅ **Supir** - Input text untuk nama supir utama
-- ✅ **Supir 2** - Input text untuk nama supir cadangan  
-- ✅ **Kenek** - Input text untuk nama kenek
-- ✅ **No. Plat** - Input text untuk nomor plat kendaraan
+
+-   ✅ **Supir** - Input text untuk nama supir utama
+-   ✅ **Supir 2** - Input text untuk nama supir cadangan
+-   ✅ **Kenek** - Input text untuk nama kenek
+-   ✅ **No. Plat** - Input text untuk nomor plat kendaraan
 
 ## Status: SELESAI ✅
 
 Kolom `karyawan` telah berhasil dihapus dari:
-- ❌ Database (kolom terhapus)
-- ❌ Form create (input field terhapus) 
-- ❌ Controller validation (rules terhapus)
+
+-   ❌ Database (kolom terhapus)
+-   ❌ Form create (input field terhapus)
+-   ❌ Controller validation (rules terhapus)
 
 Form sekarang lebih streamlined tanpa field karyawan yang tidak diperlukan!

@@ -171,6 +171,21 @@
 .btn-animated:active {
     transform: translateY(0);
 }
+
+/* Required field styling */
+input[required]:invalid {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 1px #ef4444;
+}
+
+input[required]:valid {
+    border-color: #10b981;
+}
+
+input[required]:focus {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+    border-color: #3b82f6;
+}
 </style>
 
 <div class="container mx-auto p-4">
@@ -2062,6 +2077,9 @@ window.closeModal = function() {
     if (tanggalField) {
         tanggalField.value = today;
     }
+
+    // Invoice vendor fields will be reset by form.reset() above
+    // User needs to fill them again as they are required
 };
 
 // Add backdrop click to close modal
@@ -2098,10 +2116,22 @@ document.addEventListener('DOMContentLoaded', function() {
             const pranotaType = formData.get('pranota_type');
             const selectedIds = formData.get('selected_tagihan_ids').split(',').filter(id => id);
             const tanggalPranota = formData.get('tanggal_pranota');
+            const noInvoiceVendor = formData.get('no_invoice_vendor');
+            const tglInvoiceVendor = formData.get('tgl_invoice_vendor');
 
-            // Validate tanggal pranota
+            // Validate required fields
             if (!tanggalPranota) {
                 alert('Tanggal pranota harus diisi');
+                return;
+            }
+
+            if (!noInvoiceVendor || noInvoiceVendor.trim() === '') {
+                alert('Invoice Vendor harus diisi');
+                return;
+            }
+
+            if (!tglInvoiceVendor) {
+                alert('Tanggal Invoice Vendor harus diisi');
                 return;
             }
 
@@ -2124,6 +2154,8 @@ document.addEventListener('DOMContentLoaded', function() {
             submitData.append('nomor_cetakan', '1'); // Fixed value since input removed
             submitData.append('tanggal_pranota', tanggalPranota);
             submitData.append('keterangan', formData.get('keterangan') || '');
+            submitData.append('no_invoice_vendor', noInvoiceVendor.trim());
+            submitData.append('tgl_invoice_vendor', tglInvoiceVendor);
 
             let actionUrl;
 
@@ -2191,6 +2223,9 @@ document.addEventListener('DOMContentLoaded', function() {
                                 tanggalField.value = today;
                             }
 
+                            // Keep invoice vendor fields as they are required
+                            // Fields will be reset by form.reset() but user needs to fill them again
+
                             // Reload page after a short delay to show updated data
                             setTimeout(() => {
                                 window.location.reload();
@@ -2247,6 +2282,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             } else {
                                 errorTitle = 'Gagal Membuat Pranota';
                                 errorMessage = data.message || 'Terjadi kesalahan saat membuat pranota. Silakan periksa data dan coba lagi.';
+                            }
+
+                            // Handle validation errors
+                            if (data.errors) {
+                                const validationErrors = Object.values(data.errors).flat();
+                                if (validationErrors.length > 0) {
+                                    errorMessage = validationErrors.join('\n');
+                                }
                             }
 
                             // Show error notification
@@ -2875,6 +2918,28 @@ window.closeAdjustmentModal = function() {
                             <input type="date" id="tanggal_pranota" name="tanggal_pranota" required
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <small class="text-gray-500 text-xs mt-1">Pilih tanggal pembuatan pranota</small>
+                        </div>
+                    </div>
+
+                    <!-- Data Invoice Vendor -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="no_invoice_vendor" class="block text-[10px] font-medium text-gray-700 mb-2">
+                                Invoice Vendor <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="no_invoice_vendor" name="no_invoice_vendor" required
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                                   placeholder="Masukkan nomor invoice vendor">
+                            <small class="text-gray-500 text-xs mt-1">Nomor invoice dari vendor (wajib diisi)</small>
+                        </div>
+
+                        <div>
+                            <label for="tgl_invoice_vendor" class="block text-[10px] font-medium text-gray-700 mb-2">
+                                Tanggal Invoice Vendor <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" id="tgl_invoice_vendor" name="tgl_invoice_vendor" required
+                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
+                            <small class="text-gray-500 text-xs mt-1">Tanggal invoice dari vendor (wajib diisi)</small>
                         </div>
                     </div>
 

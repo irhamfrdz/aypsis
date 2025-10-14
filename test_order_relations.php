@@ -60,12 +60,12 @@ if ($order) {
     echo "   Sample Order Attributes:\n";
     echo "   - pengirim_id: " . ($order->pengirim_id ?? 'NULL') . "\n";
     echo "   - jenis_barang_id: " . ($order->jenis_barang_id ?? 'NULL') . "\n";
-    
+
     if ($order->pengirim_id) {
         $pengirim = Pengirim::find($order->pengirim_id);
         echo "   - Pengirim exists: " . ($pengirim ? "YES ({$pengirim->nama_pengirim})" : "NO") . "\n";
     }
-    
+
     if ($order->jenis_barang_id) {
         $jenisBarang = JenisBarang::find($order->jenis_barang_id);
         echo "   - JenisBarang exists: " . ($jenisBarang ? "YES ({$jenisBarang->nama_barang})" : "NO") . "\n";

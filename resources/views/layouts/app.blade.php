@@ -268,7 +268,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');
+                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*') || Request::routeIs('master-aktivitas.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -393,6 +393,14 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
                                     Data Transportasi
+                                </a>
+                            @endif
+                            @if($user && $user->can('master-aktivitas-view'))
+                                <a href="{{ route('master-aktivitas.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master-aktivitas.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+                                    </svg>
+                                    Master Aktivitas
                                 </a>
                             @endif
                         </div>

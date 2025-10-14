@@ -7,6 +7,7 @@ use App\Models\SuratJalan;
 use App\Models\User;
 use App\Models\Order;
 use App\Models\Karyawan;
+use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
@@ -100,12 +101,12 @@ class SuratJalanController extends Controller
     public function create(Request $request)
     {
         $selectedOrder = null;
-        
+
         // If order_id is provided, get the order data
         if ($request->filled('order_id')) {
             $selectedOrder = Order::with(['pengirim', 'jenisBarang', 'tujuanAmbil', 'term'])
                                   ->find($request->order_id);
-            
+
             if (!$selectedOrder || !in_array($selectedOrder->status, ['active', 'confirmed', 'processing'])) {
                 return redirect()->route('surat-jalan.select-order')
                                 ->with('error', 'Order tidak valid atau tidak tersedia untuk membuat surat jalan.');
@@ -208,7 +209,7 @@ class SuratJalanController extends Controller
     public function edit($id)
     {
         $suratJalan = SuratJalan::findOrFail($id);
-        
+
         // Get karyawan supir data - hanya divisi supir
         $supirs = Karyawan::where('divisi', 'supir')
                          ->whereNotNull('nama_lengkap')
@@ -220,7 +221,7 @@ class SuratJalanController extends Controller
                          ->whereNotNull('nama_lengkap')
                          ->orderBy('nama_lengkap')
                          ->get(['id', 'nama_lengkap']);
-        
+
         return view('surat-jalan.edit', compact('suratJalan', 'supirs', 'keneks'));
     }
 
@@ -322,15 +323,73 @@ class SuratJalanController extends Controller
     {
         $today = Carbon::today();
         $prefix = 'SJ/' . $today->format('Y/m');
-        
+
         $lastNumber = SuratJalan::whereDate('tanggal_surat_jalan', $today)
                                ->where('no_surat_jalan', 'like', $prefix . '%')
                                ->count();
-        
+
         $nextNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        
+
         return response()->json([
             'no_surat_jalan' => $prefix . '/' . $nextNumber
         ]);
+    }
+
+    /**
+     * Get uang jalan based on tujuan pengambilan and container size
+     */
+    public function getUangJalanByTujuan(Request $request)
+    {
+        $request->validate([
+            'tujuan' => 'required|string',
+            'size' => 'nullable|string'
+        ]);
+
+        try {
+            $tujuan = $request->tujuan;
+            $size = $request->size;
+            
+            // Find tujuan kegiatan utama by 'dari' or 'ke' field
+            $tujuanKegiatan = TujuanKegiatanUtama::where(function($query) use ($tujuan) {
+                                                    $query->where('dari', 'like', '%' . $tujuan . '%')
+                                                          ->orWhere('ke', 'like', '%' . $tujuan . '%');
+                                                })
+                                                ->first();
+
+            if ($tujuanKegiatan) {
+                $uangJalan = 0;
+                
+                // Determine uang jalan based on container size
+                if ($size == '20') {
+                    $uangJalan = $tujuanKegiatan->uang_jalan_20ft ?? 0;
+                } elseif ($size == '40' || $size == '45') {
+                    $uangJalan = $tujuanKegiatan->uang_jalan_40ft ?? 0;
+                } else {
+                    // Default to 20ft if size not specified
+                    $uangJalan = $tujuanKegiatan->uang_jalan_20ft ?? 0;
+                }
+
+                return response()->json([
+                    'success' => true,
+                    'uang_jalan' => number_format($uangJalan, 0, ',', '.'),
+                    'message' => 'Uang jalan ditemukan'
+                ]);
+            }
+
+            return response()->json([
+                'success' => false,
+                'uang_jalan' => '0',
+                'message' => 'Tujuan tidak ditemukan dalam master data'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error getting uang jalan: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'uang_jalan' => '0',
+                'message' => 'Terjadi kesalahan saat mengambil data uang jalan'
+            ], 500);
+        }
     }
 }
