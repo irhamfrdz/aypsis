@@ -188,6 +188,14 @@
             border: 2px solid #333 !important;
         }
 
+        .total-row td.text-right {
+            text-align: right !important;
+        }
+
+        .total-row td.text-center {
+            text-align: center !important;
+        }
+
         .summary {
             margin-top: 10px;
             text-align: right;
@@ -461,6 +469,14 @@
                 border: 2px solid #000 !important;
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+            }
+
+            .table tr:last-child td.text-right {
+                text-align: right !important;
+            }
+
+            .table tr:last-child td.text-center {
+                text-align: center !important;
             }
 
             /* Keterangan table for print */
