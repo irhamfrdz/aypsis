@@ -22,33 +22,33 @@
         .container {
             max-width: 210mm;
             margin: 0 auto;
-            padding: 20px;
+            padding: 10px;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             border-bottom: 2px solid #333;
-            padding-bottom: 20px;
+            padding-bottom: 8px;
         }
 
         .header h1 {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: bold;
             color: #333;
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .header h2 {
-            font-size: 18px;
+            font-size: 16px;
             color: #666;
-            margin-bottom: 10px;
+            margin-bottom: 5px;
         }
 
         .info-section {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 30px;
+            margin-bottom: 8px;
         }
 
         .info-left, .info-right {
@@ -56,13 +56,13 @@
         }
 
         .info-item {
-            margin-bottom: 8px;
+            margin-bottom: 4px;
         }
 
         .info-label {
             font-weight: bold;
             display: inline-block;
-            width: 120px;
+            width: 100px;
         }
 
         .status-badge {
@@ -80,14 +80,14 @@
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 30px;
+            margin-bottom: 8px;
             table-layout: fixed;
         }
 
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 12px 8px;
+            padding: 4px 2px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
@@ -97,14 +97,14 @@
             background-color: #f8f9fa;
             color: #333;
             font-weight: bold;
-            font-size: 11px;
+            font-size: 10px;
             text-align: center;
             white-space: nowrap;
             border: 2px solid #333;
         }
 
         .table td {
-            font-size: 11px;
+            font-size: 10px;
         }
 
         .table .text-right {
@@ -189,31 +189,31 @@
         }
 
         .summary {
-            margin-top: 20px;
+            margin-top: 10px;
             text-align: right;
         }
 
         .summary-item {
-            margin-bottom: 5px;
+            margin-bottom: 3px;
         }
 
         .summary-label {
             font-weight: bold;
             display: inline-block;
-            width: 150px;
+            width: 120px;
         }
 
         .total-amount {
-            font-size: 16px;
+            font-size: 14px;
             font-weight: bold;
             color: #000000;
             border-top: 2px solid #000000;
-            padding-top: 10px;
-            margin-top: 10px;
+            padding-top: 5px;
+            margin-top: 5px;
         }
 
         .signature-section {
-            margin-top: 60px;
+            margin-top: 12px;
             text-align: center;
             page-break-inside: avoid;
         }
@@ -221,34 +221,34 @@
         .signature-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 30px;
+            margin-top: 15px;
         }
 
         .signature-cell {
             width: 33.33%;
-            padding: 40px 20px;
+            padding: 12px 8px;
             text-align: center;
             vertical-align: top;
         }
 
         .signature-label {
             font-weight: bold;
-            margin-bottom: 80px;
-            font-size: 14px;
+            margin-bottom: 30px;
+            font-size: 11px;
         }
 
         .signature-line {
             border-bottom: 2px solid #333;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             height: 2px;
-            width: 200px;
+            width: 150px;
             margin-left: auto;
             margin-right: auto;
         }
 
         .signature-name {
-            font-size: 13px;
-            margin-bottom: 10px;
+            font-size: 11px;
+            margin-bottom: 5px;
             font-weight: bold;
         }
 
@@ -282,18 +282,18 @@
             }
 
             .header {
-                margin-bottom: 15px;
-                padding-bottom: 10px;
+                margin-bottom: 10px;
+                padding-bottom: 8px;
             }
 
             .header h1 {
-                font-size: 18px;
-                margin-bottom: 5px;
+                font-size: 16px;
+                margin-bottom: 3px;
             }
 
             .header h2 {
-                font-size: 14px;
-                margin-bottom: 8px;
+                font-size: 12px;
+                margin-bottom: 5px;
             }
 
             .header div strong {
@@ -304,14 +304,21 @@
                 font-size: 10px;
             }
 
+            /* Header layout for print */
+            .header > div:first-child {
+                display: flex !important;
+                justify-content: space-between !important;
+                align-items: flex-start !important;
+            }
+
             .info-section {
-                margin-bottom: 15px;
-                font-size: 10px;
+                margin-bottom: 10px;
+                font-size: 9px;
             }
 
             .info-label {
-                width: 100px;
-                font-size: 10px;
+                width: 80px;
+                font-size: 9px;
             }
 
             .no-print {
@@ -320,21 +327,21 @@
 
             .table {
                 page-break-inside: avoid;
-                margin-bottom: 15px;
+                margin-bottom: 10px;
                 width: 100%;
-                font-size: 10px;
+                font-size: 9px;
             }
 
             .table th,
             .table td {
-                padding: 6px 4px;
-                font-size: 10px;
+                padding: 2px 1px;
+                font-size: 9px;
                 border: 1px solid #000;
                 word-wrap: break-word;
             }
 
             .table th {
-                font-size: 10px;
+                font-size: 9px;
                 background-color: #f8f9fa !important;
                 color: #333 !important;
                 border: 2px solid #000 !important;
@@ -343,8 +350,8 @@
             }
 
             /* Specific column widths for better spacing */
-            .table th:nth-child(1) { width: 8%; }  /* No */
-            .table th:nth-child(2) { width: 20%; } /* No. Kontainer */
+            .table th:nth-child(1) { width: 4%; }  /* No */
+            .table th:nth-child(2) { width: 22%; } /* No. Kontainer */
             .table th:nth-child(3) { width: 8%; }  /* Size */
             .table th:nth-child(4) { width: 15%; } /* Masa */
             .table th:nth-child(5) { width: 12%; } /* DPP */
@@ -353,8 +360,8 @@
             .table th:nth-child(8) { width: 10%; } /* PPH */
             .table th:nth-child(9) { width: 15%; } /* Grand Total */
 
-            .table td:nth-child(1) { width: 8%; text-align: center; }
-            .table td:nth-child(2) { width: 20%; }
+            .table td:nth-child(1) { width: 4%; text-align: center; }
+            .table td:nth-child(2) { width: 22%; }
             .table td:nth-child(3) { width: 8%; text-align: center; }
             .table td:nth-child(4) { width: 15%; }
             .table td:nth-child(5) { width: 12%; text-align: right; }
@@ -384,49 +391,49 @@
             }
 
             .summary {
-                margin-top: 15px;
-                font-size: 11px;
+                margin-top: 8px;
+                font-size: 10px;
             }
 
             .summary-label {
-                width: 120px;
+                width: 100px;
             }
 
             .total-amount {
-                font-size: 12px;
-                padding-top: 8px;
-                margin-top: 8px;
+                font-size: 11px;
+                padding-top: 5px;
+                margin-top: 5px;
             }
 
             .signature-section {
-                margin-top: 50px;
+                margin-top: 15px;
                 page-break-inside: avoid;
             }
 
             .signature-table {
-                margin-top: 25px;
+                margin-top: 10px;
             }
 
             .signature-cell {
-                padding: 30px 15px;
+                padding: 10px 6px;
             }
 
             .signature-label {
-                margin-bottom: 60px;
-                font-size: 12px;
+                margin-bottom: 25px;
+                font-size: 9px;
             }
 
             .signature-line {
-                margin-bottom: 8px;
+                margin-bottom: 5px;
                 border-bottom: 2px solid #000 !important;
-                width: 150px;
+                width: 120px;
                 margin-left: auto;
                 margin-right: auto;
             }
 
             .signature-name {
-                font-size: 11px;
-                margin-bottom: 8px;
+                font-size: 9px;
+                margin-bottom: 5px;
                 font-weight: bold;
             }
 
@@ -455,6 +462,26 @@
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
             }
+
+            /* Keterangan table for print */
+            .keterangan-table {
+                page-break-inside: avoid;
+                margin-top: 10px;
+                margin-bottom: 10px;
+            }
+
+            .keterangan-table th {
+                background-color: #f8f9fa !important;
+                color: #333 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+                border: 1px solid #000 !important;
+            }
+
+            .keterangan-table td {
+                border: 1px solid #000 !important;
+                min-height: 40px;
+            }
         }
     </style>
 </head>
@@ -462,9 +489,19 @@
     <div class="container">
         <!-- Header -->
         <div class="header">
-            <div style="text-align: left; margin-bottom: 15px;">
-                <strong style="font-size: 14px;">PT. ALEXINDO YAKINPRIMA</strong><br>
-                <span style="font-size: 11px;">Jalan Pluit Raya No.8 Blok B No.12</span>
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
+                <div style="text-align: left;">
+                    <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
+                    <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12</span><br>
+                    <span style="font-size: 10px; font-weight: bold; margin-top: 5px; display: inline-block;">
+                        Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}
+                    </span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 10px; font-weight: bold;">
+                        No. Pranota: {{ $pranota->no_invoice }}
+                    </span>
+                </div>
             </div>
             <h1>PRANOTA TAGIHAN KONTAINER</h1>
         </div>
@@ -472,14 +509,6 @@
         <!-- Info Section -->
         <div class="info-section">
             <div class="info-left">
-                <div class="info-item">
-                    <span class="info-label">No. Pranota:</span>
-                    <span>{{ $pranota->no_invoice }}</span>
-                </div>
-                <div class="info-item">
-                    <span class="info-label">Tanggal Pranota:</span>
-                    <span>{{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-y') }}</span>
-                </div>
                 @php
                     $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
                 @endphp
@@ -497,10 +526,7 @@
                 @endif
             </div>
             <div class="info-right">
-                <div class="info-item">
-                    <span class="info-label">Keterangan:</span>
-                    <span>{{ $pranota->keterangan ?: '-' }}</span>
-                </div>
+                <!-- Info right can be used for other information if needed -->
             </div>
         </div>
 
@@ -508,8 +534,8 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width: 8%;">No</th>
-                    <th style="width: 20%;">No. Kontainer</th>
+                    <th style="width: 4%;">No</th>
+                    <th style="width: 22%;">No. Kontainer</th>
                     <th style="width: 8%;">Size</th>
                     <th style="width: 15%;">Masa</th>
                     <th style="width: 12%;">DPP</th>
@@ -555,11 +581,11 @@
                             <span class="masa-display">-</span>
                         @endif
                     </td>
-                    <td class="text-right">{{ number_format($item->dpp ?? 0, 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->adjustment ?? 0, 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->ppn ?? 0, 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->pph ?? 0, 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->grand_total ?? 0, 2, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->dpp ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->adjustment ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->ppn ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->pph ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($item->grand_total ?? 0, 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
@@ -568,25 +594,45 @@
                 @endforelse
                 <!-- Total Row -->
                 <tr class="total-row">
-                    <td class="text-center">TOTAL</td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 2, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}</td>
+                    <td class="text-center" style="font-weight: bold; text-align: center;">TOTAL</td>
+                    <td style="font-weight: bold;"></td>
+                    <td style="font-weight: bold;"></td>
+                    <td style="font-weight: bold;"></td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 0, ',', '.') }}</td>
+                    <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</td>
                 </tr>
             </tbody>
         </table>
 
         <!-- Summary -->
         <div class="summary">
-            <div class="summary-item total-amount" style="margin-top: 15px;">
+            <div class="summary-item total-amount" style="margin-top: 10px;">
                 <span class="summary-label">TOTAL AMOUNT:</span>
-                <span>Rp {{ number_format((float)$pranota->total_amount, 2, ',', '.') }}</span>
+                <span>Rp {{ number_format((float)$pranota->total_amount, 0, ',', '.') }}</span>
             </div>
+        </div>
+
+        <!-- Keterangan Table -->
+        <div class="keterangan-table" style="margin-top: 8px; margin-bottom: 8px;">
+            <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
+                <thead>
+                    <tr>
+                        <th style="background-color: #f8f9fa; color: #333; font-weight: bold; font-size: 10px; text-align: center; padding: 4px; border: 1px solid #333;">
+                            KETERANGAN
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td style="padding: 6px; border: 1px solid #333; font-size: 10px; min-height: 30px; vertical-align: top;">
+                            {{ $pranota->keterangan ?: 'Tidak ada keterangan khusus' }}
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
 
         <!-- Signature Section -->
