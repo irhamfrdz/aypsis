@@ -271,7 +271,7 @@
         .summary {
             margin-top: 10px;
             text-align: right;
-            padding-right: 20px;
+            padding-right: 50px;
         }
 
         .summary-item {
@@ -281,14 +281,13 @@
         .summary-label {
             font-weight: bold;
             display: inline-block;
-            width: 120px;
+            width: 90px;
         }
 
         .total-amount {
             font-size: 10px;
             font-weight: bold;
             color: #000000;
-            border-top: 2px solid #000000;
             padding-top: 5px;
             margin-top: 5px;
         }
@@ -463,26 +462,26 @@
 
             /* Specific column widths for better spacing */
             .table th:nth-child(1) { width: 4%; }  /* No */
-            .table th:nth-child(2) { width: 18%; } /* No. Kontainer */
+            .table th:nth-child(2) { width: 14%; } /* No. Kontainer */
             .table th:nth-child(3) { width: 6%; }  /* Size */
-            .table th:nth-child(4) { width: 12%; } /* Masa */
+            .table th:nth-child(4) { width: 16%; } /* Masa */
             .table th:nth-child(5) { width: 10%; } /* DPP */
             .table th:nth-child(6) { width: 10%; } /* Adjustment */
             .table th:nth-child(7) { width: 8%; }  /* PPN */
             .table th:nth-child(8) { width: 8%; }  /* PPH */
-            .table th:nth-child(9) { width: 12%; } /* Grand Total */
-            .table th:nth-child(10) { width: 18%; } /* Invoice Vendor */
+            .table th:nth-child(9) { width: 10%; } /* Grand Total */
+            .table th:nth-child(10) { width: 14%; } /* Invoice Vendor */
 
             .table td:nth-child(1) { width: 4%; text-align: center; }
-            .table td:nth-child(2) { width: 18%; }
+            .table td:nth-child(2) { width: 14%; }
             .table td:nth-child(3) { width: 6%; text-align: center; }
-            .table td:nth-child(4) { width: 12%; }
+            .table td:nth-child(4) { width: 16%; }
             .table td:nth-child(5) { width: 10%; text-align: right; }
             .table td:nth-child(6) { width: 10%; text-align: right; }
             .table td:nth-child(7) { width: 8%; text-align: right; }
             .table td:nth-child(8) { width: 8%; text-align: right; }
-            .table td:nth-child(9) { width: 12%; text-align: right; }
-            .table td:nth-child(10) { width: 18%; text-align: center; }
+            .table td:nth-child(9) { width: 10%; text-align: right; }
+            .table td:nth-child(10) { width: 14%; text-align: center; }
 
             .masa-display {
                 padding: 0;
@@ -507,10 +506,12 @@
             .summary {
                 margin-top: 5px;
                 font-size: 9px;
+                text-align: right;
+                padding-right: 40px;
             }
 
             .summary-label {
-                width: 80px;
+                width: 70px;
             }
 
             .total-amount {
@@ -605,11 +606,11 @@
 
             .keterangan-table td {
                 border: 2px solid #000 !important;
-                height: 110px !important;
-                min-height: 110px !important;
-                padding: 12px !important;
+                height: 55px !important;
+                min-height: 55px !important;
+                padding: 8px !important;
                 font-size: 10px !important;
-                line-height: 1.5 !important;
+                line-height: 1.4 !important;
                 vertical-align: top !important;
             }
 
@@ -717,15 +718,15 @@
             <thead>
                 <tr>
                     <th style="width: 4%;">No</th>
-                    <th style="width: 18%;">No. Kontainer</th>
+                    <th style="width: 14%;">No. Kontainer</th>
                     <th style="width: 6%;">Size</th>
-                    <th style="width: 12%;">Masa</th>
+                    <th style="width: 16%;">Masa</th>
                     <th style="width: 10%;">DPP</th>
                     <th style="width: 10%;">Adjustment</th>
                     <th style="width: 8%;">PPN</th>
                     <th style="width: 8%;">PPH</th>
-                    <th style="width: 12%;">Grand Total</th>
-                    <th style="width: 18%;">Invoice Vendor</th>
+                    <th style="width: 10%;">Grand Total</th>
+                    <th style="width: 14%;">Invoice Vendor</th>
                 </tr>
             </thead>
             <tbody>
@@ -802,12 +803,11 @@
             <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
                 <tbody>
                     <tr>
-                        <td style="padding: 12px; border: 2px solid #333; font-size: 11px; height: 90px; min-height: 90px; vertical-align: top; line-height: 1.5;">
+                        <td style="padding: 8px; border: 2px solid #333; font-size: 11px; height: 45px; min-height: 45px; vertical-align: top; line-height: 1.4;">
                             {{ $pranota->keterangan ?: '' }}
                             @if(!$pranota->keterangan)
-                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 8px; height: 18px;"></div>
-                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 8px; height: 18px;"></div>
-                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 8px; height: 18px;"></div>
+                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
+                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
                             @endif
                         </td>
                     </tr>
