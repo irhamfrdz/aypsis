@@ -1,8 +1,58 @@
 <!DOCTYPE html>
 <html lang="id">
+@php
+    // Get paper size from request or default to Half-A4
+    $paperSize = request('paper_size', 'Half-A4');
+
+    // Define paper dimensions and styles
+    $paperMap = [
+        'A4' => [
+            'size' => 'A4',
+            'width' => '210mm',
+            'height' => '297mm',
+            'containerWidth' => '210mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+            'signatureBottom' => '15mm'
+        ],
+        'Folio' => [
+            'size' => '8.5in 13in',
+            'width' => '8.5in',
+            'height' => '13in',
+            'containerWidth' => '8.5in',
+            'fontSize' => '12px',
+            'headerH1' => '20px',
+            'tableFont' => '10px',
+            'signatureBottom' => '20mm'
+        ],
+        'Half-A4' => [
+            'size' => '210mm 148.5mm', // A4 width x half height (A5 landscape)
+            'width' => '210mm',
+            'height' => '148.5mm',
+            'containerWidth' => '210mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '7px',
+            'signatureBottom' => '5mm'
+        ],
+        'Half-Folio' => [
+            'size' => '8.5in 6.5in', // Folio width x half height
+            'width' => '8.5in',
+            'height' => '6.5in',
+            'containerWidth' => '8.5in',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '7px',
+            'signatureBottom' => '5mm'
+        ]
+    ];
+
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
+@endphp
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width={{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }}, initial-scale=1.0">
     <title>Pranota {{ $pranota->no_invoice }}</title>
     <style>
         * {
@@ -11,23 +61,40 @@
             box-sizing: border-box;
         }
 
+        @page {
+            size: {{ $paperSize === 'Half-A4' ? '210mm 148.5mm' : ($paperSize === 'Half-Folio' ? '8.5in 6.5in' : ($paperSize === 'A4' ? 'A4' : '8.5in 13in')) }} portrait;
+            margin: 0;
+        }
+
+        html {
+            width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
+            height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+        }
+
         body {
             font-family: Arial, sans-serif;
-            font-size: 12px;
+            font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : ($paperSize === 'A4' ? '11px' : '12px')) }};
             line-height: 1.4;
             color: #333;
             background: white;
-            min-height: 100vh;
             position: relative;
+            width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
+            height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+            margin: 0;
+            padding: 0;
         }
 
         .container {
-            max-width: 8.5in;
+            width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
+            max-width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
+            height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+            max-height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
             margin: 0 auto;
-            padding: 5px;
-            min-height: 100vh;
+            padding: 5mm;
             position: relative;
-            padding-bottom: 100px;
+            padding-bottom: {{ $paperSize === 'Half-A4' ? '60px' : ($paperSize === 'Half-Folio' ? '60px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
+            box-sizing: border-box;
+            overflow: hidden;
         }
 
         .header {
@@ -38,7 +105,7 @@
         }
 
         .header h1 {
-            font-size: 20px;
+            font-size: {{ $paperSize === 'Half-A4' ? '14px' : ($paperSize === 'Half-Folio' ? '14px' : ($paperSize === 'A4' ? '18px' : '20px')) }};
             font-weight: bold;
             color: #333;
             margin-bottom: 3px;
@@ -102,14 +169,14 @@
             background-color: #f8f9fa;
             color: #333;
             font-weight: bold;
-            font-size: 10px;
+            font-size: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : ($paperSize === 'A4' ? '10px' : '11px')) }};
             text-align: center;
             white-space: nowrap;
             border: 2px solid #333;
         }
 
         .table td {
-            font-size: 10px;
+            font-size: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : ($paperSize === 'A4' ? '10px' : '11px')) }};
         }
 
         .table .text-right {
@@ -225,12 +292,13 @@
             margin-top: 5px;
         }
 
+        /* Signature section for screen preview */
         .signature-section {
             margin-top: auto;
             text-align: center;
             page-break-inside: avoid;
-            position: fixed;
-            bottom: 20mm;
+            position: absolute;
+            bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '40px') }};
             left: 0;
             right: 0;
             width: 100%;
@@ -239,33 +307,33 @@
         .signature-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 15px;
+            margin-top: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '15px') }};
         }
 
         .signature-cell {
             width: 33.33%;
-            padding: 12px 8px;
+            padding: {{ $paperSize === 'Half-A4' ? '8px 4px' : ($paperSize === 'Half-Folio' ? '8px 4px' : '12px 8px') }};
             text-align: center;
             vertical-align: top;
         }
 
         .signature-label {
             font-weight: bold;
-            margin-bottom: 30px;
-            font-size: 11px;
+            margin-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '30px') }};
+            font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '11px') }};
         }
 
         .signature-line {
             border-bottom: 2px solid #333;
-            margin-bottom: 8px;
+            margin-bottom: {{ $paperSize === 'Half-Folio' ? '5px' : '8px' }};
             height: 2px;
-            width: 150px;
+            width: {{ $paperSize === 'Half-A4' ? '100px' : ($paperSize === 'Half-Folio' ? '100px' : '150px') }};
             margin-left: auto;
             margin-right: auto;
         }
 
         .signature-name {
-            font-size: 11px;
+            font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '11px') }};
             margin-bottom: 5px;
             font-weight: bold;
         }
@@ -281,27 +349,56 @@
 
         @media print {
             @page {
-                size: 8.5in 6.5in;
-                margin: 5mm;
+                size: A4 portrait;
+                margin: 0;
+            }
+
+            * {
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+
+            html {
+                width: 210mm;
+                height: 297mm;
             }
 
             body {
-                font-size: 10px;
-                width: 100%;
+                width: 210mm;
+                height: 297mm;
                 margin: 0;
                 padding: 0;
+                font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : ($paperSize === 'A4' ? '11px' : '12px')) }};
                 color: #000;
-                min-height: 100vh;
                 position: relative;
+                overflow: visible;
             }
 
             .container {
-                padding: 0;
-                max-width: 100%;
-                width: 100%;
-                min-height: 100vh;
+                width: 210mm;
+                @if($paperSize === 'Half-A4')
+                    /* Half-A4: Scale content to fit in half page */
+                    height: 148.5mm;
+                    max-height: 148.5mm;
+                    border-bottom: 2px dashed #999;
+                    /* Visual guide for cutting line */
+                @elseif($paperSize === 'Half-Folio')
+                    /* Half-Folio: Scale content to fit in half page */
+                    height: 6.5in;
+                    max-height: 6.5in;
+                    border-bottom: 2px dashed #999;
+                    /* Visual guide for cutting line */
+                @else
+                    height: 287mm;
+                    max-height: 287mm;
+                @endif
+                padding: 5mm;
+                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
+                margin: 0;
+                box-sizing: border-box;
+                overflow: hidden;
                 position: relative;
-                padding-bottom: 80px;
+                page-break-after: avoid;
             }
 
             .header {
@@ -310,21 +407,21 @@
             }
 
             .header h1 {
-                font-size: 14px;
-                margin-bottom: 2px;
+                font-size: {{ $paperSize === 'A4' ? '16px' : ($paperSize === 'Folio' ? '20px' : '14px') }};
+                margin-bottom: {{ $paperSize === 'Half-A4' ? '2px' : ($paperSize === 'Half-Folio' ? '2px' : '3px') }};
             }
 
             .header h2 {
-                font-size: 10px;
-                margin-bottom: 3px;
+                font-size: {{ $paperSize === 'A4' ? '12px' : ($paperSize === 'Folio' ? '16px' : '10px') }};
+                margin-bottom: {{ $paperSize === 'Half-A4' ? '3px' : ($paperSize === 'Half-Folio' ? '3px' : '5px') }};
             }
 
             .header div strong {
-                font-size: 10px;
+                font-size: {{ $paperSize === 'A4' ? '11px' : ($paperSize === 'Folio' ? '12px' : '10px') }};
             }
 
             .header div span {
-                font-size: 8px;
+                font-size: {{ $paperSize === 'A4' ? '9px' : ($paperSize === 'Folio' ? '10px' : '8px') }};
             }
 
             /* Header layout for print */
@@ -350,21 +447,21 @@
 
             .table {
                 page-break-inside: avoid;
-                margin-bottom: 5px;
+                margin-bottom: {{ $paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '10px') }};
                 width: 100%;
-                font-size: 8px;
+                font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
             }
 
             .table th,
             .table td {
-                padding: 1px;
-                font-size: 8px;
+                padding: {{ $paperSize === 'Half-A4' ? '1px' : ($paperSize === 'Half-Folio' ? '1px' : '2px 1px') }};
+                font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
                 border: 1px solid #000;
                 word-wrap: break-word;
             }
 
             .table th {
-                font-size: 8px;
+                font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
                 background-color: #f8f9fa !important;
                 color: #333 !important;
                 border: 2px solid #000 !important;
@@ -431,8 +528,16 @@
             .signature-section {
                 margin-top: auto;
                 page-break-inside: avoid;
-                position: fixed;
-                bottom: 5mm;
+                @if($paperSize === 'Half-A4')
+                    position: absolute;
+                    bottom: 10mm;
+                @elseif($paperSize === 'Half-Folio')
+                    position: absolute;
+                    bottom: 10mm;
+                @else
+                    position: fixed;
+                    bottom: {{ $paperSize === 'A4' ? '15mm' : '20mm' }};
+                @endif
                 left: 0;
                 right: 0;
                 width: 100%;
@@ -524,10 +629,68 @@
                 border: 1px solid #000 !important;
                 min-height: 40px;
             }
+
+
         }
     </style>
 </head>
 <body>
+    <!-- Print Instructions Banner (hidden when printing) -->
+    <div class="no-print" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #fef3c7; padding: 15px 25px; border: 2px solid #f59e0b; border-radius: 8px; z-index: 1001; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 650px;">
+        <div style="display: flex; align-items: start; gap: 12px;">
+            <svg style="width: 28px; height: 28px; color: #f59e0b; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+            </svg>
+            <div style="flex: 1;">
+                <strong style="color: #92400e; display: block; margin-bottom: 6px; font-size: 14px;">⚠️ PENTING - Setting Print untuk {{ $paperSize }}:</strong>
+                <div style="color: #78350f; font-size: 13px; line-height: 1.6;">
+                    @if($paperSize === 'Half-A4')
+                        <strong>Ukuran: Setengah A4 (210 x 148.5 mm)</strong><br>
+                        📌 Saat Print Dialog:<br>
+                        &nbsp;&nbsp;&nbsp;1️⃣ Scale: <strong>None / 100% / Actual Size</strong><br>
+                        &nbsp;&nbsp;&nbsp;2️⃣ Orientation: <strong>Portrait (Tegak)</strong><br>
+                        &nbsp;&nbsp;&nbsp;3️⃣ Paper: <strong>A4</strong><br>
+                        &nbsp;&nbsp;&nbsp;4️⃣ Margins: <strong>None / Minimal</strong><br>
+                        ✂️ Setelah print, potong kertas A4 menjadi 2 bagian (setengah horizontal)
+                    @elseif($paperSize === 'Half-Folio')
+                        <strong>Ukuran: Setengah Folio (8.5 x 6.5 inch)</strong><br>
+                        📌 Saat Print Dialog:<br>
+                        &nbsp;&nbsp;&nbsp;1️⃣ Scale: <strong>None / 100% / Actual Size</strong><br>
+                        &nbsp;&nbsp;&nbsp;2️⃣ Orientation: <strong>Portrait (Tegak)</strong><br>
+                        &nbsp;&nbsp;&nbsp;3️⃣ Paper: <strong>Legal/Folio</strong><br>
+                        &nbsp;&nbsp;&nbsp;4️⃣ Margins: <strong>None / Minimal</strong><br>
+                        ✂️ Setelah print, potong kertas Folio menjadi 2 bagian (setengah horizontal)
+                    @elseif($paperSize === 'Folio')
+                        <strong>Ukuran: Legal/Folio (8.5 x 13 inch)</strong><br>
+                        📌 Set Paper Size: <strong>Legal</strong> dan Scale: <strong>100%</strong>
+                    @else
+                        <strong>Ukuran: A4 (210 x 297 mm)</strong><br>
+                        � Set Paper Size: <strong>A4</strong> dan Scale: <strong>100%</strong>
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Paper Size Selector (hidden when printing) -->
+    <div class="no-print" style="position: fixed; top: 10px; right: 10px; background: white; padding: 10px; border: 1px solid #ccc; border-radius: 5px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+        @include('components.paper-selector', ['selectedSize' => $paperSize])
+        <div class="mt-2">
+            <small class="text-gray-600">
+                Current: {{ $paperSize }}
+                @if($paperSize === 'Half-A4')
+                    (210mm × 148.5mm)
+                @elseif($paperSize === 'Half-Folio')
+                    (8.5in × 6.5in)
+                @elseif($paperSize === 'A4')
+                    (210mm × 297mm)
+                @else
+                    (8.5in × 13in)
+                @endif
+            </small>
+        </div>
+    </div>
+
     <div class="container">
         <!-- Header -->
         <div class="header">

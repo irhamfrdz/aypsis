@@ -136,6 +136,20 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Kontainer</label>
+                    <input type="number"
+                           name="jumlah_kontainer"
+                           value="{{ old('jumlah_kontainer', $suratJalan->jumlah_kontainer ?? 1) }}"
+                           min="1"
+                           placeholder="Jumlah kontainer"
+                           onchange="updateKontainerNote()"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_kontainer') border-red-500 @enderror">
+                    @error('jumlah_kontainer')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
                     <input type="text"
                            name="supir"
@@ -234,4 +248,31 @@
         </form>
     </div>
 </div>
+
+<script>
+function updateKontainerNote() {
+    const jumlahKontainer = parseInt(document.querySelector('input[name="jumlah_kontainer"]').value) || 1;
+    const jumlahKontainerInput = document.querySelector('input[name="jumlah_kontainer"]');
+
+    // Hapus note yang ada
+    const existingNote = document.getElementById('kontainer-rule-note-edit');
+    if (existingNote) {
+        existingNote.remove();
+    }
+
+    if (jumlahKontainer === 2) {
+        // Tambahkan keterangan
+        const note = document.createElement('p');
+        note.id = 'kontainer-rule-note-edit';
+        note.className = 'text-xs text-blue-600 mt-1';
+        note.innerHTML = '<strong>Catatan:</strong> Untuk 2 kontainer, akan menggunakan tarif 40ft meskipun size 20ft';
+        jumlahKontainerInput.parentNode.appendChild(note);
+    }
+}
+
+// Check kontainer rules on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateKontainerNote();
+});
+</script>
 @endsection

@@ -268,7 +268,7 @@
 
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*') || Request::routeIs('master-aktivitas.*');
+                    $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -393,14 +393,6 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                     </svg>
                                     Data Transportasi
-                                </a>
-                            @endif
-                            @if($user && $user->can('master-aktivitas-view'))
-                                <a href="{{ route('master-aktivitas.index') }}" class="flex items-center py-1 px-4 rounded-lg text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master-aktivitas.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
-                                    </svg>
-                                    Master Aktivitas
                                 </a>
                             @endif
                         </div>
@@ -533,20 +525,44 @@
 
 {{-- Order Management Section --}}
 @php
-    $isOrderRoute = Request::routeIs('orders.*');
+    $isOrderRoute = Request::routeIs('orders.*') || Request::routeIs('outstanding.*');
     $hasOrderPermissions = $user && ($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete'));
 @endphp
 
 @if($hasOrderPermissions)
 <div class="mt-4 mb-4">
-    <a href="{{ route('orders.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isOrderRoute ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
+    <div class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isOrderRoute ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
         <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isOrderRoute ? 'bg-orange-200' : 'bg-orange-50 group-hover:bg-orange-200' }}">
             <svg class="w-4 h-4 {{ $isOrderRoute ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
         </div>
         <span class="text-xs font-medium menu-text">Order Management</span>
-    </a>
+        <svg class="w-3 h-3 ml-auto transition-transform duration-200 {{ $isOrderRoute ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        </svg>
+    </div>
+    
+    <!-- Order Submenu -->
+    <div class="ml-6 space-y-1 {{ $isOrderRoute ? 'block' : 'hidden' }}">
+        <a href="{{ route('orders.index') }}" class="flex items-center py-2 px-4 rounded-lg text-xs transition-all duration-200 group {{ Request::routeIs('orders.*') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+            <div class="flex items-center justify-center w-6 h-6 rounded-lg mr-3 {{ Request::routeIs('orders.*') ? 'bg-orange-100' : 'bg-gray-100 group-hover:bg-orange-100' }}">
+                <svg class="w-3 h-3 {{ Request::routeIs('orders.*') ? 'text-orange-600' : 'text-gray-500 group-hover:text-orange-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                </svg>
+            </div>
+            <span class="menu-text">All Orders</span>
+        </a>
+        
+        <a href="{{ route('outstanding.index') }}" class="flex items-center py-2 px-4 rounded-lg text-xs transition-all duration-200 group {{ Request::routeIs('outstanding.*') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
+            <div class="flex items-center justify-center w-6 h-6 rounded-lg mr-3 {{ Request::routeIs('outstanding.*') ? 'bg-orange-100' : 'bg-gray-100 group-hover:bg-orange-100' }}">
+                <svg class="w-3 h-3 {{ Request::routeIs('outstanding.*') ? 'text-orange-600' : 'text-gray-500 group-hover:text-orange-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
+                </svg>
+            </div>
+            <span class="menu-text">Outstanding Orders</span>
+        </a>
+    </div>
 </div>
 @endif
 

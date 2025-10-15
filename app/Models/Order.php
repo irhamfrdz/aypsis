@@ -16,6 +16,12 @@ class Order extends Model
         'tujuan_ambil_id',
         'size_kontainer',
         'unit_kontainer',
+        'units',
+        'sisa',
+        'outstanding_status',
+        'completion_percentage',
+        'completed_at',
+        'processing_history',
         'tipe_kontainer',
         'tanggal_pickup',
         'exclude_ftz03',
@@ -34,12 +40,17 @@ class Order extends Model
     protected $casts = [
         'tanggal_order' => 'date',
         'tanggal_pickup' => 'date',
+        'completed_at' => 'datetime',
+        'processing_history' => 'array',
         'exclude_ftz03' => 'boolean',
         'include_ftz03' => 'boolean',
         'exclude_sppb' => 'boolean',
         'include_sppb' => 'boolean',
         'exclude_buruh_bongkar' => 'boolean',
         'include_buruh_bongkar' => 'boolean',
+        'units' => 'integer',
+        'sisa' => 'integer',
+        'completion_percentage' => 'decimal:2',
     ];
 
     // Relationships
@@ -61,5 +72,97 @@ class Order extends Model
     public function tujuanAmbil(): BelongsTo
     {
         return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_ambil_id');
+    }
+
+    // Outstanding Scopes
+    public function scopeOutstanding($query)
+    {
+        return $query->where('sisa', '>', 0)->where('outstanding_status', '!=', 'completed');
+    }
+
+    public function scopeCompleted($query)
+    {
+        return $query->where('outstanding_status', 'completed')->where('sisa', 0);
+    }
+
+    public function scopePartial($query)
+    {
+        return $query->where('outstanding_status', 'partial')->where('sisa', '>', 0);
+    }
+
+    public function scopePending($query)
+    {
+        return $query->where('outstanding_status', 'pending')->where('sisa', '=', function($query) {
+            $query->selectRaw('units');
+        });
+    }
+
+    // Outstanding Helper Methods
+    public function isOutstanding()
+    {
+        return $this->sisa > 0 && $this->outstanding_status !== 'completed';
+    }
+
+    public function isCompleted()
+    {
+        return $this->sisa == 0 && $this->outstanding_status === 'completed';
+    }
+
+    public function getProcessedUnits()
+    {
+        return $this->units - $this->sisa;
+    }
+
+    public function updateOutstandingStatus()
+    {
+        if ($this->sisa <= 0) {
+            $this->outstanding_status = 'completed';
+            $this->completion_percentage = 100.00;
+            $this->completed_at = now();
+        } elseif ($this->sisa < $this->units) {
+            $this->outstanding_status = 'partial';
+            $this->completion_percentage = round((($this->units - $this->sisa) / $this->units) * 100, 2);
+        } else {
+            $this->outstanding_status = 'pending';
+            $this->completion_percentage = 0.00;
+        }
+        
+        return $this;
+    }
+
+    public function processUnits($processed_count, $note = null)
+    {
+        if ($processed_count > $this->sisa) {
+            throw new \InvalidArgumentException('Processed units cannot exceed remaining units');
+        }
+
+        $this->sisa -= $processed_count;
+        
+        // Add to processing history
+        $history = $this->processing_history ?? [];
+        $history[] = [
+            'processed_count' => $processed_count,
+            'remaining' => $this->sisa,
+            'note' => $note,
+            'processed_at' => now()->toISOString(),
+            'processed_by' => auth()->user()?->id
+        ];
+        $this->processing_history = $history;
+
+        $this->updateOutstandingStatus();
+        $this->save();
+
+        return $this;
+    }
+
+    public function getOutstandingStatusBadgeAttribute()
+    {
+        $badges = [
+            'pending' => 'bg-yellow-100 text-yellow-800',
+            'partial' => 'bg-blue-100 text-blue-800',
+            'completed' => 'bg-green-100 text-green-800'
+        ];
+
+        return $badges[$this->outstanding_status] ?? 'bg-gray-100 text-gray-800';
     }
 }

@@ -258,7 +258,7 @@ class PranotaTagihanKontainerSewaController extends Controller
 
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-            
+
             // Check if request is AJAX
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -267,11 +267,11 @@ class PranotaTagihanKontainerSewaController extends Controller
                     'errors' => $e->errors()
                 ], 422);
             }
-            
+
             return redirect()->back()->withErrors($e->errors())->withInput();
         } catch (\Exception $e) {
             DB::rollback();
-            
+
             // Check if request is AJAX
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
@@ -279,7 +279,7 @@ class PranotaTagihanKontainerSewaController extends Controller
                     'message' => 'Gagal membuat pranota kontainer sewa bulk: ' . $e->getMessage()
                 ], 422);
             }
-            
+
             return redirect()->back()->with('error', 'Gagal membuat pranota kontainer sewa bulk: ' . $e->getMessage());
         }
     }

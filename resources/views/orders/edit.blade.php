@@ -272,6 +272,20 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                         </div>
 
+                        <!-- Units for Outstanding -->
+                        <div>
+                            <label for="units" class="block text-sm font-medium text-gray-700 mb-2">
+                                Total Units <span class="text-red-500">*</span>
+                            </label>
+                            <input type="number" name="units" id="units" value="{{ old('units', $order->units) }}" required min="1"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('units') border-red-500 @enderror"
+                                   placeholder="Total units for tracking">
+                            <small class="text-gray-500">Current remaining: {{ $order->sisa ?? $order->units ?? 0 }} units</small>
+                            @error('units')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <div>
                             <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer <span class="text-red-500">*</span></label>
                             <select name="tipe_kontainer" id="tipe_kontainer" required class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">

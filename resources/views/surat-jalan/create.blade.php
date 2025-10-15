@@ -233,6 +233,20 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Kontainer</label>
+                    <input type="number"
+                           name="jumlah_kontainer"
+                           value="{{ old('jumlah_kontainer', 1) }}"
+                           min="1"
+                           placeholder="Jumlah kontainer"
+                           onchange="updateKontainerRules()"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_kontainer') border-red-500 @enderror">
+                    @error('jumlah_kontainer')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Seal</label>
                     <input type="text"
                            name="no_seal"
@@ -535,10 +549,17 @@ function updateUangJalan() {
     const tujuanPengambilan = document.querySelector('input[name="tujuan_pengambilan"]').value;
     const sizeSelect = document.querySelector('select[name="size"]');
     const uangJalanInput = document.getElementById('uang-jalan-input');
-    
+    const jumlahKontainer = parseInt(document.querySelector('input[name="jumlah_kontainer"]').value) || 1;
+
     if (tujuanPengambilan) {
-        const size = sizeSelect ? sizeSelect.value : '';
-        
+        let size = sizeSelect ? sizeSelect.value : '';
+
+        // Jika jumlah kontainer = 2, gunakan perhitungan untuk 40ft meskipun size 20ft
+        let calculationSize = size;
+        if (jumlahKontainer === 2 && size === '20') {
+            calculationSize = '40';
+        }
+
         // Fetch uang jalan based on tujuan pengambilan and container size
         fetch('/api/get-uang-jalan-by-tujuan', {
             method: 'POST',
@@ -548,7 +569,7 @@ function updateUangJalan() {
             },
             body: JSON.stringify({
                 tujuan: tujuanPengambilan,
-                size: size
+                size: calculationSize
             })
         })
         .then(response => response.json())
@@ -568,10 +589,55 @@ function updateUangJalan() {
     }
 }
 
+function updateKontainerRules() {
+    const jumlahKontainer = parseInt(document.querySelector('input[name="jumlah_kontainer"]').value) || 1;
+    const sizeSelect = document.querySelector('select[name="size"]');
+
+    if (jumlahKontainer === 2) {
+        // Jika jumlah kontainer = 2, set size ke 20ft dan disable
+        sizeSelect.value = '20';
+        sizeSelect.disabled = true;
+        sizeSelect.style.backgroundColor = '#F3F4F6';
+        sizeSelect.style.color = '#6B7280';
+
+        // Update uang jalan
+        updateUangJalan();
+
+        // Tambahkan keterangan
+        let existingNote = document.getElementById('kontainer-rule-note');
+        if (!existingNote) {
+            const note = document.createElement('p');
+            note.id = 'kontainer-rule-note';
+            note.className = 'text-xs text-blue-600 mt-1';
+            note.innerHTML = '<strong>Catatan:</strong> Untuk 2 kontainer, size otomatis 20ft dengan tarif 40ft';
+            sizeSelect.parentNode.appendChild(note);
+        }
+    } else {
+        // Jika bukan 2 kontainer, enable kembali size select
+        sizeSelect.disabled = false;
+        sizeSelect.style.backgroundColor = '';
+        sizeSelect.style.color = '';
+
+        // Hapus keterangan jika ada
+        const existingNote = document.getElementById('kontainer-rule-note');
+        if (existingNote) {
+            existingNote.remove();
+        }
+
+        // Update uang jalan
+        updateUangJalan();
+    }
+}
+
 // Auto-populate uang jalan when page loads if order is selected
 @if($selectedOrder && $selectedOrder->tujuan_ambil)
 document.addEventListener('DOMContentLoaded', function() {
     updateUangJalan();
+    updateKontainerRules(); // Check kontainer rules on load
+});
+@else
+document.addEventListener('DOMContentLoaded', function() {
+    updateKontainerRules(); // Check kontainer rules on load
 });
 @endif
 </script>

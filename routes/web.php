@@ -47,7 +47,7 @@ use App\Http\Controllers\JenisBarangController;
 use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
-use App\Http\Controllers\AktivitasController;
+use App\Http\Controllers\OutstandingController;
 
 /*
 |--------------------------------------------------------------------------
@@ -851,41 +851,6 @@ Route::middleware([
     Route::post('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'import'])
          ->name('tujuan-kirim.import.process')
          ->middleware('can:master-tujuan-kirim-create');
-
-    // 🎯 Aktivitas Management with permissions
-    Route::resource('master/aktivitas', AktivitasController::class)
-         ->names([
-             'index' => 'master-aktivitas.index',
-             'create' => 'master-aktivitas.create',
-             'store' => 'master-aktivitas.store',
-             'show' => 'master-aktivitas.show',
-             'edit' => 'master-aktivitas.edit',
-             'update' => 'master-aktivitas.update',
-             'destroy' => 'master-aktivitas.destroy'
-         ])
-         ->parameters(['aktivitas' => 'aktivitas'])
-         ->middleware([
-             'index' => 'can:master-aktivitas-view',
-             'create' => 'can:master-aktivitas-create',
-             'store' => 'can:master-aktivitas-create',
-             'show' => 'can:master-aktivitas-view',
-             'edit' => 'can:master-aktivitas-update',
-             'update' => 'can:master-aktivitas-update',
-             'destroy' => 'can:master-aktivitas-delete'
-         ]);
-
-    // 📥 Aktivitas - Download Template & Import CSV
-    Route::get('master/aktivitas-download-template', [AktivitasController::class, 'downloadTemplate'])
-         ->name('master-aktivitas.download-template')
-         ->middleware('can:master-aktivitas-view');
-
-    Route::get('master/aktivitas-import', [AktivitasController::class, 'showImportForm'])
-         ->name('master-aktivitas.import-form')
-         ->middleware('can:master-aktivitas-create');
-
-    Route::post('master/aktivitas-import', [AktivitasController::class, 'import'])
-         ->name('master-aktivitas.import')
-         ->middleware('can:master-aktivitas-create');
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -909,6 +874,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/orders/generate-number', [OrderController::class, 'generateOrderNumber'])
          ->name('orders.generate-number')
          ->middleware('can:order-create');
+
+    // 📊 Outstanding Orders Management with permissions
+    Route::prefix('outstanding')->name('outstanding.')->middleware('can:order-view')->group(function () {
+        Route::get('/', [OutstandingController::class, 'index'])->name('index');
+        Route::get('/stats', [OutstandingController::class, 'getStats'])->name('stats');
+        Route::get('/status/{status}', [OutstandingController::class, 'byStatus'])->name('by-status');
+        Route::get('/{order}/details', [OutstandingController::class, 'getOrderDetails'])->name('details');
+        Route::post('/{order}/process', [OutstandingController::class, 'processUnits'])
+             ->name('process')
+             ->middleware('can:order-update');
+        Route::get('/export', [OutstandingController::class, 'export'])->name('export');
+    });
 
     // ═══════════════════════════════════════════════════════════════════════
     // 📋 SURAT JALAN MANAGEMENT

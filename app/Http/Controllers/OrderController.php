@@ -12,6 +12,7 @@ use App\Models\TujuanKegiatanUtama;
 use App\Models\StockKontainer;
 use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class OrderController extends Controller
 {
@@ -79,6 +80,7 @@ class OrderController extends Controller
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'size_kontainer' => 'required|string|max:255',
             'unit_kontainer' => 'required|integer|min:1',
+            'units' => 'required|integer|min:1',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
             'tanggal_pickup' => 'nullable|date',
             'no_tiket_do' => 'nullable|string|max:255',
@@ -112,6 +114,12 @@ class OrderController extends Controller
 
         // Remove the radio button fields from data
         unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id'], $data['tujuan_ambil_id']);
+
+        // Initialize outstanding tracking fields
+        $data['sisa'] = $data['units']; // Initially, all units are remaining
+        $data['outstanding_status'] = 'pending';
+        $data['completion_percentage'] = 0.00;
+        $data['processing_history'] = json_encode([]);
 
         // Update nomor terakhir for ODS if nomor_order follows ODS format
         if (strpos($request->nomor_order, 'ODS') === 0) {
@@ -237,6 +245,7 @@ class OrderController extends Controller
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'size_kontainer' => 'required|string|max:255',
             'unit_kontainer' => 'required|integer|min:1',
+            'units' => 'required|integer|min:1',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
             'tanggal_pickup' => 'nullable|date',
             'no_tiket_do' => 'nullable|string|max:255',
@@ -270,6 +279,43 @@ class OrderController extends Controller
 
         // Remove the radio button fields from data
         unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id'], $data['tujuan_ambil_id']);
+
+        // Handle changes to units field for outstanding tracking
+        if ($request->units != $order->units) {
+            $oldUnits = $order->units ?? 0;
+            $newUnits = $request->units;
+            $processedUnits = $oldUnits - ($order->sisa ?? 0);
+            
+            // Update sisa based on new units and already processed units
+            $data['sisa'] = max(0, $newUnits - $processedUnits);
+            
+            // Recalculate completion percentage
+            if ($newUnits > 0) {
+                $data['completion_percentage'] = min(100, ($processedUnits / $newUnits) * 100);
+                
+                // Update outstanding status
+                if ($processedUnits >= $newUnits) {
+                    $data['outstanding_status'] = 'completed';
+                    $data['completed_at'] = now();
+                } elseif ($processedUnits > 0) {
+                    $data['outstanding_status'] = 'partial';
+                } else {
+                    $data['outstanding_status'] = 'pending';
+                }
+            }
+            
+            // Log the change in processing history
+            $history = json_decode($order->processing_history ?? '[]', true);
+            $history[] = [
+                'action' => 'units_updated',
+                'old_units' => $oldUnits,
+                'new_units' => $newUnits,
+                'user_id' => Auth::id(),
+                'timestamp' => now()->toDateTimeString(),
+                'notes' => 'Units updated via order edit'
+            ];
+            $data['processing_history'] = json_encode($history);
+        }
 
         $order->update($data);
 

@@ -32,6 +32,7 @@ class SuratJalan extends Model
         'no_kontainer',
         'no_seal',
         'size',
+        'jumlah_kontainer',
         'karton',
         'plastik',
         'terpal',

@@ -84,6 +84,15 @@ class DaftarTagihanKontainerSewa extends Model
     }
 
     /**
+     * Get the master pricelist for this container
+     */
+    public function masterPricelist()
+    {
+        return $this->hasOne(MasterPricelistSewaKontainer::class, 'ukuran_kontainer', 'size')
+                    ->where('vendor', $this->vendor);
+    }
+
+    /**
      * Get the actual pranota record (checks both tables)
      * Returns either Pranota or PranotaTagihanKontainerSewa
      */

@@ -153,6 +153,7 @@ class SuratJalanController extends Controller
             'tipe_kontainer' => 'nullable|string|max:50',
             'no_seal' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
+            'jumlah_kontainer' => 'nullable|integer|min:1',
             'karton' => 'nullable|in:pakai,tidak_pakai',
             'plastik' => 'nullable|in:pakai,tidak_pakai',
             'terpal' => 'nullable|in:pakai,tidak_pakai',
@@ -247,6 +248,7 @@ class SuratJalanController extends Controller
             'tipe_kontainer' => 'nullable|string|max:50',
             'no_seal' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
+            'jumlah_kontainer' => 'nullable|integer|min:1',
             'karton' => 'nullable|in:pakai,tidak_pakai',
             'plastik' => 'nullable|in:pakai,tidak_pakai',
             'terpal' => 'nullable|in:pakai,tidak_pakai',
@@ -348,7 +350,7 @@ class SuratJalanController extends Controller
         try {
             $tujuan = $request->tujuan;
             $size = $request->size;
-            
+
             // Find tujuan kegiatan utama by 'dari' or 'ke' field
             $tujuanKegiatan = TujuanKegiatanUtama::where(function($query) use ($tujuan) {
                                                     $query->where('dari', 'like', '%' . $tujuan . '%')
@@ -358,7 +360,7 @@ class SuratJalanController extends Controller
 
             if ($tujuanKegiatan) {
                 $uangJalan = 0;
-                
+
                 // Determine uang jalan based on container size
                 if ($size == '20') {
                     $uangJalan = $tujuanKegiatan->uang_jalan_20ft ?? 0;
@@ -384,7 +386,7 @@ class SuratJalanController extends Controller
 
         } catch (\Exception $e) {
             Log::error('Error getting uang jalan: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'uang_jalan' => '0',
