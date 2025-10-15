@@ -49,6 +49,7 @@
                         <option value="">-- Pilih Type --</option>
                         <option value="kegiatan memo supir" {{ old('type') == 'kegiatan memo supir' ? 'selected' : '' }}>Kegiatan Memo Supir</option>
                         <option value="uang muka" {{ old('type') == 'uang muka' ? 'selected' : '' }}>Uang Muka</option>
+                        <option value="kegiatan surat jalan" {{ old('type') == 'kegiatan surat jalan' ? 'selected' : '' }}>Kegiatan Surat Jalan</option>
                     </select>
                     @error('type')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
