@@ -80,7 +80,6 @@ class OrderController extends Controller
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'size_kontainer' => 'required|string|max:255',
             'unit_kontainer' => 'required|integer|min:1',
-            'units' => 'required|integer|min:1',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
             'tanggal_pickup' => 'nullable|date',
             'no_tiket_do' => 'nullable|string|max:255',
@@ -116,7 +115,9 @@ class OrderController extends Controller
         unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id'], $data['tujuan_ambil_id']);
 
         // Initialize outstanding tracking fields
-        $data['sisa'] = $data['units']; // Initially, all units are remaining
+        // Use unit_kontainer for outstanding tracking instead of units input
+        $data['units'] = $data['unit_kontainer']; // For outstanding tracking, use actual container units
+        $data['sisa'] = $data['unit_kontainer']; // Initially, all container units are remaining
         $data['outstanding_status'] = 'pending';
         $data['completion_percentage'] = 0.00;
         $data['processing_history'] = json_encode([]);
@@ -245,7 +246,6 @@ class OrderController extends Controller
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
             'size_kontainer' => 'required|string|max:255',
             'unit_kontainer' => 'required|integer|min:1',
-            'units' => 'required|integer|min:1',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
             'tanggal_pickup' => 'nullable|date',
             'no_tiket_do' => 'nullable|string|max:255',
@@ -280,10 +280,13 @@ class OrderController extends Controller
         // Remove the radio button fields from data
         unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id'], $data['tujuan_ambil_id']);
 
-        // Handle changes to units field for outstanding tracking
-        if ($request->units != $order->units) {
+        // Handle changes to unit_kontainer field for outstanding tracking
+        // Always sync units with unit_kontainer for consistency
+        $data['units'] = $request->unit_kontainer;
+        
+        if ($request->unit_kontainer != $order->units) {
             $oldUnits = $order->units ?? 0;
-            $newUnits = $request->units;
+            $newUnits = $request->unit_kontainer;
             $processedUnits = $oldUnits - ($order->sisa ?? 0);
 
             // Update sisa based on new units and already processed units
@@ -312,7 +315,7 @@ class OrderController extends Controller
                 'new_units' => $newUnits,
                 'user_id' => Auth::id(),
                 'timestamp' => now()->toDateTimeString(),
-                'notes' => 'Units updated via order edit'
+                'notes' => 'Units updated via order edit (synced with unit_kontainer)'
             ];
             $data['processing_history'] = json_encode($history);
         }
