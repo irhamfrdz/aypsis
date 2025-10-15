@@ -129,7 +129,13 @@ class SuratJalanController extends Controller
                          ->orderBy('nama_lengkap')
                          ->get(['id', 'nama_lengkap']);
 
-        return view('surat-jalan.create', compact('selectedOrder', 'supirs', 'keneks'));
+        // Get kegiatan surat jalan from master kegiatan
+        $kegiatanSuratJalan = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                                        ->where('status', 'aktif')
+                                                        ->orderBy('nama_kegiatan')
+                                                        ->get(['id', 'nama_kegiatan']);
+
+        return view('surat-jalan.create', compact('selectedOrder', 'supirs', 'keneks', 'kegiatanSuratJalan'));
     }
 
     /**
@@ -141,6 +147,7 @@ class SuratJalanController extends Controller
             'order_id' => 'nullable|exists:orders,id',
             'tanggal_surat_jalan' => 'required|date',
             'no_surat_jalan' => 'required|string|max:255|unique:surat_jalans',
+            'kegiatan' => 'required|string|max:255',
             'pengirim' => 'nullable|string|max:255',
             'jenis_barang' => 'nullable|string|max:255',
             'tujuan_pengambilan' => 'nullable|string|max:255',
@@ -161,7 +168,6 @@ class SuratJalanController extends Controller
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'tanggal_muat' => 'nullable|date',
             'term' => 'nullable|string|max:255',
-            'aktifitas' => 'nullable|string',
             'rit' => 'nullable|integer|min:0',
             'uang_jalan' => 'nullable|numeric|min:0',
             'no_pemesanan' => 'nullable|string|max:255',

@@ -96,6 +96,26 @@
                     @enderror
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kegiatan <span class="text-red-600">*</span></label>
+                    <select name="kegiatan"
+                            required
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kegiatan') border-red-500 @enderror">
+                        <option value="">Pilih Kegiatan</option>
+                        @if(isset($kegiatanSuratJalan))
+                            @foreach($kegiatanSuratJalan as $kegiatan)
+                                <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                    {{ $kegiatan->nama_kegiatan }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                    @error('kegiatan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">Data kegiatan diambil dari master kegiatan dengan type "kegiatan surat jalan"</p>
+                </div>
+
                 <!-- Pengirim Information -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Pengirim</h3>
@@ -458,17 +478,6 @@
                     @if($selectedOrder)
                         <p class="text-xs text-gray-500 mt-1">Nomor pemesanan diambil dari nomor order yang dipilih</p>
                     @endif
-                </div>
-
-                <div class="md:col-span-2">
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
-                    <textarea name="aktifitas"
-                              rows="3"
-                              placeholder="Deskripsi aktifitas atau catatan tambahan"
-                              class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('aktifitas') border-red-500 @enderror">{{ old('aktifitas') }}</textarea>
-                    @error('aktifitas')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
                 </div>
 
                 <div>
