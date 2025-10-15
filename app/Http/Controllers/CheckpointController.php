@@ -373,26 +373,42 @@ class CheckpointController extends Controller
                 $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
             }
 
-            // Update surat jalan dengan nomor kontainer
+            // Update surat jalan dengan nomor kontainer dan status
             $nomorKontainers = implode(', ', $request->nomor_kontainer);
 
             $suratJalan->update([
                 'no_kontainer' => $nomorKontainers,
-                'status' => 'checkpoint_completed',
+                'no_seal' => $request->no_seal,
+                'status' => 'sudah_checkpoint', // Status berubah menjadi "sudah checkpoint"
                 'gambar_checkpoint' => $imagePath,
             ]);
 
-            // Log checkpoint untuk tracking
-            Log::info('Surat jalan checkpoint completed by supir:', [
+            // Buat approval records untuk tugas-1 dan tugas-2
+            \App\Models\SuratJalanApproval::create([
                 'surat_jalan_id' => $suratJalan->id,
-                'supir' => $user->karyawan->nama,
+                'approval_level' => 'tugas-1',
+                'status' => 'pending',
+            ]);
+
+            \App\Models\SuratJalanApproval::create([
+                'surat_jalan_id' => $suratJalan->id,
+                'approval_level' => 'tugas-2',
+                'status' => 'pending',
+            ]);
+
+            // Log checkpoint untuk tracking
+            Log::info('Surat jalan checkpoint completed by supir - sent to approval:', [
+                'surat_jalan_id' => $suratJalan->id,
+                'supir' => $user->karyawan->nama ?? $user->name,
                 'nomor_kontainer' => $nomorKontainers,
+                'no_seal' => $request->no_seal,
                 'catatan' => $request->catatan,
                 'surat_jalan_vendor' => $request->surat_jalan_vendor,
+                'approval_levels_created' => ['tugas-1', 'tugas-2']
             ]);
 
             DB::commit();
-            return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan berhasil disimpan!');
+            return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan berhasil disimpan dan telah dikirim ke approval tugas 1 dan 2!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error storing surat jalan checkpoint: ' . $e->getMessage());

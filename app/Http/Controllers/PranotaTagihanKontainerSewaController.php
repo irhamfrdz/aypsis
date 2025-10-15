@@ -179,7 +179,7 @@ class PranotaTagihanKontainerSewaController extends Controller
     {
         // Check if this is "masukan ke pranota" action
         $isMasukanKePranota = $request->input('action') === 'masukan_ke_pranota';
-        
+
         // Base validation rules
         $validationRules = [
             'selected_ids' => 'required|array|min:1',
@@ -187,11 +187,11 @@ class PranotaTagihanKontainerSewaController extends Controller
             'tanggal_pranota' => 'required|date',
             'keterangan' => 'nullable|string|max:1000',
         ];
-        
+
         $validationMessages = [
             'tanggal_pranota.required' => 'Tanggal Pranota harus diisi'
         ];
-        
+
         // Only require invoice vendor fields for "buat pranota baru", not for "masukan ke pranota"
         if (!$isMasukanKePranota) {
             $validationRules['no_invoice_vendor'] = 'required|string|max:255';
@@ -199,7 +199,7 @@ class PranotaTagihanKontainerSewaController extends Controller
             $validationMessages['no_invoice_vendor.required'] = 'Invoice Vendor harus diisi';
             $validationMessages['tgl_invoice_vendor.required'] = 'Tanggal Invoice Vendor harus diisi';
         }
-        
+
         $request->validate($validationRules, $validationMessages);
 
         try {

@@ -1143,6 +1143,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
           Route::get('/riwayat', [\App\Http\Controllers\PenyelesaianController::class, 'riwayat'])->name('riwayat');
                // Proses masal permohonan (define before parameterized routes to avoid route-model binding conflicts)
                Route::post('/mass-process', [\App\Http\Controllers\PenyelesaianController::class, 'massProcess'])->name('mass_process');
+               
+               // Approval Surat Jalan routes
+               Route::prefix('surat-jalan')->name('surat-jalan.')->group(function () {
+                   Route::get('/', [\App\Http\Controllers\SuratJalanApprovalController::class, 'index'])->name('index');
+                   Route::get('/{suratJalan}', [\App\Http\Controllers\SuratJalanApprovalController::class, 'show'])->name('show');
+                   Route::post('/{suratJalan}/approve', [\App\Http\Controllers\SuratJalanApprovalController::class, 'approve'])->name('approve');
+                   Route::post('/{suratJalan}/reject', [\App\Http\Controllers\SuratJalanApprovalController::class, 'reject'])->name('reject');
+               });
+               
                // Menampilkan form approval untuk permohonan tertentu
                Route::get('/{permohonan}', [\App\Http\Controllers\PenyelesaianController::class, 'create'])->name('create');
                // Menyimpan data dari form approval

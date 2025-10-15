@@ -283,18 +283,6 @@
                     @enderror
                 </div>
 
-                <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Seal</label>
-                    <input type="text"
-                           name="no_seal"
-                           value="{{ old('no_seal') }}"
-                           placeholder="Nomor seal kontainer"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror">
-                    @error('no_seal')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
                 <!-- Packaging Information -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Kemasan</h3>

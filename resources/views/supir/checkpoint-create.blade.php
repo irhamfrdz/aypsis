@@ -157,6 +157,10 @@
 
                             {{-- Common fields --}}
                             <div>
+                                <label for="no_seal_permohonan" class="block text-sm font-medium text-gray-700">No. Seal</label>
+                                <input type="text" id="no_seal_permohonan" name="no_seal" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" placeholder="Masukkan nomor seal kontainer">
+                            </div>
+                            <div>
                                 <label for="surat_jalan_vendor" class="block text-sm font-medium text-gray-700">Surat Jalan Vendor</label>
                                 <input type="text" id="surat_jalan_vendor" name="surat_jalan_vendor" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" placeholder="Masukkan nomor surat jalan vendor">
                             </div>
@@ -246,6 +250,10 @@
 
                             {{-- Common fields --}}
                             <div>
+                                <label for="no_seal_surat_jalan" class="block text-sm font-medium text-gray-700">No. Seal</label>
+                                <input type="text" id="no_seal_surat_jalan" name="no_seal" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" placeholder="Masukkan nomor seal kontainer">
+                            </div>
+                            <div>
                                 <label for="surat_jalan_vendor" class="block text-sm font-medium text-gray-700">Surat Jalan Vendor</label>
                                 <input type="text" id="surat_jalan_vendor" name="surat_jalan_vendor" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" placeholder="Masukkan nomor surat jalan vendor">
                             </div>
@@ -330,9 +338,9 @@
                             <p class="text-sm text-gray-500">Belum ada riwayat checkpoint.</p>
                         @endforelse
                     @elseif(isset($suratJalan))
-                        @if($suratJalan->status === 'checkpoint_completed' && $suratJalan->no_kontainer)
+                        @if(in_array($suratJalan->status, ['checkpoint_completed', 'sudah_checkpoint']) && $suratJalan->no_kontainer)
                             <div class="border-l-4 pl-4 border-indigo-500">
-                                <p class="font-semibold text-gray-800">Checkpoint Selesai</p>
+                                <p class="font-semibold text-gray-800">Checkpoint Selesai - Sedang Menunggu Approval</p>
                                 <p class="text-sm text-gray-600 mt-1">Nomor Kontainer: {{ $suratJalan->no_kontainer }}</p>
                                 <p class="text-xs text-gray-500 mt-1">{{ $suratJalan->updated_at->format('d M Y, H:i') }}</p>
                                 @if($suratJalan->gambar_checkpoint)

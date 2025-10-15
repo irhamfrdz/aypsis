@@ -926,6 +926,16 @@
                         Approval Tugas II
                     </a>
                 @endif
+
+                {{-- Approval Surat Jalan --}}
+                @if(Route::has('approval.surat-jalan.index'))
+                    <a href="{{ route('approval.surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval.surat-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Approval Surat Jalan
+                    </a>
+                @endif
             </div>
         </div>
         @endif
