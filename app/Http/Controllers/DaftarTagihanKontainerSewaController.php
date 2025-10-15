@@ -1567,14 +1567,35 @@ class DaftarTagihanKontainerSewaController extends Controller
             // Determine tarif_nominal (tarif per hari numerik) - CHECK MASTER PRICELIST FIRST
             $tarifNominal = 0;
 
-            // First priority: Check master pricelist
-            $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
-                ->where('vendor', $vendor)
-                ->first();
+            // FIXED: Parse tarif type from CSV first to determine which pricelist to use
+            $csvTarifType = null;
+            if (in_array(strtolower($tarifText), ['bulanan', 'monthly'])) {
+                $csvTarifType = 'bulanan';
+            } else if (in_array(strtolower($tarifText), ['harian', 'daily'])) {
+                $csvTarifType = 'harian';
+            }
+
+            // First priority: Check master pricelist - prioritize matching tarif type from CSV
+            $masterPricelist = null;
+            
+            if ($csvTarifType) {
+                // Try to find pricelist that matches CSV tarif type
+                $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
+                    ->where('vendor', $vendor)
+                    ->where('tarif', $csvTarifType)
+                    ->first();
+            }
+            
+            // If no matching tarif type found, get any pricelist for this vendor/size
+            if (!$masterPricelist) {
+                $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
+                    ->where('vendor', $vendor)
+                    ->first();
+            }
 
             if ($masterPricelist) {
-                // Check if this is monthly or daily rate
-                $tarifType = strtolower($masterPricelist->tarif);
+                // Use tarif type from CSV if specified, otherwise from master pricelist
+                $tarifType = $csvTarifType ?: strtolower($masterPricelist->tarif);
 
                 if ($tarifType === 'bulanan') {
                     // For monthly rate, store the monthly amount and mark it
@@ -1593,13 +1614,14 @@ class DaftarTagihanKontainerSewaController extends Controller
                     $tarifNominal = ($size == '20') ? 20000 : 30000;
                 }
                 $isBulanan = false; // Fallback is always daily rate
+                $tarifType = 'harian'; // Set explicit tarif type for fallback
             }
 
             // If tarif in CSV is a number, use that as tarif_nominal
             if (is_numeric($tarifText)) {
                 $tarifNominal = $this->cleanNumber($tarifText);
                 $tarifText = 'Custom'; // Mark as custom tarif
-            } else if (!in_array($tarifType, ['bulanan', 'harian', 'monthly', 'daily', ''])) {
+            } else if (!in_array($tarifType ?? '', ['bulanan', 'harian']) && !in_array(strtolower($tarifText), ['bulanan', 'harian', 'monthly', 'daily', ''])) {
                 // Try to parse as number if not empty and not bulanan/harian
                 $numericValue = $this->cleanNumber($tarifText);
                 if ($numericValue > 0) {
@@ -1608,10 +1630,10 @@ class DaftarTagihanKontainerSewaController extends Controller
                 }
             }
 
-            // Normalize tarif text
-            if (in_array($tarifType, ['bulanan', 'monthly'])) {
+            // Normalize tarif text using the determined tarif type
+            if (($tarifType ?? '') === 'bulanan' || in_array(strtolower($tarifText), ['bulanan', 'monthly'])) {
                 $tarifText = 'Bulanan';
-            } else if (in_array($tarifType, ['harian', 'daily'])) {
+            } else if (($tarifType ?? '') === 'harian' || in_array(strtolower($tarifText), ['harian', 'daily'])) {
                 $tarifText = 'Harian';
             }
 
@@ -1661,9 +1683,8 @@ class DaftarTagihanKontainerSewaController extends Controller
             $cleaned['periode'] = $startDate->diffInDays($endDate) + 1;
         }
 
-        // Format masa: Tampilkan range tanggal (tanggal awal - tanggal akhir minus 1 hari)
-        $endDateMinus1 = $endDate->copy()->subDay();
-        $cleaned['masa'] = $startDate->format('j M Y') . ' - ' . $endDateMinus1->format('j M Y');
+        // Format masa: Tampilkan range tanggal (tanggal awal - tanggal akhir)
+        $cleaned['masa'] = $startDate->format('j M Y') . ' - ' . $endDate->format('j M Y');
 
         // Remove empty group
         if (empty($cleaned['group']) || $cleaned['group'] === '-') {
