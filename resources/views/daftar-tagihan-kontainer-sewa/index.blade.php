@@ -3964,6 +3964,8 @@ window.closeBulkGroupInfoModal = function() {
                                   placeholder="Keterangan tambahan untuk pranota ini..."></textarea>
                     </div>
 
+
+
                     <!-- Summary -->
                     <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
                         <h4 class="font-medium mb-2">Ringkasan</h4>

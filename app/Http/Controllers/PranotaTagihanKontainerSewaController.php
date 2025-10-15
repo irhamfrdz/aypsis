@@ -177,18 +177,30 @@ class PranotaTagihanKontainerSewaController extends Controller
      */
     public function bulkCreateFromTagihanKontainerSewa(Request $request)
     {
-        $request->validate([
+        // Check if this is "masukan ke pranota" action
+        $isMasukanKePranota = $request->input('action') === 'masukan_ke_pranota';
+        
+        // Base validation rules
+        $validationRules = [
             'selected_ids' => 'required|array|min:1',
             'selected_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id',
             'tanggal_pranota' => 'required|date',
             'keterangan' => 'nullable|string|max:1000',
-            'no_invoice_vendor' => 'required|string|max:255',
-            'tgl_invoice_vendor' => 'required|date'
-        ], [
-            'no_invoice_vendor.required' => 'Invoice Vendor harus diisi',
-            'tgl_invoice_vendor.required' => 'Tanggal Invoice Vendor harus diisi',
+        ];
+        
+        $validationMessages = [
             'tanggal_pranota.required' => 'Tanggal Pranota harus diisi'
-        ]);
+        ];
+        
+        // Only require invoice vendor fields for "buat pranota baru", not for "masukan ke pranota"
+        if (!$isMasukanKePranota) {
+            $validationRules['no_invoice_vendor'] = 'required|string|max:255';
+            $validationRules['tgl_invoice_vendor'] = 'required|date';
+            $validationMessages['no_invoice_vendor.required'] = 'Invoice Vendor harus diisi';
+            $validationMessages['tgl_invoice_vendor.required'] = 'Tanggal Invoice Vendor harus diisi';
+        }
+        
+        $request->validate($validationRules, $validationMessages);
 
         try {
             DB::beginTransaction();
@@ -215,13 +227,31 @@ class PranotaTagihanKontainerSewaController extends Controller
             $nomorTerakhir->nomor_terakhir = $nextNumber;
             $nomorTerakhir->save();
 
+            // Determine invoice vendor info based on action
+            $invoiceVendorInfo = [];
+            if ($isMasukanKePranota) {
+                // For "masukan ke pranota", use invoice vendor from the first tagihan item
+                // (assuming all items in same group have same vendor info)
+                $firstTagihan = $tagihanItems->first();
+                if ($firstTagihan && $firstTagihan->invoice_vendor && $firstTagihan->tanggal_vendor) {
+                    $invoiceVendorInfo['no_invoice_vendor'] = $firstTagihan->invoice_vendor;
+                    $invoiceVendorInfo['tgl_invoice_vendor'] = $firstTagihan->tanggal_vendor;
+                } else {
+                    throw new \Exception('Data invoice vendor tidak lengkap pada tagihan yang dipilih. Pastikan semua tagihan memiliki nomor dan tanggal invoice vendor.');
+                }
+            } else {
+                // For "buat pranota baru", use form input
+                $invoiceVendorInfo['no_invoice_vendor'] = $request->no_invoice_vendor;
+                $invoiceVendorInfo['tgl_invoice_vendor'] = $request->tgl_invoice_vendor;
+            }
+
             // Create pranota
             $pranota = PranotaTagihanKontainerSewa::create([
                 'no_invoice' => $noInvoice,
                 'total_amount' => $tagihanItems->sum('grand_total'),
                 'keterangan' => $request->keterangan ?: 'Pranota bulk kontainer sewa untuk ' . count($request->selected_ids) . ' tagihan',
-                'no_invoice_vendor' => $request->no_invoice_vendor,
-                'tgl_invoice_vendor' => $request->tgl_invoice_vendor,
+                'no_invoice_vendor' => $invoiceVendorInfo['no_invoice_vendor'],
+                'tgl_invoice_vendor' => $invoiceVendorInfo['tgl_invoice_vendor'],
                 'status' => 'unpaid',
                 'tagihan_kontainer_sewa_ids' => $request->selected_ids,
                 'jumlah_tagihan' => count($request->selected_ids),
