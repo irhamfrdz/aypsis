@@ -24,12 +24,13 @@ class OutstandingController extends Controller
         // Apply filters
         $this->applyFilters($query, $request);
 
-        $outstandingOrders = $query->paginate(15);
+        $orders = $query->paginate(15);
 
-        // Get statistics
-        $stats = $this->getOutstandingStats();
+        // Get filter options
+        $terms = Term::orderBy('nama_status')->get();
+        $pengirims = Pengirim::orderBy('nama_pengirim')->get();
 
-        return view('outstanding.index', compact('outstandingOrders', 'stats'));
+        return view('outstanding.index', compact('orders', 'terms', 'pengirims'));
     }
 
     /**
@@ -73,14 +74,14 @@ class OutstandingController extends Controller
     public function processUnits(Request $request, Order $order): JsonResponse
     {
         $request->validate([
-            'processed_count' => 'required|integer|min:1|max:' . $order->sisa,
-            'note' => 'nullable|string|max:255'
+            'processed_units' => 'required|integer|min:1|max:' . $order->sisa,
+            'notes' => 'nullable|string|max:255'
         ]);
 
         try {
             $order->processUnits(
-                $request->processed_count,
-                $request->note
+                $request->processed_units,
+                $request->notes
             );
 
             return response()->json([
@@ -91,6 +92,7 @@ class OutstandingController extends Controller
                     'sisa' => $order->sisa,
                     'completion_percentage' => $order->completion_percentage,
                     'outstanding_status' => $order->outstanding_status,
+                    'status_badge' => $order->outstanding_status_badge,
                     'is_completed' => $order->isCompleted()
                 ]
             ]);
@@ -231,7 +233,7 @@ class OutstandingController extends Controller
     public function getFilterOptions(): JsonResponse
     {
         return response()->json([
-            'terms' => Term::where('status', 'active')->select('id', 'nama_term')->get(),
+            'terms' => Term::where('status', 'active')->select('id', 'nama_status')->get(),
             'pengirims' => Pengirim::where('status', 'active')->select('id', 'nama_pengirim')->get(),
             'sizes' => Order::outstanding()->distinct()->pluck('size_kontainer')->filter(),
             'outstanding_statuses' => ['pending', 'partial', 'completed']
@@ -251,7 +253,7 @@ class OutstandingController extends Controller
             'completion_percentage' => $order->completion_percentage ?? 0,
             'outstanding_status' => $order->outstanding_status,
             'no_kontainer' => $order->no_kontainer,
-            'term' => $order->term?->nama_term,
+            'term' => $order->term?->nama_status,
             'pengirim' => $order->pengirim?->nama_pengirim
         ]);
     }

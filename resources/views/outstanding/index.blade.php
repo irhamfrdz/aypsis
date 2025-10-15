@@ -3,340 +3,394 @@
 @section('title', 'Outstanding Orders')
 
 @section('content')
-<div class="container-fluid">
-    <div class="d-sm-flex align-items-center justify-content-between mb-4">
-        <h1 class="h3 mb-0 text-gray-800">Outstanding Orders</h1>
-        <div class="btn-group" role="group">
-            <a href="{{ route('outstanding.export', request()->query()) }}" class="btn btn-success btn-sm">
-                <i class="fas fa-download fa-sm text-white-50"></i>
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
+        <h1 class="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Outstanding Orders</h1>
+        <div class="flex space-x-2">
+            <a href="{{ route('outstanding.export', request()->query()) }}" 
+               class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                </svg>
                 Export Excel
             </a>
-            <button class="btn btn-primary btn-sm" id="refreshStats">
-                <i class="fas fa-sync-alt fa-sm text-white-50"></i>
+            <button id="refreshStats" 
+                    class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                </svg>
                 Refresh
             </button>
         </div>
     </div>
 
     <!-- Statistics Cards -->
-    <div class="row mb-4" id="statsContainer">
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-warning shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Pending Orders
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="pendingCount">
-                                <i class="fas fa-spinner fa-spin"></i>
-                            </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8" id="statsContainer">
+        <div class="bg-white rounded-lg shadow border-l-4 border-yellow-500">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="text-xs font-bold text-yellow-600 uppercase tracking-wide mb-1">
+                            Pending Orders
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-clock fa-2x text-gray-300"></i>
+                        <div class="text-2xl font-bold text-gray-900" id="pendingCount">
+                            <svg class="animate-spin h-5 w-5 inline" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </div>
+                    </div>
+                    <div>
+                        <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-info shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Partial Orders
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="partialCount">
-                                <i class="fas fa-spinner fa-spin"></i>
-                            </div>
+        <div class="bg-white rounded-lg shadow border-l-4 border-blue-500">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">
+                            Partial Orders
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-hourglass-half fa-2x text-gray-300"></i>
+                        <div class="text-2xl font-bold text-gray-900" id="partialCount">
+                            <svg class="animate-spin h-5 w-5 inline" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </div>
+                    </div>
+                    <div>
+                        <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-success shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Completed Orders
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="completedCount">
-                                <i class="fas fa-spinner fa-spin"></i>
-                            </div>
+        <div class="bg-white rounded-lg shadow border-l-4 border-green-500">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="text-xs font-bold text-green-600 uppercase tracking-wide mb-1">
+                            Completed Orders
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        <div class="text-2xl font-bold text-gray-900" id="completedCount">
+                            <svg class="animate-spin h-5 w-5 inline" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </div>
+                    </div>
+                    <div>
+                        <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-xl-3 col-md-6 mb-4">
-            <div class="card border-left-primary shadow h-100 py-2">
-                <div class="card-body">
-                    <div class="row no-gutters align-items-center">
-                        <div class="col mr-2">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Outstanding
-                            </div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800" id="outstandingCount">
-                                <i class="fas fa-spinner fa-spin"></i>
-                            </div>
+        <div class="bg-white rounded-lg shadow border-l-4 border-purple-500">
+            <div class="p-6">
+                <div class="flex items-center">
+                    <div class="flex-1">
+                        <div class="text-xs font-bold text-purple-600 uppercase tracking-wide mb-1">
+                            Total Outstanding
                         </div>
-                        <div class="col-auto">
-                            <i class="fas fa-list-alt fa-2x text-gray-300"></i>
+                        <div class="text-2xl font-bold text-gray-900" id="outstandingCount">
+                            <svg class="animate-spin h-5 w-5 inline" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                         </div>
+                    </div>
+                    <div>
+                        <svg class="w-8 h-8 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
+                        </svg>
                     </div>
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Filter Card -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
-            <h6 class="m-0 font-weight-bold text-primary">Filter Outstanding Orders</h6>
-            <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle="collapse" data-target="#filterCollapse">
-                <i class="fas fa-filter"></i> Filters
+    </div>    <!-- Filter Card -->
+    <div class="bg-white shadow-sm rounded-lg mb-8">
+        <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
+            <h3 class="text-lg font-medium text-gray-900">Filter Outstanding Orders</h3>
+            <button class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" 
+                    type="button" id="toggleFilter">
+                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"></path>
+                </svg>
+                Filters
             </button>
         </div>
-        <div class="collapse show" id="filterCollapse">
-            <div class="card-body">
-                <form id="filterForm" method="GET">
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="status">Status</label>
-                                <select name="status" id="status" class="form-control">
-                                    <option value="">All Status</option>
-                                    <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                    <option value="partial" {{ request('status') == 'partial' ? 'selected' : '' }}>Partial</option>
-                                    <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="term_id">Term</label>
-                                <select name="term_id" id="term_id" class="form-control">
-                                    <option value="">All Terms</option>
-                                    @foreach($terms as $term)
-                                        <option value="{{ $term->id }}" {{ request('term_id') == $term->id ? 'selected' : '' }}>
-                                            {{ $term->nama_term }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="pengirim_id">Pengirim</label>
-                                <select name="pengirim_id" id="pengirim_id" class="form-control">
-                                    <option value="">All Pengirim</option>
-                                    @foreach($pengirims as $pengirim)
-                                        <option value="{{ $pengirim->id }}" {{ request('pengirim_id') == $pengirim->id ? 'selected' : '' }}>
-                                            {{ $pengirim->nama_pengirim }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="completion_percentage">Min. Completion %</label>
-                                <input type="number" name="completion_percentage" id="completion_percentage"
-                                       class="form-control" min="0" max="100"
-                                       value="{{ request('completion_percentage') }}" placeholder="0-100">
-                            </div>
-                        </div>
+        <div id="filterCollapse" class="p-6">
+            <form id="filterForm" method="GET">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="space-y-1">
+                        <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
+                        <select name="status" id="status" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="">All Status</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
+                            <option value="partial" {{ request('status') == 'partial' ? 'selected' : '' }}>Partial</option>
+                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                        </select>
                     </div>
 
-                    <div class="row">
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="date_from">Date From</label>
-                                <input type="date" name="date_from" id="date_from" class="form-control"
-                                       value="{{ request('date_from') }}">
-                            </div>
-                        </div>
+                    <div class="space-y-1">
+                        <label for="term_id" class="block text-sm font-medium text-gray-700">Term</label>
+                        <select name="term_id" id="term_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="">All Terms</option>
+                            @foreach($terms as $term)
+                                <option value="{{ $term->id }}" {{ request('term_id') == $term->id ? 'selected' : '' }}>
+                                    {{ $term->nama_status }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="date_to">Date To</label>
-                                <input type="date" name="date_to" id="date_to" class="form-control"
-                                       value="{{ request('date_to') }}">
-                            </div>
-                        </div>
+                    <div class="space-y-1">
+                        <label for="pengirim_id" class="block text-sm font-medium text-gray-700">Pengirim</label>
+                        <select name="pengirim_id" id="pengirim_id" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                            <option value="">All Pengirim</option>
+                            @foreach($pengirims as $pengirim)
+                                <option value="{{ $pengirim->id }}" {{ request('pengirim_id') == $pengirim->id ? 'selected' : '' }}>
+                                    {{ $pengirim->nama_pengirim }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
 
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label for="search">Search</label>
-                                <input type="text" name="search" id="search" class="form-control"
-                                       value="{{ request('search') }}" placeholder="Order number, container...">
-                            </div>
-                        </div>
+                    <div class="space-y-1">
+                        <label for="completion_percentage" class="block text-sm font-medium text-gray-700">Min. Completion %</label>
+                        <input type="number" name="completion_percentage" id="completion_percentage"
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                               min="0" max="100" value="{{ request('completion_percentage') }}" placeholder="0-100">
+                    </div>
 
-                        <div class="col-md-3">
-                            <div class="form-group">
-                                <label>&nbsp;</label>
-                                <div class="d-flex">
-                                    <button type="submit" class="btn btn-primary mr-2">
-                                        <i class="fas fa-search"></i> Filter
-                                    </button>
-                                    <a href="{{ route('outstanding.index') }}" class="btn btn-secondary">
-                                        <i class="fas fa-times"></i> Clear
-                                    </a>
-                                </div>
-                            </div>
+                    <div class="space-y-1">
+                        <label for="date_from" class="block text-sm font-medium text-gray-700">Date From</label>
+                        <input type="date" name="date_from" id="date_from" 
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               value="{{ request('date_from') }}">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="date_to" class="block text-sm font-medium text-gray-700">Date To</label>
+                        <input type="date" name="date_to" id="date_to" 
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               value="{{ request('date_to') }}">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
+                        <input type="text" name="search" id="search" 
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                               value="{{ request('search') }}" placeholder="Order number, container...">
+                    </div>
+
+                    <div class="space-y-1">
+                        <label class="block text-sm font-medium text-gray-700">&nbsp;</label>
+                        <div class="flex space-x-3">
+                            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                                Filter
+                            </button>
+                            <a href="{{ route('outstanding.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Clear
+                            </a>
                         </div>
                     </div>
-                </form>
-            </div>
+                </div>
+            </form>
         </div>
     </div>
 
     <!-- Data Table -->
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Outstanding Orders Data</h6>
+    <div class="bg-white shadow-sm rounded-lg overflow-hidden">
+        <div class="px-6 py-4 border-b border-gray-200">
+            <h3 class="text-lg font-medium text-gray-900">Outstanding Orders Data</h3>
         </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="outstandingTable" width="100%" cellspacing="0">
-                    <thead>
-                        <tr>
-                            <th>No. Order</th>
-                            <th>Term</th>
-                            <th>Pengirim</th>
-                            <th>Jenis Barang</th>
-                            <th>Units</th>
-                            <th>Sisa</th>
-                            <th>Completion</th>
-                            <th>Status</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($orders as $order)
-                        <tr data-order-id="{{ $order->id }}">
-                            <td>
-                                <strong>{{ $order->nomor_order }}</strong>
-                                @if($order->no_kontainer)
-                                    <br><small class="text-muted">{{ $order->no_kontainer }}</small>
-                                @endif
-                            </td>
-                            <td>{{ $order->term->nama_term ?? '-' }}</td>
-                            <td>{{ $order->pengirim->nama_pengirim ?? '-' }}</td>
-                            <td>{{ $order->jenisBarang->nama_jenis ?? '-' }}</td>
-                            <td>
-                                <span class="badge badge-info">{{ number_format($order->units, 0) }}</span>
-                            </td>
-                            <td>
-                                <span class="badge badge-warning">{{ number_format($order->sisa, 0) }}</span>
-                            </td>
-                            <td>
-                                <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar" role="progressbar"
-                                         style="width: {{ $order->completion_percentage }}%"
-                                         aria-valuenow="{{ $order->completion_percentage }}"
-                                         aria-valuemin="0" aria-valuemax="100">
-                                        {{ number_format($order->completion_percentage, 1) }}%
-                                    </div>
-                                </div>
-                            </td>
-                            <td>{!! $order->outstanding_status_badge !!}</td>
-                            <td>{{ $order->created_at->format('d/m/Y') }}</td>
-                            <td>
-                                <div class="btn-group btn-group-sm" role="group">
-                                    <button class="btn btn-primary btn-sm" onclick="processUnits({{ $order->id }})">
-                                        <i class="fas fa-edit"></i>
-                                    </button>
-                                    <a href="{{ route('orders.show', $order->id) }}" class="btn btn-info btn-sm">
-                                        <i class="fas fa-eye"></i>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="10" class="text-center">No outstanding orders found</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200" id="outstandingTable">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Order</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Term</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Units</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($orders as $order)
+                    <tr data-order-id="{{ $order->id }}" class="hover:bg-gray-50">
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="text-sm font-medium text-gray-900">{{ $order->nomor_order }}</div>
+                            @if($order->no_kontainer)
+                                <div class="text-sm text-gray-500">{{ $order->no_kontainer }}</div>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $order->term->nama_status ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $order->pengirim->nama_pengirim ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $order->jenisBarang->nama_jenis ?? '-' }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ number_format($order->units, 0) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                {{ number_format($order->sisa, 0) }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            <div class="w-full bg-gray-200 rounded-full h-2">
+                                <div class="h-2 rounded-full transition-all duration-300 
+                                    {{ ($order->completion_percentage ?? 0) >= 100 ? 'bg-green-600' : 
+                                       (($order->completion_percentage ?? 0) >= 50 ? 'bg-yellow-400' : 'bg-red-400') }}" 
+                                     style="width: {{ $order->completion_percentage ?? 0 }}%"></div>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-1">{{ number_format($order->completion_percentage ?? 0, 1) }}%</div>
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                            {!! $order->outstanding_status_badge !!}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {{ $order->created_at->format('d/m/Y') }}
+                        </td>
+                        <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div class="flex space-x-2">
+                                <button onclick="processUnits({{ $order->id }})" 
+                                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                    </svg>
+                                </button>
+                                <a href="{{ route('orders.show', $order->id) }}" 
+                                   class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                    </svg>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="10" class="px-6 py-12 text-center text-sm text-gray-500">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path vector-effect="non-scaling-stroke" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01" />
+                            </svg>
+                            <h3 class="mt-2 text-sm font-medium text-gray-900">No outstanding orders found</h3>
+                            <p class="mt-1 text-sm text-gray-500">Try adjusting your search or filter to find what you're looking for.</p>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
 
-            <!-- Pagination -->
-            <div class="d-flex justify-content-between align-items-center mt-3">
-                <div>
-                    Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }}
-                    of {{ $orders->total() }} results
-                </div>
+        <!-- Pagination -->
+        <div class="bg-white px-6 py-3 border-t border-gray-200 flex items-center justify-between">
+            <div class="flex-1 flex justify-between sm:hidden">
                 {{ $orders->appends(request()->query())->links() }}
+            </div>
+            <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                <div>
+                    <p class="text-sm text-gray-700">
+                        Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }}
+                        of {{ $orders->total() }} results
+                    </p>
+                </div>
+                <div>
+                    {{ $orders->appends(request()->query())->links() }}
+                </div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Process Units Modal -->
-<div class="modal fade" id="processUnitsModal" tabindex="-1" role="dialog">
-    <div class="modal-dialog" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Process Units</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
+<div class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden" id="processUnitsModal">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Process Units</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeModal()">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
                 </button>
             </div>
-            <form id="processUnitsForm">
-                <div class="modal-body">
-                    <div class="form-group">
-                        <label>Order Number</label>
-                        <input type="text" id="modalOrderNumber" class="form-control" readonly>
+            
+            <form id="processUnitsForm" class="space-y-4">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Order Number</label>
+                    <input type="text" id="modalOrderNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" readonly>
+                </div>
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
+                        <input type="number" id="modalTotalUnits" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" readonly>
                     </div>
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Total Units</label>
-                                <input type="number" id="modalTotalUnits" class="form-control" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Current Remaining</label>
-                                <input type="number" id="modalCurrentSisa" class="form-control" readonly>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="form-group">
-                        <label>Process Units <span class="text-danger">*</span></label>
-                        <input type="number" id="processedUnits" name="processed_units"
-                               class="form-control" min="1" required>
-                        <small class="form-text text-muted">Enter number of units to process</small>
-                    </div>
-                    <div class="form-group">
-                        <label>Notes</label>
-                        <textarea id="processNotes" name="notes" class="form-control" rows="3"
-                                  placeholder="Optional notes about this processing..."></textarea>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Current Remaining</label>
+                        <input type="number" id="modalCurrentSisa" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" readonly>
                     </div>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Process Units
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">
+                        Process Units <span class="text-red-500">*</span>
+                    </label>
+                    <input type="number" id="processedUnits" name="processed_units"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                           min="1" required>
+                    <p class="text-sm text-gray-500 mt-1">Enter number of units to process</p>
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                    <textarea id="processNotes" name="notes" rows="3"
+                              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
+                              placeholder="Optional notes about this processing..."></textarea>
+                </div>
+                
+                <div class="flex justify-end space-x-3 pt-4">
+                    <button type="button" onclick="closeModal()" 
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        Cancel
+                    </button>
+                    <button type="submit" 
+                            class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Process Units
                     </button>
                 </div>
             </form>
@@ -358,6 +412,11 @@ $(document).ready(function() {
     $('#refreshStats').click(function() {
         loadStatistics();
     });
+
+    // Toggle filter functionality
+    $('#toggleFilter').click(function() {
+        $('#filterCollapse').slideToggle();
+    });
 });
 
 function loadStatistics() {
@@ -368,22 +427,27 @@ function loadStatistics() {
         $('#outstandingCount').html(data.total_outstanding);
     }).fail(function() {
         // Show error state
-        $('.h5').html('<i class="fas fa-exclamation-triangle text-danger"></i>');
+        $('.text-2xl').html('<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>');
     });
 }
 
 function processUnits(orderId) {
     // Get order details via AJAX
-    $.get(`/outstanding/${orderId}/details`, function(data) {
+    $.get(`{{ route('outstanding.details', '') }}/${orderId}`, function(data) {
         $('#modalOrderNumber').val(data.nomor_order);
         $('#modalTotalUnits').val(data.units);
         $('#modalCurrentSisa').val(data.sisa);
         $('#processedUnits').attr('max', data.sisa);
-        $('#processUnitsModal').modal('show');
+        $('#processUnitsModal').removeClass('hidden');
 
         // Store order ID for processing
         $('#processUnitsForm').data('order-id', orderId);
     });
+}
+
+function closeModal() {
+    $('#processUnitsModal').addClass('hidden');
+    $('#processUnitsForm')[0].reset();
 }
 
 $('#processUnitsForm').submit(function(e) {
@@ -394,7 +458,7 @@ $('#processUnitsForm').submit(function(e) {
     const notes = $('#processNotes').val();
 
     if (!processedUnits || processedUnits <= 0) {
-        alert('Please enter a valid number of units to process');
+        showAlert('danger', 'Please enter a valid number of units to process');
         return;
     }
 
@@ -402,7 +466,7 @@ $('#processUnitsForm').submit(function(e) {
     $('#processUnitsForm button').prop('disabled', true);
 
     $.ajax({
-        url: `/outstanding/${orderId}/process`,
+        url: `{{ route('outstanding.process', '') }}/${orderId}`,
         method: 'POST',
         data: {
             processed_units: processedUnits,
@@ -413,14 +477,32 @@ $('#processUnitsForm').submit(function(e) {
             if (response.success) {
                 // Update the row in table
                 const row = $(`tr[data-order-id="${orderId}"]`);
-                row.find('td:nth-child(6) .badge').text(new Intl.NumberFormat().format(response.order.sisa));
-                row.find('.progress-bar').css('width', response.order.completion_percentage + '%')
-                    .text(response.order.completion_percentage.toFixed(1) + '%');
+                
+                // Update sisa badge
+                row.find('td:nth-child(6) span').text(new Intl.NumberFormat().format(response.order.sisa));
+                
+                // Update progress bar
+                const progressBar = row.find('.h-2');
+                const percentage = response.order.completion_percentage;
+                progressBar.css('width', percentage + '%');
+                
+                // Update progress bar color
+                if (percentage >= 100) {
+                    progressBar.removeClass('bg-yellow-400 bg-red-400').addClass('bg-green-600');
+                } else if (percentage >= 50) {
+                    progressBar.removeClass('bg-green-600 bg-red-400').addClass('bg-yellow-400');
+                } else {
+                    progressBar.removeClass('bg-green-600 bg-yellow-400').addClass('bg-red-400');
+                }
+                
+                // Update percentage text
+                row.find('.text-xs.text-gray-500').text(percentage.toFixed(1) + '%');
+                
+                // Update status badge
                 row.find('td:nth-child(8)').html(response.order.status_badge);
 
-                // Close modal and reset form
-                $('#processUnitsModal').modal('hide');
-                $('#processUnitsForm')[0].reset();
+                // Close modal
+                closeModal();
 
                 // Refresh statistics
                 loadStatistics();
@@ -442,24 +524,47 @@ $('#processUnitsForm').submit(function(e) {
 });
 
 function showAlert(type, message) {
+    const alertColors = {
+        'success': 'bg-green-50 border-green-200 text-green-800',
+        'danger': 'bg-red-50 border-red-200 text-red-800',
+        'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800',
+        'info': 'bg-blue-50 border-blue-200 text-blue-800'
+    };
+
     const alertHtml = `
-        <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-            ${message}
-            <button type="button" class="close" data-dismiss="alert">
-                <span aria-hidden="true">&times;</span>
-            </button>
+        <div class="fixed top-4 right-4 max-w-sm w-full ${alertColors[type]} border rounded-md p-4 shadow-lg z-50" id="alert">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    ${type === 'success' ? 
+                        '<svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : 
+                        '<svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                    }
+                </div>
+                <div class="ml-3">
+                    <p class="text-sm font-medium">${message}</p>
+                </div>
+                <div class="ml-auto pl-3">
+                    <button onclick="$('#alert').remove()" class="inline-flex text-gray-400 hover:text-gray-600">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
         </div>
     `;
 
     // Remove existing alerts
-    $('.alert').remove();
+    $('#alert').remove();
 
-    // Add new alert at top of container
-    $('.container-fluid').prepend(alertHtml);
+    // Add new alert
+    $('body').append(alertHtml);
 
     // Auto-remove after 5 seconds
     setTimeout(function() {
-        $('.alert').fadeOut();
+        $('#alert').fadeOut(function() {
+            $(this).remove();
+        });
     }, 5000);
 }
 </script>
