@@ -792,7 +792,7 @@
         <!-- Summary -->
         <div class="summary">
             <div class="summary-item total-amount" style="margin-top: 10px;">
-                <span class="summary-label">TOTAL PEMBAYARAN:</span>
+                <span class="summary-label">PEMBAYARAN:</span>
                 <span>Rp {{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</span>
             </div>
         </div>
