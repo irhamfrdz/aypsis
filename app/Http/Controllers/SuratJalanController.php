@@ -172,7 +172,7 @@ class SuratJalanController extends Controller
             $data = $request->except(['gambar']);
             $data['input_by'] = Auth::id();
             $data['input_date'] = now();
-            $data['status'] = 'draft'; // Set default status to draft
+            $data['status'] = 'belum melakukan checkpoint'; // Set default status to belum melakukan checkpoint
 
             // Handle image upload
             if ($request->hasFile('gambar')) {
