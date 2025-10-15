@@ -23,10 +23,10 @@ $masaFixed = 0;
 foreach ($allTagihan as $tagihan) {
     $startDate = \Carbon\Carbon::parse($tagihan->tanggal_awal);
     $endDate = \Carbon\Carbon::parse($tagihan->tanggal_akhir);
-    
+
     // Format masa baru: tanggal awal - tanggal akhir (tanpa dikurangi 1 hari)
     $masaBaru = $startDate->format('j M Y') . ' - ' . $endDate->format('j M Y');
-    
+
     // Update jika berbeda
     if ($tagihan->masa !== $masaBaru) {
         $tagihan->masa = $masaBaru;
@@ -69,44 +69,44 @@ foreach ($tagihanHarian as $tagihan) {
     try {
         // Cari master price
         $vendorSize = $tagihan->vendor . '_' . $tagihan->size;
-        
+
         if (!isset($pricelistMap[$vendorSize])) {
             $errors[] = "Pricelist tidak ditemukan untuk {$vendorSize} (ID: {$tagihan->id})";
             continue;
         }
-        
+
         $tarifHarian = $pricelistMap[$vendorSize];
-        
+
         // Hitung hari dan DPP yang benar
         $startDate = \Carbon\Carbon::parse($tagihan->tanggal_awal);
         $endDate = \Carbon\Carbon::parse($tagihan->tanggal_akhir);
         $hari = $startDate->diffInDays($endDate) + 1;
         $dppBenar = $tarifHarian * $hari;
-        
+
         // Cek apakah DPP saat ini salah (toleransi 1%)
         $selisih = abs($tagihan->dpp - $dppBenar);
         $persentaseSelisih = ($tagihan->dpp > 0) ? ($selisih / $tagihan->dpp) * 100 : 100;
-        
+
         if ($persentaseSelisih > 1) {
             echo "Memperbaiki {$tagihan->nomor_kontainer} periode {$tagihan->periode}:\n";
             echo "  DPP Lama: Rp " . number_format($tagihan->dpp, 0, ',', '.') . "\n";
             echo "  DPP Baru: Rp " . number_format($dppBenar, 0, ',', '.') . "\n";
-            
+
             // Update DPP dan hitung ulang PPN, PPH, Grand Total
             $tagihan->dpp = $dppBenar;
             $tagihan->ppn = $dppBenar * 0.11; // PPN 11%
             $tagihan->pph = $dppBenar * 0.02; // PPH 2%
             $tagihan->grand_total = $dppBenar + $tagihan->ppn - $tagihan->pph;
-            
+
             $tagihan->save();
             $dppFixed++;
-            
+
             echo "  PPN Baru: Rp " . number_format($tagihan->ppn, 0, ',', '.') . "\n";
             echo "  PPH Baru: Rp " . number_format($tagihan->pph, 0, ',', '.') . "\n";
             echo "  Grand Total Baru: Rp " . number_format($tagihan->grand_total, 0, ',', '.') . "\n";
             echo "  ✅ Berhasil diperbaiki\n\n";
         }
-        
+
     } catch (\Exception $e) {
         $errors[] = "Error untuk ID {$tagihan->id}: " . $e->getMessage();
     }

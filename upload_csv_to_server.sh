@@ -15,16 +15,16 @@ LOCAL_CSV_PATH="C:/Users/amanda/Downloads/Zona.csv"
 # Fungsi untuk upload file
 upload_csv() {
     echo "📤 1. Uploading CSV file to server..."
-    
+
     if [ ! -f "$LOCAL_CSV_PATH" ]; then
         echo "❌ File tidak ditemukan: $LOCAL_CSV_PATH"
         echo "💡 Ubah LOCAL_CSV_PATH di script ini sesuai lokasi file Anda"
         exit 1
     fi
-    
+
     echo "Uploading $LOCAL_CSV_PATH to $SERVER_USER@$SERVER_HOST:$SERVER_PATH/"
     scp "$LOCAL_CSV_PATH" "$SERVER_USER@$SERVER_HOST:$SERVER_PATH/"
-    
+
     if [ $? -eq 0 ]; then
         echo "✅ File berhasil diupload"
     else

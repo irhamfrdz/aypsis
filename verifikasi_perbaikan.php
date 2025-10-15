@@ -22,7 +22,7 @@ foreach ($samples as $sample) {
     $tagihan = DaftarTagihanKontainerSewa::where('nomor_kontainer', $sample['nomor_kontainer'])
         ->where('periode', $sample['periode'])
         ->first();
-    
+
     if ($tagihan) {
         echo "✅ {$tagihan->nomor_kontainer} Periode {$tagihan->periode}:\n";
         echo "   Masa: {$tagihan->masa}\n";

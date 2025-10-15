@@ -1577,7 +1577,7 @@ class DaftarTagihanKontainerSewaController extends Controller
 
             // First priority: Check master pricelist - prioritize matching tarif type from CSV
             $masterPricelist = null;
-            
+
             if ($csvTarifType) {
                 // Try to find pricelist that matches CSV tarif type
                 $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)
@@ -1585,7 +1585,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                     ->where('tarif', $csvTarifType)
                     ->first();
             }
-            
+
             // If no matching tarif type found, get any pricelist for this vendor/size
             if (!$masterPricelist) {
                 $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $size)

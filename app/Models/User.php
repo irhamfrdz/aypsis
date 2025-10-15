@@ -293,4 +293,15 @@ class User extends Authenticatable
 
         return false;
     }
+
+    /**
+     * Get the name attribute (accessor)
+     * Use karyawan nama_lengkap if available, otherwise use username
+     *
+     * @return string
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->karyawan->nama_lengkap ?? $this->username;
+    }
 }

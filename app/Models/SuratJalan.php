@@ -46,6 +46,7 @@ class SuratJalan extends Model
         'uang_jalan',
         'no_pemesanan',
         'gambar',
+        'gambar_checkpoint',
         'input_by',
         'input_date',
         'status'

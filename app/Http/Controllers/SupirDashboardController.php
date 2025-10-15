@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Permohonan;
-
-
+use App\Models\SuratJalan;
 
 use Illuminate\Http\Request;
 
@@ -18,18 +17,43 @@ class SupirDashboardController extends Controller
             abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
         }
 
-        $supirId = $user->karyawan->id;
+        $supirId = $user->karyawan->id ?? null;
+        $supirUsername = $user->username;
+        $supirName = $user->name;  // This will use the accessor
 
-        // Ambil permohonan yang sedang berjalan (misalnya status bukan 'Selesai' atau 'Dibatalkan')
+        // Get the karyawan record to get nama_lengkap
+        $supirNamaLengkap = $user->karyawan->nama_lengkap ?? $supirUsername;
+
+        // Ambil permohonan yang sedang berjalan (menggunakan supir_id)
         $permohonans = Permohonan::where('supir_id', $supirId)
                      ->whereNotIn('status', ['Selesai', 'Dibatalkan'])
                      ->latest()
                      ->get();
 
-    // Build kegiatan map (kode => nama) so view can display human-friendly names
-    $kegiatanRows = \App\Models\MasterKegiatan::all();
-    $kegiatanMap = $kegiatanRows->pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
+        // Ambil surat jalan yang perlu checkpoint atau sedang berjalan (menggunakan nama_lengkap karyawan)
+        // Try multiple matching strategies to ensure we find the records
+        $suratJalans = SuratJalan::where(function($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
+                         $query->where('supir', $supirNamaLengkap)
+                               ->orWhere('supir', $supirUsername)
+                               ->orWhere('supir', $supirName);
+                     })
+                     ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
+                     ->latest()
+                     ->get();
 
-    return view('supir.dashboard', compact('permohonans', 'kegiatanMap'));
+        // Debug logging to help diagnose issues
+        \Log::info('Supir Dashboard Debug', [
+            'user_username' => $supirUsername,
+            'user_name' => $supirName,
+            'karyawan_nama_lengkap' => $supirNamaLengkap,
+            'found_surat_jalans' => $suratJalans->count(),
+            'surat_jalan_ids' => $suratJalans->pluck('id')->toArray()
+        ]);
+
+        // Build kegiatan map (kode => nama) so view can display human-friendly names
+        $kegiatanRows = \App\Models\MasterKegiatan::all();
+        $kegiatanMap = $kegiatanRows->pluck('nama_kegiatan', 'kode_kegiatan')->toArray();
+
+        return view('supir.dashboard', compact('permohonans', 'suratJalans', 'kegiatanMap'));
     }
 }

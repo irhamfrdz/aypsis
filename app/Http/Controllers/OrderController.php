@@ -283,7 +283,7 @@ class OrderController extends Controller
         // Handle changes to unit_kontainer field for outstanding tracking
         // Always sync units with unit_kontainer for consistency
         $data['units'] = $request->unit_kontainer;
-        
+
         if ($request->unit_kontainer != $order->units) {
             $oldUnits = $order->units ?? 0;
             $newUnits = $request->unit_kontainer;

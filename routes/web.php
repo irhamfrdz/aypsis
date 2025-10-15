@@ -1127,6 +1127,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('checkpoint.create');
         Route::post('/permohonan/{permohonan}/checkpoint', [CheckpointController::class, 'store'])
             ->name('checkpoint.store');
+
+        // Checkpoint management for surat jalan
+        Route::get('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'createSuratJalan'])
+            ->name('checkpoint.create-surat-jalan');
+        Route::post('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'storeSuratJalan'])
+            ->name('checkpoint.store-surat-jalan');
     });
 
          // --- Rute Penyelesaian Tugas ---

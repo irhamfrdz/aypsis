@@ -53,6 +53,17 @@ class Order extends Model
         'completion_percentage' => 'decimal:2',
     ];
 
+    // Accessor to ensure processing_history is always an array
+    public function getProcessingHistoryAttribute($value)
+    {
+        if (is_null($value) || $value === '') {
+            return [];
+        }
+
+        $decoded = json_decode($value, true);
+        return is_array($decoded) ? $decoded : [];
+    }
+
     // Relationships
     public function term(): BelongsTo
     {
@@ -139,13 +150,18 @@ class Order extends Model
         $this->sisa -= $processed_count;
 
         // Add to processing history
-        $history = $this->processing_history ?? [];
+        // Ensure processing_history is always an array
+        $history = $this->processing_history;
+        if (!is_array($history)) {
+            $history = [];
+        }
+
         $history[] = [
             'processed_count' => $processed_count,
             'remaining' => $this->sisa,
             'note' => $note,
             'processed_at' => now()->toISOString(),
-            'processed_by' => auth()->user()?->id
+            'processed_by' => auth()->user()?->id ?? null
         ];
         $this->processing_history = $history;
 

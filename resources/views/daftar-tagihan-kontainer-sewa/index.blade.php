@@ -1622,7 +1622,7 @@ window.masukanKePranota = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const invoiceVendorElement = row.querySelector('td:nth-child(15)'); // Invoice Vendor column (index 15)
+            const invoiceVendorElement = row.querySelector('td:nth-child(14)'); // Invoice Vendor column (index 14)
             const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
 
             console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);

@@ -68,8 +68,11 @@ class CheckpointController extends Controller
             }
         }
 
-        // Ambil semua stock kontainer dari master stock kontainer
-        $stockKontainers = \App\Models\StockKontainer::all();
+        // Ambil stock kontainer berdasarkan ukuran permohonan (20ft atau 40ft)
+        $stockKontainers = \App\Models\StockKontainer::where('ukuran', $permohonan->ukuran)
+                                                    ->where('status', '!=', 'inactive')
+                                                    ->orderBy('nomor_seri_gabungan')
+                                                    ->get();
 
         return view('supir.checkpoint-create', compact('permohonan', 'kontainerList', 'stockKontainers'));
     }
@@ -94,6 +97,7 @@ class CheckpointController extends Controller
         $rules = [
             'surat_jalan_vendor' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
+            'gambar' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB
         ];
 
         // Tambahkan validasi untuk nomor_kontainer hanya jika kontainer belum diinput sebelumnya.
@@ -222,12 +226,21 @@ class CheckpointController extends Controller
                 }
             }
 
+            // Handle image upload
+            $imagePath = null;
+            if ($request->hasFile('gambar')) {
+                $image = $request->file('gambar');
+                $filename = time() . '_checkpoint_' . $image->getClientOriginalName();
+                $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+            }
+
             // Simpan data checkpoint
             $permohonan->checkpoints()->create([
                 'lokasi' => $permohonan->tujuan, // Mengisi lokasi dengan tujuan permohonan
                 'catatan' => $validated['catatan'] ?? 'Checkpoint dibuat oleh supir.',
                 'surat_jalan_vendor' => $validated['surat_jalan_vendor'] ?? null,
                 'tanggal_checkpoint' => $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d'),
+                'gambar' => $imagePath,
             ]);
 
             // Update permohonan quick-access fields for driver checkpoint and supir (if not already set)
@@ -254,6 +267,136 @@ class CheckpointController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             return back()->with('error', 'Gagal menyimpan: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * Menampilkan form checkpoint untuk surat jalan.
+     */
+    public function createSuratJalan(\App\Models\SuratJalan $suratJalan)
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
+        }
+
+        // Otorisasi: Pastikan supir yang login adalah yang ditugaskan untuk surat jalan ini
+        // Check multiple possible name formats to ensure access
+        $userNamaLengkap = $user->karyawan->nama_lengkap ?? $user->username;
+        $userNama = $user->karyawan->nama ?? $user->username;
+        $userName = $user->name; // This uses the accessor we created
+
+        if ($userNamaLengkap !== $suratJalan->supir &&
+            $userNama !== $suratJalan->supir &&
+            $userName !== $suratJalan->supir &&
+            $user->username !== $suratJalan->supir) {
+            abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
+        }
+
+        // Get kegiatan name from master kegiatan if available
+        $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $suratJalan->kegiatan)
+                        ->value('nama_kegiatan') ?? $suratJalan->kegiatan;
+
+        $kegiatanLower = strtolower($kegiatanName);
+        $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false &&
+                                stripos($kegiatanLower, 'kontainer') !== false &&
+                                stripos($kegiatanLower, 'sewa') !== false);
+
+        // Filter kontainer berdasarkan kegiatan dan ukuran
+        if ($isAntarKontainerSewa) {
+            // Untuk antar kontainer sewa, filter berdasarkan ukuran dan status tersedia
+            $kontainerList = Kontainer::where('ukuran', $suratJalan->size)
+                                    ->where('status', 'Tersedia')
+                                    ->orderBy('nomor_seri_gabungan')
+                                    ->get();
+        } else {
+            // Untuk kegiatan lain, ambil kontainer sesuai vendor dan kondisi lainnya
+            $kontainerList = Kontainer::where('ukuran', $suratJalan->size)
+                                    ->orderBy('nomor_seri_gabungan')
+                                    ->get();
+        }
+
+        // Ambil stock kontainer berdasarkan ukuran surat jalan (20ft atau 40ft)
+        $stockKontainers = \App\Models\StockKontainer::where('ukuran', $suratJalan->size)
+                                                    ->where('status', '!=', 'inactive')
+                                                    ->orderBy('nomor_seri_gabungan')
+                                                    ->get();
+
+        return view('supir.checkpoint-create', compact('suratJalan', 'kontainerList', 'stockKontainers'));
+    }
+
+    /**
+     * Menyimpan checkpoint untuk surat jalan.
+     */
+    public function storeSuratJalan(Request $request, \App\Models\SuratJalan $suratJalan)
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Fitur ini hanya untuk supir.');
+        }
+
+        // Otorisasi: Pastikan supir yang login adalah yang ditugaskan untuk surat jalan ini
+        // Check multiple possible name formats to ensure access
+        $userNamaLengkap = $user->karyawan->nama_lengkap ?? $user->username;
+        $userNama = $user->karyawan->nama ?? $user->username;
+        $userName = $user->name; // This uses the accessor we created
+
+        if ($userNamaLengkap !== $suratJalan->supir &&
+            $userNama !== $suratJalan->supir &&
+            $userName !== $suratJalan->supir &&
+            $user->username !== $suratJalan->supir) {
+            abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
+        }
+
+        // Validasi input
+        $rules = [
+            'nomor_kontainer' => 'required|array',
+            'nomor_kontainer.*' => 'required|string',
+            'surat_jalan_vendor' => 'nullable|string|max:255',
+            'catatan' => 'nullable|string',
+            'tanggal_checkpoint' => 'required|date',
+            'gambar' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB
+        ];
+
+        $request->validate($rules);
+
+        try {
+            DB::beginTransaction();
+
+            // Handle image upload
+            $imagePath = null;
+            if ($request->hasFile('gambar')) {
+                $image = $request->file('gambar');
+                $filename = time() . '_surat_jalan_checkpoint_' . $image->getClientOriginalName();
+                $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+            }
+
+            // Update surat jalan dengan nomor kontainer
+            $nomorKontainers = implode(', ', $request->nomor_kontainer);
+
+            $suratJalan->update([
+                'no_kontainer' => $nomorKontainers,
+                'status' => 'checkpoint_completed',
+                'gambar_checkpoint' => $imagePath,
+            ]);
+
+            // Log checkpoint untuk tracking
+            Log::info('Surat jalan checkpoint completed by supir:', [
+                'surat_jalan_id' => $suratJalan->id,
+                'supir' => $user->karyawan->nama,
+                'nomor_kontainer' => $nomorKontainers,
+                'catatan' => $request->catatan,
+                'surat_jalan_vendor' => $request->surat_jalan_vendor,
+            ]);
+
+            DB::commit();
+            return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan berhasil disimpan!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error storing surat jalan checkpoint: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menyimpan checkpoint: ' . $e->getMessage())->withInput();
         }
     }
 }

@@ -7,14 +7,14 @@
     <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6">
         <h1 class="text-2xl font-bold text-gray-900 mb-4 sm:mb-0">Outstanding Orders</h1>
         <div class="flex space-x-2">
-            <a href="{{ route('outstanding.export', request()->query()) }}" 
+            <a href="{{ route('outstanding.export', request()->query()) }}"
                class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                 </svg>
                 Export Excel
             </a>
-            <button id="refreshStats" 
+            <button id="refreshStats"
                     class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition duration-150 ease-in-out">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
@@ -121,7 +121,7 @@
     <div class="bg-white shadow-sm rounded-lg mb-8">
         <div class="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
             <h3 class="text-lg font-medium text-gray-900">Filter Outstanding Orders</h3>
-            <button class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50" 
+            <button class="inline-flex items-center px-3 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 bg-white hover:bg-gray-50"
                     type="button" id="toggleFilter">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.414A1 1 0 013 6.707V4z"></path>
@@ -169,27 +169,27 @@
                     <div class="space-y-1">
                         <label for="completion_percentage" class="block text-sm font-medium text-gray-700">Min. Completion %</label>
                         <input type="number" name="completion_percentage" id="completion_percentage"
-                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" 
+                               class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                min="0" max="100" value="{{ request('completion_percentage') }}" placeholder="0-100">
                     </div>
 
                     <div class="space-y-1">
                         <label for="date_from" class="block text-sm font-medium text-gray-700">Date From</label>
-                        <input type="date" name="date_from" id="date_from" 
+                        <input type="date" name="date_from" id="date_from"
                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                value="{{ request('date_from') }}">
                     </div>
 
                     <div class="space-y-1">
                         <label for="date_to" class="block text-sm font-medium text-gray-700">Date To</label>
-                        <input type="date" name="date_to" id="date_to" 
+                        <input type="date" name="date_to" id="date_to"
                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                value="{{ request('date_to') }}">
                     </div>
 
                     <div class="space-y-1">
                         <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
-                        <input type="text" name="search" id="search" 
+                        <input type="text" name="search" id="search"
                                class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
                                value="{{ request('search') }}" placeholder="Order number, container...">
                     </div>
@@ -267,9 +267,9 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap">
                             <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="h-2 rounded-full transition-all duration-300 
-                                    {{ ($order->completion_percentage ?? 0) >= 100 ? 'bg-green-600' : 
-                                       (($order->completion_percentage ?? 0) >= 50 ? 'bg-yellow-400' : 'bg-red-400') }}" 
+                                <div class="h-2 rounded-full transition-all duration-300
+                                    {{ ($order->completion_percentage ?? 0) >= 100 ? 'bg-green-600' :
+                                       (($order->completion_percentage ?? 0) >= 50 ? 'bg-yellow-400' : 'bg-red-400') }}"
                                      style="width: {{ $order->completion_percentage ?? 0 }}%"></div>
                             </div>
                             <div class="text-xs text-gray-500 mt-1">{{ number_format($order->completion_percentage ?? 0, 1) }}%</div>
@@ -282,13 +282,13 @@
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div class="flex space-x-2">
-                                <button onclick="processUnits({{ $order->id }})" 
+                                <button onclick="processUnits({{ $order->id }})"
                                         class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                     </svg>
                                 </button>
-                                <a href="{{ route('orders.show', $order->id) }}" 
+                                <a href="{{ route('orders.show', $order->id) }}"
                                    class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -345,13 +345,13 @@
                     </svg>
                 </button>
             </div>
-            
+
             <form id="processUnitsForm" class="space-y-4">
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Order Number</label>
                     <input type="text" id="modalOrderNumber" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" readonly>
                 </div>
-                
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
@@ -362,30 +362,30 @@
                         <input type="number" id="modalCurrentSisa" class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50" readonly>
                     </div>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">
                         Process Units <span class="text-red-500">*</span>
                     </label>
                     <input type="number" id="processedUnits" name="processed_units"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent" 
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                            min="1" required>
                     <p class="text-sm text-gray-500 mt-1">Enter number of units to process</p>
                 </div>
-                
+
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                     <textarea id="processNotes" name="notes" rows="3"
                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent"
                               placeholder="Optional notes about this processing..."></textarea>
                 </div>
-                
+
                 <div class="flex justify-end space-x-3 pt-4">
-                    <button type="button" onclick="closeModal()" 
+                    <button type="button" onclick="closeModal()"
                             class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         Cancel
                     </button>
-                    <button type="submit" 
+                    <button type="submit"
                             class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
@@ -402,22 +402,22 @@
 <div class="fixed inset-0 z-50 overflow-y-auto hidden" id="processUnitsModal">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        
+
         <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
-        
+
         <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
             <form id="processUnitsForm">
                 <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
                     <div class="sm:flex sm:items-start">
                         <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
                             <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Process Units</h3>
-                            
+
                             <div class="space-y-4">
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Order Number</label>
                                     <input type="text" id="modalOrderNumber" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50" readonly>
                                 </div>
-                                
+
                                 <div class="grid grid-cols-2 gap-4">
                                     <div>
                                         <label class="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
@@ -428,15 +428,15 @@
                                         <input type="number" id="modalCurrentSisa" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50" readonly>
                                     </div>
                                 </div>
-                                
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Process Units <span class="text-red-500">*</span></label>
                                     <input type="number" id="processedUnits" name="processed_units"
-                                           class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                           class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
                                            min="1" required>
                                     <p class="mt-1 text-sm text-gray-500">Enter number of units to process</p>
                                 </div>
-                                
+
                                 <div>
                                     <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
                                     <textarea id="processNotes" name="notes" rows="3"
@@ -447,16 +447,16 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
-                    <button type="submit" 
+                    <button type="submit"
                             class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                         Process Units
                     </button>
-                    <button type="button" onclick="closeModal()" 
+                    <button type="button" onclick="closeModal()"
                             class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
                         Cancel
                     </button>
@@ -512,7 +512,7 @@ function processUnits(orderId) {
         $('#modalTotalUnits').val(data.units);
         $('#modalCurrentSisa').val(data.sisa);
         $('#processedUnits').attr('max', data.sisa);
-        
+
         // Show modal (Tailwind modal)
         $('#processUnitsModal').removeClass('hidden');
 
@@ -583,10 +583,10 @@ $('#processUnitsForm').submit(function(e) {
 function showAlert(type, message) {
     const bgColor = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800';
     const iconColor = type === 'success' ? 'text-green-400' : 'text-red-400';
-    const icon = type === 'success' ? 
+    const icon = type === 'success' ?
         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>' :
         '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
-    
+
     const alertHtml = `
         <div id="alert" class="fixed top-4 right-4 max-w-md w-full ${bgColor} border rounded-lg shadow-lg z-50">
             <div class="p-4">

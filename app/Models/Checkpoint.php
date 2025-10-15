@@ -19,6 +19,7 @@ class Checkpoint extends Model
         'lokasi',
         'catatan',
         'surat_jalan_vendor',
+        'gambar',
         'status', // Disimpan untuk penggunaan di masa depan
         'tanggal_checkpoint',
     ];

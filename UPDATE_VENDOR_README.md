@@ -18,9 +18,10 @@ Group;Kontainer;Awal;Akhir;Ukuran;Harga;Periode;Status;Hari;DPP;Keterangan;QTY D
 ```
 
 **Kolom penting:**
-- **Kontainer** - Nomor kontainer yang akan dicocokkan dengan database
-- **No.InvoiceVendor** - Nomor invoice vendor yang akan diupdate
-- **Tgl.InvVendor** - Tanggal invoice vendor (opsional)
+
+-   **Kontainer** - Nomor kontainer yang akan dicocokkan dengan database
+-   **No.InvoiceVendor** - Nomor invoice vendor yang akan diupdate
+-   **Tgl.InvVendor** - Tanggal invoice vendor (opsional)
 
 ## Cara Penggunaan
 
@@ -33,12 +34,14 @@ php backup_vendor_data.php
 ```
 
 Script ini akan membuat:
-- File SQL backup untuk restore: `storage/backups/vendor_backup_YYYY_MM_DD_HH_MM_SS.sql`
-- File CSV backup untuk referensi: `storage/backups/vendor_backup_YYYY_MM_DD_HH_MM_SS.csv`
+
+-   File SQL backup untuk restore: `storage/backups/vendor_backup_YYYY_MM_DD_HH_MM_SS.sql`
+-   File CSV backup untuk referensi: `storage/backups/vendor_backup_YYYY_MM_DD_HH_MM_SS.csv`
 
 ### 2. Upload File CSV ke Server (Jika di Server)
 
 **Opsi A - Manual Upload:**
+
 ```bash
 # Upload via SCP
 scp Zona.csv user@server:/var/www/aypsis/
@@ -49,6 +52,7 @@ put Zona.csv /var/www/aypsis/
 ```
 
 **Opsi B - Menggunakan Helper Script:**
+
 ```bash
 # Edit konfigurasi di upload_csv_to_server.sh terlebih dahulu
 ./upload_csv_to_server.sh upload
@@ -73,18 +77,20 @@ php artisan vendor:update-from-csv
 ```
 
 **Lokasi default yang dicari (otomatis):**
-- `C:\Users\amanda\Downloads\Zona.csv` (Windows)
-- `/var/www/aypsis/storage/app/Zona.csv` (Linux)
-- `/var/www/aypsis/Zona.csv` (Linux)
-- `/tmp/Zona.csv` (Linux)
-- `./Zona.csv` (Current directory)
+
+-   `C:\Users\amanda\Downloads\Zona.csv` (Windows)
+-   `/var/www/aypsis/storage/app/Zona.csv` (Linux)
+-   `/var/www/aypsis/Zona.csv` (Linux)
+-   `/tmp/Zona.csv` (Linux)
+-   `./Zona.csv` (Current directory)
 
 **Keuntungan Artisan command:**
-- Progress bar
-- Konfirmasi sebelum update
-- Output yang lebih rapi
-- Terintegrasi dengan Laravel
-- Auto-detect path untuk berbagai environment
+
+-   Progress bar
+-   Konfirmasi sebelum update
+-   Output yang lebih rapi
+-   Terintegrasi dengan Laravel
+-   Auto-detect path untuk berbagai environment
 
 ### 4. Update Vendor (Pilihan B - Script Standalone)
 
@@ -109,31 +115,34 @@ Script akan melakukan:
 Script akan mengupdate tabel `daftar_tagihan_kontainer_sewa`:
 
 ```sql
-UPDATE daftar_tagihan_kontainer_sewa 
-SET 
+UPDATE daftar_tagihan_kontainer_sewa
+SET
     invoice_vendor = 'ZONA23.07.20493',
     tanggal_vendor = '2023-07-13'
 WHERE nomor_kontainer = 'BMOU2495277';
 ```
 
 **Pencocokan data:**
-- CSV `Kontainer` → Database `nomor_kontainer`
-- CSV `No.InvoiceVendor` → Database `invoice_vendor`
-- CSV `Tgl.InvVendor` → Database `tanggal_vendor`
+
+-   CSV `Kontainer` → Database `nomor_kontainer`
+-   CSV `No.InvoiceVendor` → Database `invoice_vendor`
+-   CSV `Tgl.InvVendor` → Database `tanggal_vendor`
 
 ## Format Tanggal yang Didukung
 
 Script dapat membaca berbagai format tanggal:
-- `13 Jul 23` (format CSV saat ini)
-- `13-Jul-23`
-- `13/07/2023`
-- `13-07-2023`
-- `2023-07-13`
-- `13 Jul 2023`
+
+-   `13 Jul 23` (format CSV saat ini)
+-   `13-Jul-23`
+-   `13/07/2023`
+-   `13-07-2023`
+-   `2023-07-13`
+-   `13 Jul 2023`
 
 ## Output Script
 
 ### Contoh Output Sukses:
+
 ```
 ====================================================
 UPDATE VENDOR INVOICE DARI CSV
@@ -187,11 +196,11 @@ psql -U username -d database_name -f storage/backups/vendor_backup_YYYY_MM_DD_HH
 
 ## Keamanan
 
-- ✅ Menggunakan database transaction (rollback jika error)
-- ✅ Validasi input data
-- ✅ Backup otomatis sebelum update
-- ✅ Log semua aktivitas
-- ✅ Konfirmasi sebelum eksekusi (Artisan command)
+-   ✅ Menggunakan database transaction (rollback jika error)
+-   ✅ Validasi input data
+-   ✅ Backup otomatis sebelum update
+-   ✅ Log semua aktivitas
+-   ✅ Konfirmasi sebelum eksekusi (Artisan command)
 
 ## Tips Penggunaan
 
@@ -204,21 +213,25 @@ psql -U username -d database_name -f storage/backups/vendor_backup_YYYY_MM_DD_HH
 ## Troubleshooting
 
 ### Error: "Kolom kontainer tidak ditemukan"
-- Periksa header CSV, pastikan ada kolom `Kontainer` atau `nomor_kontainer`
-- Periksa delimiter CSV (harus `;`)
+
+-   Periksa header CSV, pastikan ada kolom `Kontainer` atau `nomor_kontainer`
+-   Periksa delimiter CSV (harus `;`)
 
 ### Error: "File tidak ditemukan"
-- Pastikan path file CSV benar
-- Pastikan file accessible dari aplikasi
+
+-   Pastikan path file CSV benar
+-   Pastikan file accessible dari aplikasi
 
 ### Banyak "kontainer tidak ditemukan"
-- Periksa format nomor kontainer di CSV vs database
-- Pastikan tidak ada spasi extra atau karakter khusus
+
+-   Periksa format nomor kontainer di CSV vs database
+-   Pastikan tidak ada spasi extra atau karakter khusus
 
 ### Update berhasil tapi data tidak berubah
-- Periksa apakah transaksi di-commit
-- Periksa log aplikasi Laravel
-- Pastikan koneksi database benar
+
+-   Periksa apakah transaksi di-commit
+-   Periksa log aplikasi Laravel
+-   Pastikan koneksi database benar
 
 ## Contact
 
