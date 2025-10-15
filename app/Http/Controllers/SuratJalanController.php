@@ -166,13 +166,13 @@ class SuratJalanController extends Controller
             'uang_jalan' => 'nullable|numeric|min:0',
             'no_pemesanan' => 'nullable|string|max:255',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:draft,active,completed,cancelled',
         ]);
 
         try {
             $data = $request->except(['gambar']);
             $data['input_by'] = Auth::id();
             $data['input_date'] = now();
+            $data['status'] = 'draft'; // Set default status to draft
 
             // Handle image upload
             if ($request->hasFile('gambar')) {
