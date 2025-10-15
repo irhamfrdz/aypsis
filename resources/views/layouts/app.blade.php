@@ -531,20 +531,20 @@
 
 @if($hasOrderPermissions)
 <div class="mt-4 mb-4">
-    <div class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isOrderRoute ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
+    <button id="order-menu-toggle" class="w-full flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isOrderRoute ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
         <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isOrderRoute ? 'bg-orange-200' : 'bg-orange-50 group-hover:bg-orange-200' }}">
             <svg class="w-4 h-4 {{ $isOrderRoute ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
         </div>
         <span class="text-xs font-medium menu-text">Order Management</span>
-        <svg class="w-3 h-3 ml-auto transition-transform duration-200 {{ $isOrderRoute ? 'rotate-90' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+        <svg class="w-3 h-3 ml-auto transition-transform duration-200 dropdown-arrow {{ $isOrderRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
-    </div>
+    </button>
 
     <!-- Order Submenu -->
-    <div class="ml-6 space-y-1 {{ $isOrderRoute ? 'block' : 'hidden' }}">
+    <div id="order-menu-content" class="dropdown-content ml-6 space-y-1 mt-2" @if($isOrderRoute) style="display: block;" @endif>
         <a href="{{ route('orders.index') }}" class="flex items-center py-2 px-4 rounded-lg text-xs transition-all duration-200 group {{ Request::routeIs('orders.*') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
             <div class="flex items-center justify-center w-6 h-6 rounded-lg mr-3 {{ Request::routeIs('orders.*') ? 'bg-orange-100' : 'bg-gray-100 group-hover:bg-orange-100' }}">
                 <svg class="w-3 h-3 {{ Request::routeIs('orders.*') ? 'text-orange-600' : 'text-gray-500 group-hover:text-orange-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1278,6 +1278,7 @@
         setupDropdown('master-menu-toggle', 'master-menu-content');
         setupDropdown('user-menu-toggle', 'user-menu-content');
         setupDropdown('karyawan-menu-toggle', 'karyawan-menu-content');
+        setupDropdown('order-menu-toggle', 'order-menu-content');
         setupDropdown('input-menu-toggle', 'input-menu-content');
         setupDropdown('aktivitas-menu-toggle', 'aktivitas-menu-content');
         setupDropdown('aktivitas-supir-menu-toggle', 'aktivitas-supir-menu-content');

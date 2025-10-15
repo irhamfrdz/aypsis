@@ -462,26 +462,26 @@
 
             /* Specific column widths for better spacing */
             .table th:nth-child(1) { width: 3%; }  /* No */
-            .table th:nth-child(2) { width: 11%; } /* No. Kontainer */
+            .table th:nth-child(2) { width: 10%; } /* No. Kontainer */
             .table th:nth-child(3) { width: 4%; }  /* Size */
-            .table th:nth-child(4) { width: 14%; } /* Masa */
+            .table th:nth-child(4) { width: 13%; } /* Masa */
             .table th:nth-child(5) { width: 9%; } /* DPP */
             .table th:nth-child(6) { width: 9%; } /* Adjustment */
             .table th:nth-child(7) { width: 7%; }  /* PPN */
             .table th:nth-child(8) { width: 7%; }  /* PPH */
             .table th:nth-child(9) { width: 9%; } /* Grand Total */
-            .table th:nth-child(10) { width: 11%; } /* Invoice Vendor */
+            .table th:nth-child(10) { width: 15%; } /* Invoice Vendor */
 
             .table td:nth-child(1) { width: 3%; text-align: center; }
-            .table td:nth-child(2) { width: 11%; }
+            .table td:nth-child(2) { width: 10%; }
             .table td:nth-child(3) { width: 4%; text-align: center; }
-            .table td:nth-child(4) { width: 14%; }
+            .table td:nth-child(4) { width: 13%; }
             .table td:nth-child(5) { width: 9%; text-align: right; }
             .table td:nth-child(6) { width: 9%; text-align: right; }
             .table td:nth-child(7) { width: 7%; text-align: right; }
             .table td:nth-child(8) { width: 7%; text-align: right; }
             .table td:nth-child(9) { width: 9%; text-align: right; }
-            .table td:nth-child(10) { width: 11%; text-align: center; }
+            .table td:nth-child(10) { width: 15%; text-align: center; }
 
             .masa-display {
                 padding: 0;
@@ -718,15 +718,15 @@
             <thead>
                 <tr>
                     <th style="width: 3%;">No</th>
-                    <th style="width: 11%;">No. Kontainer</th>
+                    <th style="width: 10%;">No. Kontainer</th>
                     <th style="width: 4%;">Size</th>
-                    <th style="width: 14%;">Masa</th>
+                    <th style="width: 13%;">Masa</th>
                     <th style="width: 9%;">DPP</th>
                     <th style="width: 9%;">Adjustment</th>
                     <th style="width: 7%;">PPN</th>
                     <th style="width: 7%;">PPH</th>
                     <th style="width: 9%;">Grand Total</th>
-                    <th style="width: 11%;">Invoice Vendor</th>
+                    <th style="width: 15%;">Invoice Vendor</th>
                 </tr>
             </thead>
             <tbody>

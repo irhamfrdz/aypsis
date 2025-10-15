@@ -157,12 +157,18 @@ class Order extends Model
 
     public function getOutstandingStatusBadgeAttribute()
     {
-        $badges = [
-            'pending' => 'bg-yellow-100 text-yellow-800',
-            'partial' => 'bg-blue-100 text-blue-800',
-            'completed' => 'bg-green-100 text-green-800'
-        ];
+        $status = $this->outstanding_status ?? 'pending';
+        $text = ucfirst($status);
 
-        return $badges[$this->outstanding_status] ?? 'bg-gray-100 text-gray-800';
+        switch ($status) {
+            case 'pending':
+                return '<span class="badge badge-warning">' . $text . '</span>';
+            case 'partial':
+                return '<span class="badge badge-info">' . $text . '</span>';
+            case 'completed':
+                return '<span class="badge badge-success">' . $text . '</span>';
+            default:
+                return '<span class="badge badge-secondary">Unknown</span>';
+        }
     }
 }
