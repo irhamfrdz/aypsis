@@ -249,7 +249,7 @@
                 <!-- Container Information -->
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Kontainer</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <div>
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Size Kontainer <span class="text-red-500">*</span></label>
                             <select name="size_kontainer" id="size_kontainer" required
@@ -270,20 +270,7 @@
                             <label for="unit_kontainer" class="block text-sm font-medium text-gray-700 mb-2">Unit Kontainer <span class="text-red-500">*</span></label>
                             <input type="number" name="unit_kontainer" id="unit_kontainer" value="{{ old('unit_kontainer', $order->unit_kontainer) }}" required min="1"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                        </div>
-
-                        <!-- Units for Outstanding -->
-                        <div>
-                            <label for="units" class="block text-sm font-medium text-gray-700 mb-2">
-                                Total Units <span class="text-red-500">*</span>
-                            </label>
-                            <input type="number" name="units" id="units" value="{{ old('units', $order->units) }}" required min="1"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('units') border-red-500 @enderror"
-                                   placeholder="Total units for tracking">
-                            <small class="text-gray-500">Current remaining: {{ $order->sisa ?? $order->units ?? 0 }} units</small>
-                            @error('units')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <small class="text-gray-500">Units untuk outstanding: {{ $order->units ?? 0 }} | Sisa: {{ $order->sisa ?? 0 }}</small>
                         </div>
 
                         <div>

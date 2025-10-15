@@ -288,7 +288,7 @@
                 <!-- Container Information -->
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Kontainer</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <!-- Size Kontainer -->
                         <div>
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
@@ -315,22 +315,9 @@
                             </label>
                             <input type="number" name="unit_kontainer" id="unit_kontainer" value="{{ old('unit_kontainer') }}" required min="1"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('unit_kontainer') border-red-500 @enderror"
-                                   placeholder="Jumlah unit">
+                                   placeholder="Jumlah unit kontainer">
+                            <small class="text-gray-500">Akan digunakan untuk outstanding tracking</small>
                             @error('unit_kontainer')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Units for Outstanding -->
-                        <div>
-                            <label for="units" class="block text-sm font-medium text-gray-700 mb-2">
-                                Total Units <span class="text-red-500">*</span>
-                            </label>
-                            <input type="number" name="units" id="units" value="{{ old('units') }}" required min="1"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('units') border-red-500 @enderror"
-                                   placeholder="Total units for tracking">
-                            <small class="text-gray-500">This will be used for outstanding tracking</small>
-                            @error('units')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
