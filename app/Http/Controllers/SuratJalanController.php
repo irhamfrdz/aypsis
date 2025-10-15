@@ -151,7 +151,7 @@ class SuratJalanController extends Controller
         }
 
         Log::info('Starting surat jalan validation');
-        
+
         $request->validate([
             'order_id' => 'nullable|exists:orders,id',
             'tanggal_surat_jalan' => 'required|date',
@@ -188,11 +188,11 @@ class SuratJalanController extends Controller
         try {
             Log::info('Starting surat jalan creation process');
             Log::info('Request data:', $request->all());
-            
+
             $data = $request->except(['gambar']);
             $data['input_by'] = Auth::id();
             $data['input_date'] = now();
-            $data['status'] = 'belum melakukan checkpoint'; // Set default status to belum melakukan checkpoint
+            $data['status'] = 'belum masuk checkpoint'; // Set default status to belum masuk checkpoint
 
             Log::info('Prepared data for saving:', $data);
 
