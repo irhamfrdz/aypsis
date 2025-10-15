@@ -397,6 +397,75 @@
         </div>
     </div>
 </div>
+
+<!-- Process Units Modal -->
+<div class="fixed inset-0 z-50 overflow-y-auto hidden" id="processUnitsModal">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+        
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen">&#8203;</span>
+        
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="processUnitsForm">
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mt-3 text-center sm:mt-0 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900 mb-4">Process Units</h3>
+                            
+                            <div class="space-y-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Order Number</label>
+                                    <input type="text" id="modalOrderNumber" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50" readonly>
+                                </div>
+                                
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Total Units</label>
+                                        <input type="number" id="modalTotalUnits" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50" readonly>
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Current Remaining</label>
+                                        <input type="number" id="modalCurrentSisa" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50" readonly>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Process Units <span class="text-red-500">*</span></label>
+                                    <input type="number" id="processedUnits" name="processed_units"
+                                           class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500" 
+                                           min="1" required>
+                                    <p class="mt-1 text-sm text-gray-500">Enter number of units to process</p>
+                                </div>
+                                
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-1">Notes</label>
+                                    <textarea id="processNotes" name="notes" rows="3"
+                                              class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                              placeholder="Optional notes about this processing..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit" 
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Process Units
+                    </button>
+                    <button type="button" onclick="closeModal()" 
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Cancel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -412,12 +481,17 @@ $(document).ready(function() {
     $('#refreshStats').click(function() {
         loadStatistics();
     });
-
-    // Toggle filter functionality
-    $('#toggleFilter').click(function() {
-        $('#filterCollapse').slideToggle();
-    });
 });
+
+// Toggle filter collapse
+function toggleFilter() {
+    const filterCollapse = document.getElementById('filterCollapse');
+    if (filterCollapse.style.display === 'none') {
+        filterCollapse.style.display = 'block';
+    } else {
+        filterCollapse.style.display = 'none';
+    }
+}
 
 function loadStatistics() {
     $.get('{{ route("outstanding.stats") }}', function(data) {
@@ -427,7 +501,7 @@ function loadStatistics() {
         $('#outstandingCount').html(data.total_outstanding);
     }).fail(function() {
         // Show error state
-        $('.text-2xl').html('<svg class="w-5 h-5 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>');
+        $('.text-2xl').html('<svg class="w-5 h-5 inline text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>');
     });
 }
 
@@ -438,6 +512,8 @@ function processUnits(orderId) {
         $('#modalTotalUnits').val(data.units);
         $('#modalCurrentSisa').val(data.sisa);
         $('#processedUnits').attr('max', data.sisa);
+        
+        // Show modal (Tailwind modal)
         $('#processUnitsModal').removeClass('hidden');
 
         // Store order ID for processing
@@ -477,31 +553,12 @@ $('#processUnitsForm').submit(function(e) {
             if (response.success) {
                 // Update the row in table
                 const row = $(`tr[data-order-id="${orderId}"]`);
-                
-                // Update sisa badge
-                row.find('td:nth-child(6) span').text(new Intl.NumberFormat().format(response.order.sisa));
-                
-                // Update progress bar
-                const progressBar = row.find('.h-2');
-                const percentage = response.order.completion_percentage;
-                progressBar.css('width', percentage + '%');
-                
-                // Update progress bar color
-                if (percentage >= 100) {
-                    progressBar.removeClass('bg-yellow-400 bg-red-400').addClass('bg-green-600');
-                } else if (percentage >= 50) {
-                    progressBar.removeClass('bg-green-600 bg-red-400').addClass('bg-yellow-400');
-                } else {
-                    progressBar.removeClass('bg-green-600 bg-yellow-400').addClass('bg-red-400');
-                }
-                
-                // Update percentage text
-                row.find('.text-xs.text-gray-500').text(percentage.toFixed(1) + '%');
-                
-                // Update status badge
+                row.find('td:nth-child(6) .badge').text(new Intl.NumberFormat().format(response.order.sisa));
+                row.find('.progress-bar').css('width', response.order.completion_percentage + '%')
+                    .text(response.order.completion_percentage.toFixed(1) + '%');
                 row.find('td:nth-child(8)').html(response.order.status_badge);
 
-                // Close modal
+                // Close modal and reset form
                 closeModal();
 
                 // Refresh statistics
@@ -524,31 +581,31 @@ $('#processUnitsForm').submit(function(e) {
 });
 
 function showAlert(type, message) {
-    const alertColors = {
-        'success': 'bg-green-50 border-green-200 text-green-800',
-        'danger': 'bg-red-50 border-red-200 text-red-800',
-        'warning': 'bg-yellow-50 border-yellow-200 text-yellow-800',
-        'info': 'bg-blue-50 border-blue-200 text-blue-800'
-    };
-
+    const bgColor = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800';
+    const iconColor = type === 'success' ? 'text-green-400' : 'text-red-400';
+    const icon = type === 'success' ? 
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>' :
+        '<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>';
+    
     const alertHtml = `
-        <div class="fixed top-4 right-4 max-w-sm w-full ${alertColors[type]} border rounded-md p-4 shadow-lg z-50" id="alert">
-            <div class="flex">
-                <div class="flex-shrink-0">
-                    ${type === 'success' ? 
-                        '<svg class="h-5 w-5 text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>' : 
-                        '<svg class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
-                    }
-                </div>
-                <div class="ml-3">
-                    <p class="text-sm font-medium">${message}</p>
-                </div>
-                <div class="ml-auto pl-3">
-                    <button onclick="$('#alert').remove()" class="inline-flex text-gray-400 hover:text-gray-600">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+        <div id="alert" class="fixed top-4 right-4 max-w-md w-full ${bgColor} border rounded-lg shadow-lg z-50">
+            <div class="p-4">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <svg class="w-5 h-5 ${iconColor}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            ${icon}
                         </svg>
-                    </button>
+                    </div>
+                    <div class="ml-3">
+                        <p class="text-sm font-medium">${message}</p>
+                    </div>
+                    <div class="ml-auto pl-3">
+                        <button onclick="$('#alert').fadeOut()" class="inline-flex ${iconColor} hover:text-gray-500">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
                 </div>
             </div>
         </div>
