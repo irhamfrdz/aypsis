@@ -90,7 +90,7 @@
             height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
             max-height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
             margin: 0 auto;
-            padding: 5mm;
+            padding: 5mm 1mm 5mm 5mm;
             position: relative;
             padding-bottom: {{ $paperSize === 'Half-A4' ? '60px' : ($paperSize === 'Half-Folio' ? '60px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
             box-sizing: border-box;
@@ -271,7 +271,7 @@
         .summary {
             margin-top: 10px;
             text-align: right;
-            padding-right: 50px;
+            padding-right: 3px;
         }
 
         .summary-item {
@@ -383,7 +383,7 @@
                     height: 287mm;
                     max-height: 287mm;
                 @endif
-                padding: 5mm;
+                padding: 5mm 1mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
                 margin: 0;
                 box-sizing: border-box;
@@ -461,27 +461,27 @@
             }
 
             /* Specific column widths for better spacing */
-            .table th:nth-child(1) { width: 4%; }  /* No */
-            .table th:nth-child(2) { width: 14%; } /* No. Kontainer */
-            .table th:nth-child(3) { width: 6%; }  /* Size */
-            .table th:nth-child(4) { width: 16%; } /* Masa */
-            .table th:nth-child(5) { width: 10%; } /* DPP */
-            .table th:nth-child(6) { width: 10%; } /* Adjustment */
-            .table th:nth-child(7) { width: 8%; }  /* PPN */
-            .table th:nth-child(8) { width: 8%; }  /* PPH */
-            .table th:nth-child(9) { width: 10%; } /* Grand Total */
-            .table th:nth-child(10) { width: 14%; } /* Invoice Vendor */
+            .table th:nth-child(1) { width: 3%; }  /* No */
+            .table th:nth-child(2) { width: 11%; } /* No. Kontainer */
+            .table th:nth-child(3) { width: 4%; }  /* Size */
+            .table th:nth-child(4) { width: 14%; } /* Masa */
+            .table th:nth-child(5) { width: 9%; } /* DPP */
+            .table th:nth-child(6) { width: 9%; } /* Adjustment */
+            .table th:nth-child(7) { width: 7%; }  /* PPN */
+            .table th:nth-child(8) { width: 7%; }  /* PPH */
+            .table th:nth-child(9) { width: 9%; } /* Grand Total */
+            .table th:nth-child(10) { width: 11%; } /* Invoice Vendor */
 
-            .table td:nth-child(1) { width: 4%; text-align: center; }
-            .table td:nth-child(2) { width: 14%; }
-            .table td:nth-child(3) { width: 6%; text-align: center; }
-            .table td:nth-child(4) { width: 16%; }
-            .table td:nth-child(5) { width: 10%; text-align: right; }
-            .table td:nth-child(6) { width: 10%; text-align: right; }
-            .table td:nth-child(7) { width: 8%; text-align: right; }
-            .table td:nth-child(8) { width: 8%; text-align: right; }
-            .table td:nth-child(9) { width: 10%; text-align: right; }
-            .table td:nth-child(10) { width: 14%; text-align: center; }
+            .table td:nth-child(1) { width: 3%; text-align: center; }
+            .table td:nth-child(2) { width: 11%; }
+            .table td:nth-child(3) { width: 4%; text-align: center; }
+            .table td:nth-child(4) { width: 14%; }
+            .table td:nth-child(5) { width: 9%; text-align: right; }
+            .table td:nth-child(6) { width: 9%; text-align: right; }
+            .table td:nth-child(7) { width: 7%; text-align: right; }
+            .table td:nth-child(8) { width: 7%; text-align: right; }
+            .table td:nth-child(9) { width: 9%; text-align: right; }
+            .table td:nth-child(10) { width: 11%; text-align: center; }
 
             .masa-display {
                 padding: 0;
@@ -507,7 +507,7 @@
                 margin-top: 5px;
                 font-size: 9px;
                 text-align: right;
-                padding-right: 40px;
+                padding-right: 2px;
             }
 
             .summary-label {
@@ -717,16 +717,16 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th style="width: 4%;">No</th>
-                    <th style="width: 14%;">No. Kontainer</th>
-                    <th style="width: 6%;">Size</th>
-                    <th style="width: 16%;">Masa</th>
-                    <th style="width: 10%;">DPP</th>
-                    <th style="width: 10%;">Adjustment</th>
-                    <th style="width: 8%;">PPN</th>
-                    <th style="width: 8%;">PPH</th>
-                    <th style="width: 10%;">Grand Total</th>
-                    <th style="width: 14%;">Invoice Vendor</th>
+                    <th style="width: 3%;">No</th>
+                    <th style="width: 11%;">No. Kontainer</th>
+                    <th style="width: 4%;">Size</th>
+                    <th style="width: 14%;">Masa</th>
+                    <th style="width: 9%;">DPP</th>
+                    <th style="width: 9%;">Adjustment</th>
+                    <th style="width: 7%;">PPN</th>
+                    <th style="width: 7%;">PPH</th>
+                    <th style="width: 9%;">Grand Total</th>
+                    <th style="width: 11%;">Invoice Vendor</th>
                 </tr>
             </thead>
             <tbody>
