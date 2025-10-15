@@ -543,6 +543,76 @@ class DaftarTagihanKontainerSewaController extends Controller
     }
 
     /**
+     * Update vendor invoice information
+     */
+    public function updateVendorInfo(Request $request, $id)
+    {
+        try {
+            // Validate request
+            $request->validate([
+                'invoice_vendor' => 'nullable|string|max:100',
+                'tanggal_vendor' => 'nullable|date',
+            ]);
+
+            // Find the record
+            $tagihan = DaftarTagihanKontainerSewa::find($id);
+            if (!$tagihan) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data tagihan tidak ditemukan'
+                    ], 404);
+                }
+                return redirect()->back()->with('error', 'Data tagihan tidak ditemukan');
+            }
+
+            // Update vendor info
+            $tagihan->invoice_vendor = $request->invoice_vendor;
+            $tagihan->tanggal_vendor = $request->tanggal_vendor;
+            $tagihan->save();
+
+            // Log the change
+            Log::info("Vendor info updated for tagihan ID {$id}", [
+                'invoice_vendor' => $request->invoice_vendor,
+                'tanggal_vendor' => $request->tanggal_vendor,
+                'user_id' => Auth::id(),
+                'timestamp' => now()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Informasi vendor berhasil diperbarui',
+                    'data' => [
+                        'id' => $tagihan->id,
+                        'invoice_vendor' => $tagihan->invoice_vendor,
+                        'tanggal_vendor' => $tagihan->tanggal_vendor,
+                        'formatted_tanggal_vendor' => $tagihan->tanggal_vendor ? $tagihan->tanggal_vendor->format('d-M-Y') : null,
+                    ]
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Informasi vendor berhasil diperbarui');
+
+        } catch (\Exception $e) {
+            Log::error("Failed to update vendor info for tagihan ID {$id}", [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'timestamp' => now()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui informasi vendor: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Gagal memperbarui informasi vendor: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Bulk delete selected items
      */
     public function bulkDelete(Request $request)

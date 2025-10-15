@@ -611,6 +611,32 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
+                    <th class="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 150px;">
+                        <div class="flex items-center justify-start space-x-1">
+                            <span>Invoice Vendor</span>
+                            <div class="relative group">
+                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                                    Nomor invoice dari vendor
+                                </div>
+                            </div>
+                        </div>
+                    </th>
+                    <th class="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 120px;">
+                        <div class="flex items-center justify-start space-x-1">
+                            <span>Tanggal Vendor</span>
+                            <div class="relative group">
+                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                                    Tanggal invoice vendor
+                                </div>
+                            </div>
+                        </div>
+                    </th>
                     <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>DPP Nilai Lain</span>
@@ -866,6 +892,58 @@ input[required]:focus {
                                     <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
                                             onclick="editAdjustmentNote({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->adjustment_note ?? '') }}')"
                                             title="Edit alasan adjustment">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- Kolom Invoice Vendor -->
+                        <td class="px-2 py-2 whitespace-nowrap text-left text-[10px] text-gray-900" style="min-width: 150px;">
+                            <div class="relative group min-h-[40px] flex items-center">
+                                @if(optional($tagihan)->invoice_vendor)
+                                    <div class="text-sm text-gray-700 w-full">
+                                        <div class="truncate max-w-[130px]" title="{{ $tagihan->invoice_vendor }}">
+                                            {{ $tagihan->invoice_vendor }}
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="text-xs text-gray-400 w-full">
+                                        -
+                                    </div>
+                                @endif
+
+                                <!-- Edit button for invoice vendor -->
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
+                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                            onclick="editVendorInfo({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->invoice_vendor ?? '') }}', '{{ optional($tagihan)->tanggal_vendor ? optional($tagihan)->tanggal_vendor->format('Y-m-d') : '' }}')"
+                                            title="Edit invoice vendor">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- Kolom Tanggal Vendor -->
+                        <td class="px-2 py-2 whitespace-nowrap text-left text-[10px] text-gray-900" style="min-width: 120px;">
+                            <div class="relative group min-h-[40px] flex items-center">
+                                @if(optional($tagihan)->tanggal_vendor)
+                                    <div class="text-sm text-gray-700 w-full">
+                                        {{ optional($tagihan)->tanggal_vendor->format('d-M-Y') }}
+                                    </div>
+                                @else
+                                    <div class="text-xs text-gray-400 w-full">
+                                        -
+                                    </div>
+                                @endif
+
+                                <!-- Edit button for tanggal vendor (same as invoice vendor) -->
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
+                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                            onclick="editVendorInfo({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->invoice_vendor ?? '') }}', '{{ optional($tagihan)->tanggal_vendor ? optional($tagihan)->tanggal_vendor->format('Y-m-d') : '' }}')"
+                                            title="Edit tanggal vendor">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
@@ -3046,6 +3124,172 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
 // Function to close adjustment modal
 window.closeAdjustmentModal = function() {
     const modal = document.getElementById('adjustmentModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
+// Function to edit vendor info
+window.editVendorInfo = function(tagihanId, currentInvoice, currentTanggal) {
+    console.log('editVendorInfo called:', { tagihanId, currentInvoice, currentTanggal });
+
+    // Check permission for updating tagihan
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit informasi vendor. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
+        return;
+    @endif
+
+    // Create modal HTML for vendor info editing
+    const modalHTML = `
+        <div id="vendorInfoModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between pb-3 border-b">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Edit Informasi Vendor
+                        </h3>
+                        <button type="button" onclick="closeVendorInfoModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <form id="vendorInfoForm" class="mt-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Invoice Vendor
+                                </label>
+                                <input type="text" id="invoice_vendor_value" name="invoice_vendor" maxlength="100"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan nomor invoice vendor" value="${currentInvoice || ''}">
+                                <p class="text-xs text-gray-500 mt-1">Maksimal 100 karakter</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tanggal Vendor
+                                </label>
+                                <input type="date" id="tanggal_vendor_value" name="tanggal_vendor"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       value="${currentTanggal || ''}">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
+                            <button type="button" onclick="closeVendorInfoModal()"
+                                    class="btn-animated px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                    class="btn-animated px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <span class="btn-text">Simpan</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('vendorInfoModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Handle form submission
+    const form = document.getElementById('vendorInfoForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const invoiceVendor = document.getElementById('invoice_vendor_value').value.trim();
+        const tanggalVendor = document.getElementById('tanggal_vendor_value').value;
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const originalText = btnText.textContent;
+        btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
+        submitBtn.disabled = true;
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PATCH');
+        formData.append('invoice_vendor', invoiceVendor);
+        formData.append('tanggal_vendor', tanggalVendor);
+
+        // Send AJAX request
+        fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${tagihanId}/vendor-info`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    throw new Error(`Server error: ${response.status}`);
+                });
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('success', 'Informasi Vendor Berhasil Disimpan',
+                    'Informasi vendor telah berhasil diperbarui.');
+
+                // Close modal and reload page after success
+                closeVendorInfoModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Gagal menyimpan informasi vendor');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving vendor info:', error);
+            showNotification('error', 'Gagal Menyimpan', error.message || 'Terjadi kesalahan saat menyimpan informasi vendor');
+
+            // Reset button state
+            btnText.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+};
+
+// Function to close vendor info modal
+window.closeVendorInfoModal = function() {
+    const modal = document.getElementById('vendorInfoModal');
     if (!modal) return;
 
     modal.classList.add('modal-hide');

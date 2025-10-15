@@ -27,6 +27,8 @@ class DaftarTagihanKontainerSewa extends Model
         'dpp',
         'adjustment',
         'adjustment_note',
+        'invoice_vendor',
+        'tanggal_vendor',
         'dpp_nilai_lain',
         'ppn',
         'pph',
@@ -36,6 +38,7 @@ class DaftarTagihanKontainerSewa extends Model
     protected $casts = [
         'tanggal_awal' => 'date',
         'tanggal_akhir' => 'date',
+        'tanggal_vendor' => 'date',
         'periode' => 'integer',
         'masa' => 'string',
         'dpp' => 'decimal:2',
