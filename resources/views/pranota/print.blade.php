@@ -271,6 +271,7 @@
         .summary {
             margin-top: 10px;
             text-align: right;
+            padding-right: 20px;
         }
 
         .summary-item {
@@ -321,15 +322,6 @@
             font-weight: bold;
             margin-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '30px') }};
             font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '11px') }};
-        }
-
-        .signature-line {
-            border-bottom: 2px solid #333;
-            margin-bottom: {{ $paperSize === 'Half-Folio' ? '5px' : '8px' }};
-            height: 2px;
-            width: {{ $paperSize === 'Half-A4' ? '100px' : ($paperSize === 'Half-Folio' ? '100px' : '150px') }};
-            margin-left: auto;
-            margin-right: auto;
         }
 
         .signature-name {
@@ -455,13 +447,13 @@
             .table th,
             .table td {
                 padding: {{ $paperSize === 'Half-A4' ? '1px' : ($paperSize === 'Half-Folio' ? '1px' : '2px 1px') }};
-                font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
+                font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
                 border: 1px solid #000;
                 word-wrap: break-word;
             }
 
             .table th {
-                font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
+                font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
                 background-color: #f8f9fa !important;
                 color: #333 !important;
                 border: 2px solid #000 !important;
@@ -471,42 +463,44 @@
 
             /* Specific column widths for better spacing */
             .table th:nth-child(1) { width: 4%; }  /* No */
-            .table th:nth-child(2) { width: 22%; } /* No. Kontainer */
-            .table th:nth-child(3) { width: 8%; }  /* Size */
-            .table th:nth-child(4) { width: 15%; } /* Masa */
-            .table th:nth-child(5) { width: 12%; } /* DPP */
-            .table th:nth-child(6) { width: 12%; } /* Adjustment */
-            .table th:nth-child(7) { width: 10%; } /* PPN */
-            .table th:nth-child(8) { width: 10%; } /* PPH */
-            .table th:nth-child(9) { width: 15%; } /* Grand Total */
+            .table th:nth-child(2) { width: 18%; } /* No. Kontainer */
+            .table th:nth-child(3) { width: 6%; }  /* Size */
+            .table th:nth-child(4) { width: 12%; } /* Masa */
+            .table th:nth-child(5) { width: 10%; } /* DPP */
+            .table th:nth-child(6) { width: 10%; } /* Adjustment */
+            .table th:nth-child(7) { width: 15%; } /* Keterangan */
+            .table th:nth-child(8) { width: 8%; }  /* PPN */
+            .table th:nth-child(9) { width: 8%; }  /* PPH */
+            .table th:nth-child(10) { width: 12%; } /* Grand Total */
 
             .table td:nth-child(1) { width: 4%; text-align: center; }
-            .table td:nth-child(2) { width: 22%; }
-            .table td:nth-child(3) { width: 8%; text-align: center; }
-            .table td:nth-child(4) { width: 15%; }
-            .table td:nth-child(5) { width: 12%; text-align: right; }
-            .table td:nth-child(6) { width: 12%; text-align: right; }
-            .table td:nth-child(7) { width: 10%; text-align: right; }
-            .table td:nth-child(8) { width: 10%; text-align: right; }
-            .table td:nth-child(9) { width: 15%; text-align: right; }
+            .table td:nth-child(2) { width: 18%; }
+            .table td:nth-child(3) { width: 6%; text-align: center; }
+            .table td:nth-child(4) { width: 12%; }
+            .table td:nth-child(5) { width: 10%; text-align: right; }
+            .table td:nth-child(6) { width: 10%; text-align: right; }
+            .table td:nth-child(7) { width: 15%; font-size: 7px; vertical-align: top; word-wrap: break-word; }
+            .table td:nth-child(8) { width: 8%; text-align: right; }
+            .table td:nth-child(9) { width: 8%; text-align: right; }
+            .table td:nth-child(10) { width: 12%; text-align: right; }
 
             .masa-display {
                 padding: 0;
-                font-size: 8px;
+                font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '8px') }};
                 line-height: 1.1;
             }
 
             .masa-display small {
-                font-size: 6px;
+                font-size: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : '6px') }};
             }
 
             .col-vendor {
                 max-width: none;
-                font-size: 8px;
+                font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '8px') }};
             }
 
             .col-nomor {
-                font-size: 8px;
+                font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '8px') }};
                 font-weight: 500;
             }
 
@@ -554,14 +548,6 @@
             .signature-label {
                 margin-bottom: 15px;
                 font-size: 8px;
-            }
-
-            .signature-line {
-                margin-bottom: 3px;
-                border-bottom: 2px solid #000 !important;
-                width: 80px;
-                margin-left: auto;
-                margin-right: auto;
             }
 
             .signature-name {
@@ -698,15 +684,15 @@
                 <div style="text-align: left;">
                     <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
                     <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12</span><br>
-                    <span style="font-size: 10px; font-weight: bold; margin-top: 5px; display: inline-block;">
-                        Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}
-                    </span>
                 </div>
-                <div style="text-align: right;">
-                    <span style="font-size: 10px; font-weight: bold;">
-                        No. Pranota: {{ $pranota->no_invoice }}
-                    </span>
-                </div>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                <span style="font-size: 10px; font-weight: bold;">
+                    Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}
+                </span>
+                <span style="font-size: 10px; font-weight: bold;">
+                    No. Pranota: {{ $pranota->no_invoice }}
+                </span>
             </div>
             <h1>PRANOTA TAGIHAN KONTAINER</h1>
         </div>
@@ -740,14 +726,15 @@
             <thead>
                 <tr>
                     <th style="width: 4%;">No</th>
-                    <th style="width: 22%;">No. Kontainer</th>
-                    <th style="width: 8%;">Size</th>
-                    <th style="width: 15%;">Masa</th>
-                    <th style="width: 12%;">DPP</th>
-                    <th style="width: 12%;">Adjustment</th>
-                    <th style="width: 10%;">PPN</th>
-                    <th style="width: 10%;">PPH</th>
-                    <th style="width: 15%;">Grand Total</th>
+                    <th style="width: 18%;">No. Kontainer</th>
+                    <th style="width: 6%;">Size</th>
+                    <th style="width: 12%;">Masa</th>
+                    <th style="width: 10%;">DPP</th>
+                    <th style="width: 10%;">Adjustment</th>
+                    <th style="width: 15%;">Keterangan</th>
+                    <th style="width: 8%;">PPN</th>
+                    <th style="width: 8%;">PPH</th>
+                    <th style="width: 12%;">Grand Total</th>
                 </tr>
             </thead>
             <tbody>
@@ -788,13 +775,16 @@
                     </td>
                     <td class="text-right">{{ number_format($item->dpp ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($item->adjustment ?? 0, 0, ',', '.') }}</td>
+                    <td style="font-size: 8px; padding: 2px; vertical-align: top; word-wrap: break-word;">
+                        {{ $item->adjustment_note ?: '-' }}
+                    </td>
                     <td class="text-right">{{ number_format($item->ppn ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($item->pph ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($item->grand_total ?? 0, 0, ',', '.') }}</td>
                 </tr>
                 @empty
                 <tr>
-                    <td colspan="9" class="text-center">Tidak ada tagihan ditemukan</td>
+                    <td colspan="10" class="text-center">Tidak ada tagihan ditemukan</td>
                 </tr>
                 @endforelse
                 <!-- Total Row -->
@@ -802,6 +792,7 @@
                     <td colspan="4" class="text-center" style="font-weight: bold; text-align: center;">TOTAL</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 0, ',', '.') }}</td>
+                    <td class="text-center">-</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</td>
@@ -813,20 +804,13 @@
         <div class="summary">
             <div class="summary-item total-amount" style="margin-top: 10px;">
                 <span class="summary-label">TOTAL AMOUNT:</span>
-                <span>Rp {{ number_format((float)$pranota->total_amount, 0, ',', '.') }}</span>
+                <span>Rp {{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</span>
             </div>
         </div>
 
         <!-- Keterangan Table -->
         <div class="keterangan-table" style="margin-top: 8px; margin-bottom: 8px;">
             <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
-                <thead>
-                    <tr>
-                        <th style="background-color: #f8f9fa; color: #333; font-weight: bold; font-size: 10px; text-align: center; padding: 4px; border: 1px solid #333;">
-                            KETERANGAN
-                        </th>
-                    </tr>
-                </thead>
                 <tbody>
                     <tr>
                         <td style="padding: 6px; border: 1px solid #333; font-size: 10px; min-height: 30px; vertical-align: top;">
@@ -843,17 +827,14 @@
                 <tr>
                     <td class="signature-cell">
                         <div class="signature-label">Dibuat Oleh</div>
-                        <div class="signature-line"></div>
                         <div class="signature-name">&nbsp;</div>
                     </td>
                     <td class="signature-cell">
                         <div class="signature-label">Disetujui Oleh</div>
-                        <div class="signature-line"></div>
                         <div class="signature-name">&nbsp;</div>
                     </td>
                     <td class="signature-cell">
                         <div class="signature-label">Diterima Oleh</div>
-                        <div class="signature-line"></div>
                         <div class="signature-name">&nbsp;</div>
                     </td>
                 </tr>

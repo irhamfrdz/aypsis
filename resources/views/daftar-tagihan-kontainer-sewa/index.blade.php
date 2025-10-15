@@ -598,6 +598,19 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
+                    <th class="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 200px;">
+                        <div class="flex items-center justify-start space-x-1">
+                            <span>Alasan Adjustment</span>
+                            <div class="relative group">
+                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                                    Alasan penyesuaian harga
+                                </div>
+                            </div>
+                        </div>
+                    </th>
                     <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>DPP Nilai Lain</span>
@@ -826,6 +839,33 @@ input[required]:focus {
                                     <button type="button" class="text-xs bg-cyan-600 text-white px-2 py-1 rounded hover:bg-cyan-700 transition-colors"
                                             onclick="editAdjustment({{ $tagihan->id }}, {{ optional($tagihan)->adjustment ?? 0 }})"
                                             title="Edit adjustment">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                        </td>
+                        <!-- Kolom Alasan Adjustment -->
+                        <td class="px-2 py-2 whitespace-nowrap text-left text-[10px] text-gray-900" style="min-width: 200px;">
+                            <div class="relative group min-h-[40px] flex items-center">
+                                @if(optional($tagihan)->adjustment_note)
+                                    <div class="text-sm text-gray-700 w-full">
+                                        <div class="truncate max-w-[180px]" title="{{ $tagihan->adjustment_note }}">
+                                            {{ $tagihan->adjustment_note }}
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="text-xs text-gray-400 w-full">
+                                        -
+                                    </div>
+                                @endif
+
+                                <!-- Edit button for adjustment note -->
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
+                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                            onclick="editAdjustmentNote({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->adjustment_note ?? '') }}')"
+                                            title="Edit alasan adjustment">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
@@ -2700,6 +2740,161 @@ window.showError = function(title, message, duration) {
 
 window.showWarning = function(title, message, duration) {
     return showNotification('warning', title, message, duration);
+};
+
+// Function to edit adjustment note
+window.editAdjustmentNote = function(tagihanId, currentNote) {
+    console.log('editAdjustmentNote called:', { tagihanId, currentNote });
+
+    // Check permission for updating tagihan
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit alasan adjustment. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
+        return;
+    @endif
+
+    // Create modal HTML for adjustment note editing
+    const modalHTML = `
+        <div id="adjustmentNoteModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <div class="flex items-center justify-between pb-4 border-b">
+                        <h3 class="text-lg font-medium text-gray-900">
+                            Edit Alasan Adjustment
+                        </h3>
+                        <button type="button" onclick="closeAdjustmentNoteModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <form id="adjustmentNoteForm" class="mt-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label for="adjustment_note_value" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Alasan Adjustment
+                                </label>
+                                <textarea id="adjustment_note_value" name="adjustment_note" rows="4" 
+                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                         placeholder="Masukkan alasan penyesuaian harga...">${currentNote}</textarea>
+                                <div class="text-xs text-gray-500 mt-1">
+                                    Jelaskan mengapa ada penyesuaian harga pada item ini
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
+                            <button type="button" onclick="closeAdjustmentNoteModal()" 
+                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                Batal
+                            </button>
+                            <button type="submit" 
+                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                                <span class="btn-text">Simpan</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('adjustmentNoteModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Handle form submission
+    const form = document.getElementById('adjustmentNoteForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const adjustmentNote = document.getElementById('adjustment_note_value').value.trim();
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const originalText = btnText.textContent;
+        btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
+        submitBtn.disabled = true;
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PATCH');
+        formData.append('adjustment_note', adjustmentNote);
+
+        // Send AJAX request
+        fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${tagihanId}/adjustment-note`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    throw new Error(`Server error: ${response.status}`);
+                });
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('success', 'Alasan Adjustment Berhasil Disimpan',
+                    'Alasan adjustment telah berhasil diperbarui.');
+
+                // Close modal and reload page
+                closeAdjustmentNoteModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Gagal menyimpan alasan adjustment');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving adjustment note:', error);
+            showNotification('error', 'Gagal Menyimpan', error.message || 'Terjadi kesalahan saat menyimpan alasan adjustment');
+
+            // Reset button state
+            btnText.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+};
+
+// Function to close adjustment note modal
+window.closeAdjustmentNoteModal = function() {
+    const modal = document.getElementById('adjustmentNoteModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
 };
 
 // Function to edit adjustment

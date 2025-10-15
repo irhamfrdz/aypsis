@@ -478,6 +478,71 @@ class DaftarTagihanKontainerSewaController extends Controller
     }
 
     /**
+     * Update adjustment note
+     */
+    public function updateAdjustmentNote(Request $request, $id)
+    {
+        try {
+            // Validate request
+            $request->validate([
+                'adjustment_note' => 'nullable|string|max:500',
+            ]);
+
+            // Find the record
+            $tagihan = DaftarTagihanKontainerSewa::find($id);
+            if (!$tagihan) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data tagihan tidak ditemukan'
+                    ], 404);
+                }
+                return redirect()->back()->with('error', 'Data tagihan tidak ditemukan');
+            }
+
+            // Update adjustment note
+            $tagihan->adjustment_note = $request->adjustment_note;
+            $tagihan->save();
+
+            // Log the change
+            Log::info("Adjustment note updated for tagihan ID {$id}", [
+                'adjustment_note' => $request->adjustment_note,
+                'user_id' => Auth::id(),
+                'timestamp' => now()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Alasan adjustment berhasil diperbarui',
+                    'data' => [
+                        'id' => $tagihan->id,
+                        'adjustment_note' => $tagihan->adjustment_note,
+                    ]
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Alasan adjustment berhasil diperbarui');
+
+        } catch (\Exception $e) {
+            Log::error("Failed to update adjustment note for tagihan ID {$id}", [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'timestamp' => now()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui alasan adjustment: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Gagal memperbarui alasan adjustment: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Bulk delete selected items
      */
     public function bulkDelete(Request $request)

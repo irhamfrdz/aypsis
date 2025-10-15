@@ -26,6 +26,7 @@ class DaftarTagihanKontainerSewa extends Model
         'pranota_id',
         'dpp',
         'adjustment',
+        'adjustment_note',
         'dpp_nilai_lain',
         'ppn',
         'pph',
