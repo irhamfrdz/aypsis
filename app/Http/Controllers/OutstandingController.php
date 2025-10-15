@@ -38,7 +38,7 @@ class OutstandingController extends Controller
     public function byStatus(Request $request, string $status)
     {
         $validStatuses = ['pending', 'partial', 'completed'];
-        
+
         if (!in_array($status, $validStatuses)) {
             abort(404, 'Invalid status');
         }
@@ -118,7 +118,7 @@ class OutstandingController extends Controller
     {
         $query = Order::outstanding()->with(['term', 'pengirim', 'jenisBarang', 'tujuanAmbil']);
         $this->applyFilters($query, $request);
-        
+
         $orders = $query->get();
 
         // You can implement Excel export here
@@ -208,7 +208,7 @@ class OutstandingController extends Controller
     {
         $totalOrders = Order::count();
         $completedOrders = Order::completed()->count();
-        
+
         return $totalOrders > 0 ? round(($completedOrders / $totalOrders) * 100, 2) : 0;
     }
 

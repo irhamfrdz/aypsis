@@ -613,6 +613,71 @@ class DaftarTagihanKontainerSewaController extends Controller
     }
 
     /**
+     * Update group information
+     */
+    public function updateGroupInfo(Request $request, $id)
+    {
+        try {
+            // Validate request
+            $request->validate([
+                'group' => 'nullable|string|max:50',
+            ]);
+
+            // Find the record
+            $tagihan = DaftarTagihanKontainerSewa::find($id);
+            if (!$tagihan) {
+                if ($request->ajax()) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Data tagihan tidak ditemukan'
+                    ], 404);
+                }
+                return redirect()->back()->with('error', 'Data tagihan tidak ditemukan');
+            }
+
+            // Update group info
+            $tagihan->group = $request->group;
+            $tagihan->save();
+
+            // Log the change
+            Log::info("Group info updated for tagihan ID {$id}", [
+                'group' => $request->group,
+                'user_id' => Auth::id(),
+                'timestamp' => now()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Informasi group berhasil diperbarui',
+                    'data' => [
+                        'id' => $tagihan->id,
+                        'group' => $tagihan->group,
+                    ]
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Informasi group berhasil diperbarui');
+
+        } catch (\Exception $e) {
+            Log::error("Failed to update group info for tagihan ID {$id}", [
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id(),
+                'timestamp' => now()
+            ]);
+
+            if ($request->ajax()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Gagal memperbarui informasi group: ' . $e->getMessage()
+                ], 500);
+            }
+
+            return redirect()->back()->with('error', 'Gagal memperbarui informasi group: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Bulk delete selected items
      */
     public function bulkDelete(Request $request)

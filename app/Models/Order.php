@@ -126,7 +126,7 @@ class Order extends Model
             $this->outstanding_status = 'pending';
             $this->completion_percentage = 0.00;
         }
-        
+
         return $this;
     }
 
@@ -137,7 +137,7 @@ class Order extends Model
         }
 
         $this->sisa -= $processed_count;
-        
+
         // Add to processing history
         $history = $this->processing_history ?? [];
         $history[] = [

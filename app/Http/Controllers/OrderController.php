@@ -285,14 +285,14 @@ class OrderController extends Controller
             $oldUnits = $order->units ?? 0;
             $newUnits = $request->units;
             $processedUnits = $oldUnits - ($order->sisa ?? 0);
-            
+
             // Update sisa based on new units and already processed units
             $data['sisa'] = max(0, $newUnits - $processedUnits);
-            
+
             // Recalculate completion percentage
             if ($newUnits > 0) {
                 $data['completion_percentage'] = min(100, ($processedUnits / $newUnits) * 100);
-                
+
                 // Update outstanding status
                 if ($processedUnits >= $newUnits) {
                     $data['outstanding_status'] = 'completed';
@@ -303,7 +303,7 @@ class OrderController extends Controller
                     $data['outstanding_status'] = 'pending';
                 }
             }
-            
+
             // Log the change in processing history
             $history = json_decode($order->processing_history ?? '[]', true);
             $history[] = [

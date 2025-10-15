@@ -162,8 +162,6 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pranota</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Tagihan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Invoice Vendor</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tgl Invoice Vendor</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pembayaran</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
@@ -199,16 +197,6 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 Rp {{ number_format($pranota->total_amount, 2, ',', '.') }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $pranota->no_invoice_vendor ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                @if($pranota->tgl_invoice_vendor)
-                                    {{ $pranota->tgl_invoice_vendor->format('d/M/Y') }}
-                                @else
-                                    <span class="text-gray-500">-</span>
-                                @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $pranota->getStatusColor() }}">

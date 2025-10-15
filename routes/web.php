@@ -1219,6 +1219,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
                     ->name('daftar-tagihan-kontainer-sewa.vendor-info.update')
                     ->middleware('can:tagihan-kontainer-sewa-update');
 
+               // Update group info endpoint
+               Route::patch('daftar-tagihan-kontainer-sewa/{id}/group-info', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'updateGroupInfo'])
+                    ->name('daftar-tagihan-kontainer-sewa.group-info.update')
+                    ->middleware('can:tagihan-kontainer-sewa-update');
+
                // Individual routes with specific middleware instead of resource
                Route::get('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'index'])
                     ->name('daftar-tagihan-kontainer-sewa.index')

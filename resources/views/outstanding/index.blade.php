@@ -156,8 +156,8 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="completion_percentage">Min. Completion %</label>
-                                <input type="number" name="completion_percentage" id="completion_percentage" 
-                                       class="form-control" min="0" max="100" 
+                                <input type="number" name="completion_percentage" id="completion_percentage"
+                                       class="form-control" min="0" max="100"
                                        value="{{ request('completion_percentage') }}" placeholder="0-100">
                             </div>
                         </div>
@@ -167,7 +167,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="date_from">Date From</label>
-                                <input type="date" name="date_from" id="date_from" class="form-control" 
+                                <input type="date" name="date_from" id="date_from" class="form-control"
                                        value="{{ request('date_from') }}">
                             </div>
                         </div>
@@ -175,7 +175,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="date_to">Date To</label>
-                                <input type="date" name="date_to" id="date_to" class="form-control" 
+                                <input type="date" name="date_to" id="date_to" class="form-control"
                                        value="{{ request('date_to') }}">
                             </div>
                         </div>
@@ -183,7 +183,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label for="search">Search</label>
-                                <input type="text" name="search" id="search" class="form-control" 
+                                <input type="text" name="search" id="search" class="form-control"
                                        value="{{ request('search') }}" placeholder="Order number, container...">
                             </div>
                         </div>
@@ -249,9 +249,9 @@
                             </td>
                             <td>
                                 <div class="progress" style="height: 20px;">
-                                    <div class="progress-bar" role="progressbar" 
+                                    <div class="progress-bar" role="progressbar"
                                          style="width: {{ $order->completion_percentage }}%"
-                                         aria-valuenow="{{ $order->completion_percentage }}" 
+                                         aria-valuenow="{{ $order->completion_percentage }}"
                                          aria-valuemin="0" aria-valuemax="100">
                                         {{ number_format($order->completion_percentage, 1) }}%
                                     </div>
@@ -282,7 +282,7 @@
             <!-- Pagination -->
             <div class="d-flex justify-content-between align-items-center mt-3">
                 <div>
-                    Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }} 
+                    Showing {{ $orders->firstItem() ?? 0 }} to {{ $orders->lastItem() ?? 0 }}
                     of {{ $orders->total() }} results
                 </div>
                 {{ $orders->appends(request()->query())->links() }}
@@ -323,13 +323,13 @@
                     </div>
                     <div class="form-group">
                         <label>Process Units <span class="text-danger">*</span></label>
-                        <input type="number" id="processedUnits" name="processed_units" 
+                        <input type="number" id="processedUnits" name="processed_units"
                                class="form-control" min="1" required>
                         <small class="form-text text-muted">Enter number of units to process</small>
                     </div>
                     <div class="form-group">
                         <label>Notes</label>
-                        <textarea id="processNotes" name="notes" class="form-control" rows="3" 
+                        <textarea id="processNotes" name="notes" class="form-control" rows="3"
                                   placeholder="Optional notes about this processing..."></textarea>
                     </div>
                 </div>
@@ -350,10 +350,10 @@
 $(document).ready(function() {
     // Load statistics
     loadStatistics();
-    
+
     // Auto-refresh stats every 30 seconds
     setInterval(loadStatistics, 30000);
-    
+
     // Manual refresh button
     $('#refreshStats').click(function() {
         loadStatistics();
@@ -380,7 +380,7 @@ function processUnits(orderId) {
         $('#modalCurrentSisa').val(data.sisa);
         $('#processedUnits').attr('max', data.sisa);
         $('#processUnitsModal').modal('show');
-        
+
         // Store order ID for processing
         $('#processUnitsForm').data('order-id', orderId);
     });
@@ -388,19 +388,19 @@ function processUnits(orderId) {
 
 $('#processUnitsForm').submit(function(e) {
     e.preventDefault();
-    
+
     const orderId = $(this).data('order-id');
     const processedUnits = $('#processedUnits').val();
     const notes = $('#processNotes').val();
-    
+
     if (!processedUnits || processedUnits <= 0) {
         alert('Please enter a valid number of units to process');
         return;
     }
-    
+
     // Disable form during processing
     $('#processUnitsForm button').prop('disabled', true);
-    
+
     $.ajax({
         url: `/outstanding/${orderId}/process`,
         method: 'POST',
@@ -417,14 +417,14 @@ $('#processUnitsForm').submit(function(e) {
                 row.find('.progress-bar').css('width', response.order.completion_percentage + '%')
                     .text(response.order.completion_percentage.toFixed(1) + '%');
                 row.find('td:nth-child(8)').html(response.order.status_badge);
-                
+
                 // Close modal and reset form
                 $('#processUnitsModal').modal('hide');
                 $('#processUnitsForm')[0].reset();
-                
+
                 // Refresh statistics
                 loadStatistics();
-                
+
                 // Show success message
                 showAlert('success', 'Units processed successfully!');
             } else {
@@ -450,13 +450,13 @@ function showAlert(type, message) {
             </button>
         </div>
     `;
-    
+
     // Remove existing alerts
     $('.alert').remove();
-    
+
     // Add new alert at top of container
     $('.container-fluid').prepend(alertHtml);
-    
+
     // Auto-remove after 5 seconds
     setTimeout(function() {
         $('.alert').fadeOut();

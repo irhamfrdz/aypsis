@@ -542,7 +542,7 @@
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
         </svg>
     </div>
-    
+
     <!-- Order Submenu -->
     <div class="ml-6 space-y-1 {{ $isOrderRoute ? 'block' : 'hidden' }}">
         <a href="{{ route('orders.index') }}" class="flex items-center py-2 px-4 rounded-lg text-xs transition-all duration-200 group {{ Request::routeIs('orders.*') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
@@ -553,7 +553,7 @@
             </div>
             <span class="menu-text">All Orders</span>
         </a>
-        
+
         <a href="{{ route('outstanding.index') }}" class="flex items-center py-2 px-4 rounded-lg text-xs transition-all duration-200 group {{ Request::routeIs('outstanding.*') ? 'bg-orange-50 text-orange-600 font-medium' : 'text-gray-600 hover:bg-orange-50 hover:text-orange-600' }}">
             <div class="flex items-center justify-center w-6 h-6 rounded-lg mr-3 {{ Request::routeIs('outstanding.*') ? 'bg-orange-100' : 'bg-gray-100 group-hover:bg-orange-100' }}">
                 <svg class="w-3 h-3 {{ Request::routeIs('outstanding.*') ? 'text-orange-600' : 'text-gray-500 group-hover:text-orange-600' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">

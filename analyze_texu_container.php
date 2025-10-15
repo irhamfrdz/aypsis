@@ -24,25 +24,25 @@ if ($container) {
     echo "- DPP: Rp " . number_format($container->dpp, 0, ',', '.') . "\n";
     echo "- Tanggal Awal: {$container->tanggal_awal}\n";
     echo "- Tanggal Akhir: {$container->tanggal_akhir}\n";
-    
+
     // Hitung jumlah hari aktual
     $startDate = \Carbon\Carbon::parse($container->tanggal_awal);
     $endDate = \Carbon\Carbon::parse($container->tanggal_akhir);
     $actualDays = $startDate->diffInDays($endDate) + 1;
     echo "- Jumlah hari aktual: $actualDays\n";
-    
+
     echo "\n=== CEK MASTER PRICELIST ===\n";
     $pricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $container->size)
         ->where('vendor', $container->vendor)
         ->first();
-        
+
     if ($pricelist) {
         echo "Master Pricelist ditemukan:\n";
         echo "- Vendor: {$pricelist->vendor}\n";
         echo "- Ukuran: {$pricelist->ukuran_kontainer}\n";
         echo "- Tarif Type: {$pricelist->tarif}\n";
         echo "- Harga: Rp " . number_format($pricelist->harga, 0, ',', '.') . "\n";
-        
+
         echo "\n=== ANALISIS PERHITUNGAN ===\n";
         if (strtolower($pricelist->tarif) === 'bulanan') {
             echo "Tarif BULANAN: DPP = {$pricelist->harga} (tidak dikali hari)\n";
@@ -52,9 +52,9 @@ if ($container) {
             $expectedDpp = $pricelist->harga * $actualDays;
             echo "Expected DPP: Rp " . number_format($expectedDpp, 0, ',', '.') . "\n";
         }
-        
+
         echo "Actual DPP: Rp " . number_format($container->dpp, 0, ',', '.') . "\n";
-        
+
         if ($container->dpp != $pricelist->harga && strtolower($pricelist->tarif) === 'bulanan') {
             echo "\n❌ MASALAH DITEMUKAN: DPP tidak sesuai untuk tarif bulanan!\n";
             echo "Selisih: Rp " . number_format($container->dpp - $pricelist->harga, 0, ',', '.') . "\n";
@@ -69,7 +69,7 @@ if ($container) {
     }
 } else {
     echo "Container TEXU7210230 dengan periode 6 tidak ditemukan!\n";
-    
+
     // Cari semua record dengan nomor kontainer tersebut
     $allRecords = DaftarTagihanKontainerSewa::where('nomor_kontainer', 'TEXU7210230')->get();
     echo "\nDitemukan " . $allRecords->count() . " record dengan nomor kontainer TEXU7210230:\n";

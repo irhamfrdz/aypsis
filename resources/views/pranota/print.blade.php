@@ -285,7 +285,7 @@
         }
 
         .total-amount {
-            font-size: 14px;
+            font-size: 10px;
             font-weight: bold;
             color: #000000;
             border-top: 2px solid #000000;
@@ -468,10 +468,10 @@
             .table th:nth-child(4) { width: 12%; } /* Masa */
             .table th:nth-child(5) { width: 10%; } /* DPP */
             .table th:nth-child(6) { width: 10%; } /* Adjustment */
-            .table th:nth-child(7) { width: 15%; } /* Keterangan */
-            .table th:nth-child(8) { width: 8%; }  /* PPN */
-            .table th:nth-child(9) { width: 8%; }  /* PPH */
-            .table th:nth-child(10) { width: 12%; } /* Grand Total */
+            .table th:nth-child(7) { width: 8%; }  /* PPN */
+            .table th:nth-child(8) { width: 8%; }  /* PPH */
+            .table th:nth-child(9) { width: 12%; } /* Grand Total */
+            .table th:nth-child(10) { width: 18%; } /* Invoice Vendor */
 
             .table td:nth-child(1) { width: 4%; text-align: center; }
             .table td:nth-child(2) { width: 18%; }
@@ -479,10 +479,10 @@
             .table td:nth-child(4) { width: 12%; }
             .table td:nth-child(5) { width: 10%; text-align: right; }
             .table td:nth-child(6) { width: 10%; text-align: right; }
-            .table td:nth-child(7) { width: 15%; font-size: 7px; vertical-align: top; word-wrap: break-word; }
+            .table td:nth-child(7) { width: 8%; text-align: right; }
             .table td:nth-child(8) { width: 8%; text-align: right; }
-            .table td:nth-child(9) { width: 8%; text-align: right; }
-            .table td:nth-child(10) { width: 12%; text-align: right; }
+            .table td:nth-child(9) { width: 12%; text-align: right; }
+            .table td:nth-child(10) { width: 18%; text-align: center; }
 
             .masa-display {
                 padding: 0;
@@ -599,21 +599,18 @@
             /* Keterangan table for print */
             .keterangan-table {
                 page-break-inside: avoid;
-                margin-top: 10px;
-                margin-bottom: 10px;
-            }
-
-            .keterangan-table th {
-                background-color: #f8f9fa !important;
-                color: #333 !important;
-                -webkit-print-color-adjust: exact;
-                print-color-adjust: exact;
-                border: 1px solid #000 !important;
+                margin-top: 15px;
+                margin-bottom: 15px;
             }
 
             .keterangan-table td {
-                border: 1px solid #000 !important;
-                min-height: 40px;
+                border: 2px solid #000 !important;
+                height: 110px !important;
+                min-height: 110px !important;
+                padding: 12px !important;
+                font-size: 10px !important;
+                line-height: 1.5 !important;
+                vertical-align: top !important;
             }
 
 
@@ -683,7 +680,7 @@
             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
                 <div style="text-align: left;">
                     <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
-                    <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12</span><br>
+                    <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span><br>
                 </div>
             </div>
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
@@ -691,7 +688,7 @@
                     Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}
                 </span>
                 <span style="font-size: 10px; font-weight: bold;">
-                    No. Pranota: {{ $pranota->no_invoice }}
+                    {{ $pranota->no_invoice }}
                 </span>
             </div>
             <h1>PRANOTA TAGIHAN KONTAINER</h1>
@@ -707,12 +704,6 @@
                 <div class="info-item">
                     <span class="info-label">Vendor:</span>
                     <span>{{ $vendorList->implode(', ') }}</span>
-                </div>
-                @endif
-                @if($pranota->no_invoice_vendor)
-                <div class="info-item">
-                    <span class="info-label">Invoice Vendor:</span>
-                    <span>{{ $pranota->no_invoice_vendor }}</span>
                 </div>
                 @endif
             </div>
@@ -731,10 +722,10 @@
                     <th style="width: 12%;">Masa</th>
                     <th style="width: 10%;">DPP</th>
                     <th style="width: 10%;">Adjustment</th>
-                    <th style="width: 15%;">Keterangan</th>
                     <th style="width: 8%;">PPN</th>
                     <th style="width: 8%;">PPH</th>
                     <th style="width: 12%;">Grand Total</th>
+                    <th style="width: 18%;">Invoice Vendor</th>
                 </tr>
             </thead>
             <tbody>
@@ -775,12 +766,10 @@
                     </td>
                     <td class="text-right">{{ number_format($item->dpp ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($item->adjustment ?? 0, 0, ',', '.') }}</td>
-                    <td style="font-size: 8px; padding: 2px; vertical-align: top; word-wrap: break-word;">
-                        {{ $item->adjustment_note ?: '-' }}
-                    </td>
                     <td class="text-right">{{ number_format($item->ppn ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($item->pph ?? 0, 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($item->grand_total ?? 0, 0, ',', '.') }}</td>
+                    <td class="text-center">{{ $item->invoice_vendor ?: '-' }}</td>
                 </tr>
                 @empty
                 <tr>
@@ -792,10 +781,10 @@
                     <td colspan="4" class="text-center" style="font-weight: bold; text-align: center;">TOTAL</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 0, ',', '.') }}</td>
-                    <td class="text-center">-</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 0, ',', '.') }}</td>
                     <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</td>
+                    <td class="text-center">-</td>
                 </tr>
             </tbody>
         </table>
@@ -803,18 +792,23 @@
         <!-- Summary -->
         <div class="summary">
             <div class="summary-item total-amount" style="margin-top: 10px;">
-                <span class="summary-label">TOTAL AMOUNT:</span>
+                <span class="summary-label">TOTAL PEMBAYARAN:</span>
                 <span>Rp {{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</span>
             </div>
         </div>
 
         <!-- Keterangan Table -->
-        <div class="keterangan-table" style="margin-top: 8px; margin-bottom: 8px;">
+        <div class="keterangan-table" style="margin-top: 15px; margin-bottom: 15px;">
             <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
                 <tbody>
                     <tr>
-                        <td style="padding: 6px; border: 1px solid #333; font-size: 10px; min-height: 30px; vertical-align: top;">
-                            {{ $pranota->keterangan ?: 'Tidak ada keterangan khusus' }}
+                        <td style="padding: 12px; border: 2px solid #333; font-size: 11px; height: 90px; min-height: 90px; vertical-align: top; line-height: 1.5;">
+                            {{ $pranota->keterangan ?: '' }}
+                            @if(!$pranota->keterangan)
+                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 8px; height: 18px;"></div>
+                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 8px; height: 18px;"></div>
+                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 8px; height: 18px;"></div>
+                            @endif
                         </td>
                     </tr>
                 </tbody>

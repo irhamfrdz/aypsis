@@ -282,6 +282,16 @@ input[required]:focus {
                         Hapus Group
                     </button>
                     @endcan
+                    @can('tagihan-kontainer-sewa-update')
+                    <button type="button" onclick="bulkEditVendorInfo()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Input Vendor Info
+                    </button>
+                    @endcan
+                    @can('tagihan-kontainer-sewa-update')
+                    <button type="button" onclick="bulkEditGroupInfo()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Edit Group
+                    </button>
+                    @endcan
                 </div>
             </div>
             <button type="button" id="btnCancelSelection" class="text-blue-600 hover:text-blue-800 text-sm font-medium">
@@ -690,8 +700,32 @@ input[required]:focus {
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                             <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono ">
-                            {{ optional($tagihan)->group ?? '-' }}
+                        <!-- Kolom Group -->
+                        <td class="px-2 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono" style="min-width: 100px;">
+                            <div class="relative group min-h-[40px] flex items-center justify-center">
+                                @if(optional($tagihan)->group)
+                                    <div class="text-sm text-gray-700 w-full text-center">
+                                        <div class="truncate max-w-[80px]" title="{{ $tagihan->group }}">
+                                            {{ $tagihan->group }}
+                                        </div>
+                                    </div>
+                                @else
+                                    <div class="text-xs text-gray-400 w-full text-center">
+                                        -
+                                    </div>
+                                @endif
+
+                                <!-- Edit button for group -->
+                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
+                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                            onclick="editGroupInfo({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->group ?? '') }}')"
+                                            title="Edit group">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-medium ">
                             <div class="flex items-center">
@@ -1362,7 +1396,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
                         const groupValue = groupElement ? groupElement.textContent.trim() : '';
 
-                        const statusPranotaElement = row.querySelector('td:nth-child(18)'); // Status Pranota column (index 18)
+                        const statusPranotaElement = row.querySelector('td:nth-child(21)'); // Status Pranota column (index 21)
                         const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
                         console.log(`Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
@@ -1583,12 +1617,40 @@ window.masukanKePranota = function() {
         return;
     }
 
+    // Validasi: Periksa apakah semua item memiliki nomor vendor (invoice vendor)
+    let itemsWithoutVendorNumber = [];
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            const invoiceVendorElement = row.querySelector('td:nth-child(15)'); // Invoice Vendor column (index 15)
+            const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
+
+            console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
+
+            if (!invoiceVendorValue || invoiceVendorValue === '-' || invoiceVendorValue === '') {
+                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
+                itemsWithoutVendorNumber.push(containerName);
+                console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutVendorNumber`);
+            } else {
+                console.log(`Item ${index + 1} has vendor number: "${invoiceVendorValue}"`);
+            }
+        }
+    });
+
+    // Jika ada item yang tidak memiliki nomor vendor, tampilkan pesan error
+    if (itemsWithoutVendorNumber.length > 0) {
+        const itemList = itemsWithoutVendorNumber.join(', ');
+        alert(`⚠️ Tidak dapat memasukkan ke pranota!\n\nItem berikut belum memiliki nomor vendor:\n${itemList}\n\nTolong input nomor vendor terlebih dahulu sebelum memasukkan ke pranota.`);
+        return;
+    }
+
     // Validasi: Periksa apakah ada item yang sudah masuk pranota
     let itemsAlreadyInPranota = [];
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const statusPranotaElement = row.querySelector('td:nth-child(18)'); // Status Pranota column (index 18)
+            const statusPranotaElement = row.querySelector('td:nth-child(21)'); // Status Pranota column (index 21)
             const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
             console.log(`Pranota Status Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
@@ -1639,7 +1701,7 @@ window.masukanKePranota = function() {
         const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
         const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
         const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(16)'); // Grand Total column (16th column) - Total Biaya
+        const totalElement = row.querySelector('td:nth-child(19)'); // Grand Total column (19th column) - Total Biaya
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -1710,7 +1772,7 @@ window.buatPranotaTerpilih = function() {
         const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
         const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
         const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(16)'); // Grand Total column (16th column) - Total Biaya
+        const totalElement = row.querySelector('td:nth-child(19)'); // Grand Total column (19th column) - Total Biaya
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -2195,9 +2257,6 @@ window.closeModal = function() {
     if (tanggalField) {
         tanggalField.value = today;
     }
-
-    // Invoice vendor fields will be reset by form.reset() above
-    // User needs to fill them again as they are required
 };
 
 // Add backdrop click to close modal
@@ -2234,22 +2293,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const pranotaType = formData.get('pranota_type');
             const selectedIds = formData.get('selected_tagihan_ids').split(',').filter(id => id);
             const tanggalPranota = formData.get('tanggal_pranota');
-            const noInvoiceVendor = formData.get('no_invoice_vendor');
-            const tglInvoiceVendor = formData.get('tgl_invoice_vendor');
 
             // Validate required fields
             if (!tanggalPranota) {
                 alert('Tanggal pranota harus diisi');
-                return;
-            }
-
-            if (!noInvoiceVendor || noInvoiceVendor.trim() === '') {
-                alert('Invoice Vendor harus diisi');
-                return;
-            }
-
-            if (!tglInvoiceVendor) {
-                alert('Tanggal Invoice Vendor harus diisi');
                 return;
             }
 
@@ -2272,8 +2319,6 @@ document.addEventListener('DOMContentLoaded', function() {
             submitData.append('nomor_cetakan', '1'); // Fixed value since input removed
             submitData.append('tanggal_pranota', tanggalPranota);
             submitData.append('keterangan', formData.get('keterangan') || '');
-            submitData.append('no_invoice_vendor', noInvoiceVendor.trim());
-            submitData.append('tgl_invoice_vendor', tglInvoiceVendor);
 
             let actionUrl;
 
@@ -2845,14 +2890,14 @@ window.editAdjustmentNote = function(tagihanId, currentNote) {
                             </svg>
                         </button>
                     </div>
-                    
+
                     <form id="adjustmentNoteForm" class="mt-4">
                         <div class="space-y-4">
                             <div>
                                 <label for="adjustment_note_value" class="block text-sm font-medium text-gray-700 mb-2">
                                     Alasan Adjustment
                                 </label>
-                                <textarea id="adjustment_note_value" name="adjustment_note" rows="4" 
+                                <textarea id="adjustment_note_value" name="adjustment_note" rows="4"
                                          class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                          placeholder="Masukkan alasan penyesuaian harga...">${currentNote}</textarea>
                                 <div class="text-xs text-gray-500 mt-1">
@@ -2860,13 +2905,13 @@ window.editAdjustmentNote = function(tagihanId, currentNote) {
                                 </div>
                             </div>
                         </div>
-                        
+
                         <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
-                            <button type="button" onclick="closeAdjustmentNoteModal()" 
+                            <button type="button" onclick="closeAdjustmentNoteModal()"
                                     class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 Batal
                             </button>
-                            <button type="submit" 
+                            <button type="submit"
                                     class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                                 <span class="btn-text">Simpan</span>
                             </button>
@@ -3307,6 +3352,556 @@ window.closeVendorInfoModal = function() {
     }, 300);
 };
 
+// Function to edit group info
+window.editGroupInfo = function(tagihanId, currentGroup) {
+    console.log('editGroupInfo called:', { tagihanId, currentGroup });
+
+    // Check permission for updating tagihan
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit informasi group. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
+        return;
+    @endif
+
+    // Create modal HTML for group info editing
+    const modalHTML = `
+        <div id="groupInfoModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between pb-3 border-b">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Edit Group
+                        </h3>
+                        <button type="button" onclick="closeGroupInfoModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <form id="groupInfoForm" class="mt-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Group
+                                </label>
+                                <input type="text" id="group_value" name="group" maxlength="50"
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan nama group" value="${currentGroup || ''}">
+                                <p class="text-xs text-gray-500 mt-1">Maksimal 50 karakter</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
+                            <button type="button" onclick="closeGroupInfoModal()"
+                                    class="btn-animated px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                    class="btn-animated px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <span class="btn-text">Simpan</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('groupInfoModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Handle form submission
+    const form = document.getElementById('groupInfoForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const groupValue = document.getElementById('group_value').value.trim();
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const originalText = btnText.textContent;
+        btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
+        submitBtn.disabled = true;
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('_method', 'PATCH');
+        formData.append('group', groupValue);
+
+        // Send AJAX request
+        fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${tagihanId}/group-info`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                return response.text().then(text => {
+                    throw new Error(`Server error: ${response.status}`);
+                });
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('success', 'Group Berhasil Disimpan',
+                    'Informasi group telah berhasil diperbarui.');
+
+                // Close modal and reload page after success
+                closeGroupInfoModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Gagal menyimpan informasi group');
+            }
+        })
+        .catch(error => {
+            console.error('Error saving group info:', error);
+            showNotification('error', 'Gagal Menyimpan', error.message || 'Terjadi kesalahan saat menyimpan informasi group');
+
+            // Reset button state
+            btnText.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+};
+
+// Function to close group info modal
+window.closeGroupInfoModal = function() {
+    const modal = document.getElementById('groupInfoModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
+// Function to bulk edit vendor info
+window.bulkEditVendorInfo = function() {
+    console.log('bulkEditVendorInfo called');
+
+    // Check permission for updating tagihan
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit informasi vendor. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
+        return;
+    @endif
+
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+    console.log('Selected IDs for bulk vendor info:', selectedIds);
+
+    if (selectedIds.length === 0) {
+        alert('Pilih minimal satu kontainer untuk mengedit informasi vendor');
+        return;
+    }
+
+    // Create modal HTML for bulk vendor info editing
+    const modalHTML = `
+        <div id="bulkVendorInfoModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-lg shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between pb-3 border-b">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Input Vendor Info Bulk (${selectedIds.length} kontainer)
+                        </h3>
+                        <button type="button" onclick="closeBulkVendorInfoModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <form id="bulkVendorInfoForm" class="mt-4">
+                        <div class="space-y-4">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 mb-4">
+                                <div class="flex items-center">
+                                    <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    <p class="text-sm text-blue-800">
+                                        Informasi vendor ini akan diterapkan ke <strong>${selectedIds.length} kontainer</strong> yang dipilih
+                                    </p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Invoice Vendor <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" id="bulk_invoice_vendor" name="invoice_vendor" maxlength="100" required
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan nomor invoice vendor">
+                                <p class="text-xs text-gray-500 mt-1">Maksimal 100 karakter</p>
+                            </div>
+
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Tanggal Vendor <span class="text-red-500">*</span>
+                                </label>
+                                <input type="date" id="bulk_tanggal_vendor" name="tanggal_vendor" required
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
+                            <button type="button" onclick="closeBulkVendorInfoModal()"
+                                    class="btn-animated px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                    class="btn-animated px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors">
+                                <span class="btn-text">Simpan ke ${selectedIds.length} Kontainer</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('bulkVendorInfoModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Handle form submission
+    const form = document.getElementById('bulkVendorInfoForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const invoiceVendor = document.getElementById('bulk_invoice_vendor').value.trim();
+        const tanggalVendor = document.getElementById('bulk_tanggal_vendor').value;
+
+        // Validation
+        if (!invoiceVendor) {
+            alert('Invoice vendor harus diisi');
+            return;
+        }
+
+        if (!tanggalVendor) {
+            alert('Tanggal vendor harus diisi');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const originalText = btnText.textContent;
+        btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
+        submitBtn.disabled = true;
+
+        // Process each selected item
+        let completedRequests = 0;
+        let successCount = 0;
+        let errorCount = 0;
+        const errors = [];
+
+        selectedIds.forEach((id, index) => {
+            // Prepare form data for each item
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('_method', 'PATCH');
+            formData.append('invoice_vendor', invoiceVendor);
+            formData.append('tanggal_vendor', tanggalVendor);
+
+            // Send AJAX request for each item
+            fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${id}/vendor-info`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    return response.text().then(text => {
+                        throw new Error(`Server error for item ${index + 1}: ${response.status}`);
+                    });
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    successCount++;
+                } else {
+                    errorCount++;
+                    errors.push(`Item ${index + 1}: ${data.message || 'Unknown error'}`);
+                }
+            })
+            .catch(error => {
+                console.error(`Error saving vendor info for item ${index + 1}:`, error);
+                errorCount++;
+                errors.push(`Item ${index + 1}: ${error.message}`);
+            })
+            .finally(() => {
+                completedRequests++;
+
+                // Check if all requests are completed
+                if (completedRequests === selectedIds.length) {
+                    // Show summary notification
+                    if (successCount > 0 && errorCount === 0) {
+                        showNotification('success', 'Bulk Update Berhasil',
+                            `Informasi vendor berhasil disimpan untuk ${successCount} kontainer.`);
+                    } else if (successCount > 0 && errorCount > 0) {
+                        showNotification('warning', 'Bulk Update Sebagian Berhasil',
+                            `${successCount} berhasil, ${errorCount} gagal. Cek detail error di console.`);
+                        console.error('Bulk update errors:', errors);
+                    } else {
+                        showNotification('error', 'Bulk Update Gagal',
+                            `Semua ${errorCount} item gagal diupdate. Cek detail error di console.`);
+                        console.error('Bulk update errors:', errors);
+                    }
+
+                    // Close modal and reload page
+                    closeBulkVendorInfoModal();
+                    if (successCount > 0) {
+                        setTimeout(() => {
+                            window.location.reload();
+                        }, 1500);
+                    }
+                }
+            });
+        });
+    });
+};
+
+// Function to close bulk vendor info modal
+window.closeBulkVendorInfoModal = function() {
+    const modal = document.getElementById('bulkVendorInfoModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
+// Function to bulk edit group info
+window.bulkEditGroupInfo = function() {
+    console.log('bulkEditGroupInfo called');
+
+    // Check permission for updating tagihan
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit informasi group. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
+        return;
+    @endif
+
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+    console.log('Selected IDs for bulk group info:', selectedIds);
+
+    if (selectedIds.length === 0) {
+        alert('Pilih minimal satu kontainer untuk mengedit informasi group');
+        return;
+    }
+
+    // Create modal HTML for bulk group info editing
+    const modalHTML = `
+        <div id="bulkGroupInfoModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-lg shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between pb-3 border-b">
+                        <h3 class="text-lg font-semibold text-gray-900">
+                            Edit Group Bulk (${selectedIds.length} kontainer)
+                        </h3>
+                        <button type="button" onclick="closeBulkGroupInfoModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Modal Body -->
+                    <form id="bulkGroupInfoForm" class="mt-4">
+                        <div class="space-y-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">
+                                    Group
+                                </label>
+                                <input type="text" id="bulk_group" name="group" maxlength="50" required
+                                       class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                       placeholder="Masukkan nama group">
+                                <p class="text-xs text-gray-500 mt-1">Maksimal 50 karakter</p>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
+                            <button type="button" onclick="closeBulkGroupInfoModal()"
+                                    class="btn-animated px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                                Batal
+                            </button>
+                            <button type="submit"
+                                    class="btn-animated px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                                <span class="btn-text">Simpan</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('bulkGroupInfoModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Handle form submission
+    const form = document.getElementById('bulkGroupInfoForm');
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+
+        const groupValue = document.getElementById('bulk_group').value.trim();
+
+        if (!groupValue) {
+            alert('Nama group tidak boleh kosong');
+            return;
+        }
+
+        // Show loading state
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const btnText = submitBtn.querySelector('.btn-text');
+        const originalText = btnText.textContent;
+        btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
+        submitBtn.disabled = true;
+
+        // Process each selected ID
+        const updatePromises = selectedIds.map(id => {
+            const formData = new FormData();
+            formData.append('_token', '{{ csrf_token() }}');
+            formData.append('_method', 'PATCH');
+            formData.append('group', groupValue);
+
+            return fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${id}/group-info`, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error(`Failed to update record ${id}`);
+                }
+                return response.json();
+            });
+        });
+
+        // Wait for all updates to complete
+        Promise.all(updatePromises)
+        .then(results => {
+            const successCount = results.filter(r => r.success).length;
+            if (successCount === selectedIds.length) {
+                showNotification('success', 'Group Berhasil Disimpan',
+                    `Informasi group telah berhasil diperbarui untuk ${successCount} kontainer.`);
+
+                // Close modal and reload page after success
+                closeBulkGroupInfoModal();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(`Only ${successCount} out of ${selectedIds.length} records were updated successfully`);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving bulk group info:', error);
+            showNotification('error', 'Gagal Menyimpan', error.message || 'Terjadi kesalahan saat menyimpan informasi group');
+
+            // Reset button state
+            btnText.textContent = originalText;
+            submitBtn.disabled = false;
+        });
+    });
+};
+
+// Function to close bulk group info modal
+window.closeBulkGroupInfoModal = function() {
+    const modal = document.getElementById('bulkGroupInfoModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
 
 </script>
 
@@ -3357,28 +3952,6 @@ window.closeVendorInfoModal = function() {
                             <input type="date" id="tanggal_pranota" name="tanggal_pranota" required
                                    class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
                             <small class="text-gray-500 text-xs mt-1">Pilih tanggal pembuatan pranota</small>
-                        </div>
-                    </div>
-
-                    <!-- Data Invoice Vendor -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label for="no_invoice_vendor" class="block text-[10px] font-medium text-gray-700 mb-2">
-                                Invoice Vendor <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" id="no_invoice_vendor" name="no_invoice_vendor" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
-                                   placeholder="Masukkan nomor invoice vendor">
-                            <small class="text-gray-500 text-xs mt-1">Nomor invoice dari vendor (wajib diisi)</small>
-                        </div>
-
-                        <div>
-                            <label for="tgl_invoice_vendor" class="block text-[10px] font-medium text-gray-700 mb-2">
-                                Tanggal Invoice Vendor <span class="text-red-500">*</span>
-                            </label>
-                            <input type="date" id="tgl_invoice_vendor" name="tgl_invoice_vendor" required
-                                   class="w-full border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors">
-                            <small class="text-gray-500 text-xs mt-1">Tanggal invoice dari vendor (wajib diisi)</small>
                         </div>
                     </div>
 

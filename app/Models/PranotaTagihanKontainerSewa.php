@@ -14,8 +14,6 @@ class PranotaTagihanKontainerSewa extends Model
         "no_invoice",
         "total_amount",
         "keterangan",
-        "no_invoice_vendor",
-        "tgl_invoice_vendor",
         "status",
         "tagihan_kontainer_sewa_ids",
         "jumlah_tagihan",
@@ -26,7 +24,6 @@ class PranotaTagihanKontainerSewa extends Model
         "tagihan_kontainer_sewa_ids" => "array",
         "total_amount" => "decimal:2",
         "tanggal_pranota" => "date",
-        "tgl_invoice_vendor" => "date",
         "due_date" => "date"
     ];
 

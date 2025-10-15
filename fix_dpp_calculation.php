@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\DB;
 
 echo "=== PERBAIKAN DPP CALCULATION BUG ===\n";
 
-// Step 1: Identifikasi semua record yang bermasalah  
+// Step 1: Identifikasi semua record yang bermasalah
 echo "Step 1: Mencari semua record dengan masalah DPP...\n";
 
 // Cari record yang DPP-nya jauh lebih besar dari master pricelist
@@ -21,12 +21,12 @@ foreach ($allRecords as $record) {
     $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $record->size)
         ->where('vendor', $record->vendor)
         ->first();
-    
+
     if ($masterPricelist && strtolower($masterPricelist->tarif) === 'bulanan') {
         // Untuk tarif bulanan, DPP seharusnya sama dengan harga master pricelist
         $expectedDpp = $masterPricelist->harga;
         $actualDpp = floatval($record->dpp);
-        
+
         // Jika selisih lebih dari 10%, berarti ada masalah
         if (abs($actualDpp - $expectedDpp) > ($expectedDpp * 0.1)) {
             $problematicRecords[] = [
@@ -54,15 +54,15 @@ foreach (array_slice($problematicRecords, 0, 10) as $item) {
     $record = $item['record'];
     $expectedDpp = $item['expected_dpp'];
     $actualDpp = $item['actual_dpp'];
-    
+
     $expectedPpn = $expectedDpp * 0.11;
     $expectedPph = $expectedDpp * 0.02;
     $expectedGrandTotal = $expectedDpp + $expectedPpn - $expectedPph;
-    
+
     $selisihDpp = $actualDpp - $expectedDpp;
     $selisihGrandTotal = floatval($record->grand_total) - $expectedGrandTotal;
     $totalSelisih += $selisihGrandTotal;
-    
+
     echo "Container: {$record->nomor_kontainer} ({$record->vendor} {$record->size}ft) - Periode: {$record->periode}\n";
     echo "  Current DPP: Rp " . number_format($actualDpp, 0, ',', '.') . "\n";
     echo "  Correct DPP: Rp " . number_format($expectedDpp, 0, ',', '.') . "\n";
@@ -101,18 +101,18 @@ try {
         $record = $item['record'];
         $correctDpp = $item['expected_dpp'];
         $pricelist = $item['pricelist'];
-        
+
         // Hitung ulang PPN dan PPh berdasarkan DPP yang benar
         $correctPpn = $correctDpp * 0.11;
         $correctPph = $correctDpp * 0.02;
         $correctGrandTotal = $correctDpp + $correctPpn - $correctPph;
-        
+
         // Update record
         $record->dpp = $correctDpp;
         $record->ppn = $correctPpn;
         $record->pph = $correctPph;
         $record->grand_total = $correctGrandTotal;
-        
+
         if ($record->save()) {
             $fixedCount++;
             echo "✓ Fixed: {$record->nomor_kontainer} - DPP: Rp " . number_format($correctDpp, 0, ',', '.') . "\n";
@@ -121,19 +121,19 @@ try {
             echo "✗ Error fixing: {$record->nomor_kontainer}\n";
         }
     }
-    
+
     DB::commit();
-    
+
     echo "\n=== PERBAIKAN SELESAI ===\n";
     echo "Records berhasil diperbaiki: {$fixedCount}\n";
     echo "Records yang error: {$errorCount}\n";
     echo "Total records diproses: " . count($problematicRecords) . "\n";
-    
+
     if ($fixedCount > 0) {
         echo "\nPerbaikan berhasil disimpan ke database.\n";
         echo "DPP untuk semua tarif bulanan telah disesuaikan dengan master pricelist.\n";
     }
-    
+
 } catch (Exception $e) {
     DB::rollback();
     echo "\nError terjadi selama perbaikan: " . $e->getMessage() . "\n";
@@ -166,14 +166,14 @@ try {
         $masterPricelist = MasterPricelistSewaKontainer::where('ukuran_kontainer', $record->size)
             ->where('vendor', $record->vendor)
             ->first();
-        
+
         if ($masterPricelist && strtolower($masterPricelist->tarif) === 'bulanan') {
             // Hitung ulang semua nilai financial
             $correctDpp = $masterPricelist->harga;
             $correctPpn = round($correctDpp * 0.11, 2);
             $correctPph = round($correctDpp * 0.02, 2);
             $correctGrandTotal = round($correctDpp + $correctPpn - $correctPph, 2);
-            
+
             // Update record
             $updated = $record->update([
                 'dpp' => $correctDpp,
@@ -183,7 +183,7 @@ try {
                 // Keep existing adjustment and dpp_nilai_lain
                 'dpp_nilai_lain' => round($correctDpp * 11 / 12, 2), // Update this too
             ]);
-            
+
             if ($updated) {
                 $correctedCount++;
                 echo "✅ {$record->nomor_kontainer}: DPP " . number_format($record->dpp, 0, ',', '.') . " → " . number_format($correctDpp, 0, ',', '.') . "\n";
@@ -192,7 +192,7 @@ try {
             }
         }
     }
-    
+
     if (empty($errors)) {
         DB::commit();
         echo "\n🎉 PERBAIKAN SELESAI!\n";
@@ -204,7 +204,7 @@ try {
             echo "- $error\n";
         }
     }
-    
+
 } catch (Exception $e) {
     DB::rollback();
     echo "\n❌ ERROR: " . $e->getMessage() . "\n";
