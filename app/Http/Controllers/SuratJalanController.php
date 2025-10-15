@@ -143,6 +143,15 @@ class SuratJalanController extends Controller
      */
     public function store(Request $request)
     {
+        // Check permission explicitly
+        if (!auth()->user()->can('surat-jalan-create')) {
+            Log::warning('User lacks permission for surat-jalan-create', ['user_id' => auth()->id()]);
+            return redirect()->back()
+                           ->with('error', 'Anda tidak memiliki permission untuk membuat surat jalan.');
+        }
+
+        Log::info('Starting surat jalan validation');
+        
         $request->validate([
             'order_id' => 'nullable|exists:orders,id',
             'tanggal_surat_jalan' => 'required|date',
@@ -168,17 +177,24 @@ class SuratJalanController extends Controller
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'tanggal_muat' => 'nullable|date',
             'term' => 'nullable|string|max:255',
-            'rit' => 'nullable|integer|min:0',
+            'rit' => 'nullable|string|max:255',
             'uang_jalan' => 'nullable|numeric|min:0',
             'no_pemesanan' => 'nullable|string|max:255',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
         ]);
 
+        Log::info('Validation passed successfully');
+
         try {
+            Log::info('Starting surat jalan creation process');
+            Log::info('Request data:', $request->all());
+            
             $data = $request->except(['gambar']);
             $data['input_by'] = Auth::id();
             $data['input_date'] = now();
             $data['status'] = 'belum melakukan checkpoint'; // Set default status to belum melakukan checkpoint
+
+            Log::info('Prepared data for saving:', $data);
 
             // Handle image upload
             if ($request->hasFile('gambar')) {
@@ -186,15 +202,18 @@ class SuratJalanController extends Controller
                 $filename = time() . '_' . $image->getClientOriginalName();
                 $path = $image->storeAs('surat-jalan', $filename, 'public');
                 $data['gambar'] = $path;
+                Log::info('Image uploaded:', ['path' => $path]);
             }
 
-            SuratJalan::create($data);
+            $suratJalan = SuratJalan::create($data);
+            Log::info('Surat jalan created successfully:', ['id' => $suratJalan->id]);
 
             return redirect()->route('surat-jalan.index')
                            ->with('success', 'Surat jalan berhasil dibuat.');
 
         } catch (\Exception $e) {
             Log::error('Error creating surat jalan: ' . $e->getMessage());
+            Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()
                            ->withInput()
                            ->with('error', 'Gagal membuat surat jalan: ' . $e->getMessage());
