@@ -33,7 +33,40 @@ class UpdateVendorFromCsv extends Command
      */
     public function handle()
     {
-        $csvFilePath = $this->argument('file') ?: 'C:\Users\amanda\Downloads\Zona.csv';
+        $csvFilePath = $this->argument('file');
+        
+        // If no file specified, try to find default locations
+        if (!$csvFilePath) {
+            $defaultPaths = [
+                // Windows paths
+                'C:\Users\amanda\Downloads\Zona.csv',
+                // Linux/Server paths
+                '/var/www/aypsis/storage/app/Zona.csv',
+                '/var/www/aypsis/Zona.csv',
+                '/tmp/Zona.csv',
+                // Current directory
+                getcwd() . '/Zona.csv',
+                storage_path('app/Zona.csv'),
+            ];
+            
+            foreach ($defaultPaths as $path) {
+                if (file_exists($path)) {
+                    $csvFilePath = $path;
+                    break;
+                }
+            }
+            
+            if (!$csvFilePath) {
+                $this->error("File CSV tidak ditemukan di lokasi default.");
+                $this->error("Lokasi yang dicek:");
+                foreach ($defaultPaths as $path) {
+                    $this->line("  - {$path}");
+                }
+                $this->newLine();
+                $this->info("Gunakan: php artisan vendor:update-from-csv /path/to/your/file.csv");
+                return Command::FAILURE;
+            }
+        }
         
         if (!file_exists($csvFilePath)) {
             $this->error("File CSV tidak ditemukan: {$csvFilePath}");

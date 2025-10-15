@@ -53,6 +53,17 @@ php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
 
+# 7a. 📋 VENDOR CSV UPDATE (JIKA DIPERLUKAN)
+echo "📋 7a. Vendor CSV Update Commands Available..."
+echo "ℹ️  To update vendor invoices from CSV, follow these steps:"
+echo "   1. Upload CSV file to server: scp Zona.csv user@server:/var/www/aypsis/"
+echo "   2. Run backup: php backup_vendor_data.php"
+echo "   3. Run update: php artisan vendor:update-from-csv /var/www/aypsis/Zona.csv"
+echo "   Available update commands:"
+echo "   - php artisan vendor:update-from-csv [file_path]"
+echo "   - php update_vendor_from_csv.php (standalone)"
+echo "   - php backup_vendor_data.php (backup first!)"
+
 # 7b. 🔧 PERBAIKAN DPP TAGIHAN KONTAINER (BARU DITAMBAHKAN)
 echo "💰 7b. Fixing DPP calculations..."
 echo "⚠️  IMPORTANT: This will fix incorrect DPP values in tagihan kontainer"

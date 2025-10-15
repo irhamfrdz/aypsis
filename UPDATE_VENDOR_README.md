@@ -36,25 +36,57 @@ Script ini akan membuat:
 - File SQL backup untuk restore: `storage/backups/vendor_backup_YYYY_MM_DD_HH_MM_SS.sql`
 - File CSV backup untuk referensi: `storage/backups/vendor_backup_YYYY_MM_DD_HH_MM_SS.csv`
 
-### 2. Update Vendor (Pilihan A - Artisan Command)
+### 2. Upload File CSV ke Server (Jika di Server)
+
+**Opsi A - Manual Upload:**
+```bash
+# Upload via SCP
+scp Zona.csv user@server:/var/www/aypsis/
+
+# Upload via SFTP
+sftp user@server
+put Zona.csv /var/www/aypsis/
+```
+
+**Opsi B - Menggunakan Helper Script:**
+```bash
+# Edit konfigurasi di upload_csv_to_server.sh terlebih dahulu
+./upload_csv_to_server.sh upload
+```
+
+### 3. Update Vendor (Pilihan A - Artisan Command)
 
 Menggunakan Laravel Artisan command (RECOMMENDED):
 
 ```bash
-# Dengan file default
+# Local (Windows) - dengan file default
 php artisan vendor:update-from-csv
 
-# Dengan file custom
+# Local (Windows) - dengan file custom
 php artisan vendor:update-from-csv "C:\path\to\your\file.csv"
+
+# Server (Linux) - dengan file yang sudah diupload
+php artisan vendor:update-from-csv /var/www/aypsis/Zona.csv
+
+# Server (Linux) - akan mencari file di lokasi default
+php artisan vendor:update-from-csv
 ```
+
+**Lokasi default yang dicari (otomatis):**
+- `C:\Users\amanda\Downloads\Zona.csv` (Windows)
+- `/var/www/aypsis/storage/app/Zona.csv` (Linux)
+- `/var/www/aypsis/Zona.csv` (Linux)
+- `/tmp/Zona.csv` (Linux)
+- `./Zona.csv` (Current directory)
 
 **Keuntungan Artisan command:**
 - Progress bar
 - Konfirmasi sebelum update
 - Output yang lebih rapi
 - Terintegrasi dengan Laravel
+- Auto-detect path untuk berbagai environment
 
-### 3. Update Vendor (Pilihan B - Script Standalone)
+### 4. Update Vendor (Pilihan B - Script Standalone)
 
 Menggunakan script standalone:
 
