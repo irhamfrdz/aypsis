@@ -6,11 +6,16 @@
         <div class="col-12">
             <div class="d-flex justify-content-between align-items-center">
                 <h1 class="h3 mb-0 text-gray-800">Master Kapal</h1>
-                @can('master-kapal.create')
-                <a href="{{ route('master-kapal.create') }}" class="btn btn-primary">
-                    <i class="fas fa-plus"></i> Tambah Kapal
-                </a>
-                @endcan
+                <div>
+                    @can('master-kapal.create')
+                    <a href="{{ route('master-kapal.import-form') }}" class="btn btn-success me-2">
+                        <i class="fas fa-file-import"></i> Import CSV
+                    </a>
+                    <a href="{{ route('master-kapal.create') }}" class="btn btn-primary">
+                        <i class="fas fa-plus"></i> Tambah Kapal
+                    </a>
+                    @endcan
+                </div>
             </div>
         </div>
     </div>
@@ -25,6 +30,19 @@
     @if(session('error'))
     <div class="alert alert-danger alert-dismissible fade show" role="alert">
         <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
+    @if(session('import_errors'))
+    <div class="alert alert-warning alert-dismissible fade show" role="alert">
+        <i class="fas fa-exclamation-triangle"></i> 
+        <strong>Peringatan:</strong> Beberapa baris tidak dapat diimport
+        <ul class="mb-0 mt-2">
+            @foreach(session('import_errors') as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif

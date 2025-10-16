@@ -726,6 +726,19 @@ Route::middleware([
              'destroy' => 'can:master-stock-kontainer-delete'
          ]);
 
+    // 🚢 Master Kapal - Download Template & Import (must be BEFORE resource routes)
+    Route::get('master-kapal/download-template', [\App\Http\Controllers\MasterKapalController::class, 'downloadTemplate'])
+         ->name('master-kapal.download-template')
+         ->middleware('can:master-kapal.view');
+    
+    Route::get('master-kapal/import', [\App\Http\Controllers\MasterKapalController::class, 'importForm'])
+         ->name('master-kapal.import-form')
+         ->middleware('can:master-kapal.create');
+    
+    Route::post('master-kapal/import', [\App\Http\Controllers\MasterKapalController::class, 'import'])
+         ->name('master-kapal.import')
+         ->middleware('can:master-kapal.create');
+
     // 🚢 Master Kapal (Ship Master) Management with permissions
     Route::resource('master-kapal', \App\Http\Controllers\MasterKapalController::class)
          ->names('master-kapal')
