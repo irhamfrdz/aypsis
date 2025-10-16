@@ -52,11 +52,11 @@
                                 <label for="tanggal_pranota" class="{{ $labelClasses }}">
                                     Tanggal Pranota <span class="text-red-500">*</span>
                                 </label>
-                                <input type="date" 
-                                       class="{{ $inputClasses }} @error('tanggal_pranota') border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500 @enderror" 
-                                       id="tanggal_pranota" 
-                                       name="tanggal_pranota" 
-                                       value="{{ old('tanggal_pranota', date('Y-m-d')) }}" 
+                                <input type="date"
+                                       class="{{ $inputClasses }} @error('tanggal_pranota') border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500 @enderror"
+                                       id="tanggal_pranota"
+                                       name="tanggal_pranota"
+                                       value="{{ old('tanggal_pranota', date('Y-m-d')) }}"
                                        required>
                                 @error('tanggal_pranota')
                                     <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
@@ -64,9 +64,9 @@
                             </div>
                             <div>
                                 <label for="keterangan" class="{{ $labelClasses }}">Keterangan</label>
-                                <textarea class="{{ $inputClasses }} @error('keterangan') border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500 @enderror" 
-                                          id="keterangan" 
-                                          name="keterangan" 
+                                <textarea class="{{ $inputClasses }} @error('keterangan') border-red-300 text-red-900 focus:ring-red-500 focus:border-red-500 @enderror"
+                                          id="keterangan"
+                                          name="keterangan"
                                           rows="2"
                                           placeholder="Keterangan tambahan (opsional)">{{ old('keterangan') }}</textarea>
                                 @error('keterangan')
@@ -140,7 +140,7 @@
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
                         <span class="text-xs text-blue-700">
-                            <span id="selectedCount">0</span> surat jalan dipilih dengan total tarif: 
+                            <span id="selectedCount">0</span> surat jalan dipilih dengan total tarif:
                             <span class="font-semibold" id="totalTarif">Rp 0</span>
                         </span>
                     </div>
@@ -163,15 +163,15 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @forelse($approvedSuratJalans as $suratJalan)
-                                <tr class="surat-jalan-row hover:bg-gray-50 transition-colors" 
+                                <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
                                     data-nomor="{{ strtolower($suratJalan->no_surat_jalan ?? $suratJalan->nomor_surat_jalan ?? '') }}"
                                     data-pengirim="{{ strtolower($suratJalan->pengirim ?? '') }}"
                                     data-tujuan="{{ strtolower($suratJalan->tujuan_pengiriman ?? $suratJalan->tujuan_kirim_name ?? '') }}"
                                     data-jenis-barang="{{ strtolower($suratJalan->jenis_barang ?? '') }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
-                                        <input type="checkbox" 
-                                               name="surat_jalan_ids[]" 
-                                               value="{{ $suratJalan->id }}" 
+                                        <input type="checkbox"
+                                               name="surat_jalan_ids[]"
+                                               value="{{ $suratJalan->id }}"
                                                class="surat-jalan-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded"
                                                data-tarif="{{ $suratJalan->tarif ?? 0 }}"
                                                {{ in_array($suratJalan->id, old('surat_jalan_ids', [])) ? 'checked' : '' }}>
@@ -218,15 +218,15 @@
             <!-- Submit Button -->
             @if($approvedSuratJalans->count() > 0)
                 <div class="flex flex-col sm:flex-row justify-end gap-2">
-                    <a href="{{ route('pranota-surat-jalan.index') }}" 
+                    <a href="{{ route('pranota-surat-jalan.index') }}"
                        class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                         Batal
                     </a>
-                    <button type="submit" 
-                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed" 
+                    <button type="submit"
+                            class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                             id="submitBtn">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path>
@@ -258,15 +258,15 @@
                         count++;
                     }
                 });
-                
+
                 jumlahSuratJalanDisplay.value = count;
                 totalTarifDisplay.value = 'Rp ' + total.toLocaleString('id-ID');
-                
+
                 if (selectedCount && totalTarif) {
                     selectedCount.textContent = count;
                     totalTarif.textContent = 'Rp ' + total.toLocaleString('id-ID');
                 }
-                
+
                 // Show/hide summary and enable/disable submit button
                 if (count > 0) {
                     if (selectedSummary) selectedSummary.classList.remove('hidden');
@@ -275,7 +275,7 @@
                     if (selectedSummary) selectedSummary.classList.add('hidden');
                     if (submitBtn) submitBtn.disabled = true;
                 }
-                
+
                 return { total, count };
             }
 
@@ -300,7 +300,7 @@
 
             function updateSelectAllState() {
                 if (!selectAllCheckbox) return;
-                
+
                 const visibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not([style*="display: none"])');
                 const checkedVisibleCheckboxes = document.querySelectorAll('.surat-jalan-checkbox:not([style*="display: none"]):checked');
 
@@ -369,12 +369,12 @@
                     const pengirim = row.dataset.pengirim || '';
                     const tujuan = row.dataset.tujuan || '';
                     const jenisBarang = row.dataset.jenisBarang || '';
-                    
-                    const isVisible = nomor.includes(term) || 
-                                    pengirim.includes(term) || 
+
+                    const isVisible = nomor.includes(term) ||
+                                    pengirim.includes(term) ||
                                     tujuan.includes(term) ||
                                     jenisBarang.includes(term);
-                    
+
                     row.style.display = isVisible ? '' : 'none';
                     if (isVisible) visibleCount++;
                 });

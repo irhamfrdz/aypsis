@@ -16,9 +16,9 @@ try {
         ->whereDoesntHave('pranotaSuratJalan')
         ->orderBy('tanggal_surat_jalan', 'desc')
         ->get();
-    
+
     echo "✅ Found " . $approvedSuratJalans->count() . " approved surat jalans without pranota\n\n";
-    
+
     // Test relationship
     echo "2. Testing relationships...\n";
     $testPranota = PranotaSuratJalan::first();
@@ -28,9 +28,9 @@ try {
     } else {
         echo "ℹ️  No existing pranota found (this is normal for new installation)\n";
     }
-    
+
     echo "\n✅ All queries working correctly!\n";
-    
+
 } catch (Exception $e) {
     echo "❌ Error: " . $e->getMessage() . "\n";
     echo "Stack trace:\n" . $e->getTraceAsString() . "\n";

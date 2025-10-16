@@ -22,6 +22,6 @@ INSERT IGNORE INTO user_permissions (user_id, permission_id, created_at, updated
 (1, @perm_delete_id, NOW(), NOW());
 
 -- Verify the permissions were added
-SELECT p.name, p.description 
-FROM permissions p 
+SELECT p.name, p.description
+FROM permissions p
 WHERE p.name LIKE 'pranota-surat-jalan%';

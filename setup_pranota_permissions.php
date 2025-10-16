@@ -3,7 +3,7 @@
 // Simple permission script for pranota surat jalan
 echo "Adding Pranota Surat Jalan Permissions...\n";
 
-// Change to Laravel directory 
+// Change to Laravel directory
 chdir(__DIR__);
 
 // Run individual commands

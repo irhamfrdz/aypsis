@@ -31,7 +31,7 @@ echo "\nChecking admin permissions:\n";
 foreach ($permissions as $perm) {
     $has = $admin->hasPermissionTo($perm->name);
     echo "- " . $perm->name . ": " . ($has ? "YES" : "NO") . "\n";
-    
+
     if (!$has) {
         // Assign permission
         $admin->permissions()->attach($perm->id);
