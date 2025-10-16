@@ -113,6 +113,11 @@ class SuratJalan extends Model
         return $this->hasMany(SuratJalanApproval::class);
     }
 
+    public function pranotaSuratJalan()
+    {
+        return $this->belongsToMany(PranotaSuratJalan::class, 'pranota_surat_jalan_items', 'surat_jalan_id', 'pranota_surat_jalan_id');
+    }
+
     // Helper methods for approval status
     public function getApprovalStatus($level)
     {
@@ -128,6 +133,11 @@ class SuratJalan extends Model
     public function isFullyApproved()
     {
         return $this->isApprovedByLevel('tugas-1') && $this->isApprovedByLevel('tugas-2');
+    }
+
+    public function hasPranota()
+    {
+        return $this->pranotaSuratJalan()->exists();
     }
 
     // Scopes

@@ -48,6 +48,7 @@ use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OutstandingController;
+use App\Http\Controllers\PranotaSuratJalanController;
 
 /*
 |--------------------------------------------------------------------------
@@ -1106,6 +1107,36 @@ Route::middleware(['auth', 'verified'])->group(function () {
                 ->name('print')
                 ->middleware('can:pembayaran-pranota-perbaikan-kontainer-print');
         });
+
+    // 📄 Pranota Surat Jalan (Invoice from Delivery Orders) - Resource with Permissions
+    Route::prefix('pranota-surat-jalan')->name('pranota-surat-jalan.')->middleware(['auth'])->group(function () {
+        Route::get('/', [PranotaSuratJalanController::class, 'index'])
+            ->name('index')
+            ->middleware('can:pranota-surat-jalan-view');
+        Route::get('/create', [PranotaSuratJalanController::class, 'create'])
+            ->name('create')
+            ->middleware('can:pranota-surat-jalan-create');
+        Route::post('/', [PranotaSuratJalanController::class, 'store'])
+            ->name('store')
+            ->middleware('can:pranota-surat-jalan-create');
+        Route::get('/{pranotaSuratJalan}', [PranotaSuratJalanController::class, 'show'])
+            ->name('show')
+            ->middleware('can:pranota-surat-jalan-view');
+        Route::get('/{pranotaSuratJalan}/edit', [PranotaSuratJalanController::class, 'edit'])
+            ->name('edit')
+            ->middleware('can:pranota-surat-jalan-update');
+        Route::put('/{pranotaSuratJalan}', [PranotaSuratJalanController::class, 'update'])
+            ->name('update')
+            ->middleware('can:pranota-surat-jalan-update');
+        Route::delete('/{pranotaSuratJalan}', [PranotaSuratJalanController::class, 'destroy'])
+            ->name('destroy')
+            ->middleware('can:pranota-surat-jalan-delete');
+
+        // Additional granular routes
+        Route::get('/{pranotaSuratJalan}/print', [PranotaSuratJalanController::class, 'print'])
+            ->name('print')
+            ->middleware('can:pranota-surat-jalan-view');
+    });
 
 /*
 |===========================================================================
