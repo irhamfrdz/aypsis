@@ -383,16 +383,10 @@ class CheckpointController extends Controller
                 'gambar_checkpoint' => $imagePath,
             ]);
 
-            // Buat approval records untuk tugas-1 dan tugas-2
+            // Buat approval record untuk surat jalan (hanya 1 approval)
             \App\Models\SuratJalanApproval::create([
                 'surat_jalan_id' => $suratJalan->id,
-                'approval_level' => 'tugas-1',
-                'status' => 'pending',
-            ]);
-
-            \App\Models\SuratJalanApproval::create([
-                'surat_jalan_id' => $suratJalan->id,
-                'approval_level' => 'tugas-2',
+                'approval_level' => 'approval',
                 'status' => 'pending',
             ]);
 
@@ -404,7 +398,7 @@ class CheckpointController extends Controller
                 'no_seal' => $request->no_seal,
                 'catatan' => $request->catatan,
                 'surat_jalan_vendor' => $request->surat_jalan_vendor,
-                'approval_levels_created' => ['tugas-1', 'tugas-2']
+                'approval_level_created' => 'approval'
             ]);
 
             DB::commit();

@@ -647,11 +647,6 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
-                        <div class="flex items-center justify-end space-x-1">
-                            <span>DPP Nilai Lain</span>
-                        </div>
-                    </th>
                     <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 120px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>PPN</span>
@@ -983,11 +978,6 @@ input[required]:focus {
                                         </svg>
                                     </button>
                                 </div>
-                            </div>
-                        </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
-                            <div class="font-semibold text-blue-900">
-                                Rp {{ number_format((float)(optional($tagihan)->dpp_nilai_lain ?? 0), 0, '.', ',') }}
                             </div>
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
@@ -1396,7 +1386,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
                         const groupValue = groupElement ? groupElement.textContent.trim() : '';
 
-                        const statusPranotaElement = row.querySelector('td:nth-child(21)'); // Status Pranota column (index 21)
+                        const statusPranotaElement = row.querySelector('td:nth-child(20)'); // Status Pranota column (index 20, was 21 before)
                         const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
                         console.log(`Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
@@ -1622,7 +1612,7 @@ window.masukanKePranota = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const invoiceVendorElement = row.querySelector('td:nth-child(14)'); // Invoice Vendor column (index 14)
+            const invoiceVendorElement = row.querySelector('td:nth-child(14)'); // Invoice Vendor column (index 14, was 14 before)
             const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
 
             console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
@@ -1650,7 +1640,7 @@ window.masukanKePranota = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const statusPranotaElement = row.querySelector('td:nth-child(21)'); // Status Pranota column (index 21)
+            const statusPranotaElement = row.querySelector('td:nth-child(20)'); // Status Pranota column (index 20, was 21 before)
             const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
             console.log(`Pranota Status Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
@@ -1701,7 +1691,7 @@ window.masukanKePranota = function() {
         const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
         const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
         const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(19)'); // Grand Total column (19th column) - Total Biaya
+        const totalElement = row.querySelector('td:nth-child(18)'); // Grand Total column (18th column, was 19 before) - Total Biaya
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -1772,7 +1762,7 @@ window.buatPranotaTerpilih = function() {
         const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
         const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
         const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(19)'); // Grand Total column (19th column) - Total Biaya
+        const totalElement = row.querySelector('td:nth-child(18)'); // Grand Total column (18th column, was 19 before) - Total Biaya
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -1864,7 +1854,7 @@ window.ungroupSelectedContainers = function() {
     checkedBoxes.forEach((checkbox) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const groupCell = row.querySelector('td:nth-child(7)'); // Group column (index 7)
+            const groupCell = row.querySelector('td:nth-child(2)'); // Group column (index 2, was 7 before)
             const groupValue = groupCell ? groupCell.textContent.trim() : '';
             if (!groupValue || groupValue === '-') {
                 containersWithoutGroup++;

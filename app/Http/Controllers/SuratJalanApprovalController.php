@@ -17,18 +17,11 @@ class SuratJalanApprovalController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
-        // Tentukan level approval berdasarkan permission user
-        $approvalLevel = null;
-        if ($user->can('approval-tugas-1.view')) {
-            $approvalLevel = 'tugas-1';
-        } elseif ($user->can('approval-tugas-2.view')) {
-            $approvalLevel = 'tugas-2';
-        } else {
-            abort(403, 'Anda tidak memiliki akses untuk melihat approval surat jalan.');
-        }
 
-        // Ambil surat jalan yang perlu approval untuk level ini
+        // Approval surat jalan hanya 1 level
+        $approvalLevel = 'approval';
+
+        // Ambil surat jalan yang perlu approval
         $pendingApprovals = SuratJalanApproval::with(['suratJalan', 'approver'])
             ->where('approval_level', $approvalLevel)
             ->where('status', 'pending')
@@ -55,18 +48,11 @@ class SuratJalanApprovalController extends Controller
     public function show(SuratJalan $suratJalan)
     {
         $user = Auth::user();
-        
-        // Tentukan level approval berdasarkan permission user
-        $approvalLevel = null;
-        if ($user->can('approval-tugas-1.view')) {
-            $approvalLevel = 'tugas-1';
-        } elseif ($user->can('approval-tugas-2.view')) {
-            $approvalLevel = 'tugas-2';
-        } else {
-            abort(403, 'Anda tidak memiliki akses untuk melihat approval surat jalan.');
-        }
 
-        // Ambil approval record untuk level ini
+        // Approval surat jalan hanya 1 level
+        $approvalLevel = 'approval';
+
+        // Ambil approval record
         $approval = SuratJalanApproval::where('surat_jalan_id', $suratJalan->id)
             ->where('approval_level', $approvalLevel)
             ->first();
@@ -87,20 +73,9 @@ class SuratJalanApprovalController extends Controller
     public function approve(Request $request, SuratJalan $suratJalan)
     {
         $user = Auth::user();
-        
-        // Tentukan level approval dan permission yang dibutuhkan
-        $approvalLevel = null;
-        $requiredPermission = null;
-        
-        if ($user->can('approval-tugas-1.approve')) {
-            $approvalLevel = 'tugas-1';
-            $requiredPermission = 'approval-tugas-1.approve';
-        } elseif ($user->can('approval-tugas-2.approve')) {
-            $approvalLevel = 'tugas-2';
-            $requiredPermission = 'approval-tugas-2.approve';
-        } else {
-            abort(403, 'Anda tidak memiliki akses untuk approve surat jalan.');
-        }
+
+        // Approval surat jalan hanya 1 level
+        $approvalLevel = 'approval';
 
         // Validasi input
         $request->validate([
@@ -109,7 +84,7 @@ class SuratJalanApprovalController extends Controller
 
         DB::beginTransaction();
         try {
-            // Ambil approval record untuk level ini
+            // Ambil approval record
             $approval = SuratJalanApproval::where('surat_jalan_id', $suratJalan->id)
                 ->where('approval_level', $approvalLevel)
                 ->where('status', 'pending')
@@ -127,36 +102,20 @@ class SuratJalanApprovalController extends Controller
                 'approved_at' => now(),
             ]);
 
-            // Check apakah semua approval level sudah selesai
-            $allApprovals = SuratJalanApproval::where('surat_jalan_id', $suratJalan->id)->get();
-            $allApproved = $allApprovals->every(function ($item) {
-                return $item->status === 'approved';
-            });
-
-            // Jika semua sudah approved, update status surat jalan
-            if ($allApproved) {
-                $suratJalan->update(['status' => 'fully_approved']);
-                Log::info('Surat jalan fully approved', [
-                    'surat_jalan_id' => $suratJalan->id,
-                    'final_approver' => $user->name,
-                ]);
-            }
-
+            // Update status surat jalan menjadi approved
+            $suratJalan->update(['status' => 'approved']);
+            
             Log::info('Surat jalan approved', [
                 'surat_jalan_id' => $suratJalan->id,
                 'approval_level' => $approvalLevel,
                 'approved_by' => $user->name,
-                'all_approved' => $allApproved,
             ]);
 
             DB::commit();
-            
-            $message = $allApproved ? 
-                'Surat jalan berhasil di-approve. Semua tahap approval telah selesai!' : 
-                'Surat jalan berhasil di-approve untuk level ' . $approvalLevel . '.';
-                
-            return redirect()->route('approval.surat-jalan.index')->with('success', $message);
-            
+
+            return redirect()->route('approval.surat-jalan.index')
+                ->with('success', 'Surat jalan berhasil di-approve!');
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error approving surat jalan: ' . $e->getMessage(), [
@@ -173,16 +132,9 @@ class SuratJalanApprovalController extends Controller
     public function reject(Request $request, SuratJalan $suratJalan)
     {
         $user = Auth::user();
-        
-        // Tentukan level approval
-        $approvalLevel = null;
-        if ($user->can('approval-tugas-1.approve')) {
-            $approvalLevel = 'tugas-1';
-        } elseif ($user->can('approval-tugas-2.approve')) {
-            $approvalLevel = 'tugas-2';
-        } else {
-            abort(403, 'Anda tidak memiliki akses untuk reject surat jalan.');
-        }
+
+        // Approval surat jalan hanya 1 level
+        $approvalLevel = 'approval';
 
         // Validasi input
         $request->validate([
@@ -191,7 +143,7 @@ class SuratJalanApprovalController extends Controller
 
         DB::beginTransaction();
         try {
-            // Ambil approval record untuk level ini
+            // Ambil approval record
             $approval = SuratJalanApproval::where('surat_jalan_id', $suratJalan->id)
                 ->where('approval_level', $approvalLevel)
                 ->where('status', 'pending')
@@ -222,7 +174,7 @@ class SuratJalanApprovalController extends Controller
             DB::commit();
             return redirect()->route('approval.surat-jalan.index')
                 ->with('success', 'Surat jalan berhasil di-reject.');
-            
+
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error rejecting surat jalan: ' . $e->getMessage());

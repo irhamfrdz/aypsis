@@ -321,27 +321,48 @@ class DaftarTagihanKontainerSewaController extends Controller
     {
         $data = $this->validateData($request);
 
-        foreach (['dpp','ppn','pph','grand_total'] as $n) {
-            if (!isset($data[$n]) || $data[$n] === null || $data[$n] === '') {
-                $data[$n] = 0;
+        // Log untuk debugging
+        \Log::info('Update Tagihan - Data received:', [
+            'dpp' => $request->input('dpp'),
+            'ppn' => $request->input('ppn'),
+            'pph' => $request->input('pph'),
+            'grand_total' => $request->input('grand_total'),
+        ]);
+
+        // Pastikan field numerik adalah angka, bukan null atau string kosong
+        foreach (['dpp','ppn','pph','grand_total','dpp_nilai_lain'] as $field) {
+            if (!isset($data[$field]) || $data[$field] === null || $data[$field] === '') {
+                $data[$field] = 0;
+            } else {
+                // Pastikan nilai adalah numeric
+                $data[$field] = (float) $data[$field];
             }
         }
 
-        if (!isset($data['dpp_nilai_lain']) || $data['dpp_nilai_lain'] === null || $data['dpp_nilai_lain'] === '') {
-            $data['dpp_nilai_lain'] = round((float)($data['dpp'] ?? 0) * 11 / 12, 2);
+        // PENTING: Jangan auto-calculate jika user sudah input nilai
+        // Auto-calculate hanya untuk field yang benar-benar kosong (nilai 0)
+        
+        // Auto-calculate DPP Nilai Lain hanya jika = 0 dan DPP ada nilai
+        if ($data['dpp_nilai_lain'] == 0 && $data['dpp'] > 0) {
+            $data['dpp_nilai_lain'] = round($data['dpp'] * 11 / 12, 2);
         }
 
-        if (!isset($data['ppn']) || $data['ppn'] === null || $data['ppn'] === '') {
-            $data['ppn'] = round((float)($data['dpp_nilai_lain'] ?? 0) * 0.12, 2);
+        // Auto-calculate PPN hanya jika = 0 dan DPP Nilai Lain ada nilai
+        if ($data['ppn'] == 0 && $data['dpp_nilai_lain'] > 0) {
+            $data['ppn'] = round($data['dpp_nilai_lain'] * 0.12, 2);
         }
 
-        if (!isset($data['pph']) || $data['pph'] === null || $data['pph'] === '') {
-            $data['pph'] = round((float)($data['dpp'] ?? 0) * 0.02, 2);
+        // Auto-calculate PPH hanya jika = 0 dan DPP ada nilai
+        if ($data['pph'] == 0 && $data['dpp'] > 0) {
+            $data['pph'] = round($data['dpp'] * 0.02, 2);
         }
 
-        if (!isset($data['grand_total']) || $data['grand_total'] === null || $data['grand_total'] === '') {
-            $data['grand_total'] = round((float)($data['dpp'] ?? 0) + (float)($data['ppn'] ?? 0) - (float)($data['pph'] ?? 0), 2);
+        // Auto-calculate Grand Total hanya jika = 0
+        if ($data['grand_total'] == 0) {
+            $data['grand_total'] = round($data['dpp'] + $data['ppn'] - $data['pph'], 2);
         }
+
+        \Log::info('Update Tagihan - Data after processing:', $data);
 
         $tagihan->update($data);
 

@@ -212,91 +212,77 @@ console.log('Page:', 'Edit Tagihan Kontainer Sewa');
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== DOM CONTENT LOADED ===');
 
-    // Currency formatting function
+    // Currency formatting function - Indonesian format: 1.234.567,89
     function formatCurrency(value) {
-        // Remove non-numeric characters except decimal point
+        if (!value || value === '' || value === null || value === undefined) {
+            return '';
+        }
+
+        // Remove non-numeric characters except comma and dot
         let numericValue = value.toString().replace(/[^\d,.-]/g, '');
 
-        // Convert comma to dot for calculation
+        // Handle Indonesian format input (1.234.567,89)
+        // Remove dots (thousands separator) first
+        numericValue = numericValue.replace(/\./g, '');
+        // Then replace comma with dot for parsing
         numericValue = numericValue.replace(',', '.');
 
         // Parse as float
-        let number = parseFloat(numericValue) || 0;
+        let number = parseFloat(numericValue);
+        
+        if (isNaN(number) || !isFinite(number)) {
+            return '';
+        }
 
         // Format with Indonesian locale (dot for thousands, comma for decimal)
-        // Only show decimals if they exist and are not zero
-        if (number % 1 === 0) {
-            // Whole number - no decimals
-            return number.toLocaleString('id-ID', {
-                minimumFractionDigits: 0,
-                maximumFractionDigits: 0
-            });
-        } else {
-            // Has decimals
-            return number.toLocaleString('id-ID', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2
-            });
-        }
+        return number.toLocaleString('id-ID', {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        });
     }
 
     // Function to get numeric value from formatted string
     function getNumericValue(formattedValue) {
-        // Handle null, undefined, or empty values
-        if (formattedValue === null || formattedValue === undefined || formattedValue === '') {
-            return '0';
+        if (!formattedValue || formattedValue === '' || formattedValue === null || formattedValue === undefined) {
+            return 0;
         }
 
-        // Convert to string and trim whitespace
+        // Convert to string and remove currency symbols
         let stringValue = formattedValue.toString().trim();
-
-        // If empty after trim, return 0
-        if (stringValue === '' || stringValue === '0' || stringValue === '0,00' || stringValue === '0.00') {
-            return '0';
-        }
-
-        // Remove currency symbols and extra spaces
         stringValue = stringValue.replace(/Rp\s*/gi, '').trim();
 
-        // Remove all non-numeric characters except dots, commas, and minus sign
-        stringValue = stringValue.replace(/[^\d,.,-]/g, '');
-
-        // Handle Indonesian format: dots are thousands separator, comma is decimal separator
-        // Count dots and commas to determine format
+        // Detect format by counting dots and commas
         const dotCount = (stringValue.match(/\./g) || []).length;
         const commaCount = (stringValue.match(/,/g) || []).length;
 
-        // Indonesian format: 1.234.567,89 (dots for thousands, comma for decimal)
-        if (dotCount > 0 && commaCount <= 1) {
-            // Remove dots (thousands separator)
-            stringValue = stringValue.replace(/\./g, '');
-            // Replace comma with dot (decimal separator)
-            stringValue = stringValue.replace(',', '.');
+        // Indonesian format: 1.234.567,89 (multiple dots, one comma)
+        if (dotCount > 0 && commaCount === 1) {
+            stringValue = stringValue.replace(/\./g, ''); // Remove thousands separator
+            stringValue = stringValue.replace(',', '.'); // Replace decimal separator
         }
-        // US format: 1,234,567.89 (commas for thousands, dot for decimal)
-        else if (commaCount > 1 && dotCount <= 1) {
-            // Remove commas (thousands separator)
-            stringValue = stringValue.replace(/,/g, '');
-            // Dot is already decimal separator
+        // US format: 1,234,567.89 (multiple commas, one dot) OR simple decimal: 1234567.89 (one dot)
+        else if (commaCount === 0 && dotCount === 1) {
+            // Keep the dot as decimal separator (already correct format)
+            // No changes needed
         }
-        // Simple format with single comma (assume decimal)
+        // Only comma: 1234567,89 (Indonesian decimal)
         else if (commaCount === 1 && dotCount === 0) {
-            stringValue = stringValue.replace(',', '.');
+            stringValue = stringValue.replace(',', '.'); // Replace decimal separator
         }
-        // Simple format with single dot (assume decimal)
-        // No changes needed
+        // Multiple dots, no comma: 1.234.567 (Indonesian thousands, no decimal)
+        else if (dotCount > 1 && commaCount === 0) {
+            stringValue = stringValue.replace(/\./g, ''); // Remove all dots
+        }
+        // No special characters or multiple of both
+        else {
+            // Remove all dots and commas, treat as whole number
+            stringValue = stringValue.replace(/[.,]/g, '');
+        }
 
         // Parse as float
         let number = parseFloat(stringValue);
 
-        // If parsing failed, return 0
-        if (isNaN(number) || !isFinite(number)) {
-            console.warn('Failed to parse numeric value:', formattedValue, '-> returning 0');
-            return '0';
-        }
-
-        // Return as string to avoid scientific notation
-        return number.toString();
+        return isNaN(number) || !isFinite(number) ? 0 : number;
     }
 
     // Initialize currency formatting for all currency inputs
@@ -316,76 +302,69 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        let typingTimer;
-        const doneTypingInterval = 1000; // 1 second
-
         // Update hidden input whenever display input changes
         function updateHiddenInput() {
             const displayValue = input.value.trim();
-
-            if (displayValue === '' || displayValue === null || displayValue === undefined) {
-                hiddenInput.value = '0';
-                return;
-            }
-
-            // Convert formatted value to numeric
-            let cleanValue = displayValue;
-            cleanValue = cleanValue.replace(/Rp\s*/gi, '').trim();
-            cleanValue = cleanValue.replace(/\./g, ''); // Remove thousands separator
-            cleanValue = cleanValue.replace(/,/g, '.'); // Replace comma with dot
-
-            const numericValue = parseFloat(cleanValue);
-            hiddenInput.value = isNaN(numericValue) ? '0' : numericValue.toString();
-
-            console.log(`Updated ${fieldName}: "${displayValue}" -> ${hiddenInput.value}`);
+            const numericValue = getNumericValue(displayValue);
+            hiddenInput.value = numericValue.toString();
+            console.log(`[${fieldName}] Display: "${displayValue}" -> Numeric: ${numericValue} -> Hidden: ${hiddenInput.value}`);
         }
 
-        // Format on input - with delay to avoid interrupting typing
-        input.addEventListener('input', function() {
-            clearTimeout(typingTimer);
-
-            typingTimer = setTimeout(() => {
-                const cursorPosition = this.selectionStart;
-                const oldValue = this.value;
-                const newValue = formatCurrency(oldValue);
-
-                if (newValue !== oldValue) {
-                    this.value = newValue;
-                    this.setSelectionRange(newValue.length, newValue.length);
-                }
-
-                updateHiddenInput();
-            }, doneTypingInterval);
+        // Handle input with real-time formatting
+        let isFormatting = false;
+        
+        input.addEventListener('input', function(e) {
+            if (isFormatting) return;
+            
+            // Allow typing freely without interruption
+            updateHiddenInput();
+            
+            // Trigger auto-calculation for grand total
+            if (['dpp', 'ppn', 'pph'].includes(fieldName)) {
+                calculateGrandTotal();
+            }
         });
 
-        // Better focus behavior - double-click to select all
-        input.addEventListener('focus', function() {
-            // Don't auto-select on focus
-        });
-
-        // Double-click to select all for easy replacement
-        input.addEventListener('dblclick', function() {
-            this.select();
-        });
-
-        // Format on blur - only if value changed
+        // Format on blur
         input.addEventListener('blur', function() {
-            clearTimeout(typingTimer);
-
+            isFormatting = true;
+            
             const currentValue = this.value.trim();
             if (currentValue && currentValue !== '') {
                 const formattedValue = formatCurrency(currentValue);
                 this.value = formattedValue;
+            } else {
+                this.value = '';
             }
-
+            
             updateHiddenInput();
+            
+            // Trigger auto-calculation for grand total
+            if (['dpp', 'ppn', 'pph'].includes(fieldName)) {
+                calculateGrandTotal();
+            }
+            
+            setTimeout(() => { isFormatting = false; }, 100);
+        });
+
+        // Select all on focus for easy editing
+        input.addEventListener('focus', function() {
+            // Remove formatting temporarily for easier editing
+            const numericValue = getNumericValue(this.value);
+            if (numericValue !== 0) {
+                // Show unformatted value for easier editing
+                const currentFormatted = this.value;
+                setTimeout(() => {
+                    this.select();
+                }, 50);
+            }
         });
 
         // Initialize hidden input value on page load
         updateHiddenInput();
     });
 
-    // Form submission handler - just for logging and final check
+    // Form submission handler
     const form = document.querySelector('form');
     const submitButton = form.querySelector('button[type="submit"]');
 
@@ -408,18 +387,8 @@ document.addEventListener('DOMContentLoaded', function() {
             if (!hiddenInput) return;
 
             const displayValue = input.value.trim();
-
-            if (displayValue === '' || displayValue === null || displayValue === undefined) {
-                hiddenInput.value = '0';
-            } else {
-                let cleanValue = displayValue;
-                cleanValue = cleanValue.replace(/Rp\s*/gi, '').trim();
-                cleanValue = cleanValue.replace(/\./g, '');
-                cleanValue = cleanValue.replace(/,/g, '.');
-
-                const numericValue = parseFloat(cleanValue);
-                hiddenInput.value = isNaN(numericValue) ? '0' : numericValue.toString();
-            }
+            const numericValue = getNumericValue(displayValue);
+            hiddenInput.value = numericValue.toString();
 
             console.log(`Final ${fieldName}: display="${displayValue}" -> hidden="${hiddenInput.value}"`);
         });
@@ -437,50 +406,49 @@ document.addEventListener('DOMContentLoaded', function() {
                 Menyimpan...
             `;
         }
+    });
 
-        // Let the form submit naturally
-    });    // Auto-calculate Grand Total when other values change
+    // Auto-calculate Grand Total when other values change
     function calculateGrandTotal() {
         const dppHidden = document.getElementById('dpp_hidden');
-        const dppNilaiLainHidden = document.getElementById('dpp_nilai_lain_hidden');
         const ppnHidden = document.getElementById('ppn_hidden');
         const pphHidden = document.getElementById('pph_hidden');
         const grandTotalDisplay = document.getElementById('grand_total_display');
         const grandTotalHidden = document.getElementById('grand_total_hidden');
 
-        if (!dppHidden || !ppnHidden || !pphHidden || !grandTotalDisplay || !grandTotalHidden) return;
+        if (!dppHidden || !ppnHidden || !pphHidden || !grandTotalDisplay || !grandTotalHidden) {
+            console.warn('Missing required elements for grand total calculation');
+            return;
+        }
 
         const dpp = parseFloat(dppHidden.value) || 0;
         const ppn = parseFloat(ppnHidden.value) || 0;
         const pph = parseFloat(pphHidden.value) || 0;
 
-        // Formula: DPP + PPN - PPH (tidak termasuk DPP Nilai Lain)
+        // Formula: DPP + PPN - PPH
         const grandTotal = dpp + ppn - pph;
 
         grandTotalDisplay.value = formatCurrency(grandTotal);
         grandTotalHidden.value = grandTotal.toString();
 
-        console.log(`Grand Total calculated: ${grandTotal}`);
+        console.log(`Grand Total calculated: DPP(${dpp}) + PPN(${ppn}) - PPH(${pph}) = ${grandTotal}`);
     }
 
-    // Add event listeners for auto-calculation on display inputs
-    ['dpp', 'ppn', 'pph'].forEach(fieldName => {
-        const displayInput = document.getElementById(fieldName + '_display');
-        if (displayInput) {
-            displayInput.addEventListener('input', calculateGrandTotal);
-            displayInput.addEventListener('blur', calculateGrandTotal);
-        }
-    });
+    // Initial calculation on page load
+    calculateGrandTotal();
+
+    // Initial calculation on page load
+    calculateGrandTotal();
 
     // Add focus effects for better UX
     const allInputs = document.querySelectorAll('input, select, textarea');
     allInputs.forEach(input => {
         input.addEventListener('focus', function() {
-            this.closest('div')?.classList.add('ring-2', 'ring-blue-200');
+            this.parentElement?.classList.add('ring-2', 'ring-blue-200');
         });
 
         input.addEventListener('blur', function() {
-            this.closest('div')?.classList.remove('ring-2', 'ring-blue-200');
+            this.parentElement?.classList.remove('ring-2', 'ring-blue-200');
         });
     });
 });

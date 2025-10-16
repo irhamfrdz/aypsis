@@ -1166,23 +1166,24 @@ Route::middleware(['auth', 'verified'])->group(function () {
             ->name('checkpoint.store-surat-jalan');
     });
 
+     // === Approval Surat Jalan (HARUS SEBELUM route dengan parameter) ===
+     Route::prefix('approval/surat-jalan')->name('approval.surat-jalan.')->middleware(['auth', 'can:surat-jalan-approval-dashboard'])->group(function () {
+         Route::get('/', [\App\Http\Controllers\SuratJalanApprovalController::class, 'index'])->name('index');
+         Route::get('/{suratJalan}', [\App\Http\Controllers\SuratJalanApprovalController::class, 'show'])->name('show');
+         Route::post('/{suratJalan}/approve', [\App\Http\Controllers\SuratJalanApprovalController::class, 'approve'])->name('approve');
+         Route::post('/{suratJalan}/reject', [\App\Http\Controllers\SuratJalanApprovalController::class, 'reject'])->name('reject');
+     });
+
          // --- Rute Penyelesaian Tugas ---
         // Menggunakan PenyelesaianController yang sudah kita kembangkan
-         Route::prefix('approval')->name('approval.')->middleware('can:approval-tugas-1.view')->group(function () {          // Dashboard untuk melihat tugas yang perlu diselesaikan
+         Route::prefix('approval')->name('approval.')->middleware('can:approval-tugas-1.view')->group(function () {
+          // Dashboard untuk melihat tugas yang perlu diselesaikan
           Route::get('/', [\App\Http\Controllers\PenyelesaianController::class, 'index'])->name('dashboard');
           // Riwayat approval yang sudah selesai
           Route::get('/riwayat', [\App\Http\Controllers\PenyelesaianController::class, 'riwayat'])->name('riwayat');
                // Proses masal permohonan (define before parameterized routes to avoid route-model binding conflicts)
                Route::post('/mass-process', [\App\Http\Controllers\PenyelesaianController::class, 'massProcess'])->name('mass_process');
-               
-               // Approval Surat Jalan routes
-               Route::prefix('surat-jalan')->name('surat-jalan.')->group(function () {
-                   Route::get('/', [\App\Http\Controllers\SuratJalanApprovalController::class, 'index'])->name('index');
-                   Route::get('/{suratJalan}', [\App\Http\Controllers\SuratJalanApprovalController::class, 'show'])->name('show');
-                   Route::post('/{suratJalan}/approve', [\App\Http\Controllers\SuratJalanApprovalController::class, 'approve'])->name('approve');
-                   Route::post('/{suratJalan}/reject', [\App\Http\Controllers\SuratJalanApprovalController::class, 'reject'])->name('reject');
-               });
-               
+
                // Menampilkan form approval untuk permohonan tertentu
                Route::get('/{permohonan}', [\App\Http\Controllers\PenyelesaianController::class, 'create'])->name('create');
                // Menyimpan data dari form approval
