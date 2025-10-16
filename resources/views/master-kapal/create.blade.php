@@ -1,121 +1,256 @@
 @extends('layouts.app')
 
+@section('title', 'Tambah Kapal Baru')
+
 @section('content')
-<div class="container-fluid px-4">
-    <div class="row mb-4">
-        <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('master-kapal.index') }}">Master Kapal</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Tambah Kapal</li>
-                </ol>
-            </nav>
-            <h1 class="h3 mb-0 text-gray-800">Tambah Kapal Baru</h1>
-        </div>
+<div class="container mx-auto px-4 py-8">
+    <!-- Breadcrumb -->
+    <nav class="flex mb-6" aria-label="Breadcrumb">
+        <ol class="inline-flex items-center space-x-1 md:space-x-3">
+            <li class="inline-flex items-center">
+                <a href="{{ route('master-kapal.index') }}" class="inline-flex items-center text-sm font-medium text-gray-700 hover:text-blue-600">
+                    <i class="fas fa-ship mr-2"></i>
+                    Master Kapal
+                </a>
+            </li>
+            <li>
+                <div class="flex items-center">
+                    <i class="fas fa-chevron-right text-gray-400 text-xs"></i>
+                    <span class="ml-1 text-sm font-medium text-gray-500 md:ml-2">Tambah Kapal</span>
+                </div>
+            </li>
+        </ol>
+    </nav>
+
+    <!-- Header -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
+        <h1 class="text-2xl font-bold text-gray-900">Tambah Kapal Baru</h1>
+        <p class="text-gray-600 mt-1">Lengkapi formulir di bawah untuk menambahkan data kapal baru</p>
     </div>
 
+    <!-- Error Alert -->
     @if($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Terdapat kesalahan:</strong>
-        <ul class="mb-0">
-            @foreach($errors->all() as $error)
-                <li>{{ $error }}</li>
-            @endforeach
-        </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-circle text-red-400 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <h3 class="text-sm font-medium text-red-800">Terdapat kesalahan pada form:</h3>
+                <ul class="mt-2 text-sm text-red-700 list-disc pl-5 space-y-1">
+                    @foreach($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
+        </div>
     </div>
     @endif
 
-    <div class="card shadow mb-4">
-        <div class="card-header py-3">
-            <h6 class="m-0 font-weight-bold text-primary">Form Tambah Kapal</h6>
+    <!-- Form Card -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Form Tambah Kapal</h2>
         </div>
-        <div class="card-body">
-            <form action="{{ route('master-kapal.store') }}" method="POST">
-                @csrf
-                
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="kode" class="form-label">Kode <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('kode') is-invalid @enderror" 
-                                   id="kode" name="kode" value="{{ old('kode') }}" 
-                                   placeholder="Masukkan kode kapal" required>
-                            @error('kode')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">Kode unik untuk identifikasi kapal (maks. 50 karakter)</small>
-                        </div>
+
+        <form action="{{ route('master-kapal.store') }}" method="POST" class="p-6">
+            @csrf
+
+            <!-- Row 1: Kode & Kode Kapal -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="kode" class="block text-sm font-medium text-gray-700 mb-2">
+                        Kode <span class="text-red-500">*</span>
+                    </label>
+                    <input type="text"
+                           id="kode"
+                           name="kode"
+                           value="{{ old('kode') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kode') border-red-500 @enderror"
+                           placeholder="Masukkan kode kapal"
+                           required>
+                    @error('kode')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Kode unik untuk identifikasi kapal (maks. 50 karakter)</p>
+                </div>
+
+                <div>
+                    <label for="kode_kapal" class="block text-sm font-medium text-gray-700 mb-2">
+                        Kode Kapal
+                    </label>
+                    <input type="text"
+                           id="kode_kapal"
+                           name="kode_kapal"
+                           value="{{ old('kode_kapal') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kode_kapal') border-red-500 @enderror"
+                           placeholder="Masukkan kode alternatif kapal">
+                    @error('kode_kapal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Kode alternatif/tambahan (opsional, maks. 100 karakter)</p>
+                </div>
+            </div>
+
+            <!-- Nama Kapal -->
+            <div class="mb-6">
+                <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
+                    Nama Kapal <span class="text-red-500">*</span>
+                </label>
+                <input type="text"
+                       id="nama_kapal"
+                       name="nama_kapal"
+                       value="{{ old('nama_kapal') }}"
+                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_kapal') border-red-500 @enderror"
+                       placeholder="Masukkan nama kapal"
+                       required>
+                @error('nama_kapal')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+
+            <!-- Row 2: Nickname & Pelayaran -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                    <label for="nickname" class="block text-sm font-medium text-gray-700 mb-2">
+                        Nickname
+                    </label>
+                    <input type="text"
+                           id="nickname"
+                           name="nickname"
+                           value="{{ old('nickname') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nickname') border-red-500 @enderror"
+                           placeholder="Masukkan nickname kapal">
+                    @error('nickname')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Nama panggilan/singkatan kapal (opsional)</p>
+                </div>
+
+                <div>
+                    <label for="pelayaran" class="block text-sm font-medium text-gray-700 mb-2">
+                        Pelayaran (Pemilik Kapal)
+                    </label>
+                    <input type="text"
+                           id="pelayaran"
+                           name="pelayaran"
+                           value="{{ old('pelayaran') }}"
+                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pelayaran') border-red-500 @enderror"
+                           placeholder="Masukkan nama pelayaran/pemilik kapal">
+                    @error('pelayaran')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Nama perusahaan pelayaran pemilik kapal (opsional)</p>
+                </div>
+            </div>
+
+            <!-- Row 3: Kapasitas Kontainer & Gross Tonnage -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
+                <div>
+                    <label for="kapasitas_kontainer_palka" class="block text-sm font-medium text-gray-700 mb-2">
+                        Kapasitas Kontainer Palka
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               id="kapasitas_kontainer_palka"
+                               name="kapasitas_kontainer_palka"
+                               value="{{ old('kapasitas_kontainer_palka') }}"
+                               min="0"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kapasitas_kontainer_palka') border-red-500 @enderror"
+                               placeholder="0">
                     </div>
+                    @error('kapasitas_kontainer_palka')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="mt-1 text-xs text-gray-500">Kapasitas kontainer di bagian palka kapal</p>
+                </div>
 
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="kode_kapal" class="form-label">Kode Kapal</label>
-                            <input type="text" class="form-control @error('kode_kapal') is-invalid @enderror" 
-                                   id="kode_kapal" name="kode_kapal" value="{{ old('kode_kapal') }}" 
-                                   placeholder="Masukkan kode alternatif kapal">
-                            @error('kode_kapal')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <small class="form-text text-muted">Kode alternatif/tambahan (opsional, maks. 100 karakter)</small>
-                        </div>
+                <div>
+                    <label for="kapasitas_kontainer_deck" class="block text-sm font-medium text-gray-700 mb-2">
+                        Kapasitas Kontainer Deck
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               id="kapasitas_kontainer_deck"
+                               name="kapasitas_kontainer_deck"
+                               value="{{ old('kapasitas_kontainer_deck') }}"
+                               min="0"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kapasitas_kontainer_deck') border-red-500 @enderror"
+                               placeholder="0">
                     </div>
-                </div>
-
-                <div class="mb-3">
-                    <label for="nama_kapal" class="form-label">Nama Kapal <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('nama_kapal') is-invalid @enderror" 
-                           id="nama_kapal" name="nama_kapal" value="{{ old('nama_kapal') }}" 
-                           placeholder="Masukkan nama kapal" required>
-                    @error('nama_kapal')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                    @error('kapasitas_kontainer_deck')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-xs text-gray-500">Kapasitas kontainer di bagian deck kapal</p>
                 </div>
 
-                <div class="mb-3">
-                    <label for="lokasi" class="form-label">Lokasi</label>
-                    <input type="text" class="form-control @error('lokasi') is-invalid @enderror" 
-                           id="lokasi" name="lokasi" value="{{ old('lokasi') }}" 
-                           placeholder="Masukkan lokasi kapal (pelabuhan, dermaga, dll)">
-                    @error('lokasi')
-                        <div class="invalid-feedback">{{ $message }}</div>
+                <div>
+                    <label for="gross_tonnage" class="block text-sm font-medium text-gray-700 mb-2">
+                        Gross Tonnage
+                    </label>
+                    <div class="relative">
+                        <input type="number"
+                               id="gross_tonnage"
+                               name="gross_tonnage"
+                               value="{{ old('gross_tonnage') }}"
+                               min="0"
+                               step="0.01"
+                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('gross_tonnage') border-red-500 @enderror"
+                               placeholder="0.00">
+                    </div>
+                    @error('gross_tonnage')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="mt-1 text-xs text-gray-500">Gross tonnage kapal dalam ton</p>
                 </div>
+            </div>
 
-                <div class="mb-3">
-                    <label for="catatan" class="form-label">Catatan</label>
-                    <textarea class="form-control @error('catatan') is-invalid @enderror" 
-                              id="catatan" name="catatan" rows="4" 
-                              placeholder="Masukkan catatan tambahan tentang kapal">{{ old('catatan') }}</textarea>
-                    @error('catatan')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+            <!-- Catatan -->
+            <div class="mb-6">
+                <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
+                    Catatan
+                </label>
+                <textarea id="catatan"
+                          name="catatan"
+                          rows="4"
+                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('catatan') border-red-500 @enderror"
+                          placeholder="Masukkan catatan tambahan tentang kapal">{{ old('catatan') }}</textarea>
+                @error('catatan')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
 
-                <div class="mb-3">
-                    <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
-                    <select class="form-select @error('status') is-invalid @enderror" id="status" name="status" required>
-                        <option value="">Pilih Status</option>
-                        <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
-                        <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
-                    </select>
-                    @error('status')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
+            <!-- Status -->
+            <div class="mb-6">
+                <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                    Status <span class="text-red-500">*</span>
+                </label>
+                <select id="status"
+                        name="status"
+                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status') border-red-500 @enderror"
+                        required>
+                    <option value="">Pilih Status</option>
+                    <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
+                    <option value="nonaktif" {{ old('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                </select>
+                @error('status')
+                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
 
-                <hr class="my-4">
+            <!-- Divider -->
+            <div class="border-t border-gray-200 my-6"></div>
 
-                <div class="d-flex justify-content-between">
-                    <a href="{{ route('master-kapal.index') }}" class="btn btn-secondary">
-                        <i class="fas fa-arrow-left"></i> Kembali
-                    </a>
-                    <button type="submit" class="btn btn-primary">
-                        <i class="fas fa-save"></i> Simpan Data
-                    </button>
-                </div>
-            </form>
-        </div>
+            <!-- Action Buttons -->
+            <div class="flex items-center justify-between">
+                <a href="{{ route('master-kapal.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg transition duration-200 inline-flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Kembali
+                </a>
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg transition duration-200 inline-flex items-center">
+                    <i class="fas fa-save mr-2"></i> Simpan Data
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 @endsection

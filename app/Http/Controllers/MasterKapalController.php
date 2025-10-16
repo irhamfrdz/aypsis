@@ -59,8 +59,12 @@ class MasterKapalController extends Controller
             'kode' => 'required|string|max:50|unique:master_kapals,kode',
             'kode_kapal' => 'nullable|string|max:100',
             'nama_kapal' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:255',
+            'pelayaran' => 'nullable|string|max:255',
+            'kapasitas_kontainer_palka' => 'nullable|integer|min:0',
+            'kapasitas_kontainer_deck' => 'nullable|integer|min:0',
+            'gross_tonnage' => 'nullable|numeric|min:0',
             'catatan' => 'nullable|string',
-            'lokasi' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
@@ -103,8 +107,12 @@ class MasterKapalController extends Controller
             'kode' => 'required|string|max:50|unique:master_kapals,kode,' . $masterKapal->id,
             'kode_kapal' => 'nullable|string|max:100',
             'nama_kapal' => 'required|string|max:255',
+            'nickname' => 'nullable|string|max:255',
+            'pelayaran' => 'nullable|string|max:255',
+            'kapasitas_kontainer_palka' => 'nullable|integer|min:0',
+            'kapasitas_kontainer_deck' => 'nullable|integer|min:0',
+            'gross_tonnage' => 'nullable|numeric|min:0',
             'catatan' => 'nullable|string',
-            'lokasi' => 'nullable|string|max:255',
             'status' => 'required|in:aktif,nonaktif',
         ]);
 
@@ -146,7 +154,7 @@ class MasterKapalController extends Controller
     public function downloadTemplate()
     {
         $filename = 'template_master_kapal.csv';
-        
+
         // Header CSV dengan delimiter titik koma
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
@@ -155,13 +163,19 @@ class MasterKapalController extends Controller
 
         $callback = function() {
             $file = fopen('php://output', 'w');
-            
+
             // Add BOM for UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
-            // Header only, no example data
-            fputcsv($file, ['kode', 'kode_kapal', 'nama_kapal', 'lokasi', 'catatan', 'status'], ';');
-            
+
+            // Header with new fields: nickname and pelayaran (changed from lokasi)
+            fputcsv($file, ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status'], ';');
+
+            // Example data rows
+            fputcsv($file, ['K001', 'KP-001', 'MV SEJAHTERA', 'SEJAHTERA', 'PT Pelayaran Indonesia', 'Kapal kontainer 20 feet', 'aktif'], ';');
+            fputcsv($file, ['K002', 'KP-002', 'MV NUSANTARA', 'NUSA', 'PT Samudera Lines', 'Kapal cargo besar', 'aktif'], ';');
+            fputcsv($file, ['K003', 'KP-003', 'MV BAHARI', '', 'PT Pelni', 'Kapal penumpang', 'nonaktif'], ';');
+            fputcsv($file, ['K004', '', 'MV SRIKANDI', 'KANDI', 'PT Berlian Shipping', '', 'aktif'], ';');
+
             fclose($file);
         };
 
@@ -188,7 +202,7 @@ class MasterKapalController extends Controller
         try {
             $file = $request->file('csv_file');
             $path = $file->getRealPath();
-            
+
             // Open and read CSV
             $csvData = array_map(function($line) {
                 return str_getcsv($line, ';');
@@ -196,24 +210,32 @@ class MasterKapalController extends Controller
 
             // Remove header
             $header = array_shift($csvData);
-            
+
+            // Remove UTF-8 BOM if present and trim whitespace
+            $header = array_map(function($value) {
+                // Remove BOM (﻿) from UTF-8 encoded files
+                $value = str_replace("\xEF\xBB\xBF", '', $value);
+                return trim($value);
+            }, $header);
+
             // Validate header
-            $expectedHeader = ['kode', 'kode_kapal', 'nama_kapal', 'lokasi', 'catatan', 'status'];
+            $expectedHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status'];
             if ($header !== $expectedHeader) {
                 return redirect()
                     ->back()
-                    ->with('error', 'Format header CSV tidak sesuai. Gunakan template yang disediakan.');
+                    ->with('error', 'Format header CSV tidak sesuai. Expected: ' . implode(';', $expectedHeader) . ' | Got: ' . implode(';', $header));
             }
 
             $imported = 0;
             $updated = 0;
             $errors = [];
+            $skipped = 0;
 
             DB::beginTransaction();
 
             foreach ($csvData as $index => $row) {
                 $rowNumber = $index + 2; // +2 karena header di row 1 dan index mulai dari 0
-                
+
                 // Skip empty rows
                 if (empty(array_filter($row))) {
                     continue;
@@ -222,25 +244,29 @@ class MasterKapalController extends Controller
                 // Skip if kode is empty
                 if (empty(trim($row[0]))) {
                     $errors[] = "Baris {$rowNumber}: Kode tidak boleh kosong";
+                    $skipped++;
                     continue;
                 }
 
                 $kode = trim($row[0]);
                 $kode_kapal = !empty(trim($row[1])) ? trim($row[1]) : null;
                 $nama_kapal = trim($row[2]);
-                $lokasi = !empty(trim($row[3])) ? trim($row[3]) : null;
-                $catatan = !empty(trim($row[4])) ? trim($row[4]) : null;
-                $status = trim($row[5]);
+                $nickname = !empty(trim($row[3])) ? trim($row[3]) : null;
+                $pelayaran = !empty(trim($row[4])) ? trim($row[4]) : null;
+                $catatan = !empty(trim($row[5])) ? trim($row[5]) : null;
+                $status = trim($row[6]);
 
                 // Validate required fields
                 if (empty($nama_kapal)) {
                     $errors[] = "Baris {$rowNumber}: Nama kapal tidak boleh kosong";
+                    $skipped++;
                     continue;
                 }
 
-                // Validate status
+                // Validate status - accept both Indonesian and English
                 if (!in_array(strtolower($status), ['aktif', 'nonaktif', 'active', 'inactive'])) {
-                    $errors[] = "Baris {$rowNumber}: Status harus 'aktif' atau 'nonaktif'";
+                    $errors[] = "Baris {$rowNumber}: Status harus 'aktif'/'active' atau 'nonaktif'/'inactive'";
+                    $skipped++;
                     continue;
                 }
 
@@ -255,7 +281,8 @@ class MasterKapalController extends Controller
                     $existing->update([
                         'kode_kapal' => $kode_kapal,
                         'nama_kapal' => $nama_kapal,
-                        'lokasi' => $lokasi,
+                        'nickname' => $nickname,
+                        'pelayaran' => $pelayaran,
                         'catatan' => $catatan,
                         'status' => $normalizedStatus,
                     ]);
@@ -266,7 +293,8 @@ class MasterKapalController extends Controller
                         'kode' => $kode,
                         'kode_kapal' => $kode_kapal,
                         'nama_kapal' => $nama_kapal,
-                        'lokasi' => $lokasi,
+                        'nickname' => $nickname,
+                        'pelayaran' => $pelayaran,
                         'catatan' => $catatan,
                         'status' => $normalizedStatus,
                     ]);
@@ -276,10 +304,16 @@ class MasterKapalController extends Controller
 
             DB::commit();
 
-            $message = "Import berhasil! {$imported} data baru ditambahkan, {$updated} data diperbarui.";
-            
+            $message = "Import berhasil! {$imported} data baru ditambahkan, {$updated} data diperbarui";
+
+            if ($skipped > 0) {
+                $message .= ", {$skipped} data dilewati";
+            }
+
+            $message .= ".";
+
             if (!empty($errors)) {
-                $message .= " Dengan " . count($errors) . " error.";
+                $message .= " Detail error: " . count($errors) . " baris bermasalah.";
             }
 
             return redirect()
@@ -289,7 +323,7 @@ class MasterKapalController extends Controller
 
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             return redirect()
                 ->back()
                 ->with('error', 'Gagal mengimport data: ' . $e->getMessage());
