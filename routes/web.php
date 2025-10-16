@@ -726,6 +726,19 @@ Route::middleware([
              'destroy' => 'can:master-stock-kontainer-delete'
          ]);
 
+    // 🚢 Master Kapal (Ship Master) Management with permissions
+    Route::resource('master-kapal', \App\Http\Controllers\MasterKapalController::class)
+         ->names('master-kapal')
+         ->middleware([
+             'index' => 'can:master-kapal.view',
+             'show' => 'can:master-kapal.view',
+             'create' => 'can:master-kapal.create',
+             'store' => 'can:master-kapal.create',
+             'edit' => 'can:master-kapal.edit',
+             'update' => 'can:master-kapal.edit',
+             'destroy' => 'can:master-kapal.delete'
+         ]);
+
     // 🏦 Tipe Akun (Account Type) Management with permissions
     Route::resource('master/tipe-akun', TipeAkunController::class)->names('master.tipe-akun')->middleware([
         'index' => 'can:master-tipe-akun-view',

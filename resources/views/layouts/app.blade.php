@@ -653,6 +653,14 @@
                         Stock Kontainer
                     </a>
                 @endif
+                @if($user && $user->can('master-kapal.view'))
+                    <a href="{{ route('master-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master-kapal.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        Master Kapal
+                    </a>
+                @endif
                 @if($user && $user->can('master-pricelist-cat-view'))
                     <a href="{{ route('master.pricelist-cat.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.pricelist-cat.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
