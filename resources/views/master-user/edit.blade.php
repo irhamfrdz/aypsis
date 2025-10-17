@@ -783,7 +783,7 @@
                             </tr>
 
                             {{-- Vendor Kontainer Sewa --}}
-                            <tr class="submodule-row" data-parent="master">
+                            <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">
                                     <div class="flex items-center">
                                         <span class="text-sm mr-2">└─</span>
