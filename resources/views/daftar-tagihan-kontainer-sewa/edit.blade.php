@@ -229,7 +229,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Parse as float
         let number = parseFloat(numericValue);
-        
+
         if (isNaN(number) || !isFinite(number)) {
             return '';
         }
@@ -312,13 +312,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Handle input with real-time formatting
         let isFormatting = false;
-        
+
         input.addEventListener('input', function(e) {
             if (isFormatting) return;
-            
+
             // Allow typing freely without interruption
             updateHiddenInput();
-            
+
             // Trigger auto-calculation for grand total
             if (['dpp', 'ppn', 'pph'].includes(fieldName)) {
                 calculateGrandTotal();
@@ -328,7 +328,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Format on blur
         input.addEventListener('blur', function() {
             isFormatting = true;
-            
+
             const currentValue = this.value.trim();
             if (currentValue && currentValue !== '') {
                 const formattedValue = formatCurrency(currentValue);
@@ -336,14 +336,14 @@ document.addEventListener('DOMContentLoaded', function() {
             } else {
                 this.value = '';
             }
-            
+
             updateHiddenInput();
-            
+
             // Trigger auto-calculation for grand total
             if (['dpp', 'ppn', 'pph'].includes(fieldName)) {
                 calculateGrandTotal();
             }
-            
+
             setTimeout(() => { isFormatting = false; }, 100);
         });
 

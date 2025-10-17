@@ -38,7 +38,7 @@ foreach ($permissions as $perm) {
         ->where('user_id', $admin->id)
         ->where('permission_id', $perm->id)
         ->exists();
-    
+
     if (!$exists) {
         DB::table('user_permissions')->insert([
             'user_id' => $admin->id,

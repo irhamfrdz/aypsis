@@ -21,7 +21,7 @@ return new class extends Migration
             $table->enum('status', ['aktif', 'nonaktif'])->default('aktif')->comment('Status kapal');
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Indexes
             $table->index('kode');
             $table->index('status');

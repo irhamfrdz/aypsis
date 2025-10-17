@@ -204,7 +204,7 @@
                     <i class="fas fa-chart-bar text-blue-500 mr-2"></i>
                     Kapasitas & Spesifikasi Teknis
                 </h3>
-                
+
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <!-- Kapasitas Palka -->
                     <div class="bg-blue-50 rounded-lg p-4 border border-blue-200">

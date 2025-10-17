@@ -13,7 +13,7 @@ echo "==========================================\n\n";
 $kapalData = [
     [
         'mother_vessel' => 'KM. SUMBER ABADI 178',
-        'kode' => 'SA', 
+        'kode' => 'SA',
         'kapasitas_palka' => 40,
         'kapasitas_deck' => 27,
         'gross_tonnage' => 1316
@@ -58,49 +58,49 @@ $kapalData = [
 // Update data kapal berdasarkan kode atau nama kapal
 foreach ($kapalData as $data) {
     echo "🔄 Processing: {$data['mother_vessel']} ({$data['kode']})\n";
-    
+
     // Cari kapal berdasarkan kode atau nama yang mirip
-    $searchQuery = "SELECT id, kode, nama_kapal FROM master_kapals 
+    $searchQuery = "SELECT id, kode, nama_kapal FROM master_kapals
                    WHERE kode = ? OR nama_kapal LIKE ? OR nama_kapal LIKE ?
-                   ORDER BY 
-                   CASE 
+                   ORDER BY
+                   CASE
                        WHEN kode = ? THEN 1
                        WHEN nama_kapal LIKE ? THEN 2
                        ELSE 3
                    END
                    LIMIT 1";
-    
+
     $namaPattern1 = '%' . str_replace('KM. ', '', $data['mother_vessel']) . '%';
     $namaPattern2 = '%' . $data['mother_vessel'] . '%';
-    
+
     $stmt = $conn->prepare($searchQuery);
-    $stmt->bind_param("sssss", 
-        $data['kode'], 
-        $namaPattern1, 
+    $stmt->bind_param("sssss",
+        $data['kode'],
+        $namaPattern1,
         $namaPattern2,
         $data['kode'],
         $namaPattern1
     );
     $stmt->execute();
     $result = $stmt->get_result();
-    
+
     if ($kapal = $result->fetch_assoc()) {
         // Update kapal yang ditemukan
-        $updateQuery = "UPDATE master_kapals SET 
+        $updateQuery = "UPDATE master_kapals SET
                        kapasitas_kontainer_palka = ?,
                        kapasitas_kontainer_deck = ?,
                        gross_tonnage = ?,
                        updated_at = NOW()
                        WHERE id = ?";
-        
+
         $updateStmt = $conn->prepare($updateQuery);
-        $updateStmt->bind_param("iidi", 
+        $updateStmt->bind_param("iidi",
             $data['kapasitas_palka'],
             $data['kapasitas_deck'],
             $data['gross_tonnage'],
             $kapal['id']
         );
-        
+
         if ($updateStmt->execute()) {
             $total_teu = $data['kapasitas_palka'] + $data['kapasitas_deck'];
             echo "   ✅ Updated: {$kapal['nama_kapal']} (ID: {$kapal['id']})\n";
@@ -115,11 +115,11 @@ foreach ($kapalData as $data) {
     } else {
         // Kapal tidak ditemukan, coba insert baru
         echo "   ⚠️ Kapal tidak ditemukan, mencoba insert baru...\n";
-        
-        $insertQuery = "INSERT INTO master_kapals 
+
+        $insertQuery = "INSERT INTO master_kapals
                        (kode, nama_kapal, kapasitas_kontainer_palka, kapasitas_kontainer_deck, gross_tonnage, status, created_at, updated_at)
                        VALUES (?, ?, ?, ?, ?, 'aktif', NOW(), NOW())";
-        
+
         $insertStmt = $conn->prepare($insertQuery);
         $insertStmt->bind_param("ssiii",
             $data['kode'],
@@ -128,7 +128,7 @@ foreach ($kapalData as $data) {
             $data['kapasitas_deck'],
             $data['gross_tonnage']
         );
-        
+
         if ($insertStmt->execute()) {
             echo "   ✅ Inserted new: {$data['mother_vessel']}\n";
         } else {
@@ -136,23 +136,23 @@ foreach ($kapalData as $data) {
         }
         $insertStmt->close();
     }
-    
+
     $stmt->close();
     echo "   " . str_repeat("-", 50) . "\n";
 }
 
 // Tampilkan hasil akhir
 echo "\n📊 HASIL AKHIR - KAPAL DENGAN DATA LENGKAP:\n";
-$finalQuery = "SELECT 
-    kode, 
+$finalQuery = "SELECT
+    kode,
     nama_kapal,
     kapasitas_kontainer_palka,
     kapasitas_kontainer_deck,
     gross_tonnage,
     (COALESCE(kapasitas_kontainer_palka, 0) + COALESCE(kapasitas_kontainer_deck, 0)) as total_teu
-FROM master_kapals 
-WHERE kapasitas_kontainer_palka IS NOT NULL 
-   OR kapasitas_kontainer_deck IS NOT NULL 
+FROM master_kapals
+WHERE kapasitas_kontainer_palka IS NOT NULL
+   OR kapasitas_kontainer_deck IS NOT NULL
    OR gross_tonnage IS NOT NULL
 ORDER BY total_teu DESC";
 

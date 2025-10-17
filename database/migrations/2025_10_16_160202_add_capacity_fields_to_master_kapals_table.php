@@ -12,7 +12,7 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('master_kapals', function (Blueprint $table) {
-            $table->integer('kapasitas_kontainer_palka')->nullable()->after('pelayaran')->comment('Kapasitas kontainer di palka kapal');
+            $table->integer('kapasitas_kontainer_palka')->nullable()->after('lokasi')->comment('Kapasitas kontainer di palka kapal');
             $table->integer('kapasitas_kontainer_deck')->nullable()->after('kapasitas_kontainer_palka')->comment('Kapasitas kontainer di deck kapal');
             $table->decimal('gross_tonnage', 12, 2)->nullable()->after('kapasitas_kontainer_deck')->comment('Gross tonnage kapal dalam ton');
         });

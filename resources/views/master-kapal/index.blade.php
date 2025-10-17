@@ -211,7 +211,7 @@
                                     </span>
                                     @if($kapal->kapasitas_kontainer_palka && $kapal->kapasitas_kontainer_deck)
                                         <div class="text-xs text-gray-500 mt-1">
-                                            Palka: {{ number_format($kapal->kapasitas_kontainer_palka) }} | 
+                                            Palka: {{ number_format($kapal->kapasitas_kontainer_palka) }} |
                                             Deck: {{ number_format($kapal->kapasitas_kontainer_deck) }}
                                         </div>
                                     @endif

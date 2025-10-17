@@ -115,10 +115,19 @@
                             <label for="vendor_perusahaan" class="block text-sm font-medium text-gray-700">Vendor Perusahaan</label>
                             <select name="vendor_perusahaan" id="vendor_perusahaan" class="{{ $inputClasses }}" required>
                                 <option value="">Pilih Vendor</option>
-                                <option value="AYP">AYP</option>
-                                <option value="ZONA">ZONA</option>
-                                <option value="SOC">SOC</option>
-                                <option value="DPE">DPE</option>
+                                @if(isset($vendors) && $vendors->count() > 0)
+                                    @foreach($vendors as $vendor)
+                                        <option value="{{ $vendor->nama_vendor }}" {{ old('vendor_perusahaan') == $vendor->nama_vendor ? 'selected' : '' }}>
+                                            {{ $vendor->nama_vendor }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    {{-- Fallback jika tidak ada data vendor --}}
+                                    <option value="AYP">AYP</option>
+                                    <option value="ZONA">ZONA</option>
+                                    <option value="SOC">SOC</option>
+                                    <option value="DPE">DPE</option>
+                                @endif
                             </select>
                         </div>
                     </div>

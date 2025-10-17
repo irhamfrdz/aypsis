@@ -255,7 +255,7 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
                     <select name="size"
-                            onchange="updateUangJalan()"
+                            onchange="updateUangJalan(); updateKontainerRules();"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('size') border-red-500 @enderror">
                         <option value="">Pilih Size</option>
                         @php $selectedSize = old('size', $selectedOrder ? $selectedOrder->size_kontainer ?? '' : ''); @endphp
@@ -456,7 +456,7 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
-                    <input type="text"
+                    <input type="number"
                            name="uang_jalan"
                            id="uang-jalan-input"
                            value="{{ old('uang_jalan', '0') }}"
@@ -466,7 +466,7 @@
                     @error('uang_jalan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Uang jalan otomatis berdasarkan tujuan pengambilan (Format: 200,000)</p>
+                    <p class="text-xs text-gray-500 mt-1">Uang jalan otomatis berdasarkan tujuan pengambilan. Nilai akan diisi otomatis ketika size dipilih.</p>
                 </div>
 
                 <div>
@@ -574,7 +574,22 @@ function updateUangJalan() {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                uangJalanInput.value = data.uang_jalan || '0';
+                // Remove formatting and store as raw number for database
+                const rawValue = data.uang_jalan.replace(/[^\d]/g, ''); // Remove non-digits
+                uangJalanInput.value = rawValue;
+
+                // Add hidden field with formatted display value
+                let displayField = document.getElementById('uang-jalan-display');
+                if (!displayField) {
+                    displayField = document.createElement('input');
+                    displayField.type = 'hidden';
+                    displayField.name = 'uang_jalan_display';
+                    displayField.id = 'uang-jalan-display';
+                    uangJalanInput.parentNode.appendChild(displayField);
+                }
+                displayField.value = data.uang_jalan; // Keep formatted version for display
+
+                console.log('Uang Jalan - Raw:', rawValue, 'Formatted:', data.uang_jalan);
             } else {
                 uangJalanInput.value = '0';
             }

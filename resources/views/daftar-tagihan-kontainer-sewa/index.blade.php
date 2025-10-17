@@ -247,6 +247,41 @@ input[required]:focus {
                 </a>
                 @endcan
             </div>
+
+            <!-- Quick Filter Buttons -->
+            <div class="flex items-center gap-2">
+                <span class="text-sm font-medium text-gray-700">Quick Filter:</span>
+
+                <!-- Filter Semua -->
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}"
+                   class="px-3 py-1 text-xs rounded-full border {{ !request()->anyFilled(['status', 'status_pranota', 'vendor', 'size']) ? 'bg-gray-800 text-white border-gray-800' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50' }} transition-colors duration-150">
+                    📋 Semua
+                </a>
+
+                <!-- Filter Ongoing -->
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['status' => 'ongoing']) }}"
+                   class="px-3 py-1 text-xs rounded-full border {{ request('status') == 'ongoing' ? 'bg-green-600 text-white border-green-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-green-50' }} transition-colors duration-150">
+                    🟢 Ongoing
+                </a>
+
+                <!-- Filter Belum Pranota -->
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['status_pranota' => 'null']) }}"
+                   class="px-3 py-1 text-xs rounded-full border {{ request('status_pranota') == 'null' ? 'bg-orange-600 text-white border-orange-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-orange-50' }} transition-colors duration-150">
+                    🔄 Belum Pranota
+                </a>
+
+                <!-- Filter Vendor ZONA -->
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['vendor' => 'ZONA']) }}"
+                   class="px-3 py-1 text-xs rounded-full border {{ request('vendor') == 'ZONA' ? 'bg-purple-600 text-white border-purple-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-purple-50' }} transition-colors duration-150">
+                    🏢 ZONA
+                </a>
+
+                <!-- Filter 40ft -->
+                <a href="{{ route('daftar-tagihan-kontainer-sewa.index', ['size' => '40']) }}"
+                   class="px-3 py-1 text-xs rounded-full border {{ request('size') == '40' ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-blue-50' }} transition-colors duration-150">
+                    📦 40ft
+                </a>
+            </div>
         </div>
 
 
@@ -361,13 +396,21 @@ input[required]:focus {
                     <label class="text-sm font-medium text-gray-700">Filter:</label>
                 </div>
 
-                <!-- Status Filter -->
-                <select name="status" class="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 text-sm">
-                    <option value="">Semua Status</option>
-                    @foreach(($statusOptions ?? ['ongoing' => 'Container Ongoing', 'selesai' => 'Container Selesai']) as $value => $label)
+                <!-- Status Kontainer Filter -->
+                <select name="status" class="border border-green-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm bg-green-50">
+                    <option value="">📋 Semua Status Kontainer</option>
+                    <option value="ongoing" {{ request('status') == 'ongoing' ? 'selected' : '' }}>
+                        🟢 Ongoing (Kontainer Aktif)
+                    </option>
+                    <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>
+                        ✅ Selesai (Kontainer Dikembalikan)
+                    </option>
+                    @foreach(($statusOptions ?? []) as $value => $label)
+                        @if(!in_array($value, ['ongoing', 'selesai']))
                         <option value="{{ $value }}" {{ request('status') == $value ? 'selected' : '' }}>
                             {{ $label }}
                         </option>
+                        @endif
                     @endforeach
                 </select>
 
@@ -479,8 +522,15 @@ input[required]:focus {
                             </span>
                         @endif
                         @if(request('status'))
-                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                Status: {{ request('status') == 'ongoing' ? 'Container Ongoing' : 'Container Selesai' }}
+                            <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                Status:
+                                @if(request('status') == 'ongoing')
+                                    🟢 Ongoing (Kontainer Aktif)
+                                @elseif(request('status') == 'selesai')
+                                    ✅ Selesai (Kontainer Dikembalikan)
+                                @else
+                                    {{ ucfirst(request('status')) }}
+                                @endif
                             </span>
                         @endif
                         @if(request('status_pranota'))

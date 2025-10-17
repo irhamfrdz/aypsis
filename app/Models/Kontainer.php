@@ -33,7 +33,14 @@ class Kontainer extends Model
         'kontainer_asal',
         'keterangan1',
         'keterangan2',
-        'status'
+        'status',
+        'gate_in_id',
+        'status_checkpoint_supir',
+        'tanggal_checkpoint_supir',
+        'status_gate_in',
+        'tanggal_gate_in',
+        'terminal_id',
+        'service_id'
     ];
 
     /**
@@ -47,6 +54,8 @@ class Kontainer extends Model
         'tanggal_kondisi_terakhir' => 'date',
         'tanggal_masuk_sewa' => 'date',
         'tanggal_selesai_sewa' => 'date',
+        'tanggal_checkpoint_supir' => 'datetime',
+        'tanggal_gate_in' => 'datetime',
     ];
 
     /**
@@ -124,6 +133,22 @@ class Kontainer extends Model
     public function perbaikanKontainers()
     {
         return $this->hasMany(PerbaikanKontainer::class, 'nomor_kontainer', 'nomor_seri_gabungan');
+    }
+
+    // Gate In relationships
+    public function gateIn()
+    {
+        return $this->belongsTo(GateIn::class);
+    }
+
+    public function terminal()
+    {
+        return $this->belongsTo(MasterTerminal::class, 'terminal_id');
+    }
+
+    public function service()
+    {
+        return $this->belongsTo(MasterService::class, 'service_id');
     }
 
     // Accessor untuk nomor kontainer gabungan

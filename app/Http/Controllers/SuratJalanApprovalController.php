@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalan;
 use App\Models\SuratJalanApproval;
+use App\Models\TandaTerima;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -104,17 +105,27 @@ class SuratJalanApprovalController extends Controller
 
             // Update status surat jalan menjadi approved
             $suratJalan->update(['status' => 'approved']);
-            
+
+            // Update status kontainer berdasarkan kegiatan
+            if ($suratJalan->no_kontainer) {
+                $this->updateKontainerStatus($suratJalan);
+            }
+
+            // Create tanda terima automatically
+            $this->createTandaTerima($suratJalan);
+
             Log::info('Surat jalan approved', [
                 'surat_jalan_id' => $suratJalan->id,
                 'approval_level' => $approvalLevel,
                 'approved_by' => $user->name,
+                'kontainer_updated' => $suratJalan->no_kontainer ? 'yes' : 'no',
+                'tanda_terima_created' => 'yes',
             ]);
 
             DB::commit();
 
             return redirect()->route('approval.surat-jalan.index')
-                ->with('success', 'Surat jalan berhasil di-approve!');
+                ->with('success', 'Surat jalan berhasil di-approve! Status kontainer telah diperbarui dan tanda terima telah dibuat.');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -124,6 +135,99 @@ class SuratJalanApprovalController extends Controller
             ]);
             return back()->with('error', 'Gagal approve surat jalan: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Create tanda terima from approved surat jalan
+     */
+    private function createTandaTerima(SuratJalan $suratJalan)
+    {
+        // Check if tanda terima already exists
+        $existingTandaTerima = TandaTerima::where('surat_jalan_id', $suratJalan->id)->first();
+
+        if ($existingTandaTerima) {
+            Log::info('Tanda terima already exists', ['surat_jalan_id' => $suratJalan->id]);
+            return;
+        }
+
+        // Create new tanda terima with data from surat jalan
+        TandaTerima::create([
+            'surat_jalan_id' => $suratJalan->id,
+            'no_surat_jalan' => $suratJalan->no_surat_jalan,
+            'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan,
+            'supir' => $suratJalan->supir,
+            'kegiatan' => $suratJalan->kegiatan,
+            'jenis_barang' => $suratJalan->jenis_barang,
+            'size' => $suratJalan->size,
+            'jumlah_kontainer' => $suratJalan->jumlah_kontainer,
+            'no_kontainer' => $suratJalan->no_kontainer,
+            'no_seal' => $suratJalan->no_seal,
+            'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman,
+            'pengirim' => $suratJalan->pengirim,
+            'gambar_checkpoint' => $suratJalan->gambar_checkpoint,
+            'status' => 'draft', // Default status
+            'created_by' => Auth::id(),
+        ]);
+
+        Log::info('Tanda terima created from surat jalan', [
+            'surat_jalan_id' => $suratJalan->id,
+            'no_surat_jalan' => $suratJalan->no_surat_jalan,
+        ]);
+    }
+
+    /**
+     * Update status kontainer berdasarkan kegiatan surat jalan
+     */
+    private function updateKontainerStatus(SuratJalan $suratJalan)
+    {
+        // Parse nomor kontainer (bisa lebih dari 1, dipisah koma)
+        $nomorKontainers = array_map('trim', explode(',', $suratJalan->no_kontainer));
+
+        foreach ($nomorKontainers as $nomorKontainer) {
+            if (empty($nomorKontainer)) continue;
+
+            // Tentukan status baru berdasarkan kegiatan
+            $statusBaru = $this->determineKontainerStatus($suratJalan->kegiatan);
+
+            // Update di tabel kontainers
+            \App\Models\Kontainer::where('nomor_seri_gabungan', $nomorKontainer)
+                ->update([
+                    'status' => $statusBaru,
+                    'updated_at' => now(),
+                ]);
+
+            // Update di tabel stock_kontainers
+            \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)
+                ->update([
+                    'status' => $statusBaru,
+                    'tanggal_keluar' => in_array($suratJalan->kegiatan, ['stuffing', 'antar']) ? now() : null,
+                    'updated_at' => now(),
+                ]);
+
+            Log::info('Kontainer status updated', [
+                'nomor_kontainer' => $nomorKontainer,
+                'kegiatan' => $suratJalan->kegiatan,
+                'status_baru' => $statusBaru,
+                'surat_jalan_id' => $suratJalan->id,
+            ]);
+        }
+    }
+
+    /**
+     * Tentukan status kontainer berdasarkan kegiatan
+     */
+    private function determineKontainerStatus($kegiatan)
+    {
+        $statusMap = [
+            'stuffing' => 'terisi',           // Kontainer sudah diisi barang
+            'antar' => 'terkirim',            // Kontainer sudah diantar ke tujuan
+            'jemput' => 'active',             // Kontainer dijemput (kembali aktif)
+            'kosong' => 'kosong',             // Kontainer kosong
+            'perbaikan' => 'perbaikan',       // Kontainer dalam perbaikan
+            'cuci' => 'cuci',                 // Kontainer sedang dicuci
+        ];
+
+        return $statusMap[$kegiatan] ?? 'active';
     }
 
     /**

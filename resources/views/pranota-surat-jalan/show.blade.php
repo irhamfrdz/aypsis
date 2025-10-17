@@ -27,7 +27,7 @@
                     @endcan
 
                     @can('pranota-surat-jalan-update')
-                        @if($pranotaSuratJalan->status == 'draft')
+                        @if($pranotaSuratJalan->status == 'pending')
                             <a href="{{ route('pranota-surat-jalan.edit', $pranotaSuratJalan) }}"
                                class="inline-flex items-center px-3 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -59,26 +59,48 @@
                     </div>
                     <div class="flex justify-between py-2 border-t border-gray-100">
                         <span class="font-medium text-gray-700">Tanggal:</span>
-                        <span class="text-gray-900">{{ $pranotaSuratJalan->tanggal_formatted }}</span>
+                        <span class="text-gray-900">{{ $pranotaSuratJalan->formatted_tanggal_pranota }}</span>
                     </div>
                     <div class="flex justify-between py-2 border-t border-gray-100">
                         <span class="font-medium text-gray-700">Status:</span>
                         <span>
-                            @if($pranotaSuratJalan->status == 'draft')
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Draft</span>
-                            @elseif($pranotaSuratJalan->status == 'terkirim')
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Terkirim</span>
-                            @elseif($pranotaSuratJalan->status == 'dibayar')
+                            @php
+                                // Cek status approval surat jalan
+                                $allApproved = true;
+                                $hasApproval = false;
+                                foreach($pranotaSuratJalan->suratJalans as $suratJalan) {
+                                    if($suratJalan->approvals()->exists()) {
+                                        $hasApproval = true;
+                                        if($suratJalan->approvals()->where('status', '!=', 'approved')->exists()) {
+                                            $allApproved = false;
+                                            break;
+                                        }
+                                    } else {
+                                        $allApproved = false;
+                                        break;
+                                    }
+                                }
+                            @endphp
+
+                            @if($pranotaSuratJalan->status == 'paid')
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Dibayar</span>
+                            @elseif($pranotaSuratJalan->status == 'cancelled')
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">Dibatalkan</span>
+                            @elseif($hasApproval && $allApproved)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Approved</span>
+                            @elseif($hasApproval)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending Approval</span>
+                            @else
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">Draft</span>
                             @endif
                         </span>
                     </div>
                 </div>
                 <div class="space-y-4">
                     <div class="flex justify-between py-2">
-                        <span class="font-medium text-gray-700">Total Tarif:</span>
+                        <span class="font-medium text-gray-700">Total Uang Jalan:</span>
                         <span class="text-lg font-bold text-green-600">
-                            {{ $pranotaSuratJalan->total_tarif_formatted }}
+                            {{ $pranotaSuratJalan->formatted_total_amount }}
                         </span>
                     </div>
                     <div class="flex justify-between py-2 border-t border-gray-100">
@@ -89,21 +111,21 @@
                     </div>
                     <div class="flex justify-between py-2 border-t border-gray-100">
                         <span class="font-medium text-gray-700">Dibuat oleh:</span>
-                        <span class="text-gray-900">{{ $pranotaSuratJalan->user->name ?? '-' }}</span>
+                        <span class="text-gray-900">{{ $pranotaSuratJalan->creator->name ?? '-' }}</span>
                     </div>
                 </div>
             </div>
 
-            @if($pranotaSuratJalan->keterangan)
+            @if($pranotaSuratJalan->catatan)
                 <div class="mb-8">
                     <div class="bg-gray-50 rounded-lg p-4">
                         <div class="flex items-center space-x-2 mb-3">
                             <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            <h3 class="font-medium text-gray-900">Keterangan</h3>
+                            <h3 class="font-medium text-gray-900">Catatan</h3>
                         </div>
-                        <p class="text-gray-700">{{ $pranotaSuratJalan->keterangan }}</p>
+                        <p class="text-gray-700">{{ $pranotaSuratJalan->catatan }}</p>
                     </div>
                 </div>
             @endif
@@ -121,16 +143,18 @@
                 <div class="p-6">
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
-                            <thead class="bg-gray-800">
+                            <thead class="bg-gray-50">
                                 <tr>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">No</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Nomor Surat Jalan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Tanggal</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Pengirim</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Tujuan</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Jenis Barang</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Tarif</th>
-                                    <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Status Approval</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat Jalan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Jalan</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Approval</th>
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -138,31 +162,67 @@
                                     <tr class="hover:bg-gray-50 transition-colors duration-150">
                                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="text-sm font-medium text-gray-900">{{ $suratJalan->nomor_surat_jalan }}</span>
+                                            <span class="text-sm font-medium text-gray-900">{{ $suratJalan->no_surat_jalan ?? '-' }}</span>
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->tanggal_surat_jalan_formatted }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->pengirim_name ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->tujuan_kirim_name ?? '-' }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->jenis_barang_name ?? '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->formatted_tanggal_surat_jalan }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->pengirim ?? '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->tujuan_pengambilan ?? '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $suratJalan->jenis_barang ?? '-' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            @if($suratJalan->no_kontainer)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {{ $suratJalan->no_kontainer }}
+                                                </span>
+                                            @else
+                                                <span class="text-gray-500">-</span>
+                                            @endif
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                            @if($suratJalan->supir)
+                                                {{ $suratJalan->supir }}
+                                                @if($suratJalan->supir2)
+                                                    <br><small class="text-gray-500">{{ $suratJalan->supir2 }}</small>
+                                                @endif
+                                            @else
+                                                <span class="text-gray-500">-</span>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             <span class="text-sm font-medium text-green-600">
-                                                {{ $suratJalan->tarif ? 'Rp ' . number_format($suratJalan->tarif, 0, ',', '.') : 'Rp 0' }}
+                                                {{ $suratJalan->formatted_uang_jalan }}
                                             </span>
                                         </td>
                                         <td class="px-6 py-4 whitespace-nowrap">
-                                            @if($suratJalan->isFullyApproved())
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Fully Approved</span>
+                                            @if($suratJalan->approvals()->where('status', 'approved')->exists())
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Approved
+                                                </span>
+                                            @elseif($suratJalan->approvals()->exists())
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Pending
+                                                </span>
                                             @else
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Pending Approval</span>
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                                        <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h8a2 2 0 012 2v12a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 0v12h8V4H6z" clip-rule="evenodd"></path>
+                                                    </svg>
+                                                    Draft
+                                                </span>
                                             @endif
                                         </td>
                                     </tr>
                                 @endforeach
                             </tbody>
-                            <tfoot class="bg-gray-50">
+                            <tfoot class="bg-blue-50">
                                 <tr>
-                                    <th colspan="6" class="px-6 py-3 text-right text-sm font-medium text-gray-900">Total Tarif:</th>
-                                    <th class="px-6 py-3 text-left text-sm font-medium text-green-600">{{ $pranotaSuratJalan->total_tarif_formatted }}</th>
+                                    <th colspan="7" class="px-6 py-3 text-right text-sm font-medium text-blue-900">Total Uang Jalan:</th>
+                                    <th class="px-6 py-3 text-left text-sm font-bold text-green-600">{{ $pranotaSuratJalan->formatted_total_amount }}</th>
                                     <th class="px-6 py-3"></th>
                                 </tr>
                             </tfoot>
@@ -172,7 +232,7 @@
             </div>
 
             <!-- Status Actions -->
-            @if($pranotaSuratJalan->status == 'draft')
+            @if($pranotaSuratJalan->status == 'pending')
                 <div class="mt-8 bg-white border border-gray-200 rounded-lg shadow-sm">
                     <div class="bg-gray-50 px-6 py-3 border-b border-gray-200 rounded-t-lg">
                         <div class="flex items-center space-x-2">
@@ -190,7 +250,7 @@
                                 </svg>
                                 <div>
                                     <p class="text-sm text-blue-700">
-                                        Pranota masih dalam status <span class="font-medium">Draft</span>. Anda dapat mengubah status atau mengedit pranota.
+                                        Pranota masih dalam status <span class="font-medium">Pending</span>. Anda dapat mengubah status atau mengedit pranota.
                                     </p>
                                 </div>
                             </div>
@@ -274,7 +334,7 @@
                         @endcan
                     </div>
                 </div>
-            @elseif($pranotaSuratJalan->status == 'dibayar')
+            @elseif($pranotaSuratJalan->status == 'paid')
                 <div class="mt-8 bg-white border border-gray-200 rounded-lg shadow-sm">
                     <div class="bg-gray-50 px-6 py-3 border-b border-gray-200 rounded-t-lg">
                         <div class="flex items-center space-x-2">

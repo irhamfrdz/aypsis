@@ -51,10 +51,29 @@ class CheckpointController extends Controller
                     || (stripos($kegiatanLower, 'pengambilan') !== false);
 
                 if ($isTarikSewa) {
-                    $kontainerList = Kontainer::where('grup_tagihan', 'approved')
-                                            ->where('ukuran', $permohonan->ukuran)
-                                            ->orderBy('nomor_seri_gabungan')
-                                            ->get();
+                    // Untuk tarik kontainer sewa, ambil kontainer dari daftar tagihan yang sedang ongoing
+                    $sewaKontainerNumbers = DB::table('daftar_tagihan_kontainer_sewa')
+                                              ->where('status', 'ongoing')
+                                              ->where('size', $permohonan->ukuran)
+                                              ->pluck('nomor_kontainer')
+                                              ->toArray();
+
+                    if (!empty($sewaKontainerNumbers)) {
+                        $kontainerList = Kontainer::whereIn('nomor_seri_gabungan', $sewaKontainerNumbers)
+                                                ->where('ukuran', $permohonan->ukuran)
+                                                ->orderBy('nomor_seri_gabungan')
+                                                ->get();
+                    } else {
+                        // Jika tidak ada kontainer dalam tagihan sewa, ambil kontainer yang sedang disewa
+                        $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
+                                                ->whereNotNull('tanggal_masuk_sewa')
+                                                ->where(function($query) {
+                                                    $query->whereNull('tanggal_selesai_sewa')
+                                                          ->orWhere('tanggal_selesai_sewa', '>=', now());
+                                                })
+                                                ->orderBy('nomor_seri_gabungan')
+                                                ->get();
+                    }
                 } else {
                     $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
                                             ->orderBy('nomor_seri_gabungan')

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalan;
 use App\Models\PranotaSuratJalan;
+use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -18,14 +19,14 @@ class PranotaSuratJalanController extends Controller
     public function index()
     {
         $user = Auth::user();
-        
+
         // Check permission
         if (!$user->can('pranota-surat-jalan-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota surat jalan.');
         }
 
         // Get pranota surat jalan with pagination
-        $pranotaSuratJalans = PranotaSuratJalan::with(['suratJalan'])
+        $pranotaSuratJalans = PranotaSuratJalan::with(['suratJalans'])
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -48,18 +49,28 @@ class PranotaSuratJalanController extends Controller
     public function create()
     {
         $user = Auth::user();
-        
+
         // Check permission
         if (!$user->can('pranota-surat-jalan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota surat jalan.');
         }
 
         // Get surat jalan yang sudah fully approved tapi belum ada pranota
-        $approvedSuratJalans = SuratJalan::whereHas('approvals', function($query) {
-                $query->where('approval_level', 'tugas-1')->where('status', 'approved');
+        // Check by status column OR by approval relationships
+        $approvedSuratJalans = SuratJalan::where(function($query) {
+                // Method 1: Check by status column
+                $query->where('status', 'fully_approved')
+                      ->orWhere('status', 'approved')
+                      ->orWhere('status', 'completed');
             })
-            ->whereHas('approvals', function($query) {
-                $query->where('approval_level', 'tugas-2')->where('status', 'approved');
+            ->orWhere(function($query) {
+                // Method 2: Check if has both tugas-1 and tugas-2 approved
+                $query->whereHas('approvals', function($q) {
+                    $q->where('approval_level', 'tugas-1')->where('status', 'approved');
+                })
+                ->whereHas('approvals', function($q) {
+                    $q->where('approval_level', 'tugas-2')->where('status', 'approved');
+                });
             })
             ->whereDoesntHave('pranotaSuratJalan')
             ->orderBy('tanggal_surat_jalan', 'desc')
@@ -74,7 +85,7 @@ class PranotaSuratJalanController extends Controller
     public function store(Request $request)
     {
         $user = Auth::user();
-        
+
         // Check permission
         if (!$user->can('pranota-surat-jalan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota surat jalan.');
@@ -92,23 +103,26 @@ class PranotaSuratJalanController extends Controller
         try {
             // Generate nomor pranota
             $nomorPranota = $this->generateNomorPranota();
+            $date = Carbon::now();
 
-            // Calculate total tarif from selected surat jalans
-            $totalTarif = 0;
+            // Calculate total uang jalan from selected surat jalans
+            $totalUangJalan = 0;
             $suratJalans = SuratJalan::whereIn('id', $request->surat_jalan_ids)->get();
-            
+
             foreach ($suratJalans as $suratJalan) {
-                $totalTarif += $suratJalan->tarif ?? 0;
+                $totalUangJalan += $suratJalan->uang_jalan ?? 0;
             }
 
             // Create pranota surat jalan
             $pranotaSuratJalan = PranotaSuratJalan::create([
                 'nomor_pranota' => $nomorPranota,
                 'tanggal_pranota' => $request->tanggal_pranota,
-                'total_tarif' => $totalTarif,
-                'status' => 'draft',
-                'keterangan' => $request->keterangan,
-                'user_id' => $user->id,
+                'periode_tagihan' => $date->format('Y-m'),
+                'jumlah_surat_jalan' => count($request->surat_jalan_ids),
+                'total_amount' => $totalUangJalan,
+                'status' => 'pending',
+                'catatan' => $request->keterangan,
+                'created_by' => $user->id,
             ]);
 
             // Attach surat jalans to pranota
@@ -118,7 +132,7 @@ class PranotaSuratJalanController extends Controller
                 'pranota_id' => $pranotaSuratJalan->id,
                 'nomor_pranota' => $nomorPranota,
                 'surat_jalan_count' => count($request->surat_jalan_ids),
-                'total_tarif' => $totalTarif,
+                'total_uang_jalan' => $totalUangJalan,
                 'created_by' => $user->name,
             ]);
 
@@ -140,7 +154,7 @@ class PranotaSuratJalanController extends Controller
     public function show(PranotaSuratJalan $pranotaSuratJalan)
     {
         $user = Auth::user();
-        
+
         // Check permission
         if (!$user->can('pranota-surat-jalan-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota surat jalan.');
@@ -158,7 +172,7 @@ class PranotaSuratJalanController extends Controller
     public function edit(PranotaSuratJalan $pranotaSuratJalan)
     {
         $user = Auth::user();
-        
+
         // Check permission
         if (!$user->can('pranota-surat-jalan-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota surat jalan.');
@@ -180,7 +194,7 @@ class PranotaSuratJalanController extends Controller
     public function update(Request $request, PranotaSuratJalan $pranotaSuratJalan)
     {
         $user = Auth::user();
-        
+
         // Check permission
         if (!$user->can('pranota-surat-jalan-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota surat jalan.');
@@ -227,7 +241,7 @@ class PranotaSuratJalanController extends Controller
     public function destroy(PranotaSuratJalan $pranotaSuratJalan)
     {
         $user = Auth::user();
-        
+
         // Check permission
         if (!$user->can('pranota-surat-jalan-delete')) {
             abort(403, 'Anda tidak memiliki akses untuk menghapus pranota surat jalan.');
@@ -266,26 +280,37 @@ class PranotaSuratJalanController extends Controller
     }
 
     /**
-     * Generate nomor pranota
+     * Generate nomor pranota dengan format PSJ-MMYY-XXXXXX
      */
     private function generateNomorPranota()
     {
         $date = Carbon::now();
-        $prefix = 'PSJ/' . $date->format('Y/m') . '/';
-        
-        // Get the last number for this month
-        $lastPranota = PranotaSuratJalan::where('nomor_pranota', 'like', $prefix . '%')
-            ->orderBy('nomor_pranota', 'desc')
-            ->first();
+        $bulan = $date->format('m'); // 2 digit bulan
+        $tahun = $date->format('y'); // 2 digit tahun
 
-        if ($lastPranota) {
-            $lastNumber = intval(substr($lastPranota->nomor_pranota, strlen($prefix)));
-            $newNumber = $lastNumber + 1;
-        } else {
-            $newNumber = 1;
+        // Get or create nomor terakhir for PSJ module
+        $nomorTerakhir = NomorTerakhir::where('modul', 'PSJ')->lockForUpdate()->first();
+
+        if (!$nomorTerakhir) {
+            // Create new record if not exists
+            $nomorTerakhir = NomorTerakhir::create([
+                'modul' => 'PSJ',
+                'nomor_terakhir' => 0,
+                'keterangan' => 'Pranota Surat Jalan'
+            ]);
         }
 
-        return $prefix . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
+        // Increment nomor terakhir
+        $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
+
+        // Update nomor terakhir
+        $nomorTerakhir->nomor_terakhir = $nextNumber;
+        $nomorTerakhir->save();
+
+        // Format: PSJ-MMYY-XXXXXX (contoh: PSJ-1025-000001)
+        $runningNumber = str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+        return "PSJ-{$bulan}{$tahun}-{$runningNumber}";
     }
 
     /**
@@ -295,7 +320,7 @@ class PranotaSuratJalanController extends Controller
     {
         // Placeholder calculation - sesuaikan dengan business logic
         $baseTarif = 100000; // Base tarif
-        
+
         // Add multiplier based on container size
         if ($suratJalan->size == '40') {
             $baseTarif *= 1.5;

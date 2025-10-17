@@ -8,6 +8,7 @@ use App\Models\Kontainer;
 use App\Models\Tujuan;
 use App\Models\MasterKegiatan;
 use App\Models\NomorTerakhir;
+use App\Models\VendorKontainerSewa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -99,20 +100,25 @@ class PermohonanController extends Controller
      */
     public function create()
     {
-    $supirs = Karyawan::whereIn('pekerjaan', ['Supir Truck', 'Supir Trailer'])->where('plat', '<>', '')->get();
+        $supirs = Karyawan::whereIn('pekerjaan', ['Supir Truck', 'Supir Trailer'])->where('plat', '<>', '')->get();
         $kranis = Karyawan::where('pekerjaan', 'Krani')->get();
         // Ambil kontainer yang statusnya 'Tersedia' untuk dipilih
-    $kontainers = Kontainer::where('status', 'Tersedia')->orderBy('nomor_seri_gabungan')->get();
-    $kegiatans = MasterKegiatan::orderBy('kode_kegiatan')->get();
-    $tujuans = Tujuan::orderBy('dari')->get();
-    // Get next nomor memo for preview
-    $nomorTerakhir = NomorTerakhir::where('modul', 'MSN')->first();
-    $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
-    $now = now();
-    $bulan = $now->format('m');
-    $tahun = $now->format('y');
-    $previewMemo = 'MSN' . '1' . $bulan . $tahun . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
-    return view('permohonan.create', compact('supirs', 'kranis', 'kontainers', 'kegiatans', 'tujuans', 'previewMemo'));
+        $kontainers = Kontainer::where('status', 'Tersedia')->orderBy('nomor_seri_gabungan')->get();
+        $kegiatans = MasterKegiatan::orderBy('kode_kegiatan')->get();
+        $tujuans = Tujuan::orderBy('dari')->get();
+
+        // Ambil data vendor dari master vendor kontainer sewa yang aktif
+        $vendors = VendorKontainerSewa::aktif()->orderBy('kode')->get();
+
+        // Get next nomor memo for preview
+        $nomorTerakhir = NomorTerakhir::where('modul', 'MSN')->first();
+        $nextNumber = $nomorTerakhir ? $nomorTerakhir->nomor_terakhir + 1 : 1;
+        $now = now();
+        $bulan = $now->format('m');
+        $tahun = $now->format('y');
+        $previewMemo = 'MSN' . '1' . $bulan . $tahun . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
+
+        return view('permohonan.create', compact('supirs', 'kranis', 'kontainers', 'kegiatans', 'tujuans', 'vendors', 'previewMemo'));
     }
 
     /**
@@ -121,10 +127,11 @@ class PermohonanController extends Controller
     public function store(Request $request)
     {
         // Validasi dasar untuk semua permohonan
+        $vendorNames = VendorKontainerSewa::aktif()->pluck('nama_vendor')->toArray();
         $validatedData = $request->validate([
             'nomor_memo' => 'nullable|string|max:255', // Changed to nullable since we'll generate it
             'kegiatan' => 'required|string|max:255',
-            'vendor_perusahaan' => 'required|string|max:255',
+            'vendor_perusahaan' => ['required', Rule::in($vendorNames)],
             'tanggal_memo' => 'required|date',
             'supir_id' => 'required|exists:karyawans,id',
             'plat_nomor' => 'nullable|string|max:255',
@@ -241,16 +248,19 @@ class PermohonanController extends Controller
      */
     public function edit(Permohonan $permohonan)
     {
-    $supirs = Karyawan::whereIn('pekerjaan', ['Supir Truck', 'Supir Trailer'])->whereNotNull('plat')->where('plat', '!=', '')->get();
+        $supirs = Karyawan::whereIn('pekerjaan', ['Supir Truck', 'Supir Trailer'])->whereNotNull('plat')->where('plat', '!=', '')->get();
         $kranis = Karyawan::where('pekerjaan', 'Krani')->get();
         $kontainers = Kontainer::where('kondisi_kontainer', 'Baik')
             ->orWhereIn('id', $permohonan->kontainers->pluck('id'))
             ->get();
 
-    $kegiatans = MasterKegiatan::orderBy('kode_kegiatan')->get();
-    $tujuans = Tujuan::orderBy('dari')->get();
+        $kegiatans = MasterKegiatan::orderBy('kode_kegiatan')->get();
+        $tujuans = Tujuan::orderBy('dari')->get();
 
-    return view('permohonan.edit', compact('permohonan', 'supirs', 'kranis', 'kontainers', 'kegiatans', 'tujuans'));
+        // Ambil data vendor dari master vendor kontainer sewa yang aktif
+        $vendors = VendorKontainerSewa::aktif()->orderBy('kode')->get();
+
+        return view('permohonan.edit', compact('permohonan', 'supirs', 'kranis', 'kontainers', 'kegiatans', 'tujuans', 'vendors'));
     }
 
     /**
@@ -259,9 +269,10 @@ class PermohonanController extends Controller
     public function update(Request $request, Permohonan $permohonan)
     {
         // Validasi dasar untuk semua permohonan
+        $vendorNames = VendorKontainerSewa::aktif()->pluck('nama_vendor')->toArray();
         $validatedData = $request->validate([
             'kegiatan' => 'required|string',
-            'vendor_perusahaan' => 'required|in:AYP,ZONA,SOC,DPE',
+            'vendor_perusahaan' => ['required', Rule::in($vendorNames)],
             'supir_id' => 'required|exists:karyawans,id',
             'krani_id' => 'nullable|exists:karyawans,id',
             'plat_nomor' => 'required|string|max:255',

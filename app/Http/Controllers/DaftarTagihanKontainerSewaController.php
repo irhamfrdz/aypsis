@@ -341,7 +341,7 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         // PENTING: Jangan auto-calculate jika user sudah input nilai
         // Auto-calculate hanya untuk field yang benar-benar kosong (nilai 0)
-        
+
         // Auto-calculate DPP Nilai Lain hanya jika = 0 dan DPP ada nilai
         if ($data['dpp_nilai_lain'] == 0 && $data['dpp'] > 0) {
             $data['dpp_nilai_lain'] = round($data['dpp'] * 11 / 12, 2);

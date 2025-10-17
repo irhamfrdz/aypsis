@@ -585,6 +585,44 @@
 </div>
 @endif
 
+{{-- Tanda Terima Management Section --}}
+@php
+    $isTandaTerimaRoute = Request::routeIs('tanda-terima.*');
+    $hasTandaTerimaPermissions = $user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete'));
+@endphp
+
+@if($hasTandaTerimaPermissions)
+<div class="mt-4 mb-4">
+    <a href="{{ route('tanda-terima.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isTandaTerimaRoute ? 'bg-teal-100 text-teal-700 font-bold' : 'text-gray-700 hover:bg-teal-100 hover:text-teal-700' }}">
+        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isTandaTerimaRoute ? 'bg-teal-200' : 'bg-teal-50 group-hover:bg-teal-200' }}">
+            <svg class="w-4 h-4 {{ $isTandaTerimaRoute ? 'text-teal-700' : 'text-teal-600 group-hover:text-teal-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium menu-text">Tanda Terima</span>
+    </a>
+</div>
+@endif
+
+{{-- Gate In Management Section --}}
+@php
+    $isGateInRoute = Request::routeIs('gate-in.*');
+    $hasGateInPermissions = $user && ($user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete'));
+@endphp
+
+@if($hasGateInPermissions)
+<div class="mt-4 mb-4">
+    <a href="{{ route('gate-in.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isGateInRoute ? 'bg-purple-100 text-purple-700 font-bold' : 'text-gray-700 hover:bg-purple-100 hover:text-purple-700' }}">
+        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isGateInRoute ? 'bg-purple-200' : 'bg-purple-50 group-hover:bg-purple-200' }}">
+            <svg class="w-4 h-4 {{ $isGateInRoute ? 'text-purple-700' : 'text-purple-600 group-hover:text-purple-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium menu-text">Gate In</span>
+    </a>
+</div>
+@endif
+
 {{-- Aktiva Dropdown --}}
 @php
     $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.mobil.*');
@@ -609,8 +647,8 @@
     <div id="aktiva-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isAktivaRoute) style="display: block;" @endif>
         {{-- Kontainer Sub-Dropdown --}}
         @php
-            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.vendor-bengkel.*');
-            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('master-vendor-bengkel.view'));
+            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*');
+            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('master-vendor-bengkel.view') || $user->can('master-vendor-kontainer-sewa-view'));
         @endphp
 
         @if($hasKontainerPermissions)
@@ -675,6 +713,14 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                         Vendor/Bengkel
+                    </a>
+                @endif
+                @if($user && $user->can('master-vendor-kontainer-sewa-view'))
+                    <a href="{{ route('vendor-kontainer-sewa.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('vendor-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        Vendor Kontainer Sewa
                     </a>
                 @endif
             </div>

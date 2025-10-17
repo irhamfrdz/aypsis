@@ -80,27 +80,27 @@ class SuratJalan extends Model
 
     public function pengirimRelation()
     {
-        return $this->belongsTo(MasterPengirim::class, 'pengirim', 'id');
+        return $this->belongsTo(Pengirim::class, 'pengirim', 'id');
     }
 
     public function jenisBarangRelation()
     {
-        return $this->belongsTo(MasterJenisBarang::class, 'jenis_barang', 'id');
+        return $this->belongsTo(JenisBarang::class, 'jenis_barang', 'id');
     }
 
     public function tujuanPengambilanRelation()
     {
-        return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengambilan', 'id');
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengambilan', 'id');
     }
 
     public function tujuanPengirimanRelation()
     {
-        return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengiriman', 'id');
+        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengiriman', 'id');
     }
 
     public function termRelation()
     {
-        return $this->belongsTo(MasterTerm::class, 'term', 'id');
+        return $this->belongsTo(Term::class, 'term', 'id');
     }
 
     public function inputBy()

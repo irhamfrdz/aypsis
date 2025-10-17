@@ -1,0 +1,5 @@
+kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status
+K001;KP-001;MV SEJAHTERA;SEJAHTERA;PT Pelayaran Indonesia;Kapal kontainer 20 feet;aktif
+K002;KP-002;MV NUSANTARA;NUSA;PT Samudera Lines;Kapal cargo besar;aktif
+K003;KP-003;MV BAHARI;;PT Pelni;Kapal penumpang;nonaktif
+K004;;MV SRIKANDI;KANDI;PT Berlian Shipping;;aktif

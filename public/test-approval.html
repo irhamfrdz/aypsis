@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Test Approval Surat Jalan</title>
+    </head>
+    <body>
+        <h1>Test Akses Menu Approval Surat Jalan</h1>
+
+        <p>Klik link berikut untuk test:</p>
+        <ul>
+            <li>
+                <a href="/approval/surat-jalan" target="_blank"
+                    >Approval Surat Jalan (/approval/surat-jalan)</a
+                >
+            </li>
+            <li><a href="/login" target="_blank">Login</a></li>
+            <li><a href="/dashboard" target="_blank">Dashboard</a></li>
+        </ul>
+
+        <h2>Debugging Info:</h2>
+        <pre>
+Route: approval.surat-jalan.index
+URL: /approval/surat-jalan
+Controller: App\Http\Controllers\SuratJalanApprovalController@index
+Middleware: web, auth, EnsureKaryawanPresent, EnsureUserApproved, EnsureCrewChecklistComplete, can:surat-jalan-approval-dashboard
+
+Required Permissions:
+- surat-jalan-approval-dashboard (untuk akses menu)
+- surat-jalan-approval-level-1-view ATAU surat-jalan-approval-level-2-view (untuk melihat data)
+    </pre
+        >
+    </body>
+</html>

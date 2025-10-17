@@ -41,13 +41,22 @@
         <form action="{{ route('pranota-surat-jalan.store') }}" method="POST" id="pranotaForm" class="space-y-3">
             @csrf
 
-            <!-- Data Pranota & Total Tarif dalam satu baris -->
+            <!-- Data Pranota & Total Uang Jalan dalam satu baris -->
             <div class="grid grid-cols-1 lg:grid-cols-4 gap-3">
                 <!-- Data Pranota -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pranota</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
+                            <div>
+                                <label for="nomor_pranota_preview" class="{{ $labelClasses }}">Nomor Pranota</label>
+                                <input type="text"
+                                       class="{{ $readonlyInputClasses }} font-medium text-indigo-600"
+                                       id="nomor_pranota_preview"
+                                       value="Auto Generate: PSJ-{{ date('my') }}-XXXXXX"
+                                       readonly>
+                                <p class="mt-1 text-xs text-gray-500">Nomor otomatis saat disimpan</p>
+                            </div>
                             <div>
                                 <label for="tanggal_pranota" class="{{ $labelClasses }}">
                                     Tanggal Pranota <span class="text-red-500">*</span>
@@ -77,18 +86,18 @@
                     </div>
                 </div>
 
-                <!-- Total Tarif -->
+                <!-- Total Uang Jalan -->
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Total Tarif</h4>
+                        <h4 class="text-sm font-semibold text-gray-800 mb-2">Total Uang Jalan</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                             <div>
                                 <label for="jumlah_surat_jalan_display" class="{{ $labelClasses }}">Jumlah Surat Jalan</label>
                                 <input type="text" id="jumlah_surat_jalan_display" class="{{ $readonlyInputClasses }}" value="0" readonly>
                             </div>
                             <div>
-                                <label for="total_tarif_display" class="{{ $labelClasses }}">Total Tarif</label>
-                                <input type="text" id="total_tarif_display" class="{{ $readonlyInputClasses }} font-bold text-gray-800 bg-gray-100" value="Rp 0" readonly>
+                                <label for="total_uang_jalan_display" class="{{ $labelClasses }}">Total Uang Jalan</label>
+                                <input type="text" id="total_uang_jalan_display" class="{{ $readonlyInputClasses }} font-bold text-gray-800 bg-gray-100" value="Rp 0" readonly>
                             </div>
                         </div>
                     </div>
@@ -140,8 +149,8 @@
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
                         <span class="text-xs text-blue-700">
-                            <span id="selectedCount">0</span> surat jalan dipilih dengan total tarif:
-                            <span class="font-semibold" id="totalTarif">Rp 0</span>
+                            <span id="selectedCount">0</span> surat jalan dipilih dengan total uang jalan:
+                            <span class="font-semibold" id="totalUangJalan">Rp 0</span>
                         </span>
                     </div>
                 </div>
@@ -158,7 +167,7 @@
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
-                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
+                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Uang Jalan</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
@@ -166,23 +175,23 @@
                                 <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
                                     data-nomor="{{ strtolower($suratJalan->no_surat_jalan ?? $suratJalan->nomor_surat_jalan ?? '') }}"
                                     data-pengirim="{{ strtolower($suratJalan->pengirim ?? '') }}"
-                                    data-tujuan="{{ strtolower($suratJalan->tujuan_pengiriman ?? $suratJalan->tujuan_kirim_name ?? '') }}"
+                                    data-tujuan="{{ strtolower($suratJalan->tujuan_pengambilan ?? '') }}"
                                     data-jenis-barang="{{ strtolower($suratJalan->jenis_barang ?? '') }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox"
                                                name="surat_jalan_ids[]"
                                                value="{{ $suratJalan->id }}"
                                                class="surat-jalan-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded"
-                                               data-tarif="{{ $suratJalan->tarif ?? 0 }}"
+                                               data-uang_jalan="{{ $suratJalan->uang_jalan ?? 0 }}"
                                                {{ in_array($suratJalan->id, old('surat_jalan_ids', [])) ? 'checked' : '' }}>
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $suratJalan->no_surat_jalan ?? $suratJalan->nomor_surat_jalan ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->pengirim ?? '-' }}</td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->tujuan_pengiriman ?? $suratJalan->tujuan_kirim_name ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->tujuan_pengambilan ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->jenis_barang ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-right text-xs font-semibold">
-                                        {{ $suratJalan->tarif ? 'Rp ' . number_format($suratJalan->tarif, 0, ',', '.') : 'Rp 0' }}
+                                        {{ $suratJalan->uang_jalan ? 'Rp ' . number_format($suratJalan->uang_jalan, 0, ',', '.') : 'Rp 0' }}
                                     </td>
                                 </tr>
                             @empty
@@ -243,28 +252,28 @@
             const selectAllCheckbox = document.getElementById('selectAllCheckbox');
             const suratJalanCheckboxes = document.querySelectorAll('.surat-jalan-checkbox');
             const jumlahSuratJalanDisplay = document.getElementById('jumlah_surat_jalan_display');
-            const totalTarifDisplay = document.getElementById('total_tarif_display');
+            const totalUangJalanDisplay = document.getElementById('total_uang_jalan_display');
             const submitBtn = document.getElementById('submitBtn');
             const selectedSummary = document.getElementById('selectedSummary');
             const selectedCount = document.getElementById('selectedCount');
-            const totalTarif = document.getElementById('totalTarif');
+            const totalUangJalan = document.getElementById('totalUangJalan');
 
-            function updateTotalTarif() {
+            function updateTotalUangJalan() {
                 let total = 0;
                 let count = 0;
                 suratJalanCheckboxes.forEach(checkbox => {
                     if (checkbox.checked) {
-                        total += parseFloat(checkbox.dataset.tarif) || 0;
+                        total += parseFloat(checkbox.dataset.uang_jalan) || 0;
                         count++;
                     }
                 });
 
                 jumlahSuratJalanDisplay.value = count;
-                totalTarifDisplay.value = 'Rp ' + total.toLocaleString('id-ID');
+                totalUangJalanDisplay.value = 'Rp ' + total.toLocaleString('id-ID');
 
-                if (selectedCount && totalTarif) {
+                if (selectedCount && totalUangJalan) {
                     selectedCount.textContent = count;
-                    totalTarif.textContent = 'Rp ' + total.toLocaleString('id-ID');
+                    totalUangJalan.textContent = 'Rp ' + total.toLocaleString('id-ID');
                 }
 
                 // Show/hide summary and enable/disable submit button
@@ -286,14 +295,14 @@
                     visibleCheckboxes.forEach(checkbox => {
                         checkbox.checked = this.checked;
                     });
-                    updateTotalTarif();
+                    updateTotalUangJalan();
                 });
             }
 
             // Individual checkbox change
             suratJalanCheckboxes.forEach(checkbox => {
                 checkbox.addEventListener('change', function() {
-                    updateTotalTarif();
+                    updateTotalUangJalan();
                     updateSelectAllState();
                 });
             });
@@ -327,7 +336,7 @@
                     visibleCheckboxes.forEach(checkbox => {
                         checkbox.checked = true;
                     });
-                    updateTotalTarif();
+                    updateTotalUangJalan();
                     updateSelectAllState();
                 });
             }
@@ -340,7 +349,7 @@
                     visibleCheckboxes.forEach(checkbox => {
                         checkbox.checked = false;
                     });
-                    updateTotalTarif();
+                    updateTotalUangJalan();
                     updateSelectAllState();
                 });
             }
@@ -390,7 +399,7 @@
                 }
 
                 updateSelectAllState();
-                updateTotalTarif();
+                updateTotalUangJalan();
             }
 
             if (searchInput) {
@@ -440,7 +449,7 @@
             }
 
             // Initialize
-            updateTotalTarif();
+            updateTotalUangJalan();
             updateSelectAllState();
         });
     </script>

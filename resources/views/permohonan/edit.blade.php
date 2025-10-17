@@ -64,10 +64,20 @@
                     <div>
                         <label for="vendor_perusahaan" class="block text-sm font-medium text-gray-700 mb-1">Vendor Perusahaan</label>
                         <select name="vendor_perusahaan" id="vendor_perusahaan" class="{{ $inputClasses }}" required>
-                            <option value="AYP" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'AYP' ? 'selected' : '' }}>AYP</option>
-                            <option value="ZONA" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'ZONA' ? 'selected' : '' }}>ZONA</option>
-                            <option value="SOC" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'SOC' ? 'selected' : '' }}>SOC</option>
-                            <option value="DPE" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'DPE' ? 'selected' : '' }}>DPE</option>
+                            <option value="">Pilih Vendor</option>
+                            @if(isset($vendors) && $vendors->count() > 0)
+                                @foreach($vendors as $vendor)
+                                    <option value="{{ $vendor->nama_vendor }}" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == $vendor->nama_vendor ? 'selected' : '' }}>
+                                        {{ $vendor->nama_vendor }}
+                                    </option>
+                                @endforeach
+                            @else
+                                {{-- Fallback jika tidak ada data vendor --}}
+                                <option value="AYP" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'AYP' ? 'selected' : '' }}>AYP</option>
+                                <option value="ZONA" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'ZONA' ? 'selected' : '' }}>ZONA</option>
+                                <option value="SOC" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'SOC' ? 'selected' : '' }}>SOC</option>
+                                <option value="DPE" {{ old('vendor_perusahaan', $permohonan->vendor_perusahaan) == 'DPE' ? 'selected' : '' }}>DPE</option>
+                            @endif
                         </select>
                     </div>
                     <div>

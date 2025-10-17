@@ -37,11 +37,11 @@ class PranotaSuratJalan extends Model
     }
 
     /**
-     * Single relationship for backward compatibility
+     * Get first surat jalan for backward compatibility
      */
-    public function suratJalan()
+    public function getFirstSuratJalan()
     {
-        return $this->belongsToMany(SuratJalan::class, 'pranota_surat_jalan_items', 'pranota_surat_jalan_id', 'surat_jalan_id')->first();
+        return $this->suratJalans()->first();
     }
 
     /**

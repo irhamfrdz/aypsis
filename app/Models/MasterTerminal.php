@@ -1,0 +1,48 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\SoftDeletes;
+
+class MasterTerminal extends Model
+{
+    use HasFactory, SoftDeletes;
+
+    protected $fillable = [
+        'kode_terminal',
+        'nama_terminal',
+        'lokasi',
+        'keterangan',
+        'status'
+    ];
+
+    // Relationships
+    public function gateIns()
+    {
+        return $this->hasMany(GateIn::class, 'terminal_id');
+    }
+
+    public function kontainers()
+    {
+        return $this->hasMany(Kontainer::class, 'terminal_id');
+    }
+
+    // Scopes
+    public function scopeAktif($query)
+    {
+        return $query->where('status', 'aktif');
+    }
+
+    public function scopeNonaktif($query)
+    {
+        return $query->where('status', 'nonaktif');
+    }
+
+    // Accessors
+    public function getFormattedNamaAttribute()
+    {
+        return $this->kode_terminal . ' - ' . $this->nama_terminal;
+    }
+}

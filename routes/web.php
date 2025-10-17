@@ -49,6 +49,7 @@ use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OutstandingController;
 use App\Http\Controllers\PranotaSuratJalanController;
+use App\Http\Controllers\GateInController;
 
 /*
 |--------------------------------------------------------------------------
@@ -730,11 +731,11 @@ Route::middleware([
     Route::get('master-kapal/download-template', [\App\Http\Controllers\MasterKapalController::class, 'downloadTemplate'])
          ->name('master-kapal.download-template')
          ->middleware('can:master-kapal.view');
-    
+
     Route::get('master-kapal/import', [\App\Http\Controllers\MasterKapalController::class, 'importForm'])
          ->name('master-kapal.import-form')
          ->middleware('can:master-kapal.create');
-    
+
     Route::post('master-kapal/import', [\App\Http\Controllers\MasterKapalController::class, 'import'])
          ->name('master-kapal.import')
          ->middleware('can:master-kapal.create');
@@ -878,6 +879,28 @@ Route::middleware([
     Route::post('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'import'])
          ->name('tujuan-kirim.import.process')
          ->middleware('can:master-tujuan-kirim-create');
+
+    // 🏢 Vendor Kontainer Sewa Management with permissions
+    Route::resource('master/vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class)
+         ->names([
+             'index' => 'vendor-kontainer-sewa.index',
+             'create' => 'vendor-kontainer-sewa.create', 
+             'store' => 'vendor-kontainer-sewa.store',
+             'show' => 'vendor-kontainer-sewa.show',
+             'edit' => 'vendor-kontainer-sewa.edit',
+             'update' => 'vendor-kontainer-sewa.update',
+             'destroy' => 'vendor-kontainer-sewa.destroy'
+         ])
+         ->parameters(['vendor-kontainer-sewa' => 'vendorKontainerSewa'])
+         ->middleware([
+             'index' => 'can:master-vendor-kontainer-sewa-view',
+             'create' => 'can:master-vendor-kontainer-sewa-create',
+             'store' => 'can:master-vendor-kontainer-sewa-create',
+             'show' => 'can:master-vendor-kontainer-sewa-view',
+             'edit' => 'can:master-vendor-kontainer-sewa-update',
+             'update' => 'can:master-vendor-kontainer-sewa-update',
+             'destroy' => 'can:master-vendor-kontainer-sewa-delete'
+         ]);
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -944,6 +967,51 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/api/get-uang-jalan-by-tujuan', [\App\Http\Controllers\SuratJalanController::class, 'getUangJalanByTujuan'])
          ->name('surat-jalan.get-uang-jalan')
          ->middleware('can:surat-jalan-create');
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 📋 TANDA TERIMA MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+
+    Route::resource('tanda-terima', \App\Http\Controllers\TandaTerimaController::class)
+         ->middleware([
+             'index' => 'can:tanda-terima-view',
+             'create' => 'can:tanda-terima-create',
+             'store' => 'can:tanda-terima-create',
+             'show' => 'can:tanda-terima-view',
+             'edit' => 'can:tanda-terima-edit',
+             'update' => 'can:tanda-terima-edit',
+             'destroy' => 'can:tanda-terima-delete'
+         ]);
+
+    // Gate In Management Routes
+    Route::resource('gate-in', \App\Http\Controllers\GateInController::class)
+         ->middleware([
+             'index' => 'can:gate-in-view',
+             'create' => 'can:gate-in-create',
+             'store' => 'can:gate-in-create',
+             'show' => 'can:gate-in-view',
+             'edit' => 'can:gate-in-update',
+             'update' => 'can:gate-in-update',
+             'destroy' => 'can:gate-in-delete'
+         ]);
+
+    // Gate In AJAX Routes
+    Route::get('gate-in/get-kontainers', [\App\Http\Controllers\GateInController::class, 'getKontainers'])
+         ->name('gate-in.get-kontainers')
+         ->middleware('can:gate-in-view');
+
+    Route::post('gate-in/{gateIn}/add-kontainer', [\App\Http\Controllers\GateInController::class, 'addKontainer'])
+         ->name('gate-in.add-kontainer')
+         ->middleware('can:gate-in-update');
+
+    Route::post('gate-in/{gateIn}/remove-kontainer', [\App\Http\Controllers\GateInController::class, 'removeKontainer'])
+         ->name('gate-in.remove-kontainer')
+         ->middleware('can:gate-in-update');
+
+    Route::patch('gate-in/{gateIn}/update-status', [\App\Http\Controllers\GateInController::class, 'updateStatus'])
+         ->name('gate-in.update-status')
+         ->middleware('can:gate-in-update');
+
 });
 
 // ═══════════════════════════════════════════════════════════════════════
