@@ -35,11 +35,11 @@
                 <h2 class="text-lg font-semibold text-gray-900">Informasi Gate In</h2>
                 <p class="text-sm text-gray-600 mt-1">Lengkapi form berikut untuk membuat gate in baru</p>
             </div>
-            
+
             <div class="p-6">
                 <form action="{{ route('gate-in.store') }}" method="POST" id="gate-in-form" class="space-y-6">
                     @csrf
-                    
+
                     <!-- Terminal -->
                     <div class="space-y-2">
                         <label for="terminal_id" class="block text-sm font-medium text-gray-700">
@@ -145,7 +145,7 @@
                                     Memuat kontainer...
                                 </div>
                             </div>
-                            
+
                             <!-- Kontainer List -->
                             <div id="kontainer-list">
                                 <div class="text-center py-8 text-gray-500">
@@ -171,7 +171,7 @@
                         <label for="keterangan" class="block text-sm font-medium text-gray-700">
                             Keterangan
                         </label>
-                        <textarea name="keterangan" id="keterangan" rows="4" 
+                        <textarea name="keterangan" id="keterangan" rows="4"
                                   class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out resize-none"
                                   placeholder="Masukkan keterangan tambahan (opsional)...">{{ old('keterangan') }}</textarea>
                         @error('keterangan')
@@ -216,19 +216,19 @@ $(document).ready(function() {
     $('#terminal_id, #kapal_id, #service_id').change(function() {
         loadKontainers();
     });
-    
+
     function loadKontainers() {
         const terminalId = $('#terminal_id').val();
         const kapalId = $('#kapal_id').val();
         const serviceId = $('#service_id').val();
-        
+
         if (terminalId && kapalId && serviceId) {
             const loading = $('#kontainer-loading');
             const list = $('#kontainer-list');
-            
+
             loading.removeClass('hidden');
             list.empty();
-            
+
             // AJAX call to get kontainers
             $.ajax({
                 url: '/gate-in/get-kontainers',
@@ -240,7 +240,7 @@ $(document).ready(function() {
                 },
                 success: function(data) {
                     loading.addClass('hidden');
-                    
+
                     if (data.length === 0) {
                         list.html(`
                             <div class="text-center py-8">
@@ -254,7 +254,7 @@ $(document).ready(function() {
                     } else {
                         let html = '<div class="space-y-3">';
                         html += '<div class="mb-4"><p class="text-sm font-medium text-gray-700">Pilih kontainer (bisa lebih dari 1):</p></div>';
-                        
+
                         data.forEach(function(kontainer, index) {
                             html += `
                                 <div class="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors duration-150">
@@ -281,7 +281,7 @@ $(document).ready(function() {
                                 </div>
                             `;
                         });
-                        
+
                         html += '</div>';
                         list.html(html);
                     }

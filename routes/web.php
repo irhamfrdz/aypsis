@@ -884,7 +884,7 @@ Route::middleware([
     Route::resource('master/vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class)
          ->names([
              'index' => 'vendor-kontainer-sewa.index',
-             'create' => 'vendor-kontainer-sewa.create', 
+             'create' => 'vendor-kontainer-sewa.create',
              'store' => 'vendor-kontainer-sewa.store',
              'show' => 'vendor-kontainer-sewa.show',
              'edit' => 'vendor-kontainer-sewa.edit',

@@ -45,13 +45,24 @@ echo "🗄️ 6. Checking migration status..."
 # 6c. Run database migrations jika ada
 echo "🗄️ 6c. Running database migrations..."
 php artisan migrate --force
- 
+
 # 7. Clear all caches (PENTING untuk Report Tagihan menu)
 echo "🧹 7. Clearing application caches..."
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
+
+# 7.1 🏭 VENDOR KONTAINER SEWA PERMISSIONS SETUP (BARU DITAMBAHKAN)
+echo "🏭 7.1 Setting up Vendor Kontainer Sewa permissions..."
+echo "ℹ️  This will add vendor kontainer sewa management permissions"
+echo "📋 Compatible with custom permission system (no Spatie dependency)"
+
+# Run vendor kontainer sewa permission setup
+php setup_vendor_kontainer_sewa_custom_permissions.php
+
+echo "✅ Vendor Kontainer Sewa permissions setup completed!"
+echo "🌐 Access URL: /vendor-kontainer-sewa"
 
 # 7a. 📋 VENDOR CSV UPDATE (JIKA DIPERLUKAN)
 echo "📋 7a. Vendor CSV Update Commands Available..."

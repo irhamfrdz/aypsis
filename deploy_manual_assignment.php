@@ -92,7 +92,7 @@ echo "\n🔧 Creating/Finding Permissions:\n";
 $permissionIds = [];
 foreach ($permissions as $permName) {
     $perm = DB::table('permissions')->where('name', $permName)->first();
-    
+
     if (!$perm) {
         // Create permission
         $permId = DB::table('permissions')->insertGetId([
@@ -119,7 +119,7 @@ foreach ($permissionIds as $permName => $permId) {
         ->where('model_type', 'App\\Models\\User')
         ->where('model_id', $targetUserId)
         ->exists();
-    
+
     if (!$exists) {
         DB::table('model_has_permissions')->insert([
             'permission_id' => $permId,

@@ -37,7 +37,7 @@ class VendorKontainerSewaController extends Controller
         }
 
         $vendors = $query->latest()->paginate(10);
-        
+
         return view('vendor-kontainer-sewa.index', compact('vendors'));
     }
 
@@ -63,7 +63,7 @@ class VendorKontainerSewaController extends Controller
 
         try {
             VendorKontainerSewa::create($request->all());
-            
+
             return redirect()->route('vendor-kontainer-sewa.index')
                            ->with('success', 'Vendor kontainer sewa berhasil ditambahkan!');
         } catch (\Exception $e) {
@@ -103,7 +103,7 @@ class VendorKontainerSewaController extends Controller
 
         try {
             $vendorKontainerSewa->update($request->all());
-            
+
             return redirect()->route('vendor-kontainer-sewa.index')
                            ->with('success', 'Vendor kontainer sewa berhasil diperbarui!');
         } catch (\Exception $e) {
@@ -120,7 +120,7 @@ class VendorKontainerSewaController extends Controller
     {
         try {
             $vendorKontainerSewa->delete();
-            
+
             return redirect()->route('vendor-kontainer-sewa.index')
                            ->with('success', 'Vendor kontainer sewa berhasil dihapus!');
         } catch (\Exception $e) {

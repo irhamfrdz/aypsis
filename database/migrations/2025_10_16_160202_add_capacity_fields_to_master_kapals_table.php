@@ -16,7 +16,7 @@ return new class extends Migration
             $hasLokasi = Schema::hasColumn('master_kapals', 'lokasi');
             $hasPelayaran = Schema::hasColumn('master_kapals', 'pelayaran');
             $hasCatatan = Schema::hasColumn('master_kapals', 'catatan');
-            
+
             // Only add columns if they don't already exist
             if (!Schema::hasColumn('master_kapals', 'kapasitas_kontainer_palka')) {
                 if ($hasPelayaran) {
@@ -29,11 +29,11 @@ return new class extends Migration
                     $table->integer('kapasitas_kontainer_palka')->nullable()->comment('Kapasitas kontainer di palka kapal');
                 }
             }
-            
+
             if (!Schema::hasColumn('master_kapals', 'kapasitas_kontainer_deck')) {
                 $table->integer('kapasitas_kontainer_deck')->nullable()->after('kapasitas_kontainer_palka')->comment('Kapasitas kontainer di deck kapal');
             }
-            
+
             if (!Schema::hasColumn('master_kapals', 'gross_tonnage')) {
                 $table->decimal('gross_tonnage', 12, 2)->nullable()->after('kapasitas_kontainer_deck')->comment('Gross tonnage kapal dalam ton');
             }

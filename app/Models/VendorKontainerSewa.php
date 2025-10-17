@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class VendorKontainerSewa extends Model
 {
     protected $table = 'vendor_kontainer_sewas';
-    
+
     protected $fillable = [
         'kode',
-        'nama_vendor', 
+        'nama_vendor',
         'catatan',
         'status'
     ];

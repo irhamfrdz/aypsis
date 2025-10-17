@@ -3,18 +3,21 @@
 ## 🚀 Quick Setup for Server
 
 ### Step 1: Create Permissions
+
 ```bash
 # Jalankan script simple (recommended untuk server)
 php simple_vendor_permissions.php
 ```
 
 ### Step 2: Assign to Admin (Manual)
+
 ```bash
 # Access tinker
 php artisan tinker
 ```
 
 In tinker console:
+
 ```php
 // Find admin user
 $admin = User::where('username', 'admin')->first() ?? User::find(1);
@@ -53,44 +56,53 @@ foreach ($permissions as $perm) {
 ## Alternative Scripts (Choose One)
 
 ### 1. ⭐ Simple Script (Recommended)
+
 ```bash
 php simple_vendor_permissions.php
 ```
-- ✅ Only creates permissions
-- ✅ Works without Spatie package
-- ✅ Manual assignment guide included
+
+-   ✅ Only creates permissions
+-   ✅ Works without Spatie package
+-   ✅ Manual assignment guide included
 
 ### 2. Quick Script (With auto-assignment)
+
 ```bash
 php quick_vendor_permissions.php
 ```
-- ✅ Attempts auto-assignment
-- ✅ Fallback to manual method
-- ⚠ May fail if permission tables missing
+
+-   ✅ Attempts auto-assignment
+-   ✅ Fallback to manual method
+-   ⚠ May fail if permission tables missing
 
 ### 3. Comprehensive Script (Full featured)
+
 ```bash
 php deploy_vendor_kontainer_sewa_permissions.php
 ```
-- ✅ Detailed logging
-- ✅ Multiple admin detection methods
-- ✅ Complete verification
-- ⚠ Requires full permission system
+
+-   ✅ Detailed logging
+-   ✅ Multiple admin detection methods
+-   ✅ Complete verification
+-   ⚠ Requires full permission system
 
 ## Complete Deployment Process
 
 ### 1. Pull Latest Code
+
 ```bash
 cd /path/to/your/project
 git pull origin main
 ```
 
 ### 2. Install Dependencies
+
 ```bash
 composer install --no-dev --optimize-autoloader
 ```
 
 ### 3. Run Migrations
+
 ```bash
 php artisan migrate --force
 
@@ -99,6 +111,7 @@ php fix_master_kapals_migration.php
 ```
 
 ### 4. Setup Permissions
+
 ```bash
 # Use the simple script
 php simple_vendor_permissions.php
@@ -107,6 +120,7 @@ php simple_vendor_permissions.php
 ```
 
 ### 5. Clear Caches
+
 ```bash
 php artisan config:cache
 php artisan route:cache
@@ -114,6 +128,7 @@ php artisan view:cache
 ```
 
 ### 6. Set File Permissions (Linux/Unix)
+
 ```bash
 chmod -R 755 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
@@ -122,6 +137,7 @@ chown -R www-data:www-data storage bootstrap/cache
 ## Verification Commands
 
 ### Check Permissions Exist
+
 ```bash
 php artisan tinker --execute="
 \$count = DB::table('permissions')->whereIn('name', ['vendor-kontainer-sewa-view', 'vendor-kontainer-sewa-create', 'vendor-kontainer-sewa-edit', 'vendor-kontainer-sewa-delete'])->count();
@@ -130,11 +146,13 @@ echo 'Permissions in DB: ' . \$count . '/4';
 ```
 
 ### Check Routes
+
 ```bash
 php artisan route:list --name=vendor-kontainer-sewa
 ```
 
 ### Test Access
+
 ```bash
 # Access the URL
 curl -I http://your-domain/vendor-kontainer-sewa
@@ -144,6 +162,7 @@ curl -I http://your-domain/vendor-kontainer-sewa
 ## Expected Results
 
 ### After Running Scripts:
+
 ```
 ✅ Permissions setup completed!
 📝 Manual assignment required:
@@ -156,17 +175,19 @@ curl -I http://your-domain/vendor-kontainer-sewa
 ```
 
 ### Routes Available:
-- GET /vendor-kontainer-sewa (Index)
-- GET /vendor-kontainer-sewa/create (Create Form)
-- POST /vendor-kontainer-sewa (Store)
-- GET /vendor-kontainer-sewa/{id} (Show)
-- GET /vendor-kontainer-sewa/{id}/edit (Edit Form)
-- PUT /vendor-kontainer-sewa/{id} (Update)
-- DELETE /vendor-kontainer-sewa/{id} (Delete)
+
+-   GET /vendor-kontainer-sewa (Index)
+-   GET /vendor-kontainer-sewa/create (Create Form)
+-   POST /vendor-kontainer-sewa (Store)
+-   GET /vendor-kontainer-sewa/{id} (Show)
+-   GET /vendor-kontainer-sewa/{id}/edit (Edit Form)
+-   PUT /vendor-kontainer-sewa/{id} (Update)
+-   DELETE /vendor-kontainer-sewa/{id} (Delete)
 
 ## Troubleshooting
 
 ### Permissions Table Not Found
+
 ```bash
 # Install permission package
 composer require spatie/laravel-permission
@@ -179,6 +200,7 @@ php artisan migrate
 ```
 
 ### Admin User Not Found
+
 ```bash
 # List available users
 php artisan tinker --execute="User::select('id', 'username', 'email')->get()"
@@ -191,12 +213,14 @@ echo 'Found: ' . \$user->username;
 ```
 
 ### 403 Access Denied
+
 1. Check if permissions are assigned to user
 2. Check middleware in routes
 3. Verify permission names match exactly
 4. Clear cache: `php artisan cache:clear`
 
 ### Route Not Found (404)
+
 1. Check if routes are registered: `php artisan route:list`
 2. Clear route cache: `php artisan route:clear`
 3. Verify controller exists: `ls app/Http/Controllers/VendorKontainerSewaController.php`
@@ -233,8 +257,9 @@ echo "✅ Setup completed manually";
 ```
 
 ## Success Indicators
-- ✅ All 4 permissions exist in database
-- ✅ Admin user has permissions assigned
-- ✅ Routes return 200/302 (not 404)
-- ✅ No 403 errors when accessing as admin
-- ✅ CRUD operations work properly
+
+-   ✅ All 4 permissions exist in database
+-   ✅ Admin user has permissions assigned
+-   ✅ Routes return 200/302 (not 404)
+-   ✅ No 403 errors when accessing as admin
+-   ✅ CRUD operations work properly

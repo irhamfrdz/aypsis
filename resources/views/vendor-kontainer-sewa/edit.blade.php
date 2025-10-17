@@ -45,19 +45,19 @@
                 <h2 class="text-lg font-semibold text-gray-900">Informasi Vendor</h2>
                 <p class="text-sm text-gray-600 mt-1">Perbarui informasi vendor kontainer sewa</p>
             </div>
-            
+
             <div class="p-6">
                 <form action="{{ route('vendor-kontainer-sewa.update', $vendorKontainerSewa) }}" method="POST" class="space-y-6">
                     @csrf
                     @method('PUT')
-                    
+
                     <!-- Kode -->
                     <div class="space-y-2">
                         <label for="kode" class="block text-sm font-medium text-gray-700">
                             Kode Vendor <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
-                               name="kode" 
+                        <input type="text"
+                               name="kode"
                                id="kode"
                                value="{{ old('kode', $vendorKontainerSewa->kode) }}"
                                required
@@ -80,8 +80,8 @@
                         <label for="nama_vendor" class="block text-sm font-medium text-gray-700">
                             Nama Vendor <span class="text-red-500">*</span>
                         </label>
-                        <input type="text" 
-                               name="nama_vendor" 
+                        <input type="text"
+                               name="nama_vendor"
                                id="nama_vendor"
                                value="{{ old('nama_vendor', $vendorKontainerSewa->nama_vendor) }}"
                                required
@@ -104,7 +104,7 @@
                             Status <span class="text-red-500">*</span>
                         </label>
                         <div class="relative">
-                            <select name="status" 
+                            <select name="status"
                                     id="status"
                                     required
                                     class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out">
@@ -133,8 +133,8 @@
                         <label for="catatan" class="block text-sm font-medium text-gray-700">
                             Catatan
                         </label>
-                        <textarea name="catatan" 
-                                  id="catatan" 
+                        <textarea name="catatan"
+                                  id="catatan"
                                   rows="4"
                                   placeholder="Masukkan catatan atau keterangan tambahan (opsional)"
                                   class="block w-full px-3 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out resize-none">{{ old('catatan', $vendorKontainerSewa->catatan) }}</textarea>
@@ -151,14 +151,14 @@
 
                     <!-- Submit Buttons -->
                     <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                        <a href="{{ route('vendor-kontainer-sewa.index') }}" 
+                        <a href="{{ route('vendor-kontainer-sewa.index') }}"
                            class="inline-flex items-center px-6 py-3 border border-gray-300 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition duration-150 ease-in-out">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                             </svg>
                             Batal
                         </a>
-                        <button type="submit" 
+                        <button type="submit"
                                 class="inline-flex items-center px-8 py-3 border border-transparent text-sm font-medium rounded-lg text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 shadow-lg transition duration-150 ease-in-out">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
@@ -198,7 +198,7 @@ $(document).ready(function() {
     // Form validation
     $('form').on('submit', function(e) {
         let hasErrors = false;
-        
+
         // Check required fields
         if ($('#kode').val().trim() === '') {
             hasErrors = true;
@@ -209,7 +209,7 @@ $(document).ready(function() {
         if ($('#status').val() === '') {
             hasErrors = true;
         }
-        
+
         if (hasErrors) {
             e.preventDefault();
             alert('Mohon lengkapi semua field yang wajib diisi!');

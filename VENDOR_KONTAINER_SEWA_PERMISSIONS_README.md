@@ -7,18 +7,20 @@ Script ini digunakan untuk menambahkan permissions Master Vendor Kontainer Sewa 
 Script ini akan membuat dan assign 4 permissions berikut:
 
 1. `vendor-kontainer-sewa-view` - Melihat data vendor kontainer sewa
-2. `vendor-kontainer-sewa-create` - Menambah data vendor kontainer sewa  
+2. `vendor-kontainer-sewa-create` - Menambah data vendor kontainer sewa
 3. `vendor-kontainer-sewa-edit` - Mengedit data vendor kontainer sewa
 4. `vendor-kontainer-sewa-delete` - Menghapus data vendor kontainer sewa
 
 ## 🚀 Cara Menjalankan
 
 ### Di Server Development (Local)
+
 ```bash
 php run_vendor_kontainer_sewa_permissions.php
 ```
 
 ### Di Server Production
+
 ```bash
 # Masuk ke direktori aplikasi
 cd /path/to/your/laravel/app
@@ -67,35 +69,40 @@ URL: http://your-domain.com/vendor-kontainer-sewa
 
 ## ⚡ Fitur Script
 
-- **✅ Idempotent**: Script dapat dijalankan berulang kali tanpa menimbulkan error
-- **📊 Logging Detail**: Menampilkan log lengkap dengan timestamp dan status
-- **🔍 Verifikasi**: Melakukan verifikasi final untuk memastikan semua permissions berhasil di-assign
-- **⚠️ Error Handling**: Menangani error dengan baik dan memberikan pesan yang jelas
-- **🎯 User Detection**: Mencari user admin dengan username 'admin' atau email 'admin@admin.com'
+-   **✅ Idempotent**: Script dapat dijalankan berulang kali tanpa menimbulkan error
+-   **📊 Logging Detail**: Menampilkan log lengkap dengan timestamp dan status
+-   **🔍 Verifikasi**: Melakukan verifikasi final untuk memastikan semua permissions berhasil di-assign
+-   **⚠️ Error Handling**: Menangani error dengan baik dan memberikan pesan yang jelas
+-   **🎯 User Detection**: Mencari user admin dengan username 'admin' atau email 'admin@admin.com'
 
 ## ❗ Troubleshooting
 
 ### User Admin Tidak Ditemukan
+
 Jika mendapat error "User admin tidak ditemukan!", pastikan:
+
 1. Ada user dengan username 'admin', atau
 2. Ada user dengan email 'admin@admin.com'
 
 ### Permission Sudah Ada
+
 Jika permission sudah ada, script akan skip dan menampilkan pesan "sudah ada". Ini normal dan tidak menimbulkan error.
 
 ### Database Connection Error
+
 Pastikan:
+
 1. File `.env` sudah dikonfigurasi dengan benar
 2. Database server sedang berjalan
 3. Koneksi database dapat diakses
 
 ## 🗂️ Files Terkait
 
-- `run_vendor_kontainer_sewa_permissions.php` - Script utama
-- `app/Models/VendorKontainerSewa.php` - Model
-- `app/Http/Controllers/VendorKontainerSewaController.php` - Controller
-- `resources/views/vendor-kontainer-sewa/` - Views directory
-- `database/migrations/*_create_vendor_kontainer_sewas_table.php` - Migration
+-   `run_vendor_kontainer_sewa_permissions.php` - Script utama
+-   `app/Models/VendorKontainerSewa.php` - Model
+-   `app/Http/Controllers/VendorKontainerSewaController.php` - Controller
+-   `resources/views/vendor-kontainer-sewa/` - Views directory
+-   `database/migrations/*_create_vendor_kontainer_sewas_table.php` - Migration
 
 ## 🔗 Setelah Setup
 
@@ -109,6 +116,7 @@ Setelah script berhasil dijalankan:
 ## 📞 Support
 
 Jika ada masalah dengan script ini, silakan check:
+
 1. Log output script untuk detail error
 2. Laravel log di `storage/logs/laravel.log`
 3. Database permissions dan connection

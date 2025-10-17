@@ -3,7 +3,7 @@
 /**
  * Script khusus untuk setup Vendor Kontainer Sewa Permissions di Server
  * Jalankan dengan: php setup_vendor_kontainer_sewa_permissions_server.php
- * 
+ *
  * Script ini minimal dan focused untuk server production
  */
 
@@ -23,23 +23,23 @@ echo "Date: " . date('Y-m-d H:i:s') . "\n\n";
 
 try {
     DB::beginTransaction();
-    
+
     // 1. Create permissions
     echo "1. Creating permissions...\n";
     $permissions = [
         'vendor-kontainer-sewa-view',
-        'vendor-kontainer-sewa-create', 
+        'vendor-kontainer-sewa-create',
         'vendor-kontainer-sewa-edit',
         'vendor-kontainer-sewa-delete',
     ];
-    
+
     $created = 0;
     foreach ($permissions as $name) {
         $permission = Permission::firstOrCreate(
             ['name' => $name],
             ['guard_name' => 'web']
         );
-        
+
         if ($permission->wasRecentlyCreated) {
             $created++;
             echo "   ✓ Created: {$name}\n";
@@ -47,17 +47,17 @@ try {
             echo "   → Exists: {$name}\n";
         }
     }
-    
+
     echo "   Summary: {$created} new permissions created\n\n";
 
     // 2. Find and assign to admin
     echo "2. Finding admin user...\n";
-    
+
     // Try to find admin user
-    $admin = User::where('username', 'admin')->first() 
+    $admin = User::where('username', 'admin')->first()
            ?? User::where('email', 'like', '%admin%')->first()
            ?? User::find(1);
-    
+
     if (!$admin) {
         echo "   ❌ Admin user not found!\n";
         echo "   Available users:\n";
@@ -72,7 +72,7 @@ try {
         DB::rollBack();
         exit(1);
     }
-    
+
     echo "   ✓ Found admin: {$admin->username} (ID: {$admin->id})\n\n";
 
     // 3. Assign permissions
@@ -87,7 +87,7 @@ try {
             echo "   → Already has: {$perm}\n";
         }
     }
-    
+
     echo "   Summary: {$newPerms} new permissions assigned\n\n";
 
     // 4. Verify
@@ -98,7 +98,7 @@ try {
         echo "   " . ($has ? "✓" : "✗") . " {$perm}\n";
         if (!$has) $hasAll = false;
     }
-    
+
     if ($hasAll) {
         DB::commit();
         echo "\n✅ SUCCESS: All permissions assigned to {$admin->username}\n";

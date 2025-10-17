@@ -13,7 +13,7 @@ try {
     // Permissions yang akan dibuat
     $permissions = [
         'vendor-kontainer-sewa-view',
-        'vendor-kontainer-sewa-create', 
+        'vendor-kontainer-sewa-create',
         'vendor-kontainer-sewa-edit',
         'vendor-kontainer-sewa-delete'
     ];
@@ -23,7 +23,7 @@ try {
     // Insert permissions
     foreach ($permissions as $permission) {
         $exists = DB::table('permissions')->where('name', $permission)->exists();
-        
+
         if (!$exists) {
             DB::table('permissions')->insert([
                 'name' => $permission,
@@ -38,7 +38,7 @@ try {
 
     // Cari user admin
     $adminUser = DB::table('users')->where('username', 'admin')->first();
-    
+
     if (!$adminUser) {
         echo "User admin tidak ditemukan!\n";
         exit(1);
@@ -49,13 +49,13 @@ try {
     // Assign permissions ke admin
     foreach ($permissions as $permission) {
         $permissionRecord = DB::table('permissions')->where('name', $permission)->first();
-        
+
         if ($permissionRecord) {
             $exists = DB::table('user_permissions')
                 ->where('user_id', $adminUser->id)
                 ->where('permission_id', $permissionRecord->id)
                 ->exists();
-                
+
             if (!$exists) {
                 DB::table('user_permissions')->insert([
                     'user_id' => $adminUser->id,

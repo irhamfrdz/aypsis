@@ -782,6 +782,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Vendor Kontainer Sewa --}}
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Vendor Kontainer Sewa</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['view']) && $userMatrixPermissions['vendor-kontainer-sewa']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['create']) && $userMatrixPermissions['vendor-kontainer-sewa']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['update']) && $userMatrixPermissions['vendor-kontainer-sewa']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['delete']) && $userMatrixPermissions['vendor-kontainer-sewa']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['print']) && $userMatrixPermissions['vendor-kontainer-sewa']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[vendor-kontainer-sewa][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['vendor-kontainer-sewa']['export']) && $userMatrixPermissions['vendor-kontainer-sewa']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Data Stock Kontainer --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">

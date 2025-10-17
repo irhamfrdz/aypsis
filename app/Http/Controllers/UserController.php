@@ -573,6 +573,32 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for vendor-kontainer-sewa dash notation permissions
+            if (strpos($permissionName, 'vendor-kontainer-sewa-') === 0) {
+                $module = 'vendor-kontainer-sewa';
+                $action = str_replace('vendor-kontainer-sewa-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'export' => 'export',
+                    'print' => 'print'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Special handling for tagihan-perbaikan-kontainer dash notation permissions
             if (strpos($permissionName, 'tagihan-perbaikan-kontainer-') === 0) {
                 $module = 'tagihan-perbaikan-kontainer';
@@ -2101,6 +2127,27 @@ class UserController extends Controller
                                         $permissionIds[] = $editPermission->id;
                                     }
                                 }
+                            }
+                        }
+                    }
+
+                    // Special handling for vendor-kontainer-sewa module
+                    if ($module === 'vendor-kontainer-sewa') {
+                        // Map matrix actions to permission names (using dash notation as they exist in DB)
+                        $actionMap = [
+                            'view' => 'vendor-kontainer-sewa-view',
+                            'create' => 'vendor-kontainer-sewa-create',
+                            'update' => 'vendor-kontainer-sewa-edit',
+                            'delete' => 'vendor-kontainer-sewa-delete',
+                            'export' => 'vendor-kontainer-sewa-export',
+                            'print' => 'vendor-kontainer-sewa-print'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
                             }
                         }
                     }

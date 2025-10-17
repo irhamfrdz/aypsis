@@ -3,7 +3,7 @@
 /**
  * Script untuk menambahkan permissions Vendor Kontainer Sewa ke database
  * dan assign ke user admin
- * 
+ *
  * Usage: php setup_vendor_kontainer_sewa_permissions.php
  */
 
@@ -23,11 +23,11 @@ function logMessage($message, $type = 'INFO') {
 
 try {
     logMessage("Memulai setup permissions Vendor Kontainer Sewa...");
-    
+
     // Permissions yang akan dibuat
     $permissions = [
         'vendor-kontainer-sewa-view' => 'Melihat data vendor kontainer sewa',
-        'vendor-kontainer-sewa-create' => 'Menambah data vendor kontainer sewa', 
+        'vendor-kontainer-sewa-create' => 'Menambah data vendor kontainer sewa',
         'vendor-kontainer-sewa-edit' => 'Mengedit data vendor kontainer sewa',
         'vendor-kontainer-sewa-delete' => 'Menghapus data vendor kontainer sewa'
     logMessage("Mengecek dan menambahkan permissions...");
@@ -35,10 +35,10 @@ try {
     // Insert permissions
     $newPermissions = 0;
     $existingPermissions = 0;
-    
+
     foreach ($permissions as $permissionName => $description) {
         $exists = DB::table('permissions')->where('name', $permissionName)->exists();
-        
+
         if (!$exists) {
             DB::table('permissions')->insert([
                 'name' => $permissionName,
@@ -59,11 +59,11 @@ try {
     // Cari user admin
     logMessage("Mencari user admin...");
     $adminUser = DB::table('users')->where('username', 'admin')->first();
-    
+
     if (!$adminUser) {
         // Coba cari dengan email admin
         $adminUser = DB::table('users')->where('email', 'admin@admin.com')->first();
-        
+
         if (!$adminUser) {
             logMessage("User admin tidak ditemukan! Pastikan ada user dengan username 'admin' atau email 'admin@admin.com'", 'ERROR');
             exit(1);
@@ -76,16 +76,16 @@ try {
     logMessage("Assign permissions ke user admin...");
     $newAssignments = 0;
     $existingAssignments = 0;
-    
+
     foreach (array_keys($permissions) as $permissionName) {
         $permissionRecord = DB::table('permissions')->where('name', $permissionName)->first();
-        
+
         if ($permissionRecord) {
             $exists = DB::table('user_permissions')
                 ->where('user_id', $adminUser->id)
                 ->where('permission_id', $permissionRecord->id)
                 ->exists();
-                
+
             if (!$exists) {
                 DB::table('user_permissions')->insert([
                     'user_id' => $adminUser->id,
