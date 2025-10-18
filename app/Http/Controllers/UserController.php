@@ -2,16 +2,14 @@
 
 namespace App\Http\Controllers;
 
-
 use App\Models\User;
 use App\Models\Karyawan;
 use App\Models\Permission;
+use App\Helpers\PermissionMatrixHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
-use PhpParser\Node\Expr\FuncCall;
-
-use function PHPUnit\Framework\returnSelf;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -149,7 +147,26 @@ class UserController extends Controller
         // Handle permissions - prioritize new matrix format
         $permissionIds = [];
         if ($request->has('permissions') && !empty($request->permissions)) {
-            $permissionIds = $this->convertMatrixPermissionsToIds($request->permissions);
+            try {
+                // Add debug logging for operational modules
+                Log::info('Processing permission matrix for user: ' . $user->username, [
+                    'permissions_input' => $request->permissions
+                ]);
+
+                $permissionIds = $this->convertMatrixPermissionsToIds($request->permissions);
+
+                Log::info('Converted permission IDs for user: ' . $user->username, [
+                    'permission_ids' => $permissionIds,
+                    'count' => count($permissionIds)
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error('Error converting matrix permissions for user: ' . $user->username, [
+                    'error' => $e->getMessage(),
+                    'input' => $request->permissions
+                ]);
+                return redirect()->back()->with('error', 'Error processing permissions: ' . $e->getMessage())->withInput();
+            }
         } elseif ($request->has('simple_permissions') && !empty($request->simple_permissions)) {
             // Fallback to simple permissions
             $permissionIds = $this->convertSimplePermissionsToIds($request->simple_permissions);
@@ -477,6 +494,44 @@ class UserController extends Controller
                     $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
                     $matrixPermissions[$module][$mappedAction] = true;
                     continue; // Skip other patterns
+                }
+            }
+
+            // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
+            $operationalModules = [
+                'order-management',
+                'surat-jalan', 
+                'tanda-terima',
+                'gate-in',
+                'pranota-surat-jalan',
+                'approval-surat-jalan'
+            ];
+
+            foreach ($operationalModules as $opModule) {
+                if (strpos($permissionName, $opModule . '-') === 0) {
+                    $module = $opModule;
+                    $action = str_replace($opModule . '-', '', $permissionName);
+
+                    // Initialize module array if not exists
+                    if (!isset($matrixPermissions[$module])) {
+                        $matrixPermissions[$module] = [];
+                    }
+
+                    // Map database actions to matrix actions
+                    $actionMap = [
+                        'view' => 'view',
+                        'create' => 'create',
+                        'update' => 'update',
+                        'delete' => 'delete',
+                        'print' => 'print',
+                        'export' => 'export',
+                        'approve' => 'approve',
+                        'reject' => 'reject'
+                    ];
+
+                    $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                    $matrixPermissions[$module][$mappedAction] = true;
+                    continue 2; // Skip to next permissionName
                 }
             }
 
@@ -2214,7 +2269,11 @@ class UserController extends Controller
 
                     // OPERATIONAL MODULES: Handle operational management permissions explicitly
                     if ($module === 'order-management' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
-                        error_log("DEBUG: Processing order-management with action: $action");
+                        Log::info("Processing order-management permission", [
+                            'module' => $module,
+                            'action' => $action
+                        ]);
+
                         $actionMap = [
                             'view' => 'order-management-view',
                             'create' => 'order-management-create',
@@ -2226,14 +2285,18 @@ class UserController extends Controller
 
                         if (isset($actionMap[$action])) {
                             $permissionName = $actionMap[$action];
-                            error_log("DEBUG: Looking for permission: $permissionName");
                             $directPermission = Permission::where('name', $permissionName)->first();
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
-                                error_log("DEBUG: Found permission ID: {$directPermission->id}");
+                                Log::info("Found order-management permission", [
+                                    'permission_name' => $permissionName,
+                                    'permission_id' => $directPermission->id
+                                ]);
                             } else {
-                                error_log("DEBUG: Permission not found: $permissionName");
+                                Log::warning("Order-management permission not found in database", [
+                                    'permission_name' => $permissionName
+                                ]);
                             }
                         }
                     }
