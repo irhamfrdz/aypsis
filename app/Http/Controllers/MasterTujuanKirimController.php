@@ -346,16 +346,16 @@ class MasterTujuanKirimController extends Controller
             // Add UTF-8 BOM for Excel compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // CSV Headers
+            // CSV Headers with semicolon delimiter
             fputcsv($file, [
                 'No',
                 'Kode',
                 'Nama Tujuan',
                 'Catatan',
                 'Status'
-            ]);
+            ], ';');
 
-            // CSV Data
+            // CSV Data with semicolon delimiter
             foreach ($tujuanKirim as $index => $item) {
                 fputcsv($file, [
                     $index + 1,
@@ -363,7 +363,7 @@ class MasterTujuanKirimController extends Controller
                     $item->nama_tujuan,
                     $item->catatan ?? '',
                     $item->status === 'active' ? 'Aktif' : 'Tidak Aktif'
-                ]);
+                ], ';');
             }
 
             fclose($file);

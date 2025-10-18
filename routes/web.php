@@ -871,7 +871,25 @@ Route::middleware([
          ->name('term.import.process')
          ->middleware('can:master-term-create');
 
-    // 📦 Tujuan Kirim (Shipping Destination) Management with permissions
+    // � Tujuan Kirim - Download Template & Import CSV (BEFORE resource routes)
+    Route::get('master/tujuan-kirim-download-template', [MasterTujuanKirimController::class, 'downloadTemplate'])
+         ->name('tujuan-kirim.download-template')
+         ->middleware('can:master-tujuan-kirim-view');
+
+    Route::get('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'showImport'])
+         ->name('tujuan-kirim.import')
+         ->middleware('can:master-tujuan-kirim-create');
+
+    Route::post('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'import'])
+         ->name('tujuan-kirim.import.process')
+         ->middleware('can:master-tujuan-kirim-create');
+
+    // 📤 Tujuan Kirim - Export CSV (BEFORE resource routes)
+    Route::get('master/tujuan-kirim/export', [MasterTujuanKirimController::class, 'export'])
+         ->name('tujuan-kirim.export')
+         ->middleware('can:master-tujuan-kirim-view');
+
+    // �📦 Tujuan Kirim (Shipping Destination) Management with permissions
     Route::resource('master/tujuan-kirim', \App\Http\Controllers\MasterTujuanKirimController::class)
          ->names([
              'index' => 'tujuan-kirim.index',
@@ -892,24 +910,6 @@ Route::middleware([
              'update' => 'can:master-tujuan-kirim-update',
              'destroy' => 'can:master-tujuan-kirim-delete'
          ]);
-
-    // 📥 Tujuan Kirim - Download Template & Import CSV
-    Route::get('master/tujuan-kirim-download-template', [MasterTujuanKirimController::class, 'downloadTemplate'])
-         ->name('tujuan-kirim.download-template')
-         ->middleware('can:master-tujuan-kirim-view');
-
-    Route::get('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'showImport'])
-         ->name('tujuan-kirim.import')
-         ->middleware('can:master-tujuan-kirim-create');
-
-    Route::post('master/tujuan-kirim-import', [MasterTujuanKirimController::class, 'import'])
-         ->name('tujuan-kirim.import.process')
-         ->middleware('can:master-tujuan-kirim-create');
-
-    // 📤 Tujuan Kirim - Export CSV
-    Route::get('master/tujuan-kirim/export', [MasterTujuanKirimController::class, 'export'])
-         ->name('tujuan-kirim.export')
-         ->middleware('can:master-tujuan-kirim-view');
 
     // 🏢 Vendor Kontainer Sewa Management with permissions
     Route::resource('master/vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class)
