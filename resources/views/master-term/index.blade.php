@@ -182,11 +182,11 @@
                                         </form>
                                     </div>
                                 </td>
-                            
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode('MasterTerm') !!}, {!! json_encode($master_term->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog('MasterTerm', {{ $master_term->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -203,11 +203,11 @@
                                         <p class="text-gray-400 text-sm mt-1">Tambah term pertama untuk memulai</p>
                                     </div>
                                 </td>
-                            
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode('MasterTerm') !!}, {!! json_encode($master_term->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog('MasterTerm', {{ $master_term->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

@@ -210,11 +210,11 @@
                                             </form>
                                         </div>
                                     </td>
-                                
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode(get_class($vendor)) !!}, {!! json_encode($vendor->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog(get_class($vendor), {{ $vendor->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

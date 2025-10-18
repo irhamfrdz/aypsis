@@ -65,10 +65,8 @@ Letakkan di bawah content halaman
 <script>
 // Universal Audit Log Functions
 function showAuditLog(modelType, modelId, itemName) {
-    console.log('🔍 Universal showAuditLog called with:', { modelType, modelId, itemName });
-    
     // Set item name
-    document.getElementById('auditLogItemName').textContent = itemName || 'Item';
+    document.getElementById('auditLogItemName').textContent = itemName;
 
     // Show modal
     const modal = document.getElementById('auditLogModal');
@@ -79,15 +77,6 @@ function showAuditLog(modelType, modelId, itemName) {
     document.getElementById('auditLogLoading').classList.remove('hidden');
     document.getElementById('auditLogContent').classList.add('hidden');
 
-    // Prepare request data
-    const requestData = {
-        model_type: modelType,
-        model_id: modelId
-    };
-    
-    console.log('📤 Sending AJAX request:', requestData);
-    console.log('🔑 CSRF Token:', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-
     // Fetch audit logs
     fetch('/audit-logs/model', {
         method: 'POST',
@@ -95,63 +84,42 @@ function showAuditLog(modelType, modelId, itemName) {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify(requestData)
+        body: JSON.stringify({
+            model_type: modelType,
+            model_id: modelId
+        })
     })
-    .then(response => {
-        console.log('📥 Response received:', response);
-        console.log('Status:', response.status, response.statusText);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        return response.json();
-    })
+    .then(response => response.json())
     .then(data => {
-        console.log('📊 Response data:', data);
-        
         document.getElementById('auditLogLoading').classList.add('hidden');
         document.getElementById('auditLogContent').classList.remove('hidden');
 
-        if (data.success && data.data && data.data.length > 0) {
-            console.log('✅ Data found, displaying logs:', data.data.length, 'records');
+        if (data.success && data.data.length > 0) {
             displayAuditLogs(data.data);
             document.getElementById('auditLogEmpty').classList.add('hidden');
         } else {
-            console.log('❌ No data found or failed request');
             document.getElementById('auditLogList').innerHTML = '';
             document.getElementById('auditLogEmpty').classList.remove('hidden');
         }
     })
     .catch(error => {
-        console.error('💥 Error fetching audit logs:', error);
+        console.error('Error fetching audit logs:', error);
         document.getElementById('auditLogLoading').classList.add('hidden');
         document.getElementById('auditLogContent').classList.remove('hidden');
-        document.getElementById('auditLogList').innerHTML = '<p class="text-red-600 text-center">Gagal memuat riwayat perubahan: ' + error.message + '</p>';
+        document.getElementById('auditLogList').innerHTML = '<p class="text-red-600 text-center">Gagal memuat riwayat perubahan</p>';
     });
 }
 
 function displayAuditLogs(auditLogs) {
-    console.log('🎨 displayAuditLogs called with:', auditLogs);
-    
     const container = document.getElementById('auditLogList');
-    if (!container) {
-        console.error('❌ auditLogList container not found!');
-        return;
-    }
-    
     container.innerHTML = '';
-    console.log('📝 Processing', auditLogs.length, 'audit log entries...');
 
-    auditLogs.forEach((log, index) => {
-        console.log(`Processing log ${index + 1}:`, log);
-        
+    auditLogs.forEach(log => {
         const logElement = document.createElement('div');
         logElement.className = 'border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors';
 
         let changesHtml = '';
         if (log.changes && log.changes.length > 0) {
-            console.log('📋 Changes found for log', index + 1, ':', log.changes);
             changesHtml = `
                 <div class="mt-3 pt-3 border-t border-gray-100">
                     <h5 class="text-xs font-medium text-gray-700 mb-2">Perubahan:</h5>
@@ -167,8 +135,6 @@ function displayAuditLogs(auditLogs) {
                     </div>
                 </div>
             `;
-        } else {
-            console.log('ℹ️ No changes for log', index + 1);
         }
 
         const actionBadge = getActionBadge(log.action);
@@ -190,10 +156,7 @@ function displayAuditLogs(auditLogs) {
         `;
 
         container.appendChild(logElement);
-        console.log(`✅ Log ${index + 1} added to container`);
     });
-    
-    console.log('🎉 All logs displayed successfully');
 }
 
 function getActionBadge(action) {
@@ -225,6 +188,21 @@ document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
         closeAuditLogModal();
     }
+});
+
+// Event listener for audit log buttons
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to all audit log buttons
+    document.addEventListener('click', function(e) {
+        if (e.target.classList.contains('audit-log-btn')) {
+            const modelType = e.target.getAttribute('data-model-type');
+            const modelId = e.target.getAttribute('data-model-id');
+            const itemName = e.target.getAttribute('data-item-name');
+            
+            console.log('🔍 Audit log button clicked:', { modelType, modelId, itemName });
+            showAuditLog(modelType, modelId, itemName);
+        }
+    });
 });
 </script>
 @endpush

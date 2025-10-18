@@ -27,7 +27,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="p-4">
             @if(session('success'))
                 <div class="mb-4 bg-green-100 border-l-4 border-green-500 text-green-700 p-4 rounded-md" role="alert">
@@ -113,7 +113,7 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <a href="{{ route('approval.surat-jalan.show', $approval->suratJalan) }}" 
+                                        <a href="{{ route('approval.surat-jalan.show', $approval->suratJalan) }}"
                                            class="inline-flex items-center px-3 py-2 border border-indigo-300 rounded-md text-sm font-medium text-indigo-700 bg-white hover:bg-indigo-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-150">
                                             <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -122,11 +122,11 @@
                                             Detail
                                         </a>
                                     </td>
-                                
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode(get_class($approval)) !!}, {!! json_encode($approval->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog(get_class($approval), {{ $approval->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
     setTimeout(function() {
         location.reload();
     }, 30000);
-    
+
     // Add visual indicator for auto refresh
     let countdown = 30;
     const refreshIndicator = document.createElement('div');
@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', function() {
         </div>
     `;
     document.body.appendChild(refreshIndicator);
-    
+
     const countdownEl = document.getElementById('countdown');
     const interval = setInterval(() => {
         countdown--;
@@ -186,7 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
             clearInterval(interval);
         }
     }, 1000);
-    
+
     // Hide refresh indicator after 5 seconds
     setTimeout(() => {
         refreshIndicator.style.opacity = '0';

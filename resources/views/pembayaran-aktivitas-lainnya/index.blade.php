@@ -145,11 +145,11 @@
                                             @endcan
                                         </div>
                                     </td>
-                                    
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode(get_class($index)) !!}, {!! json_encode($index->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -169,11 +169,11 @@
                                             @endcan
                                         </div>
                                     </td>
-                                
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode(get_class($index)) !!}, {!! json_encode($index->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

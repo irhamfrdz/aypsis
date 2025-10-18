@@ -78,8 +78,8 @@
                                 <td class="py-3 px-4 space-x-2">
                                     <a href="{{ route('master.tujuan.edit', $tujuan) }}" class="text-blue-500 hover:underline">Edit</a>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode(get_class($tujuan)) !!}, {!! json_encode($tujuan->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog(get_class($tujuan), {{ $tujuan->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i> Riwayat
                                             </button>

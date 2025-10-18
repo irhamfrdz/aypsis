@@ -248,7 +248,7 @@
                                     </a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog({!! json_encode(get_class($pranota)) !!}, {!! json_encode($pranota->id) !!}, {!! json_encode($pranota->nomor_pranota) !!})"
+                                            onclick="showAuditLog('{{ get_class($pranota) }}', '{{ $pranota->id }}', '{{ $pranota->nomor_pranota }}')"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

@@ -205,11 +205,11 @@
                                         </form>
                                     </div>
                                 </td>
-                            
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode('Order') !!}, {!! json_encode($order->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog('Order', {{ $order->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -226,11 +226,11 @@
                                         <p class="text-gray-400 text-sm mt-1">Tambah order pertama untuk memulai</p>
                                     </div>
                                 </td>
-                            
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode('Order') !!}, {!! json_encode($order->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog('Order', {{ $order->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

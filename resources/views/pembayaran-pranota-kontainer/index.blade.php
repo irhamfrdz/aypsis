@@ -136,11 +136,11 @@
                                     </button>
                                 </div>
                             </td>
-                        
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode(get_class($pembayaran)) !!}, {!! json_encode($pembayaran->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -151,11 +151,11 @@
                             <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                                 Belum ada data pembayaran
                             </td>
-                        
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode(get_class($pembayaran)) !!}, {!! json_encode($pembayaran->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

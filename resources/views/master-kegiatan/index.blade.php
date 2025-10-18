@@ -120,10 +120,10 @@
                                     Edit
                                 </a>
                                 <span class="text-gray-300">|</span>
-                                
+
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog({!! json_encode(get_class($kegiatan)) !!}, {!! json_encode($kegiatan->id) !!}, {!! json_encode($kegiatan->nama_kegiatan) !!})"
+                                            onclick="showAuditLog('{{ get_class($kegiatan) }}', '{{ $kegiatan->id }}', '{{ $kegiatan->nama_kegiatan }}')"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

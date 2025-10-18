@@ -122,11 +122,11 @@
                                     <i class="fas fa-print"></i> Print
                                 </a>
                             </td>
-                        
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode('PembayaranPranotaCat') !!}, {!! json_encode($pembayaran_pranota_cat->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog('PembayaranPranotaCat', {{ $pembayaran_pranota_cat->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -137,11 +137,11 @@
                             <td colspan="7" class="px-6 py-4 text-center text-gray-500">
                                 Tidak ada data pembayaran pranota CAT kontainer.
                             </td>
-                        
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog({!! json_encode('PembayaranPranotaCat') !!}, {!! json_encode($pembayaran_pranota_cat->id) !!})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog('PembayaranPranotaCat', {{ $pembayaran_pranota_cat->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

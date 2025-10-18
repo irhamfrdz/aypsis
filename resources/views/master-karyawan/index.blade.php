@@ -443,7 +443,7 @@
 
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog({!! json_encode(get_class($karyawan)) !!}, {{ $karyawan->id }}, {!! json_encode($karyawan->nama_lengkap) !!})"
+                                            onclick="showAuditLog('{!! addslashes(get_class($karyawan)) !!}', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat
