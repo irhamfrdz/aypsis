@@ -680,6 +680,27 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for audit-log permissions (audit-log-view, audit-log-export) - MUST BE BEFORE Pattern 3
+            if (strpos($permissionName, 'audit-log-') === 0) {
+                $module = 'audit-log';
+                $action = str_replace('audit-log-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map audit log actions
+                $actionMap = [
+                    'view' => 'view',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Pattern 3: module-action (e.g., dashboard-view, master-karyawan-view)
             if (strpos($permissionName, '-') !== false) {
                 $parts = explode('-', $permissionName, 2);
@@ -901,27 +922,6 @@ class UserController extends Controller
                     $matrixPermissions[$module][$mappedAction] = true;
                     continue; // Skip other patterns
                 }
-            }
-
-            // Special handling for audit-log permissions (audit-log-view, audit-log-export)
-            if (strpos($permissionName, 'audit-log-') === 0) {
-                $module = 'audit-log';
-                $action = str_replace('audit-log-', '', $permissionName);
-
-                // Initialize module array if not exists
-                if (!isset($matrixPermissions[$module])) {
-                    $matrixPermissions[$module] = [];
-                }
-
-                // Map audit log actions
-                $actionMap = [
-                    'view' => 'view',
-                    'export' => 'export'
-                ];
-
-                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
-                $matrixPermissions[$module][$mappedAction] = true;
-                continue; // Skip other patterns
             }
 
             // Pattern 4: Simple module names (e.g., master-karyawan) - ONLY if no separators found
