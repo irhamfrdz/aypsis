@@ -48,7 +48,7 @@ if [[ $backup_choice =~ ^[Yy]$ ]]; then
     DB_DATABASE=$(grep "^DB_DATABASE=" .env | cut -d'=' -f2)
     DB_USERNAME=$(grep "^DB_USERNAME=" .env | cut -d'=' -f2)
     DB_PASSWORD=$(grep "^DB_PASSWORD=" .env | cut -d'=' -f2)
-    
+
     if [ ! -z "$DB_DATABASE" ]; then
         backup_file="backup_$(date +%Y%m%d_%H%M%S)_${DB_DATABASE}.sql"
         print_info "Creating database backup: $backup_file"
@@ -109,18 +109,18 @@ if php artisan migrate --force --verbose; then
     print_status "Migrations completed successfully!"
 else
     print_error "Migration failed!"
-    
+
     # Tampilkan informasi untuk troubleshooting
     echo -e "\n${YELLOW}🔧 TROUBLESHOOTING INFORMATION:${NC}"
     echo "================================"
-    
+
     # Cek migration files yang pending
     print_info "Checking pending migrations..."
     php artisan migrate:status | grep "No"
-    
+
     # Cek apakah ada conflict dengan table yang sudah ada
     print_info "Checking for table conflicts..."
-    
+
     # Opsi untuk skip migration yang bermasalah
     echo -e "\n${YELLOW}💡 OPSI TROUBLESHOOTING:${NC}"
     echo "1. Rollback last migration: php artisan migrate:rollback --step=1"
@@ -128,12 +128,12 @@ else
     echo "3. Fresh migrate: php artisan migrate:fresh (DANGER: akan hapus semua data!)"
     echo "4. Skip problematic migration manually"
     echo ""
-    
+
     read -p "Apakah Anda ingin mencoba rollback dan migrate ulang? (y/N): " retry_choice
     if [[ $retry_choice =~ ^[Yy]$ ]]; then
         print_info "Rolling back last migration..."
         php artisan migrate:rollback --step=1
-        
+
         print_info "Trying migrate again..."
         if php artisan migrate --force; then
             print_status "Migration successful after rollback!"

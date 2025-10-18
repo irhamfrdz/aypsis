@@ -255,7 +255,7 @@
                         </th>
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center space-x-1">
-                                <span>NIK</span>
+                                <span>NIK Karyawan</span>
                                 <div class="flex flex-col">
                                     <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'nik', 'direction' => 'asc'])) }}"
                                        class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'nik' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"

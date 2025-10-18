@@ -42,7 +42,7 @@
         <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Pribadi</summary>
         <div class="p-4 grid grid-cols-2 gap-6 text-sm">
             <div>
-                <p class="font-semibold text-gray-600">NIK</p>
+                <p class="font-semibold text-gray-600">NIK Karyawan</p>
                 <p class="text-gray-800">{{ $karyawan->nik ?? '-' }}</p>
             </div>
             <div>

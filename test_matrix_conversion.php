@@ -49,7 +49,7 @@ echo "\n📊 Matrix conversion results:\n";
 
 $operationalModules = [
     'order-management',
-    'surat-jalan', 
+    'surat-jalan',
     'tanda-terima',
     'gate-in',
     'pranota-surat-jalan',

@@ -24,7 +24,7 @@ echo "📊 Total permissions: " . $admin->permissions()->count() . "\n\n";
 // Check operational permissions
 $operationalModules = [
     'order-management',
-    'surat-jalan', 
+    'surat-jalan',
     'tanda-terima',
     'gate-in',
     'pranota-surat-jalan',
@@ -35,17 +35,17 @@ $totalOperationalPerms = 0;
 
 foreach ($operationalModules as $module) {
     echo "🔧 Module: $module\n";
-    
+
     $modulePerms = $admin->permissions()
         ->where('name', 'like', $module . '%')
         ->get();
-    
+
     echo "   Permissions: " . $modulePerms->count() . "\n";
-    
+
     foreach ($modulePerms as $perm) {
         echo "   - {$perm->name}\n";
     }
-    
+
     $totalOperationalPerms += $modulePerms->count();
     echo "\n";
 }

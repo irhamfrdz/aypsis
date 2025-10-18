@@ -499,18 +499,18 @@ class UserController extends Controller
 
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             $operationalModules = [
-                'order-management',
-                'surat-jalan', 
-                'tanda-terima',
-                'gate-in',
-                'pranota-surat-jalan',
-                'approval-surat-jalan'
+                'order-management' => 'order', // Map order-management to order for permission names
+                'surat-jalan' => 'surat-jalan',
+                'tanda-terima' => 'tanda-terima',
+                'gate-in' => 'gate-in',
+                'pranota-surat-jalan' => 'pranota-surat-jalan',
+                'approval-surat-jalan' => 'approval-surat-jalan'
             ];
 
-            foreach ($operationalModules as $opModule) {
-                if (strpos($permissionName, $opModule . '-') === 0) {
-                    $module = $opModule;
-                    $action = str_replace($opModule . '-', '', $permissionName);
+            foreach ($operationalModules as $moduleKey => $permissionPrefix) {
+                if (strpos($permissionName, $permissionPrefix . '-') === 0) {
+                    $module = $moduleKey; // Use module key for matrix (order-management)
+                    $action = str_replace($permissionPrefix . '-', '', $permissionName);
 
                     // Initialize module array if not exists
                     if (!isset($matrixPermissions[$module])) {
@@ -1490,6 +1490,28 @@ class UserController extends Controller
                         }
                     }
 
+                    // DIRECT FIX: Handle master-kapal permissions explicitly
+                    if ($module === 'master-kapal' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        // Map action to correct permission name (using dot notation)
+                        $actionMap = [
+                            'view' => 'master-kapal.view',
+                            'create' => 'master-kapal.create',
+                            'update' => 'master-kapal.edit',
+                            'delete' => 'master-kapal.delete',
+                            'print' => 'master-kapal.print',
+                            'export' => 'master-kapal.export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // DIRECT FIX: Handle master-coa permissions explicitly
                     if ($module === 'master-coa' && in_array($action, ['view', 'create', 'update', 'delete'])) {
                         // Map action to correct permission name
@@ -2275,12 +2297,12 @@ class UserController extends Controller
                         ]);
 
                         $actionMap = [
-                            'view' => 'order-management-view',
-                            'create' => 'order-management-create',
-                            'update' => 'order-management-update',
-                            'delete' => 'order-management-delete',
-                            'print' => 'order-management-print',
-                            'export' => 'order-management-export'
+                            'view' => 'order-view',
+                            'create' => 'order-create',
+                            'update' => 'order-update',
+                            'delete' => 'order-delete',
+                            'print' => 'order-print',
+                            'export' => 'order-export'
                         ];
 
                         if (isset($actionMap[$action])) {
@@ -2289,12 +2311,12 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
-                                Log::info("Found order-management permission", [
+                                Log::info("Found order permission", [
                                     'permission_name' => $permissionName,
                                     'permission_id' => $directPermission->id
                                 ]);
                             } else {
-                                Log::warning("Order-management permission not found in database", [
+                                Log::warning("Order permission not found in database", [
                                     'permission_name' => $permissionName
                                 ]);
                             }

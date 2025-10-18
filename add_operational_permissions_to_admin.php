@@ -72,10 +72,10 @@ try {
 
     // Get current user permissions
     $currentPermissionIds = $adminUser->permissions()->pluck('permissions.id')->toArray();
-    
+
     // Merge with operational permissions (without duplicates)
     $allPermissionIds = array_unique(array_merge($currentPermissionIds, $operationalPermissionIds));
-    
+
     echo "📊 Permission Summary:\n";
     echo "   • Current permissions: " . count($currentPermissionIds) . "\n";
     echo "   • Operational permissions: " . count($operationalPermissionIds) . "\n";

@@ -55,7 +55,7 @@ try {
 
     // Get permission names for the IDs
     $permissions = Permission::whereIn('id', $permissionIds)->get(['id', 'name']);
-    
+
     echo "📝 Found Permissions:\n";
     foreach ($permissions as $permission) {
         echo "   • ID {$permission->id}: {$permission->name}\n";
@@ -64,7 +64,7 @@ try {
     echo "\n✅ Test completed successfully!\n";
     echo "   • Total permissions converted: " . count($permissionIds) . "\n";
     echo "   • Expected operational permissions: 9\n";
-    
+
     if (count($permissionIds) === 9) {
         echo "   • ✅ All operational permissions converted correctly!\n";
     } else {

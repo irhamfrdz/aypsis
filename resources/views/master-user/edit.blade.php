@@ -932,6 +932,23 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
+                            {{-- Data Kapal --}}
+                            <tr class="submodule-row" data-parent="aktiva">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Data Kapal</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kapal][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kapal']['view']) && $userMatrixPermissions['master-kapal']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kapal']['create']) && $userMatrixPermissions['master-kapal']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kapal']['update']) && $userMatrixPermissions['master-kapal']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kapal']['delete']) && $userMatrixPermissions['master-kapal']['delete']) checked @endif></td>
+                                <td class="empty-cell"></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kapal']['print']) && $userMatrixPermissions['master-kapal']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-kapal']['export']) && $userMatrixPermissions['master-kapal']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Pricelist Sewa Kontainer --}}
                             <tr class="submodule-row" data-parent="aktiva">
                                 <td class="submodule">

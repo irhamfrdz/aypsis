@@ -457,6 +457,21 @@
                             <tr class="submodule-row" data-parent="master">
                                 <td class="submodule">
                                     <div class="flex items-center">
+                                        <span>Data Kapal</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[master-kapal][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][delete]" value="1" class="permission-checkbox"></td>
+                                <td class="text-center text-gray-400">-</td>
+                                <td><input type="checkbox" name="permissions[master-kapal][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[master-kapal][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="master">
+                                <td class="submodule">
+                                    <div class="flex items-center">
                                         <span>Data Pricelist Sewa Kontainer</span>
                                     </div>
                                 </td>
