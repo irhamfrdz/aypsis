@@ -674,6 +674,9 @@ Route::middleware([
     Route::post('master/coa/import', [\App\Http\Controllers\MasterCoaController::class, 'import'])
          ->name('master-coa-import')
          ->middleware('can:master-coa-create');
+    Route::get('master/coa/export', [\App\Http\Controllers\MasterCoaController::class, 'export'])
+         ->name('master-coa-export')
+         ->middleware('can:master-coa-view');
     Route::get('master/coa/{coa}/ledger', [\App\Http\Controllers\MasterCoaController::class, 'ledger'])
          ->name('master-coa-ledger')
          ->middleware('can:master-coa-view')

@@ -241,4 +241,75 @@ class MasterCoaController extends Controller
 
         return view('master-coa.ledger-print', compact('coa', 'transactions', 'saldoAwal', 'totalDebit', 'totalKredit'));
     }
+
+    /**
+     * Export COA data to CSV
+     */
+    public function export(Request $request)
+    {
+        $query = Coa::query();
+
+        // Apply same filters as index
+        if ($request->has('search') && !empty($request->search)) {
+            $searchTerm = $request->search;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('nomor_akun', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('kode_nomor', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('nama_akun', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('tipe_akun', 'like', '%' . $searchTerm . '%');
+            });
+        }
+
+        if ($request->has('tipe_akun') && !empty($request->tipe_akun)) {
+            $query->where('tipe_akun', $request->tipe_akun);
+        }
+
+        $coas = $query->orderBy('nomor_akun')->get();
+
+        // Generate CSV content
+        $filename = 'master_coa_' . date('Y-m-d_H-i-s') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0'
+        ];
+
+        $callback = function() use ($coas) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // CSV Header
+            fputcsv($file, [
+                'No. Akun',
+                'Kode Nomor', 
+                'Nama Akun',
+                'Tipe Akun',
+                'Saldo',
+                'Tanggal Dibuat',
+                'Tanggal Diupdate'
+            ], ';');
+
+            // CSV Data
+            foreach ($coas as $coa) {
+                fputcsv($file, [
+                    $coa->nomor_akun,
+                    $coa->kode_nomor ?? '',
+                    $coa->nama_akun,
+                    $coa->tipe_akun,
+                    number_format((float)$coa->saldo ?? 0, 2, ',', '.'),
+                    $coa->created_at ? $coa->created_at->format('d/m/Y H:i:s') : '',
+                    $coa->updated_at ? $coa->updated_at->format('d/m/Y H:i:s') : ''
+                ], ';');
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
