@@ -724,6 +724,24 @@ class UserController extends Controller
                             // For master-nomor-terakhir-view, extract the action
                             $action = str_replace('nomor-terakhir-', '', $action);
                             $module = 'master-nomor-terakhir';
+                        }
+                        // Special handling for master-jenis-barang permissions
+                        elseif (strpos($action, 'jenis-barang-') === 0) {
+                            // For master-jenis-barang-view, extract the action
+                            $action = str_replace('jenis-barang-', '', $action);
+                            $module = 'master-jenis-barang';
+                        }
+                        // Special handling for master-tujuan-kirim permissions
+                        elseif (strpos($action, 'tujuan-kirim-') === 0) {
+                            // For master-tujuan-kirim-view, extract the action
+                            $action = str_replace('tujuan-kirim-', '', $action);
+                            $module = 'master-tujuan-kirim';
+                        }
+                        // Special handling for master-term permissions
+                        elseif (strpos($action, 'term-') === 0) {
+                            // For master-term-view, extract the action
+                            $action = str_replace('term-', '', $action);
+                            $module = 'master-term';
                         } else {
                             // For master-karyawan-view, split further
                             $subParts = explode('-', $action, 2);
@@ -1680,6 +1698,26 @@ class UserController extends Controller
                             'create' => 'master-term-create',
                             'update' => 'master-term-update',
                             'delete' => 'master-term-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-tujuan-kirim permissions explicitly
+                    if ($module === 'master-tujuan-kirim' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-tujuan-kirim-view',
+                            'create' => 'master-tujuan-kirim-create',
+                            'update' => 'master-tujuan-kirim-update',
+                            'delete' => 'master-tujuan-kirim-delete'
                         ];
 
                         if (isset($actionMap[$action])) {
