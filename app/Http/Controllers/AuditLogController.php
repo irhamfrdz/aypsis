@@ -89,6 +89,15 @@ class AuditLogController extends Controller
      */
     public function getModelAuditLogs(Request $request)
     {
+        // Debug logging
+        \Illuminate\Support\Facades\Log::info('getModelAuditLogs called', [
+            'user_id' => \Illuminate\Support\Facades\Auth::id(),
+            'user_name' => \Illuminate\Support\Facades\Auth::user()->username ?? 'not_logged_in',
+            'model_type' => $request->model_type,
+            'model_id' => $request->model_id,
+            'has_permission' => \Illuminate\Support\Facades\Auth::user() ? \Illuminate\Support\Facades\Auth::user()->hasPermissionTo('audit-log-view') : false
+        ]);
+
         $this->authorize('audit-log-view');
 
         $modelType = $request->model_type;
@@ -100,6 +109,10 @@ class AuditLogController extends Controller
             ->orderBy('created_at', 'desc')
             ->limit(10)
             ->get();
+
+        \Illuminate\Support\Facades\Log::info('getModelAuditLogs result', [
+            'count' => $auditLogs->count()
+        ]);
 
         return response()->json([
             'success' => true,
