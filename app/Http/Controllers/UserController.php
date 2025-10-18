@@ -1555,6 +1555,66 @@ class UserController extends Controller
                         }
                     }
 
+                    // DIRECT FIX: Handle master-pengirim permissions explicitly
+                    if ($module === 'master-pengirim' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-pengirim-view',
+                            'create' => 'master-pengirim-create',
+                            'update' => 'master-pengirim-update',
+                            'delete' => 'master-pengirim-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-jenis-barang permissions explicitly
+                    if ($module === 'master-jenis-barang' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-jenis-barang-view',
+                            'create' => 'master-jenis-barang-create',
+                            'update' => 'master-jenis-barang-update',
+                            'delete' => 'master-jenis-barang-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // DIRECT FIX: Handle master-term permissions explicitly
+                    if ($module === 'master-term' && in_array($action, ['view', 'create', 'update', 'delete'])) {
+                        // Map action to correct permission name
+                        $actionMap = [
+                            'view' => 'master-term-view',
+                            'create' => 'master-term-create',
+                            'update' => 'master-term-update',
+                            'delete' => 'master-term-delete'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
                     // Special handling for admin modules
                     if ($module === 'admin') {
                         foreach ($possibleActions as $dbAction) {
@@ -2147,6 +2207,136 @@ class UserController extends Controller
                             $permission = Permission::where('name', $actionMap[$action])->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // OPERATIONAL MODULES: Handle operational management permissions explicitly
+                    if ($module === 'order-management' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        error_log("DEBUG: Processing order-management with action: $action");
+                        $actionMap = [
+                            'view' => 'order-management-view',
+                            'create' => 'order-management-create',
+                            'update' => 'order-management-update',
+                            'delete' => 'order-management-delete',
+                            'print' => 'order-management-print',
+                            'export' => 'order-management-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            error_log("DEBUG: Looking for permission: $permissionName");
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                                error_log("DEBUG: Found permission ID: {$directPermission->id}");
+                            } else {
+                                error_log("DEBUG: Permission not found: $permissionName");
+                            }
+                        }
+                    }
+
+                    // Handle surat-jalan permissions explicitly
+                    if ($module === 'surat-jalan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'surat-jalan-view',
+                            'create' => 'surat-jalan-create',
+                            'update' => 'surat-jalan-update',
+                            'delete' => 'surat-jalan-delete',
+                            'print' => 'surat-jalan-print',
+                            'export' => 'surat-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle tanda-terima permissions explicitly
+                    if ($module === 'tanda-terima' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'tanda-terima-view',
+                            'create' => 'tanda-terima-create',
+                            'update' => 'tanda-terima-update',
+                            'delete' => 'tanda-terima-delete',
+                            'print' => 'tanda-terima-print',
+                            'export' => 'tanda-terima-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle gate-in permissions explicitly
+                    if ($module === 'gate-in' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'gate-in-view',
+                            'create' => 'gate-in-create',
+                            'update' => 'gate-in-update',
+                            'delete' => 'gate-in-delete',
+                            'print' => 'gate-in-print',
+                            'export' => 'gate-in-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle pranota-surat-jalan permissions explicitly
+                    if ($module === 'pranota-surat-jalan' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'pranota-surat-jalan-view',
+                            'create' => 'pranota-surat-jalan-create',
+                            'update' => 'pranota-surat-jalan-update',
+                            'delete' => 'pranota-surat-jalan-delete',
+                            'print' => 'pranota-surat-jalan-print',
+                            'export' => 'pranota-surat-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle approval-surat-jalan permissions explicitly
+                    if ($module === 'approval-surat-jalan' && in_array($action, ['view', 'approve', 'reject', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'approval-surat-jalan-view',
+                            'approve' => 'approval-surat-jalan-approve',
+                            'reject' => 'approval-surat-jalan-reject',
+                            'print' => 'approval-surat-jalan-print',
+                            'export' => 'approval-surat-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
                                 $found = true;
                             }
                         }
