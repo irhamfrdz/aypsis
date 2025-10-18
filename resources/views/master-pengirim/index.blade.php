@@ -130,8 +130,10 @@
                                         </a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($pengirim) }}', '{{ $pengirim->id }}', '{{ $pengirim->nama_pengirim }}')"
-                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            data-model-type="{{ get_class($pengirim) }}"
+                                            data-model-id="{{ $pengirim->id }}"
+                                            data-item-name="{{ $pengirim->nama_pengirim }}"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat
                                     </button>

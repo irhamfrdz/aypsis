@@ -65,6 +65,8 @@ Letakkan di bawah content halaman
 <script>
 // Universal Audit Log Functions
 function showAuditLog(modelType, modelId, itemName) {
+    console.log('🔍 showAuditLog called with:', { modelType, modelId, itemName });
+    
     // Set item name
     document.getElementById('auditLogItemName').textContent = itemName;
 
@@ -77,6 +79,15 @@ function showAuditLog(modelType, modelId, itemName) {
     document.getElementById('auditLogLoading').classList.remove('hidden');
     document.getElementById('auditLogContent').classList.add('hidden');
 
+    // Prepare request data
+    const requestData = {
+        model_type: modelType,
+        model_id: modelId
+    };
+    
+    console.log('📤 Sending AJAX request:', requestData);
+    console.log('🔑 CSRF Token:', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
     // Fetch audit logs
     fetch('/audit-logs/model', {
         method: 'POST',
@@ -84,29 +95,39 @@ function showAuditLog(modelType, modelId, itemName) {
             'Content-Type': 'application/json',
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
         },
-        body: JSON.stringify({
-            model_type: modelType,
-            model_id: modelId
-        })
+        body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+        console.log('📥 Response received:', response);
+        console.log('Status:', response.status, response.statusText);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        return response.json();
+    })
     .then(data => {
+        console.log('📊 Response data:', data);
+        
         document.getElementById('auditLogLoading').classList.add('hidden');
         document.getElementById('auditLogContent').classList.remove('hidden');
 
-        if (data.success && data.data.length > 0) {
+        if (data.success && data.data && data.data.length > 0) {
+            console.log('✅ Data found, displaying logs:', data.data.length, 'records');
             displayAuditLogs(data.data);
             document.getElementById('auditLogEmpty').classList.add('hidden');
         } else {
+            console.log('❌ No data found or failed request');
             document.getElementById('auditLogList').innerHTML = '';
             document.getElementById('auditLogEmpty').classList.remove('hidden');
         }
     })
     .catch(error => {
-        console.error('Error fetching audit logs:', error);
+        console.error('💥 Error fetching audit logs:', error);
         document.getElementById('auditLogLoading').classList.add('hidden');
         document.getElementById('auditLogContent').classList.remove('hidden');
-        document.getElementById('auditLogList').innerHTML = '<p class="text-red-600 text-center">Gagal memuat riwayat perubahan</p>';
+        document.getElementById('auditLogList').innerHTML = '<p class="text-red-600 text-center">Gagal memuat riwayat perubahan: ' + error.message + '</p>';
     });
 }
 
@@ -192,16 +213,40 @@ document.addEventListener('keydown', function(e) {
 
 // Event listener for audit log buttons
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('🚀 Audit log modal component loaded');
+    
     // Add event listeners to all audit log buttons
     document.addEventListener('click', function(e) {
+        console.log('👆 Click detected on:', e.target);
+        console.log('Classes:', e.target.classList.toString());
+        
         if (e.target.classList.contains('audit-log-btn')) {
+            console.log('✅ Audit log button clicked!');
+            
             const modelType = e.target.getAttribute('data-model-type');
             const modelId = e.target.getAttribute('data-model-id');
             const itemName = e.target.getAttribute('data-item-name');
             
-            console.log('🔍 Audit log button clicked:', { modelType, modelId, itemName });
+            console.log('� Button data attributes:', { modelType, modelId, itemName });
+            
+            if (!modelType || !modelId) {
+                console.error('❌ Missing data attributes on button');
+                return;
+            }
+            
             showAuditLog(modelType, modelId, itemName);
         }
+    });
+    
+    // Also check for existing buttons on page load
+    const auditButtons = document.querySelectorAll('.audit-log-btn');
+    console.log('🔍 Found audit log buttons on page:', auditButtons.length);
+    auditButtons.forEach((btn, index) => {
+        console.log(`Button ${index + 1}:`, {
+            modelType: btn.getAttribute('data-model-type'),
+            modelId: btn.getAttribute('data-model-id'),
+            itemName: btn.getAttribute('data-item-name')
+        });
     });
 });
 </script>
