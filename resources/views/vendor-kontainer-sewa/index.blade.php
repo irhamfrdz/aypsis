@@ -214,7 +214,7 @@
                                     <td>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($vendor), {{ $vendor->id }})"
+                                                    onclick="showAuditLog({!! json_encode(get_class($vendor)) !!}, {!! json_encode($vendor->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

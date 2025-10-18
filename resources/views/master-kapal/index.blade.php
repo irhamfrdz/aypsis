@@ -261,7 +261,7 @@
                                     </a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($kapal) }}', '{{ $kapal->id }}', '{{ $kapal->nama_kapal }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($kapal)) !!}, {!! json_encode($kapal->id) !!}, {!! json_encode($kapal->nama_kapal) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

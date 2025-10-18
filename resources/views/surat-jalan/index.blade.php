@@ -154,7 +154,7 @@
                                 </a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($suratJalan) }}', '{{ $suratJalan->id }}', '{{ $suratJalan->nomor_surat }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($suratJalan)) !!}, {!! json_encode($suratJalan->id) !!}, {!! json_encode($suratJalan->nomor_surat) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

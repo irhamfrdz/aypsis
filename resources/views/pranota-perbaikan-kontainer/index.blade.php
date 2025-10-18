@@ -138,7 +138,7 @@
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($pranota), {{ $pranota->id }})"
+                                                    onclick="showAuditLog({!! json_encode(get_class($pranota)) !!}, {!! json_encode($pranota->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i> Riwayat
                                             </button>

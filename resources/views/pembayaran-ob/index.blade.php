@@ -224,7 +224,7 @@
                                     <td>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('PembayaranOb', {{ $pembayaran_ob->id }})"
+                                                    onclick="showAuditLog({!! json_encode('PembayaranOb') !!}, {!! json_encode($pembayaran_ob->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -251,7 +251,7 @@
                                     <td>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('PembayaranOb', {{ $pembayaran_ob->id }})"
+                                                    onclick="showAuditLog({!! json_encode('PembayaranOb') !!}, {!! json_encode($pembayaran_ob->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

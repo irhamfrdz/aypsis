@@ -252,7 +252,7 @@
                                                 </a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($pembayaran) }}', '{{ $pembayaran->id }}', '{{ $pembayaran->nomor_pembayaran }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($pembayaran)) !!}, {!! json_encode($pembayaran->id) !!}, {!! json_encode($pembayaran->nomor_pembayaran) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

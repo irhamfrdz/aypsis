@@ -47,11 +47,11 @@
                                 <td class="px-4 py-3 text-right">
                                     <a href="{{ route('pembayaran-pranota-supir.print', $pembayaran) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded text-sm">Cetak</a>
                                 </td>
-                            
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog({!! json_encode(get_class($pembayaran)) !!}, {!! json_encode($pembayaran->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -60,11 +60,11 @@
                     @empty
                         <tr>
                             <td colspan="8" class="px-4 py-4 text-center text-gray-500">Belum ada pembayaran yang dilakukan.</td>
-                        
+
                                     <td>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
+                                            <button type="button" class="btn btn-info btn-sm"
+                                                    onclick="showAuditLog({!! json_encode(get_class($pembayaran)) !!}, {!! json_encode($pembayaran->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

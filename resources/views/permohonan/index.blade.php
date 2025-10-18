@@ -342,7 +342,7 @@
                                     <a href="{{ route('permohonan.edit', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-700 transition shadow">Edit</a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($permohonan) }}', '{{ $permohonan->id }}', '{{ $permohonan->nomor_permohonan }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($permohonan)) !!}, {!! json_encode($permohonan->id) !!}, {!! json_encode($permohonan->nomor_permohonan) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

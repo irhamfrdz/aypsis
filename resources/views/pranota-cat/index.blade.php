@@ -145,7 +145,7 @@
                                     <td>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('PranotaCat', {{ $pranota_cat->id }})"
+                                                    onclick="showAuditLog({!! json_encode('PranotaCat') !!}, {!! json_encode($pranota_cat->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
@@ -160,7 +160,7 @@
                                     <td>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('PranotaCat', {{ $pranota_cat->id }})"
+                                                    onclick="showAuditLog({!! json_encode('PranotaCat') !!}, {!! json_encode($pranota_cat->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>

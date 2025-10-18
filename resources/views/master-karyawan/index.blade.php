@@ -443,7 +443,7 @@
 
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($karyawan) }}', '{{ $karyawan->id }}', '{{ $karyawan->nama_lengkap }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($karyawan)) !!}, {{ $karyawan->id }}, {!! json_encode($karyawan->nama_lengkap) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat
@@ -876,6 +876,15 @@ function showAuditLog(modelType, modelId, karyawanName) {
     })
     .then(data => {
         console.log('📊 Response data:', data);
+        console.log('🔍 Response structure analysis:');
+        console.log('  - data.success:', data.success);
+        console.log('  - data.data:', data.data);
+        console.log('  - data.data type:', typeof data.data);
+        console.log('  - data.data is array:', Array.isArray(data.data));
+        if (data.data) {
+            console.log('  - data.data.length:', data.data.length);
+        }
+        console.log('  - Full response keys:', Object.keys(data));
 
         document.getElementById('auditLogLoading').classList.add('hidden');
         document.getElementById('auditLogContent').classList.remove('hidden');
@@ -886,6 +895,7 @@ function showAuditLog(modelType, modelId, karyawanName) {
             document.getElementById('auditLogEmpty').classList.add('hidden');
         } else {
             console.log('❌ No data found or failed request');
+            console.log('  - Reason: success=' + data.success + ', data=' + (data.data ? 'exists' : 'null/undefined') + ', length=' + (data.data ? data.data.length : 'N/A'));
             document.getElementById('auditLogList').innerHTML = '';
             document.getElementById('auditLogEmpty').classList.remove('hidden');
         }
@@ -900,19 +910,19 @@ function showAuditLog(modelType, modelId, karyawanName) {
 
 function displayAuditLogs(auditLogs) {
     console.log('🎨 displayAuditLogs called with:', auditLogs);
-    
+
     const container = document.getElementById('auditLogList');
     if (!container) {
         console.error('❌ auditLogList container not found!');
         return;
     }
-    
+
     container.innerHTML = '';
     console.log('📝 Processing', auditLogs.length, 'audit log entries...');
 
     auditLogs.forEach((log, index) => {
         console.log(`Processing log ${index + 1}:`, log);
-        
+
         const logElement = document.createElement('div');
         logElement.className = 'border border-gray-200 rounded-lg p-4 hover:bg-gray-50 transition-colors';
 
@@ -959,7 +969,7 @@ function displayAuditLogs(auditLogs) {
         container.appendChild(logElement);
         console.log(`✅ Log ${index + 1} added to container`);
     });
-    
+
     console.log('🎉 All logs displayed successfully');
 }
 

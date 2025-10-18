@@ -194,7 +194,7 @@
                                     <td>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('PranotaSuratJalan', {{ $pranota_surat_jalan->id }})"
+                                                    onclick="showAuditLog({!! json_encode('PranotaSuratJalan') !!}, {!! json_encode($pranota_surat_jalan->id) !!})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i>
                                             </button>
