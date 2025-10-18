@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', 'Daftar Pranota Supir')
 @section('page_title', 'Daftar Pranota Supir')
 
@@ -121,13 +126,31 @@
                         <a href="{{ route('pranota-supir.show', $pranota->id) }}" class="text-indigo-600 hover:text-indigo-900">Detail</a>
                         <a href="{{ route('pranota-supir.print', $pranota->id) }}" target="_blank" class="ml-3 text-gray-600 hover:text-gray-900">Cetak</a>
                     </td>
-                </tr>
+                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($pranota), {{ $pranota->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                 @empty
                 <tr>
                     <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                         Tidak ada data pranota supir yang ditemukan.
                     </td>
-                </tr>
+                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($pranota), {{ $pranota->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                 @endforelse
             </tbody>
         </table>
@@ -138,4 +161,8 @@
         {{ $pranotas->links() }}
     </div>
 </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

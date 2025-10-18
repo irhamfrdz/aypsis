@@ -13,13 +13,13 @@ class VendorKontainerSewaPermissionSeeder extends Seeder
      * Run the database seeds.
      *
      * Seeder untuk menambahkan permissions Vendor Kontainer Sewa
-     * 
+     *
      * Usage: php artisan db:seed --class=VendorKontainerSewaPermissionSeeder
      */
     public function run(): void
     {
         $now = Carbon::now();
-        
+
         // Permissions yang akan dibuat untuk Vendor Kontainer Sewa
         $permissions = [
             [
@@ -83,7 +83,7 @@ class VendorKontainerSewaPermissionSeeder extends Seeder
 
         // Assign permissions ke user admin (jika ada)
         $this->assignPermissionsToAdmin($permissions);
-        
+
         $this->command->info("🎉 Vendor Kontainer Sewa permissions seeder completed!");
     }
 

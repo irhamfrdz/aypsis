@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', 'Master Pricelist Sewa Kontainer')
 @section('page_title', 'Master Pricelist Sewa Kontainer')
 
@@ -67,7 +72,15 @@
                                     Edit
                                 </a>
                                 <span class="text-gray-300">|</span>
-                                <form action="{{ route('master.master.pricelist-sewa-kontainer.destroy', $pricelist->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
+                                
+                                    <!-- Audit Log Link -->
+                                    <button type="button"
+                                            onclick="showAuditLog('{{ get_class($pricelist) }}', '{{ $pricelist->id }}', '{{ $pricelist->keterangan }}')"
+                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            title="Lihat Riwayat Perubahan">
+                                        Riwayat
+                                    </button>
+                                    <span class="text-gray-300">|</span><form action="{{ route('master.master.pricelist-sewa-kontainer.destroy', $pricelist->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?');">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0"
@@ -133,5 +146,9 @@
         </div>
     </div>
 </div>
+
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
 
 @endsection

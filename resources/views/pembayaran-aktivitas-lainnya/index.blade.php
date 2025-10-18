@@ -145,7 +145,16 @@
                                             @endcan
                                         </div>
                                     </td>
-                                    </tr>
+                                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                             @empty
                                 <tr>
                                     <td colspan="10" class="px-6 py-12 text-center">
@@ -160,7 +169,16 @@
                                             @endcan
                                         </div>
                                     </td>
-                                </tr>
+                                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                             @endforelse
                         </tbody>
                     </table>

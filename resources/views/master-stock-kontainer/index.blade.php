@@ -154,6 +154,13 @@
                         <a href="{{ route('master.stock-kontainer.show', $stockKontainer) }}" class="text-green-600 hover:text-green-800 hover:underline font-medium" title="Lihat Detail">Detail</a>
                         <span class="text-gray-300">|</span>
                         <a href="{{ route('master.stock-kontainer.edit', $stockKontainer) }}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium" title="Edit Data">Edit</a>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($stockKontainer), {{ $stockKontainer->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i> Riwayat
+                                            </button>
+                                        @endcan
                         <span class="text-gray-300">|</span>
                         <form action="{{ route('master.stock-kontainer.destroy', $stockKontainer) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus stock kontainer ini?')">
                             @csrf

@@ -132,7 +132,7 @@ try {
         logMessage("Setup permissions vendor kontainer sewa berhasil lengkap!", 'SUCCESS');
         logMessage("User admin sekarang memiliki akses penuh ke menu Vendor Kontainer Sewa");
         logMessage("Total permissions: " . $adminPermissions->count());
-        
+
         // Log informasi tambahan
         logMessage("\n=== INFORMASI AKSES ===");
         logMessage("✅ View: Dapat melihat daftar vendor kontainer sewa");
@@ -141,7 +141,7 @@ try {
         logMessage("✅ Delete: Dapat menghapus vendor kontainer sewa");
         logMessage("✅ Export: Dapat export data vendor kontainer sewa");
         logMessage("✅ Print: Dapat print data vendor kontainer sewa");
-        
+
     } else {
         logMessage("Ada masalah dalam assignment permissions", 'WARNING');
         logMessage("Expected: " . count($permissions) . ", Actual: " . $adminPermissions->count());

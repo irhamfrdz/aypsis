@@ -87,6 +87,13 @@
                                     <div class="flex space-x-2">
                                         <a href="{{ route('master.nomor-terakhir.show', $nomorTerakhir) }}" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
                                         <a href="{{ route('master.nomor-terakhir.edit', $nomorTerakhir) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i> Riwayat
+                                            </button>
+                                        @endcan
                                         <form method="POST" action="{{ route('master.nomor-terakhir.destroy', $nomorTerakhir) }}" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus nomor terakhir ini?')">
                                             @csrf
                                             @method('DELETE')

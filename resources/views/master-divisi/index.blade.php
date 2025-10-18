@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', 'Master Divisi')
 @section('page_title', 'Master Divisi')
 
@@ -204,7 +209,15 @@
                                 </td>
                                 <td class="px-4 py-2 whitespace-nowrap text-center text-[10px]">
                                     <a href="{{ route('master.divisi.show', $divisi->id) }}" class="text-blue-600 hover:text-blue-800">Lihat</a> |
-                                    <a href="{{ route('master.divisi.edit', $divisi->id) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a> |
+                                    <a href="{{ route('master.divisi.edit', $divisi->id) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a><span class="text-gray-300">|</span>
+                                    <!-- Audit Log Link -->
+                                    <button type="button"
+                                            onclick="showAuditLog('{{ get_class($divisi) }}', '{{ $divisi->id }}', '{{ $divisi->nama_divisi }}')"
+                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            title="Lihat Riwayat Perubahan">
+                                        Riwayat
+                                    </button>
+                                    <span class="text-gray-300">|</span> |
                                     <a href="#" onclick="event.preventDefault(); if(confirm('Apakah Anda yakin ingin menghapus divisi ini?')) { document.getElementById('delete-form-{{ $divisi->id }}').submit(); }" class="text-red-600 hover:text-red-800">Hapus</a>
                                     <form id="delete-form-{{ $divisi->id }}" action="{{ route('master.divisi.destroy', $divisi->id) }}" method="POST" style="display: none;">
                                         @csrf
@@ -306,5 +319,9 @@ document.getElementById('importModal').addEventListener('click', function(e) {
     }
 });
 </script>
+
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
 
 @endsection

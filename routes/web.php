@@ -50,6 +50,7 @@ use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OutstandingController;
 use App\Http\Controllers\PranotaSuratJalanController;
 use App\Http\Controllers\GateInController;
+use App\Http\Controllers\AuditLogController;
 
 /*
 |--------------------------------------------------------------------------
@@ -517,6 +518,28 @@ Route::middleware([
             'destroy' => 'can:master-pricelist-cat-delete'
         ]);
 
+        // Master pricelist gate in routes - granular permissions
+        // Import/Export routes (must be BEFORE resource routes)
+        Route::get('pricelist-gate-in/import', [\App\Http\Controllers\PricelistGateInController::class, 'import'])
+             ->name('pricelist-gate-in.import')
+             ->middleware('can:master-pricelist-gate-in-create');
+        Route::post('pricelist-gate-in/import/process', [\App\Http\Controllers\PricelistGateInController::class, 'importProcess'])
+             ->name('pricelist-gate-in.import.process')
+             ->middleware('can:master-pricelist-gate-in-create');
+        Route::get('pricelist-gate-in/download-template', [\App\Http\Controllers\PricelistGateInController::class, 'downloadTemplate'])
+             ->name('pricelist-gate-in.download-template')
+             ->middleware('can:master-pricelist-gate-in-view');
+
+        Route::resource('pricelist-gate-in', \App\Http\Controllers\PricelistGateInController::class)->middleware([
+            'index' => 'can:master-pricelist-gate-in-view',
+            'show' => 'can:master-pricelist-gate-in-view',
+            'create' => 'can:master-pricelist-gate-in-create',
+            'store' => 'can:master-pricelist-gate-in-create',
+            'edit' => 'can:master-pricelist-gate-in-update',
+            'update' => 'can:master-pricelist-gate-in-update',
+            'destroy' => 'can:master-pricelist-gate-in-delete'
+        ]);
+
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
              ->name('divisi.download-template')
@@ -893,13 +916,13 @@ Route::middleware([
          ])
          ->parameters(['vendor-kontainer-sewa' => 'vendorKontainerSewa'])
          ->middleware([
-             'index' => 'can:master-vendor-kontainer-sewa-view',
-             'create' => 'can:master-vendor-kontainer-sewa-create',
-             'store' => 'can:master-vendor-kontainer-sewa-create',
-             'show' => 'can:master-vendor-kontainer-sewa-view',
-             'edit' => 'can:master-vendor-kontainer-sewa-update',
-             'update' => 'can:master-vendor-kontainer-sewa-update',
-             'destroy' => 'can:master-vendor-kontainer-sewa-delete'
+             'index' => 'can:vendor-kontainer-sewa-view',
+             'create' => 'can:vendor-kontainer-sewa-create',
+             'store' => 'can:vendor-kontainer-sewa-create',
+             'show' => 'can:vendor-kontainer-sewa-view',
+             'edit' => 'can:vendor-kontainer-sewa-edit',
+             'update' => 'can:vendor-kontainer-sewa-edit',
+             'destroy' => 'can:vendor-kontainer-sewa-delete'
          ]);
 });
 
@@ -983,6 +1006,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
              'destroy' => 'can:tanda-terima-delete'
          ]);
 
+    // Gate In AJAX Routes (must be defined BEFORE resource route to avoid conflicts)
+    Route::get('gate-in/get-kontainers', [\App\Http\Controllers\GateInController::class, 'getKontainers'])
+         ->name('gate-in.get-kontainers')
+         ->middleware('can:gate-in-view');
+
+    Route::get('gate-in/get-kontainers-surat-jalan', [\App\Http\Controllers\GateInController::class, 'getKontainersSuratJalan'])
+         ->name('gate-in.get-kontainers-surat-jalan')
+         ->middleware('can:gate-in-view');
+
     // Gate In Management Routes
     Route::resource('gate-in', \App\Http\Controllers\GateInController::class)
          ->middleware([
@@ -994,11 +1026,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
              'update' => 'can:gate-in-update',
              'destroy' => 'can:gate-in-delete'
          ]);
-
-    // Gate In AJAX Routes
-    Route::get('gate-in/get-kontainers', [\App\Http\Controllers\GateInController::class, 'getKontainers'])
-         ->name('gate-in.get-kontainers')
-         ->middleware('can:gate-in-view');
 
     Route::post('gate-in/{gateIn}/add-kontainer', [\App\Http\Controllers\GateInController::class, 'addKontainer'])
          ->name('gate-in.add-kontainer')
@@ -1013,6 +1040,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->middleware('can:gate-in-update');
 
 });
+
+// Test route for AJAX debugging
+Route::get('/test-gate-in-ajax', function () {
+    return view('test-gate-in-ajax');
+})->middleware('auth');
+
+
 
 // ═══════════════════════════════════════════════════════════════════════
 // �🔗 SPECIAL ROUTES (Outside Master Group)
@@ -2018,4 +2052,31 @@ Route::middleware(['auth'])->prefix('report')->name('report.')->group(function (
     Route::get('/pembayaran', [App\Http\Controllers\ReportPembayaranController::class, 'index'])->name('pembayaran.index');
     Route::get('/pembayaran/export', [App\Http\Controllers\ReportPembayaranController::class, 'export'])->name('pembayaran.export');
     Route::get('/pembayaran/print', [App\Http\Controllers\ReportPembayaranController::class, 'print'])->name('pembayaran.print');
+});
+
+// ═══════════════════════════════════════════════════════════════════════
+// 📊 AUDIT LOG ROUTES - Universal audit trail system
+// ═══════════════════════════════════════════════════════════════════════
+
+Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \App\Http\Middleware\EnsureUserApproved::class])->group(function () {
+    // Audit Log routes
+    Route::get('audit-logs', [AuditLogController::class, 'index'])->name('audit-logs.index');
+    Route::get('audit-logs/{id}', [AuditLogController::class, 'show'])->name('audit-logs.show');
+    Route::post('audit-logs/model', [AuditLogController::class, 'getModelAuditLogs'])->name('audit-logs.model');
+    Route::get('audit-logs/export/csv', [AuditLogController::class, 'export'])->name('audit-logs.export');
+
+    // Test route
+    Route::get('audit-logs-test', function () {
+        return view('audit-logs.test');
+    })->name('audit-logs.test');
+
+    // Simple audit logs route for debugging
+    Route::get('audit-logs-simple', function () {
+        return view('audit-logs.index', [
+            'auditLogs' => new \Illuminate\Pagination\LengthAwarePaginator([], 0, 25),
+            'modules' => collect([]),
+            'actions' => collect([]),
+            'users' => collect([])
+        ]);
+    })->name('audit-logs.simple');
 });

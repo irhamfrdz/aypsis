@@ -189,7 +189,16 @@
                                     </form>
                                 </div>
                             </td>
-                        </tr>
+                        
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('User', {{ $user->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                     @empty
                         <tr>
                             <td colspan="4" class="px-6 py-2 text-center">
@@ -209,7 +218,16 @@
                                     </div>
                                 </div>
                             </td>
-                        </tr>
+                        
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('User', {{ $user->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                     @endforelse
                 </tbody>
             </table>

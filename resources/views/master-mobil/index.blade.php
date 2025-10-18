@@ -132,13 +132,31 @@
                                 </form>
                             </div>
                         </td>
-                    </tr>
+                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                 @empty
                     <tr>
                         <td colspan="6" class="py-4 px-6 text-center text-gray-500">
                             Tidak ada data mobil yang ditemukan.
                         </td>
-                    </tr>
+                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                 @endforelse
             </tbody>
         </table>

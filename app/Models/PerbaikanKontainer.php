@@ -6,10 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Models\NomorTerakhir;
+use App\Traits\Auditable;
 
 class PerbaikanKontainer extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'perbaikan_kontainers';
 

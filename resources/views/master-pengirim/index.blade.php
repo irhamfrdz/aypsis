@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', 'Master Pengirim')
 @section('page_title', 'Master Pengirim')
 
@@ -122,7 +127,15 @@
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
-                                        </a>
+                                        </a><span class="text-gray-300">|</span>
+                                    <!-- Audit Log Link -->
+                                    <button type="button"
+                                            onclick="showAuditLog('{{ get_class($pengirim) }}', '{{ $pengirim->id }}', '{{ $pengirim->nama_pengirim }}')"
+                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            title="Lihat Riwayat Perubahan">
+                                        Riwayat
+                                    </button>
+                                    <span class="text-gray-300">|</span>
                                         <form action="{{ route('pengirim.destroy', $pengirim) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengirim ini?')">
                                             @csrf
                                             @method('DELETE')
@@ -161,4 +174,8 @@
         </div>
     </div>
 </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

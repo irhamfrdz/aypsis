@@ -75,7 +75,16 @@
                                 </form>
                             </div>
                         </td>
-                    </tr>
+                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('MasterCabang', {{ $master_cabang->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                 @empty
                     <tr>
                         <td colspan="4" class="py-8 px-6 text-center text-gray-500">
@@ -87,7 +96,16 @@
                                 <p class="text-sm text-gray-400 mt-1">Tambah cabang pertama untuk memulai</p>
                             </div>
                         </td>
-                    </tr>
+                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('MasterCabang', {{ $master_cabang->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                 @endforelse
             </tbody>
         </table>

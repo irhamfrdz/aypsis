@@ -1,6 +1,11 @@
 
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', 'Master Permohonan')
 @section('page_title', 'Daftar Permohonan')
 
@@ -334,7 +339,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-indigo-900 font-bold">Rp. {{ number_format($permohonan->total_harga_setelah_adj, 0, ',', '.') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-[10px] font-medium space-x-2">
                                     <a href="{{ route('permohonan.show', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-indigo-500 text-white hover:bg-indigo-700 transition shadow">Lihat</a>
-                                    <a href="{{ route('permohonan.edit', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-700 transition shadow">Edit</a>
+                                    <a href="{{ route('permohonan.edit', $permohonan) }}" class="inline-block px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-700 transition shadow">Edit</a><span class="text-gray-300">|</span>
+                                    <!-- Audit Log Link -->
+                                    <button type="button"
+                                            onclick="showAuditLog('{{ get_class($permohonan) }}', '{{ $permohonan->id }}', '{{ $permohonan->nomor_permohonan }}')"
+                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            title="Lihat Riwayat Perubahan">
+                                        Riwayat
+                                    </button>
+                                    <span class="text-gray-300">|</span>
                                     <a href="{{ route('permohonan.print', $permohonan) }}" target="_blank" class="inline-block px-3 py-1 rounded bg-green-500 text-white hover:bg-green-700 transition shadow" title="Print Memo Surat Jalan">
                                         🖨️ Print
                                     </a>
@@ -540,4 +553,8 @@ function quickFilterByDateRange(days) {
     document.getElementById('date_from').closest('form').submit();
 }
 </script>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

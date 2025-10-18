@@ -1194,7 +1194,16 @@ input[required]:focus {
                                 </form>
                             </div>
                         </td>
-                    </tr>
+                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                 @empty
                         <td class="px-2 py-2 text-center text-xs font-medium bg-gray-100 text-gray-800 " colspan="17">
                             <div class="flex flex-col items-center">
@@ -2118,7 +2127,16 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
                     <td class="px-2 py-1 text-sm text-center">${data.sizes[index]}</td>
                     <td class="px-2 py-1 text-sm">${data.periodes[index]}</td>
                     <td class="px-2 py-1 text-sm text-right font-medium">${data.totals[index]}</td>
-                </tr>
+                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
             `;
         });
 
@@ -2203,7 +2221,16 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
                     <td class="px-2 py-1 text-sm text-center">${data.sizes[index]}</td>
                     <td class="px-2 py-1 text-sm">${data.periodes[index]}</td>
                     <td class="px-2 py-1 text-sm text-right font-medium">${data.totals[index]}</td>
-                </tr>
+                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
             `;
         });
 
@@ -2662,7 +2689,16 @@ window.showDeleteGroupModal = function(groups) {
                                                         Hapus
                                                     </button>
                                                 </td>
-                                            </tr>
+                                            
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                                         `).join('')}
                                     </tbody>
                                 </table>

@@ -220,7 +220,16 @@
                                             @endcan
                                         </div>
                                     </td>
-                                </tr>
+                                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('PembayaranOb', {{ $pembayaran_ob->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                             @empty
                                 <tr>
                                     <td colspan="7" class="px-6 py-4 text-center text-gray-500">
@@ -238,7 +247,16 @@
                                             @endcan
                                         </div>
                                     </td>
-                                </tr>
+                                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('PembayaranOb', {{ $pembayaran_ob->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                             @endforelse
                         </tbody>
                     </table>

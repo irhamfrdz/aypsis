@@ -249,7 +249,8 @@
                         $user->can('master-tipe-akun-view') ||
                         $user->can('master-tujuan-view') ||
                         $user->can('master-tujuan-kirim-view') ||
-                        $user->can('master-kegiatan-view')
+                        $user->can('master-kegiatan-view') ||
+                        $user->can('master-pricelist-gate-in-view')
                     );
 
                     // Show master section if user is admin OR has any master permissions
@@ -648,7 +649,7 @@
         {{-- Kontainer Sub-Dropdown --}}
         @php
             $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*');
-            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('master-vendor-bengkel.view') || $user->can('master-vendor-kontainer-sewa-view'));
+            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view'));
         @endphp
 
         @if($hasKontainerPermissions)
@@ -707,6 +708,14 @@
                         Pricelist CAT
                     </a>
                 @endif
+                @if($user && $user->can('master-pricelist-gate-in-view'))
+                    <a href="{{ route('master.pricelist-gate-in.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.pricelist-gate-in.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+                        </svg>
+                        Pricelist Gate In
+                    </a>
+                @endif
                 @if($user && $user->can('master-vendor-bengkel.view'))
                     <a href="{{ route('master.vendor-bengkel.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master.vendor-bengkel.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -715,7 +724,7 @@
                         Vendor/Bengkel
                     </a>
                 @endif
-                @if($user && $user->can('master-vendor-kontainer-sewa-view'))
+                @if($user && $user->can('vendor-kontainer-sewa-view'))
                     <a href="{{ route('vendor-kontainer-sewa.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('vendor-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
@@ -1266,6 +1275,25 @@
 </div>
 @endif
 
+{{-- Audit Log Menu - Standalone --}}
+@if($user && $user->can('audit-log-view'))
+<div class="mt-4">
+    <a href="{{ route('audit-logs.index') }}" class="w-full flex items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('audit-logs.*') ? 'bg-orange-50 text-orange-700 font-medium' : '' }}">
+        <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ Request::routeIs('audit-logs.*') ? 'bg-orange-100' : '' }}">
+            <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ Request::routeIs('audit-logs.*') ? 'text-orange-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium truncate w-full">Audit Log</span>
+        <span class="ml-auto">
+            <svg class="w-3 h-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+            </svg>
+        </span>
+    </a>
+</div>
+@endif
 
 @endif
 

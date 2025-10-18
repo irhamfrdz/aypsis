@@ -205,7 +205,16 @@
                                         </form>
                                     </div>
                                 </td>
-                            </tr>
+                            
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('Order', {{ $order->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                         @empty
                             <tr>
                                 <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
@@ -217,7 +226,16 @@
                                         <p class="text-gray-400 text-sm mt-1">Tambah order pertama untuk memulai</p>
                                     </div>
                                 </td>
-                            </tr>
+                            
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('Order', {{ $order->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                         @endforelse
                     </tbody>
                 </table>

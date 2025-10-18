@@ -212,13 +212,31 @@
                                         @endcan
                                     </div>
                                 </td>
-                            </tr>
+                            
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('RealisasiUangMuka', {{ $realisasi_uang_muka->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                         @empty
                             <tr>
                                 <td colspan="8" class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 text-center">
                                     Tidak ada data realisasi uang muka
                                 </td>
-                            </tr>
+                            
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('RealisasiUangMuka', {{ $realisasi_uang_muka->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', $title)
 
 @section('content')
@@ -244,7 +249,15 @@
                                                    class="text-yellow-600 hover:text-yellow-900 transition duration-200"
                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
-                                                </a>
+                                                </a><span class="text-gray-300">|</span>
+                                    <!-- Audit Log Link -->
+                                    <button type="button"
+                                            onclick="showAuditLog('{{ get_class($pembayaran) }}', '{{ $pembayaran->id }}', '{{ $pembayaran->nomor_pembayaran }}')"
+                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            title="Lihat Riwayat Perubahan">
+                                        Riwayat
+                                    </button>
+                                    <span class="text-gray-300">|</span>
 
                                                 <form action="{{ route('pembayaran-uang-muka.destroy', $pembayaran->id) }}"
                                                       method="POST"
@@ -322,4 +335,8 @@
         </div>
     </div>
 </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', 'Tanda Terima')
 
 @section('content')
@@ -187,7 +192,15 @@
                                        class="inline-flex items-center px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md transition duration-150"
                                        title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
-                                    </a>
+                                    </a><span class="text-gray-300">|</span>
+                                    <!-- Audit Log Link -->
+                                    <button type="button"
+                                            onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', '{{ $tandaTerima->nomor_tanda_terima }}')"
+                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            title="Lihat Riwayat Perubahan">
+                                        Riwayat
+                                    </button>
+                                    <span class="text-gray-300">|</span>
                                     <form action="{{ route('tanda-terima.destroy', $tandaTerima->id) }}"
                                           method="POST"
                                           class="inline-block"
@@ -277,4 +290,8 @@
     }, 5000);
 </script>
 @endpush
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

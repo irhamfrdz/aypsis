@@ -13,8 +13,8 @@ class GateIn extends Model
     protected $fillable = [
         'nomor_gate_in',
         'terminal_id',
-        'kapal_id',
         'service_id',
+        'kapal_id',
         'tanggal_gate_in',
         'user_id',
         'keterangan',
@@ -44,6 +44,12 @@ class GateIn extends Model
     public function kontainers()
     {
         return $this->hasMany(Kontainer::class, 'gate_in_id');
+    }
+
+    // Relasi dengan surat jalan yang sudah gate in
+    public function suratJalans()
+    {
+        return $this->hasMany('App\Models\SuratJalan', 'gate_in_id');
     }
 
     public function user()

@@ -10,6 +10,7 @@ use App\Models\Kontainer;
 use App\Models\GateIn;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class GateInController extends Controller
 {
@@ -42,7 +43,6 @@ class GateInController extends Controller
         // Get master data for dropdowns
         $terminals = MasterTerminal::where('status', 'aktif')->orderBy('nama_terminal')->get();
         $kapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
-        $services = MasterService::where('status', 'aktif')->orderBy('nama_service')->get();
 
         // Get kontainers yang sudah checkpoint supir dan belum gate in
         $kontainers = Kontainer::where('status_checkpoint_supir', 'selesai')
@@ -50,7 +50,7 @@ class GateInController extends Controller
             ->orderBy('nomor_seri_gabungan')
             ->get();
 
-        return view('gate-in.create', compact('terminals', 'kapals', 'services', 'kontainers'));
+        return view('gate-in.create', compact('terminals', 'kapals'));
     }
 
     /**
@@ -61,47 +61,152 @@ class GateInController extends Controller
         $this->authorize('gate-in-create');
 
         $request->validate([
+            'nomor_gate_in' => 'required|string|max:50|unique:gate_ins,nomor_gate_in',
             'terminal_id' => 'required|exists:master_terminals,id',
             'kapal_id' => 'required|exists:master_kapals,id',
-            'service_id' => 'required|exists:master_services,id',
             'kontainer_ids' => 'required|array|min:1',
-            'kontainer_ids.*' => 'exists:kontainers,id',
+            'kontainer_ids.*' => 'required|integer|exists:surat_jalans,id',
             'keterangan' => 'nullable|string|max:500'
+        ], [
+            'nomor_gate_in.required' => 'Nomor Gate In wajib diisi.',
+            'nomor_gate_in.unique' => 'Nomor Gate In sudah digunakan, silakan gunakan nomor lain.',
+            'nomor_gate_in.max' => 'Nomor Gate In maksimal 50 karakter.',
+            'terminal_id.required' => 'Terminal wajib dipilih.',
+            'terminal_id.exists' => 'Terminal yang dipilih tidak valid.',
+            'kapal_id.required' => 'Kapal wajib dipilih.',
+            'kapal_id.exists' => 'Kapal yang dipilih tidak valid.',
+            'kontainer_ids.required' => 'Pilih minimal satu kontainer.',
+            'kontainer_ids.min' => 'Pilih minimal satu kontainer.',
+            'kontainer_ids.*.required' => 'Data kontainer tidak boleh kosong.',
+            'kontainer_ids.*.integer' => 'Data kontainer tidak valid.',
+            'kontainer_ids.*.exists' => 'Surat jalan yang dipilih tidak ditemukan.',
+            'keterangan.max' => 'Keterangan maksimal 500 karakter.'
         ]);
 
         DB::beginTransaction();
         try {
             // Create Gate In record
+            // Auto-assign service_id untuk gate in (ambil service yang aktif)
+            $serviceId = MasterService::where('status', 'aktif')->value('id');
+            if (!$serviceId) {
+                throw new \Exception('Tidak ada service aktif yang tersedia. Hubungi administrator.');
+            }
+
             $gateIn = GateIn::create([
-                'nomor_gate_in' => $this->generateNomorGateIn(),
+                'nomor_gate_in' => $request->nomor_gate_in,
                 'terminal_id' => $request->terminal_id,
                 'kapal_id' => $request->kapal_id,
-                'service_id' => $request->service_id,
+                'service_id' => $serviceId,
                 'tanggal_gate_in' => now(),
                 'user_id' => Auth::id(),
                 'keterangan' => $request->keterangan,
                 'status' => 'aktif'
             ]);
 
-            // Update kontainer status and link to gate in
-            foreach ($request->kontainer_ids as $kontainerId) {
-                $kontainer = Kontainer::find($kontainerId);
-                $kontainer->update([
+            // Log data yang diterima
+            Log::info('Gate In store - surat_jalan IDs diterima:', ['count' => count($request->kontainer_ids), 'ids' => $request->kontainer_ids]);
+
+            // Update surat jalan yang dipilih dengan gate_in_id
+            $updateCount = 0;
+            $errorMessages = [];
+
+            foreach ($request->kontainer_ids as $suratJalanId) {
+                // Ambil data surat jalan
+                $suratJalan = DB::table('surat_jalans')->where('id', $suratJalanId)->first();
+
+                if (!$suratJalan) {
+                    $errorMessages[] = "Surat jalan dengan ID {$suratJalanId} tidak ditemukan";
+                    continue;
+                }
+
+                // Validasi apakah surat jalan sudah checkpoint
+                if ($suratJalan->status !== 'sudah_checkpoint') {
+                    $errorMessages[] = "Surat jalan {$suratJalan->no_surat_jalan} belum melalui checkpoint supir";
+                    continue;
+                }
+
+                if (!$suratJalan->no_kontainer) {
+                    $errorMessages[] = "Surat jalan {$suratJalan->no_surat_jalan} tidak memiliki nomor kontainer";
+                    continue;
+                }
+
+                // Update surat jalan dengan gate_in_id dan status gate in
+                $updated = DB::table('surat_jalans')->where('id', $suratJalanId)->update([
                     'gate_in_id' => $gateIn->id,
                     'status_gate_in' => 'selesai',
-                    'tanggal_gate_in' => now()
+                    'tanggal_gate_in' => now(),
+                    'updated_at' => now()
                 ]);
+
+                if ($updated) {
+                    $updateCount++;
+                    Log::info('Surat jalan ' . $suratJalan->no_surat_jalan . ' dengan kontainer ' . $suratJalan->no_kontainer . ' linked ke Gate In ID ' . $gateIn->id);
+
+                    // Opsional: Jika ada tabel kontainers dan ingin sync data juga
+                    try {
+                        $kontainer = Kontainer::where('nomor_seri_gabungan', $suratJalan->no_kontainer)->first();
+                        if ($kontainer) {
+                            $kontainer->update([
+                                'gate_in_id' => $gateIn->id,
+                                'status_gate_in' => 'selesai',
+                                'tanggal_gate_in' => now()
+                            ]);
+                            Log::info('Kontainer ' . $suratJalan->no_kontainer . ' juga diupdate di tabel kontainers');
+                        }
+                    } catch (\Exception $e) {
+                        // Jika gagal update kontainer, tidak perlu error karena data utama di surat_jalans
+                        Log::warning('Gagal update tabel kontainers untuk nomor: ' . $suratJalan->no_kontainer . '. Error: ' . $e->getMessage());
+                    }
+                } else {
+                    $errorMessages[] = "Gagal mengupdate surat jalan {$suratJalan->no_surat_jalan}";
+                }
             }
+
+            // Jika tidak ada kontainer yang berhasil diupdate, rollback dan return error
+            if ($updateCount === 0) {
+                DB::rollback();
+                $errorMessage = 'Tidak ada kontainer yang berhasil ditambahkan ke Gate In. ';
+                $errorMessage .= implode('; ', $errorMessages);
+
+                return back()->withInput()
+                    ->with('error', $errorMessage);
+            }
+
+            Log::info('Gate In created with ID ' . $gateIn->id . ' - Updated ' . $updateCount . ' kontainer records');
 
             DB::commit();
 
+            $successMessage = 'Gate In berhasil dibuat dengan nomor: ' . $gateIn->nomor_gate_in . ' (' . $updateCount . ' kontainer berhasil ditambahkan)';
+
+            // Tambahkan warning jika ada error pada beberapa kontainer
+            if (!empty($errorMessages)) {
+                $successMessage .= '. Peringatan: ' . implode('; ', $errorMessages);
+            }
+
             return redirect()->route('gate-in.show', $gateIn)
-                ->with('success', 'Gate In berhasil dibuat dengan nomor: ' . $gateIn->nomor_gate_in);
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollback();
+            Log::error('Gate In store error: ' . $e->getMessage());
+            Log::error('Gate In store stack trace: ' . $e->getTraceAsString());
+
+            // Buat pesan error yang lebih informatif
+            $errorMessage = 'Gagal menyimpan Gate In. ';
+
+            if (strpos($e->getMessage(), 'Duplicate entry') !== false) {
+                $errorMessage .= 'Nomor Gate In sudah digunakan, silakan gunakan nomor lain.';
+            } elseif (strpos($e->getMessage(), 'foreign key constraint') !== false) {
+                $errorMessage .= 'Data yang dipilih tidak valid atau sudah dihapus.';
+            } elseif (strpos($e->getMessage(), 'Connection refused') !== false) {
+                $errorMessage .= 'Koneksi database bermasalah, silakan coba lagi.';
+            } else {
+                $errorMessage .= 'Detail error: ' . $e->getMessage();
+            }
+
             return back()->withInput()
-                ->with('error', 'Terjadi kesalahan saat menyimpan Gate In: ' . $e->getMessage());
+                ->with('error', $errorMessage)
+                ->withErrors(['general' => 'Silakan periksa kembali data yang diinput dan coba lagi.']);
         }
     }
 
@@ -112,7 +217,8 @@ class GateInController extends Controller
     {
         $this->authorize('gate-in-view');
 
-        $gateIn->load(['terminal', 'kapal', 'service', 'kontainers.kontainer', 'user']);
+        // Load relasi yang benar - suratJalans bukan kontainers
+        $gateIn->load(['terminal', 'kapal', 'service', 'suratJalans', 'user']);
 
         return view('gate-in.show', compact('gateIn'));
     }
@@ -250,6 +356,44 @@ class GateInController extends Controller
         $kontainers = $query->orderBy('nomor_seri_gabungan')->get();
 
         return response()->json($kontainers);
+    }
+
+    /**
+     * Get kontainers from surat jalan by filters via AJAX
+     */
+    public function getKontainersSuratJalan(Request $request)
+    {
+        try {
+            Log::info('getKontainersSuratJalan called - loading all available kontainers');
+
+            // Query surat jalan yang sudah approved dan belum gate in
+            $query = DB::table('surat_jalans as sj')
+                ->whereIn('sj.status', ['approved', 'fully_approved', 'completed', 'sudah_checkpoint'])
+                ->whereNotNull('sj.no_kontainer')
+                ->where('sj.no_kontainer', '!=', '')
+                ->whereNull('sj.gate_in_id') // Belum pernah gate in
+                ->select(
+                    'sj.id',
+                    'sj.no_surat_jalan',
+                    'sj.no_kontainer as nomor_kontainer',
+                    'sj.size',
+                    'sj.jumlah_kontainer',
+                    'sj.tujuan_pengiriman',
+                    'sj.supir as supir_nama',
+                    'sj.no_plat as plat_nomor',
+                    'sj.tipe_kontainer',
+                    'sj.no_seal'
+                );
+
+            $kontainers = $query->orderBy('sj.no_surat_jalan')->get();
+
+            Log::info('Found kontainers:', ['count' => $kontainers->count()]);
+
+            return response()->json($kontainers);
+        } catch (\Exception $e) {
+            Log::error('getKontainersSuratJalan error:', ['message' => $e->getMessage(), 'trace' => $e->getTraceAsString()]);
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
 
     /**

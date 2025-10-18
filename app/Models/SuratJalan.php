@@ -5,10 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Carbon\Carbon;
+use App\Traits\Auditable;
 
 class SuratJalan extends Model
 {
-    use HasFactory;
+    use HasFactory, Auditable;
 
     protected $table = 'surat_jalans';
 

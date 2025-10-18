@@ -122,6 +122,13 @@
                             @can('master-pricelist-cat-update')
                             <a href="{{ route('master.pricelist-cat.edit', $pricelist) }}"
                                class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i> Riwayat
+                                            </button>
+                                        @endcan
                             @endcan
                             @can('master-pricelist-cat-delete')
                             <form method="POST" action="{{ route('master.pricelist-cat.destroy', $pricelist) }}"

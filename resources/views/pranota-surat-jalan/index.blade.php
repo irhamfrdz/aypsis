@@ -190,7 +190,16 @@
                                         <p class="text-sm text-gray-400">Belum ada pranota surat jalan yang dibuat.</p>
                                     </div>
                                 </td>
-                            </tr>
+                            
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('PranotaSuratJalan', {{ $pranota_surat_jalan->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                         @endforelse
                     </tbody>
                 </table>

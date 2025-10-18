@@ -5,10 +5,14 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use App\Traits\Auditable;
 
 class TagihanCat extends Model
 {
-    protected $table = 'tagihan_cat';
+    
+    use Auditable;
+
+protected $table = 'tagihan_cat';
 
     protected $fillable = [
         'nomor_tagihan_cat',

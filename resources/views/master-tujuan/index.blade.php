@@ -77,6 +77,13 @@
 
                                 <td class="py-3 px-4 space-x-2">
                                     <a href="{{ route('master.tujuan.edit', $tujuan) }}" class="text-blue-500 hover:underline">Edit</a>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($tujuan), {{ $tujuan->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i> Riwayat
+                                            </button>
+                                        @endcan
                                     <form action="{{ route('master.tujuan.destroy', $tujuan) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tujuan ini?');">
                                         @csrf
                                         @method('DELETE')

@@ -3,12 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\Auditable;
 
 class TandaTerima extends Model
 {
-    use SoftDeletes;
-
+    use HasFactory, Auditable;
     protected $fillable = [
         'surat_jalan_id',
         'no_surat_jalan',

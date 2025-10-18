@@ -141,13 +141,31 @@
                                 @endcan
                             </div>
                         </td>
-                    </tr>
+                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('PranotaCat', {{ $pranota_cat->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                     @empty
                     <tr>
                         <td colspan="8" class="px-6 py-4 text-center text-gray-500">
                             Tidak ada data pranota tagihan CAT ditemukan.
                         </td>
-                    </tr>
+                    
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog('PranotaCat', {{ $pranota_cat->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                     @endforelse
                 </tbody>
             </table>

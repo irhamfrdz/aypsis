@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class MasterPricelistSewaKontainer extends Model
 {
-    protected $table = 'master_pricelist_sewa_kontainers';
+    
+    use Auditable;
+
+protected $table = 'master_pricelist_sewa_kontainers';
     protected $fillable = [
         'vendor',
         'tarif',

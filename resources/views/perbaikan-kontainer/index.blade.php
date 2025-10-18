@@ -1,5 +1,10 @@
 @extends('layouts.app')
 
+
+@section('head')
+<meta name="csrf-token" content="{{ csrf_token() }}">
+@endsection
+
 @section('title', 'Perbaikan Kontainer')
 
 @section('content')
@@ -311,7 +316,15 @@
                                 @endcan
                                 @can('tagihan-perbaikan-kontainer-update')
                                 <a href="{{ route('perbaikan-kontainer.edit', $perbaikan) }}"
-                                   class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                   class="text-indigo-600 hover:text-indigo-900">Edit</a><span class="text-gray-300">|</span>
+                                    <!-- Audit Log Link -->
+                                    <button type="button"
+                                            onclick="showAuditLog('{{ get_class($perbaikan) }}', '{{ $perbaikan->id }}', '{{ $perbaikan->nomor_kontainer }}')"
+                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                            title="Lihat Riwayat Perubahan">
+                                        Riwayat
+                                    </button>
+                                    <span class="text-gray-300">|</span>
                                 @endcan
                                 @if(!$perbaikan->tanggal_cat)
                                 @can('tagihan-perbaikan-kontainer-update')

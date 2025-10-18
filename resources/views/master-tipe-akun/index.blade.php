@@ -87,6 +87,13 @@
                                     <div class="flex space-x-2">
                                         <a href="{{ route('master.tipe-akun.show', $tipeAkun) }}" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
                                         <a href="{{ route('master.tipe-akun.edit', $tipeAkun) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i> Riwayat
+                                            </button>
+                                        @endcan
                                         <form method="POST" action="{{ route('master.tipe-akun.destroy', $tipeAkun) }}" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tipe akun ini?')">
                                             @csrf
                                             @method('DELETE')

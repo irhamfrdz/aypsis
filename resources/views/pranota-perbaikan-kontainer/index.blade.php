@@ -136,6 +136,13 @@
                                 @can('pranota-perbaikan-kontainer.edit')
                                 <a href="{{ route('pranota-perbaikan-kontainer.edit', $pranota) }}"
                                    class="text-indigo-600 hover:text-indigo-900">Edit</a>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($pranota), {{ $pranota->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i> Riwayat
+                                            </button>
+                                        @endcan
                                 @endcan
                                 <form method="POST" action="{{ route('pranota-perbaikan-kontainer.destroy', $pranota) }}"
                                       onsubmit="return confirm('Apakah Anda yakin ingin menghapus data ini?')"

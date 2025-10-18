@@ -210,7 +210,16 @@
                                             </form>
                                         </div>
                                     </td>
-                                </tr>
+                                
+                                    <td>
+                                        @can('audit-log-view')
+                                            <button type="button" class="btn btn-info btn-sm" 
+                                                    onclick="showAuditLog(get_class($vendor), {{ $vendor->id }})"
+                                                    title="Lihat Riwayat">
+                                                <i class="fas fa-history"></i>
+                                            </button>
+                                        @endcan
+                                    </td></tr>
                             @endforeach
                         </tbody>
                     </table>

@@ -3,10 +3,14 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\Auditable;
 
 class KontainerSewa extends Model
 {
-    protected $fillable = [
+    
+    use Auditable;
+
+protected $fillable = [
         'kode',
         'nama_vendor',
         'catatan',
