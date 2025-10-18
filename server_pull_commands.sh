@@ -44,7 +44,6 @@ echo "🗄️ 6. Checking migration status..."
 
 # 6c. Run database migrations jika ada
 echo "🗄️ 6c. Running database migrations..."
-php artisan migrate --force
 
 # 7. Clear all caches (PENTING untuk Report Tagihan menu)
 echo "🧹 7. Clearing application caches..."
