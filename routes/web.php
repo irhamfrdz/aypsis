@@ -906,6 +906,11 @@ Route::middleware([
          ->name('tujuan-kirim.import.process')
          ->middleware('can:master-tujuan-kirim-create');
 
+    // 📤 Tujuan Kirim - Export CSV
+    Route::get('master/tujuan-kirim/export', [MasterTujuanKirimController::class, 'export'])
+         ->name('tujuan-kirim.export')
+         ->middleware('can:master-tujuan-kirim-view');
+
     // 🏢 Vendor Kontainer Sewa Management with permissions
     Route::resource('master/vendor-kontainer-sewa', \App\Http\Controllers\VendorKontainerSewaController::class)
          ->names([

@@ -302,4 +302,73 @@ class MasterTujuanKirimController extends Controller
                 ->withInput();
         }
     }
+
+    /**
+     * Export data tujuan kirim to CSV
+     */
+    public function export(Request $request)
+    {
+        $search = $request->get('search');
+        $status = $request->get('status');
+
+        $query = MasterTujuanKirim::query();
+
+        // Apply same filters as index page
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('kode', 'like', '%' . $search . '%')
+                  ->orWhere('nama_tujuan', 'like', '%' . $search . '%')
+                  ->orWhere('catatan', 'like', '%' . $search . '%');
+            });
+        }
+
+        if ($status) {
+            $query->where('status', $status);
+        }
+
+        $tujuanKirim = $query->orderBy('nama_tujuan')->get();
+
+        // Generate CSV filename with timestamp
+        $filename = 'tujuan-kirim-' . date('Ymd-His') . '.csv';
+
+        // Create CSV content
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Pragma' => 'public',
+            'Expires' => '0'
+        ];
+
+        $callback = function() use ($tujuanKirim) {
+            $file = fopen('php://output', 'w');
+            
+            // Add UTF-8 BOM for Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // CSV Headers
+            fputcsv($file, [
+                'No',
+                'Kode',
+                'Nama Tujuan',
+                'Catatan',
+                'Status'
+            ]);
+
+            // CSV Data
+            foreach ($tujuanKirim as $index => $item) {
+                fputcsv($file, [
+                    $index + 1,
+                    $item->kode,
+                    $item->nama_tujuan,
+                    $item->catatan ?? '',
+                    $item->status === 'active' ? 'Aktif' : 'Tidak Aktif'
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
