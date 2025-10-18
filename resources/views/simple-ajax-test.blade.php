@@ -13,18 +13,18 @@
         function testRequest() {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = 'Loading...';
-            
+
             // Log to console for debugging
             console.log('Starting AJAX request...');
             console.log('CSRF Token:', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
-            
+
             const requestData = {
                 model_type: 'App\\Models\\Karyawan',
                 model_id: 80
             };
-            
+
             console.log('Request data:', requestData);
-            
+
             fetch('/audit-logs/model', {
                 method: 'POST',
                 headers: {

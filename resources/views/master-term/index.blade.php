@@ -171,6 +171,21 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
                                         </a>
+                                        <span class="text-gray-300">|</span>
+
+                                        <!-- Audit Log Button -->
+                                        @can('audit-log-view')
+                                            <button type="button"
+                                                    class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                                    data-model-type="{{ get_class($term) }}"
+                                                    data-model-id="{{ $term->id }}"
+                                                    data-item-name="{{ $term->nama_status }}"
+                                                    title="Lihat Riwayat Perubahan">
+                                                Riwayat
+                                            </button>
+                                            <span class="text-gray-300">|</span>
+                                        @endcan
+
                                         <form action="{{ route('term.destroy', $term) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus term ini?')">
                                             @csrf
                                             @method('DELETE')
@@ -182,16 +197,7 @@
                                         </form>
                                     </div>
                                 </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog('MasterTerm', {{ $master_term->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                            </tr>
                         @empty
                             <tr>
                                 <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
@@ -203,16 +209,7 @@
                                         <p class="text-gray-400 text-sm mt-1">Tambah term pertama untuk memulai</p>
                                     </div>
                                 </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog('MasterTerm', {{ $master_term->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -227,4 +224,8 @@
         </div>
     </div>
 </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

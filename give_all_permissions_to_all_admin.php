@@ -33,13 +33,13 @@ echo "📋 Total permission di sistem: {$totalPermissions}\n\n";
 // Process setiap user admin
 foreach ($adminUsers as $admin) {
     echo "🔄 Processing user: {$admin->username}\n";
-    
+
     $currentPermissions = $admin->permissions()->pluck('permission_id')->toArray();
     $missingPermissions = array_diff($allPermissionIds, $currentPermissions);
-    
+
     echo "   Current permissions: " . count($currentPermissions) . "\n";
     echo "   Missing permissions: " . count($missingPermissions) . "\n";
-    
+
     if (count($missingPermissions) > 0) {
         // Tambahkan permission yang belum ada
         $admin->permissions()->syncWithoutDetaching($missingPermissions);
@@ -47,11 +47,11 @@ foreach ($adminUsers as $admin) {
     } else {
         echo "   ✅ Already has all permissions\n";
     }
-    
+
     // Verifikasi final
     $finalCount = $admin->permissions()->count();
     echo "   Final permission count: {$finalCount}\n";
-    
+
     if ($finalCount == $totalPermissions) {
         echo "   Status: ✅ COMPLETE\n";
     } else {

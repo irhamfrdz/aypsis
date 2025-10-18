@@ -86,14 +86,23 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         <a href="{{ route('master.nomor-terakhir.show', $nomorTerakhir) }}" class="text-indigo-600 hover:text-indigo-900">Lihat</a>
+                                        <span class="text-gray-300">|</span>
                                         <a href="{{ route('master.nomor-terakhir.edit', $nomorTerakhir) }}" class="text-blue-600 hover:text-blue-900">Edit</a>
+                                        <span class="text-gray-300">|</span>
+
+                                        <!-- Audit Log Button -->
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i> Riwayat
+                                            <button type="button"
+                                                    class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                                    data-model-type="{{ get_class($nomorTerakhir) }}"
+                                                    data-model-id="{{ $nomorTerakhir->id }}"
+                                                    data-item-name="{{ $nomorTerakhir->modul }}"
+                                                    title="Lihat Riwayat Perubahan">
+                                                Riwayat
                                             </button>
+                                            <span class="text-gray-300">|</span>
                                         @endcan
+
                                         <form method="POST" action="{{ route('master.nomor-terakhir.destroy', $nomorTerakhir) }}" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus nomor terakhir ini?')">
                                             @csrf
                                             @method('DELETE')
@@ -120,4 +129,8 @@
         </div>
     </div>
 </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

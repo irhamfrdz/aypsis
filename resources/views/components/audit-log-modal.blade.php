@@ -66,7 +66,7 @@ Letakkan di bawah content halaman
 // Universal Audit Log Functions
 function showAuditLog(modelType, modelId, itemName) {
     console.log('🔍 showAuditLog called with:', { modelType, modelId, itemName });
-    
+
     // Set item name
     document.getElementById('auditLogItemName').textContent = itemName;
 
@@ -84,7 +84,7 @@ function showAuditLog(modelType, modelId, itemName) {
         model_type: modelType,
         model_id: modelId
     };
-    
+
     console.log('📤 Sending AJAX request:', requestData);
     console.log('🔑 CSRF Token:', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
@@ -100,16 +100,16 @@ function showAuditLog(modelType, modelId, itemName) {
     .then(response => {
         console.log('📥 Response received:', response);
         console.log('Status:', response.status, response.statusText);
-        
+
         if (!response.ok) {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
         }
-        
+
         return response.json();
     })
     .then(data => {
         console.log('📊 Response data:', data);
-        
+
         document.getElementById('auditLogLoading').classList.add('hidden');
         document.getElementById('auditLogContent').classList.remove('hidden');
 
@@ -214,30 +214,30 @@ document.addEventListener('keydown', function(e) {
 // Event listener for audit log buttons
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Audit log modal component loaded');
-    
+
     // Add event listeners to all audit log buttons
     document.addEventListener('click', function(e) {
         console.log('👆 Click detected on:', e.target);
         console.log('Classes:', e.target.classList.toString());
-        
+
         if (e.target.classList.contains('audit-log-btn')) {
             console.log('✅ Audit log button clicked!');
-            
+
             const modelType = e.target.getAttribute('data-model-type');
             const modelId = e.target.getAttribute('data-model-id');
             const itemName = e.target.getAttribute('data-item-name');
-            
+
             console.log('� Button data attributes:', { modelType, modelId, itemName });
-            
+
             if (!modelType || !modelId) {
                 console.error('❌ Missing data attributes on button');
                 return;
             }
-            
+
             showAuditLog(modelType, modelId, itemName);
         }
     });
-    
+
     // Also check for existing buttons on page load
     const auditButtons = document.querySelectorAll('.audit-log-btn');
     console.log('🔍 Found audit log buttons on page:', auditButtons.length);

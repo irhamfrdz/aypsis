@@ -14,19 +14,19 @@ $adminUsers = User::where('username', 'like', '%admin%')->get();
 
 foreach ($adminUsers as $user) {
     echo "\n👤 User: {$user->username} (ID: {$user->id})\n";
-    
+
     // Check audit-log permissions
     $auditLogView = $user->hasPermissionTo('audit-log-view');
     $auditLogEdit = $user->hasPermissionTo('audit-log-edit');
     $auditLogCreate = $user->hasPermissionTo('audit-log-create');
     $auditLogDelete = $user->hasPermissionTo('audit-log-delete');
-    
+
     echo "  🔐 Permissions:\n";
     echo "     audit-log-view: " . ($auditLogView ? '✅' : '❌') . "\n";
     echo "     audit-log-edit: " . ($auditLogEdit ? '✅' : '❌') . "\n";
     echo "     audit-log-create: " . ($auditLogCreate ? '✅' : '❌') . "\n";
     echo "     audit-log-delete: " . ($auditLogDelete ? '✅' : '❌') . "\n";
-    
+
     // Total permissions
     $totalPermissions = $user->permissions->count();
     echo "  📊 Total permissions: {$totalPermissions}\n";

@@ -2087,17 +2087,17 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
             'users' => collect([])
         ]);
     })->name('audit-logs.simple');
-    
+
     // Debug audit modal route
     Route::get('debug-audit-modal', function () {
         return view('debug-audit-modal');
     })->name('debug.audit.modal');
-    
+
     // Simple AJAX test route
     Route::get('simple-ajax-test', function () {
         return view('simple-ajax-test');
     })->name('simple.ajax.test');
-    
+
     // Auth check route
     Route::get('auth-check', function () {
         return view('auth-check');

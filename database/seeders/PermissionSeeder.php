@@ -11,7 +11,7 @@ class PermissionSeeder extends Seeder
 {
     /**
      * Run the database seeds.
-     * 
+     *
      * Seeder komprehensif untuk semua permission yang ada di sistem
      * Berdasarkan analisis routes/web.php dan controller permissions
      */
@@ -481,7 +481,7 @@ class PermissionSeeder extends Seeder
         // Insert permissions only if they don't exist
         foreach ($permissions as $permission) {
             $existingPermission = Permission::where('name', $permission)->first();
-            
+
             if (!$existingPermission) {
                 Permission::create([
                     'name' => $permission,
@@ -489,7 +489,7 @@ class PermissionSeeder extends Seeder
                     'created_at' => now(),
                     'updated_at' => now(),
                 ]);
-                
+
                 $this->command->info("✅ Created permission: {$permission}");
                 $created++;
             } else {

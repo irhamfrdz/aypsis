@@ -59,15 +59,15 @@ $controller = new AuditLogController();
 try {
     // Call the method directly
     $response = $controller->getModelAuditLogs($request);
-    
+
     echo "\n📤 Response from controller:\n";
     $responseData = json_decode($response->getContent(), true);
     echo json_encode($responseData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) . "\n";
-    
+
     echo "\n🔍 Response analysis:\n";
     echo "Success: " . ($responseData['success'] ? '✅ true' : '❌ false') . "\n";
     echo "Data count: " . count($responseData['data'] ?? []) . "\n";
-    
+
     if (!empty($responseData['data'])) {
         echo "\n📝 Audit log entries:\n";
         foreach ($responseData['data'] as $index => $log) {
@@ -83,7 +83,7 @@ try {
             echo "Message: {$responseData['message']}\n";
         }
     }
-    
+
 } catch (Exception $e) {
     echo "❌ Error calling controller: " . $e->getMessage() . "\n";
     echo "Stack trace:\n" . $e->getTraceAsString() . "\n";

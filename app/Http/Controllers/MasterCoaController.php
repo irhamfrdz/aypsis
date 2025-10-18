@@ -268,7 +268,7 @@ class MasterCoaController extends Controller
 
         // Generate CSV content
         $filename = 'master_coa_' . date('Y-m-d_H-i-s') . '.csv';
-        
+
         $headers = [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => 'attachment; filename="' . $filename . '"',
@@ -279,14 +279,14 @@ class MasterCoaController extends Controller
 
         $callback = function() use ($coas) {
             $file = fopen('php://output', 'w');
-            
+
             // Add BOM for UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
-            
+
             // CSV Header
             fputcsv($file, [
                 'No. Akun',
-                'Kode Nomor', 
+                'Kode Nomor',
                 'Nama Akun',
                 'Tipe Akun',
                 'Saldo',

@@ -57,12 +57,12 @@ if ($auditLogs->count() > 0) {
     }
 } else {
     echo "❌ Tidak ada audit logs ditemukan\n";
-    
+
     // Cek apakah ada audit logs untuk model Karyawan secara umum
     echo "\n🔍 Mengecek audit logs untuk model Karyawan secara umum...\n";
     $allKaryawanLogs = AuditLog::where('auditable_type', $modelClass)->get();
     echo "📊 Total audit logs untuk semua karyawan: " . $allKaryawanLogs->count() . "\n";
-    
+
     if ($allKaryawanLogs->count() > 0) {
         echo "📝 Beberapa audit logs untuk karyawan lain:\n";
         foreach ($allKaryawanLogs->take(3) as $log) {
@@ -104,7 +104,7 @@ if ($testLogs->count() > 0) {
             'changes' => $log->getFormattedChanges() ?? []
         ];
     });
-    
+
     echo "📋 Mapped data:\n";
     foreach ($mapped as $item) {
         echo "   - {$item['action']}: {$item['description']} by {$item['user_name']} at {$item['created_at']}\n";

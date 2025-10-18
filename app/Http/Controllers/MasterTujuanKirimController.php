@@ -342,7 +342,7 @@ class MasterTujuanKirimController extends Controller
 
         $callback = function() use ($tujuanKirim) {
             $file = fopen('php://output', 'w');
-            
+
             // Add UTF-8 BOM for Excel compatibility
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 

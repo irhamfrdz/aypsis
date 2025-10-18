@@ -6,22 +6,22 @@
 </head>
 <body>
     <h1>Authentication Status</h1>
-    
+
     @auth
         <p><strong>✅ User is logged in</strong></p>
         <p>Username: {{ auth()->user()->username }}</p>
         <p>ID: {{ auth()->user()->id }}</p>
         <p>Has audit-log-view permission: {{ auth()->user()->hasPermissionTo('audit-log-view') ? '✅ Yes' : '❌ No' }}</p>
-        
+
         <h2>Test AJAX Request</h2>
         <button onclick="testAuditRequest()">Test Audit Log Request</button>
         <div id="result"></div>
-        
+
         <script>
             function testAuditRequest() {
                 const resultDiv = document.getElementById('result');
                 resultDiv.innerHTML = 'Loading...';
-                
+
                 fetch('/audit-logs/model', {
                     method: 'POST',
                     headers: {

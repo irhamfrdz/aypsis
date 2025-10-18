@@ -168,7 +168,7 @@
                                             </svg>
                                         </a>
                                         <span class="text-gray-300">|</span>
-                                        
+
                                         <!-- Audit Log Button -->
                                         @can('audit-log-view')
                                             <button type="button"
@@ -181,7 +181,7 @@
                                             </button>
                                             <span class="text-gray-300">|</span>
                                         @endcan
-                                        
+
                                         <form action="{{ route('jenis-barang.destroy', $jenisBarang) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus jenis barang ini?')">
                                             @csrf
                                             @method('DELETE')

@@ -36,10 +36,10 @@ echo "➕ Permission yang akan ditambahkan: " . count($missingPermissions) . "\n
 
 if (count($missingPermissions) > 0) {
     echo "🔄 Menambahkan permission yang belum ada...\n";
-    
+
     // Tambahkan permission yang belum ada (tanpa menghapus yang sudah ada)
     $admin->permissions()->syncWithoutDetaching($missingPermissions);
-    
+
     echo "✅ Berhasil menambahkan " . count($missingPermissions) . " permission baru\n\n";
 } else {
     echo "✅ User admin sudah memiliki semua permission\n\n";

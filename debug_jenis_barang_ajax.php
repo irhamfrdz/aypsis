@@ -5,36 +5,36 @@ require 'vendor/autoload.php';
 $app = require_once 'bootstrap/app.php';
 $app->make('Illuminate\Contracts\Console\Kernel')->bootstrap();
 
-use App\Models\Pengirim;
+use App\Models\JenisBarang;
 use App\Models\User;
 use App\Http\Controllers\AuditLogController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-echo "=== DEBUG AUDIT LOG PENGIRIM ID 1 ===\n";
+echo "=== DEBUG AUDIT LOG JENIS BARANG AJAX ===\n";
 
 // Login as admin user
 $admin = User::where('username', 'admin')->first();
 Auth::login($admin);
 echo "✅ Logged in as: {$admin->username}\n";
 
-// Find pengirim ID 1
-$pengirim = Pengirim::find(1);
-if (!$pengirim) {
-    echo "❌ Pengirim ID 1 tidak ditemukan\n";
+// Find jenis barang ID 1
+$jenisBarang = JenisBarang::find(1);
+if (!$jenisBarang) {
+    echo "❌ JenisBarang ID 1 tidak ditemukan\n";
     exit;
 }
 
-echo "✅ Pengirim ditemukan: {$pengirim->nama_pengirim} (ID: {$pengirim->id})\n";
+echo "✅ JenisBarang ditemukan: {$jenisBarang->nama_barang} (ID: {$jenisBarang->id})\n";
 
 // Get the correct model class name
-$modelClass = get_class($pengirim);
+$modelClass = get_class($jenisBarang);
 echo "📋 Model class: {$modelClass}\n";
 
 // Create a mock request like what would be sent via AJAX
 $requestData = [
     'model_type' => $modelClass,
-    'model_id' => $pengirim->id
+    'model_id' => $jenisBarang->id
 ];
 
 echo "\n🔄 Simulating AJAX request...\n";
@@ -70,14 +70,10 @@ try {
         }
     } else {
         echo "❌ No audit log data in response\n";
-        if (isset($responseData['message'])) {
-            echo "Message: {$responseData['message']}\n";
-        }
     }
 
 } catch (Exception $e) {
     echo "❌ Error calling controller: " . $e->getMessage() . "\n";
-    echo "Stack trace:\n" . $e->getTraceAsString() . "\n";
 }
 
 echo "\n=================================================\n";

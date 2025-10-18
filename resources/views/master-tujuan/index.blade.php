@@ -77,13 +77,21 @@
 
                                 <td class="py-3 px-4 space-x-2">
                                     <a href="{{ route('master.tujuan.edit', $tujuan) }}" class="text-blue-500 hover:underline">Edit</a>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($tujuan), {{ $tujuan->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i> Riwayat
-                                            </button>
-                                        @endcan
+                                    <span class="text-gray-300">|</span>
+                                    
+                                    <!-- Audit Log Button -->
+                                    @can('audit-log-view')
+                                        <button type="button"
+                                                class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                                data-model-type="{{ get_class($tujuan) }}"
+                                                data-model-id="{{ $tujuan->id }}"
+                                                data-item-name="{{ trim((($tujuan->dari ?? '') ? $tujuan->dari : '') . ' ' . (($tujuan->ke ?? '') ? '- '.$tujuan->ke : '')) }}"
+                                                title="Lihat Riwayat Perubahan">
+                                            Riwayat
+                                        </button>
+                                        <span class="text-gray-300">|</span>
+                                    @endcan
+                                    
                                     <form action="{{ route('master.tujuan.destroy', $tujuan) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus tujuan ini?');">
                                         @csrf
                                         @method('DELETE')
@@ -163,4 +171,8 @@
             </div>
         </div>
     </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

@@ -70,7 +70,7 @@ var_dump($testMatrix);
 try {
     $idsResult = $userController->testConvertMatrixPermissionsToIds($testMatrix);
     echo "IDs result: " . implode(', ', $idsResult) . "\n";
-    
+
     // Convert IDs back to permission names for verification
     $permissions = Permission::whereIn('id', $idsResult)->pluck('name')->toArray();
     echo "Permission names: " . implode(', ', $permissions) . "\n";
