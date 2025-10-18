@@ -11,6 +11,7 @@ class SuratJalan extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $table = 'surat_jalans';
 
     protected $fillable = [

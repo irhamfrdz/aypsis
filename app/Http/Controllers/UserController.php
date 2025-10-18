@@ -903,6 +903,27 @@ class UserController extends Controller
                 }
             }
 
+            // Special handling for audit-log permissions (audit-log-view, audit-log-export)
+            if (strpos($permissionName, 'audit-log-') === 0) {
+                $module = 'audit-log';
+                $action = str_replace('audit-log-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map audit log actions
+                $actionMap = [
+                    'view' => 'view',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Pattern 4: Simple module names (e.g., master-karyawan) - ONLY if no separators found
             if (strpos($permissionName, '-') === false && strpos($permissionName, '.') === false) {
                 $module = $permissionName;
@@ -2453,6 +2474,23 @@ class UserController extends Controller
                             'reject' => 'approval-surat-jalan-reject',
                             'print' => 'approval-surat-jalan-print',
                             'export' => 'approval-surat-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle audit-log permissions explicitly
+                    if ($module === 'audit-log' && in_array($action, ['view', 'export'])) {
+                        $actionMap = [
+                            'view' => 'audit-log-view',
+                            'export' => 'audit-log-export'
                         ];
 
                         if (isset($actionMap[$action])) {

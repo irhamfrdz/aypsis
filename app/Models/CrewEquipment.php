@@ -4,8 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class CrewEquipment extends Model
 {
+    use Auditable;
+
     protected $table = 'crew_checklists';
 
     protected $fillable = [

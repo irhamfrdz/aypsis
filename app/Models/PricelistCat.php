@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class PricelistCat extends Model
 {
     use HasFactory;
 
+    use Auditable;
     /**
      * The table associated with the model.
      *

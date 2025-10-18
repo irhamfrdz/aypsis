@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+
+use App\Traits\Auditable;
 class GateIn extends Model
 {
     use HasFactory, SoftDeletes;
 
+    use Auditable;
     protected $fillable = [
         'nomor_gate_in',
         'terminal_id',

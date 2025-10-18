@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class AktivitasLainnya extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $table = 'aktivitas_lainnya';
 
     protected $fillable = [

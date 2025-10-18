@@ -12,6 +12,7 @@ class PerbaikanKontainer extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $table = 'perbaikan_kontainers';
 
     protected $fillable = [

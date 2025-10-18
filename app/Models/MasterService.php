@@ -6,10 +6,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
+
+use App\Traits\Auditable;
 class MasterService extends Model
 {
     use HasFactory, SoftDeletes;
 
+    use Auditable;
     protected $fillable = [
         'kode_service',
         'nama_service',

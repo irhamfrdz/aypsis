@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+
+use App\Traits\Auditable;
 class RealisasiUangMuka extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $table = 'realisasi_uang_muka';
 
     protected $fillable = [

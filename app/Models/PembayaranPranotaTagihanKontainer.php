@@ -3,8 +3,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class PembayaranPranotaTagihanKontainer extends Model
 {
+    use Auditable;
+
     protected $table = 'pembayaran_pranota_tagihan_kontainer';
     protected $guarded = [];
 

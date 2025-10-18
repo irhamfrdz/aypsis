@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class Pembayaran extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $fillable = [
         'nomor_pembayaran',
         'tanggal_pembayaran',

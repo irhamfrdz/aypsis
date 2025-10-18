@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class PembayaranAktivitasLainnyaItem extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $table = 'pembayaran_aktivitas_lainnya_items';
 
     protected $fillable = [

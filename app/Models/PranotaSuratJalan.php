@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class PranotaSuratJalan extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $table = 'pranota_surat_jalans';
 
     protected $fillable = [

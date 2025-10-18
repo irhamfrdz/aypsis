@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class MasterPricelistUangJalan extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $table = 'master_pricelist_uang_jalan';
 
     protected $fillable = [

@@ -10,6 +10,7 @@ class PembayaranUangMuka extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $table = 'pembayaran_uang_muka';
 
     protected $fillable = [

@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
+
+use App\Traits\Auditable;
 class Pekerjaan extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $fillable = [
         'nama_pekerjaan',
         'kode_pekerjaan',

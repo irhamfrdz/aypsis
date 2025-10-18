@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class CrewChecklist extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $fillable = [
         'karyawan_id',
         'item_name',

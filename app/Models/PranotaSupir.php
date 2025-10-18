@@ -10,6 +10,7 @@ class PranotaSupir extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $table = 'pranota_supirs';
 
     protected $fillable = [

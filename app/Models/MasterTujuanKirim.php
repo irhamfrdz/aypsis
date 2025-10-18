@@ -4,8 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class MasterTujuanKirim extends Model
 {
+    use Auditable;
+
     protected $table = 'master_tujuan_kirim';
 
     protected $fillable = [

@@ -10,6 +10,7 @@ class Divisi extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $fillable = [
         'nama_divisi',
         'kode_divisi',

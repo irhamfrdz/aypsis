@@ -10,6 +10,7 @@ class MasterKegiatan extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $table = 'master_kegiatans';
 
     protected $fillable = [

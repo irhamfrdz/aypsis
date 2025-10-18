@@ -10,6 +10,7 @@ class MasterKapal extends Model
 {
     use SoftDeletes, Auditable;
 
+    use Auditable;
     protected $table = 'master_kapals';
 
     protected $fillable = [

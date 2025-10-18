@@ -10,6 +10,7 @@ class PembayaranPranota extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $table = 'pembayaran_pranota';
 
     protected $fillable = [

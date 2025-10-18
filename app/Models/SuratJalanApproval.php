@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class SuratJalanApproval extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $fillable = [
         'surat_jalan_id',
         'approval_level',

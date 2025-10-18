@@ -10,6 +10,7 @@ class Permission extends Model
 {
     use HasFactory, Auditable;
 
+    use Auditable;
     protected $fillable = ['name', 'description'];
 
     public function users()

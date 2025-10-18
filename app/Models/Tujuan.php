@@ -5,10 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class Tujuan extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $fillable = [
         'deskripsi',
         'uang_jalan',

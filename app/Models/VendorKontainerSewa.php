@@ -4,8 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 
+
+use App\Traits\Auditable;
 class VendorKontainerSewa extends Model
 {
+    use Auditable;
+
     protected $table = 'vendor_kontainer_sewas';
 
     protected $fillable = [

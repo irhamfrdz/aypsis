@@ -7,10 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+
+use App\Traits\Auditable;
 class PranotaPerbaikanKontainer extends Model
 {
     use HasFactory;
 
+    use Auditable;
     protected $fillable = [
         'nomor_pranota',
         'tanggal_pranota',
