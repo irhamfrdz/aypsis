@@ -75,7 +75,7 @@
                                 
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($pricelist) }}', '{{ $pricelist->id }}', '{{ $pricelist->keterangan }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($pricelist)) !!}, {!! json_encode($pricelist->id) !!}, {!! json_encode($pricelist->keterangan) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

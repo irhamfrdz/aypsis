@@ -212,7 +212,7 @@
                                     <a href="{{ route('master.divisi.edit', $divisi->id) }}" class="text-indigo-600 hover:text-indigo-800">Edit</a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($divisi) }}', '{{ $divisi->id }}', '{{ $divisi->nama_divisi }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($divisi)) !!}, {!! json_encode($divisi->id) !!}, {!! json_encode($divisi->nama_divisi) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat

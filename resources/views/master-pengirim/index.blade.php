@@ -130,7 +130,7 @@
                                         </a><span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
-                                            onclick="showAuditLog('{{ get_class($pengirim) }}', '{{ $pengirim->id }}', '{{ $pengirim->nama_pengirim }}')"
+                                            onclick="showAuditLog({!! json_encode(get_class($pengirim)) !!}, {!! json_encode($pengirim->id) !!}, {!! json_encode($pengirim->nama_pengirim) !!})"
                                             class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
                                             title="Lihat Riwayat Perubahan">
                                         Riwayat
