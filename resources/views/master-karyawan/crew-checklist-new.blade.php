@@ -4,7 +4,8 @@
 @section('page_title', 'Checklist Kelengkapan Crew')
 
 @section('content')
-<div class="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+    <div class="space-y-6">
     {{-- Header Section --}}
     <section class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-4">
@@ -395,6 +396,7 @@
             </div>
         </form>
         </div>
+    </div>
     </div>
 </div>
 
