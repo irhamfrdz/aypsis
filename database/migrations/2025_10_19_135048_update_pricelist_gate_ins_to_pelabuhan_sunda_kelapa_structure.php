@@ -12,52 +12,56 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pricelist_gate_ins', function (Blueprint $table) {
-            // Drop old columns (foreign keys will be dropped automatically when columns are dropped)
+            // Check and drop old columns safely
+            if (Schema::hasColumn('pricelist_gate_ins', 'kode')) {
+                $table->dropColumn('kode');
+            }
+            if (Schema::hasColumn('pricelist_gate_ins', 'keterangan')) {
+                $table->dropColumn('keterangan');
+            }
+            if (Schema::hasColumn('pricelist_gate_ins', 'catatan')) {
+                $table->dropColumn('catatan');
+            }
 
-            // Drop old columns
-            $table->dropColumn([
-                'kode',
-                'keterangan',
-                'catatan'
-            ]);
-
-            // Add new columns
-            $table->string('pelabuhan')->after('id');
-            $table->enum('kegiatan', [
-                'BATAL MUAT',
-                'CHANGE VASSEL',
-                'DELIVERY',
-                'DISCHARGE',
-                'DISCHARGE TL',
-                'LOADING',
-                'PENUMPUKAN BPRP',
-                'PERPANJANGAN DELIVERY',
-                'RECEIVING',
-                'RECEIVING LOSING'
-            ])->after('pelabuhan');
-            $table->enum('biaya', [
-                'ADMINISTRASI',
-                'DERMAGA',
-                'HAULAGE',
-                'LOLO',
-                'MASA 1A',
-                'MASA 1B',
-                'MASA2',
-                'STEVEDORING',
-                'STRIPPING',
-                'STUFFING'
-            ])->after('kegiatan');
-            $table->enum('gudang', ['CY', 'DERMAGA', 'SS'])->nullable()->after('biaya');
-            $table->enum('kontainer', ['20', '40'])->nullable()->after('gudang');
-            $table->enum('muatan', ['EMPTY', 'FULL'])->nullable()->after('kontainer');
+            // Add new columns only if they don't exist
+            if (!Schema::hasColumn('pricelist_gate_ins', 'pelabuhan')) {
+                $table->string('pelabuhan')->after('id');
+            }
+            if (!Schema::hasColumn('pricelist_gate_ins', 'kegiatan')) {
+                $table->enum('kegiatan', [
+                    'BATAL MUAT',
+                    'CHANGE VASSEL',
+                    'DELIVERY',
+                    'DISCHARGE',
+                    'DISCHARGE TL',
+                    'LOADING',
+                    'PENUMPUKAN BPRP',
+                    'PERPANJANGAN DELIVERY',
+                    'RECEIVING',
+                    'RECEIVING LOSING'
+                ])->after('pelabuhan');
+            }
+            if (!Schema::hasColumn('pricelist_gate_ins', 'gudang')) {
+                $table->enum('gudang', ['CY', 'DERMAGA', 'SS'])->nullable()->after('kegiatan');
+            }
+            if (!Schema::hasColumn('pricelist_gate_ins', 'kontainer')) {
+                $table->enum('kontainer', ['20', '40'])->nullable()->after('gudang');
+            }
+            if (!Schema::hasColumn('pricelist_gate_ins', 'muatan')) {
+                $table->enum('muatan', ['EMPTY', 'FULL'])->nullable()->after('kontainer');
+            }
 
             // Update tarif column (already exists but ensure it's positioned correctly)
-            $table->decimal('tarif', 15, 2)->default(0)->after('muatan')->change();
+            $table->decimal('tarif', 15, 2)->default(0)->change();
 
-            // Add indexes for new columns
-            $table->index(['pelabuhan', 'kegiatan']);
-            $table->index(['biaya', 'gudang']);
-            $table->index(['kontainer', 'muatan']);
+            // Add indexes for new columns (with error handling)
+            try {
+                $table->index(['pelabuhan', 'kegiatan'], 'idx_pelabuhan_kegiatan');
+                $table->index(['gudang', 'kontainer'], 'idx_gudang_kontainer');
+                $table->index(['kontainer', 'muatan'], 'idx_kontainer_muatan');
+            } catch (Exception $e) {
+                // Indexes might already exist, continue
+            }
         });
     }
 
@@ -67,17 +71,42 @@ return new class extends Migration
     public function down(): void
     {
         Schema::table('pricelist_gate_ins', function (Blueprint $table) {
-            // Drop new columns
-            $table->dropColumn([
-                'pelabuhan',
-                'kegiatan',
-                'biaya',
-                'gudang',
-                'kontainer',
-                'muatan'
-            ]);
+            // Drop indexes first
+            try {
+                $table->dropIndex('idx_pelabuhan_kegiatan');
+                $table->dropIndex('idx_gudang_kontainer');
+                $table->dropIndex('idx_kontainer_muatan');
+            } catch (Exception $e) {
+                // Indexes might not exist, continue
+            }
 
-            // Restore old columns (no foreign keys needed for rollback)
+            // Drop new columns
+            if (Schema::hasColumn('pricelist_gate_ins', 'pelabuhan')) {
+                $table->dropColumn('pelabuhan');
+            }
+            if (Schema::hasColumn('pricelist_gate_ins', 'kegiatan')) {
+                $table->dropColumn('kegiatan');
+            }
+            if (Schema::hasColumn('pricelist_gate_ins', 'gudang')) {
+                $table->dropColumn('gudang');
+            }
+            if (Schema::hasColumn('pricelist_gate_ins', 'kontainer')) {
+                $table->dropColumn('kontainer');
+            }
+            if (Schema::hasColumn('pricelist_gate_ins', 'muatan')) {
+                $table->dropColumn('muatan');
+            }
+
+            // Add back old columns
+            if (!Schema::hasColumn('pricelist_gate_ins', 'kode')) {
+                $table->string('kode')->nullable();
+            }
+            if (!Schema::hasColumn('pricelist_gate_ins', 'keterangan')) {
+                $table->text('keterangan')->nullable();
+            }
+            if (!Schema::hasColumn('pricelist_gate_ins', 'catatan')) {
+                $table->text('catatan')->nullable();
+            }
         });
     }
 };
