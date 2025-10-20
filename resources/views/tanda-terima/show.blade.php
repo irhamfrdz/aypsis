@@ -95,7 +95,7 @@
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tujuan</dt>
-                            <dd class="text-sm text-gray-900">{{ $tandaTerima->tujuan ?: '-' }}</dd>
+                            <dd class="text-sm text-gray-900">{{ $tandaTerima->tujuan_pengiriman ?: '-' }}</dd>
                         </div>
                         <div>
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Pengirim</dt>

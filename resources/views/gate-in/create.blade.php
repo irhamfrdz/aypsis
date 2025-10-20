@@ -90,6 +90,19 @@
                             @enderror
                         </div>
 
+                        <!-- Tanggal Gate In -->
+                        <div class="space-y-1">
+                            <label for="tanggal_gate_in" class="block text-sm font-medium text-gray-700">
+                                Tanggal Gate In <span class="text-red-500">*</span>
+                            </label>
+                            <input type="datetime-local" name="tanggal_gate_in" id="tanggal_gate_in"
+                                   class="block w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                   value="{{ old('tanggal_gate_in', now()->format('Y-m-d\TH:i')) }}" required>
+                            @error('tanggal_gate_in')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Pelabuhan -->
                         <div class="space-y-1">
                             <label for="pelabuhan" class="block text-sm font-medium text-gray-700">
@@ -369,6 +382,7 @@
                         <!-- Breakdown Details -->
                         <div id="breakdown-details" class="text-xs text-gray-500 border-t pt-2 hidden">
                             <div class="grid grid-cols-2 gap-2">
+                                <div>Tanggal: <span id="breakdown-tanggal">-</span></div>
                                 <div>Pelabuhan: <span id="breakdown-pelabuhan">-</span></div>
                                 <div>Kegiatan: <span id="breakdown-kegiatan">-</span></div>
                                 <div>Gudang: <span id="breakdown-gudang">-</span></div>
@@ -1051,6 +1065,11 @@ function validateForm() {
         errors.push('Nomor Gate In maksimal 20 karakter');
     }
 
+    // Check tanggal gate in
+    if (!$('#tanggal_gate_in').val()) {
+        errors.push('Tanggal Gate In harus diisi');
+    }
+
     // Check pelabuhan
     if (!$('#pelabuhan').val()) {
         errors.push('Pelabuhan harus dipilih');
@@ -1247,6 +1266,7 @@ function calculateTotal() {
 
             // Update breakdown (common for both)
             if (response.breakdown) {
+                $('#breakdown-tanggal').text($('#tanggal_gate_in').val() ? new Date($('#tanggal_gate_in').val()).toLocaleString('id-ID') : '-');
                 $('#breakdown-pelabuhan').text(response.breakdown.pelabuhan || '-');
                 $('#breakdown-kegiatan').text(response.breakdown.kegiatan || '-');
                 $('#breakdown-gudang').text(response.breakdown.gudang || '-');
@@ -1279,7 +1299,7 @@ function calculateTotal() {
 // Event handlers for total calculation
 $(document).ready(function() {
     // Calculate total when form inputs change
-    $('#pelabuhan, #kegiatan, #gudang, #kontainer, #muatan').on('change', function() {
+    $('#tanggal_gate_in, #pelabuhan, #kegiatan, #gudang, #kontainer, #muatan').on('change', function() {
         calculateTotal();
     });
 

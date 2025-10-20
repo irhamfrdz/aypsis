@@ -52,6 +52,9 @@
                 <form action="{{ route('tanda-terima.update', $tandaTerima->id) }}" method="POST" class="p-6">
                     @csrf
                     @method('PUT')
+                    
+                    <!-- Hidden status field -->
+                    <input type="hidden" name="status" value="{{ $tandaTerima->status }}">
 
                     <div class="space-y-6">
                         <!-- Estimasi Nama Kapal -->
@@ -193,6 +196,22 @@
                             @enderror
                         </div>
 
+                        <!-- Tujuan Pengiriman -->
+                        <div>
+                            <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tujuan Pengiriman
+                            </label>
+                            <input type="text"
+                                   name="tujuan_pengiriman"
+                                   id="tujuan_pengiriman"
+                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('tujuan_pengiriman') border-red-500 @enderror"
+                                   placeholder="Masukkan tujuan pengiriman"
+                                   value="{{ old('tujuan_pengiriman', $tandaTerima->tujuan_pengiriman) }}">
+                            @error('tujuan_pengiriman')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
                         <!-- Catatan -->
                         <div>
                             <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
@@ -297,7 +316,7 @@
                 <dl class="space-y-3">
                     <div>
                         <dt class="text-xs font-medium text-gray-500 uppercase">Tujuan</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->tujuan ?: '-' }}</dd>
+                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->tujuan_pengiriman ?: '-' }}</dd>
                     </div>
                     <div>
                         <dt class="text-xs font-medium text-gray-500 uppercase">Pengirim</dt>

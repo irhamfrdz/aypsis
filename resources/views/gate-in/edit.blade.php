@@ -44,8 +44,12 @@
             <div class="px-6 py-4 bg-gray-50">
                 <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
                     <div>
-                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Terminal</div>
-                        <div class="mt-1 text-sm text-gray-900">{{ $gateIn->terminal->nama_terminal }}</div>
+                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Pelabuhan</div>
+                        <div class="mt-1 text-sm text-gray-900">{{ $gateIn->pelabuhan }}</div>
+                    </div>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</div>
+                        <div class="mt-1 text-sm text-gray-900">{{ $gateIn->tanggal_gate_in ? $gateIn->tanggal_gate_in->format('d/m/Y H:i') : '-' }}</div>
                     </div>
                     <div>
                         <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</div>
@@ -72,18 +76,29 @@
                 </div>
                 <div class="px-6 py-4">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <!-- Terminal -->
+                        <!-- Pelabuhan -->
                         <div>
-                            <label for="terminal_id" class="block text-sm font-medium text-gray-700 mb-2">Terminal</label>
-                            <select name="terminal_id" id="terminal_id"
+                            <label for="pelabuhan" class="block text-sm font-medium text-gray-700 mb-2">Pelabuhan</label>
+                            <select name="pelabuhan" id="pelabuhan"
                                     class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                @foreach($terminals as $terminal)
-                                    <option value="{{ $terminal->id }}" {{ $gateIn->terminal_id == $terminal->id ? 'selected' : '' }}>
-                                        {{ $terminal->nama_terminal }} - {{ $terminal->kode_terminal }}
+                                @foreach($pelabuhans as $pelabuhan)
+                                    <option value="{{ $pelabuhan }}" {{ $gateIn->pelabuhan == $pelabuhan ? 'selected' : '' }}>
+                                        {{ $pelabuhan }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('terminal_id')
+                            @error('pelabuhan')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Tanggal Gate In -->
+                        <div>
+                            <label for="tanggal_gate_in" class="block text-sm font-medium text-gray-700 mb-2">Tanggal Gate In</label>
+                            <input type="datetime-local" name="tanggal_gate_in" id="tanggal_gate_in"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                                   value="{{ old('tanggal_gate_in', $gateIn->tanggal_gate_in ? $gateIn->tanggal_gate_in->format('Y-m-d\TH:i') : '') }}" required>
+                            @error('tanggal_gate_in')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

@@ -122,7 +122,7 @@
                                 Nomor Gate In
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Terminal
+                                Pelabuhan
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Kapal
@@ -157,7 +157,7 @@
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $gateIn->terminal->nama_terminal ?? '-' }}
+                                {{ $gateIn->pelabuhan ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $gateIn->kapal->nama_kapal ?? '-' }}

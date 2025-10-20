@@ -49,7 +49,7 @@ return new class extends Migration
 
         // Step 4: Drop any other tables that might reference master_services
         $tablesToCheck = ['pranota_kontainer_sewas', 'tagihan_kontainer_sewas', 'daftar_tagihan_kontainer_sewas'];
-        
+
         foreach ($tablesToCheck as $tableName) {
             if (Schema::hasTable($tableName) && Schema::hasColumn($tableName, 'service_id')) {
                 Schema::table($tableName, function (Blueprint $table) {

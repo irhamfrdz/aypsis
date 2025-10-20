@@ -7,7 +7,7 @@ $migrationPath = 'database/migrations/2025_10_19_135048_update_pricelist_gate_in
 
 if (file_exists($migrationPath)) {
     $content = file_get_contents($migrationPath);
-    
+
     // Replace the down method dengan safe column dropping
     $newDownMethod = '
     public function down(): void
@@ -25,15 +25,15 @@ if (file_exists($migrationPath)) {
             }
         });
     }';
-    
+
     // Find and replace the down method
     $pattern = '/public function down\(\): void\s*\{[^}]*\}/s';
     $content = preg_replace($pattern, $newDownMethod, $content);
-    
+
     // Backup and write new content
     copy($migrationPath, $migrationPath . '.backup');
     file_put_contents($migrationPath, $content);
-    
+
     echo "✅ Migration fixed! Safe column dropping implemented.\n";
 } else {
     echo "❌ Migration file not found!\n";
@@ -50,7 +50,7 @@ $dbFixScript = "
 DESCRIBE pricelist_gate_ins;
 
 -- Add missing columns if they don't exist
-ALTER TABLE pricelist_gate_ins 
+ALTER TABLE pricelist_gate_ins
 ADD COLUMN IF NOT EXISTS pelabuhan VARCHAR(255) NULL AFTER id,
 ADD COLUMN IF NOT EXISTS kegiatan VARCHAR(255) NULL AFTER pelabuhan,
 ADD COLUMN IF NOT EXISTS gudang VARCHAR(255) NULL AFTER kegiatan,
@@ -60,8 +60,8 @@ ADD COLUMN IF NOT EXISTS tarif DECIMAL(15,2) NULL AFTER muatan,
 ADD COLUMN IF NOT EXISTS status ENUM('aktif', 'tidak_aktif') DEFAULT 'aktif' AFTER tarif;
 
 -- Mark migration as completed
-INSERT IGNORE INTO migrations (migration, batch) 
-VALUES ('2025_10_19_135048_update_pricelist_gate_ins_to_pelabuhan_sunda_kelapa_structure', 
+INSERT IGNORE INTO migrations (migration, batch)
+VALUES ('2025_10_19_135048_update_pricelist_gate_ins_to_pelabuhan_sunda_kelapa_structure',
         (SELECT COALESCE(MAX(batch), 0) + 1 FROM (SELECT batch FROM migrations) as temp));
 ";
 

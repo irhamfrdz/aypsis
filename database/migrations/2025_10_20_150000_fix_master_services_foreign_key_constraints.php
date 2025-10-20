@@ -16,10 +16,10 @@ return new class extends Migration
         try {
             // Check if foreign key constraint exists and drop it
             $foreignKeys = DB::select("
-                SELECT CONSTRAINT_NAME 
-                FROM information_schema.KEY_COLUMN_USAGE 
-                WHERE TABLE_SCHEMA = DATABASE() 
-                AND TABLE_NAME = 'pricelist_gate_ins' 
+                SELECT CONSTRAINT_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE()
+                AND TABLE_NAME = 'pricelist_gate_ins'
                 AND REFERENCED_TABLE_NAME = 'master_services'
             ");
 
@@ -30,9 +30,9 @@ return new class extends Migration
 
             // Also check for other tables that might reference master_services
             $allForeignKeys = DB::select("
-                SELECT TABLE_NAME, CONSTRAINT_NAME 
-                FROM information_schema.KEY_COLUMN_USAGE 
-                WHERE TABLE_SCHEMA = DATABASE() 
+                SELECT TABLE_NAME, CONSTRAINT_NAME
+                FROM information_schema.KEY_COLUMN_USAGE
+                WHERE TABLE_SCHEMA = DATABASE()
                 AND REFERENCED_TABLE_NAME = 'master_services'
             ");
 
@@ -59,7 +59,7 @@ return new class extends Migration
 
         // Step 3: Drop other service_id columns from other tables
         $tablesToClean = ['gate_ins', 'kontainers'];
-        
+
         foreach ($tablesToClean as $tableName) {
             if (Schema::hasTable($tableName) && Schema::hasColumn($tableName, 'service_id')) {
                 Schema::table($tableName, function (Blueprint $table) {

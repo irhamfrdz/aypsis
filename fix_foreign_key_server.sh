@@ -17,12 +17,12 @@ cat > fix_foreign_key_emergency.sql << 'EOF'
 -- This will forcefully remove all master_services dependencies
 
 -- 1. Show current foreign key constraints
-SELECT 
-    CONSTRAINT_NAME, 
-    TABLE_NAME, 
+SELECT
+    CONSTRAINT_NAME,
+    TABLE_NAME,
     REFERENCED_TABLE_NAME
-FROM information_schema.KEY_COLUMN_USAGE 
-WHERE TABLE_SCHEMA = DATABASE() 
+FROM information_schema.KEY_COLUMN_USAGE
+WHERE TABLE_SCHEMA = DATABASE()
 AND REFERENCED_TABLE_NAME = 'master_services';
 
 -- 2. Disable foreign key checks
@@ -30,8 +30,8 @@ SET FOREIGN_KEY_CHECKS = 0;
 
 -- 3. Drop the specific constraint mentioned in error
 SET @sql = (SELECT CONCAT('ALTER TABLE ', TABLE_NAME, ' DROP FOREIGN KEY ', CONSTRAINT_NAME, ';')
-            FROM information_schema.KEY_COLUMN_USAGE 
-            WHERE TABLE_SCHEMA = DATABASE() 
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
             AND CONSTRAINT_NAME = 'pricelist_gate_ins_service_id_foreign');
 
 -- Execute if constraint exists
@@ -49,10 +49,10 @@ BEGIN
     DECLARE done INT DEFAULT FALSE;
     DECLARE constraint_name VARCHAR(255);
     DECLARE table_name VARCHAR(255);
-    DECLARE cur CURSOR FOR 
+    DECLARE cur CURSOR FOR
         SELECT CONSTRAINT_NAME, TABLE_NAME
-        FROM information_schema.KEY_COLUMN_USAGE 
-        WHERE TABLE_SCHEMA = DATABASE() 
+        FROM information_schema.KEY_COLUMN_USAGE
+        WHERE TABLE_SCHEMA = DATABASE()
         AND REFERENCED_TABLE_NAME = 'master_services';
     DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
 
@@ -62,12 +62,12 @@ BEGIN
         IF done THEN
             LEAVE read_loop;
         END IF;
-        
+
         SET @sql = CONCAT('ALTER TABLE ', table_name, ' DROP FOREIGN KEY ', constraint_name);
         PREPARE stmt FROM @sql;
         EXECUTE stmt;
         DEALLOCATE PREPARE stmt;
-        
+
         SELECT CONCAT('Dropped constraint: ', constraint_name, ' from table: ', table_name) as result;
     END LOOP;
     CLOSE cur;
@@ -90,8 +90,8 @@ DROP TABLE IF EXISTS master_services;
 SET FOREIGN_KEY_CHECKS = 1;
 
 -- 8. Mark problematic migrations as completed
-INSERT IGNORE INTO migrations (migration, batch) VALUES 
-('2025_10_20_134713_drop_service_id_from_tables', 
+INSERT IGNORE INTO migrations (migration, batch) VALUES
+('2025_10_20_134713_drop_service_id_from_tables',
  (SELECT COALESCE(MAX(batch), 0) + 1 FROM (SELECT batch FROM migrations) as temp));
 
 -- 9. Verify fix

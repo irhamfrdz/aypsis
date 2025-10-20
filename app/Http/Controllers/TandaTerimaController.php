@@ -27,7 +27,8 @@ class TandaTerimaController extends Controller
                 $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('no_kontainer', 'like', "%{$search}%")
                   ->orWhere('estimasi_nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%");
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
             });
         }
 
@@ -168,6 +169,7 @@ class TandaTerimaController extends Controller
             'satuan' => 'nullable|string|max:50',
             'berat_kotor' => 'nullable|numeric|min:0',
             'dimensi' => 'nullable|string|max:100',
+            'tujuan_pengiriman' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'required|in:draft,submitted,completed',
         ]);
@@ -183,6 +185,7 @@ class TandaTerimaController extends Controller
                 'satuan' => $request->satuan,
                 'berat_kotor' => $request->berat_kotor,
                 'dimensi' => $request->dimensi,
+                'tujuan_pengiriman' => $request->tujuan_pengiriman,
                 'catatan' => $request->catatan,
                 'status' => $request->status,
                 'updated_by' => Auth::id(),

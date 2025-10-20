@@ -434,11 +434,11 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) {
         form.addEventListener('submit', function(e) {
             let hasErrors = false;
-            
+
             // Add loading state
             const formContainer = document.querySelector('.bg-white.rounded-lg.shadow-sm');
             const saveBtn = document.getElementById('sticky-save-btn');
-            
+
             if (formContainer) formContainer.classList.add('opacity-75');
             if (saveBtn) {
                 saveBtn.disabled = true;
@@ -457,21 +457,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (hasErrors) {
                 e.preventDefault();
-                
+
                 // Remove loading state
                 if (formContainer) formContainer.classList.remove('opacity-75');
                 if (saveBtn) {
                     saveBtn.disabled = false;
                     saveBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Simpan Checklist';
                 }
-                
+
                 // Show user-friendly error message
                 const firstError = document.querySelector('.border-red-400');
                 if (firstError) {
                     firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
                     firstError.focus();
                 }
-                
+
                 // Show notification
                 alert('Periksa kembali input yang berwarna merah');
                 return false;
@@ -491,7 +491,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const value = field.value && field.value.trim();
         const isValid = !value || alnumRegex.test(value);
         const errorElement = document.querySelector(`.nomor-error[data-item-id="${field.getAttribute('data-item-id')}"]`);
-        
+
         if (!isValid) {
             if (errorElement) errorElement.classList.remove('hidden');
             field.classList.add('border-red-400', 'bg-red-50');
@@ -512,7 +512,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const value = field.value;
         const isValid = !value || !isNaN(new Date(value));
         const errorElement = document.querySelector(`.date-error[data-item-id="${field.getAttribute('data-item-id')}"][data-field="${field.getAttribute('data-field')}"]`);
-        
+
         if (!isValid) {
             if (errorElement) errorElement.classList.remove('hidden');
             field.classList.add('border-red-400', 'bg-red-50');

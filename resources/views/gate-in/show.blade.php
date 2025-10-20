@@ -71,8 +71,8 @@
                                 <dd class="text-sm text-gray-900">{{ $gateIn->tanggal_gate_in ? $gateIn->tanggal_gate_in->format('d/m/Y H:i') : '-' }}</dd>
                             </div>
                             <div class="flex justify-between">
-                                <dt class="text-sm font-medium text-gray-500">Terminal:</dt>
-                                <dd class="text-sm text-gray-900">{{ $gateIn->terminal->nama_terminal ?? '-' }}</dd>
+                                <dt class="text-sm font-medium text-gray-500">Pelabuhan:</dt>
+                                <dd class="text-sm text-gray-900">{{ $gateIn->pelabuhan ?? '-' }}</dd>
                             </div>
                             <div class="flex justify-between">
                                 <dt class="text-sm font-medium text-gray-500">Kapal:</dt>
@@ -155,7 +155,7 @@
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
                         <!-- Company Info -->
                         <div class="lg:col-span-2">
-                            <h4 class="font-semibold text-gray-900 mb-2">PT. PELABUHAN INDONESIA</h4>
+                            <h4 class="font-semibold text-gray-900 mb-2">PT. Alexindo Yakinprima</h4>
                             <div class="text-sm text-gray-600 space-y-1">
                                 <div>Tgl. Cetak: {{ now()->format('d/m/Y H:i') }}</div>
                                 <div>Tgl. Pmh: {{ $gateIn->created_at->format('d/m/Y H:i') }}</div>
@@ -168,8 +168,7 @@
                         <div>
                             <div class="text-sm space-y-1">
                                 <div><strong>Kapal:</strong> {{ $gateIn->kapal->nama_kapal ?? '-' }}</div>
-                                <div><strong>Nama Tertanggg:</strong> {{ $gateIn->kapal->nama_kapal ?? '-' }}</div>
-                                <div><strong>Keterangan:</strong> {{ $gateIn->kegiatan }}</div>
+                                <div><strong>Kegiatan:</strong> {{ $gateIn->kegiatan }}</div>
                                 <div><strong>Valuta:</strong> IDR</div>
                             </div>
                         </div>

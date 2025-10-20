@@ -110,6 +110,7 @@ class GateInController extends Controller
 
         $request->validate([
             'nomor_gate_in' => 'required|string|max:50|unique:gate_ins,nomor_gate_in',
+            'tanggal_gate_in' => 'required|date',
             'pelabuhan' => 'required|string|max:255',
             'kegiatan' => 'required|string|max:255',
             'gudang' => 'required|string|max:255',
@@ -123,6 +124,8 @@ class GateInController extends Controller
             'nomor_gate_in.required' => 'Nomor Gate In wajib diisi.',
             'nomor_gate_in.unique' => 'Nomor Gate In sudah digunakan, silakan gunakan nomor lain.',
             'nomor_gate_in.max' => 'Nomor Gate In maksimal 50 karakter.',
+            'tanggal_gate_in.required' => 'Tanggal Gate In wajib diisi.',
+            'tanggal_gate_in.date' => 'Format tanggal Gate In tidak valid.',
             'pelabuhan.required' => 'Pelabuhan wajib dipilih.',
             'kegiatan.required' => 'Kegiatan wajib dipilih.',
             'gudang.required' => 'Gudang wajib dipilih.',
@@ -149,7 +152,7 @@ class GateInController extends Controller
                 'kontainer' => $request->kontainer,
                 'muatan' => $request->muatan,
                 'kapal_id' => $request->kapal_id,
-                'tanggal_gate_in' => now(),
+                'tanggal_gate_in' => $request->tanggal_gate_in,
                 'user_id' => Auth::id(),
                 'keterangan' => $request->keterangan,
                 'status' => 'aktif'
@@ -285,7 +288,12 @@ class GateInController extends Controller
     {
         $this->authorize('gate-in-update');
 
-        $terminals = MasterTerminal::where('status', 'aktif')->orderBy('nama_terminal')->get();
+        // Get unique pelabuhan from pricelist_gate_ins
+        $pelabuhans = PricelistGateIn::select('pelabuhan')
+            ->distinct()
+            ->whereNotNull('pelabuhan')
+            ->orderBy('pelabuhan')
+            ->pluck('pelabuhan');
         $kapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
 
         // Get kontainers yang sudah checkpoint supir (termasuk yang sudah terpilih di gate in ini)
@@ -299,7 +307,7 @@ class GateInController extends Controller
 
         $gateIn->load(['kontainers']);
 
-        return view('gate-in.edit', compact('gateIn', 'terminals', 'kapals', 'kontainers'));
+        return view('gate-in.edit', compact('gateIn', 'pelabuhans', 'kapals', 'kontainers'));
     }
 
     /**
@@ -310,6 +318,8 @@ class GateInController extends Controller
         $this->authorize('gate-in-update');
 
         $request->validate([
+            'pelabuhan' => 'required|string|max:255',
+            'tanggal_gate_in' => 'required|date',
             'kapal_id' => 'required|exists:master_kapals,id',
             'kontainer_ids' => 'required|array|min:1',
             'kontainer_ids.*' => 'exists:kontainers,id',
@@ -320,6 +330,8 @@ class GateInController extends Controller
         try {
             // Update Gate In record
             $gateIn->update([
+                'pelabuhan' => $request->pelabuhan,
+                'tanggal_gate_in' => $request->tanggal_gate_in,
                 'kapal_id' => $request->kapal_id,
                 'keterangan' => $request->keterangan
             ]);
@@ -740,14 +752,14 @@ class GateInController extends Controller
 
         // Calculate grand total with tax calculations
         $subtotal = $totalKeseluruhan;
-        
+
         // Calculate materai (10,000 for transactions above 5 million)
         $materai = $subtotal > 5000000 ? 10000 : 0;
-        
+
         // Calculate PPN (11% added to subtotal)
         $ppn = $subtotal * 0.11;
         $totalWithPPN = $subtotal + $ppn;
-        
+
         // Calculate PPH (2% reduced from total)
         $pph = $totalWithPPN * 0.02;
         $grandTotal = $totalWithPPN - $pph + $materai;

@@ -14,7 +14,7 @@ return new class extends Migration
     {
         // This migration specifically handles the foreign key constraint error
         // It must run BEFORE the drop_service_id_from_tables migration
-        
+
         // Step 1: Drop the specific foreign key constraint that's causing the error
         try {
             DB::statement('ALTER TABLE pricelist_gate_ins DROP FOREIGN KEY pricelist_gate_ins_service_id_foreign');
@@ -25,11 +25,11 @@ return new class extends Migration
 
         // Step 2: Find and drop any other foreign keys referencing master_services
         $foreignKeys = DB::select("
-            SELECT 
+            SELECT
                 TABLE_NAME,
-                CONSTRAINT_NAME 
-            FROM information_schema.KEY_COLUMN_USAGE 
-            WHERE TABLE_SCHEMA = DATABASE() 
+                CONSTRAINT_NAME
+            FROM information_schema.KEY_COLUMN_USAGE
+            WHERE TABLE_SCHEMA = DATABASE()
             AND REFERENCED_TABLE_NAME = 'master_services'
         ");
 

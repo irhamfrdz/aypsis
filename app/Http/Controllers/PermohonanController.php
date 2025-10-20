@@ -100,8 +100,8 @@ class PermohonanController extends Controller
      */
     public function create()
     {
-        $supirs = Karyawan::whereIn('pekerjaan', ['Supir Truck', 'Supir Trailer'])->where('plat', '<>', '')->get();
-        $kranis = Karyawan::where('pekerjaan', 'Krani')->get();
+        $supirs = Karyawan::where('divisi', 'SUPIR')->get();
+        $kranis = Karyawan::where('divisi', 'KRANI')->get();
         // Ambil kontainer yang statusnya 'Tersedia' untuk dipilih
         $kontainers = Kontainer::where('status', 'Tersedia')->orderBy('nomor_seri_gabungan')->get();
         $kegiatans = MasterKegiatan::orderBy('kode_kegiatan')->get();
@@ -248,8 +248,8 @@ class PermohonanController extends Controller
      */
     public function edit(Permohonan $permohonan)
     {
-        $supirs = Karyawan::whereIn('pekerjaan', ['Supir Truck', 'Supir Trailer'])->whereNotNull('plat')->where('plat', '!=', '')->get();
-        $kranis = Karyawan::where('pekerjaan', 'Krani')->get();
+        $supirs = Karyawan::where('divisi', 'SUPIR')->get();
+        $kranis = Karyawan::where('divisi', 'KRANI')->get();
         $kontainers = Kontainer::where('kondisi_kontainer', 'Baik')
             ->orWhereIn('id', $permohonan->kontainers->pluck('id'))
             ->get();
