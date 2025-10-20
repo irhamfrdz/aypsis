@@ -249,19 +249,19 @@ Route::middleware([
         // Crew checklist for ABK employees
         Route::get('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'crewChecklist'])
             ->name('karyawan.crew-checklist')
-            ->middleware('can:master-karyawan-crew-checklist');
+            ->middleware('can:master-karyawan-view');
 
         // NEW: Simplified crew checklist page
         Route::get('karyawan/{karyawan}/crew-checklist-new', [KaryawanController::class, 'crewChecklistNew'])
             ->name('karyawan.crew-checklist-new')
-            ->middleware('can:master-karyawan-crew-checklist');
+            ->middleware('can:master-karyawan-view');
 
         Route::post('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'updateCrewChecklist'])
             ->name('karyawan.crew-checklist.update');
 
         Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
             ->name('karyawan.crew-checklist.print')
-            ->middleware('can:master-karyawan-crew-checklist');
+            ->middleware('can:master-karyawan-view');
 
         // Individual routes for karyawan with specific permissions (except index which is defined outside master group)
         Route::get('karyawan/create', [KaryawanController::class, 'create'])
@@ -592,7 +592,7 @@ Route::middleware([
          ->middleware('can:master-bank-update');
     Route::delete('master/bank/{bank}', [MasterBankController::class, 'destroy'])
          ->name('master-bank-destroy')
-         ->middleware('can:master-bank-delete');
+         ->middleware('can:master-bank-destroy');
     Route::post('master/bank/import', [MasterBankController::class, 'import'])
          ->name('master-bank-import')
          ->middleware('can:master-bank-create');
@@ -635,7 +635,7 @@ Route::middleware([
         'store' => 'can:master-pajak-create',
         'edit' => 'can:master-pajak-update',
         'update' => 'can:master-pajak-update',
-        'destroy' => 'can:master-pajak-delete'
+        'destroy' => 'can:master-pajak-destroy'
     ]);
     Route::post('master/pajak/import', [PajakController::class, 'import'])
          ->name('master.pajak.import')
@@ -694,7 +694,7 @@ Route::middleware([
         'store' => 'can:master-pekerjaan-create',
         'edit' => 'can:master-pekerjaan-update',
         'update' => 'can:master-pekerjaan-update',
-        'destroy' => 'can:master-pekerjaan-delete'
+        'destroy' => 'can:master-pekerjaan-destroy'
     ]);
     Route::get('master/pekerjaan/export-template', [PekerjaanController::class, 'exportTemplate'])
          ->name('master.pekerjaan.export-template')
@@ -1021,6 +1021,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('gate-in/get-kontainers-surat-jalan', [\App\Http\Controllers\GateInController::class, 'getKontainersSuratJalan'])
          ->name('gate-in.get-kontainers-surat-jalan')
+         ->middleware('can:gate-in-view');
+
+    Route::get('gate-in/get-gudang-by-kegiatan', [\App\Http\Controllers\GateInController::class, 'getGudangByKegiatan'])
+         ->name('gate-in.get-gudang-by-kegiatan')
+         ->middleware('can:gate-in-view');
+
+    Route::get('gate-in/get-kontainer-by-kegiatan', [\App\Http\Controllers\GateInController::class, 'getKontainerByKegiatan'])
+         ->name('gate-in.get-kontainer-by-kegiatan')
+         ->middleware('can:gate-in-view');
+
+    Route::get('gate-in/get-muatan-by-kegiatan', [\App\Http\Controllers\GateInController::class, 'getMuatanByKegiatan'])
+         ->name('gate-in.get-muatan-by-kegiatan')
+         ->middleware('can:gate-in-view');
+
+    Route::get('gate-in/calculate-total', [\App\Http\Controllers\GateInController::class, 'calculateTotal'])
+         ->name('gate-in.calculate-total')
          ->middleware('can:gate-in-view');
 
     // Gate In Management Routes
@@ -2087,6 +2103,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
             'users' => collect([])
         ]);
     })->name('audit-logs.simple');
+
+    // Test audit modal
+    Route::get('audit-test-simple', function () {
+        return view('audit-test-simple');
+    })->name('audit.test.simple');
 
     // Debug audit modal route
     Route::get('debug-audit-modal', function () {

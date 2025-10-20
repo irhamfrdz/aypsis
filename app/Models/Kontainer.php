@@ -42,8 +42,7 @@ class Kontainer extends Model
         'tanggal_checkpoint_supir',
         'status_gate_in',
         'tanggal_gate_in',
-        'terminal_id',
-        'service_id'
+        'terminal_id'
     ];
 
     /**
@@ -147,11 +146,6 @@ class Kontainer extends Model
     public function terminal()
     {
         return $this->belongsTo(MasterTerminal::class, 'terminal_id');
-    }
-
-    public function service()
-    {
-        return $this->belongsTo(MasterService::class, 'service_id');
     }
 
     // Accessor untuk nomor kontainer gabungan

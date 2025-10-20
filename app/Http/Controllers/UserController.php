@@ -816,6 +816,24 @@ class UserController extends Controller
                         $action = str_replace('pembayaran-aktivitas-lainnya-', '', $permissionName);
                     }
 
+                    // Special handling for pembayaran-uang-muka-* permissions
+                    if (strpos($permissionName, 'pembayaran-uang-muka-') === 0) {
+                        $module = 'pembayaran-uang-muka';
+                        $action = str_replace('pembayaran-uang-muka-', '', $permissionName);
+                    }
+
+                    // Special handling for realisasi-uang-muka-* permissions
+                    if (strpos($permissionName, 'realisasi-uang-muka-') === 0) {
+                        $module = 'realisasi-uang-muka';
+                        $action = str_replace('realisasi-uang-muka-', '', $permissionName);
+                    }
+
+                    // Special handling for pembayaran-ob-* permissions
+                    if (strpos($permissionName, 'pembayaran-ob-') === 0) {
+                        $module = 'pembayaran-ob';
+                        $action = str_replace('pembayaran-ob-', '', $permissionName);
+                    }
+
                     // Special handling for pranota-perbaikan-kontainer-* permissions
                     if ($module === 'pranota' && strpos($action, 'perbaikan-kontainer-') === 0) {
                         $action = str_replace('perbaikan-kontainer-', '', $action);
@@ -2262,6 +2280,72 @@ class UserController extends Controller
                             'approve' => 'pembayaran-aktivitas-lainnya-approve',
                             'print' => 'pembayaran-aktivitas-lainnya-print',
                             'export' => 'pembayaran-aktivitas-lainnya-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-uang-muka module
+                    if ($module === 'pembayaran-uang-muka') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pembayaran-uang-muka-view',
+                            'create' => 'pembayaran-uang-muka-create',
+                            'update' => 'pembayaran-uang-muka-update',
+                            'delete' => 'pembayaran-uang-muka-delete',
+                            'approve' => 'pembayaran-uang-muka-approve',
+                            'print' => 'pembayaran-uang-muka-print',
+                            'export' => 'pembayaran-uang-muka-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for realisasi-uang-muka module
+                    if ($module === 'realisasi-uang-muka') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'realisasi-uang-muka-view',
+                            'create' => 'realisasi-uang-muka-create',
+                            'update' => 'realisasi-uang-muka-update',
+                            'delete' => 'realisasi-uang-muka-delete',
+                            'approve' => 'realisasi-uang-muka-approve',
+                            'print' => 'realisasi-uang-muka-print',
+                            'export' => 'realisasi-uang-muka-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permission = Permission::where('name', $actionMap[$action])->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-ob module
+                    if ($module === 'pembayaran-ob') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'pembayaran-ob-view',
+                            'create' => 'pembayaran-ob-create',
+                            'update' => 'pembayaran-ob-update',
+                            'delete' => 'pembayaran-ob-delete',
+                            'approve' => 'pembayaran-ob-approve',
+                            'print' => 'pembayaran-ob-print',
+                            'export' => 'pembayaran-ob-export'
                         ];
 
                         if (isset($actionMap[$action])) {

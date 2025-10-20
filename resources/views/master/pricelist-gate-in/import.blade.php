@@ -63,16 +63,20 @@
                     <div class="text-sm text-blue-700 space-y-2">
                         <p><strong>1. Download Template:</strong> Gunakan tombol "Download Template" untuk mendapatkan format CSV yang benar.</p>
                         <p><strong>2. Format File:</strong> File CSV harus menggunakan delimiter titik koma (;) dan encoding UTF-8.</p>
-                        <p><strong>3. Header Kolom:</strong> kode, keterangan, catatan, tarif, status</p>
+                        <p><strong>3. Header Kolom:</strong> pelabuhan, kegiatan, biaya, gudang, kontainer, muatan, tarif, status</p>
                         <p><strong>4. Ketentuan Data:</strong></p>
                         <ul class="ml-4 space-y-1">
-                            <li>• <strong>kode:</strong> Wajib diisi, maksimal 20 karakter, harus unik</li>
-                            <li>• <strong>keterangan:</strong> Wajib diisi, maksimal 255 karakter</li>
-                            <li>• <strong>catatan:</strong> Opsional, maksimal 500 karakter</li>
-                            <li>• <strong>tarif:</strong> Wajib diisi, format angka (contoh: 150000 atau 150000.50)</li>
-                            <li>• <strong>status:</strong> Opsional, nilai: 'aktif' atau 'tidak_aktif' (default: aktif jika kosong)</li>
+                            <li>• <strong>pelabuhan:</strong> Wajib diisi, maksimal 255 karakter</li>
+                            <li>• <strong>kegiatan:</strong> Wajib diisi, nilai: BATAL MUAT, CHANGE VASSEL, DELIVERY, DISCHARGE, DISCHARGE TL, LOADING, PENUMPUKAN BPRP, PERPANJANGAN DELIVERY, RECEIVING, RECEIVING LOSING</li>
+                            <li>• <strong>biaya:</strong> Wajib diisi, nilai: ADMINISTRASI, DERMAGA, HAULAGE, LOLO, MASA 1A/MASA1A, MASA 1B/MASA1B, MASA2, STEVEDORING, STRIPPING, STUFFING</li>
+                            <li>• <strong>gudang:</strong> Opsional, nilai: CY, DERMAGA, SS (kosongkan jika tidak ada)</li>
+                            <li>• <strong>kontainer:</strong> Opsional, nilai: 20, 40 (kosongkan jika tidak ada)</li>
+                            <li>• <strong>muatan:</strong> Opsional, nilai: EMPTY, FULL (kosongkan jika tidak ada)</li>
+                            <li>• <strong>tarif:</strong> Wajib diisi, format angka (contoh: 150000, 150000.50, atau 150.000,50)</li>
+                            <li>• <strong>status:</strong> Opsional, nilai: 'aktif' atau 'nonaktif' (default: aktif jika kosong)</li>
                         </ul>
                         <p><strong>5. Ukuran File:</strong> Maksimal 2MB</p>
+                        <p><strong>6. Catatan:</strong> Validasi case-insensitive untuk nilai enum (EMPTY/empty, FULL/full, dll.). Format angka Eropa didukung (koma sebagai pemisah desimal).</p>
                     </div>
                 </div>
             </div>
@@ -138,11 +142,11 @@
                 <div class="mb-6 p-4 bg-gray-50 rounded-lg">
                     <h4 class="text-sm font-medium text-gray-900 mb-2">Contoh Format Data CSV:</h4>
                     <div class="bg-white p-3 rounded border font-mono text-xs overflow-x-auto">
-                        <div class="text-gray-600">kode;keterangan;catatan;tarif;status</div>
-                        <div class="text-gray-800">GATE20;Gate In 20 Feet;Tarif gate in kontainer 20 feet;150000;aktif</div>
-                        <div class="text-gray-800">GATE40;Gate In 40 Feet;Tarif gate in kontainer 40 feet;250000;aktif</div>
-                        <div class="text-gray-800">GATEOV;Gate In Over Size;;500000;</div>
-                        <div class="text-gray-500 text-xs mt-1">* Status akan default ke 'aktif' jika kosong</div>
+                        <div class="text-gray-600">pelabuhan;kegiatan;biaya;gudang;kontainer;muatan;tarif;status</div>
+                        <div class="text-gray-800">SUNDA KELAPA;RECEIVING;LOLO;CY;20;FULL;128.000,00;aktif</div>
+                        <div class="text-gray-800">SUNDA KELAPA;DELIVERY;HAULAGE;CY;40;EMPTY;20.000,00;aktif</div>
+                        <div class="text-gray-800">SUNDA KELAPA;LOADING;ADMINISTRASI;;;;10.000,00;aktif</div>
+                        <div class="text-gray-500 text-xs mt-1">* Kolom gudang, kontainer, muatan boleh kosong. Status akan default ke 'aktif' jika kosong</div>
                     </div>
                 </div>
 

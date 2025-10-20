@@ -12,9 +12,12 @@ class PricelistGateIn extends Model
     use HasFactory, SoftDeletes, Auditable;
 
     protected $fillable = [
-        'kode',
-        'keterangan',
-        'catatan',
+        'pelabuhan',
+        'kegiatan',
+        'biaya',
+        'gudang',
+        'kontainer',
+        'muatan',
         'tarif',
         'status'
     ];

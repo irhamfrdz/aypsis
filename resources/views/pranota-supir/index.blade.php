@@ -124,33 +124,27 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                         <a href="{{ route('pranota-supir.show', $pranota->id) }}" class="text-indigo-600 hover:text-indigo-900">Detail</a>
-                        <a href="{{ route('pranota-supir.print', $pranota->id) }}" target="_blank" class="ml-3 text-gray-600 hover:text-gray-900">Cetak</a>
+                        <span class="text-gray-300">|</span>
+                        <a href="{{ route('pranota-supir.print', $pranota->id) }}" target="_blank" class="text-gray-600 hover:text-gray-900">Cetak</a>
+                        @can('audit-log-view')
+                            <span class="text-gray-300">|</span>
+                            <button type="button"
+                                    class="audit-log-btn text-purple-600 hover:text-purple-900 bg-transparent border-none cursor-pointer"
+                                    data-model-type="App\Models\PranotaSupir"
+                                    data-model-id="{{ $pranota->id }}"
+                                    data-item-name="{{ $pranota->nomor_pranota }}"
+                                    title="Lihat Riwayat">
+                                Riwayat
+                            </button>
+                        @endcan
                     </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($pranota), {{ $pranota->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                </tr>
                 @empty
                 <tr>
                     <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
                         Tidak ada data pranota supir yang ditemukan.
                     </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($pranota), {{ $pranota->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                </tr>
                 @endforelse
             </tbody>
         </table>

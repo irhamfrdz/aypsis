@@ -302,13 +302,15 @@
                 <td class="px-4 py-2 whitespace-nowrap text-right text-sm font-medium">
                     <div class="flex items-center justify-end space-x-3 text-[10px]">
                         <a href="{{route('master.kontainer.edit',$kontainer->id)}}" class="text-blue-600 hover:text-blue-800 hover:underline font-medium" title="Edit Data">Edit</a>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($vendor), {{ $vendor->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i> Riwayat
-                                            </button>
-                                        @endcan
+                        <span class="text-gray-300">|</span>
+                        @can('audit-log-view')
+                            <button type="button" class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium"
+                                    data-model="{{ get_class($kontainer) }}"
+                                    data-id="{{ $kontainer->id }}"
+                                    title="Lihat Riwayat">
+                                Riwayat
+                            </button>
+                        @endcan
                         <span class="text-gray-300">|</span>
                         <form action="{{route('master.kontainer.destroy',$kontainer->id)}}" method="POST" class="inline-block" onsubmit="return confirm('Apakah anda yakin ingin menghapus kontainer ini?')">
                             @csrf
@@ -579,3 +581,6 @@ document.addEventListener('DOMContentLoaded', function() {
     border-bottom: 2px solid rgb(59 130 246); /* blue-500 */
 }
 </style>
+
+<!-- Include Audit Log Modal -->
+@include('components.audit-log-modal')

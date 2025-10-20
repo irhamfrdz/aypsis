@@ -756,6 +756,86 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-aktivitas-lainnya][export]" value="1" class="permission-checkbox"></td>
                             </tr>
 
+                            {{-- Pembayaran --}}
+                            <tr class="module-row" data-module="pembayaran">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Pembayaran</div>
+                                            <div class="text-xs text-gray-500">Modul pengelolaan pembayaran uang muka dan OB</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="pembayaran-header-checkbox permission-checkbox" data-permission="export">
+                                </td>
+                            </tr>
+
+                            {{-- Pembayaran Sub-modules --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pembayaran Uang Muka</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-uang-muka][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Realisasi Uang Muka</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[realisasi-uang-muka][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span>Pembayaran OB</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-ob][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
                             {{-- Audit Log --}}
                             <tr class="module-row" data-module="audit-log">
                                 <td class="module-header">
@@ -1098,6 +1178,9 @@
             // Initialize check all master permissions
             initializeCheckAllMaster();
 
+            // Initialize check all pembayaran permissions
+            initializeCheckAllPembayaran();
+
             // Initialize check all audit log permissions
             initializeCheckAllAuditLog();
 
@@ -1417,6 +1500,57 @@
                     if (headerCheckbox && auditLogCheckboxes.length > 0) {
                         const allChecked = Array.from(auditLogCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(auditLogCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            // Initialize checkbox handling for Pembayaran
+            function initializeCheckAllPembayaran() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.pembayaran-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in pembayaran sub-modules
+                        const pembayaranCheckboxes = document.querySelectorAll(`[data-parent="pembayaran"] input[name*="[${permission}]"]`);
+                        pembayaranCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Pembayaran telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Pembayaran telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="pembayaran"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updatePembayaranHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updatePembayaranHeaderCheckboxes();
+            }
+
+            function updatePembayaranHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.pembayaran-header-checkbox[data-permission="${permission}"]`);
+                    const pembayaranCheckboxes = document.querySelectorAll(`[data-parent="pembayaran"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && pembayaranCheckboxes.length > 0) {
+                        const allChecked = Array.from(pembayaranCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(pembayaranCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;

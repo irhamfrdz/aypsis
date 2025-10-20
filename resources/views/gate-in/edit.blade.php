@@ -52,10 +52,6 @@
                         <div class="mt-1 text-sm text-gray-900">{{ $gateIn->kapal->nama_kapal }}</div>
                     </div>
                     <div>
-                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Service</div>
-                        <div class="mt-1 text-sm text-gray-900">{{ $gateIn->service->nama_service }}</div>
-                    </div>
-                    <div>
                         <div class="text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</div>
                         <div class="mt-1 text-sm text-gray-900">{{ $gateIn->kontainers->count() }} kontainer</div>
                     </div>
@@ -104,22 +100,6 @@
                                 @endforeach
                             </select>
                             @error('kapal_id')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <!-- Service -->
-                        <div>
-                            <label for="service_id" class="block text-sm font-medium text-gray-700 mb-2">Service</label>
-                            <select name="service_id" id="service_id"
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
-                                @foreach($services as $service)
-                                    <option value="{{ $service->id }}" {{ $gateIn->service_id == $service->id ? 'selected' : '' }}>
-                                        {{ $service->nama_service }} - {{ $service->kode_service }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('service_id')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -356,9 +336,8 @@ function loadAvailableKontainers() {
     // Get current form values
     const terminalId = document.getElementById('terminal_id').value;
     const kapalId = document.getElementById('kapal_id').value;
-    const serviceId = document.getElementById('service_id').value;
 
-    fetch(`/gate-in/get-kontainers?terminal_id=${terminalId}&kapal_id=${kapalId}&service_id=${serviceId}&exclude_gate_in={{ $gateIn->id }}`)
+    fetch(`/gate-in/get-kontainers?terminal_id=${terminalId}&kapal_id=${kapalId}&exclude_gate_in={{ $gateIn->id }}`)
         .then(response => response.json())
         .then(data => {
             if (data.length === 0) {

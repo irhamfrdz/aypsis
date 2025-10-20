@@ -211,31 +211,56 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
-// Event listener for audit log buttons
+// Event listener for audit log buttons - IMPROVED VERSION
 document.addEventListener('DOMContentLoaded', function() {
     console.log('🚀 Audit log modal component loaded');
 
-    // Add event listeners to all audit log buttons
+    // Add event listeners using event delegation
     document.addEventListener('click', function(e) {
         console.log('👆 Click detected on:', e.target);
-        console.log('Classes:', e.target.classList.toString());
+        console.log('Target tag:', e.target.tagName);
+        console.log('Target classes:', e.target.classList.toString());
 
-        if (e.target.classList.contains('audit-log-btn')) {
-            console.log('✅ Audit log button clicked!');
+        // Find the button element - check target and traverse up
+        let button = e.target;
+        let maxDepth = 5; // Prevent infinite loop
+        let currentDepth = 0;
+        
+        while (button && currentDepth < maxDepth) {
+            if (button.classList && button.classList.contains('audit-log-btn')) {
+                console.log('✅ Audit log button found!');
+                console.log('Button element:', button);
 
-            const modelType = e.target.getAttribute('data-model-type');
-            const modelId = e.target.getAttribute('data-model-id');
-            const itemName = e.target.getAttribute('data-item-name');
+                const modelType = button.getAttribute('data-model-type');
+                const modelId = button.getAttribute('data-model-id');
+                const itemName = button.getAttribute('data-item-name');
 
-            console.log('� Button data attributes:', { modelType, modelId, itemName });
+                console.log('📋 Button data attributes:', { modelType, modelId, itemName });
 
-            if (!modelType || !modelId) {
-                console.error('❌ Missing data attributes on button');
+                if (!modelType || !modelId) {
+                    console.error('❌ Missing data attributes on button');
+                    return;
+                }
+
+                // Prevent default behavior
+                e.preventDefault();
+                e.stopPropagation();
+
+                showAuditLog(modelType, modelId, itemName);
                 return;
             }
-
-            showAuditLog(modelType, modelId, itemName);
+            
+            button = button.parentElement;
+            currentDepth++;
+            
+            // Stop if we reach body or document
+            if (!button || button.tagName === 'BODY' || button === document) {
+                break;
+            }
         }
+
+        // If we get here, no audit button was found
+        console.log('❌ No audit-log-btn found in click path');
     });
 
     // Also check for existing buttons on page load

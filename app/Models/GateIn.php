@@ -15,8 +15,11 @@ class GateIn extends Model
     use Auditable;
     protected $fillable = [
         'nomor_gate_in',
-        'terminal_id',
-        'service_id',
+        'pelabuhan',
+        'kegiatan',
+        'gudang',
+        'kontainer',
+        'muatan',
         'kapal_id',
         'tanggal_gate_in',
         'user_id',
@@ -29,6 +32,7 @@ class GateIn extends Model
     ];
 
     // Relationships
+
     public function terminal()
     {
         return $this->belongsTo(MasterTerminal::class, 'terminal_id');
@@ -37,11 +41,6 @@ class GateIn extends Model
     public function kapal()
     {
         return $this->belongsTo(MasterKapal::class, 'kapal_id');
-    }
-
-    public function service()
-    {
-        return $this->belongsTo(MasterService::class, 'service_id');
     }
 
     public function kontainers()
@@ -58,6 +57,16 @@ class GateIn extends Model
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function petikemas()
+    {
+        return $this->hasMany(GateInPetikemas::class, 'gate_in_id');
+    }
+
+    public function aktivitas()
+    {
+        return $this->hasMany(GateInAktivitas::class, 'gate_in_id');
     }
 
     // Scopes

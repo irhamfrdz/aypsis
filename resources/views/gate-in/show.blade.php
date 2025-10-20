@@ -79,10 +79,6 @@
                                 <dd class="text-sm text-gray-900">{{ $gateIn->kapal->nama_kapal ?? '-' }}</dd>
                             </div>
                             <div class="flex justify-between">
-                                <dt class="text-sm font-medium text-gray-500">Service:</dt>
-                                <dd class="text-sm text-gray-900">{{ $gateIn->service->nama_service ?? '-' }}</dd>
-                            </div>
-                            <div class="flex justify-between">
                                 <dt class="text-sm font-medium text-gray-500">Status:</dt>
                                 <dd class="text-sm">
                                     @if($gateIn->status === 'aktif')
@@ -147,6 +143,130 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Multiple Biaya Section (Proforma Style) -->
+            @if($gateIn->aktivitas->count() > 0)
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+                <div class="px-6 py-4 border-b border-gray-200">
+                    <h3 class="text-lg font-medium text-gray-900">PROFORMA</h3>
+                    <p class="text-sm text-gray-600 mt-1">{{ $gateIn->kegiatan }} - {{ $gateIn->pelabuhan }}</p>
+                </div>
+                <div class="p-6">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <!-- Company Info -->
+                        <div class="lg:col-span-2">
+                            <h4 class="font-semibold text-gray-900 mb-2">PT. PELABUHAN INDONESIA</h4>
+                            <div class="text-sm text-gray-600 space-y-1">
+                                <div>Tgl. Cetak: {{ now()->format('d/m/Y H:i') }}</div>
+                                <div>Tgl. Pmh: {{ $gateIn->created_at->format('d/m/Y H:i') }}</div>
+                                <div>No. Proforma: {{ $gateIn->nomor_gate_in }}</div>
+                                <div>Kode Bayar: {{ substr($gateIn->nomor_gate_in, -6) }}</div>
+                            </div>
+                        </div>
+
+                        <!-- Details -->
+                        <div>
+                            <div class="text-sm space-y-1">
+                                <div><strong>Kapal:</strong> {{ $gateIn->kapal->nama_kapal ?? '-' }}</div>
+                                <div><strong>Nama Tertanggg:</strong> {{ $gateIn->kapal->nama_kapal ?? '-' }}</div>
+                                <div><strong>Keterangan:</strong> {{ $gateIn->kegiatan }}</div>
+                                <div><strong>Valuta:</strong> IDR</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Aktivitas Table -->
+                    <div class="mt-6">
+                        <h5 class="text-sm font-semibold text-gray-900 mb-3">Aktivitas</h5>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full border border-gray-300 text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left border-r border-gray-300 font-semibold">Aktivitas</th>
+                                        <th class="px-3 py-2 text-center border-r border-gray-300 font-semibold">S/T/S</th>
+                                        <th class="px-3 py-2 text-center border-r border-gray-300 font-semibold">Box</th>
+                                        <th class="px-3 py-2 text-center border-r border-gray-300 font-semibold">Itm</th>
+                                        <th class="px-3 py-2 text-right border-r border-gray-300 font-semibold">Tarif</th>
+                                        <th class="px-3 py-2 text-right font-semibold">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($gateIn->aktivitas as $aktivitas)
+                                    <tr class="border-b border-gray-200">
+                                        <td class="px-3 py-2 text-left border-r border-gray-200 font-medium">{{ $aktivitas->aktivitas }}</td>
+                                        <td class="px-3 py-2 text-center border-r border-gray-200">{{ $aktivitas->s_t_s }}</td>
+                                        <td class="px-3 py-2 text-center border-r border-gray-200">{{ $aktivitas->box }}</td>
+                                        <td class="px-3 py-2 text-center border-r border-gray-200">{{ $aktivitas->itm }}</td>
+                                        <td class="px-3 py-2 text-right border-r border-gray-200 font-mono">{{ number_format($aktivitas->tarif, 0, ',', '.') }}</td>
+                                        <td class="px-3 py-2 text-right font-mono font-semibold">{{ number_format($aktivitas->total, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Petikemas Details -->
+                    @if($gateIn->petikemas->count() > 0)
+                    <div class="mt-6">
+                        <h5 class="text-sm font-semibold text-gray-900 mb-3">DETIL PETIKEMAS:</h5>
+                        <div class="overflow-x-auto">
+                            <table class="min-w-full border border-gray-300 text-sm">
+                                <thead class="bg-gray-100">
+                                    <tr>
+                                        <th class="px-3 py-2 text-left border-r border-gray-300 font-semibold">No. Petikemas</th>
+                                        <th class="px-3 py-2 text-center border-r border-gray-300 font-semibold">S/T/S</th>
+                                        <th class="px-3 py-2 text-center border-r border-gray-300 font-semibold">Estimasi</th>
+                                        <th class="px-3 py-2 text-right font-semibold">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($gateIn->petikemas as $petikemas)
+                                    <tr class="border-b border-gray-200">
+                                        <td class="px-3 py-2 text-left border-r border-gray-200">{{ $petikemas->no_petikemas }}</td>
+                                        <td class="px-3 py-2 text-center border-r border-gray-200">{{ $petikemas->s_t_s }}</td>
+                                        <td class="px-3 py-2 text-center border-r border-gray-200">{{ $petikemas->estimasi->format('d/m/Y') }}</td>
+                                        <td class="px-3 py-2 text-right font-mono">{{ number_format($petikemas->estimasi_biaya, 0, ',', '.') }}</td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Totals -->
+                        <div class="mt-4 flex justify-end">
+                            <div class="w-80">
+                                <div class="border-t border-gray-300 pt-2 space-y-2">
+                                    <div class="flex justify-between text-sm">
+                                        <span>Total Petikemas:</span>
+                                        <span class="font-mono">{{ $gateIn->petikemas->count() }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span>Sub - Total:</span>
+                                        <span class="font-mono">{{ number_format($gateIn->aktivitas->sum('total'), 0, ',', '.') }}</span>
+                                    </div>
+                                    <div class="flex justify-between text-sm">
+                                        <span>Materai:</span>
+                                        <span class="font-mono">0</span>
+                                    </div>
+                                    <div class="border-t border-gray-300 pt-2 flex justify-between font-bold text-lg">
+                                        <span>Grand Total:</span>
+                                        <span class="font-mono">{{ number_format($gateIn->aktivitas->sum('total'), 0, ',', '.') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
+
+                    <!-- Footer Note -->
+                    <div class="mt-6 text-xs text-gray-600 border-t border-gray-200 pt-4">
+                        <p><strong>PERHATIAN:</strong></p>
+                        <p>Dilarang TIDAK melakukan transaksi pembayaran pada jam 23.00 s.d 02.00 WIB serta maksimal 3 Hari dari Tgl. Permohonan</p>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Daftar Kontainer -->
             <div class="bg-white rounded-lg border border-gray-200">

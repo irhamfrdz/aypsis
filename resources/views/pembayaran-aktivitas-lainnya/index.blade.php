@@ -143,21 +143,23 @@
                                                     <i class="fas fa-trash"></i>
                                                 </button>
                                             @endcan
+
+                                            @can('audit-log-view')
+                                                <button type="button"
+                                                        class="audit-log-btn inline-flex items-center px-2 py-1 text-xs font-medium rounded text-white bg-purple-600 hover:bg-purple-700 transition duration-150 ease-in-out"
+                                                        data-model-type="App\Models\PembayaranAktivitasLainnya"
+                                                        data-model-id="{{ $item->id }}"
+                                                        data-item-name="{{ $item->nomor_pembayaran ?? 'Pembayaran Aktivitas' }}"
+                                                        title="Lihat Riwayat">
+                                                    <i class="fas fa-history"></i>
+                                                </button>
+                                            @endcan
                                         </div>
                                     </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                                </tr>
                             @empty
                                 <tr>
-                                    <td colspan="10" class="px-6 py-12 text-center">
+                                    <td colspan="11" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <i class="fas fa-inbox text-4xl text-gray-400 mb-4"></i>
                                             <h5 class="text-lg font-medium text-gray-900 mb-2">Tidak ada data pembayaran</h5>
@@ -169,16 +171,7 @@
                                             @endcan
                                         </div>
                                     </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                                </tr>
                             @endforelse
                         </tbody>
                     </table>
@@ -201,7 +194,8 @@
     </div>
 </div>
 
-
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
 
 <!-- Delete Modal -->
 <div class="fixed inset-0 z-50 overflow-y-auto hidden" id="deleteModal">

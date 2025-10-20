@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Master Pricelist Gate In')
-@section('page_title', 'Master Pricelist Gate In')
+@section('title', 'Master Pricelist Gate Pelabuhan Sunda Kelapa')
+@section('page_title', 'Master Pricelist Gate Pelabuhan Sunda Kelapa')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-8">
@@ -15,8 +15,8 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
                         </svg>
                         <div>
-                            <h1 class="text-2xl font-bold text-white">Master Pricelist Gate In</h1>
-                            <p class="text-blue-100 text-sm">Kelola daftar harga gate in kontainer</p>
+                            <h1 class="text-2xl font-bold text-white">Master Pricelist Gate Pelabuhan Sunda Kelapa</h1>
+                            <p class="text-blue-100 text-sm">Kelola daftar harga gate pelabuhan sunda kelapa</p>
                         </div>
                     </div>
                     <div class="flex space-x-2">
@@ -42,17 +42,20 @@
         <!-- Content -->
         <div class="bg-white shadow-lg rounded-lg overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Daftar Pricelist Gate In</h2>
-                <p class="text-sm text-gray-600 mt-1">Kelola semua pricelist gate in yang tersedia</p>
+                <h2 class="text-lg font-semibold text-gray-900">Daftar Pricelist Gate Pelabuhan Sunda Kelapa</h2>
+                <p class="text-sm text-gray-600 mt-1">Kelola semua pricelist gate pelabuhan sunda kelapa yang tersedia</p>
             </div>
 
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelabuhan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Gudang</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Muatan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -62,13 +65,22 @@
                         @forelse($pricelistGateIns as $pricelist)
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="text-sm font-medium text-gray-900">{{ $pricelist->kode }}</div>
+                                <div class="text-sm font-medium text-gray-900">{{ $pricelist->pelabuhan }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $pricelist->keterangan ?? '-' }}</div>
+                                <div class="text-sm text-gray-900">{{ $pricelist->kegiatan }}</div>
                             </td>
                             <td class="px-6 py-4">
-                                <div class="text-sm text-gray-900">{{ $pricelist->catatan ?? '-' }}</div>
+                                <div class="text-sm text-gray-900">{{ $pricelist->biaya }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $pricelist->gudang ?? '-' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $pricelist->kontainer ?? '-' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $pricelist->muatan ?? '-' }}</div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $pricelist->formatted_tarif }}</div>
@@ -90,7 +102,7 @@
                                        class="text-indigo-600 hover:text-indigo-900">Edit</a>
                                         @can('audit-log-view')
                                             <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($pricelist), {{ $pricelist->id }})"
+                                                    onclick="\list), {{ $pricelist->id }})"
                                                     title="Lihat Riwayat">
                                                 <i class="fas fa-history"></i> Riwayat
                                             </button>

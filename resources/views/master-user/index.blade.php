@@ -172,33 +172,41 @@
                                 @endif
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center">
-                                <div class="flex items-center justify-center space-x-3 text-[10px]">
+                                <div class="flex items-center justify-center space-x-2">
                                     <a href="{{ route('master.user.edit', $user->id) }}"
-                                       class="text-blue-600 hover:text-blue-800 hover:underline font-medium"
+                                       class="text-yellow-600 hover:text-yellow-900 transition-colors duration-150"
                                        title="Edit Data">
-                                        Edit
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
                                     </a>
                                     <span class="text-gray-300">|</span>
-                                    <form action="{{ route('master.user.destroy', $user->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
+
+                                    <!-- Audit Log Button -->
+                                    @can('audit-log-view')
+                                        <button type="button"
+                                                class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                                data-model-type="{{ get_class($user) }}"
+                                                data-model-id="{{ $user->id }}"
+                                                data-item-name="{{ $user->username }}"
+                                                title="Lihat Riwayat Perubahan">
+                                            Riwayat
+                                        </button>
+                                        <span class="text-gray-300">|</span>
+                                    @endcan
+
+                                    <form action="{{ route('master.user.destroy', $user->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengguna ini?');">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="submit" class="text-red-600 hover:text-red-800 hover:underline font-medium cursor-pointer border-none bg-transparent p-0"
-                                                title="Hapus Data">
-                                            Hapus
+                                        <button type="submit" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Hapus Data">
+                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
                                         </button>
                                     </form>
                                 </div>
                             </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog('User', {{ $user->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                     @empty
                         <tr>
                             <td colspan="4" class="px-6 py-2 text-center">
@@ -218,16 +226,7 @@
                                     </div>
                                 </div>
                             </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog('User', {{ $user->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
@@ -239,6 +238,10 @@
 
     </div>
 </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection
 
 <style>

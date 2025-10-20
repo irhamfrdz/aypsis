@@ -206,6 +206,7 @@
                                             </svg>
                                             Lihat
                                         </a>
+                                        <span class="text-gray-300">|</span>
                                         <a href="{{ route('master-bank-edit', $bank->id) }}"
                                            class="inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-indigo-700 bg-indigo-100 hover:bg-indigo-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
                                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -213,6 +214,7 @@
                                             </svg>
                                             Edit
                                         </a>
+                                        <span class="text-gray-300">|</span>
                                         <form action="{{ route('master-bank-destroy', $bank->id) }}" method="POST" class="inline-block" onsubmit="return confirm('Apakah Anda yakin ingin menghapus bank ini?');">
                                             @csrf
                                             @method('DELETE')
@@ -223,18 +225,20 @@
                                                 Hapus
                                             </button>
                                         </form>
-                                    </div>
-                                </td>
-                            
-                                    <td>
+                                        <span class="text-gray-300">|</span>
                                         @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
+                                            <button type="button" class="audit-log-btn inline-flex items-center px-2 py-1 border border-transparent text-xs font-medium rounded text-purple-700 bg-purple-100 hover:bg-purple-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 transition-colors duration-200"
+                                                    data-model="{{ get_class($bank) }}"
+                                                    data-id="{{ $bank->id }}"
                                                     title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                                </svg>
+                                                Audit
                                             </button>
                                         @endcan
-                                    </td></tr>
+                                    </div>
+                                </td></tr>
                         @empty
                             <tr>
                                 <td colspan="5" class="px-6 py-12 text-center">
@@ -254,16 +258,7 @@
                                         </div>
                                     </div>
                                 </td>
-                            
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -349,5 +344,8 @@ document.getElementById('importModal').addEventListener('click', function(e) {
     }
 });
 </script>
+
+<!-- Include Audit Log Modal -->
+@include('components.audit-log-modal')
 
 @endsection

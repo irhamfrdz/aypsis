@@ -46,34 +46,31 @@
                                 <td class="px-4 py-3">{{ $pembayaran->keterangan ?? '-' }}</td>
                                 <td class="px-4 py-3 text-right">
                                     <a href="{{ route('pembayaran-pranota-supir.print', $pembayaran) }}" target="_blank" class="inline-flex items-center px-3 py-1.5 bg-green-600 text-white rounded text-sm">Cetak</a>
+                                    @can('audit-log-view')
+                                        <span class="text-gray-300 mx-1">|</span>
+                                        <button type="button"
+                                                class="audit-log-btn inline-flex items-center px-3 py-1.5 bg-purple-600 text-white rounded text-sm hover:bg-purple-700"
+                                                data-model-type="App\Models\PembayaranPranotaSupir"
+                                                data-model-id="{{ $pembayaran->id }}"
+                                                data-item-name="{{ $pembayaran->nomor_pembayaran ?? 'Pembayaran Supir' }}"
+                                                title="Lihat Riwayat">
+                                            Riwayat
+                                        </button>
+                                    @endcan
                                 </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                            </tr>
                     @empty
                         <tr>
                             <td colspan="8" class="px-4 py-4 text-center text-gray-500">Belum ada pembayaran yang dilakukan.</td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<!-- Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

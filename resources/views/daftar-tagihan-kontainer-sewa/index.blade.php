@@ -1192,18 +1192,20 @@ input[required]:focus {
                                         Hapus
                                     </button>
                                 </form>
+                                @can('audit-log-view')
+                                <button type="button" class="audit-log-btn inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
+                                        data-model="{{ get_class($tagihan) }}"
+                                        data-id="{{ $tagihan->id }}"
+                                        title="Lihat Riwayat">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                    Audit
+                                </button>
+                                @endcan
                             </div>
                         </td>
-                    
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                    </tr>
                 @empty
                         <td class="px-2 py-2 text-center text-xs font-medium bg-gray-100 text-gray-800 " colspan="17">
                             <div class="flex flex-col items-center">
@@ -2127,16 +2129,7 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
                     <td class="px-2 py-1 text-sm text-center">${data.sizes[index]}</td>
                     <td class="px-2 py-1 text-sm">${data.periodes[index]}</td>
                     <td class="px-2 py-1 text-sm text-right font-medium">${data.totals[index]}</td>
-                
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                </tr>
             `;
         });
 
@@ -2221,16 +2214,7 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
                     <td class="px-2 py-1 text-sm text-center">${data.sizes[index]}</td>
                     <td class="px-2 py-1 text-sm">${data.periodes[index]}</td>
                     <td class="px-2 py-1 text-sm text-right font-medium">${data.totals[index]}</td>
-                
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                </tr>
             `;
         });
 
@@ -2689,16 +2673,7 @@ window.showDeleteGroupModal = function(groups) {
                                                         Hapus
                                                     </button>
                                                 </td>
-                                            
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('TagihanKontainerSewa', {{ $tagihan_kontainer_sewa->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                                            </tr>
                                         `).join('')}
                                     </tbody>
                                 </table>
@@ -4077,4 +4052,8 @@ window.closeBulkGroupInfoModal = function() {
         </div>
     </div>
 </div>
+
+<!-- Include Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endpush

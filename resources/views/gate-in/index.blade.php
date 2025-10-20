@@ -127,9 +127,6 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Kapal
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Service
-                            </th>
                             <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Kontainer
                             </th>
@@ -164,9 +161,6 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $gateIn->kapal->nama_kapal ?? '-' }}
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $gateIn->service->nama_service ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
@@ -227,18 +221,20 @@
                                         </button>
                                     </form>
                                     @endcan
+
+                                    @can('audit-log-view')
+                                    <button type="button" class="audit-log-btn text-purple-600 hover:text-purple-900 transition-colors duration-200"
+                                            data-model="{{ get_class($gateIn) }}"
+                                            data-id="{{ $gateIn->id }}"
+                                            title="Lihat Riwayat">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                        </svg>
+                                    </button>
+                                    @endcan
                                 </div>
                             </td>
-                        
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('GateIn', {{ $gate_in->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                         @empty
                         <tr>
                             <td colspan="8" class="px-6 py-12 text-center">
@@ -258,16 +254,7 @@
                                     @endcan
                                 </div>
                             </td>
-                        
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('GateIn', {{ $gate_in->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                         @endforelse
                     </tbody>
                 </table>
@@ -281,6 +268,10 @@
         </div>
     </div>
 </div>
+
+<!-- Include Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection
 
 @push('scripts')

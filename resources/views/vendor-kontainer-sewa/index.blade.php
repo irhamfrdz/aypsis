@@ -194,6 +194,19 @@
                                                 </svg>
                                                 Edit
                                             </a>
+                                            @can('audit-log-view')
+                                                <button type="button"
+                                                        class="audit-log-btn inline-flex items-center px-3 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 text-xs font-medium rounded transition duration-150 ease-in-out"
+                                                        data-model-type="{{ get_class($vendor) }}"
+                                                        data-model-id="{{ $vendor->id }}"
+                                                        data-item-name="{{ $vendor->nama_vendor }}"
+                                                        title="Lihat Riwayat">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                    </svg>
+                                                    Riwayat
+                                                </button>
+                                            @endcan
                                             <form action="{{ route('vendor-kontainer-sewa.destroy', $vendor) }}"
                                                   method="POST"
                                                   class="inline-block"
@@ -210,16 +223,7 @@
                                             </form>
                                         </div>
                                     </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($vendor), {{ $vendor->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                                </tr>
                             @endforeach
                         </tbody>
                     </table>
@@ -248,4 +252,8 @@
         </div>
     </div>
 </div>
+
+<!-- Include Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection

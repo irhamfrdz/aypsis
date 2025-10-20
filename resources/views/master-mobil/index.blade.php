@@ -122,8 +122,19 @@
                                 <a href="{{ route('master.mobil.edit', $mobil->id) }}" class="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200 text-sm">
                                     Edit
                                 </a>
+                                <span class="text-gray-300">|</span>
+                                @can('audit-log-view')
+                                    <button type="button" class="audit-log-btn bg-purple-500 text-white py-1 px-3 rounded-md hover:bg-purple-600 transition-colors duration-200 text-sm"
+                                            data-model-type="{{ get_class($mobil) }}"
+                                            data-model-id="{{ $mobil->id }}"
+                                            data-item-name="{{ $mobil->aktiva }}"
+                                            title="Lihat Riwayat">
+                                        Riwayat
+                                    </button>
+                                @endcan
+                                <span class="text-gray-300">|</span>
                                 <!-- Tombol Hapus -->
-                                <form action="{{ route('master.mobil.destroy', $mobil->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus mobil ini?');">
+                                <form action="{{ route('master.mobil.destroy', $mobil->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus mobil ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors duration-200 text-sm">
@@ -132,31 +143,13 @@
                                 </form>
                             </div>
                         </td>
-                    
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                    </tr>
                 @empty
                     <tr>
                         <td colspan="6" class="py-4 px-6 text-center text-gray-500">
                             Tidak ada data mobil yang ditemukan.
                         </td>
-                    
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog(get_class($index), {{ $index->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
@@ -231,4 +224,8 @@
         </div>
     </div>
 </div>
+
+<!-- Include Audit Log Modal -->
+@include('components.audit-log-modal')
+
 @endsection
