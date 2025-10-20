@@ -11,23 +11,59 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Drop foreign key dan kolom service_id dari tabel gate_ins
-        Schema::table('gate_ins', function (Blueprint $table) {
-            if (Schema::hasColumn('gate_ins', 'service_id')) {
-                $table->dropForeign(['service_id']);
+        // Step 1: Drop foreign key dan kolom service_id dari tabel pricelist_gate_ins FIRST
+        if (Schema::hasTable('pricelist_gate_ins') && Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
+            Schema::table('pricelist_gate_ins', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['service_id']);
+                } catch (Exception $e) {
+                    // Foreign key might not exist or have different name, continue
+                }
                 $table->dropColumn('service_id');
-            }
-        });
+            });
+        }
 
-        // Drop foreign key dan kolom service_id dari tabel kontainers
-        Schema::table('kontainers', function (Blueprint $table) {
-            if (Schema::hasColumn('kontainers', 'service_id')) {
-                $table->dropForeign(['service_id']);
+        // Step 2: Drop foreign key dan kolom service_id dari tabel gate_ins
+        if (Schema::hasTable('gate_ins') && Schema::hasColumn('gate_ins', 'service_id')) {
+            Schema::table('gate_ins', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['service_id']);
+                } catch (Exception $e) {
+                    // Foreign key might not exist, continue
+                }
                 $table->dropColumn('service_id');
-            }
-        });
+            });
+        }
 
-        // Drop tabel master_services jika ada
+        // Step 3: Drop foreign key dan kolom service_id dari tabel kontainers
+        if (Schema::hasTable('kontainers') && Schema::hasColumn('kontainers', 'service_id')) {
+            Schema::table('kontainers', function (Blueprint $table) {
+                try {
+                    $table->dropForeign(['service_id']);
+                } catch (Exception $e) {
+                    // Foreign key might not exist, continue
+                }
+                $table->dropColumn('service_id');
+            });
+        }
+
+        // Step 4: Drop any other tables that might reference master_services
+        $tablesToCheck = ['pranota_kontainer_sewas', 'tagihan_kontainer_sewas', 'daftar_tagihan_kontainer_sewas'];
+        
+        foreach ($tablesToCheck as $tableName) {
+            if (Schema::hasTable($tableName) && Schema::hasColumn($tableName, 'service_id')) {
+                Schema::table($tableName, function (Blueprint $table) {
+                    try {
+                        $table->dropForeign(['service_id']);
+                    } catch (Exception $e) {
+                        // Foreign key might not exist, continue
+                    }
+                    $table->dropColumn('service_id');
+                });
+            }
+        }
+
+        // Step 5: Now safely drop tabel master_services
         Schema::dropIfExists('master_services');
     }
 
@@ -37,24 +73,37 @@ return new class extends Migration
     public function down(): void
     {
         // Recreate master_services table
-        Schema::create('master_services', function (Blueprint $table) {
-            $table->id();
-            $table->string('kode')->unique()->comment('Kode service unik');
-            $table->string('nama_service')->comment('Nama service');
-            $table->text('deskripsi')->nullable()->comment('Deskripsi service');
-            $table->string('status')->default('aktif')->comment('Status aktif/non-aktif');
-            $table->timestamps();
-            $table->softDeletes();
-        });
+        if (!Schema::hasTable('master_services')) {
+            Schema::create('master_services', function (Blueprint $table) {
+                $table->id();
+                $table->string('kode')->unique()->comment('Kode service unik');
+                $table->string('nama_service')->comment('Nama service');
+                $table->text('deskripsi')->nullable()->comment('Deskripsi service');
+                $table->string('status')->default('aktif')->comment('Status aktif/non-aktif');
+                $table->timestamps();
+                $table->softDeletes();
+            });
+        }
+
+        // Add service_id back to pricelist_gate_ins (if table exists)
+        if (Schema::hasTable('pricelist_gate_ins') && !Schema::hasColumn('pricelist_gate_ins', 'service_id')) {
+            Schema::table('pricelist_gate_ins', function (Blueprint $table) {
+                $table->foreignId('service_id')->nullable()->after('id')->constrained('master_services')->onDelete('set null');
+            });
+        }
 
         // Add service_id back to gate_ins
-        Schema::table('gate_ins', function (Blueprint $table) {
-            $table->foreignId('service_id')->nullable()->constrained('master_services')->onDelete('set null');
-        });
+        if (Schema::hasTable('gate_ins') && !Schema::hasColumn('gate_ins', 'service_id')) {
+            Schema::table('gate_ins', function (Blueprint $table) {
+                $table->foreignId('service_id')->nullable()->after('id')->constrained('master_services')->onDelete('set null');
+            });
+        }
 
         // Add service_id back to kontainers
-        Schema::table('kontainers', function (Blueprint $table) {
-            $table->foreignId('service_id')->nullable()->constrained('master_services')->onDelete('set null');
-        });
+        if (Schema::hasTable('kontainers') && !Schema::hasColumn('kontainers', 'service_id')) {
+            Schema::table('kontainers', function (Blueprint $table) {
+                $table->foreignId('service_id')->nullable()->after('id')->constrained('master_services')->onDelete('set null');
+            });
+        }
     }
 };
