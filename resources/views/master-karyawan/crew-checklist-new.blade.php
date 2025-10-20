@@ -4,9 +4,9 @@
 @section('page_title', 'Checklist Kelengkapan Crew')
 
 @section('content')
-
-<div class="container mx-auto px-2 py-6">
-    <section class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-2xl shadow-lg p-6 mb-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+<div class="space-y-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {{-- Header Section --}}
+    <section class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div class="flex items-center gap-4">
             <div class="flex-shrink-0">
                 <div class="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-blue-800 text-2xl font-bold shadow-inner">
@@ -42,7 +42,9 @@
         </div>
     </section>
 
-    <div class="bg-white shadow rounded p-6">
+    {{-- Main Content --}}
+    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+        <div class="p-6">
         <form id="crew-checklist-new-form" action="{{ route('master.karyawan.crew-checklist.update', $karyawan->id) }}" method="POST">
             @csrf
 
@@ -131,10 +133,10 @@
                 });
             @endphp
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
                 <div class="space-y-8">
                     {{-- Data Pribadi --}}
-                    <section aria-labelledby="section-data-pribadi" class="rounded-2xl shadow-lg border border-blue-100 bg-blue-50/60">
+                    <section aria-labelledby="section-data-pribadi" class="rounded-lg shadow-sm border border-blue-100 bg-blue-50/60">
                         <details class="group" open>
                             <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
                                 <div class="flex items-center justify-between">
@@ -193,7 +195,7 @@
 
                     {{-- Others --}}
                     @if($othersItems->count())
-                    <section aria-labelledby="section-others" class="rounded-2xl shadow-lg border border-gray-200 bg-gray-50/60">
+                    <section aria-labelledby="section-others" class="rounded-lg shadow-sm border border-gray-200 bg-gray-50/60">
                         <details class="group" open>
                             <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
                                 <div class="flex items-center justify-between">
@@ -254,7 +256,7 @@
 
                 <div class="space-y-8">
                     {{-- Ijasah --}}
-                    <section aria-labelledby="section-ijasah" class="rounded-2xl shadow-lg border border-indigo-100 bg-indigo-50/60">
+                    <section aria-labelledby="section-ijasah" class="rounded-lg shadow-sm border border-indigo-100 bg-indigo-50/60">
                         <details class="group" open>
                             <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
                                 <div class="flex items-center justify-between">
@@ -317,7 +319,7 @@
                     </section>
 
                     {{-- Sertifikat --}}
-                    <section aria-labelledby="section-sertifikat" class="rounded-2xl shadow-lg border border-purple-100 bg-purple-50/60">
+                    <section aria-labelledby="section-sertifikat" class="rounded-lg shadow-sm border border-purple-100 bg-purple-50/60">
                         <details class="group" open>
                             <summary class="cursor-pointer mb-3 list-none px-6 pt-6">
                                 <div class="flex items-center justify-between">
@@ -382,22 +384,24 @@
             </div>
 
             <button type="submit" id="submit-btn" class="hidden"></button>
-            <div id="sticky-bar" class="fixed bottom-4 left-4 right-4 md:right-8 md:bottom-8 md:left-auto flex items-center justify-end gap-4 pointer-events-auto z-50">
-                <div class="hidden md:inline-flex items-center bg-white/90 text-gray-700 px-4 py-2 rounded-lg shadow">
-                    <div class="text-sm">Ringkasan: <span id="sticky-ada" class="font-semibold">0</span> Ada • <span id="sticky-soon" class="font-semibold">0</span> Akan Expired • <span id="sticky-expired" class="font-semibold">0</span> Expired • <span id="sticky-tidak" class="font-semibold">0</span> Tidak</div>
+            <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-4">
+                <div class="hidden lg:inline-flex items-center bg-white/95 backdrop-blur-sm text-gray-700 px-4 py-2 rounded-lg shadow-lg border border-gray-200">
+                    <div class="text-sm">Ringkasan: <span id="sticky-ada" class="font-semibold text-green-600">0</span> Ada • <span id="sticky-soon" class="font-semibold text-yellow-600">0</span> Akan Expired • <span id="sticky-expired" class="font-semibold text-red-600">0</span> Expired • <span id="sticky-tidak" class="font-semibold text-gray-600">0</span> Tidak</div>
                 </div>
-                <button type="button" id="sticky-save-btn" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-5 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
+                <button type="button" id="sticky-save-btn" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
                     <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
                     Simpan Checklist
                 </button>
             </div>
         </form>
+        </div>
     </div>
 </div>
 
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+
     const alnumRegex = /^[A-Za-z0-9]{4,}$/;
     const form = document.getElementById('crew-checklist-new-form');
     const submitBtn = document.getElementById('submit-btn');
@@ -428,6 +432,16 @@ document.addEventListener('DOMContentLoaded', function() {
     if (form) {
         form.addEventListener('submit', function(e) {
             let hasErrors = false;
+            
+            // Add loading state
+            const formContainer = document.querySelector('.bg-white.rounded-lg.shadow-sm');
+            const saveBtn = document.getElementById('sticky-save-btn');
+            
+            if (formContainer) formContainer.classList.add('opacity-75');
+            if (saveBtn) {
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<svg class="w-5 h-5 mr-2 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Menyimpan...';
+            }
             nomorFields.forEach(function(field){
                 if (!validateNomorField(field)) {
                     hasErrors = true;
@@ -441,12 +455,23 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (hasErrors) {
                 e.preventDefault();
-                alert('Periksa kembali input yang berwarna merah.');
-                if (submitBtn) {
-                    submitBtn.disabled = false;
-                    stickySaveBtn.disabled = false;
-                    stickySaveBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Simpan Checklist';
+                
+                // Remove loading state
+                if (formContainer) formContainer.classList.remove('opacity-75');
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = '<svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>Simpan Checklist';
                 }
+                
+                // Show user-friendly error message
+                const firstError = document.querySelector('.border-red-400');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    firstError.focus();
+                }
+                
+                // Show notification
+                alert('Periksa kembali input yang berwarna merah');
                 return false;
             }
         });
@@ -464,12 +489,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const value = field.value && field.value.trim();
         const isValid = !value || alnumRegex.test(value);
         const errorElement = document.querySelector(`.nomor-error[data-item-id="${field.getAttribute('data-item-id')}"]`);
+        
         if (!isValid) {
             if (errorElement) errorElement.classList.remove('hidden');
-            field.classList.add('border-red-400');
+            field.classList.add('border-red-400', 'bg-red-50');
+            field.classList.remove('border-green-400', 'bg-green-50');
         } else {
             if (errorElement) errorElement.classList.add('hidden');
-            field.classList.remove('border-red-400');
+            field.classList.remove('border-red-400', 'bg-red-50');
+            if (value) {
+                field.classList.add('border-green-400', 'bg-green-50');
+            } else {
+                field.classList.remove('border-green-400', 'bg-green-50');
+            }
         }
         return isValid;
     }
@@ -478,12 +510,19 @@ document.addEventListener('DOMContentLoaded', function() {
         const value = field.value;
         const isValid = !value || !isNaN(new Date(value));
         const errorElement = document.querySelector(`.date-error[data-item-id="${field.getAttribute('data-item-id')}"][data-field="${field.getAttribute('data-field')}"]`);
+        
         if (!isValid) {
             if (errorElement) errorElement.classList.remove('hidden');
-            field.classList.add('border-red-400');
+            field.classList.add('border-red-400', 'bg-red-50');
+            field.classList.remove('border-green-400', 'bg-green-50');
         } else {
             if (errorElement) errorElement.classList.add('hidden');
-            field.classList.remove('border-red-400');
+            field.classList.remove('border-red-400', 'bg-red-50');
+            if (value) {
+                field.classList.add('border-green-400', 'bg-green-50');
+            } else {
+                field.classList.remove('border-green-400', 'bg-green-50');
+            }
         }
         return isValid;
     }
@@ -611,11 +650,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         }
 
-        if (e.key === 'Enter') {
+        if (e.key === 'Enter' && foundCount > 0) {
             const firstMatch = document.querySelector('.checklist-item:not([style*="display: none"])');
             if (firstMatch) {
                 firstMatch.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                firstMatch.querySelector('input, textarea').focus();
+                const firstInput = firstMatch.querySelector('input, textarea');
+                if (firstInput) {
+                    setTimeout(() => firstInput.focus(), 300);
+                }
             }
         }
     });
