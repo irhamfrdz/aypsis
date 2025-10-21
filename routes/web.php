@@ -82,6 +82,9 @@ Route::get('karyawan/{karyawan}/onboarding-edit', [App\Http\Controllers\Karyawan
 // Route update khusus untuk onboarding (public, tanpa middleware permission)
 Route::put('karyawan/{karyawan}/onboarding-update', [App\Http\Controllers\KaryawanController::class, 'onboardingUpdate'])
     ->name('karyawan.onboarding-update');
+// Route update crew checklist khusus untuk onboarding (public, tanpa middleware permission)
+Route::post('karyawan/{karyawan}/onboarding-crew-checklist', [App\Http\Controllers\KaryawanController::class, 'updateCrewChecklistOnboarding'])
+    ->name('karyawan.onboarding-crew-checklist.update');
 // Diletakkan di atas agar tidak tertimpa oleh group admin/master
 Route::get('karyawan/create', [AuthController::class, 'showKaryawanRegisterForm'])->name('karyawan.create');
 Route::post('karyawan', [AuthController::class, 'registerKaryawan'])->name('karyawan.store');

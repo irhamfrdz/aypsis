@@ -94,7 +94,15 @@
         <!-- Main Content Form -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="p-6">
-                <form id="crew-checklist-new-form" action="{{ route('master.karyawan.crew-checklist.update', $karyawan->id) }}" method="POST">
+                @php
+                    // Determine form action based on route context
+                    if (request()->routeIs('karyawan.onboarding-crew-checklist')) {
+                        $formAction = route('karyawan.onboarding-crew-checklist.update', $karyawan->id);
+                    } else {
+                        $formAction = route('master.karyawan.crew-checklist.update', $karyawan->id);
+                    }
+                @endphp
+                <form id="crew-checklist-new-form" action="{{ $formAction }}" method="POST">
                     @csrf
 
             @php
