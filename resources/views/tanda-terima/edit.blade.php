@@ -52,7 +52,7 @@
                 <form action="{{ route('tanda-terima.update', $tandaTerima->id) }}" method="POST" class="p-6">
                     @csrf
                     @method('PUT')
-                    
+
                     <!-- Hidden status field -->
                     <input type="hidden" name="status" value="{{ $tandaTerima->status }}">
 
@@ -82,149 +82,329 @@
                             </p>
                         </div>
 
-                        <!-- Tanggal Section -->
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label for="tanggal_ambil_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Tanggal Ambil Kontainer
-                                </label>
-                                <input type="date"
-                                       name="tanggal_ambil_kontainer"
-                                       id="tanggal_ambil_kontainer"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('tanggal_ambil_kontainer') border-red-500 @enderror"
-                                       value="{{ old('tanggal_ambil_kontainer', $tandaTerima->tanggal_ambil_kontainer?->format('Y-m-d')) }}">
-                                @error('tanggal_ambil_kontainer')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="tanggal_terima_pelabuhan" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Tanggal Terima Pelabuhan
-                                </label>
-                                <input type="date"
-                                       name="tanggal_terima_pelabuhan"
-                                       id="tanggal_terima_pelabuhan"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('tanggal_terima_pelabuhan') border-red-500 @enderror"
-                                       value="{{ old('tanggal_terima_pelabuhan', $tandaTerima->tanggal_terima_pelabuhan?->format('Y-m-d')) }}">
-                                @error('tanggal_terima_pelabuhan')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="tanggal_garasi" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Tanggal Garasi
-                                </label>
-                                <input type="date"
-                                       name="tanggal_garasi"
-                                       id="tanggal_garasi"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('tanggal_garasi') border-red-500 @enderror"
-                                       value="{{ old('tanggal_garasi', $tandaTerima->tanggal_garasi?->format('Y-m-d')) }}">
-                                @error('tanggal_garasi')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Jumlah & Satuan -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div>
-                                <label for="jumlah" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Jumlah
-                                </label>
-                                <input type="number"
-                                       name="jumlah"
-                                       id="jumlah"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('jumlah') border-red-500 @enderror"
-                                       placeholder="Masukkan jumlah"
-                                       value="{{ old('jumlah', $tandaTerima->jumlah) }}"
-                                       min="0"
-                                       step="1">
-                                @error('jumlah')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="satuan" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Satuan
-                                </label>
-                                <input type="text"
-                                       name="satuan"
-                                       id="satuan"
-                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('satuan') border-red-500 @enderror"
-                                       placeholder="Contoh: Pcs, Dus, Karton"
-                                       value="{{ old('satuan', $tandaTerima->satuan) }}">
-                                @error('satuan')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Berat Kotor -->
+                        <!-- Tanggal Section Table -->
                         <div>
-                            <label for="berat_kotor" class="block text-sm font-medium text-gray-700 mb-2">
-                                Berat Kotor (Kg)
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Informasi Tanggal
                             </label>
-                            <input type="number"
-                                   name="berat_kotor"
-                                   id="berat_kotor"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('berat_kotor') border-red-500 @enderror"
-                                   placeholder="Masukkan berat kotor"
-                                   value="{{ old('berat_kotor', $tandaTerima->berat_kotor) }}"
-                                   min="0"
-                                   step="0.01">
-                            @error('berat_kotor')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tanggal Ambil Kontainer
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tanggal Terima Pelabuhan
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tanggal Garasi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <input type="date"
+                                                       name="tanggal_ambil_kontainer"
+                                                       id="tanggal_ambil_kontainer"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_ambil_kontainer') border-red-500 @enderror"
+                                                       value="{{ old('tanggal_ambil_kontainer', $tandaTerima->tanggal_ambil_kontainer?->format('Y-m-d')) }}">
+                                                @error('tanggal_ambil_kontainer')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <input type="date"
+                                                       name="tanggal_terima_pelabuhan"
+                                                       id="tanggal_terima_pelabuhan"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_terima_pelabuhan') border-red-500 @enderror"
+                                                       value="{{ old('tanggal_terima_pelabuhan', $tandaTerima->tanggal_terima_pelabuhan?->format('Y-m-d')) }}">
+                                                @error('tanggal_terima_pelabuhan')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <input type="date"
+                                                       name="tanggal_garasi"
+                                                       id="tanggal_garasi"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tanggal_garasi') border-red-500 @enderror"
+                                                       value="{{ old('tanggal_garasi', $tandaTerima->tanggal_garasi?->format('Y-m-d')) }}">
+                                                @error('tanggal_garasi')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
-                        <!-- Dimensi -->
+                        <!-- Jumlah & Satuan Table -->
                         <div>
-                            <label for="dimensi" class="block text-sm font-medium text-gray-700 mb-2">
-                                Dimensi
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Informasi Kuantitas
                             </label>
-                            <input type="text"
-                                   name="dimensi"
-                                   id="dimensi"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('dimensi') border-red-500 @enderror"
-                                   placeholder="Contoh: 100cm x 50cm x 40cm"
-                                   value="{{ old('dimensi', $tandaTerima->dimensi) }}">
-                            @error('dimensi')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Jumlah
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Satuan
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <input type="number"
+                                                       name="jumlah"
+                                                       id="jumlah"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('jumlah') border-red-500 @enderror"
+                                                       placeholder="Masukkan jumlah"
+                                                       value="{{ old('jumlah', $tandaTerima->jumlah) }}"
+                                                       min="0"
+                                                       step="1">
+                                                @error('jumlah')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <input type="text"
+                                                       name="satuan"
+                                                       id="satuan"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('satuan') border-red-500 @enderror"
+                                                       placeholder="Contoh: Pcs, Dus, Karton"
+                                                       value="{{ old('satuan', $tandaTerima->satuan) }}">
+                                                @error('satuan')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
 
-                        <!-- Tujuan Pengiriman -->
+                        <!-- Dimensi & Volume Table -->
                         <div>
-                            <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tujuan Pengiriman
-                            </label>
-                            <input type="text"
-                                   name="tujuan_pengiriman"
-                                   id="tujuan_pengiriman"
-                                   class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('tujuan_pengiriman') border-red-500 @enderror"
-                                   placeholder="Masukkan tujuan pengiriman"
-                                   value="{{ old('tujuan_pengiriman', $tandaTerima->tujuan_pengiriman) }}">
-                            @error('tujuan_pengiriman')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                            <div class="flex items-center justify-between mb-4">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Dimensi & Volume Items
+                                </label>
+                                <button type="button" id="addDimensiItem" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition duration-200">
+                                    <i class="fas fa-plus mr-2"></i> Tambah Item
+                                </button>
+                            </div>
+
+                            <!-- Table Container -->
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                                                No.
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Panjang (cm)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Lebar (cm)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tinggi (cm)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Volume (m³)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tonase (Ton)
+                                            </th>
+                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                                                Aksi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dimensiTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Template for existing data -->
+                                        @php
+                                            $existingDimensi = [];
+                                            if($tandaTerima->panjang || $tandaTerima->lebar || $tandaTerima->tinggi) {
+                                                $existingDimensi[] = [
+                                                    'panjang' => $tandaTerima->panjang,
+                                                    'lebar' => $tandaTerima->lebar,
+                                                    'tinggi' => $tandaTerima->tinggi,
+                                                    'meter_kubik' => $tandaTerima->meter_kubik,
+                                                    'tonase' => $tandaTerima->tonase
+                                                ];
+                                            }
+                                            // If no existing data, create one empty item
+                                            if(empty($existingDimensi)) {
+                                                $existingDimensi[] = [
+                                                    'panjang' => old('dimensi_items.0.panjang'),
+                                                    'lebar' => old('dimensi_items.0.lebar'),
+                                                    'tinggi' => old('dimensi_items.0.tinggi'),
+                                                    'meter_kubik' => old('dimensi_items.0.meter_kubik'),
+                                                    'tonase' => old('dimensi_items.0.tonase')
+                                                ];
+                                            }
+                                        @endphp
+
+                                        @foreach($existingDimensi as $index => $item)
+                                            <tr class="dimensi-item hover:bg-gray-50" data-index="{{ $index }}">
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <span class="item-number text-sm font-medium text-gray-900">{{ $index + 1 }}</span>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number"
+                                                           name="dimensi_items[{{ $index }}][panjang]"
+                                                           class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.panjang') border-red-500 @enderror"
+                                                           placeholder="0"
+                                                           value="{{ old('dimensi_items.'.$index.'.panjang', $item['panjang']) }}"
+                                                           min="0"
+                                                           step="0.01"
+                                                           onchange="calculateItemVolume(this)">
+                                                    @error('dimensi_items.'.$index.'.panjang')
+                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number"
+                                                           name="dimensi_items[{{ $index }}][lebar]"
+                                                           class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.lebar') border-red-500 @enderror"
+                                                           placeholder="0"
+                                                           value="{{ old('dimensi_items.'.$index.'.lebar', $item['lebar']) }}"
+                                                           min="0"
+                                                           step="0.01"
+                                                           onchange="calculateItemVolume(this)">
+                                                    @error('dimensi_items.'.$index.'.lebar')
+                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number"
+                                                           name="dimensi_items[{{ $index }}][tinggi]"
+                                                           class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.tinggi') border-red-500 @enderror"
+                                                           placeholder="0"
+                                                           value="{{ old('dimensi_items.'.$index.'.tinggi', $item['tinggi']) }}"
+                                                           min="0"
+                                                           step="0.01"
+                                                           onchange="calculateItemVolume(this)">
+                                                    @error('dimensi_items.'.$index.'.tinggi')
+                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number"
+                                                           name="dimensi_items[{{ $index }}][meter_kubik]"
+                                                           class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm @error('dimensi_items.'.$index.'.meter_kubik') border-red-500 @enderror"
+                                                           placeholder="0.000000"
+                                                           value="{{ old('dimensi_items.'.$index.'.meter_kubik', $item['meter_kubik']) }}"
+                                                           readonly
+                                                           step="0.000001">
+                                                    @error('dimensi_items.'.$index.'.meter_kubik')
+                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <input type="number"
+                                                           name="dimensi_items[{{ $index }}][tonase]"
+                                                           class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.tonase') border-red-500 @enderror"
+                                                           placeholder="0.00"
+                                                           value="{{ old('dimensi_items.'.$index.'.tonase', $item['tonase']) }}"
+                                                           min="0"
+                                                           step="0.01"
+                                                           onchange="calculateTotals()">
+                                                    @error('dimensi_items.'.$index.'.tonase')
+                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                    @enderror
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                    @if($index > 0)
+                                                        <button type="button" class="remove-dimensi-item text-red-600 hover:text-red-800 p-1">
+                                                            <i class="fas fa-trash text-sm"></i>
+                                                        </button>
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                    <!-- Table Footer with Totals -->
+                                    <tfoot class="bg-blue-50">
+                                        <tr>
+                                            <td colspan="4" class="px-4 py-3 text-right font-medium text-gray-900">
+                                                Total:
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span id="totalVolume" class="font-semibold text-blue-900">0.000000 m³</span>
+                                            </td>
+                                            <td class="px-4 py-3 whitespace-nowrap">
+                                                <span id="totalTonase" class="font-semibold text-blue-900">0.00 Ton</span>
+                                            </td>
+                                            <td class="px-4 py-3"></td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <!-- Hidden fields for backward compatibility -->
+                            <input type="hidden" name="panjang" id="hiddenPanjang">
+                            <input type="hidden" name="lebar" id="hiddenLebar">
+                            <input type="hidden" name="tinggi" id="hiddenTinggi">
+                            <input type="hidden" name="meter_kubik" id="hiddenMeterKubik">
+                            <input type="hidden" name="tonase" id="hiddenTonase">
                         </div>
 
-                        <!-- Catatan -->
+                        <!-- Informasi Tambahan Table -->
                         <div>
-                            <label for="catatan" class="block text-sm font-medium text-gray-700 mb-2">
-                                Catatan
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Informasi Tambahan
                             </label>
-                            <textarea name="catatan"
-                                      id="catatan"
-                                      rows="4"
-                                      class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('catatan') border-red-500 @enderror"
-                                      placeholder="Tambahkan catatan jika diperlukan">{{ old('catatan', $tandaTerima->catatan) }}</textarea>
-                            @error('catatan')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tujuan Pengiriman
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Catatan
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white">
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-4 py-3 align-top">
+                                                <input type="text"
+                                                       name="tujuan_pengiriman"
+                                                       id="tujuan_pengiriman"
+                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('tujuan_pengiriman') border-red-500 @enderror"
+                                                       placeholder="Masukkan tujuan pengiriman"
+                                                       value="{{ old('tujuan_pengiriman', $tandaTerima->tujuan_pengiriman) }}">
+                                                @error('tujuan_pengiriman')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                            <td class="px-4 py-3 align-top">
+                                                <textarea name="catatan"
+                                                          id="catatan"
+                                                          rows="3"
+                                                          class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('catatan') border-red-500 @enderror"
+                                                          placeholder="Tambahkan catatan jika diperlukan">{{ old('catatan', $tandaTerima->catatan) }}</textarea>
+                                                @error('catatan')
+                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                @enderror
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                     </div>
 
@@ -398,6 +578,155 @@
                 }
             }
         });
+
+        // Calculate initial volumes and totals
+        calculateAllVolumesAndTotals();
+
+        // Add new dimensi item
+        $('#addDimensiItem').click(function() {
+            addNewDimensiItem();
+        });
+
+        // Remove dimensi item
+        $(document).on('click', '.remove-dimensi-item', function() {
+            $(this).closest('.dimensi-item').remove();
+            updateItemNumbers();
+            calculateAllVolumesAndTotals();
+        });
     });
+
+    let dimensiItemIndex = {{ count($existingDimensi) }};
+
+    function addNewDimensiItem() {
+        const newRow = `
+            <tr class="dimensi-item hover:bg-gray-50" data-index="${dimensiItemIndex}">
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <span class="item-number text-sm font-medium text-gray-900">${dimensiItemIndex + 1}</span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="dimensi_items[${dimensiItemIndex}][panjang]"
+                           class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="0"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateItemVolume(this)">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="dimensi_items[${dimensiItemIndex}][lebar]"
+                           class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="0"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateItemVolume(this)">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="dimensi_items[${dimensiItemIndex}][tinggi]"
+                           class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="0"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateItemVolume(this)">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="dimensi_items[${dimensiItemIndex}][meter_kubik]"
+                           class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
+                           placeholder="0.000000"
+                           readonly
+                           step="0.000001">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="dimensi_items[${dimensiItemIndex}][tonase]"
+                           class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="0.00"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateTotals()">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-center">
+                    <button type="button" class="remove-dimensi-item text-red-600 hover:text-red-800 p-1">
+                        <i class="fas fa-trash text-sm"></i>
+                    </button>
+                </td>
+            </tr>`;
+
+        $('#dimensiTableBody').append(newRow);
+        dimensiItemIndex++;
+        updateItemNumbers();
+    }
+
+    function updateItemNumbers() {
+        $('#dimensiTableBody .dimensi-item').each(function(index) {
+            $(this).find('.item-number').text(index + 1);
+            $(this).attr('data-index', index);
+        });
+    }
+
+    function calculateItemVolume(element) {
+        const row = $(element).closest('.dimensi-item');
+        const panjang = parseFloat(row.find('.dimensi-panjang').val()) || 0;
+        const lebar = parseFloat(row.find('.dimensi-lebar').val()) || 0;
+        const tinggi = parseFloat(row.find('.dimensi-tinggi').val()) || 0;
+
+        let volume = 0;
+        if (panjang > 0 && lebar > 0 && tinggi > 0) {
+            volume = (panjang * lebar * tinggi) / 1000000;
+        }
+
+        row.find('.item-meter-kubik').val(volume > 0 ? volume.toFixed(6) : '');
+        calculateTotals();
+    }
+
+    function calculateAllVolumesAndTotals() {
+        $('#dimensiTableBody .dimensi-item').each(function() {
+            const row = $(this);
+            const panjang = parseFloat(row.find('.dimensi-panjang').val()) || 0;
+            const lebar = parseFloat(row.find('.dimensi-lebar').val()) || 0;
+            const tinggi = parseFloat(row.find('.dimensi-tinggi').val()) || 0;
+
+            let volume = 0;
+            if (panjang > 0 && lebar > 0 && tinggi > 0) {
+                volume = (panjang * lebar * tinggi) / 1000000;
+            }
+
+            row.find('.item-meter-kubik').val(volume > 0 ? volume.toFixed(6) : '');
+        });
+        calculateTotals();
+    }
+
+    function calculateTotals() {
+        let totalVolume = 0;
+        let totalTonase = 0;
+
+        $('#dimensiTableBody .dimensi-item').each(function() {
+            const volume = parseFloat($(this).find('.item-meter-kubik').val()) || 0;
+            const tonase = parseFloat($(this).find('.dimensi-tonase').val()) || 0;
+
+            totalVolume += volume;
+            totalTonase += tonase;
+        });
+
+        // Update summary display
+        $('#totalVolume').text(totalVolume.toFixed(6) + ' m³');
+        $('#totalTonase').text(totalTonase.toFixed(2) + ' Ton');
+
+        // Update hidden fields for backward compatibility
+        // Use first item's values or totals
+        const firstRow = $('#dimensiTableBody .dimensi-item').first();
+        if (firstRow.length) {
+            $('#hiddenPanjang').val(firstRow.find('.dimensi-panjang').val() || '');
+            $('#hiddenLebar').val(firstRow.find('.dimensi-lebar').val() || '');
+            $('#hiddenTinggi').val(firstRow.find('.dimensi-tinggi').val() || '');
+        }
+        $('#hiddenMeterKubik').val(totalVolume > 0 ? totalVolume.toFixed(6) : '');
+        $('#hiddenTonase').val(totalTonase > 0 ? totalTonase.toFixed(2) : '');
+    }    // Legacy function for backward compatibility
+    function calculateMeterKubik() {
+        calculateAllVolumesAndTotals();
+    }
 </script>
 @endpush

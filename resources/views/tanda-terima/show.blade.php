@@ -167,16 +167,88 @@
                             <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Satuan</dt>
                             <dd class="text-sm text-gray-900">{{ $tandaTerima->satuan ?: '-' }}</dd>
                         </div>
-                        <div>
-                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Berat Kotor</dt>
-                            <dd class="text-sm text-gray-900">
-                                {{ $tandaTerima->berat_kotor ? number_format($tandaTerima->berat_kotor, 2, ',', '.') . ' Kg' : '-' }}
-                            </dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi</dt>
-                            <dd class="text-sm text-gray-900">{{ $tandaTerima->dimensi ?: '-' }}</dd>
-                        </div>
+
+                        <!-- Dimensi Items Information -->
+                        @if($tandaTerima->dimensi_items)
+                            @php
+                                $dimensiItems = is_string($tandaTerima->dimensi_items) ? json_decode($tandaTerima->dimensi_items, true) : $tandaTerima->dimensi_items;
+                                $totalVolume = 0;
+                                $totalTonase = 0;
+                            @endphp
+                            @if(is_array($dimensiItems) && count($dimensiItems) > 0)
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi & Volume</dt>
+                                    <dd class="text-sm text-gray-900">
+                                        <div class="space-y-2">
+                                            @foreach($dimensiItems as $index => $item)
+                                                @if(isset($item['panjang']) || isset($item['lebar']) || isset($item['tinggi']) || isset($item['meter_kubik']) || isset($item['tonase']))
+                                                    @php
+                                                        $totalVolume += $item['meter_kubik'] ?? 0;
+                                                        $totalTonase += $item['tonase'] ?? 0;
+                                                    @endphp
+                                                    <div class="bg-gray-50 p-3 rounded-lg">
+                                                        <div class="font-medium text-gray-600 mb-1">Item {{ $index + 1 }}</div>
+                                                        @if(isset($item['panjang']) || isset($item['lebar']) || isset($item['tinggi']))
+                                                            <div class="text-xs text-gray-600">
+                                                                Dimensi:
+                                                                @if(isset($item['panjang'])){{ number_format($item['panjang'], 2) }} cm@endif
+                                                                @if(isset($item['lebar'])) × {{ number_format($item['lebar'], 2) }} cm@endif
+                                                                @if(isset($item['tinggi'])) × {{ number_format($item['tinggi'], 2) }} cm@endif
+                                                            </div>
+                                                        @endif
+                                                        <div class="grid grid-cols-2 gap-2 mt-1">
+                                                            @if(isset($item['meter_kubik']) && $item['meter_kubik'] > 0)
+                                                                <div class="text-xs">Volume: {{ number_format($item['meter_kubik'], 6) }} m³</div>
+                                                            @endif
+                                                            @if(isset($item['tonase']) && $item['tonase'] > 0)
+                                                                <div class="text-xs">Tonase: {{ number_format($item['tonase'], 2) }} Ton</div>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+
+                                            @if($totalVolume > 0 || $totalTonase > 0)
+                                                <div class="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
+                                                    <div class="font-medium text-blue-800 mb-1">Total Keseluruhan</div>
+                                                    <div class="grid grid-cols-2 gap-2">
+                                                        <div class="text-sm text-blue-700">Volume: {{ number_format($totalVolume, 6) }} m³</div>
+                                                        <div class="text-sm text-blue-700">Tonase: {{ number_format($totalTonase, 2) }} Ton</div>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </dd>
+                                </div>
+                            @endif
+                        @else
+                            <!-- Fallback to legacy single dimension display -->
+                            @if($tandaTerima->panjang || $tandaTerima->lebar || $tandaTerima->tinggi)
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi</dt>
+                                    <dd class="text-sm text-gray-900">
+                                        @if($tandaTerima->panjang){{ number_format($tandaTerima->panjang, 2) }} cm@endif
+                                        @if($tandaTerima->lebar) × {{ number_format($tandaTerima->lebar, 2) }} cm@endif
+                                        @if($tandaTerima->tinggi) × {{ number_format($tandaTerima->tinggi, 2) }} cm@endif
+                                        @if(!$tandaTerima->panjang && !$tandaTerima->lebar && !$tandaTerima->tinggi) - @endif
+                                    </dd>
+                                </div>
+                            @endif
+
+                            @if($tandaTerima->meter_kubik)
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Volume</dt>
+                                    <dd class="text-sm text-gray-900">{{ number_format($tandaTerima->meter_kubik, 6) }} m³</dd>
+                                </div>
+                            @endif
+
+                            @if($tandaTerima->tonase)
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tonase</dt>
+                                    <dd class="text-sm text-gray-900">{{ number_format($tandaTerima->tonase, 2) }} Ton</dd>
+                                </div>
+                            @endif
+                        @endif
                     </dl>
 
                     @if($tandaTerima->catatan)

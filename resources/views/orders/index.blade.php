@@ -124,7 +124,7 @@
                         </svg>
                         Cari Order
                     </label>
-                    <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nomor order, tujuan, pengirim..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nomor order, tujuan ambil, tujuan kirim, pengirim..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -156,7 +156,8 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Order</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -168,7 +169,8 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $order->nomor_order }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->tanggal_order->format('d/m/Y') }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $order->tujuan_kirim }}">{{ $order->tujuan_kirim }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $order->tujuan_ambil }}">{{ $order->tujuan_ambil ?? '-' }}</td>
+                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $order->tujuan_kirim }}">{{ $order->tujuan_kirim ?? '-' }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->size_kontainer }} ({{ $order->unit_kontainer }})</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
@@ -217,7 +219,7 @@
                                     </td></tr>
                         @empty
                             <tr>
-                                <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
                                     <div class="flex flex-col items-center justify-center py-8">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

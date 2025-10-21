@@ -29,12 +29,16 @@ class TandaTerima extends Model
         'tanggal_garasi',
         'jumlah',
         'satuan',
-        'berat_kotor',
-        'dimensi',
+        'panjang',
+        'lebar',
+        'tinggi',
+        'meter_kubik',
+        'tonase',
         'catatan',
         'status',
         'created_by',
         'updated_by',
+        'dimensi_items',
     ];
 
     protected $casts = [
@@ -42,9 +46,14 @@ class TandaTerima extends Model
         'tanggal_ambil_kontainer' => 'date',
         'tanggal_terima_pelabuhan' => 'date',
         'tanggal_garasi' => 'date',
-        'berat_kotor' => 'decimal:2',
+        'panjang' => 'decimal:2',
+        'lebar' => 'decimal:2',
+        'tinggi' => 'decimal:2',
+        'meter_kubik' => 'decimal:6',
+        'tonase' => 'decimal:2',
         'jumlah' => 'integer',
         'jumlah_kontainer' => 'integer',
+        'dimensi_items' => 'array',
     ];
 
     /**

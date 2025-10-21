@@ -82,9 +82,18 @@ class TandaTerimaController extends Controller
             'tanggal_garasi' => 'nullable|date',
             'jumlah' => 'nullable|integer|min:0',
             'satuan' => 'nullable|string|max:50',
-            'berat_kotor' => 'nullable|numeric|min:0',
-            'dimensi' => 'nullable|string|max:100',
+            'panjang' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable|numeric|min:0',
             'gambar_checkpoint' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
+            'dimensi_items' => 'nullable|array',
+            'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
+            'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
+            'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
+            'dimensi_items.*.meter_kubik' => 'nullable|numeric|min:0',
+            'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
@@ -107,11 +116,19 @@ class TandaTerimaController extends Controller
                 'tanggal_garasi' => $request->tanggal_garasi,
                 'jumlah' => $request->jumlah,
                 'satuan' => $request->satuan,
-                'berat_kotor' => $request->berat_kotor,
-                'dimensi' => $request->dimensi,
+                'panjang' => $request->panjang,
+                'lebar' => $request->lebar,
+                'tinggi' => $request->tinggi,
+                'meter_kubik' => $request->meter_kubik,
+                'tonase' => $request->tonase,
                 'status' => 'draft',
                 'created_by' => Auth::id(),
             ];
+
+            // If dimensi_items is present, store it as JSON
+            if ($request->has('dimensi_items') && is_array($request->dimensi_items)) {
+                $data['dimensi_items'] = json_encode($request->dimensi_items);
+            }
 
             // Handle gambar checkpoint upload
             if ($request->hasFile('gambar_checkpoint')) {
@@ -167,29 +184,48 @@ class TandaTerimaController extends Controller
             'tanggal_garasi' => 'nullable|date',
             'jumlah' => 'nullable|integer|min:0',
             'satuan' => 'nullable|string|max:50',
-            'berat_kotor' => 'nullable|numeric|min:0',
-            'dimensi' => 'nullable|string|max:100',
+            'panjang' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable|numeric|min:0',
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'required|in:draft,submitted,completed',
+            'dimensi_items' => 'nullable|array',
+            'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
+            'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
+            'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
+            'dimensi_items.*.meter_kubik' => 'nullable|numeric|min:0',
+            'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
         ]);
 
         DB::beginTransaction();
         try {
-            $tandaTerima->update([
+            $updateData = [
                 'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
                 'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
                 'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
                 'tanggal_garasi' => $request->tanggal_garasi,
                 'jumlah' => $request->jumlah,
                 'satuan' => $request->satuan,
-                'berat_kotor' => $request->berat_kotor,
-                'dimensi' => $request->dimensi,
+                'panjang' => $request->panjang,
+                'lebar' => $request->lebar,
+                'tinggi' => $request->tinggi,
+                'meter_kubik' => $request->meter_kubik,
+                'tonase' => $request->tonase,
                 'tujuan_pengiriman' => $request->tujuan_pengiriman,
                 'catatan' => $request->catatan,
                 'status' => $request->status,
                 'updated_by' => Auth::id(),
-            ]);
+            ];
+
+            // If dimensi_items is present, store it as JSON
+            if ($request->has('dimensi_items') && is_array($request->dimensi_items)) {
+                $updateData['dimensi_items'] = json_encode($request->dimensi_items);
+            }
+
+            $tandaTerima->update($updateData);
 
             Log::info('Tanda terima updated', [
                 'tanda_terima_id' => $tandaTerima->id,

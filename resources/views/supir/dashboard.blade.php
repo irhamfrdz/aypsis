@@ -111,8 +111,12 @@
                                     <p class="text-gray-800 font-semibold">{{ $kegiatanMap[$suratJalan->kegiatan] ?? ucfirst($suratJalan->kegiatan) }}</p>
                                 </div>
                                 <div>
+                                    <p class="font-medium text-gray-500">Tujuan Pengambilan</p>
+                                    <p class="text-gray-800 font-semibold">{{ $suratJalan->tujuan_pengambilan ?? $suratJalan->order->tujuan_ambil ?? '-' }}</p>
+                                </div>
+                                <div>
                                     <p class="font-medium text-gray-500">Tujuan Pengiriman</p>
-                                    <p class="text-gray-800 font-semibold">{{ $suratJalan->tujuan_pengiriman ?? '-' }}</p>
+                                    <p class="text-gray-800 font-semibold">{{ $suratJalan->tujuan_pengiriman ?? $suratJalan->order->tujuan_kirim ?? '-' }}</p>
                                 </div>
                                 <div>
                                     <p class="font-medium text-gray-500">Jumlah Kontainer</p>

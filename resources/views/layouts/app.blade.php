@@ -605,6 +605,26 @@
 </div>
 @endif
 
+{{-- Tanda Terima Tanpa Surat Jalan Management Section --}}
+@php
+    $isTandaTerimaTanpaSuratJalanRoute = Request::routeIs('tanda-terima-tanpa-surat-jalan.*');
+    $hasTandaTerimaTanpaSuratJalanPermissions = $user && ($user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete'));
+@endphp
+
+@if($hasTandaTerimaTanpaSuratJalanPermissions)
+<div class="mt-4 mb-4">
+    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isTandaTerimaTanpaSuratJalanRoute ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
+        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isTandaTerimaTanpaSuratJalanRoute ? 'bg-indigo-200' : 'bg-indigo-50 group-hover:bg-indigo-200' }}">
+            <svg class="w-4 h-4 {{ $isTandaTerimaTanpaSuratJalanRoute ? 'text-indigo-700' : 'text-indigo-600 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium menu-text">Tanda Terima Tanpa Surat Jalan</span>
+    </a>
+</div>
+@endif
+
 {{-- Gate In Management Section --}}
 @php
     $isGateInRoute = Request::routeIs('gate-in.*');

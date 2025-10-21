@@ -69,7 +69,7 @@
                         <input type="text"
                                name="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Cari no. surat jalan, kontainer, kapal, tujuan..."
+                               placeholder="Cari no. surat jalan, kontainer, kapal, tujuan ambil, tujuan kirim..."
                                value="{{ request('search') }}">
                     </div>
                     <div class="md:col-span-3">
@@ -117,7 +117,10 @@
                                 Jenis Barang
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
-                                Tujuan
+                                Tujuan Ambil
+                            </th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                                Tujuan Kirim
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
                                 Kegiatan
@@ -161,9 +164,16 @@
                                 </span>
                             </td>
                             <td class="px-6 py-4 text-sm text-gray-600">
-                                <div class="max-w-[200px] truncate" title="{{ $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan' }}">
+                                <div class="max-w-[200px] truncate" title="{{ $tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil' }}">
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ Str::limit($tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil', 25) }}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 text-sm text-gray-600">
+                                <div class="max-w-[200px] truncate" title="{{ $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim' }}">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                        {{ Str::limit($tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan', 25) }}
+                                        {{ Str::limit($tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim', 25) }}
                                     </span>
                                 </div>
                             </td>
@@ -228,7 +238,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-12 text-center">
+                            <td colspan="11" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-receipt text-gray-300 text-6xl mb-4"></i>
                                     <p class="text-gray-500 text-lg font-medium">Tidak ada data tanda terima</p>

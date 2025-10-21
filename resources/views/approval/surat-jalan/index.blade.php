@@ -60,6 +60,8 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Kontainer</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Submitted</th>
@@ -93,6 +95,16 @@
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                             {{ $kegiatanName }}
                                         </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $approval->suratJalan->tujuan_pengambilan ?? $approval->suratJalan->order->tujuan_ambil ?? '-' }}">
+                                            {{ $approval->suratJalan->tujuan_pengambilan ?? $approval->suratJalan->order->tujuan_ambil ?? '-' }}
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $approval->suratJalan->tujuan_pengiriman ?? $approval->suratJalan->order->tujuan_kirim ?? '-' }}">
+                                            {{ $approval->suratJalan->tujuan_pengiriman ?? $approval->suratJalan->order->tujuan_kirim ?? '-' }}
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <code class="text-xs bg-gray-100 px-2 py-1 rounded">

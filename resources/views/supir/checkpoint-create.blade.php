@@ -84,6 +84,18 @@
                             <p class="font-medium text-gray-500">Vendor</p>
                             <p class="text-gray-800">{{ $permohonan->vendor_perusahaan }}</p>
                         </div>
+                        @if($permohonan->tujuan_pengambilan ?? false)
+                        <div>
+                            <p class="font-medium text-gray-500">Tujuan Pengambilan</p>
+                            <p class="text-gray-800">{{ $permohonan->tujuan_pengambilan }}</p>
+                        </div>
+                        @endif
+                        @if($permohonan->tujuan_pengiriman ?? false)
+                        <div>
+                            <p class="font-medium text-gray-500">Tujuan Pengiriman</p>
+                            <p class="text-gray-800">{{ $permohonan->tujuan_pengiriman }}</p>
+                        </div>
+                        @endif
                     </div>
                 @elseif(isset($suratJalan))
                     {{-- Detail Surat Jalan --}}
@@ -110,8 +122,12 @@
                             <p class="text-gray-800">{{ $suratJalan->jumlah_kontainer }}</p>
                         </div>
                         <div>
+                            <p class="font-medium text-gray-500">Tujuan Pengambilan</p>
+                            <p class="text-gray-800">{{ $suratJalan->tujuan_pengambilan ?? $suratJalan->order->tujuan_ambil ?? '-' }}</p>
+                        </div>
+                        <div>
                             <p class="font-medium text-gray-500">Tujuan Pengiriman</p>
-                            <p class="text-gray-800">{{ $suratJalan->tujuan_pengiriman ?? '-' }}</p>
+                            <p class="text-gray-800">{{ $suratJalan->tujuan_pengiriman ?? $suratJalan->order->tujuan_kirim ?? '-' }}</p>
                         </div>
                         <div>
                             <p class="font-medium text-gray-500">Pengirim</p>

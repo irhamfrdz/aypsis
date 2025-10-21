@@ -4,52 +4,44 @@
 @section('page_title', 'Checklist Kelengkapan Crew')
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-    <div class="space-y-6">
-    {{-- Header Section --}}
-    <section class="bg-gradient-to-r from-blue-700 to-blue-900 text-white rounded-lg shadow-lg p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div class="flex items-center gap-4">
-            <div class="flex-shrink-0">
-                <div class="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-blue-800 text-2xl font-bold shadow-inner">
-                    <span aria-label="Avatar">{{ mb_substr($karyawan->nama_lengkap ?? '?',0,1) }}</span>
+<div class="space-y-6">
+    <div class="max-w-7xl mx-auto">
+
+        <!-- Header Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
+                <div class="mb-4 sm:mb-0">
+                    <h1 class="text-3xl font-bold text-gray-900">Checklist Kelengkapan Crew</h1>
+                    <p class="mt-1 text-sm text-gray-600">
+                        Karyawan: <strong>{{ $karyawan->nama_lengkap ?? '-' }}</strong> •
+                        NIK: <strong>{{ $karyawan->nik ?? '-' }}</strong> •
+                        Divisi: <strong>{{ $karyawan->divisi ?? '-' }}</strong> •
+                        Jabatan: <strong>{{ $karyawan->pekerjaan ?? '-' }}</strong>
+                    </p>
                 </div>
-            </div>
-            <div>
-                <h1 class="text-2xl font-bold tracking-tight">Checklist Kelengkapan Crew</h1>
-                <div class="mt-1 text-blue-100 text-base font-medium flex flex-wrap gap-2">
-                    <span>Karyawan: <strong>{{ $karyawan->nama_lengkap ?? '-' }}</strong></span>
-                    <span>NIK: <strong>{{ $karyawan->nik ?? '-' }}</strong></span>
-                    <span>Divisi: <strong>{{ $karyawan->divisi ?? '-' }}</strong></span>
-                    <span>Jabatan: <strong>{{ $karyawan->pekerjaan ?? '-' }}</strong></span>
+                <div class="flex flex-col sm:flex-row gap-3">
+                    @if(request()->routeIs('karyawan.onboarding-crew-checklist'))
+                    <a href="{{ route('karyawan.onboarding-edit', $karyawan->id) }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
+                        Kembali ke Onboarding
+                    </a>
+                    @else
+                    <a href="{{ route('master.karyawan.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-gray-600 text-white text-sm font-medium rounded-lg hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
+                        Kembali
+                    </a>
+                    @endif
+                    <a href="{{ route('master.karyawan.crew-checklist.print', $karyawan->id) }}" target="_blank" class="inline-flex items-center justify-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"></path></svg>
+                        Cetak
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="flex flex-col md:flex-row gap-2 md:items-center">
-            @if(request()->routeIs('karyawan.onboarding-crew-checklist'))
-            <a href="{{ route('karyawan.onboarding-edit', $karyawan->id) }}" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-sm">
-                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
-                Kembali ke Onboarding
-            </a>
-            @else
-            <a href="{{ route('master.karyawan.index') }}" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-sm">
-                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M9.707 16.707a1 1 0 01-1.414 0l-6-6a1 1 0 010-1.414l6-6a1 1 0 011.414 1.414L5.414 9H17a1 1 0 110 2H5.414l4.293 4.293a1 1 0 010 1.414z" clip-rule="evenodd"></path></svg>
-                Kembali
-            </a>
-            @endif
-            <a href="{{ route('master.karyawan.crew-checklist.print', $karyawan->id) }}" target="_blank" class="inline-flex items-center bg-white/20 hover:bg-white/30 text-white font-semibold py-2 px-4 rounded-lg transition duration-200 text-sm">
-                <svg class="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zm0 8H7v4h6v-4z" clip-rule="evenodd"></path></svg>
-                Cetak
-            </a>
-        </div>
-    </section>
 
-    {{-- Main Content --}}
-    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-        <div class="p-6">
-        <form id="crew-checklist-new-form" action="{{ route('master.karyawan.crew-checklist.update', $karyawan->id) }}" method="POST">
-            @csrf
-
-            <div class="mb-6 flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600 bg-gray-50 p-4 rounded-lg">
+        <!-- Status Legend Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="flex flex-wrap items-center justify-center gap-4 text-sm text-gray-600">
                 <span class="font-semibold text-gray-800">Legenda Status:</span>
                 <div class="inline-flex items-center gap-2">
                     <svg class="w-4 h-4 text-green-600" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path></svg>
@@ -68,34 +60,42 @@
                     <span>Tidak Tersedia</span>
                 </div>
             </div>
+        </div>
 
-            <div class="mb-4 p-4 bg-blue-50 rounded-md flex flex-col md:flex-row md:items-center md:justify-between gap-2">
+        <!-- Summary and Search Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div class="mb-4 p-4 bg-blue-50 rounded-lg flex flex-col md:flex-row md:items-center md:justify-between gap-2">
                 <div class="text-sm text-blue-700">Ringkasan: <span id="summary-ada" class="font-semibold">0</span> Ada • <span id="summary-soon" class="font-semibold">0</span> Akan Expired • <span id="summary-expired" class="font-semibold">0</span> Expired • <span id="summary-tidak" class="font-semibold">0</span> Tidak</div>
                 <div class="text-sm text-gray-600">Format tanggal: <code class="bg-white px-1 py-0.5 rounded">10/Sep/2025</code> atau <code class="bg-white px-1 py-0.5 rounded">10/09/2025</code></div>
             </div>
 
-            <div class="mb-6 bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                <div class="flex flex-col md:flex-row md:items-center gap-4">
-                    <div class="flex-1">
-                        <input type="text" id="item-search" placeholder="Cari item checklist..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm" autocomplete="off">
-                        <div class="mt-2 text-xs text-gray-500 flex flex-wrap items-center gap-4">
-                            <span>Tip: Gunakan kata kunci seperti "BST", "ijazah", "rekening"</span>
-                            <span class="text-blue-600 font-medium">• Enter untuk fokus pertama</span>
-                        </div>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <button type="button" id="expand-all-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition text-sm font-medium">
-                            Expand All
-                        </button>
-                        <button type="button" id="collapse-all-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition text-sm font-medium">
-                            Collapse All
-                        </button>
+            <div class="flex flex-col md:flex-row md:items-center gap-4">
+                <div class="flex-1">
+                    <input type="text" id="item-search" placeholder="Cari item checklist..." class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition text-sm" autocomplete="off">
+                    <div class="mt-2 text-xs text-gray-500 flex flex-wrap items-center gap-4">
+                        <span>Tip: Gunakan kata kunci seperti "BST", "ijazah", "rekening"</span>
+                        <span class="text-blue-600 font-medium">• Enter untuk fokus pertama</span>
                     </div>
                 </div>
-                <div id="search-results" class="mt-3 hidden">
-                    <div class="text-sm text-gray-600">Ditemukan <span id="search-count">0</span> item</div>
+                <div class="flex items-center gap-2">
+                    <button type="button" id="expand-all-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition text-sm font-medium">
+                        Expand All
+                    </button>
+                    <button type="button" id="collapse-all-btn" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg transition text-sm font-medium">
+                        Collapse All
+                    </button>
                 </div>
             </div>
+            <div id="search-results" class="mt-3 hidden">
+                <div class="text-sm text-gray-600">Ditemukan <span id="search-count">0</span> item</div>
+            </div>
+        </div>
+
+        <!-- Main Content Form -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+            <div class="p-6">
+                <form id="crew-checklist-new-form" action="{{ route('master.karyawan.crew-checklist.update', $karyawan->id) }}" method="POST">
+                    @csrf
 
             @php
                 $groupDataPribadiKeywords = ['formulir data karyawan','cv','e-ktp','kartu keluarga','bpjs','npwp','photo','pas photo','rek','rekening','buku pelaut'];
@@ -384,21 +384,22 @@
                 </div>
             </div>
 
-            <button type="submit" id="submit-btn" class="hidden"></button>
-            <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-4">
-                <div class="hidden lg:inline-flex items-center bg-white/95 backdrop-blur-sm text-gray-700 px-4 py-2 rounded-lg shadow-lg border border-gray-200">
-                    <div class="text-sm">Ringkasan: <span id="sticky-ada" class="font-semibold text-green-600">0</span> Ada • <span id="sticky-soon" class="font-semibold text-yellow-600">0</span> Akan Expired • <span id="sticky-expired" class="font-semibold text-red-600">0</span> Expired • <span id="sticky-tidak" class="font-semibold text-gray-600">0</span> Tidak</div>
-                </div>
-                <button type="button" id="sticky-save-btn" class="inline-flex items-center bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
-                    <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                    Simpan Checklist
-                </button>
+                    <button type="submit" id="submit-btn" class="hidden"></button>
+                    <div class="fixed bottom-4 right-4 md:bottom-6 md:right-6 z-40 flex items-center gap-4">
+                        <div class="hidden lg:inline-flex items-center bg-white/95 backdrop-blur-sm text-gray-700 px-4 py-2 rounded-lg shadow-lg border border-gray-200">
+                            <div class="text-sm">Ringkasan: <span id="sticky-ada" class="font-semibold text-green-600">0</span> Ada • <span id="sticky-soon" class="font-semibold text-yellow-600">0</span> Akan Expired • <span id="sticky-expired" class="font-semibold text-red-600">0</span> Expired • <span id="sticky-tidak" class="font-semibold text-gray-600">0</span> Tidak</div>
+                        </div>
+                        <button type="button" id="sticky-save-btn" class="inline-flex items-center bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 px-6 rounded-lg transition duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5">
+                            <svg class="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
+                            Simpan Checklist
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
         </div>
     </div>
-    </div>
 </div>
+@endsection
 
 @push('scripts')
 <script>

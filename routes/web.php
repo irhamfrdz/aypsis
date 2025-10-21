@@ -257,7 +257,8 @@ Route::middleware([
             ->middleware('can:master-karyawan-view');
 
         Route::post('karyawan/{karyawan}/crew-checklist', [KaryawanController::class, 'updateCrewChecklist'])
-            ->name('karyawan.crew-checklist.update');
+            ->name('karyawan.crew-checklist.update')
+            ->middleware('can:master-karyawan-update');
 
         Route::get('karyawan/{karyawan}/crew-checklist/print', [KaryawanController::class, 'printCrewChecklist'])
             ->name('karyawan.crew-checklist.print')
@@ -1012,6 +1013,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
              'edit' => 'can:tanda-terima-edit',
              'update' => 'can:tanda-terima-edit',
              'destroy' => 'can:tanda-terima-delete'
+         ]);
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 📋 TANDA TERIMA TANPA SURAT JALAN MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+
+    Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
+         ->middleware([
+             'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
+             'create' => 'can:tanda-terima-tanpa-surat-jalan-create',
+             'store' => 'can:tanda-terima-tanpa-surat-jalan-create',
+             'show' => 'can:tanda-terima-tanpa-surat-jalan-view',
+             'edit' => 'can:tanda-terima-tanpa-surat-jalan-update',
+             'update' => 'can:tanda-terima-tanpa-surat-jalan-update',
+             'destroy' => 'can:tanda-terima-tanpa-surat-jalan-delete'
          ]);
 
     // Gate In AJAX Routes (must be defined BEFORE resource route to avoid conflicts)
