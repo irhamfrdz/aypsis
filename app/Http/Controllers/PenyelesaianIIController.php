@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\MasterPricelistSewaKontainer;
+use App\Models\StockKontainer;
 // removed: TagihanKontainerSewa is not needed for simplified approval flow
 
 class PenyelesaianIIController extends Controller
@@ -618,6 +619,13 @@ class PenyelesaianIIController extends Controller
                     }
                 }
 
+                // Check for "antar kontainer sewa" activity for stock creation later
+                $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $permohonan->kegiatan)
+                    ->value('nama_kegiatan') ?? ($permohonan->kegiatan ?? '');
+                $isAntarKontainerSewa = (stripos(strtolower($kegiatanName), 'antar') !== false &&
+                                       stripos(strtolower($kegiatanName), 'kontainer') !== false &&
+                                       stripos(strtolower($kegiatanName), 'sewa') !== false);
+
                 // After kontainer status updates, create daftar tagihan entries.
                 // Prefer checkpoint date if available, otherwise today.
                 $startCheckpoint = null;
@@ -630,14 +638,21 @@ class PenyelesaianIIController extends Controller
                 // Create perbaikan kontainer records if this is a perbaikan kegiatan
                 $createdPerbaikanCount = $this->createPerbaikanKontainer($permohonan, $dateForTagihan, $request);
 
+                // Store stock kontainer creation count for success message
+                $createdStockKontainerCount = 0;
+                if ($isAntarKontainerSewa && $permohonan->kontainers()->exists()) {
+                    $createdStockKontainerCount = $this->createStockKontainerRecords($permohonan, $doneDate);
+                }
+
             }
 
             $permohonan->save();
 
             DB::commit();
 
-            // Prepare success message with perbaikan info if any were created
+            // Prepare success message with additional info if records were created
             $successMessage = 'Permohonan berhasil diselesaikan!';
+
             if (isset($createdPerbaikanCount) && $createdPerbaikanCount > 0) {
                 $successMessage .= " {$createdPerbaikanCount} record perbaikan kontainer telah dibuat dengan nomor tagihan otomatis.";
 
@@ -652,6 +667,10 @@ class PenyelesaianIIController extends Controller
                 if (!empty($latestPerbaikans)) {
                     $successMessage .= " Nomor tagihan: " . implode(', ', $latestPerbaikans);
                 }
+            }
+
+            if (isset($createdStockKontainerCount) && $createdStockKontainerCount > 0) {
+                $successMessage .= " {$createdStockKontainerCount} record stock kontainer telah ditambahkan ke master stock.";
             }
 
             return redirect()->route('approval-ii.dashboard')->with('success', $successMessage);
@@ -739,6 +758,95 @@ class PenyelesaianIIController extends Controller
                 'nomor_kontainer' => $nomorKontainer,
                 'vendor' => $vendor,
                 'tanggal_akhir' => $tanggalAkhir
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Create stock_kontainers records for "antar kontainer sewa" activity
+     */
+    protected function createStockKontainerRecords($permohonan, $tanggalMasuk)
+    {
+        try {
+            $createdCount = 0;
+
+            foreach ($permohonan->kontainers as $kontainer) {
+                // Parse nomor kontainer menjadi komponen awalan, nomor seri, akhiran
+                $nomorKontainer = $kontainer->nomor_kontainer;
+
+                if (empty($nomorKontainer)) {
+                    continue;
+                }
+
+                // Cek apakah sudah ada di stock_kontainers
+                $existingStock = \App\Models\StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)
+                    ->whereIn('status', ['tersedia', 'available'])
+                    ->first();
+
+                if ($existingStock) {
+                    Log::info('Stock kontainer already exists', [
+                        'nomor_kontainer' => $nomorKontainer,
+                        'stock_id' => $existingStock->id
+                    ]);
+                    continue;
+                }
+
+                // Parse nomor kontainer - format umumnya: ABCD123456X
+                // Awalan: 4 huruf pertama, Nomor seri: 6 digit, Akhiran: 1 karakter terakhir
+                $awalan = '';
+                $nomorSeri = '';
+                $akhiran = '';
+
+                if (strlen($nomorKontainer) >= 11) {
+                    $awalan = substr($nomorKontainer, 0, 4);
+                    $nomorSeri = substr($nomorKontainer, 4, 6);
+                    $akhiran = substr($nomorKontainer, 10, 1);
+                } else {
+                    // Jika format tidak standar, gunakan seluruh nomor sebagai nomor seri
+                    $nomorSeri = $nomorKontainer;
+                }
+
+                // Tentukan ukuran dan tipe berdasarkan data kontainer yang ada
+                $ukuran = $kontainer->ukuran ?? '20';
+                $tipeKontainer = 'dry kontainer'; // Default untuk antar kontainer sewa
+
+                // Buat record baru di stock_kontainers
+                $stockKontainer = \App\Models\StockKontainer::create([
+                    'awalan_kontainer' => $awalan,
+                    'nomor_seri_kontainer' => $nomorSeri,
+                    'akhiran_kontainer' => $akhiran,
+                    'nomor_seri_gabungan' => $nomorKontainer,
+                    'ukuran' => $ukuran,
+                    'tipe_kontainer' => $tipeKontainer,
+                    'status' => 'tersedia',
+                    'tanggal_masuk' => $tanggalMasuk,
+                    'keterangan' => 'Auto created from approval antar kontainer sewa - Permohonan: ' . $permohonan->nomor_memo,
+                    'tahun_pembuatan' => date('Y') // Default ke tahun sekarang
+                ]);
+
+                $createdCount++;
+
+                Log::info('Stock kontainer created', [
+                    'nomor_kontainer' => $nomorKontainer,
+                    'stock_id' => $stockKontainer->id,
+                    'permohonan_id' => $permohonan->id
+                ]);
+            }
+
+            if ($createdCount > 0) {
+                Log::info('Stock kontainer records created successfully', [
+                    'permohonan_id' => $permohonan->id,
+                    'created_count' => $createdCount
+                ]);
+            }
+
+            return $createdCount;
+
+        } catch (\Exception $e) {
+            Log::error('createStockKontainerRecords failed', [
+                'message' => $e->getMessage(),
+                'permohonan_id' => $permohonan->id
             ]);
             throw $e;
         }

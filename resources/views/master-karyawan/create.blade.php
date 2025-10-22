@@ -365,6 +365,41 @@
             </div>
         </fieldset>
 
+        {{-- Susunan Keluarga --}}
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Susunan Keluarga</legend>
+            <div class="form-section pt-4">
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Tambahkan informasi anggota keluarga</p>
+                    <button type="button" id="addFamilyMember" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Tambah Anggota Keluarga
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Hubungan</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Tgl. Lahir</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Alamat</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">No. Telepon</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">No. NIK / KTP</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="familyMembersContainer">
+                            <!-- Family member rows will be added here dynamically -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </fieldset>
+
         <div class="flex justify-end mt-8">
             @php
                 // Determine cancel route based on current context
@@ -409,6 +444,96 @@
 
             // Data pekerjaan dari database
             const pekerjaanByDivisi = @json($pekerjaanByDivisi);
+
+            // Family members functionality
+            let familyMemberCounter = 0;
+            const addFamilyMemberBtn = document.getElementById('addFamilyMember');
+            const familyMembersContainer = document.getElementById('familyMembersContainer');
+
+            // Function to create family member form
+            function createFamilyMemberForm(index) {
+                const relationshipOptions = [
+                    { value: 'Suami', text: 'Suami' },
+                    { value: 'Istri', text: 'Istri' },
+                    { value: 'Anak', text: 'Anak' },
+                    { value: 'Ayah', text: 'Ayah' },
+                    { value: 'Ibu', text: 'Ibu' },
+                    { value: 'Kakak', text: 'Kakak' },
+                    { value: 'Adik', text: 'Adik' },
+                    { value: 'Kakek', text: 'Kakek' },
+                    { value: 'Nenek', text: 'Nenek' },
+                    { value: 'Paman', text: 'Paman' },
+                    { value: 'Bibi', text: 'Bibi' },
+                    { value: 'Lainnya', text: 'Lainnya' }
+                ];
+
+                const relationshipOptionsHtml = relationshipOptions.map(option =>
+                    `<option value="${option.value}">${option.text}</option>`
+                ).join('');
+
+                return `
+                    <tr class="family-member-row" data-index="${index}">
+                        <td class="border border-gray-300 px-2 py-2">
+                            <select name="family_members[${index}][hubungan]" class="w-full rounded border-gray-300 text-xs p-1" required>
+                                <option value="">-- Pilih --</option>
+                                ${relationshipOptionsHtml}
+                            </select>
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="text" name="family_members[${index}][nama]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Nama lengkap" required>
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="date" name="family_members[${index}][tanggal_lahir]" class="w-full rounded border-gray-300 text-xs p-1">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="text" name="family_members[${index}][alamat]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Alamat">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="tel" name="family_members[${index}][no_telepon]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="No. Telp">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="text" name="family_members[${index}][nik_ktp]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2 text-center">
+                            <button type="button" class="remove-family-member text-red-600 hover:text-red-800 font-medium text-xs px-2 py-1 border border-red-300 rounded hover:bg-red-50">
+                                Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // Add family member
+            addFamilyMemberBtn.addEventListener('click', function() {
+                const familyMemberHtml = createFamilyMemberForm(familyMemberCounter);
+                familyMembersContainer.insertAdjacentHTML('beforeend', familyMemberHtml);
+                familyMemberCounter++;
+                updateFamilyMemberNumbers();
+            });
+
+            // Remove family member
+            familyMembersContainer.addEventListener('click', function(e) {
+                if (e.target.closest('.remove-family-member')) {
+                    const familyMemberRow = e.target.closest('.family-member-row');
+                    familyMemberRow.remove();
+                    updateFamilyMemberNumbers();
+                }
+            });
+
+            // Update family member numbers
+            function updateFamilyMemberNumbers() {
+                const familyMembers = familyMembersContainer.querySelectorAll('.family-member-row');
+                familyMembers.forEach((member, index) => {
+                    member.setAttribute('data-index', index);
+                    // Update input names to maintain correct array indexing
+                    const inputs = member.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        if (input.name) {
+                            input.name = input.name.replace(/\[\d+\]/, `[${index}]`);
+                        }
+                    });
+                });
+            }
 
             // Fungsi untuk memperbarui opsi pekerjaan
             function updatePekerjaanOptions() {

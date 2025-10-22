@@ -15,18 +15,20 @@ class TandaTerimaTanpaSuratJalan extends Model
         'no_tanda_terima',
         'tanggal_tanda_terima',
         'nomor_surat_jalan_customer',
-        'nomor_tanda_terima',
-        'supir',
-        'kenek',
+        'nomor_tanda_terima', // Keep both for backward compatibility
         'term_id',
         'aktifitas',
-        'jenis_pengiriman',
         'no_kontainer',
+        'size_kontainer',
         'pengirim',
         'telepon',
+        'pic',
+        'supir',
+        'kenek',
+        'no_plat',
         'tujuan_pengiriman',
+        'estimasi_naik_kapal',
         'no_seal',
-        'PIC',
         'penerima',
         'nama_barang',
         'alamat_pengirim',
@@ -37,13 +39,12 @@ class TandaTerimaTanpaSuratJalan extends Model
         'keterangan_barang',
         'berat',
         'satuan_berat',
+        // Keep original dimensi fields for backward compatibility
         'panjang',
         'lebar',
         'tinggi',
         'meter_kubik',
         'tonase',
-        'tujuan_pengambilan',
-        'no_plat',
         'status',
         'catatan',
         'created_by',
@@ -151,5 +152,30 @@ class TandaTerimaTanpaSuratJalan extends Model
     public function term()
     {
         return $this->belongsTo(Term::class);
+    }
+
+    /**
+     * Relationship with Dimensi Items
+     */
+    public function dimensiItems()
+    {
+        return $this->hasMany(TandaTerimaDimensiItem::class, 'tanda_terima_tanpa_surat_jalan_id')
+                    ->orderBy('item_order');
+    }
+
+    /**
+     * Calculate total volume from all dimensi items
+     */
+    public function getTotalVolumeAttribute()
+    {
+        return $this->dimensiItems()->sum('meter_kubik') ?: $this->meter_kubik ?: 0;
+    }
+
+    /**
+     * Calculate total tonase from all dimensi items
+     */
+    public function getTotalTonaseAttribute()
+    {
+        return $this->dimensiItems()->sum('tonase') ?: $this->tonase ?: 0;
     }
 }

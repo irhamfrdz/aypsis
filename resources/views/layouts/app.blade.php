@@ -644,6 +644,25 @@
 </div>
 @endif
 
+{{-- Prospek Kapal Management Section --}}
+@php
+    $isProspekKapalRoute = Request::routeIs('prospek-kapal.*');
+    $hasProspekKapalPermissions = $user && ($user->can('prospek-kapal-view') || $user->can('prospek-kapal-create') || $user->can('prospek-kapal-update') || $user->can('prospek-kapal-delete'));
+@endphp
+
+@if($hasProspekKapalPermissions)
+<div class="mt-4 mb-4">
+    <a href="{{ route('prospek-kapal.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isProspekKapalRoute ? 'bg-cyan-100 text-cyan-700 font-bold' : 'text-gray-700 hover:bg-cyan-100 hover:text-cyan-700' }}">
+        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isProspekKapalRoute ? 'bg-cyan-200' : 'bg-cyan-50 group-hover:bg-cyan-200' }}">
+            <svg class="w-4 h-4 {{ $isProspekKapalRoute ? 'text-cyan-700' : 'text-cyan-600 group-hover:text-cyan-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium menu-text">Prospek Kapal</span>
+    </a>
+</div>
+@endif
+
 {{-- Aktiva Dropdown --}}
 @php
     $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.mobil.*');
@@ -718,6 +737,22 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
                         </svg>
                         Master Kapal
+                    </a>
+                @endif
+                @if($user && $user->can('pergerakan-kapal-view'))
+                    <a href="{{ route('pergerakan-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 21l4-4m0 0l4 4m-4-4v9m0-13a9 9 0 100 18 9 9 0 000-18z"/>
+                        </svg>
+                        Pergerakan Kapal
+                    </a>
+                @endif
+                @if($user && $user->can('master-pelabuhan-view'))
+                    <a href="{{ route('master-pelabuhan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-cyan-50 text-cyan-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
+                        </svg>
+                        Master Pelabuhan
                     </a>
                 @endif
                 @if($user && $user->can('master-pricelist-cat-view'))

@@ -303,6 +303,47 @@
         </div>
     </details>
 
+    <details open class="mb-4 border rounded">
+        <summary class="px-4 py-3 bg-gray-50 cursor-pointer font-semibold">Susunan Keluarga</summary>
+        <div class="p-4">
+            @if($karyawan->familyMembers && $karyawan->familyMembers->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-300 text-sm">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">No</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Hubungan</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Nama</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Tanggal Lahir</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">Alamat</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">No. Telepon</th>
+                                <th class="border border-gray-300 px-3 py-2 text-left font-semibold text-gray-700">NIK/KTP</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($karyawan->familyMembers as $index => $familyMember)
+                                <tr class="{{ $index % 2 == 0 ? 'bg-white' : 'bg-gray-50' }}">
+                                    <td class="border border-gray-300 px-3 py-2">{{ $index + 1 }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $familyMember->hubungan ?? '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2 font-medium">{{ $familyMember->nama ?? '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $familyMember->tanggal_lahir ? $formatDate($familyMember->tanggal_lahir, 'd/m/Y') : '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $familyMember->alamat ?? '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $familyMember->no_telepon ?? '-' }}</td>
+                                    <td class="border border-gray-300 px-3 py-2">{{ $familyMember->nik_ktp ?? '-' }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            @else
+                <div class="text-center py-8 text-gray-500">
+                    <p class="text-lg mb-2">💭</p>
+                    <p>Belum ada data anggota keluarga</p>
+                </div>
+            @endif
+        </div>
+    </details>
+
     <div class="mt-6">
         <p class="font-semibold text-gray-600">Catatan</p>
         <div class="mt-2 p-3 bg-gray-50 border rounded text-gray-800 min-h-[80px] whitespace-pre-wrap">

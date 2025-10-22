@@ -783,6 +783,28 @@ Route::middleware([
              'destroy' => 'can:master-kapal.delete'
          ]);
 
+    // ⚓ Master Pelabuhan (Port Master) Management with permissions
+    Route::resource('master-pelabuhan', \App\Http\Controllers\MasterPelabuhanController::class)
+         ->names([
+             'index' => 'master-pelabuhan.index',
+             'create' => 'master-pelabuhan.create',
+             'store' => 'master-pelabuhan.store',
+             'show' => 'master-pelabuhan.show',
+             'edit' => 'master-pelabuhan.edit',
+             'update' => 'master-pelabuhan.update',
+             'destroy' => 'master-pelabuhan.destroy'
+         ])
+         ->parameters(['master-pelabuhan' => 'masterPelabuhan'])
+         ->middleware([
+             'index' => 'can:master-pelabuhan-view',
+             'create' => 'can:master-pelabuhan-create',
+             'store' => 'can:master-pelabuhan-create',
+             'show' => 'can:master-pelabuhan-view',
+             'edit' => 'can:master-pelabuhan-edit',
+             'update' => 'can:master-pelabuhan-edit',
+             'destroy' => 'can:master-pelabuhan-delete'
+         ]);
+
     // 🏦 Tipe Akun (Account Type) Management with permissions
     Route::resource('master/tipe-akun', TipeAkunController::class)->names('master.tipe-akun')->middleware([
         'index' => 'can:master-tipe-akun-view',
@@ -936,6 +958,64 @@ Route::middleware([
              'update' => 'can:vendor-kontainer-sewa-edit',
              'destroy' => 'can:vendor-kontainer-sewa-delete'
          ]);
+
+    // 🚢 Pergerakan Kapal Management with permissions
+    Route::resource('pergerakan-kapal', \App\Http\Controllers\PergerakanKapalController::class)
+         ->names([
+             'index' => 'pergerakan-kapal.index',
+             'create' => 'pergerakan-kapal.create',
+             'store' => 'pergerakan-kapal.store',
+             'show' => 'pergerakan-kapal.show',
+             'edit' => 'pergerakan-kapal.edit',
+             'update' => 'pergerakan-kapal.update',
+             'destroy' => 'pergerakan-kapal.destroy'
+         ])
+         ->parameters(['pergerakan-kapal' => 'pergerakanKapal'])
+         ->middleware([
+             'index' => 'can:pergerakan-kapal-view',
+             'create' => 'can:pergerakan-kapal-create',
+             'store' => 'can:pergerakan-kapal-create',
+             'show' => 'can:pergerakan-kapal-view',
+             'edit' => 'can:pergerakan-kapal-update',
+             'update' => 'can:pergerakan-kapal-update',
+             'destroy' => 'can:pergerakan-kapal-delete'
+         ]);
+
+    // API untuk generate voyage number
+    Route::get('api/pergerakan-kapal/generate-voyage', [\App\Http\Controllers\PergerakanKapalController::class, 'generateVoyageNumber'])
+         ->name('api.pergerakan-kapal.generate-voyage')
+         ->middleware('can:pergerakan-kapal-create');
+
+    // Prospek Kapal Routes
+    Route::resource('prospek-kapal', \App\Http\Controllers\ProspekKapalController::class)
+         ->names([
+             'index' => 'prospek-kapal.index',
+             'create' => 'prospek-kapal.create',
+             'store' => 'prospek-kapal.store',
+             'show' => 'prospek-kapal.show',
+             'edit' => 'prospek-kapal.edit',
+             'update' => 'prospek-kapal.update',
+             'destroy' => 'prospek-kapal.destroy'
+         ])
+         ->parameters(['prospek-kapal' => 'prospekKapal'])
+         ->middleware([
+             'index' => 'can:prospek-kapal-view',
+             'create' => 'can:prospek-kapal-create',
+             'store' => 'can:prospek-kapal-create',
+             'show' => 'can:prospek-kapal-view',
+             'edit' => 'can:prospek-kapal-update',
+             'update' => 'can:prospek-kapal-update',
+             'destroy' => 'can:prospek-kapal-delete'
+         ]);
+
+    // Prospek Kapal additional routes
+    Route::post('prospek-kapal/{prospekKapal}/add-kontainers', [\App\Http\Controllers\ProspekKapalController::class, 'addKontainers'])
+         ->name('prospek-kapal.add-kontainers')
+         ->middleware('can:prospek-kapal-update');
+
+    Route::patch('prospek-kapal/kontainer/{kontainer}/update-status', [\App\Http\Controllers\ProspekKapalController::class, 'updateKontainerStatus'])
+         ->name('prospek-kapal.update-kontainer-status')
+         ->middleware('can:prospek-kapal-update');
 });
 
 // ═══════════════════════════════════════════════════════════════════════

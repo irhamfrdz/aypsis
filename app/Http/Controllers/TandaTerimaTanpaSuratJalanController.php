@@ -3,9 +3,12 @@
 namespace App\Http\Controllers;
 
 use App\Models\TandaTerimaTanpaSuratJalan;
+use App\Models\TandaTerimaDimensiItem;
 use App\Models\Term;
 use App\Models\Pengirim;
 use App\Models\Karyawan;
+use App\Models\MasterTujuanKirim;
+use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -64,8 +67,10 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $pengirims = Pengirim::where('status', 'active')->get();
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])->get();
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
+        $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->get();
+        $master_kapals = MasterKapal::where('status', 'aktif')->get();
 
-        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'supirs', 'kranis'));
+        return view('tanda-terima-tanpa-surat-jalan.create', compact('terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals'));
     }
 
     /**
@@ -77,17 +82,19 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'tanggal_tanda_terima' => 'required|date',
             'nomor_surat_jalan_customer' => 'nullable|string|max:255',
             'nomor_tanda_terima' => 'nullable|string|max:255',
-            'supir' => 'nullable|string|max:255',
-            'kenek' => 'nullable|string|max:255',
             'term_id' => 'nullable|exists:terms,id',
             'aktifitas' => 'nullable|string|max:255',
-            'jenis_pengiriman' => 'nullable|string|max:255',
             'no_kontainer' => 'nullable|string|max:255',
+            'size_kontainer' => 'nullable|string|max:50',
             'pengirim' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:50',
-            'tujuan_pengiriman' => 'nullable|string|max:255',
+            'pic' => 'nullable|string|max:255',
+            'supir' => 'required|string|max:255',
+            'kenek' => 'nullable|string|max:255',
+            'no_plat' => 'nullable|string|max:20',
+            'tujuan_pengiriman' => 'required|string|max:255',
+            'estimasi_naik_kapal' => 'nullable|string|max:255',
             'no_seal' => 'nullable|string|max:255',
-            'PIC' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',
             'nama_barang' => 'nullable|string|max:255',
             'alamat_pengirim' => 'nullable|string',
@@ -98,15 +105,20 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'keterangan_barang' => 'nullable|string',
             'berat' => 'nullable|numeric|min:0',
             'satuan_berat' => 'nullable|string|max:10',
+            // Hidden fields for backward compatibility
             'panjang' => 'nullable|numeric|min:0',
             'lebar' => 'nullable|numeric|min:0',
             'tinggi' => 'nullable|numeric|min:0',
             'meter_kubik' => 'nullable|numeric|min:0',
             'tonase' => 'nullable|numeric|min:0',
-            'tujuan_pengambilan' => 'required|string|max:255',
-            'no_plat' => 'nullable|string|max:20',
-            'status' => 'required|in:draft,terkirim,diterima,selesai',
             'catatan' => 'nullable|string',
+            // Dimensi items array
+            'dimensi_items' => 'nullable|array',
+            'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
+            'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
+            'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
+            'dimensi_items.*.meter_kubik' => 'nullable|numeric|min:0',
+            'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
         ]);
 
         try {
@@ -115,8 +127,30 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Generate tanda terima number
             $validated['no_tanda_terima'] = TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
             $validated['created_by'] = Auth::user()->name;
+            $validated['status'] = 'draft'; // Default status
 
-            TandaTerimaTanpaSuratJalan::create($validated);
+            // Remove dimensi_items from main validation data
+            $dimensiItems = $validated['dimensi_items'] ?? [];
+            unset($validated['dimensi_items']);
+
+            // Create main record
+            $tandaTerima = TandaTerimaTanpaSuratJalan::create($validated);
+
+            // Create dimensi items if provided
+            if (!empty($dimensiItems)) {
+                foreach ($dimensiItems as $index => $item) {
+                    if (!empty($item['panjang']) || !empty($item['lebar']) || !empty($item['tinggi']) || !empty($item['tonase'])) {
+                        $tandaTerima->dimensiItems()->create([
+                            'panjang' => $item['panjang'] ?? null,
+                            'lebar' => $item['lebar'] ?? null,
+                            'tinggi' => $item['tinggi'] ?? null,
+                            'meter_kubik' => $item['meter_kubik'] ?? null,
+                            'tonase' => $item['tonase'] ?? null,
+                            'item_order' => $index
+                        ]);
+                    }
+                }
+            }
 
             DB::commit();
 
@@ -146,8 +180,10 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         $pengirims = Pengirim::where('status', 'active')->get();
         $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])->get();
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
+        $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->get();
+        $master_kapals = MasterKapal::where('status', 'aktif')->get();
 
-        return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'supirs', 'kranis'));
+        return view('tanda-terima-tanpa-surat-jalan.edit', compact('tandaTerimaTanpaSuratJalan', 'terms', 'pengirims', 'supirs', 'kranis', 'tujuan_kirims', 'master_kapals'));
     }
 
     /**
@@ -165,9 +201,11 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'aktifitas' => 'nullable|string|max:255',
             'jenis_pengiriman' => 'nullable|string|max:255',
             'no_kontainer' => 'nullable|string|max:255',
+            'size_kontainer' => 'nullable|string|max:50',
             'pengirim' => 'required|string|max:255',
             'telepon' => 'nullable|string|max:50',
             'tujuan_pengiriman' => 'nullable|string|max:255',
+            'estimasi_naik_kapal' => 'nullable|string|max:255',
             'no_seal' => 'nullable|string|max:255',
             'PIC' => 'nullable|string|max:255',
             'penerima' => 'required|string|max:255',

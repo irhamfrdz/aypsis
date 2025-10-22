@@ -67,24 +67,8 @@
                 @endif
             </select>
         @elseif($isAntarKontainerSewa)
-            {{-- For antar kontainer sewa, show dropdown from kontainers database filtered by ukuran --}}
-            @if(isset($kontainerList) && $kontainerList->isNotEmpty())
-                <select name="nomor_kontainer[]" class="select-kontainer block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5 pr-10" required>
-                    <option value="">-- Pilih Kontainer {{ $permohonan->ukuran }}ft #{{ $i + 1 }} --</option>
-                    @foreach($kontainerList as $kontainer)
-                        <option value="{{ $kontainer->nomor_seri_gabungan }}">
-                            {{ $kontainer->nomor_seri_gabungan }}
-                            @if($kontainer->ukuran)
-                                ({{ $kontainer->ukuran }}ft)
-                            @endif
-                        </option>
-                    @endforeach
-                </select>
-            @else
-                <div class="block w-full rounded-lg border border-red-300 bg-red-50 shadow p-2.5 text-red-700">
-                    Tidak ada kontainer {{ $permohonan->ukuran }}ft yang tersedia
-                </div>
-            @endif
+            {{-- For antar kontainer sewa, allow free text input --}}
+            <input type="text" name="nomor_kontainer[]" class="block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5" placeholder="Masukkan nomor kontainer {{ $permohonan->ukuran }}ft #{{ $i + 1 }}" required>
         @elseif($isPerbaikanKontainer)
             {{-- For perbaikan kontainer, allow free text input regardless of vendor --}}
             <input type="text" name="nomor_kontainer[]" class="block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5" placeholder="Masukkan nomor kontainer #{{ $i + 1 }}" required>
@@ -129,7 +113,7 @@
     @if($isAntarKontainerPerbaikan)
         Pilih dari master stock kontainer {{ $permohonan->ukuran }}ft atau ketik nomor kontainer yang akan diantar untuk perbaikan.
     @elseif($isAntarKontainerSewa)
-        Pilih kontainer {{ $permohonan->ukuran }}ft dari database yang akan diantar ke customer.
+        Masukkan nomor kontainer {{ $permohonan->ukuran }}ft yang akan diantar ke customer.
     @elseif($isPerbaikanKontainer)
         Masukkan nomor kontainer yang akan diperbaiki.
     @elseif($isAntarSewa)

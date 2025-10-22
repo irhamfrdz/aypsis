@@ -38,6 +38,11 @@ class Karyawan extends Model
         return $this->hasMany(CrewEquipment::class, 'karyawan_id', 'id');
     }
 
+    public function familyMembers()
+    {
+        return $this->hasMany(KaryawanFamilyMember::class);
+    }
+
     public function isAbk(): bool
     {
         return strtolower((string)($this->divisi ?? '')) === 'abk' || strtolower((string)($this->pekerjaan ?? '')) === 'abk';

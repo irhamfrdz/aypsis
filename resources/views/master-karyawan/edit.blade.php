@@ -336,6 +336,85 @@
             </div>
         </fieldset>
 
+        {{-- Susunan Keluarga --}}
+        <fieldset class="border p-4 rounded-md mb-4">
+            <legend class="text-lg font-semibold text-gray-800 px-2">Susunan Keluarga</legend>
+            <div class="form-section pt-4">
+                <div class="mb-4">
+                    <p class="text-sm text-gray-600 mb-2">Kelola informasi anggota keluarga</p>
+                    <button type="button" id="addFamilyMember" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Tambah Anggota Keluarga
+                    </button>
+                </div>
+
+                <div class="overflow-x-auto">
+                    <table class="min-w-full border border-gray-300">
+                        <thead>
+                            <tr class="bg-gray-100">
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Hubungan</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Nama</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Tgl. Lahir</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Alamat</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">No. Telepon</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">No. NIK / KTP</th>
+                                <th class="border border-gray-300 px-2 py-2 text-center text-xs font-semibold text-gray-700 uppercase tracking-wider">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="familyMembersContainer">
+                            @foreach($karyawan->familyMembers ?? [] as $index => $familyMember)
+                                <tr class="family-member-row" data-index="{{ $index }}">
+                                    <td class="border border-gray-300 px-2 py-2">
+                                        <input type="hidden" name="family_members[{{ $index }}][id]" value="{{ $familyMember->id }}">
+                                        <select name="family_members[{{ $index }}][hubungan]" class="w-full rounded border-gray-300 text-xs p-1" required>
+                                            <option value="">-- Pilih --</option>
+                                            <option value="Suami" {{ $familyMember->hubungan == 'Suami' ? 'selected' : '' }}>Suami</option>
+                                            <option value="Istri" {{ $familyMember->hubungan == 'Istri' ? 'selected' : '' }}>Istri</option>
+                                            <option value="Anak" {{ $familyMember->hubungan == 'Anak' ? 'selected' : '' }}>Anak</option>
+                                            <option value="Ayah" {{ $familyMember->hubungan == 'Ayah' ? 'selected' : '' }}>Ayah</option>
+                                            <option value="Ibu" {{ $familyMember->hubungan == 'Ibu' ? 'selected' : '' }}>Ibu</option>
+                                            <option value="Kakak" {{ $familyMember->hubungan == 'Kakak' ? 'selected' : '' }}>Kakak</option>
+                                            <option value="Adik" {{ $familyMember->hubungan == 'Adik' ? 'selected' : '' }}>Adik</option>
+                                            <option value="Kakek" {{ $familyMember->hubungan == 'Kakek' ? 'selected' : '' }}>Kakek</option>
+                                            <option value="Nenek" {{ $familyMember->hubungan == 'Nenek' ? 'selected' : '' }}>Nenek</option>
+                                            <option value="Paman" {{ $familyMember->hubungan == 'Paman' ? 'selected' : '' }}>Paman</option>
+                                            <option value="Bibi" {{ $familyMember->hubungan == 'Bibi' ? 'selected' : '' }}>Bibi</option>
+                                            <option value="Lainnya" {{ $familyMember->hubungan == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                                            @if(!in_array($familyMember->hubungan, ['', 'Suami', 'Istri', 'Anak', 'Ayah', 'Ibu', 'Kakak', 'Adik', 'Kakek', 'Nenek', 'Paman', 'Bibi', 'Lainnya']))
+                                                <option value="{{ $familyMember->hubungan }}" selected>{{ $familyMember->hubungan }}</option>
+                                            @endif
+                                        </select>
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-2">
+                                        <input type="text" name="family_members[{{ $index }}][nama]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Nama lengkap" value="{{ $familyMember->nama }}" required>
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-2">
+                                        <input type="date" name="family_members[{{ $index }}][tanggal_lahir]" class="w-full rounded border-gray-300 text-xs p-1" value="{{ $familyMember->tanggal_lahir ? $familyMember->tanggal_lahir->format('Y-m-d') : '' }}">
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-2">
+                                        <input type="text" name="family_members[{{ $index }}][alamat]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Alamat" value="{{ $familyMember->alamat }}">
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-2">
+                                        <input type="tel" name="family_members[{{ $index }}][no_telepon]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="No. Telp" value="{{ $familyMember->no_telepon }}">
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-2">
+                                        <input type="text" name="family_members[{{ $index }}][nik_ktp]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" value="{{ $familyMember->nik_ktp }}">
+                                    </td>
+                                    <td class="border border-gray-300 px-2 py-2 text-center">
+                                        <button type="button" class="remove-family-member text-red-600 hover:text-red-800 font-medium text-xs px-2 py-1 border border-red-300 rounded hover:bg-red-50">
+                                            Hapus
+                                        </button>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </fieldset>
+
         <div class="flex justify-end mt-8">
             <a href="{{ route('master.karyawan.index') }}" class="inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 mr-3">
                 Batal
@@ -369,6 +448,113 @@
 
             // Data pekerjaan dari database
             const pekerjaanByDivisi = @json($pekerjaanByDivisi);
+
+            // Family members functionality
+            let familyMemberCounter = {{ count($karyawan->familyMembers ?? []) }};
+            const addFamilyMemberBtn = document.getElementById('addFamilyMember');
+            const familyMembersContainer = document.getElementById('familyMembersContainer');
+
+            // Function to create family member form
+            function createFamilyMemberForm(index, data = {}) {
+                const relationshipOptions = [
+                    { value: 'Suami', text: 'Suami' },
+                    { value: 'Istri', text: 'Istri' },
+                    { value: 'Anak', text: 'Anak' },
+                    { value: 'Ayah', text: 'Ayah' },
+                    { value: 'Ibu', text: 'Ibu' },
+                    { value: 'Kakak', text: 'Kakak' },
+                    { value: 'Adik', text: 'Adik' },
+                    { value: 'Kakek', text: 'Kakek' },
+                    { value: 'Nenek', text: 'Nenek' },
+                    { value: 'Paman', text: 'Paman' },
+                    { value: 'Bibi', text: 'Bibi' },
+                    { value: 'Lainnya', text: 'Lainnya' }
+                ];
+
+                // Check if current hubungan value is not in standard options
+                const standardValues = relationshipOptions.map(opt => opt.value);
+                const hasCustomValue = data.hubungan && !standardValues.includes(data.hubungan);
+
+                let relationshipOptionsHtml = relationshipOptions.map(option =>
+                    `<option value="${option.value}" ${data.hubungan === option.value ? 'selected' : ''}>${option.text}</option>`
+                ).join('');
+
+                // Add custom value if it exists and not in standard options
+                if (hasCustomValue) {
+                    relationshipOptionsHtml += `<option value="${data.hubungan}" selected>${data.hubungan}</option>`;
+                }
+
+                return `
+                    <tr class="family-member-row" data-index="${index}">
+                        <td class="border border-gray-300 px-2 py-2">
+                            ${data.id ? `<input type="hidden" name="family_members[${index}][id]" value="${data.id}">` : ''}
+                            <select name="family_members[${index}][hubungan]" class="w-full rounded border-gray-300 text-xs p-1" required>
+                                <option value="">-- Pilih --</option>
+                                ${relationshipOptionsHtml}
+                            </select>
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="text" name="family_members[${index}][nama]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Nama lengkap" value="${data.nama || ''}" required>
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="date" name="family_members[${index}][tanggal_lahir]" class="w-full rounded border-gray-300 text-xs p-1" value="${data.tanggal_lahir || ''}">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="text" name="family_members[${index}][alamat]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="Alamat" value="${data.alamat || ''}">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="tel" name="family_members[${index}][no_telepon]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="No. Telp" value="${data.no_telepon || ''}">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2">
+                            <input type="text" name="family_members[${index}][nik_ktp]" class="w-full rounded border-gray-300 text-xs p-1" placeholder="16 digit NIK" maxlength="16" pattern="[0-9]{16}" value="${data.nik_ktp || ''}">
+                        </td>
+                        <td class="border border-gray-300 px-2 py-2 text-center">
+                            <button type="button" class="remove-family-member text-red-600 hover:text-red-800 font-medium text-xs px-2 py-1 border border-red-300 rounded hover:bg-red-50">
+                                Hapus
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }
+
+            // Add family member
+            if (addFamilyMemberBtn) {
+                addFamilyMemberBtn.addEventListener('click', function() {
+                    const familyMemberHtml = createFamilyMemberForm(familyMemberCounter);
+                    familyMembersContainer.insertAdjacentHTML('beforeend', familyMemberHtml);
+                    familyMemberCounter++;
+                    updateFamilyMemberNumbers();
+                });
+            }
+
+            // Remove family member
+            if (familyMembersContainer) {
+                familyMembersContainer.addEventListener('click', function(e) {
+                    if (e.target.closest('.remove-family-member')) {
+                        const familyMemberRow = e.target.closest('.family-member-row');
+                        familyMemberRow.remove();
+                        updateFamilyMemberNumbers();
+                    }
+                });
+            }
+
+            // Update family member numbers and reindex form names
+            function updateFamilyMemberNumbers() {
+                const familyMembers = familyMembersContainer.querySelectorAll('.family-member-row');
+                familyMembers.forEach((member, index) => {
+                    member.setAttribute('data-index', index);
+
+                    // Update all input names to maintain proper indexing
+                    const inputs = member.querySelectorAll('input, select');
+                    inputs.forEach(input => {
+                        const name = input.getAttribute('name');
+                        if (name && name.includes('family_members[')) {
+                            const fieldName = name.split('][')[1];
+                            input.setAttribute('name', `family_members[${index}][${fieldName}`);
+                        }
+                    });
+                });
+            }
 
             // Fungsi untuk memperbarui opsi pekerjaan
             function updatePekerjaanOptions() {

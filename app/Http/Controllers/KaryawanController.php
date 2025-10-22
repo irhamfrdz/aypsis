@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\User;
 use App\Models\Karyawan;
+use App\Models\KaryawanFamilyMember;
 use App\Models\CrewEquipment;
 use App\Models\Divisi;
 use App\Models\Pekerjaan;
@@ -610,6 +611,13 @@ class KaryawanController extends Controller
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
+            'family_members' => 'nullable|array',
+            'family_members.*.hubungan' => 'nullable|string|max:255',
+            'family_members.*.nama' => 'nullable|string|max:255',
+            'family_members.*.tanggal_lahir' => 'nullable|date',
+            'family_members.*.alamat' => 'nullable|string|max:500',
+            'family_members.*.no_telepon' => 'nullable|string|max:20',
+            'family_members.*.nik_ktp' => 'nullable|string|regex:/^[0-9]{16}$/',
         ], [
             'nik.regex' => 'NIK harus berupa angka saja, tidak boleh ada huruf.',
             'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka saja, tidak boleh ada huruf.',
@@ -618,9 +626,13 @@ class KaryawanController extends Controller
             'email.unique' => 'Email sudah terdaftar dalam sistem.',
             'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
             'kk.unique' => 'Nomor KK sudah terdaftar dalam sistem.',
+            'family_members.*.nik_ktp.regex' => 'NIK/KTP anggota keluarga harus berupa 16 digit angka saja.',
         ]);
 
-        // Convert data to uppercase except email
+        // Convert data to uppercase except email and family_members
+        $familyMembers = $validated['family_members'] ?? [];
+        unset($validated['family_members']); // Remove from main data
+
         foreach ($validated as $key => $value) {
             if ($value !== null && $key !== 'email') {
                 $validated[$key] = strtoupper($value);
@@ -629,6 +641,23 @@ class KaryawanController extends Controller
 
         //Simpan data dalam database
         $karyawan = Karyawan::create($validated);
+
+        // Handle family members
+        if (!empty($familyMembers)) {
+            foreach ($familyMembers as $memberData) {
+                if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
+                    // Convert family member data to uppercase except date fields
+                    foreach ($memberData as $key => $value) {
+                        if ($value !== null && $key !== 'tanggal_lahir') {
+                            $memberData[$key] = strtoupper($value);
+                        }
+                    }
+
+                    $karyawan->familyMembers()->create($memberData);
+                }
+            }
+        }
+
         if ($karyawan->isAbk()) {
             return redirect()->route('master.karyawan.crew-checklist-new', $karyawan->id)
                 ->with('success', 'Data karyawan berhasil ditambahkan. Silakan lengkapi checklist kelengkapan crew.');
@@ -761,6 +790,14 @@ class KaryawanController extends Controller
             'cabang' => 'nullable|string|max:255',
             'nik_supervisor' => 'nullable|string|max:255',
             'supervisor' => 'nullable|string|max:255',
+            'family_members' => 'nullable|array',
+            'family_members.*.id' => 'nullable|integer|exists:karyawan_family_members,id',
+            'family_members.*.hubungan' => 'nullable|string|max:255',
+            'family_members.*.nama' => 'nullable|string|max:255',
+            'family_members.*.tanggal_lahir' => 'nullable|date',
+            'family_members.*.alamat' => 'nullable|string|max:500',
+            'family_members.*.no_telepon' => 'nullable|string|max:20',
+            'family_members.*.nik_ktp' => 'nullable|string|regex:/^[0-9]{16}$/',
         ], [
             'nik.regex' => 'NIK harus berupa angka.',
             'ktp.regex' => 'Nomor KTP harus berupa 16 digit angka.',
@@ -768,7 +805,12 @@ class KaryawanController extends Controller
             'nik.unique' => 'NIK sudah terdaftar dalam sistem.',
             'email.unique' => 'Email sudah terdaftar dalam sistem.',
             'ktp.unique' => 'Nomor KTP sudah terdaftar dalam sistem.',
+            'family_members.*.nik_ktp.regex' => 'NIK/KTP anggota keluarga harus berupa 16 digit angka saja.',
         ]);
+
+        // Handle family members data separately
+        $familyMembers = $validated['family_members'] ?? [];
+        unset($validated['family_members']); // Remove from main data
 
         // Convert data to uppercase except email
         foreach ($validated as $key => $value) {
@@ -778,6 +820,40 @@ class KaryawanController extends Controller
         }
 
         $karyawan->update($validated);
+
+        // Handle family members update
+        if (isset($familyMembers)) {
+            // Get existing family member IDs to track which ones to keep
+            $existingIds = collect($familyMembers)->pluck('id')->filter()->toArray();
+            
+            // Delete family members that are no longer in the form
+            $karyawan->familyMembers()->whereNotIn('id', $existingIds)->delete();
+            
+            // Update or create family members
+            foreach ($familyMembers as $memberData) {
+                if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
+                    // Convert family member data to uppercase except date fields
+                    foreach ($memberData as $key => $value) {
+                        if ($value !== null && $key !== 'tanggal_lahir' && $key !== 'id') {
+                            $memberData[$key] = strtoupper($value);
+                        }
+                    }
+
+                    if (!empty($memberData['id'])) {
+                        // Update existing family member
+                        $familyMember = $karyawan->familyMembers()->find($memberData['id']);
+                        if ($familyMember) {
+                            unset($memberData['id']); // Remove id from update data
+                            $familyMember->update($memberData);
+                        }
+                    } else {
+                        // Create new family member
+                        unset($memberData['id']); // Remove id field for new records
+                        $karyawan->familyMembers()->create($memberData);
+                    }
+                }
+            }
+        }
 
         // Jika akses dari onboarding, redirect ke crew checklist
         if (request()->has('onboarding') && request()->onboarding == '1') {
@@ -1433,15 +1509,15 @@ class KaryawanController extends Controller
 
             DB::commit();
 
-            // For onboarding crew checklist completion, redirect to dashboard 
+            // For onboarding crew checklist completion, redirect to dashboard
             // so users can see "setup permission" message if they don't have permissions
-            if (request()->routeIs('karyawan.crew-checklist.update') || 
+            if (request()->routeIs('karyawan.crew-checklist.update') ||
                 str_contains(request()->url(), 'onboarding')) {
                 Auth::logout();
                 return redirect()->route('login')
                     ->with('success', 'Checklist kelengkapan crew berhasil diperbarui. Silakan login kembali untuk melanjutkan.');
             }
-            
+
             // For master context, redirect back to checklist page
             return redirect()->route('master.karyawan.crew-checklist-new', $id)
                 ->with('success', 'Checklist kelengkapan crew berhasil diperbarui.');
