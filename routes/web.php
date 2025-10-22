@@ -275,7 +275,7 @@ Route::middleware([
              ->name('karyawan.store')
              ->middleware('can:master-karyawan-create');
         Route::get('karyawan/get-next-nik', [KaryawanController::class, 'getNextNik'])
-             ->name('get-next-nik')
+             ->name('master.karyawan.get-next-nik')
              ->middleware('can:master-karyawan-create');
          Route::get('karyawan/{karyawan}', [KaryawanController::class, 'show'])
               ->name('karyawan.show')
