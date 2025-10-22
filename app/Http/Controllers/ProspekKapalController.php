@@ -115,11 +115,9 @@ class ProspekKapalController extends Controller
         $prospekKapal->load(['pergerakanKapal', 'kontainers.tandaTerima', 'kontainers.tandaTerimaTanpaSuratJalan']);
 
         // Get available containers from tanda terima that:
-        // 1. Have status 'approved'
-        // 2. Have matching estimasi_nama_kapal with this prospek kapal's nama_kapal
-        // 3. Haven't been added to this specific prospek kapal yet
-        $availableTandaTerima = TandaTerima::where('status', 'approved')
-            ->where('estimasi_nama_kapal', $prospekKapal->nama_kapal)
+        // 1. Have matching estimasi_nama_kapal with this prospek kapal's nama_kapal
+        // 2. Haven't been added to this specific prospek kapal yet
+        $availableTandaTerima = TandaTerima::where('estimasi_nama_kapal', $prospekKapal->nama_kapal)
             ->whereNotIn('id', function($query) use ($prospekKapal) {
                 $query->select('tanda_terima_id')
                       ->from('prospek_kapal_kontainers')
@@ -129,8 +127,7 @@ class ProspekKapalController extends Controller
             ->get();
 
         // For TandaTerimaTanpaSJ - check estimasi_naik_kapal field
-        $availableTandaTerimaTanpaSJ = TandaTerimaTanpaSuratJalan::where('status', 'approved')
-            ->where('estimasi_naik_kapal', $prospekKapal->nama_kapal)
+        $availableTandaTerimaTanpaSJ = TandaTerimaTanpaSuratJalan::where('estimasi_naik_kapal', $prospekKapal->nama_kapal)
             ->whereNotIn('id', function($query) use ($prospekKapal) {
                 $query->select('tanda_terima_tanpa_sj_id')
                       ->from('prospek_kapal_kontainers')

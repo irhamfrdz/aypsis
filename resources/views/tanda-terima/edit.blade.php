@@ -31,9 +31,21 @@
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
                         <i class="fas fa-paper-plane text-xs mr-2"></i> Submitted
                     </span>
-                @else
+                @elseif($tandaTerima->status == 'approved')
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        <i class="fas fa-check-circle text-xs mr-2"></i> Completed
+                        <i class="fas fa-check-circle text-xs mr-2"></i> Approved
+                    </span>
+                @elseif($tandaTerima->status == 'completed')
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
+                        <i class="fas fa-check-double text-xs mr-2"></i> Completed
+                    </span>
+                @elseif($tandaTerima->status == 'cancelled')
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                        <i class="fas fa-times-circle text-xs mr-2"></i> Cancelled
+                    </span>
+                @else
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                        <i class="fas fa-question-circle text-xs mr-2"></i> {{ ucfirst($tandaTerima->status) }}
                     </span>
                 @endif
             </div>
@@ -724,7 +736,9 @@
         }
         $('#hiddenMeterKubik').val(totalVolume > 0 ? totalVolume.toFixed(6) : '');
         $('#hiddenTonase').val(totalTonase > 0 ? totalTonase.toFixed(2) : '');
-    }    // Legacy function for backward compatibility
+    }    
+    
+    // Legacy function for backward compatibility
     function calculateMeterKubik() {
         calculateAllVolumesAndTotals();
     }

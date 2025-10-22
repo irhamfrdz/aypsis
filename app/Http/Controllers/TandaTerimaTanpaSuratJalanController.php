@@ -34,11 +34,6 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $query->search($request->search);
         }
 
-        // Status filter
-        if ($request->filled('status')) {
-            $query->byStatus($request->status);
-        }
-
         // Date range filter
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->byDateRange($request->start_date, $request->end_date);
@@ -49,10 +44,6 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         // Statistics
         $stats = [
             'total' => TandaTerimaTanpaSuratJalan::count(),
-            'draft' => TandaTerimaTanpaSuratJalan::byStatus('draft')->count(),
-            'terkirim' => TandaTerimaTanpaSuratJalan::byStatus('terkirim')->count(),
-            'diterima' => TandaTerimaTanpaSuratJalan::byStatus('diterima')->count(),
-            'selesai' => TandaTerimaTanpaSuratJalan::byStatus('selesai')->count(),
         ];
 
         return view('tanda-terima-tanpa-surat-jalan.index', compact('tandaTerimas', 'stats'));
@@ -127,7 +118,6 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             // Generate tanda terima number
             $validated['no_tanda_terima'] = TandaTerimaTanpaSuratJalan::generateNoTandaTerima();
             $validated['created_by'] = Auth::user()->name;
-            $validated['status'] = 'draft'; // Default status
 
             // Remove dimensi_items from main validation data
             $dimensiItems = $validated['dimensi_items'] ?? [];
@@ -225,7 +215,6 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'tonase' => 'nullable|numeric|min:0',
             'tujuan_pengambilan' => 'required|string|max:255',
             'no_plat' => 'nullable|string|max:20',
-            'status' => 'required|in:draft,terkirim,diterima,selesai',
             'catatan' => 'nullable|string',
         ]);
 

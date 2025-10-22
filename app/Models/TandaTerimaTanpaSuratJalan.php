@@ -45,7 +45,6 @@ class TandaTerimaTanpaSuratJalan extends Model
         'tinggi',
         'meter_kubik',
         'tonase',
-        'status',
         'catatan',
         'created_by',
         'updated_by',
@@ -61,34 +60,6 @@ class TandaTerimaTanpaSuratJalan extends Model
         'tonase' => 'decimal:2',
         'jumlah_barang' => 'integer',
     ];
-
-    /**
-     * Get the status badge color
-     */
-    public function getStatusBadgeAttribute()
-    {
-        return match($this->status) {
-            'draft' => 'bg-gray-100 text-gray-800',
-            'terkirim' => 'bg-blue-100 text-blue-800',
-            'diterima' => 'bg-yellow-100 text-yellow-800',
-            'selesai' => 'bg-green-100 text-green-800',
-            default => 'bg-gray-100 text-gray-800'
-        };
-    }
-
-    /**
-     * Get the status label
-     */
-    public function getStatusLabelAttribute()
-    {
-        return match($this->status) {
-            'draft' => 'Draft',
-            'terkirim' => 'Terkirim',
-            'diterima' => 'Diterima',
-            'selesai' => 'Selesai',
-            default => 'Unknown'
-        };
-    }
 
     /**
      * Generate automatic tanda terima number
@@ -113,14 +84,6 @@ class TandaTerimaTanpaSuratJalan extends Model
         }
 
         return 'TTTSJ/' . $year . '/' . $month . '/' . str_pad($newNumber, 4, '0', STR_PAD_LEFT);
-    }
-
-    /**
-     * Scope for filtering by status
-     */
-    public function scopeByStatus($query, $status)
-    {
-        return $query->where('status', $status);
     }
 
     /**

@@ -32,11 +32,6 @@ class TandaTerimaController extends Controller
             });
         }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
         // Filter by date range
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->whereBetween('tanggal_surat_jalan', [$request->start_date, $request->end_date]);

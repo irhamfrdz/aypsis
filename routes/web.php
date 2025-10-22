@@ -2225,4 +2225,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('auth-check', function () {
         return view('auth-check');
     })->name('auth.check');
+
+    // Debug NIK route
+    Route::get('debug-nik', function () {
+        return view('debug-nik');
+    })->name('debug.nik');
 });

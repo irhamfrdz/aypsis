@@ -35,7 +35,6 @@ class TandaTerima extends Model
         'meter_kubik',
         'tonase',
         'catatan',
-        'status',
         'created_by',
         'updated_by',
         'dimensi_items',
@@ -78,14 +77,6 @@ class TandaTerima extends Model
     public function updater()
     {
         return $this->belongsTo(User::class, 'updated_by');
-    }
-
-    /**
-     * Scope untuk filter berdasarkan status
-     */
-    public function scopeStatus($query, $status)
-    {
-        return $query->where('status', $status);
     }
 
     /**
