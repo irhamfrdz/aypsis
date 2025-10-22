@@ -90,21 +90,11 @@ class Karyawan extends Model
         $minNik = 1503;
         $maxNik = 9999;
         
-        // Get the highest NIK in our designated range (1503-9999)
-        $lastNik = self::whereRaw('nik REGEXP \'^[0-9]+$\'')
-                      ->whereRaw('CAST(nik AS UNSIGNED) >= ? AND CAST(nik AS UNSIGNED) <= ?', [$minNik, $maxNik])
-                      ->orderByRaw('CAST(nik AS UNSIGNED) DESC')
-                      ->value('nik');
+        // FORCED: Always start from 1503 and find the next available NIK
+        // This ignores any existing NIKs outside our intended range
+        $nextNikNumber = $minNik;
 
-        if ($lastNik) {
-            // Convert to integer and increment
-            $nextNikNumber = (int)$lastNik + 1;
-        } else {
-            // Start from 1503 if no NIK in our range exists
-            $nextNikNumber = $minNik;
-        }
-
-        // Make sure we don't exceed our range and the NIK doesn't already exist
+        // Find the next available NIK starting from 1503
         while ($nextNikNumber <= $maxNik && self::where('nik', (string)$nextNikNumber)->exists()) {
             $nextNikNumber++;
         }
