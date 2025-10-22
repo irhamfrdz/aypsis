@@ -825,10 +825,10 @@ class KaryawanController extends Controller
         if (isset($familyMembers)) {
             // Get existing family member IDs to track which ones to keep
             $existingIds = collect($familyMembers)->pluck('id')->filter()->toArray();
-            
+
             // Delete family members that are no longer in the form
             $karyawan->familyMembers()->whereNotIn('id', $existingIds)->delete();
-            
+
             // Update or create family members
             foreach ($familyMembers as $memberData) {
                 if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
