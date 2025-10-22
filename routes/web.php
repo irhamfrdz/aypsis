@@ -274,6 +274,9 @@ Route::middleware([
         Route::post('karyawan', [KaryawanController::class, 'store'])
              ->name('karyawan.store')
              ->middleware('can:master-karyawan-create');
+        Route::get('karyawan/get-next-nik', [KaryawanController::class, 'getNextNik'])
+             ->name('get-next-nik')
+             ->middleware('can:master-karyawan-create');
          Route::get('karyawan/{karyawan}', [KaryawanController::class, 'show'])
               ->name('karyawan.show')
               ->middleware('can:master-karyawan-view');

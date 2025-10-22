@@ -76,4 +76,27 @@ class Karyawan extends Model
             return $value;
         }
     }
+
+    /**
+     * Generate the next available NIK starting from 1502
+     *
+     * @return string
+     */
+    public static function generateNextNik(): string
+    {
+        // Get the highest NIK that starts with numeric values
+        $lastNik = self::whereRaw('nik REGEXP \'^[0-9]+$\'')
+                      ->orderByRaw('CAST(nik AS UNSIGNED) DESC')
+                      ->value('nik');
+
+        if ($lastNik) {
+            // Convert to integer and increment
+            $nextNikNumber = (int)$lastNik + 1;
+        } else {
+            // Start from 1502 if no numeric NIK exists
+            $nextNikNumber = 1502;
+        }
+
+        return (string)$nextNikNumber;
+    }
 }
