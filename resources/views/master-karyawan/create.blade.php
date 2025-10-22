@@ -78,7 +78,7 @@
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK (Auto-Generated) <span class="text-green-600">*</span></label>
                         <input type="text" name="nik" id="nik" class="{{ $readonlyInputClasses }}" readonly placeholder="NIK akan di-generate otomatis" value="">
-                        <p class="text-xs text-green-600 mt-1 font-medium">💡 <strong>Auto-Generate:</strong> NIK akan dibuat otomatis mulai dari 1502 dan berlanjut secara berurutan (1502, 1503, 1504, dst)</p>
+                        <p class="text-xs text-green-600 mt-1 font-medium">💡 <strong>Auto-Generate:</strong> NIK akan dibuat otomatis mulai dari 1503 dan berlanjut secara berurutan (1503, 1504, 1505, dst)</p>
                     </div>
 
                     <div>
