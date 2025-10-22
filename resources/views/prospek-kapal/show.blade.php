@@ -239,13 +239,16 @@
                     {{-- Tanda Terima --}}
                     @if($availableTandaTerima->count() > 0)
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanda Terima</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Tanda Terima (Estimasi Kapal: {{ $prospekKapal->nama_kapal }})
+                        </label>
                         @foreach($availableTandaTerima as $tt)
                         <div class="flex items-center mb-2">
                             <input type="checkbox" name="tanda_terima_ids[]" value="{{ $tt->id }}"
                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                             <label class="ml-2 text-sm text-gray-900">
                                 {{ $tt->no_surat_jalan }} - {{ $tt->size }}ft ({{ $tt->jumlah_kontainer }} kontainer)
+                                <br><span class="text-xs text-gray-500">Kapal: {{ $tt->estimasi_nama_kapal }}</span>
                             </label>
                         </div>
                         @endforeach
@@ -255,13 +258,16 @@
                     {{-- Tanda Terima Tanpa Surat Jalan --}}
                     @if($availableTandaTerimaTanpaSJ->count() > 0)
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">Tanda Terima Tanpa Surat Jalan</label>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Tanda Terima Tanpa Surat Jalan (Estimasi Kapal: {{ $prospekKapal->nama_kapal }})
+                        </label>
                         @foreach($availableTandaTerimaTanpaSJ as $tttsj)
                         <div class="flex items-center mb-2">
                             <input type="checkbox" name="tanda_terima_tanpa_sj_ids[]" value="{{ $tttsj->id }}"
                                    class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
                             <label class="ml-2 text-sm text-gray-900">
-                                ID: {{ $tttsj->id }} - {{ $tttsj->size }}ft ({{ $tttsj->jumlah_kontainer }} kontainer)
+                                ID: {{ $tttsj->id }} - {{ $tttsj->size_kontainer }}ft ({{ $tttsj->jumlah_kontainer ?? 1 }} kontainer)
+                                <br><span class="text-xs text-gray-500">Kapal: {{ $tttsj->estimasi_naik_kapal }}</span>
                             </label>
                         </div>
                         @endforeach
@@ -270,7 +276,12 @@
 
                     @if($availableTandaTerima->count() == 0 && $availableTandaTerimaTanpaSJ->count() == 0)
                     <div class="text-center py-4">
-                        <p class="text-sm text-gray-500">Tidak ada tanda terima yang tersedia untuk ditambahkan.</p>
+                        <p class="text-sm text-gray-500">
+                            Tidak ada tanda terima yang tersedia untuk kapal "{{ $prospekKapal->nama_kapal }}".
+                        </p>
+                        <p class="text-xs text-gray-400 mt-2">
+                            Pastikan tanda terima sudah disetujui dan memiliki estimasi nama kapal yang sesuai.
+                        </p>
                     </div>
                     @endif
                 </div>
