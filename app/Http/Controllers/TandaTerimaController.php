@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 
 class TandaTerimaController extends Controller
@@ -186,7 +187,7 @@ class TandaTerimaController extends Controller
             'tonase' => 'nullable|numeric|min:0',
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
-            'status' => 'required|in:draft,submitted,completed',
+            'status' => 'nullable|in:draft,submitted,approved,completed,cancelled',
             'dimensi_items' => 'nullable|array',
             'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
             'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
@@ -211,9 +212,13 @@ class TandaTerimaController extends Controller
                 'tonase' => $request->tonase,
                 'tujuan_pengiriman' => $request->tujuan_pengiriman,
                 'catatan' => $request->catatan,
-                'status' => $request->status,
                 'updated_by' => Auth::id(),
             ];
+
+            // Only include status if the column exists and request has status
+            if ($request->has('status') && Schema::hasColumn('tanda_terimas', 'status')) {
+                $updateData['status'] = $request->status;
+            }
 
             // If dimensi_items is present, store it as JSON
             if ($request->has('dimensi_items') && is_array($request->dimensi_items)) {

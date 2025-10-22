@@ -22,33 +22,6 @@
                 <h1 class="text-2xl font-bold text-gray-900">Edit Tanda Terima</h1>
                 <p class="text-gray-600 mt-1">No. Surat Jalan: <span class="font-semibold">{{ $tandaTerima->no_surat_jalan }}</span></p>
             </div>
-            <div>
-                @if($tandaTerima->status == 'draft')
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                        <i class="fas fa-circle text-xs mr-2"></i> Draft
-                    </span>
-                @elseif($tandaTerima->status == 'submitted')
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        <i class="fas fa-paper-plane text-xs mr-2"></i> Submitted
-                    </span>
-                @elseif($tandaTerima->status == 'approved')
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        <i class="fas fa-check-circle text-xs mr-2"></i> Approved
-                    </span>
-                @elseif($tandaTerima->status == 'completed')
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-emerald-100 text-emerald-800">
-                        <i class="fas fa-check-double text-xs mr-2"></i> Completed
-                    </span>
-                @elseif($tandaTerima->status == 'cancelled')
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
-                        <i class="fas fa-times-circle text-xs mr-2"></i> Cancelled
-                    </span>
-                @else
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
-                        <i class="fas fa-question-circle text-xs mr-2"></i> {{ ucfirst($tandaTerima->status) }}
-                    </span>
-                @endif
-            </div>
         </div>
     </div>
 
@@ -63,10 +36,7 @@
 
                 <form action="{{ route('tanda-terima.update', $tandaTerima->id) }}" method="POST" class="p-6">
                     @csrf
-                    @method('PUT')
-
-                    <!-- Hidden status field -->
-                    <input type="hidden" name="status" value="{{ $tandaTerima->status }}">
+                    @method('PUT')>
 
                     <div class="space-y-6">
                         <!-- Estimasi Nama Kapal -->
