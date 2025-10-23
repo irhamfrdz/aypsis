@@ -51,7 +51,10 @@ class SuratJalan extends Model
         'gambar_checkpoint',
         'input_by',
         'input_date',
-        'status'
+        'status',
+        'status_pembayaran',
+        'total_tarif',
+        'jumlah_terbayar'
     ];
 
     protected $casts = [
@@ -60,6 +63,8 @@ class SuratJalan extends Model
         'input_date' => 'datetime',
         'waktu_berangkat' => 'datetime',
         'uang_jalan' => 'decimal:2',
+        'total_tarif' => 'decimal:2',
+        'jumlah_terbayar' => 'decimal:2',
         'jumlah_retur' => 'integer',
         'karton' => 'integer',
         'plastik' => 'integer',
@@ -184,5 +189,110 @@ class SuratJalan extends Model
         ];
 
         return $badges[$this->status] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    /**
+     * Get formatted total tarif
+     */
+    public function getFormattedTotalTarifAttribute()
+    {
+        return $this->total_tarif ? 'Rp ' . number_format((float) $this->total_tarif, 0, ',', '.') : 'Rp 0';
+    }
+
+    /**
+     * Get formatted jumlah terbayar
+     */
+    public function getFormattedJumlahTerbayarAttribute()
+    {
+        return $this->jumlah_terbayar ? 'Rp ' . number_format((float) $this->jumlah_terbayar, 0, ',', '.') : 'Rp 0';
+    }
+
+    /**
+     * Get sisa pembayaran
+     */
+    public function getSisaPembayaranAttribute()
+    {
+        $total = (float) ($this->total_tarif ?? 0);
+        $terbayar = (float) ($this->jumlah_terbayar ?? 0);
+        return $total - $terbayar;
+    }
+
+    /**
+     * Get formatted sisa pembayaran
+     */
+    public function getFormattedSisaPembayaranAttribute()
+    {
+        return 'Rp ' . number_format($this->sisa_pembayaran, 0, ',', '.');
+    }
+
+    /**
+     * Get status pembayaran badge
+     */
+    public function getStatusPembayaranBadgeAttribute()
+    {
+        $badges = [
+            'belum_dibayar' => 'bg-red-100 text-red-800',
+            'sudah_dibayar' => 'bg-green-100 text-green-800',
+        ];
+
+        return $badges[$this->status_pembayaran] ?? 'bg-gray-100 text-gray-800';
+    }
+
+    /**
+     * Get status pembayaran label
+     */
+    public function getStatusPembayaranLabelAttribute()
+    {
+        $labels = [
+            'belum_dibayar' => 'Belum Dibayar',
+            'sudah_dibayar' => 'Sudah Dibayar',
+        ];
+
+        return $labels[$this->status_pembayaran] ?? 'Unknown';
+    }
+
+    /**
+     * Scopes for status pembayaran
+     */
+    public function scopeBelumDibayar($query)
+    {
+        return $query->where('status_pembayaran', 'belum_dibayar');
+    }
+
+    public function scopeSudahDibayar($query)
+    {
+        return $query->where('status_pembayaran', 'sudah_dibayar');
+    }
+
+    /**
+     * Update status pembayaran based on payment amount
+     */
+    public function updateStatusPembayaran($status = null, $totalTarif = null, $jumlahTerbayar = null)
+    {
+        // Update nilai jika diberikan parameter
+        if ($totalTarif !== null) {
+            $this->total_tarif = $totalTarif;
+        }
+
+        if ($jumlahTerbayar !== null) {
+            $this->jumlah_terbayar = $jumlahTerbayar;
+        }
+
+        // Jika status diberikan langsung, gunakan itu
+        if ($status !== null) {
+            $this->status_pembayaran = $status;
+        } else {
+            // Otomatis hitung berdasarkan total dan terbayar
+            $total = (float) ($this->total_tarif ?? 0);
+            $terbayar = (float) ($this->jumlah_terbayar ?? 0);
+
+            if ($terbayar >= $total && $total > 0) {
+                $this->status_pembayaran = 'sudah_dibayar';
+            } else {
+                $this->status_pembayaran = 'belum_dibayar';
+            }
+        }
+
+        $this->save();
     }
 }

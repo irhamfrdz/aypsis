@@ -77,6 +77,10 @@
                             <p class="text-gray-800">{{ $permohonan->ukuran }} ft</p>
                         </div>
                         <div>
+                            <p class="font-medium text-gray-500">Tipe</p>
+                            <p class="text-gray-800">{{ strtoupper($permohonan->tipe ?? 'FCL') }}</p>
+                        </div>
+                        <div>
                             <p class="font-medium text-gray-500">Jumlah Kontainer</p>
                             <p class="text-gray-800">{{ $permohonan->jumlah_kontainer }}</p>
                         </div>
@@ -116,6 +120,10 @@
                         <div>
                             <p class="font-medium text-gray-500">Ukuran</p>
                             <p class="text-gray-800">{{ $suratJalan->size }} ft</p>
+                        </div>
+                        <div>
+                            <p class="font-medium text-gray-500">Tipe</p>
+                            <p class="text-gray-800">{{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }}</p>
                         </div>
                         <div>
                             <p class="font-medium text-gray-500">Jumlah Kontainer</p>
@@ -247,7 +255,7 @@
 
                             {{-- Container inputs for surat jalan --}}
                             <div class="space-y-2">
-                                <label class="block text-sm font-medium text-gray-700">Pilih Nomor Kontainer ({{ $suratJalan->size }}ft)</label>
+                                <label class="block text-sm font-medium text-gray-700">Pilih Nomor Kontainer ({{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} - {{ $suratJalan->size }}ft)</label>
                                 @for ($i = 0; $i < $suratJalan->jumlah_kontainer; $i++)
                                     <div class="relative mt-1">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Kontainer #{{ $i + 1 }}</label>
@@ -261,7 +269,7 @@
                                         </select>
                                     </div>
                                 @endfor
-                                <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer ukuran {{ $suratJalan->size }}ft sesuai jumlah di surat jalan.</p>
+                                <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer tipe {{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} ukuran {{ $suratJalan->size }}ft sesuai jumlah di surat jalan.</p>
                             </div>
 
                             {{-- Common fields --}}

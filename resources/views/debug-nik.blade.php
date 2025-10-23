@@ -6,7 +6,7 @@
 </head>
 <body>
     <h1>Debug NIK Route Server</h1>
-    
+
     <div>
         <h2>1. Test Route Basic</h2>
         <p>Route URL: {{ route('master.karyawan.get-next-nik') }}</p>
@@ -25,7 +25,7 @@
 
     <div>
         <h2>3. Permission Check</h2>
-        <p>Has master-karyawan-create permission: 
+        <p>Has master-karyawan-create permission:
             @can('master-karyawan-create')
                 <span style="color: green;">YES</span>
             @else
@@ -44,7 +44,7 @@
         function testRoute() {
             const resultDiv = document.getElementById('result');
             resultDiv.innerHTML = 'Loading...';
-            
+
             fetch('{{ route("master.karyawan.get-next-nik") }}', {
                 method: 'GET',
                 headers: {

@@ -34,6 +34,11 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             $query->search($request->search);
         }
 
+        // Status filter - skip since this table doesn't have status column
+        // if ($request->filled('status')) {
+        //     $query->where('status', $request->status);
+        // }
+
         // Date range filter
         if ($request->filled('start_date') && $request->filled('end_date')) {
             $query->byDateRange($request->start_date, $request->end_date);
@@ -44,6 +49,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
         // Statistics
         $stats = [
             'total' => TandaTerimaTanpaSuratJalan::count(),
+            'draft' => 0, // TandaTerimaTanpaSuratJalan tidak memiliki kolom status
+            'terkirim' => 0, // Akan diisi jika ada logika status berdasarkan field lain
+            'selesai' => 0, // Akan diisi jika ada logika status berdasarkan field lain
         ];
 
         return view('tanda-terima-tanpa-surat-jalan.index', compact('tandaTerimas', 'stats'));

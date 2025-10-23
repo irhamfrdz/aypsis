@@ -89,7 +89,7 @@ class Karyawan extends Model
         // Define the range for new NIK system: 1503 to 9999
         $minNik = 1503;
         $maxNik = 9999;
-        
+
         // FORCED: Always start from 1503 and find the next available NIK
         // This ignores any existing NIKs outside our intended range
         $nextNikNumber = $minNik;

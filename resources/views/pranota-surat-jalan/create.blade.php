@@ -109,7 +109,7 @@
                 <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
                         <div class="flex items-center gap-3">
-                            <h4 class="text-sm font-semibold text-gray-800">🚚 Pilih Surat Jalan yang Sudah Disetujui</h4>
+                            <h4 class="text-sm font-semibold text-gray-800">🚚 Pilih Surat Jalan</h4>
                             <span id="searchResults" class="text-xs text-gray-500 hidden"></span>
                         </div>
                         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
@@ -202,8 +202,8 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2 2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
                                             </svg>
                                             <p class="font-medium">Tidak ada surat jalan tersedia</p>
-                                            <p class="text-xs mt-1">Tidak ada surat jalan yang sudah disetujui dan belum memiliki pranota.</p>
-                                            <p class="text-xs">Pastikan surat jalan sudah disetujui di kedua level approval.</p>
+                                            <p class="text-xs mt-1">Tidak ada surat jalan yang belum memiliki pranota.</p>
+                                            <p class="text-xs">Semua surat jalan dapat dimasukkan ke pranota.</p>
                                         </div>
                                     </td>
                                 </tr>
@@ -213,7 +213,7 @@
                 </div>
                 <div class="bg-gray-50 px-3 py-2 border-t border-gray-200">
                     <p class="text-xs text-gray-600">
-                        * Hanya surat jalan yang sudah di-approve oleh <strong>Approval Tugas 1</strong> dan <strong>Approval Tugas 2</strong> dan belum memiliki pranota.
+                        * Semua surat jalan yang belum memiliki pranota dapat dipilih.
                     </p>
                 </div>
 

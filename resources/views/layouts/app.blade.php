@@ -267,6 +267,22 @@
                     <span class="text-xs font-medium menu-text">Dashboard</span>
                 </a>
 
+                <!-- Prospek Menu -->
+                @php
+                    $isProspekRoute = Request::routeIs('prospek.*');
+                @endphp
+
+                @if($user && $user->can('prospek-view'))
+                <a href="{{ route('prospek.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isProspekRoute ? 'bg-green-100 text-green-700 font-bold' : 'text-gray-700 hover:bg-green-100 hover:text-green-700' }}">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isProspekRoute ? 'bg-green-200' : 'bg-green-50 group-hover:bg-green-200' }}">
+                        <svg class="w-4 h-4 {{ $isProspekRoute ? 'text-green-700' : 'text-green-600 group-hover:text-green-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16l2.879-2.879m0 0a3 3 0 104.243-4.242 3 3 0 00-4.243 4.242zM21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                    </div>
+                    <span class="text-xs font-medium menu-text">Prospek</span>
+                </a>
+                @endif
+
                 <!-- Master Data Section -->
                 @php
                     $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');
@@ -640,25 +656,6 @@
             </svg>
         </div>
         <span class="text-xs font-medium menu-text">Gate In</span>
-    </a>
-</div>
-@endif
-
-{{-- Prospek Kapal Management Section --}}
-@php
-    $isProspekKapalRoute = Request::routeIs('prospek-kapal.*');
-    $hasProspekKapalPermissions = $user && ($user->can('prospek-kapal-view') || $user->can('prospek-kapal-create') || $user->can('prospek-kapal-update') || $user->can('prospek-kapal-delete'));
-@endphp
-
-@if($hasProspekKapalPermissions)
-<div class="mt-4 mb-4">
-    <a href="{{ route('prospek-kapal.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isProspekKapalRoute ? 'bg-cyan-100 text-cyan-700 font-bold' : 'text-gray-700 hover:bg-cyan-100 hover:text-cyan-700' }}">
-        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isProspekKapalRoute ? 'bg-cyan-200' : 'bg-cyan-50 group-hover:bg-cyan-200' }}">
-            <svg class="w-4 h-4 {{ $isProspekKapalRoute ? 'text-cyan-700' : 'text-cyan-600 group-hover:text-cyan-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"/>
-            </svg>
-        </div>
-        <span class="text-xs font-medium menu-text">Prospek Kapal</span>
     </a>
 </div>
 @endif
@@ -1079,12 +1076,13 @@
 
 {{-- Pembayaran Dropdown --}}
 @php
-    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
+    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
     $hasPaymentPermissions = $user && (
         $user->can('pembayaran-pranota-kontainer-view') ||
         $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
         $user->can('pembayaran-pranota-cat-view') ||
         $user->can('pembayaran-pranota-supir-view') ||
+        $user->can('pembayaran-pranota-surat-jalan-view') ||
         $user->can('pembayaran-aktivitas-lainnya-view') ||
         $user->can('pembayaran-uang-muka-view') ||
         $user->can('pembayaran-ob-view') ||
@@ -1110,8 +1108,8 @@
     <div id="pembayaran-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isPaymentRoute) style="display: block;" @endif>
         {{-- Aktivitas Supir Sub-dropdown --}}
         @php
-            $isAktivitasSupirPaymentRoute = Request::routeIs('pembayaran-pranota-supir.*');
-            $hasAktivitasSupirPaymentPermission = $user && $user->can('pembayaran-pranota-supir-view');
+            $isAktivitasSupirPaymentRoute = Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*');
+            $hasAktivitasSupirPaymentPermission = $user && ($user->can('pembayaran-pranota-supir-view') || $user->can('pembayaran-pranota-surat-jalan-view'));
         @endphp
         @if($hasAktivitasSupirPaymentPermission)
         <div class="mt-2 mb-2">
@@ -1136,6 +1134,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
                         Bayar Pranota Supir
+                    </a>
+                @endif
+
+                {{-- Pembayaran Pranota Surat Jalan --}}
+                @if(Route::has('pembayaran-pranota-surat-jalan.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-surat-jalan-view')))
+                    <a href="{{ route('pembayaran-pranota-surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-surat-jalan.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Bayar Pranota Surat Jalan
                     </a>
                 @endif
             </div>

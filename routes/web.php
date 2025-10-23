@@ -2,6 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\KaryawanController;
@@ -35,6 +36,7 @@ use App\Http\Controllers\PembayaranPranotaKontainerController;
 use App\Http\Controllers\PembayaranPranotaCatController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
+use App\Http\Controllers\PembayaranPranotaSuratJalanController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\PembayaranAktivitasLainnyaController;
 use App\Http\Controllers\PembayaranUangMukaController;
@@ -51,6 +53,7 @@ use App\Http\Controllers\OutstandingController;
 use App\Http\Controllers\PranotaSuratJalanController;
 use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\ProspekController;
 
 /*
 |--------------------------------------------------------------------------
@@ -117,6 +120,11 @@ Route::get('test-tujuan-kirim-route', function () {
     return view('test-tujuan-kirim-route');
 })->name('test.tujuan-kirim.route')->middleware('auth');
 
+// Test route tanpa middleware untuk debug navigasi
+Route::get('/test-no-middleware', function() {
+    return '<h1>Test Tanpa Middleware</h1><p>Ini test tanpa middleware apapun. Timestamp: ' . now() . '</p><a href="/dashboard">Ke Dashboard</a>';
+})->name('test.no.middleware');
+
 // Rute yang dilindungi middleware auth (tambahkan pemeriksaan karyawan, persetujuan, dan checklist ABK)
 Route::middleware([
     'auth',
@@ -150,9 +158,9 @@ Route::middleware([
     Route::get('/dashboard', [DashboardController::class, 'index'])
          ->name('dashboard');
 
-    /*
+/*
     |===========================================================================
-    | 👥 USER & PERMISSION MANAGEMENT - Granular Permission System
+    | �👥 USER & PERMISSION MANAGEMENT - Granular Permission System
     |===========================================================================
     | User administration with matrix-based permission management
     */
@@ -988,37 +996,6 @@ Route::middleware([
     Route::get('api/pergerakan-kapal/generate-voyage', [\App\Http\Controllers\PergerakanKapalController::class, 'generateVoyageNumber'])
          ->name('api.pergerakan-kapal.generate-voyage')
          ->middleware('can:pergerakan-kapal-create');
-
-    // Prospek Kapal Routes
-    Route::resource('prospek-kapal', \App\Http\Controllers\ProspekKapalController::class)
-         ->names([
-             'index' => 'prospek-kapal.index',
-             'create' => 'prospek-kapal.create',
-             'store' => 'prospek-kapal.store',
-             'show' => 'prospek-kapal.show',
-             'edit' => 'prospek-kapal.edit',
-             'update' => 'prospek-kapal.update',
-             'destroy' => 'prospek-kapal.destroy'
-         ])
-         ->parameters(['prospek-kapal' => 'prospekKapal'])
-         ->middleware([
-             'index' => 'can:prospek-kapal-view',
-             'create' => 'can:prospek-kapal-create',
-             'store' => 'can:prospek-kapal-create',
-             'show' => 'can:prospek-kapal-view',
-             'edit' => 'can:prospek-kapal-update',
-             'update' => 'can:prospek-kapal-update',
-             'destroy' => 'can:prospek-kapal-delete'
-         ]);
-
-    // Prospek Kapal additional routes
-    Route::post('prospek-kapal/{prospekKapal}/add-kontainers', [\App\Http\Controllers\ProspekKapalController::class, 'addKontainers'])
-         ->name('prospek-kapal.add-kontainers')
-         ->middleware('can:prospek-kapal-update');
-
-    Route::patch('prospek-kapal/kontainer/{kontainer}/update-status', [\App\Http\Controllers\ProspekKapalController::class, 'updateKontainerStatus'])
-         ->name('prospek-kapal.update-kontainer-status')
-         ->middleware('can:prospek-kapal-update');
 });
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -1391,6 +1368,42 @@ Route::get('/test-gate-in-ajax', function () {
             ->name('print')
             ->middleware('can:pranota-surat-jalan-view');
     });
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 💰 PEMBAYARAN PRANOTA SURAT JALAN (Delivery Note Payment)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    Route::prefix('pembayaran-pranota-surat-jalan')
+        ->name('pembayaran-pranota-surat-jalan.')
+        ->middleware(['auth'])
+        ->group(function() {
+            Route::get('/', [PembayaranPranotaSuratJalanController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-surat-jalan-view');
+            Route::get('/create', [PembayaranPranotaSuratJalanController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-surat-jalan-create');
+            Route::post('/', [PembayaranPranotaSuratJalanController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-surat-jalan-create');
+            Route::get('/{pembayaranPranotaSuratJalan}', [PembayaranPranotaSuratJalanController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-surat-jalan-view');
+            Route::get('/{pembayaranPranotaSuratJalan}/edit', [PembayaranPranotaSuratJalanController::class, 'edit'])
+                ->name('edit')
+                ->middleware('can:pembayaran-pranota-surat-jalan-edit');
+            Route::put('/{pembayaranPranotaSuratJalan}', [PembayaranPranotaSuratJalanController::class, 'update'])
+                ->name('update')
+                ->middleware('can:pembayaran-pranota-surat-jalan-edit');
+            Route::delete('/{pembayaranPranotaSuratJalan}', [PembayaranPranotaSuratJalanController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-surat-jalan-delete');
+
+            // Additional granular routes
+            Route::get('/generate-nomor', [PembayaranPranotaSuratJalanController::class, 'generatePaymentNumber'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-surat-jalan-create');
+        });
 
 /*
 |===========================================================================
@@ -2230,4 +2243,11 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('debug-nik', function () {
         return view('debug-nik');
     })->name('debug.nik');
+
+    // 📊 Prospek Management - Read Only
+    Route::get('prospek', [ProspekController::class, 'index'])->name('prospek.index')
+         ->middleware('can:prospek-view');
+
+    Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
+         ->middleware('can:prospek-view');
 });

@@ -34,7 +34,7 @@ return new class extends Migration
                   ->after('catatan');
         });
 
-        // Re-add status column to tanda_terima_tanpa_surat_jalan table  
+        // Re-add status column to tanda_terima_tanpa_surat_jalan table
         Schema::table('tanda_terima_tanpa_surat_jalan', function (Blueprint $table) {
             $table->enum('status', ['draft', 'submitted', 'approved', 'completed', 'cancelled'])
                   ->default('draft')

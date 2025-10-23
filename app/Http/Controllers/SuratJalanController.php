@@ -44,6 +44,11 @@ class SuratJalanController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter by status pembayaran
+        if ($request->filled('status_pembayaran') && $request->status_pembayaran !== 'all') {
+            $query->where('status_pembayaran', $request->status_pembayaran);
+        }
+
         // Filter by date range
         if ($request->filled('start_date')) {
             $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);

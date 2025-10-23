@@ -54,9 +54,10 @@
                     <div class="flex-shrink-0">
                         <select name="status" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             <option value="">Semua Status</option>
-                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                            <option value="terkirim" {{ request('status') == 'terkirim' ? 'selected' : '' }}>Terkirim</option>
-                            <option value="dibayar" {{ request('status') == 'dibayar' ? 'selected' : '' }}>Dibayar</option>
+                            <option value="unpaid" {{ request('status') == 'unpaid' ? 'selected' : '' }}>Belum Bayar</option>
+                            <option value="partial" {{ request('status') == 'partial' ? 'selected' : '' }}>Dibayar Sebagian</option>
+                            <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Lunas</option>
+                            <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
                         </select>
                     </div>
                     <button type="submit" class="inline-flex items-center px-4 py-2 border border-blue-300 rounded-md shadow-sm text-sm font-medium text-blue-700 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -84,7 +85,7 @@
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Surat Jalan</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Tarif</th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -97,30 +98,71 @@
                                     <div class="text-sm font-medium text-gray-900">{{ $pranota->nomor_pranota }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    {{ $pranota->tanggal_formatted }}
+                                    {{ $pranota->formatted_tanggal_pranota ?? ($pranota->tanggal_pranota ? $pranota->tanggal_pranota->format('d/m/Y') : '-') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ $pranota->surat_jalans_count }} Surat Jalan
+                                        {{ $pranota->jumlah_surat_jalan ?? $pranota->suratJalans->count() ?? 0 }} Surat Jalan
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                    {{ $pranota->total_tarif_formatted }}
+                                    {{ $pranota->formatted_total_amount ?? 'Rp ' . number_format($pranota->total_amount ?? 0, 0, ',', '.') }}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
-                                    @if($pranota->status == 'draft')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            Draft
-                                        </span>
-                                    @elseif($pranota->status == 'terkirim')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                            Terkirim
-                                        </span>
-                                    @elseif($pranota->status == 'dibayar')
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            Dibayar
-                                        </span>
-                                    @endif
+                                    @php
+                                        $statusConfig = [
+                                            'pending' => [
+                                                'color' => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                                                'icon' => 'fa-clock',
+                                                'label' => 'Menunggu'
+                                            ],
+                                            'belum_bayar' => [
+                                                'color' => 'bg-red-100 text-red-800 border-red-200',
+                                                'icon' => 'fa-times-circle',
+                                                'label' => 'Belum Bayar'
+                                            ],
+                                            'unpaid' => [
+                                                'color' => 'bg-red-100 text-red-800 border-red-200',
+                                                'icon' => 'fa-times-circle',
+                                                'label' => 'Belum Bayar'
+                                            ],
+                                            'lunas' => [
+                                                'color' => 'bg-green-100 text-green-800 border-green-200',
+                                                'icon' => 'fa-check-circle',
+                                                'label' => 'Lunas'
+                                            ],
+                                            'paid' => [
+                                                'color' => 'bg-green-100 text-green-800 border-green-200',
+                                                'icon' => 'fa-check-circle',
+                                                'label' => 'Lunas'
+                                            ],
+                                            'sebagian' => [
+                                                'color' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                                'icon' => 'fa-info-circle',
+                                                'label' => 'Dibayar Sebagian'
+                                            ],
+                                            'partial' => [
+                                                'color' => 'bg-blue-100 text-blue-800 border-blue-200',
+                                                'icon' => 'fa-info-circle',
+                                                'label' => 'Dibayar Sebagian'
+                                            ],
+                                            'cancelled' => [
+                                                'color' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                                'icon' => 'fa-ban',
+                                                'label' => 'Dibatalkan'
+                                            ]
+                                        ];
+                                        $status = strtolower($pranota->status_pembayaran ?? 'unpaid');
+                                        $config = $statusConfig[$status] ?? [
+                                            'color' => 'bg-gray-100 text-gray-800 border-gray-200',
+                                            'icon' => 'fa-question-circle',
+                                            'label' => ucfirst($status)
+                                        ];
+                                    @endphp
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border {{ $config['color'] }}">
+                                        <i class="fas {{ $config['icon'] }} mr-1"></i>
+                                        {{ $config['label'] }}
+                                    </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
@@ -136,15 +178,13 @@
                                         @endcan
 
                                         @can('pranota-surat-jalan-update')
-                                            @if($pranota->status == 'draft')
-                                                <a href="{{ route('pranota-surat-jalan.edit', $pranota) }}"
-                                                   class="inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:border-yellow-300 focus:shadow-outline-yellow active:bg-yellow-200 transition ease-in-out duration-150"
-                                                   title="Edit">
-                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                    </svg>
-                                                </a>
-                                            @endif
+                                            <a href="{{ route('pranota-surat-jalan.edit', $pranota) }}"
+                                               class="inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded text-yellow-700 bg-yellow-100 hover:bg-yellow-200 focus:outline-none focus:border-yellow-300 focus:shadow-outline-yellow active:bg-yellow-200 transition ease-in-out duration-150"
+                                               title="Edit">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </a>
                                         @endcan
 
                                         @can('pranota-surat-jalan-view')
@@ -159,22 +199,20 @@
                                         @endcan
 
                                         @can('pranota-surat-jalan-delete')
-                                            @if($pranota->status == 'draft')
-                                                <form action="{{ route('pranota-surat-jalan.destroy', $pranota) }}"
-                                                      method="POST"
-                                                      class="inline-flex"
-                                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit"
-                                                            class="inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:border-red-300 focus:shadow-outline-red active:bg-red-200 transition ease-in-out duration-150"
-                                                            title="Hapus">
-                                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                                                        </svg>
-                                                    </button>
-                                                </form>
-                                            @endif
+                                            <form action="{{ route('pranota-surat-jalan.destroy', $pranota) }}"
+                                                  method="POST"
+                                                  class="inline-flex"
+                                                  onsubmit="return confirm('Apakah Anda yakin ingin menghapus pranota ini?')">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-2 py-1 border border-transparent text-xs leading-4 font-medium rounded text-red-700 bg-red-100 hover:bg-red-200 focus:outline-none focus:border-red-300 focus:shadow-outline-red active:bg-red-200 transition ease-in-out duration-150"
+                                                        title="Hapus">
+                                                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                    </svg>
+                                                </button>
+                                            </form>
                                         @endcan
                                     </div>
                                 </td>
@@ -190,16 +228,7 @@
                                         <p class="text-sm text-gray-400">Belum ada pranota surat jalan yang dibuat.</p>
                                     </div>
                                 </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog('PranotaSuratJalan', {{ $pranota_surat_jalan->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                            </tr>
                         @endforelse
                     </tbody>
                 </table>

@@ -12,11 +12,11 @@ $request = Illuminate\Http\Request::create('/master/karyawan/get-next-nik', 'GET
 try {
     $response = $kernel->handle($request);
     $content = $response->getContent();
-    
+
     echo "Status Code: " . $response->getStatusCode() . "\n";
     echo "Content-Type: " . $response->headers->get('Content-Type') . "\n";
     echo "Response Content: " . $content . "\n";
-    
+
     $data = json_decode($content, true);
     if ($data) {
         echo "Parsed JSON:\n";

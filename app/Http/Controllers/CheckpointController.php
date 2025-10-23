@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Permohonan;
 use App\Models\Kontainer;
+use App\Models\Prospek;
 use Illuminate\Http\Request; // Menggunakan Request standar
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -421,11 +422,79 @@ class CheckpointController extends Controller
             ]);
 
             DB::commit();
+
+            // Update prospek jika tipe kontainer adalah FCL
+            $this->updateProspekFromCheckpoint($suratJalan, $nomorKontainers, $request->no_seal);
+
             return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan berhasil disimpan dan telah dikirim ke approval tugas 1 dan 2!');
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error storing surat jalan checkpoint: ' . $e->getMessage());
             return back()->with('error', 'Gagal menyimpan checkpoint: ' . $e->getMessage())->withInput();
+        }
+    }
+
+    /**
+     * Update prospek dengan nomor kontainer dan seal dari checkpoint FCL
+     */
+    private function updateProspekFromCheckpoint(\App\Models\SuratJalan $suratJalan, $nomorKontainer, $noSeal)
+    {
+        try {
+            // Cek apakah tipe kontainer adalah FCL
+            if (strtoupper($suratJalan->tipe_kontainer ?? '') !== 'FCL') {
+                Log::info('Surat jalan bukan FCL, skip update prospek', [
+                    'surat_jalan_id' => $suratJalan->id,
+                    'tipe_kontainer' => $suratJalan->tipe_kontainer
+                ]);
+                return;
+            }
+
+            // Cari prospek yang sesuai dengan surat jalan ini
+            // Kriteria: supir, pengirim, dan tanggal yang berdekatan
+            $prospeks = Prospek::where('nama_supir', $suratJalan->supir)
+                ->where('pt_pengirim', $suratJalan->pengirim)
+                ->where('status', Prospek::STATUS_AKTIF)
+                ->whereNull('nomor_kontainer') // Hanya update yang belum ada nomor kontainer
+                ->whereBetween('tanggal', [
+                    now()->subDays(7)->format('Y-m-d'),
+                    now()->addDays(1)->format('Y-m-d')
+                ])
+                ->get();
+
+            if ($prospeks->isEmpty()) {
+                Log::info('Tidak ada prospek yang cocok untuk diupdate', [
+                    'surat_jalan_id' => $suratJalan->id,
+                    'supir' => $suratJalan->supir,
+                    'pengirim' => $suratJalan->pengirim
+                ]);
+                return;
+            }
+
+            // Update prospek pertama yang ditemukan
+            $prospek = $prospeks->first();
+
+            $prospek->update([
+                'nomor_kontainer' => $nomorKontainer,
+                'no_seal' => $noSeal,
+                'updated_by' => Auth::id()
+            ]);
+
+            Log::info('Prospek berhasil diupdate dari checkpoint FCL', [
+                'prospek_id' => $prospek->id,
+                'surat_jalan_id' => $suratJalan->id,
+                'nomor_kontainer' => $nomorKontainer,
+                'no_seal' => $noSeal,
+                'supir' => $suratJalan->supir,
+                'pengirim' => $suratJalan->pengirim
+            ]);
+
+        } catch (\Exception $e) {
+            // Log error tapi jangan fail proses checkpoint
+            Log::error('Error updating prospek from checkpoint', [
+                'surat_jalan_id' => $suratJalan->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
     }
 }

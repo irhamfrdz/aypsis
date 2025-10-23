@@ -14,19 +14,19 @@
             </div>
             <div class="flex gap-4 text-sm">
                 <div class="text-center">
-                    <div class="text-lg font-semibold text-blue-600">{{ $stats['total'] }}</div>
+                    <div class="text-lg font-semibold text-blue-600">{{ $stats['total'] ?? 0 }}</div>
                     <div class="text-gray-500 text-xs">Total</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-lg font-semibold text-gray-600">{{ $stats['draft'] }}</div>
+                    <div class="text-lg font-semibold text-gray-600">{{ $stats['draft'] ?? 0 }}</div>
                     <div class="text-gray-500 text-xs">Draft</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-lg font-semibold text-yellow-600">{{ $stats['terkirim'] }}</div>
+                    <div class="text-lg font-semibold text-yellow-600">{{ $stats['terkirim'] ?? 0 }}</div>
                     <div class="text-gray-500 text-xs">Terkirim</div>
                 </div>
                 <div class="text-center">
-                    <div class="text-lg font-semibold text-green-600">{{ $stats['selesai'] }}</div>
+                    <div class="text-lg font-semibold text-green-600">{{ $stats['selesai'] ?? 0 }}</div>
                     <div class="text-gray-500 text-xs">Selesai</div>
                 </div>
             </div>
@@ -66,13 +66,10 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select name="status" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
-                            <option value="">Semua Status</option>
-                            <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
-                            <option value="terkirim" {{ request('status') == 'terkirim' ? 'selected' : '' }}>Terkirim</option>
-                            <option value="diterima" {{ request('status') == 'diterima' ? 'selected' : '' }}>Diterima</option>
-                            <option value="selesai" {{ request('status') == 'selesai' ? 'selected' : '' }}>Selesai</option>
+                        <select name="status" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 cursor-not-allowed">
+                            <option value="">Status tidak tersedia</option>
                         </select>
+                        <p class="text-xs text-gray-500 mt-1">Tabel ini belum memiliki kolom status</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
@@ -147,8 +144,8 @@
                                         <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengiriman }}">{{ $tandaTerima->tujuan_pengiriman }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $tandaTerima->status_badge }}">
-                                            {{ $tandaTerima->status_label }}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            Tidak Ada Status
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">

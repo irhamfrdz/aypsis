@@ -20,7 +20,7 @@ class PranotaSuratJalan extends Model
         'periode_tagihan',
         'jumlah_surat_jalan',
         'total_amount',
-        'status',
+        'status_pembayaran',
         'catatan',
         'created_by',
         'updated_by',
@@ -102,7 +102,7 @@ class PranotaSuratJalan extends Model
      */
     public function getFormattedTotalAmountAttribute()
     {
-        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
+        return 'Rp ' . number_format((float) $this->total_amount, 0, ',', '.');
     }
 
     /**
@@ -139,5 +139,25 @@ class PranotaSuratJalan extends Model
         ];
 
         return $labels[$this->status] ?? ucfirst($this->status);
+    }
+
+    /**
+     * Accessor untuk total yang akurat berdasarkan uang jalan surat jalan
+     */
+    public function getTotalRealAttribute()
+    {
+        return $this->suratJalans->sum('uang_jalan') ?? 0;
+    }
+
+    /**
+     * Accessor untuk total_for_payment (menggunakan total_amount yang sudah ada)
+     */
+    public function getTotalForPaymentAttribute()
+    {
+        // Prioritas: total_amount field, jika kosong hitung dari uang_jalan
+        $fieldTotal = $this->total_amount ?? 0;
+        $calculatedTotal = $this->total_real;
+
+        return $fieldTotal > 0 ? $fieldTotal : $calculatedTotal;
     }
 }

@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\PembayaranPranotaSupir;
 use App\Models\PranotaSupir;
 use App\Models\Coa;
+use App\Services\CoaTransactionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -12,6 +13,12 @@ use Carbon\Carbon;
 
 class PembayaranPranotaSupirController extends Controller
 {
+    protected $coaTransactionService;
+
+    public function __construct(CoaTransactionService $coaTransactionService)
+    {
+        $this->coaTransactionService = $coaTransactionService;
+    }
     // Tampilkan pranota yang belum dibayar
     public function index()
     {
@@ -75,6 +82,43 @@ class PembayaranPranotaSupirController extends Controller
             ]);
             Log::debug('PembayaranPranotaSupirController: pembayaran_created', array_merge($pembayaran->toArray(), ['pranota_ids' => $validated['pranota_ids']]));
             $pembayaran->pranotas()->sync($validated['pranota_ids']);
+
+            // Catat transaksi menggunakan double-entry COA
+            $totalPembayaran = $validated['total_tagihan_setelah_penyesuaian'] ?? $validated['total_pembayaran'];
+            $bankName = $validated['bank'];
+            $jenisTransaksi = $validated['jenis_transaksi'];
+            $keterangan = "Pembayaran Pranota Supir - " . $validated['nomor_pembayaran'];
+
+            // Tentukan apakah bank di-debit atau di-kredit berdasarkan jenis transaksi
+            if ($jenisTransaksi == 'Debit') {
+                // Jenis Debit: Bank bertambah (Debit), Biaya Uang Jalan Muat berkurang (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // DEBIT Bank
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // KREDIT Biaya
+                    $validated['tanggal_pembayaran'],
+                    $validated['nomor_pembayaran'],
+                    'Pembayaran Pranota Supir',
+                    $keterangan
+                );
+            } else {
+                // Jenis Kredit: Biaya Uang Jalan Muat bertambah (Debit), Bank berkurang (Kredit)
+                $this->coaTransactionService->recordDoubleEntry(
+                    ['nama_akun' => 'Biaya Uang Jalan Muat', 'jumlah' => $totalPembayaran], // DEBIT Biaya
+                    ['nama_akun' => $bankName, 'jumlah' => $totalPembayaran], // KREDIT Bank
+                    $validated['tanggal_pembayaran'],
+                    $validated['nomor_pembayaran'],
+                    'Pembayaran Pranota Supir',
+                    $keterangan
+                );
+            }
+
+            Log::info('Double Entry Accounting recorded for Pembayaran Pranota Supir', [
+                'nomor_pembayaran' => $validated['nomor_pembayaran'],
+                'total_pembayaran' => $totalPembayaran,
+                'bank' => $bankName,
+                'jenis_transaksi' => $jenisTransaksi,
+                'biaya_account' => 'Biaya Uang Jalan Muat'
+            ]);
 
             // Update nomor terakhir after successful payment creation
             // Extract the running number from the nomor_pembayaran (last 6 digits)

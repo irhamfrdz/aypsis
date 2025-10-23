@@ -16,28 +16,48 @@ class PranotaSuratJalanController extends Controller
     /**
      * Display a listing of pranota surat jalan.
      */
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
 
         // Check permission
-        if (!$user->can('pranota-surat-jalan-view')) {
+        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota surat jalan.');
         }
 
-        // Get pranota surat jalan with pagination
-        $pranotaSuratJalans = PranotaSuratJalan::with(['suratJalans'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(20);
+        // Build query with filters
+        $query = PranotaSuratJalan::with(['suratJalans'])
+            ->withCount('suratJalans');
 
-        // Get statistics
+        // Search filter
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_pranota', 'like', "%{$search}%")
+                  ->orWhereHas('suratJalans', function($sq) use ($search) {
+                      $sq->where('nomor_surat_jalan', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Status filter - menggunakan status_pembayaran
+        if ($request->filled('status')) {
+            $query->where('status_pembayaran', $request->status);
+        }
+
+        // Get pranota surat jalan with pagination
+        $pranotaSuratJalans = $query->orderBy('created_at', 'desc')
+            ->paginate(20)
+            ->appends($request->query());
+
+        // Get statistics - menggunakan status_pembayaran
         $stats = [
             'total' => PranotaSuratJalan::count(),
             'this_month' => PranotaSuratJalan::whereMonth('created_at', now()->month)
                 ->whereYear('created_at', now()->year)
                 ->count(),
-            'pending' => PranotaSuratJalan::where('status', 'pending')->count(),
-            'paid' => PranotaSuratJalan::where('status', 'paid')->count(),
+            'unpaid' => PranotaSuratJalan::where('status_pembayaran', 'unpaid')->count(),
+            'paid' => PranotaSuratJalan::where('status_pembayaran', 'paid')->count(),
         ];
 
         return view('pranota-surat-jalan.index', compact('pranotaSuratJalans', 'stats'));
@@ -51,28 +71,13 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$user->can('pranota-surat-jalan-create')) {
+        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota surat jalan.');
         }
 
-        // Get surat jalan yang sudah fully approved tapi belum ada pranota
-        // Check by status column OR by approval relationships
-        $approvedSuratJalans = SuratJalan::where(function($query) {
-                // Method 1: Check by status column
-                $query->where('status', 'fully_approved')
-                      ->orWhere('status', 'approved')
-                      ->orWhere('status', 'completed');
-            })
-            ->orWhere(function($query) {
-                // Method 2: Check if has both tugas-1 and tugas-2 approved
-                $query->whereHas('approvals', function($q) {
-                    $q->where('approval_level', 'tugas-1')->where('status', 'approved');
-                })
-                ->whereHas('approvals', function($q) {
-                    $q->where('approval_level', 'tugas-2')->where('status', 'approved');
-                });
-            })
-            ->whereDoesntHave('pranotaSuratJalan')
+        // Get surat jalan yang belum ada pranota
+        // Removed approval and checkpoint requirements - semua surat jalan bisa dimasukkan ke pranota
+        $approvedSuratJalans = SuratJalan::whereDoesntHave('pranotaSuratJalan')
             ->orderBy('tanggal_surat_jalan', 'desc')
             ->get();
 
@@ -87,7 +92,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$user->can('pranota-surat-jalan-create')) {
+        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-create')) {
             abort(403, 'Anda tidak memiliki akses untuk membuat pranota surat jalan.');
         }
 
@@ -120,7 +125,7 @@ class PranotaSuratJalanController extends Controller
                 'periode_tagihan' => $date->format('Y-m'),
                 'jumlah_surat_jalan' => count($request->surat_jalan_ids),
                 'total_amount' => $totalUangJalan,
-                'status' => 'pending',
+                'status_pembayaran' => 'unpaid',
                 'catatan' => $request->keterangan,
                 'created_by' => $user->id,
             ]);
@@ -156,7 +161,7 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$user->can('pranota-surat-jalan-view')) {
+        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-view')) {
             abort(403, 'Anda tidak memiliki akses untuk melihat pranota surat jalan.');
         }
 
@@ -174,12 +179,12 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$user->can('pranota-surat-jalan-update')) {
+        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota surat jalan.');
         }
 
-        // Only allow editing if status is pending
-        if ($pranotaSuratJalan->status !== 'pending') {
+        // Only allow editing if status is unpaid
+        if ($pranotaSuratJalan->status_pembayaran !== 'unpaid') {
             return back()->with('error', 'Pranota yang sudah diproses tidak dapat diubah.');
         }
 
@@ -196,12 +201,12 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$user->can('pranota-surat-jalan-update')) {
+        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-update')) {
             abort(403, 'Anda tidak memiliki akses untuk mengubah pranota surat jalan.');
         }
 
-        // Only allow updating if status is pending
-        if ($pranotaSuratJalan->status !== 'pending') {
+        // Only allow updating if status is unpaid
+        if ($pranotaSuratJalan->status_pembayaran !== 'unpaid') {
             return back()->with('error', 'Pranota yang sudah diproses tidak dapat diubah.');
         }
 
@@ -243,19 +248,19 @@ class PranotaSuratJalanController extends Controller
         $user = Auth::user();
 
         // Check permission
-        if (!$user->can('pranota-surat-jalan-delete')) {
+        if (!$this->hasPranotaSuratJalanPermission($user, 'pranota-surat-jalan-delete')) {
             abort(403, 'Anda tidak memiliki akses untuk menghapus pranota surat jalan.');
         }
 
-        // Only allow deleting if status is pending
-        if ($pranotaSuratJalan->status !== 'pending') {
+        // Only allow deleting if status is unpaid
+        if ($pranotaSuratJalan->status_pembayaran !== 'unpaid') {
             return back()->with('error', 'Pranota yang sudah diproses tidak dapat dihapus.');
         }
 
         DB::beginTransaction();
         try {
             // Restore surat jalan status
-            $pranotaSuratJalan->suratJalans()->update(['status' => 'fully_approved']);
+            $pranotaSuratJalan->suratJalans()->update(['status_pembayaran' => 'belum_bayar']);
 
             // Detach surat jalans
             $pranotaSuratJalan->suratJalans()->detach();
@@ -343,5 +348,28 @@ class PranotaSuratJalanController extends Controller
         }
 
         return $baseTarif * $kegiatanMultiplier * $suratJalan->jumlah_kontainer;
+    }
+
+    /**
+     * Check if user has specific pranota surat jalan permission
+     */
+    private function hasPranotaSuratJalanPermission($user, $permission)
+    {
+        if (!$user) return false;
+
+        // Admin and user_admin always have access
+        if (in_array($user->role, ["admin", "user_admin"])) {
+            return true;
+        }
+
+        try {
+            return DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", $permission)
+                ->exists();
+        } catch (\Exception $e) {
+            return false;
+        }
     }
 }

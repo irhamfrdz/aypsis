@@ -706,8 +706,8 @@
         }
         $('#hiddenMeterKubik').val(totalVolume > 0 ? totalVolume.toFixed(6) : '');
         $('#hiddenTonase').val(totalTonase > 0 ? totalTonase.toFixed(2) : '');
-    }    
-    
+    }
+
     // Legacy function for backward compatibility
     function calculateMeterKubik() {
         calculateAllVolumesAndTotals();
