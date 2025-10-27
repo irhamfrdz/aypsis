@@ -245,6 +245,11 @@ Route::middleware([
              ->name('karyawan.export-excel')
              ->middleware('can:master-karyawan-export');
 
+        // Export untuk Excel Indonesia (comma delimiter dengan quotes untuk mengatasi koma dalam data)
+        Route::get('karyawan/export-excel-indonesia', [KaryawanController::class, 'exportExcelIndonesia'])
+             ->name('karyawan.export-excel-indonesia')
+             ->middleware('can:master-karyawan-export');
+
         // Download CSV template for import (no special permission needed)
         Route::get('karyawan/template', [KaryawanController::class, 'downloadTemplate'])
              ->name('karyawan.template');
@@ -1068,19 +1073,45 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // ═══════════════════════════════════════════════════════════════════════
 
     Route::resource('tanda-terima', \App\Http\Controllers\TandaTerimaController::class)
+         ->except(['create', 'store'])
          ->middleware([
              'index' => 'can:tanda-terima-view',
-             'create' => 'can:tanda-terima-create',
-             'store' => 'can:tanda-terima-create',
              'show' => 'can:tanda-terima-view',
              'edit' => 'can:tanda-terima-edit',
              'update' => 'can:tanda-terima-edit',
              'destroy' => 'can:tanda-terima-delete'
          ]);
 
+    // Route untuk menambahkan cargo ke prospek
+    Route::post('tanda-terima/{tandaTerima}/add-to-prospek', [\App\Http\Controllers\TandaTerimaController::class, 'addToProspek'])
+         ->name('tanda-terima.add-to-prospek')
+         ->middleware('can:tanda-terima-edit');
+
     // ═══════════════════════════════════════════════════════════════════════
     // 📋 TANDA TERIMA TANPA SURAT JALAN MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
+
+    // Route untuk pilih tipe kontainer (harus sebelum resource route)
+    Route::get('tanda-terima-tanpa-surat-jalan/pilih-tipe', [\App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class, 'pilihTipe'])
+         ->name('tanda-terima-tanpa-surat-jalan.pilih-tipe')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
+
+    // Routes untuk LCL khusus menggunakan controller terpisah
+    Route::resource('tanda-terima-lcl', \App\Http\Controllers\TandaTerimaLclController::class)
+         ->middleware([
+             'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
+             'create' => 'can:tanda-terima-tanpa-surat-jalan-create',
+             'store' => 'can:tanda-terima-tanpa-surat-jalan-create',
+             'show' => 'can:tanda-terima-tanpa-surat-jalan-view',
+             'edit' => 'can:tanda-terima-tanpa-surat-jalan-update',
+             'update' => 'can:tanda-terima-tanpa-surat-jalan-update',
+             'destroy' => 'can:tanda-terima-tanpa-surat-jalan-delete'
+         ]);
+
+    // Route untuk create LCL khusus (backward compatibility)
+    Route::get('tanda-terima-tanpa-surat-jalan/create-lcl', [\App\Http\Controllers\TandaTerimaLclController::class, 'create'])
+         ->name('tanda-terima-tanpa-surat-jalan.create-lcl')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
 
     Route::resource('tanda-terima-tanpa-surat-jalan', \App\Http\Controllers\TandaTerimaTanpaSuratJalanController::class)
          ->middleware([

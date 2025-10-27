@@ -192,7 +192,7 @@ class PembayaranPranotaSuratJalanController extends Controller
                     $this->updatePranotaPaymentStatus($pranotaId);
                 }
 
-                // Create prospek from FCL surat jalan after successful payment
+                // Create prospek from FCL/CARGO surat jalan after successful payment
                 $prospeksCount = $this->createProspekFromFclSuratJalan($pranotaId);
                 $totalProspeksCreated += $prospeksCount;
             }
@@ -242,7 +242,7 @@ class PembayaranPranotaSuratJalanController extends Controller
             // Prepare success message
             $successMessage = 'Pembayaran berhasil disimpan untuk ' . count($pembayaranIds) . ' pranota surat jalan.';
             if ($totalProspeksCreated > 0) {
-                $successMessage .= ' ' . $totalProspeksCreated . ' data prospek FCL telah dibuat otomatis.';
+                $successMessage .= ' ' . $totalProspeksCreated . ' data prospek FCL/CARGO telah dibuat otomatis.';
             }
 
             // Redirect to first payment record or index page
@@ -498,7 +498,7 @@ class PembayaranPranotaSuratJalanController extends Controller
     }
 
     /**
-     * Create prospek from FCL surat jalan after payment.
+     * Create prospek from FCL/CARGO surat jalan after payment.
      * Data yang masuk: tanggal masuk prospek, nama supir, barang, pengirim, ukuran, tujuan
      * Nomor kontainer dan nomor seal belum ada karena belum masuk checkpoint
      *
@@ -518,43 +518,74 @@ class PembayaranPranotaSuratJalanController extends Controller
 
             // Loop through all surat jalan in this pranota
             foreach ($pranota->suratJalans as $suratJalan) {
-                // Only process FCL type surat jalan
-                if (strtoupper($suratJalan->tipe_kontainer) !== 'FCL') {
+                // Only process FCL and CARGO type surat jalan
+                $tipeKontainer = strtoupper($suratJalan->tipe_kontainer);
+                if ($tipeKontainer !== 'FCL' && $tipeKontainer !== 'CARGO') {
                     continue;
                 }
 
-                // Prepare prospek data from surat jalan
-                $prospekData = [
-                    'tanggal' => now(), // Tanggal masuk prospek adalah hari ini (saat pembayaran)
-                    'nama_supir' => $suratJalan->supir ?? null,
-                    'barang' => $suratJalan->jenis_barang ?? null,
-                    'pt_pengirim' => $suratJalan->pengirim ?? null,
-                    'ukuran' => $suratJalan->size ?? null,
-                    'tipe' => $suratJalan->tipe_kontainer ?? null, // FCL, LCL, dll
-                    'nomor_kontainer' => null, // Belum ada karena belum masuk checkpoint
-                    'no_seal' => null, // Belum ada karena belum masuk checkpoint
-                    'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
-                    'nama_kapal' => null, // Belum ada
-                    'keterangan' => 'Auto generated dari Surat Jalan: ' . ($suratJalan->no_surat_jalan ?? '-') . ' | Pranota: ' . ($pranota->nomor_pranota ?? '-'),
-                    'status' => Prospek::STATUS_AKTIF,
-                    'created_by' => Auth::id(),
-                    'updated_by' => Auth::id()
-                ];
+                // Get jumlah kontainer untuk surat jalan ini
+                $jumlahKontainer = $suratJalan->jumlah_kontainer ?? 1;
+                
+                // Create prospek berdasarkan jumlah kontainer
+                for ($i = 1; $i <= $jumlahKontainer; $i++) {
+                    // Parse nomor kontainer dan seal jika sudah ada dari checkpoint
+                    $nomorKontainerArray = [];
+                    $noSealArray = [];
+                    
+                    if (!empty($suratJalan->no_kontainer)) {
+                        $nomorKontainerArray = array_map('trim', explode(',', $suratJalan->no_kontainer));
+                    }
+                    
+                    if (!empty($suratJalan->no_seal)) {
+                        $noSealArray = array_map('trim', explode(',', $suratJalan->no_seal));
+                    }
+                    
+                    // Ambil nomor kontainer dan seal untuk kontainer ke-i (jika ada)
+                    $nomorKontainerIni = isset($nomorKontainerArray[$i-1]) ? $nomorKontainerArray[$i-1] : null;
+                    $noSealIni = isset($noSealArray[$i-1]) ? $noSealArray[$i-1] : null;
 
-                // Create prospek
-                $prospek = Prospek::create($prospekData);
-                $prospeksCreated++;
+                    // Prepare prospek data from surat jalan untuk kontainer ke-i
+                    $prospekData = [
+                        'tanggal' => now(), // Tanggal masuk prospek adalah hari ini (saat pembayaran)
+                        'nama_supir' => $suratJalan->supir ?? null,
+                        'barang' => $suratJalan->jenis_barang ?? null,
+                        'pt_pengirim' => $suratJalan->pengirim ?? null,
+                        'ukuran' => $suratJalan->size ?? null,
+                        'tipe' => $suratJalan->tipe_kontainer ?? null, // FCL, LCL, dll
+                        'no_surat_jalan' => $suratJalan->no_surat_jalan ?? null, // Field baru untuk tracking
+                        'surat_jalan_id' => $suratJalan->id, // Field baru untuk tracking yang lebih akurat
+                        'nomor_kontainer' => $nomorKontainerIni ?: null, // Set null jika belum ada, akan diisi saat checkpoint
+                        'no_seal' => $noSealIni, // Nomor seal spesifik untuk kontainer ke-i
+                        'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman ?? null,
+                        'nama_kapal' => null, // Belum ada
+                        'keterangan' => 'Auto generated dari Surat Jalan: ' . ($suratJalan->no_surat_jalan ?? '-') . 
+                                      ' | Pranota: ' . ($pranota->nomor_pranota ?? '-') . 
+                                      ($jumlahKontainer > 1 ? " | Kontainer #$i dari $jumlahKontainer" : ''),
+                        'status' => Prospek::STATUS_AKTIF,
+                        'created_by' => Auth::id(),
+                        'updated_by' => Auth::id()
+                    ];
 
-                Log::info('Prospek created from FCL Surat Jalan', [
-                    'prospek_id' => $prospek->id,
-                    'surat_jalan_id' => $suratJalan->id,
-                    'surat_jalan_no' => $suratJalan->no_surat_jalan,
-                    'pranota_id' => $pranotaId,
-                    'pranota_no' => $pranota->nomor_pranota,
-                    'tipe_kontainer' => $suratJalan->tipe_kontainer,
-                    'supir' => $suratJalan->supir,
-                    'pengirim' => $suratJalan->pengirim
-                ]);
+                    // Create prospek untuk kontainer ke-i
+                    $prospek = Prospek::create($prospekData);
+                    $prospeksCreated++;
+
+                    Log::info('Prospek created from FCL/CARGO Surat Jalan', [
+                        'prospek_id' => $prospek->id,
+                        'surat_jalan_id' => $suratJalan->id,
+                        'surat_jalan_no' => $suratJalan->no_surat_jalan,
+                        'kontainer_number' => $i,
+                        'total_kontainer' => $jumlahKontainer,
+                        'nomor_kontainer' => $nomorKontainerIni,
+                        'no_seal' => $noSealIni,
+                        'pranota_id' => $pranotaId,
+                        'pranota_no' => $pranota->nomor_pranota,
+                        'tipe_kontainer' => $suratJalan->tipe_kontainer,
+                        'supir' => $suratJalan->supir,
+                        'pengirim' => $suratJalan->pengirim
+                    ]);
+                }
             }
 
             if ($prospeksCreated > 0) {
@@ -566,7 +597,7 @@ class PembayaranPranotaSuratJalanController extends Controller
 
         } catch (\Exception $e) {
             // Log error but don't fail the payment process
-            Log::error('Error creating prospek from FCL surat jalan', [
+            Log::error('Error creating prospek from FCL/CARGO surat jalan', [
                 'pranota_id' => $pranotaId,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()

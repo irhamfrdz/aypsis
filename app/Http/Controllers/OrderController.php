@@ -73,27 +73,48 @@ class OrderController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
+        // Base validation rules
+        $rules = [
             'nomor_order' => 'required|string|unique:orders,nomor_order',
             'tanggal_order' => 'required|date',
             'tujuan_kirim_id' => 'required|exists:master_tujuan_kirim,id',
             'tujuan_ambil_id' => 'required|exists:tujuan_kegiatan_utamas,id',
-            'size_kontainer' => 'required|string|max:255',
-            'unit_kontainer' => 'required|integer|min:1',
             'tipe_kontainer' => 'required|in:fcl,lcl,cargo,fcl_plus',
             'tanggal_pickup' => 'nullable|date',
             'no_tiket_do' => 'nullable|string|max:255',
             'term_id' => 'nullable|exists:terms,id',
             'pengirim_id' => 'nullable|exists:pengirims,id',
             'jenis_barang_id' => 'nullable|exists:jenis_barangs,id',
-            'status' => 'required|in:draft,confirmed,processing,completed,cancelled',
             'catatan' => 'nullable|string',
             'ftz03_option' => 'nullable|in:exclude,include,none',
             'sppb_option' => 'nullable|in:exclude,include,none',
             'buruh_bongkar_option' => 'nullable|in:exclude,include,none',
+        ];
+
+        // Add size_kontainer and unit_kontainer validation only if tipe_kontainer is not 'cargo'
+        if ($request->tipe_kontainer !== 'cargo') {
+            $rules['size_kontainer'] = 'required|string|max:255';
+            $rules['unit_kontainer'] = 'required|integer|min:1';
+        } else {
+            // For cargo type, these fields are optional
+            $rules['size_kontainer'] = 'nullable|string|max:255';
+            $rules['unit_kontainer'] = 'nullable|integer|min:1';
+        }
+
+        // Debug: Log the request data
+        \Log::info('Order Store Request:', [
+            'tipe_kontainer' => $request->tipe_kontainer,
+            'size_kontainer' => $request->size_kontainer,
+            'unit_kontainer' => $request->unit_kontainer,
+            'all_data' => $request->all()
         ]);
 
+        $request->validate($rules);
+
         $data = $request->all();
+
+        // Auto set status to confirmed for new orders
+        $data['status'] = 'confirmed';
 
         // Get tujuan kirim name from database
         $tujuanKirim = MasterTujuanKirim::find($request->tujuan_kirim_id);
@@ -114,10 +135,20 @@ class OrderController extends Controller
         // Remove the radio button fields from data
         unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id'], $data['tujuan_ambil_id']);
 
+        // Handle cargo type - set default values for size_kontainer and unit_kontainer if empty
+        if ($request->tipe_kontainer === 'cargo') {
+            if (empty($data['size_kontainer'])) {
+                $data['size_kontainer'] = null;
+            }
+            if (empty($data['unit_kontainer'])) {
+                $data['unit_kontainer'] = 1; // Default to 1 for cargo
+            }
+        }
+
         // Initialize outstanding tracking fields
         // Use unit_kontainer for outstanding tracking instead of units input
-        $data['units'] = $data['unit_kontainer']; // For outstanding tracking, use actual container units
-        $data['sisa'] = $data['unit_kontainer']; // Initially, all container units are remaining
+        $data['units'] = $data['unit_kontainer'] ?? 1; // For outstanding tracking, use actual container units or default to 1
+        $data['sisa'] = $data['unit_kontainer'] ?? 1; // Initially, all container units are remaining or default to 1
         $data['outstanding_status'] = 'pending';
         $data['completion_percentage'] = 0.00;
         $data['processing_history'] = json_encode([]);

@@ -11,20 +11,9 @@
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div class="flex items-center justify-between">
-            <div>
-                <h1 class="text-2xl font-bold text-gray-900">Tanda Terima</h1>
-                <p class="text-gray-600 mt-1">Kelola tanda terima kontainer dari surat jalan yang sudah di-approve</p>
-            </div>
-            @can('tanda-terima-create')
-            <div>
-                <a href="{{ route('tanda-terima.create') }}"
-                   class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition duration-200 shadow-sm">
-                    <i class="fas fa-plus-circle mr-2"></i>
-                    Tambah Manual
-                </a>
-            </div>
-            @endcan
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Tanda Terima</h1>
+            <p class="text-gray-600 mt-1">Kelola tanda terima kontainer dari surat jalan yang sudah di-approve</p>
         </div>
     </div>
 
@@ -212,7 +201,16 @@
                                        class="inline-flex items-center px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md transition duration-150"
                                        title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
-                                    </a><span class="text-gray-300">|</span>
+                                    </a>
+                                    @if(strtoupper($tandaTerima->no_kontainer) === 'CARGO')
+                                        <button type="button"
+                                                onclick="addToProspek('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}')"
+                                                class="inline-flex items-center px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition duration-150"
+                                                title="Masukan ke Prospek">
+                                            <i class="fas fa-plus text-xs"></i>
+                                        </button>
+                                    @endif
+                                    <span class="text-gray-300">|</span>
                                     <!-- Audit Log Link -->
                                     <button type="button"
                                             onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', '{{ $tandaTerima->nomor_tanda_terima }}')"
@@ -308,6 +306,33 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
+
+    // Function to add cargo container to prospek
+    function addToProspek(tandaTerimaId, noSuratJalan) {
+        if (confirm(`Apakah Anda yakin ingin memasukkan kontainer CARGO dari surat jalan ${noSuratJalan} ke dalam prospek?`)) {
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("tanda-terima.add-to-prospek", ":id") }}'.replace(':id', tandaTerimaId);
+            
+            // Add CSRF token
+            const csrfInput = document.createElement('input');
+            csrfInput.type = 'hidden';
+            csrfInput.name = '_token';
+            csrfInput.value = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+            form.appendChild(csrfInput);
+            
+            // Add method
+            const methodInput = document.createElement('input');
+            methodInput.type = 'hidden';
+            methodInput.name = '_method';
+            methodInput.value = 'POST';
+            form.appendChild(methodInput);
+            
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
 </script>
 @endpush
 

@@ -3,6 +3,22 @@
 @section('title', 'Edit Tanda Terima')
 
 @section('content')
+@php
+    // Parse container and seal data
+    $nomorKontainerArray = [];
+    $noSealArray = [];
+    
+    if (!empty($tandaTerima->no_kontainer)) {
+        $nomorKontainerArray = array_map('trim', explode(',', $tandaTerima->no_kontainer));
+    }
+    
+    if (!empty($tandaTerima->no_seal)) {
+        $noSealArray = array_map('trim', explode(',', $tandaTerima->no_seal));
+    }
+    
+    $jumlahKontainer = $tandaTerima->jumlah_kontainer ?: 1;
+@endphp
+
 <div class="container mx-auto px-4 py-8">
     <!-- Breadcrumb -->
     <nav class="mb-6">
@@ -36,9 +52,128 @@
 
                 <form action="{{ route('tanda-terima.update', $tandaTerima->id) }}" method="POST" class="p-6">
                     @csrf
-                    @method('PUT')>
+                    @method('PUT')
 
                     <div class="space-y-6">
+                        <!-- Update Kontainer Section -->
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Update Data Kontainer
+                                </label>
+                                <span class="text-xs text-gray-500">
+                                    {{ $jumlahKontainer }} Kontainer - {{ $tandaTerima->size }}ft
+                                </span>
+                            </div>
+
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Kontainer
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                No. Kontainer
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                No. Seal
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody class="bg-white divide-y divide-gray-200">
+                                        @for($i = 1; $i <= $jumlahKontainer; $i++)
+                                            <tr class="hover:bg-gray-50">
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
+                                                            <span class="text-sm font-medium text-blue-600">#{{ $i }}</span>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <p class="text-sm font-medium text-gray-900">
+                                                                @if(isset($nomorKontainerArray[$i-1]) && !empty($nomorKontainerArray[$i-1]))
+                                                                    {{ $nomorKontainerArray[$i-1] }}
+                                                                @else
+                                                                    Kontainer {{ $i }}
+                                                                @endif
+                                                            </p>
+                                                            <p class="text-xs text-gray-500">{{ $tandaTerima->size }}ft - {{ strtoupper($tandaTerima->tipe_kontainer ?: 'FCL') }}</p>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    @if(isset($nomorKontainerArray[$i-1]) && !empty($nomorKontainerArray[$i-1]))
+                                                        <!-- Nomor kontainer sudah ada, tidak bisa diedit -->
+                                                        <div class="flex items-center">
+                                                            <input type="text"
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700 text-sm font-mono cursor-not-allowed"
+                                                                   value="{{ $nomorKontainerArray[$i-1] }}"
+                                                                   readonly>
+                                                            <span class="ml-2 text-xs text-gray-500">
+                                                                <i class="fas fa-lock"></i>
+                                                            </span>
+                                                        </div>
+                                                        <!-- Hidden field untuk mengirim data yang sama -->
+                                                        <input type="hidden" name="nomor_kontainer[]" value="{{ $nomorKontainerArray[$i-1] }}">
+                                                    @else
+                                                        <!-- Nomor kontainer kosong, bisa diedit -->
+                                                        <input type="text"
+                                                               name="nomor_kontainer[]"
+                                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('nomor_kontainer.'.$i) border-red-500 @enderror"
+                                                               placeholder="Nomor kontainer #{{ $i }}"
+                                                               value="{{ old('nomor_kontainer.'.$i, '') }}">
+                                                        @error('nomor_kontainer.'.$i)
+                                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                        @enderror
+                                                    @endif
+                                                </td>
+                                                <td class="px-4 py-3 whitespace-nowrap">
+                                                    @if(isset($noSealArray[$i-1]) && !empty($noSealArray[$i-1]))
+                                                        <!-- Nomor seal sudah ada, tidak bisa diedit -->
+                                                        <div class="flex items-center">
+                                                            <input type="text"
+                                                                   class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700 text-sm font-mono cursor-not-allowed"
+                                                                   value="{{ $noSealArray[$i-1] }}"
+                                                                   readonly>
+                                                            <span class="ml-2 text-xs text-gray-500">
+                                                                <i class="fas fa-lock"></i>
+                                                            </span>
+                                                        </div>
+                                                        <!-- Hidden field untuk mengirim data yang sama -->
+                                                        <input type="hidden" name="no_seal[]" value="{{ $noSealArray[$i-1] }}">
+                                                    @else
+                                                        <!-- Nomor seal kosong, bisa diedit -->
+                                                        <input type="text"
+                                                               name="no_seal[]"
+                                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.'.$i) border-red-500 @enderror"
+                                                               placeholder="Nomor seal #{{ $i }}"
+                                                               value="{{ old('no_seal.'.$i, '') }}">
+                                                        @error('no_seal.'.$i)
+                                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                                        @enderror
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endfor
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-xs text-gray-500 mt-2 space-y-1">
+                                <p>
+                                    <i class="fas fa-lock mr-1"></i>
+                                    <strong>Nomor kontainer</strong> tidak dapat diedit setelah tersimpan
+                                </p>
+                                <p>
+                                    <i class="fas fa-lock mr-1"></i>
+                                    <strong>Nomor seal</strong> tidak dapat diedit jika sudah diisi sebelumnya
+                                </p>
+                                <p>
+                                    <i class="fas fa-edit mr-1"></i>
+                                    Anda hanya dapat mengisi field yang masih kosong
+                                </p>
+                            </div>
+                        </div>
+
                         <!-- Estimasi Nama Kapal -->
                         <div>
                             <label for="estimasi_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
@@ -123,16 +258,24 @@
                             </div>
                         </div>
 
-                        <!-- Jumlah & Satuan Table -->
+                        <!-- Informasi Kuantitas per Kontainer -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-4">
-                                Informasi Kuantitas
-                            </label>
+                            <div class="flex items-center justify-between mb-4">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Informasi Kuantitas per Kontainer
+                                </label>
+                                <span class="text-xs text-gray-500">
+                                    {{ $jumlahKontainer }} Kontainer
+                                </span>
+                            </div>
 
                             <div class="overflow-x-auto border border-gray-200 rounded-lg">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50">
                                         <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Kontainer
+                                            </th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Jumlah
                                             </th>
@@ -141,197 +284,205 @@
                                             </th>
                                         </tr>
                                     </thead>
-                                    <tbody class="bg-white">
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <input type="number"
-                                                       name="jumlah"
-                                                       id="jumlah"
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('jumlah') border-red-500 @enderror"
-                                                       placeholder="Masukkan jumlah"
-                                                       value="{{ old('jumlah', $tandaTerima->jumlah) }}"
-                                                       min="0"
-                                                       step="1">
-                                                @error('jumlah')
-                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                @enderror
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <input type="text"
-                                                       name="satuan"
-                                                       id="satuan"
-                                                       class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('satuan') border-red-500 @enderror"
-                                                       placeholder="Contoh: Pcs, Dus, Karton"
-                                                       value="{{ old('satuan', $tandaTerima->satuan) }}">
-                                                @error('satuan')
-                                                    <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                @enderror
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                        <!-- Dimensi & Volume Table -->
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Dimensi & Volume Items
-                                </label>
-                                <button type="button" id="addDimensiItem" class="px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition duration-200">
-                                    <i class="fas fa-plus mr-2"></i> Tambah Item
-                                </button>
-                            </div>
-
-                            <!-- Table Container -->
-                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                                                No.
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Panjang (cm)
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Lebar (cm)
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Tinggi (cm)
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Volume (m³)
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Tonase (Ton)
-                                            </th>
-                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
-                                                Aksi
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="dimensiTableBody" class="bg-white divide-y divide-gray-200">
-                                        <!-- Template for existing data -->
+                                    <tbody class="bg-white divide-y divide-gray-200">
                                         @php
-                                            $existingDimensi = [];
-                                            if($tandaTerima->panjang || $tandaTerima->lebar || $tandaTerima->tinggi) {
-                                                $existingDimensi[] = [
-                                                    'panjang' => $tandaTerima->panjang,
-                                                    'lebar' => $tandaTerima->lebar,
-                                                    'tinggi' => $tandaTerima->tinggi,
-                                                    'meter_kubik' => $tandaTerima->meter_kubik,
-                                                    'tonase' => $tandaTerima->tonase
-                                                ];
+                                            $jumlahArray = [];
+                                            $satuanArray = [];
+                                            
+                                            if (!empty($tandaTerima->jumlah)) {
+                                                $jumlahArray = array_map('trim', explode(',', $tandaTerima->jumlah));
                                             }
-                                            // If no existing data, create one empty item
-                                            if(empty($existingDimensi)) {
-                                                $existingDimensi[] = [
-                                                    'panjang' => old('dimensi_items.0.panjang'),
-                                                    'lebar' => old('dimensi_items.0.lebar'),
-                                                    'tinggi' => old('dimensi_items.0.tinggi'),
-                                                    'meter_kubik' => old('dimensi_items.0.meter_kubik'),
-                                                    'tonase' => old('dimensi_items.0.tonase')
-                                                ];
+                                            
+                                            if (!empty($tandaTerima->satuan)) {
+                                                $satuanArray = array_map('trim', explode(',', $tandaTerima->satuan));
                                             }
                                         @endphp
 
-                                        @foreach($existingDimensi as $index => $item)
-                                            <tr class="dimensi-item hover:bg-gray-50" data-index="{{ $index }}">
+                                        @for($i = 1; $i <= $jumlahKontainer; $i++)
+                                            <tr class="hover:bg-gray-50">
                                                 <td class="px-4 py-3 whitespace-nowrap">
-                                                    <span class="item-number text-sm font-medium text-gray-900">{{ $index + 1 }}</span>
+                                                    <div class="flex items-center">
+                                                        <div class="flex-shrink-0 h-8 w-8 bg-green-100 rounded-full flex items-center justify-center">
+                                                            <span class="text-sm font-medium text-green-600">#{{ $i }}</span>
+                                                        </div>
+                                                        <div class="ml-3">
+                                                            <p class="text-sm font-medium text-gray-900">
+                                                                @if(isset($nomorKontainerArray[$i-1]) && !empty($nomorKontainerArray[$i-1]))
+                                                                    {{ $nomorKontainerArray[$i-1] }}
+                                                                @else
+                                                                    Kontainer {{ $i }}
+                                                                @endif
+                                                            </p>
+                                                            <p class="text-xs text-gray-500">{{ $tandaTerima->size }}ft - {{ strtoupper($tandaTerima->tipe_kontainer ?: 'FCL') }}</p>
+                                                        </div>
+                                                    </div>
                                                 </td>
                                                 <td class="px-4 py-3 whitespace-nowrap">
                                                     <input type="number"
-                                                           name="dimensi_items[{{ $index }}][panjang]"
-                                                           class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.panjang') border-red-500 @enderror"
-                                                           placeholder="0"
-                                                           value="{{ old('dimensi_items.'.$index.'.panjang', $item['panjang']) }}"
+                                                           name="jumlah_kontainer[]"
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('jumlah_kontainer.'.$i) border-red-500 @enderror"
+                                                           placeholder="Jumlah untuk {{ isset($nomorKontainerArray[$i-1]) && !empty($nomorKontainerArray[$i-1]) ? $nomorKontainerArray[$i-1] : 'kontainer #'.$i }}"
+                                                           value="{{ old('jumlah_kontainer.'.$i, isset($jumlahArray[$i-1]) ? $jumlahArray[$i-1] : '') }}"
                                                            min="0"
-                                                           step="0.01"
-                                                           onchange="calculateItemVolume(this)">
-                                                    @error('dimensi_items.'.$index.'.panjang')
+                                                           step="1">
+                                                    @error('jumlah_kontainer.'.$i)
                                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                                     @enderror
                                                 </td>
                                                 <td class="px-4 py-3 whitespace-nowrap">
-                                                    <input type="number"
-                                                           name="dimensi_items[{{ $index }}][lebar]"
-                                                           class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.lebar') border-red-500 @enderror"
-                                                           placeholder="0"
-                                                           value="{{ old('dimensi_items.'.$index.'.lebar', $item['lebar']) }}"
-                                                           min="0"
-                                                           step="0.01"
-                                                           onchange="calculateItemVolume(this)">
-                                                    @error('dimensi_items.'.$index.'.lebar')
+                                                    <input type="text"
+                                                           name="satuan_kontainer[]"
+                                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('satuan_kontainer.'.$i) border-red-500 @enderror"
+                                                           placeholder="Satuan untuk {{ isset($nomorKontainerArray[$i-1]) && !empty($nomorKontainerArray[$i-1]) ? $nomorKontainerArray[$i-1] : 'kontainer #'.$i }}"
+                                                           value="{{ old('satuan_kontainer.'.$i, isset($satuanArray[$i-1]) ? $satuanArray[$i-1] : '') }}">
+                                                    @error('satuan_kontainer.'.$i)
                                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                                     @enderror
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <input type="number"
-                                                           name="dimensi_items[{{ $index }}][tinggi]"
-                                                           class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.tinggi') border-red-500 @enderror"
-                                                           placeholder="0"
-                                                           value="{{ old('dimensi_items.'.$index.'.tinggi', $item['tinggi']) }}"
-                                                           min="0"
-                                                           step="0.01"
-                                                           onchange="calculateItemVolume(this)">
-                                                    @error('dimensi_items.'.$index.'.tinggi')
-                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                    @enderror
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <input type="number"
-                                                           name="dimensi_items[{{ $index }}][meter_kubik]"
-                                                           class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm @error('dimensi_items.'.$index.'.meter_kubik') border-red-500 @enderror"
-                                                           placeholder="0.000000"
-                                                           value="{{ old('dimensi_items.'.$index.'.meter_kubik', $item['meter_kubik']) }}"
-                                                           readonly
-                                                           step="0.000001">
-                                                    @error('dimensi_items.'.$index.'.meter_kubik')
-                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                    @enderror
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <input type="number"
-                                                           name="dimensi_items[{{ $index }}][tonase]"
-                                                           class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm @error('dimensi_items.'.$index.'.tonase') border-red-500 @enderror"
-                                                           placeholder="0.00"
-                                                           value="{{ old('dimensi_items.'.$index.'.tonase', $item['tonase']) }}"
-                                                           min="0"
-                                                           step="0.01"
-                                                           onchange="calculateTotals()">
-                                                    @error('dimensi_items.'.$index.'.tonase')
-                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                    @enderror
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap text-center">
-                                                    @if($index > 0)
-                                                        <button type="button" class="remove-dimensi-item text-red-600 hover:text-red-800 p-1">
-                                                            <i class="fas fa-trash text-sm"></i>
-                                                        </button>
-                                                    @endif
                                                 </td>
                                             </tr>
-                                        @endforeach
+                                        @endfor
                                     </tbody>
-                                    <!-- Table Footer with Totals -->
-                                    <tfoot class="bg-blue-50">
-                                        <tr>
-                                            <td colspan="4" class="px-4 py-3 text-right font-medium text-gray-900">
-                                                Total:
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <span id="totalVolume" class="font-semibold text-blue-900">0.000000 m³</span>
-                                            </td>
-                                            <td class="px-4 py-3 whitespace-nowrap">
-                                                <span id="totalTonase" class="font-semibold text-blue-900">0.00 Ton</span>
-                                            </td>
-                                            <td class="px-4 py-3"></td>
-                                        </tr>
-                                    </tfoot>
                                 </table>
+                            </div>
+                            
+                            <!-- Hidden fields for backward compatibility -->
+                            <input type="hidden" name="jumlah" id="hiddenJumlah">
+                            <input type="hidden" name="satuan" id="hiddenSatuan">
+                            
+                            <p class="text-xs text-gray-500 mt-2">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Masukkan jumlah dan satuan untuk setiap kontainer secara terpisah
+                            </p>
+                        </div>
+
+                        <!-- Dimensi & Volume per Kontainer -->
+                        <div>
+                            <div class="flex items-center justify-between mb-4">
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Dimensi & Volume per Kontainer
+                                </label>
+                                <span class="text-xs text-gray-500">
+                                    {{ $jumlahKontainer }} Kontainer
+                                </span>
+                            </div>
+
+                            @php
+                                $panjangArray = [];
+                                $lebarArray = [];
+                                $tinggiArray = [];
+                                $meterKubikArray = [];
+                                $tonaseArray = [];
+                                
+                                if (!empty($tandaTerima->panjang)) {
+                                    $panjangArray = array_map('trim', explode(',', $tandaTerima->panjang));
+                                }
+                                
+                                if (!empty($tandaTerima->lebar)) {
+                                    $lebarArray = array_map('trim', explode(',', $tandaTerima->lebar));
+                                }
+                                
+                                if (!empty($tandaTerima->tinggi)) {
+                                    $tinggiArray = array_map('trim', explode(',', $tandaTerima->tinggi));
+                                }
+                                
+                                if (!empty($tandaTerima->meter_kubik)) {
+                                    $meterKubikArray = array_map('trim', explode(',', $tandaTerima->meter_kubik));
+                                }
+                                
+                                if (!empty($tandaTerima->tonase)) {
+                                    $tonaseArray = array_map('trim', explode(',', $tandaTerima->tonase));
+                                }
+                            @endphp
+
+                            <!-- Loop untuk setiap kontainer -->
+                            <div class="space-y-6">
+                                @for($kontainerIndex = 1; $kontainerIndex <= $jumlahKontainer; $kontainerIndex++)
+                                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
+                                        <div class="flex items-center justify-between mb-4">
+                                            <h4 class="text-md font-semibold text-gray-700">
+                                                <span class="inline-flex items-center">
+                                                    <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
+                                                        <span class="text-sm font-medium text-blue-600">#{{ $kontainerIndex }}</span>
+                                                    </div>
+                                                    @if(isset($nomorKontainerArray[$kontainerIndex-1]) && !empty($nomorKontainerArray[$kontainerIndex-1]))
+                                                        {{ $nomorKontainerArray[$kontainerIndex-1] }}
+                                                    @else
+                                                        Kontainer {{ $kontainerIndex }}
+                                                    @endif
+                                                </span>
+                                            </h4>
+                                            <button type="button" 
+                                                    onclick="addRowToKontainer({{ $kontainerIndex }})" 
+                                                    class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition duration-200">
+                                                <i class="fas fa-plus mr-2"></i>
+                                                Tambah Item
+                                            </button>
+                                        </div>
+
+                                        <!-- Table untuk kontainer ini -->
+                                        <div class="overflow-x-auto border border-gray-300 rounded-lg bg-white">
+                                            <table class="min-w-full divide-y divide-gray-200">
+                                                <thead class="bg-gray-50">
+                                                    <tr>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            NO.
+                                                        </th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Panjang (cm)
+                                                        </th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Lebar (cm)
+                                                        </th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Tinggi (cm)
+                                                        </th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Volume (m³)
+                                                        </th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Tonase (Ton)
+                                                        </th>
+                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                            Aksi
+                                                        </th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody id="dimensiTableBody{{ $kontainerIndex }}" class="bg-white divide-y divide-gray-200">
+                                                    <!-- Items akan ditambahkan secara dinamis -->
+                                                </tbody>
+                                                <tfoot class="bg-purple-50">
+                                                    <tr>
+                                                        <td colspan="4" class="px-4 py-3 text-right font-medium text-gray-700">
+                                                            Total Kontainer {{ $kontainerIndex }}:
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <span id="totalVolumeKontainer{{ $kontainerIndex }}" class="font-semibold text-purple-700">0.000000 m³</span>
+                                                        </td>
+                                                        <td class="px-4 py-3">
+                                                            <span id="totalTonaseKontainer{{ $kontainerIndex }}" class="font-semibold text-purple-700">0.00 Ton</span>
+                                                        </td>
+                                                        <td class="px-4 py-3"></td>
+                                                    </tr>
+                                                </tfoot>
+                                            </table>
+                                        </div>
+                                    </div>
+                                @endfor
+
+                                <!-- Grand Total -->
+                                <div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
+                                    <h4 class="text-lg font-semibold text-purple-700 mb-3">Total Keseluruhan</h4>
+                                    <div class="grid grid-cols-2 gap-4">
+                                        <div class="text-center">
+                                            <p class="text-sm text-gray-600">Total Volume</p>
+                                            <p id="grandTotalVolume" class="text-xl font-bold text-purple-700">0.000000 m³</p>
+                                        </div>
+                                        <div class="text-center">
+                                            <p class="text-sm text-gray-600">Total Tonase</p>
+                                            <p id="grandTotalTonase" class="text-xl font-bold text-purple-700">0.00 Ton</p>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
 
                             <!-- Hidden fields for backward compatibility -->
@@ -340,6 +491,21 @@
                             <input type="hidden" name="tinggi" id="hiddenTinggi">
                             <input type="hidden" name="meter_kubik" id="hiddenMeterKubik">
                             <input type="hidden" name="tonase" id="hiddenTonase">
+                            
+                            <div class="text-xs text-gray-500 mt-4 space-y-1">
+                                <p>
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Setiap kontainer memiliki tabel terpisah untuk memudahkan pengelolaan data
+                                </p>
+                                <p>
+                                    <i class="fas fa-calculator mr-1"></i>
+                                    Volume dihitung otomatis dari P × L × T (cm ke m³)
+                                </p>
+                                <p>
+                                    <i class="fas fa-chart-bar mr-1"></i>
+                                    Total per kontainer dan grand total ditampilkan secara otomatis
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Informasi Tambahan Table -->
@@ -449,25 +615,44 @@
             <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                 <h3 class="text-md font-semibold text-gray-900 mb-4">Informasi Kontainer</h3>
                 <dl class="space-y-3">
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">No. Kontainer</dt>
-                        <dd class="mt-1">
-                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $tandaTerima->no_kontainer ?: '-' }}</code>
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">No. Seal</dt>
-                        <dd class="mt-1">
-                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $tandaTerima->no_seal ?: '-' }}</code>
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Size</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->size ?: '-' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Jumlah Kontainer</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->jumlah_kontainer ?: '-' }}</dd>
+
+                    @for($i = 1; $i <= $jumlahKontainer; $i++)
+                        <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
+                            <h4 class="text-sm font-medium text-gray-700 mb-2">Kontainer #{{ $i }}</h4>
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-500 uppercase">No. Kontainer</dt>
+                                    <dd class="mt-1">
+                                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                            {{ isset($nomorKontainerArray[$i-1]) ? $nomorKontainerArray[$i-1] : '-' }}
+                                        </code>
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt class="text-xs font-medium text-gray-500 uppercase">No. Seal</dt>
+                                    <dd class="mt-1">
+                                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                            {{ isset($noSealArray[$i-1]) ? $noSealArray[$i-1] : '-' }}
+                                        </code>
+                                    </dd>
+                                </div>
+                            </div>
+                        </div>
+                    @endfor
+
+                    <div class="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-gray-200">
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase">Size</dt>
+                            <dd class="mt-1 text-sm text-gray-900">{{ $tandaTerima->size ?: '-' }} ft</dd>
+                        </div>
+                        <div>
+                            <dt class="text-xs font-medium text-gray-500 uppercase">Jumlah Kontainer</dt>
+                            <dd class="mt-1">
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    {{ $jumlahKontainer }} Kontainer
+                                </span>
+                            </dd>
+                        </div>
                     </div>
                 </dl>
             </div>
@@ -545,7 +730,15 @@
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
+    let dimensiItemCounters = {}; // Counter untuk setiap kontainer
+
     $(document).ready(function() {
+        // Initialize counters for each kontainer
+        const jumlahKontainer = {{ $jumlahKontainer }};
+        for (let i = 1; i <= jumlahKontainer; i++) {
+            dimensiItemCounters[i] = 0;
+        }
+
         // Initialize Select2 for kapal dropdown
         $('.select2-kapal').select2({
             placeholder: '-- Pilih Kapal --',
@@ -561,156 +754,287 @@
             }
         });
 
-        // Calculate initial volumes and totals
-        calculateAllVolumesAndTotals();
+        // Initialize existing dimensi items from database
+        initializeExistingDimensiItems();
 
-        // Add new dimensi item
-        $('#addDimensiItem').click(function() {
-            addNewDimensiItem();
+        // Calculate dimension volumes when inputs change
+        $(document).on('input', 'input[name="panjang_kontainer[]"], input[name="lebar_kontainer[]"], input[name="tinggi_kontainer[]"]', function() {
+            calculateKontainerVolume(this);
         });
 
-        // Remove dimensi item
-        $(document).on('click', '.remove-dimensi-item', function() {
-            $(this).closest('.dimensi-item').remove();
-            updateItemNumbers();
-            calculateAllVolumesAndTotals();
+        $(document).on('input', 'input[name="tonase_kontainer[]"]', function() {
+            calculateAllTotals();
         });
+
+        // Update hidden fields when inputs change
+        $(document).on('input', 'input[name="jumlah_kontainer[]"]', function() {
+            updateHiddenQuantityFields();
+        });
+
+        $(document).on('input', 'input[name="satuan_kontainer[]"]', function() {
+            updateHiddenSatuan();
+        });
+
+        // Initialize hidden quantity fields
+        updateHiddenQuantityFields();
     });
 
-    let dimensiItemIndex = {{ count($existingDimensi) }};
-
-    function addNewDimensiItem() {
-        const newRow = `
-            <tr class="dimensi-item hover:bg-gray-50" data-index="${dimensiItemIndex}">
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <span class="item-number text-sm font-medium text-gray-900">${dimensiItemIndex + 1}</span>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="dimensi_items[${dimensiItemIndex}][panjang]"
-                           class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="0"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateItemVolume(this)">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="dimensi_items[${dimensiItemIndex}][lebar]"
-                           class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="0"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateItemVolume(this)">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="dimensi_items[${dimensiItemIndex}][tinggi]"
-                           class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="0"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateItemVolume(this)">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="dimensi_items[${dimensiItemIndex}][meter_kubik]"
-                           class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
-                           placeholder="0.000000"
-                           readonly
-                           step="0.000001">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="dimensi_items[${dimensiItemIndex}][tonase]"
-                           class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="0.00"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateTotals()">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap text-center">
-                    <button type="button" class="remove-dimensi-item text-red-600 hover:text-red-800 p-1">
-                        <i class="fas fa-trash text-sm"></i>
-                    </button>
-                </td>
-            </tr>`;
-
-        $('#dimensiTableBody').append(newRow);
-        dimensiItemIndex++;
-        updateItemNumbers();
-    }
-
-    function updateItemNumbers() {
-        $('#dimensiTableBody .dimensi-item').each(function(index) {
-            $(this).find('.item-number').text(index + 1);
-            $(this).attr('data-index', index);
-        });
-    }
-
-    function calculateItemVolume(element) {
-        const row = $(element).closest('.dimensi-item');
-        const panjang = parseFloat(row.find('.dimensi-panjang').val()) || 0;
-        const lebar = parseFloat(row.find('.dimensi-lebar').val()) || 0;
-        const tinggi = parseFloat(row.find('.dimensi-tinggi').val()) || 0;
+    // Calculate volume for individual kontainer
+    function calculateKontainerVolume(element) {
+        const row = $(element).closest('tr');
+        const panjang = parseFloat(row.find('.panjang-kontainer').val()) || 0;
+        const lebar = parseFloat(row.find('.lebar-kontainer').val()) || 0;
+        const tinggi = parseFloat(row.find('.tinggi-kontainer').val()) || 0;
 
         let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
             volume = (panjang * lebar * tinggi) / 1000000;
         }
 
-        row.find('.item-meter-kubik').val(volume > 0 ? volume.toFixed(6) : '');
-        calculateTotals();
+        row.find('.meter-kubik-kontainer').val(volume > 0 ? volume.toFixed(6) : '');
+        calculateDimensiTotals();
+        updateHiddenDimensiFields();
     }
 
-    function calculateAllVolumesAndTotals() {
-        $('#dimensiTableBody .dimensi-item').each(function() {
-            const row = $(this);
-            const panjang = parseFloat(row.find('.dimensi-panjang').val()) || 0;
-            const lebar = parseFloat(row.find('.dimensi-lebar').val()) || 0;
-            const tinggi = parseFloat(row.find('.dimensi-tinggi').val()) || 0;
+    // Calculate totals for all kontainers
+    function calculateAllTotals() {
+        const jumlahKontainer = {{ $jumlahKontainer }};
+        let grandTotalVolume = 0;
+        let grandTotalTonase = 0;
 
-            let volume = 0;
-            if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                volume = (panjang * lebar * tinggi) / 1000000;
-            }
+        // Calculate for each kontainer
+        for (let i = 1; i <= jumlahKontainer; i++) {
+            let kontainerVolume = 0;
+            let kontainerTonase = 0;
 
-            row.find('.item-meter-kubik').val(volume > 0 ? volume.toFixed(6) : '');
-        });
-        calculateTotals();
+            $(`#dimensiTableBody${i} input[name="meter_kubik_kontainer[]"]`).each(function() {
+                const volume = parseFloat($(this).val()) || 0;
+                kontainerVolume += volume;
+            });
+
+            $(`#dimensiTableBody${i} input[name="tonase_kontainer[]"]`).each(function() {
+                const tonase = parseFloat($(this).val()) || 0;
+                kontainerTonase += tonase;
+            });
+
+            // Update kontainer totals
+            $(`#totalVolumeKontainer${i}`).text(kontainerVolume.toFixed(6) + ' m³');
+            $(`#totalTonaseKontainer${i}`).text(kontainerTonase.toFixed(2) + ' Ton');
+
+            // Add to grand totals
+            grandTotalVolume += kontainerVolume;
+            grandTotalTonase += kontainerTonase;
+        }
+
+        // Update grand totals
+        $('#grandTotalVolume').text(grandTotalVolume.toFixed(6) + ' m³');
+        $('#grandTotalTonase').text(grandTotalTonase.toFixed(2) + ' Ton');
+
+        updateHiddenDimensiFields();
     }
 
-    function calculateTotals() {
-        let totalVolume = 0;
-        let totalTonase = 0;
+    // Update hidden dimension fields for backward compatibility
+    function updateHiddenDimensiFields() {
+        let panjangArray = [];
+        let lebarArray = [];
+        let tinggiArray = [];
+        let meterKubikArray = [];
+        let tonaseArray = [];
 
-        $('#dimensiTableBody .dimensi-item').each(function() {
-            const volume = parseFloat($(this).find('.item-meter-kubik').val()) || 0;
-            const tonase = parseFloat($(this).find('.dimensi-tonase').val()) || 0;
+        const jumlahKontainer = {{ $jumlahKontainer }};
 
-            totalVolume += volume;
-            totalTonase += tonase;
-        });
+        // Collect data from all kontainer tables
+        for (let i = 1; i <= jumlahKontainer; i++) {
+            $(`#dimensiTableBody${i} input[name="panjang_kontainer[]"]`).each(function() {
+                const value = $(this).val().trim();
+                if (value && parseFloat(value) > 0) {
+                    panjangArray.push(value);
+                }
+            });
 
-        // Update summary display
-        $('#totalVolume').text(totalVolume.toFixed(6) + ' m³');
-        $('#totalTonase').text(totalTonase.toFixed(2) + ' Ton');
+            $(`#dimensiTableBody${i} input[name="lebar_kontainer[]"]`).each(function() {
+                const value = $(this).val().trim();
+                if (value && parseFloat(value) > 0) {
+                    lebarArray.push(value);
+                }
+            });
+
+            $(`#dimensiTableBody${i} input[name="tinggi_kontainer[]"]`).each(function() {
+                const value = $(this).val().trim();
+                if (value && parseFloat(value) > 0) {
+                    tinggiArray.push(value);
+                }
+            });
+
+            $(`#dimensiTableBody${i} input[name="meter_kubik_kontainer[]"]`).each(function() {
+                const value = $(this).val().trim();
+                if (value && parseFloat(value) > 0) {
+                    meterKubikArray.push(value);
+                }
+            });
+
+            $(`#dimensiTableBody${i} input[name="tonase_kontainer[]"]`).each(function() {
+                const value = $(this).val().trim();
+                if (value && parseFloat(value) > 0) {
+                    tonaseArray.push(value);
+                }
+            });
+        }
 
         // Update hidden fields for backward compatibility
-        // Use first item's values or totals
-        const firstRow = $('#dimensiTableBody .dimensi-item').first();
-        if (firstRow.length) {
-            $('#hiddenPanjang').val(firstRow.find('.dimensi-panjang').val() || '');
-            $('#hiddenLebar').val(firstRow.find('.dimensi-lebar').val() || '');
-            $('#hiddenTinggi').val(firstRow.find('.dimensi-tinggi').val() || '');
-        }
-        $('#hiddenMeterKubik').val(totalVolume > 0 ? totalVolume.toFixed(6) : '');
-        $('#hiddenTonase').val(totalTonase > 0 ? totalTonase.toFixed(2) : '');
+        $('#hiddenPanjang').val(panjangArray.join(','));
+        $('#hiddenLebar').val(lebarArray.join(','));
+        $('#hiddenTinggi').val(tinggiArray.join(','));
+        $('#hiddenMeterKubik').val(meterKubikArray.join(','));
+        $('#hiddenTonase').val(tonaseArray.join(','));
     }
 
-    // Legacy function for backward compatibility
-    function calculateMeterKubik() {
-        calculateAllVolumesAndTotals();
+    // Update hidden quantity fields
+    function updateHiddenQuantityFields() {
+        let jumlahArray = [];
+
+        $('input[name="jumlah_kontainer[]"]').each(function() {
+            const value = parseFloat($(this).val()) || 0;
+            if (value > 0) {
+                jumlahArray.push(value.toString());
+            }
+        });
+
+        // Update hidden field for backward compatibility
+        $('#hiddenJumlah').val(jumlahArray.join(','));
+    }
+
+    // Update hidden satuan field
+    function updateHiddenSatuan() {
+        let satuanArray = [];
+
+        $('input[name="satuan_kontainer[]"]').each(function() {
+            const value = $(this).val().trim();
+            if (value) {
+                satuanArray.push(value);
+            }
+        });
+
+        // Update hidden field for backward compatibility  
+        $('#hiddenSatuan').val(satuanArray.join(','));
+    }
+
+    // Initialize existing dimensi items from database
+    function initializeExistingDimensiItems() {
+        @php
+            $maxItems = max(
+                count($panjangArray),
+                count($lebarArray), 
+                count($tinggiArray),
+                count($meterKubikArray),
+                count($tonaseArray),
+                1 // At least 1 item
+            );
+        @endphp
+
+        const jumlahKontainer = {{ $jumlahKontainer }};
+        
+        @for($i = 0; $i < $maxItems; $i++)
+            const kontainerTarget = ({{ $i }} % jumlahKontainer) + 1;
+            addRowToKontainer(
+                kontainerTarget,
+                '{{ isset($panjangArray[$i]) ? $panjangArray[$i] : '' }}',
+                '{{ isset($lebarArray[$i]) ? $lebarArray[$i] : '' }}',
+                '{{ isset($tinggiArray[$i]) ? $tinggiArray[$i] : '' }}',
+                '{{ isset($meterKubikArray[$i]) ? $meterKubikArray[$i] : '' }}',
+                '{{ isset($tonaseArray[$i]) ? $tonaseArray[$i] : '' }}'
+            );
+        @endfor
+
+        calculateAllTotals();
+    }
+
+    // Add row to specific kontainer table
+    function addRowToKontainer(kontainerIndex, panjang = '', lebar = '', tinggi = '', volume = '', tonase = '') {
+        dimensiItemCounters[kontainerIndex]++;
+        
+        const newRow = `
+            <tr class="hover:bg-gray-50" data-kontainer="${kontainerIndex}" data-row="${dimensiItemCounters[kontainerIndex]}">
+                <td class="px-4 py-3 whitespace-nowrap text-center">
+                    <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
+                        ${dimensiItemCounters[kontainerIndex]}
+                    </span>
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="panjang_kontainer[]"
+                           class="panjang-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="100"
+                           value="${panjang}"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateKontainerVolume(this)">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="lebar_kontainer[]"
+                           class="lebar-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="1000"
+                           value="${lebar}"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateKontainerVolume(this)">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="tinggi_kontainer[]"
+                           class="tinggi-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="1000"
+                           value="${tinggi}"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateKontainerVolume(this)">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="meter_kubik_kontainer[]"
+                           class="meter-kubik-kontainer w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
+                           placeholder="0.000000"
+                           value="${volume}"
+                           readonly
+                           step="0.000001">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap">
+                    <input type="number"
+                           name="tonase_kontainer[]"
+                           class="tonase-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                           placeholder="0.00"
+                           value="${tonase}"
+                           min="0"
+                           step="0.01"
+                           onchange="calculateAllTotals()">
+                </td>
+                <td class="px-4 py-3 whitespace-nowrap text-center">
+                    <button type="button" 
+                            onclick="removeDimensiRow(this)"
+                            class="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition duration-200">
+                        <i class="fas fa-trash text-xs"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+        
+        $(`#dimensiTableBody${kontainerIndex}`).append(newRow);
+        
+        // Calculate volume if all dimension inputs have values
+        const lastRow = $(`#dimensiTableBody${kontainerIndex} tr`).last();
+        if (panjang && lebar && tinggi) {
+            calculateKontainerVolume(lastRow.find('.panjang-kontainer')[0]);
+        }
+        
+        calculateAllTotals();
+    }
+
+    // Remove dimensi row
+    function removeDimensiRow(button) {
+        $(button).closest('tr').remove();
+        calculateAllTotals();
+        updateHiddenDimensiFields();
     }
 </script>
 @endpush

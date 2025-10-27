@@ -16,6 +16,7 @@ class TandaTerima extends Model
         'supir',
         'kegiatan',
         'jenis_barang',
+        'tipe_kontainer',
         'size',
         'jumlah_kontainer',
         'no_kontainer',

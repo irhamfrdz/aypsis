@@ -488,6 +488,26 @@
                             @enderror
                         </div>
                         <div>
+                            <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tipe Kontainer
+                            </label>
+                            <select name="tipe_kontainer" id="tipe_kontainer"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tipe_kontainer') border-red-500 @enderror"
+                                    onchange="handleTipeKontainerChange()">
+                                <option value="">-- Pilih Tipe --</option>
+                                <option value="fcl" {{ old('tipe_kontainer', $tandaTerimaTanpaSuratJalan->tipe_kontainer) == 'fcl' ? 'selected' : '' }}>FCL</option>
+                                <option value="lcl" {{ old('tipe_kontainer', $tandaTerimaTanpaSuratJalan->tipe_kontainer) == 'lcl' ? 'selected' : '' }}>LCL</option>
+                                <option value="cargo" {{ old('tipe_kontainer', $tandaTerimaTanpaSuratJalan->tipe_kontainer) == 'cargo' ? 'selected' : '' }}>Cargo</option>
+                            </select>
+                            @error('tipe_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Kontainer Details -->
+                    <div id="kontainer_fields" class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                        <div>
                             <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
                                 No. Kontainer
                             </label>
@@ -499,6 +519,24 @@
                             @enderror
                         </div>
                         <div>
+                            <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                Size Kontainer
+                            </label>
+                            <select name="size_kontainer" id="size_kontainer"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('size_kontainer') border-red-500 @enderror">
+                                <option value="">-- Pilih Size --</option>
+                                <option value="20 ft" {{ old('size_kontainer', $tandaTerimaTanpaSuratJalan->size_kontainer) == '20 ft' ? 'selected' : '' }}>20 ft</option>
+                                <option value="40 ft" {{ old('size_kontainer', $tandaTerimaTanpaSuratJalan->size_kontainer) == '40 ft' ? 'selected' : '' }}>40 ft</option>
+                                <option value="40 HC" {{ old('size_kontainer', $tandaTerimaTanpaSuratJalan->size_kontainer) == '40 HC' ? 'selected' : '' }}>40 HC (High Cube)</option>
+                                <option value="45 ft" {{ old('size_kontainer', $tandaTerimaTanpaSuratJalan->size_kontainer) == '45 ft' ? 'selected' : '' }}>45 ft</option>
+                                <option value="53 ft" {{ old('size_kontainer', $tandaTerimaTanpaSuratJalan->size_kontainer) == '53 ft' ? 'selected' : '' }}>53 ft</option>
+                                <option value="other" {{ old('size_kontainer', $tandaTerimaTanpaSuratJalan->size_kontainer) == 'other' ? 'selected' : '' }}>Lainnya</option>
+                            </select>
+                            @error('size_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        <div>
                             <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">
                                 No. Seal
                             </label>
@@ -506,6 +544,20 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror"
                                    placeholder="Nomor seal">
                             @error('no_seal')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Baris 3: Tanggal Seal -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                        <div>
+                            <label for="tanggal_seal" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal Seal
+                            </label>
+                            <input type="date" name="tanggal_seal" id="tanggal_seal" value="{{ old('tanggal_seal', $tandaTerimaTanpaSuratJalan->tanggal_seal ? $tandaTerimaTanpaSuratJalan->tanggal_seal->format('Y-m-d') : '') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_seal') border-red-500 @enderror">
+                            @error('tanggal_seal')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -667,7 +719,24 @@
 
         // Initialize kenek dropdown
         initializeKenekDropdown();
+
+        // Handle tipe kontainer on page load
+        handleTipeKontainerChange();
     });
+
+    function handleTipeKontainerChange() {
+        const tipeKontainer = document.getElementById('tipe_kontainer').value;
+        const kontainerFields = document.getElementById('kontainer_fields');
+        
+        if (tipeKontainer === 'cargo') {
+            kontainerFields.style.display = 'none';
+            // Clear kontainer fields when cargo is selected
+            document.getElementById('no_kontainer').value = '';
+            document.getElementById('size_kontainer').value = '';
+        } else {
+            kontainerFields.style.display = 'grid';
+        }
+    }
 
     function calculateMeterKubik() {
         const panjang = parseFloat(document.getElementById('panjang').value) || 0;

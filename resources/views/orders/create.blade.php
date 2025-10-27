@@ -77,24 +77,7 @@
                             @enderror
                         </div>
 
-                        <!-- Status -->
-                        <div>
-                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
-                                Status <span class="text-red-500">*</span>
-                            </label>
-                            <select name="status" id="status" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('status') border-red-500 @enderror">
-                                <option value="">Pilih Status</option>
-                                <option value="draft" {{ old('status') === 'draft' ? 'selected' : '' }}>Draft</option>
-                                <option value="confirmed" {{ old('status') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
-                                <option value="processing" {{ old('status') === 'processing' ? 'selected' : '' }}>Processing</option>
-                                <option value="completed" {{ old('status') === 'completed' ? 'selected' : '' }}>Completed</option>
-                                <option value="cancelled" {{ old('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
-                            </select>
-                            @error('status')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
+
                     </div>
                 </div>
 
@@ -290,7 +273,7 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Kontainer</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                         <!-- Size Kontainer -->
-                        <div>
+                        <div id="size_kontainer_container">
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
                                 Size Kontainer <span class="text-red-500">*</span>
                             </label>
@@ -309,7 +292,7 @@
                         </div>
 
                         <!-- Unit Kontainer -->
-                        <div>
+                        <div id="unit_kontainer_container">
                             <label for="unit_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
                                 Unit Kontainer <span class="text-red-500">*</span>
                             </label>
@@ -628,6 +611,43 @@ document.addEventListener('DOMContentLoaded', function() {
         dropdownId: 'dropdown_options_jenis_barang',
         containerClass: 'dropdown-container-jenis-barang'
     });
+
+    // Handle Tipe Kontainer change - Show/Hide Size and Unit fields
+    const tipeKontainerSelect = document.getElementById('tipe_kontainer');
+    const sizeKontainerContainer = document.getElementById('size_kontainer_container');
+    const unitKontainerContainer = document.getElementById('unit_kontainer_container');
+    const sizeKontainerSelect = document.getElementById('size_kontainer');
+    const unitKontainerInput = document.getElementById('unit_kontainer');
+
+    function handleTipeKontainerChange() {
+        const selectedTipe = tipeKontainerSelect.value;
+        
+        if (selectedTipe === 'cargo') {
+            // Hide size and unit kontainer fields for cargo
+            sizeKontainerContainer.style.display = 'none';
+            unitKontainerContainer.style.display = 'none';
+            
+            // Remove required attributes and clear values
+            sizeKontainerSelect.removeAttribute('required');
+            unitKontainerInput.removeAttribute('required');
+            sizeKontainerSelect.value = '';
+            unitKontainerInput.value = '';
+        } else {
+            // Show size and unit kontainer fields for other types
+            sizeKontainerContainer.style.display = 'block';
+            unitKontainerContainer.style.display = 'block';
+            
+            // Add required attributes back
+            sizeKontainerSelect.setAttribute('required', 'required');
+            unitKontainerInput.setAttribute('required', 'required');
+        }
+    }
+
+    // Initialize on page load
+    if (tipeKontainerSelect) {
+        handleTipeKontainerChange();
+        tipeKontainerSelect.addEventListener('change', handleTipeKontainerChange);
+    }
 
     // Handle Term "Tambah" link to pass search parameter
     const addTermLink = document.getElementById('add_term_link');
@@ -1012,6 +1032,49 @@ document.addEventListener('DOMContentLoaded', function() {
         setTimeout(() => {
             notification.remove();
         }, 3000);
+    }
+
+    // Handle form submission - validate based on tipe kontainer
+    const orderForm = document.querySelector('form[action*="orders.store"]');
+    if (orderForm) {
+        orderForm.addEventListener('submit', function(e) {
+            const tipeKontainer = document.getElementById('tipe_kontainer').value;
+            
+            if (tipeKontainer === 'cargo') {
+                // For cargo, we don't need size_kontainer and unit_kontainer
+                // Set them to empty or remove them before submission
+                const sizeKontainerSelect = document.getElementById('size_kontainer');
+                const unitKontainerInput = document.getElementById('unit_kontainer');
+                
+                if (sizeKontainerSelect) {
+                    sizeKontainerSelect.value = '';
+                    sizeKontainerSelect.removeAttribute('required');
+                    sizeKontainerSelect.removeAttribute('name'); // Don't send this field
+                }
+                
+                if (unitKontainerInput) {
+                    unitKontainerInput.value = '';
+                    unitKontainerInput.removeAttribute('required');
+                    unitKontainerInput.removeAttribute('name'); // Don't send this field
+                }
+                
+                console.log('Cargo type selected - size and unit fields removed from submission');
+            } else {
+                // For other types, ensure the fields have their names back
+                const sizeKontainerSelect = document.getElementById('size_kontainer');
+                const unitKontainerInput = document.getElementById('unit_kontainer');
+                
+                if (sizeKontainerSelect && !sizeKontainerSelect.getAttribute('name')) {
+                    sizeKontainerSelect.setAttribute('name', 'size_kontainer');
+                    sizeKontainerSelect.setAttribute('required', 'required');
+                }
+                
+                if (unitKontainerInput && !unitKontainerInput.getAttribute('name')) {
+                    unitKontainerInput.setAttribute('name', 'unit_kontainer');
+                    unitKontainerInput.setAttribute('required', 'required');
+                }
+            }
+        });
     }
 });
 </script>

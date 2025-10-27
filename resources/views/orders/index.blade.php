@@ -171,7 +171,15 @@
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $order->tujuan_ambil }}">{{ $order->tujuan_ambil ?? '-' }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $order->tujuan_kirim }}">{{ $order->tujuan_kirim ?? '-' }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $order->size_kontainer }} ({{ $order->unit_kontainer }})</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    @if($order->tipe_kontainer === 'cargo')
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-orange-100 text-orange-800">
+                                            Cargo
+                                        </span>
+                                    @else
+                                        {{ $order->size_kontainer }} ({{ $order->unit_kontainer }})
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
                                         @if($order->status === 'draft') bg-gray-100 text-gray-800

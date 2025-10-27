@@ -53,25 +53,9 @@ try {
         echo "Fresh Divisi: " . ($karyawan->divisi ?? 'NULL') . "\n";
         echo "---\n";
     }
-                echo "Fresh ID: " . $karyawan->id . "\n";
-        echo "Fresh Nama: " . ($karyawan->nama_lengkap ?? 'NULL') . "\n";
-        echo "Fresh Tanggal Berhenti: " . ($karyawan->tanggal_berhenti ?? 'NULL') . "\n";
-        echo "Fresh Divisi: " . ($karyawan->divisi ?? 'NULL') . "\n";
-        echo "---\n";
-    }
     
 } catch(Exception $e) {
     echo "Error: " . $e->getMessage() . "\n";
 }
 
 ?>
-            }
-        } else {
-            echo "No records found in the table.\n";
-        }
-    } else {
-        echo "No pranota found" . PHP_EOL;
-    }
-} catch (\Exception $e) {
-    echo "Error: " . $e->getMessage() . PHP_EOL;
-}

@@ -120,8 +120,14 @@ class CheckpointController extends Controller
             'gambar' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB
         ];
 
-        // Tambahkan validasi untuk nomor_kontainer hanya jika kontainer belum diinput sebelumnya.
-        if ($permohonan->kontainers->isEmpty()) {
+        // Add no_seal validation only if tipe is not 'cargo'
+        if (strtolower($permohonan->tipe ?? '') !== 'cargo') {
+            $rules['no_seal'] = 'nullable|array';
+            $rules['no_seal.*'] = 'nullable|string|max:255';
+        }
+
+        // Tambahkan validasi untuk nomor_kontainer hanya jika kontainer belum diinput sebelumnya dan bukan cargo.
+        if ($permohonan->kontainers->isEmpty() && strtolower($permohonan->tipe ?? '') !== 'cargo') {
             $rules['nomor_kontainer'] = ['required', 'array', 'size:' . $permohonan->jumlah_kontainer];
 
             // Check if this is a container repair activity or antar sewa activity
@@ -254,14 +260,31 @@ class CheckpointController extends Controller
                 $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
             }
 
+            // Handle multiple seals for checkpoint
+            $noSealData = null;
+            if (!empty($validated['no_seal']) && is_array($validated['no_seal'])) {
+                $noSealArray = array_filter($validated['no_seal'], function($seal) {
+                    return !empty(trim($seal));
+                }); // Filter out empty seals
+                $noSealData = !empty($noSealArray) ? implode(', ', $noSealArray) : null;
+            }
+
             // Simpan data checkpoint
-            $permohonan->checkpoints()->create([
+            $checkpointData = [
                 'lokasi' => $permohonan->tujuan, // Mengisi lokasi dengan tujuan permohonan
                 'catatan' => $validated['catatan'] ?? 'Checkpoint dibuat oleh supir.',
                 'surat_jalan_vendor' => $validated['surat_jalan_vendor'] ?? null,
                 'tanggal_checkpoint' => $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d'),
                 'gambar' => $imagePath,
-            ]);
+            ];
+            
+            // Add no_seal to catatan if provided
+            if ($noSealData) {
+                $checkpointData['catatan'] = ($checkpointData['catatan'] ?? 'Checkpoint dibuat oleh supir.') . 
+                                           " | No. Seal: " . $noSealData;
+            }
+            
+            $permohonan->checkpoints()->create($checkpointData);
 
             // Update permohonan quick-access fields for driver checkpoint and supir (if not already set)
             try {
@@ -370,15 +393,27 @@ class CheckpointController extends Controller
             abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
         }
 
-        // Validasi input
+        // Validasi input - berbeda untuk cargo dan non-cargo
         $rules = [
-            'nomor_kontainer' => 'required|array',
-            'nomor_kontainer.*' => 'required|string',
             'surat_jalan_vendor' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'tanggal_checkpoint' => 'required|date',
             'gambar' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB
         ];
+
+        // Add nomor_kontainer and no_seal validation only if tipe_kontainer is not 'cargo'
+        if (strtolower($suratJalan->tipe_kontainer ?? '') !== 'cargo') {
+            $rules['nomor_kontainer'] = 'required|array';
+            $rules['nomor_kontainer.*'] = 'required|string';
+            $rules['no_seal'] = 'nullable|array';
+            $rules['no_seal.*'] = 'nullable|string|max:255';
+        } else {
+            // For cargo type, these fields are optional
+            $rules['nomor_kontainer'] = 'nullable|array';
+            $rules['nomor_kontainer.*'] = 'nullable|string';
+            $rules['no_seal'] = 'nullable|array';
+            $rules['no_seal.*'] = 'nullable|string|max:255';
+        }
 
         $request->validate($rules);
 
@@ -394,14 +429,31 @@ class CheckpointController extends Controller
             }
 
             // Update surat jalan dengan nomor kontainer dan status
-            $nomorKontainers = implode(', ', $request->nomor_kontainer);
-
-            $suratJalan->update([
-                'no_kontainer' => $nomorKontainers,
-                'no_seal' => $request->no_seal,
+            $updateData = [
                 'status' => 'sudah_checkpoint', // Status berubah menjadi "sudah checkpoint"
                 'gambar_checkpoint' => $imagePath,
-            ]);
+            ];
+
+            // Handle cargo vs non-cargo types
+            if (strtolower($suratJalan->tipe_kontainer ?? '') === 'cargo') {
+                // For cargo, set default values or leave as null
+                $updateData['no_kontainer'] = 'CARGO'; // Default value for cargo
+                $updateData['no_seal'] = null; // No seal for cargo
+                $nomorKontainers = 'CARGO'; // For logging purposes
+            } else {
+                // For non-cargo, use provided container numbers
+                $nomorKontainers = implode(', ', $request->nomor_kontainer ?? []);
+                $updateData['no_kontainer'] = $nomorKontainers;
+                
+                // Handle multiple seals - join with comma if multiple provided
+                $noSealArray = $request->no_seal ?? [];
+                $noSealArray = array_filter($noSealArray, function($seal) {
+                    return !empty(trim($seal));
+                }); // Filter out empty seals
+                $updateData['no_seal'] = !empty($noSealArray) ? implode(', ', $noSealArray) : null;
+            }
+
+            $suratJalan->update($updateData);
 
             // Buat approval record untuk surat jalan (hanya 1 approval)
             \App\Models\SuratJalanApproval::create([
@@ -424,7 +476,7 @@ class CheckpointController extends Controller
             DB::commit();
 
             // Update prospek jika tipe kontainer adalah FCL
-            $this->updateProspekFromCheckpoint($suratJalan, $nomorKontainers, $request->no_seal);
+            $this->updateProspekFromCheckpoint($suratJalan, $request->nomor_kontainer ?? [], $request->no_seal);
 
             return redirect()->route('supir.dashboard')->with('success', 'Checkpoint surat jalan berhasil disimpan dan telah dikirim ke approval tugas 1 dan 2!');
         } catch (\Exception $e) {
@@ -449,49 +501,140 @@ class CheckpointController extends Controller
                 return;
             }
 
-            // Cari prospek yang sesuai dengan surat jalan ini
-            // Kriteria: supir, pengirim, dan tanggal yang berdekatan
-            $prospeks = Prospek::where('nama_supir', $suratJalan->supir)
-                ->where('pt_pengirim', $suratJalan->pengirim)
-                ->where('status', Prospek::STATUS_AKTIF)
-                ->whereNull('nomor_kontainer') // Hanya update yang belum ada nomor kontainer
-                ->whereBetween('tanggal', [
-                    now()->subDays(7)->format('Y-m-d'),
-                    now()->addDays(1)->format('Y-m-d')
-                ])
+            // Cari prospek dengan pencarian bertingkat berdasarkan prioritas
+            $prospeks = collect();
+            
+            // Prioritas 1: Cari berdasarkan surat_jalan_id (paling akurat)
+            $prospeks = Prospek::where('status', Prospek::STATUS_AKTIF)
+                ->where('surat_jalan_id', $suratJalan->id)
+                ->where(function($query) {
+                    $query->whereNull('nomor_kontainer')
+                          ->orWhere('nomor_kontainer', '')
+                          ->orWhere('nomor_kontainer', 'CARGO');
+                })
+                ->orderBy('created_at', 'asc') // Order by created_at ascending untuk update sesuai urutan dibuat
                 ->get();
 
+            // Jika tidak ditemukan, cari berdasarkan no_surat_jalan
+            if ($prospeks->isEmpty() && $suratJalan->no_surat_jalan) {
+                $prospeks = Prospek::where('status', Prospek::STATUS_AKTIF)
+                    ->where('no_surat_jalan', $suratJalan->no_surat_jalan)
+                    ->where(function($query) {
+                        $query->whereNull('nomor_kontainer')
+                              ->orWhere('nomor_kontainer', '')
+                              ->orWhere('nomor_kontainer', 'CARGO');
+                    })
+                    ->whereBetween('tanggal', [
+                        now()->subDays(7)->format('Y-m-d'),
+                        now()->addDays(7)->format('Y-m-d')
+                    ])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+            }
+
+            // Jika masih tidak ditemukan, cari berdasarkan keterangan yang mengandung nomor surat jalan
+            if ($prospeks->isEmpty() && $suratJalan->no_surat_jalan) {
+                $prospeks = Prospek::where('status', Prospek::STATUS_AKTIF)
+                    ->where('keterangan', 'LIKE', '%Surat Jalan: ' . $suratJalan->no_surat_jalan . ' |%')
+                    ->where(function($query) {
+                        $query->whereNull('nomor_kontainer')
+                              ->orWhere('nomor_kontainer', '')
+                              ->orWhere('nomor_kontainer', 'CARGO');
+                    })
+                    ->whereBetween('tanggal', [
+                        now()->subDays(7)->format('Y-m-d'),
+                        now()->addDays(7)->format('Y-m-d')
+                    ])
+                    ->orderBy('created_at', 'asc')
+                    ->get();
+            }
+
+            Log::info('Mencari prospek untuk update dari checkpoint', [
+                'surat_jalan_id' => $suratJalan->id,
+                'no_surat_jalan' => $suratJalan->no_surat_jalan,
+                'supir' => $suratJalan->supir,
+                'pengirim' => $suratJalan->pengirim,
+                'prospek_found' => $prospeks->count(),
+                'nomor_kontainer_baru' => $nomorKontainer,
+                'search_surat_jalan_id' => $suratJalan->id,
+                'search_no_surat_jalan' => $suratJalan->no_surat_jalan
+            ]);
+
             if ($prospeks->isEmpty()) {
-                Log::info('Tidak ada prospek yang cocok untuk diupdate', [
+                // Cari semua prospek dengan status aktif untuk debugging
+                $allProspeks = Prospek::where('status', Prospek::STATUS_AKTIF)
+                    ->where(function($query) use ($suratJalan) {
+                        $query->where('nama_supir', $suratJalan->supir)
+                              ->orWhere('pt_pengirim', $suratJalan->pengirim);
+                    })
+                    ->whereDate('tanggal', '>=', now()->subDays(3)->format('Y-m-d'))
+                    ->select('id', 'nama_supir', 'pt_pengirim', 'nomor_kontainer', 'keterangan', 'tanggal')
+                    ->get();
+
+                Log::warning('Tidak ada prospek yang cocok untuk diupdate', [
                     'surat_jalan_id' => $suratJalan->id,
+                    'no_surat_jalan' => $suratJalan->no_surat_jalan,
                     'supir' => $suratJalan->supir,
-                    'pengirim' => $suratJalan->pengirim
+                    'pengirim' => $suratJalan->pengirim,
+                    'nomor_kontainer_baru' => $nomorKontainer,
+                    'all_prospeks_debug' => $allProspeks->toArray()
                 ]);
                 return;
             }
 
-            // Update prospek pertama yang ditemukan
-            $prospek = $prospeks->first();
+            // Hitung berapa banyak nomor kontainer yang diinput
+            $nomorKontainerArray = is_array($nomorKontainer) ? array_filter($nomorKontainer) : [];
+            $jumlahKontainerInput = count($nomorKontainerArray);
+            
+            // Jika tidak ada nomor kontainer yang diinput, skip update
+            if ($jumlahKontainerInput === 0) {
+                Log::info('Tidak ada nomor kontainer yang diinput, skip update prospek');
+                return;
+            }
 
-            $prospek->update([
-                'nomor_kontainer' => $nomorKontainer,
-                'no_seal' => $noSeal,
-                'updated_by' => Auth::id()
+            Log::info('Jumlah kontainer yang akan diupdate', [
+                'jumlah_prospek_ditemukan' => $prospeks->count(),
+                'jumlah_kontainer_input' => $jumlahKontainerInput,
+                'nomor_kontainer_array' => $nomorKontainerArray
             ]);
 
-            Log::info('Prospek berhasil diupdate dari checkpoint FCL', [
-                'prospek_id' => $prospek->id,
-                'surat_jalan_id' => $suratJalan->id,
-                'nomor_kontainer' => $nomorKontainer,
-                'no_seal' => $noSeal,
-                'supir' => $suratJalan->supir,
-                'pengirim' => $suratJalan->pengirim
-            ]);
+            // Update hanya sejumlah prospek sesuai dengan jumlah kontainer yang diinput
+            $updatedCount = 0;
+            $prospeksToUpdate = $prospeks->take($jumlahKontainerInput);
+            
+            foreach ($prospeksToUpdate as $index => $prospek) {
+                // Ambil nomor kontainer dan seal yang sesuai untuk prospek ini
+                $nomorKontainerIni = isset($nomorKontainerArray[$index]) ? $nomorKontainerArray[$index] : $nomorKontainerArray[0];
+                $noSealArray = is_array($noSeal) ? array_filter($noSeal) : [$noSeal];
+                $noSealIni = isset($noSealArray[$index]) ? $noSealArray[$index] : (isset($noSealArray[0]) ? $noSealArray[0] : null);
+
+                $prospek->update([
+                    'nomor_kontainer' => $nomorKontainerIni,
+                    'no_seal' => $noSealIni,
+                    'updated_by' => Auth::id()
+                ]);
+                $updatedCount++;
+
+                Log::info('Prospek berhasil diupdate dari checkpoint FCL', [
+                    'prospek_id' => $prospek->id,
+                    'index' => $index,
+                    'surat_jalan_id' => $suratJalan->id,
+                    'no_surat_jalan' => $suratJalan->no_surat_jalan,
+                    'nomor_kontainer_lama' => $prospek->getOriginal('nomor_kontainer'),
+                    'nomor_kontainer_baru' => $nomorKontainerIni,
+                    'no_seal' => $noSealIni,
+                    'supir' => $suratJalan->supir,
+                    'pengirim' => $suratJalan->pengirim
+                ]);
+            }
+
+            Log::info('Total prospek yang diupdate: ' . $updatedCount);
 
         } catch (\Exception $e) {
             // Log error tapi jangan fail proses checkpoint
             Log::error('Error updating prospek from checkpoint', [
                 'surat_jalan_id' => $suratJalan->id,
+                'no_surat_jalan' => $suratJalan->no_surat_jalan,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);

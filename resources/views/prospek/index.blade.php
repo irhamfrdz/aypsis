@@ -55,11 +55,12 @@
 
                 {{-- Tipe Filter --}}
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipe</label>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">Tipe Kontainer</label>
                     <select name="tipe" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500">
                         <option value="">Semua Tipe</option>
                         <option value="FCL" {{ request('tipe') == 'FCL' ? 'selected' : '' }}>FCL</option>
                         <option value="LCL" {{ request('tipe') == 'LCL' ? 'selected' : '' }}>LCL</option>
+                        <option value="CARGO" {{ request('tipe') == 'CARGO' ? 'selected' : '' }}>CARGO</option>
                     </select>
                 </div>
 
@@ -139,10 +140,18 @@
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 @if($prospek->tipe)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        {{ strtoupper($prospek->tipe) == 'FCL' ? 'bg-purple-100 text-purple-800' : 'bg-orange-100 text-orange-800' }}">
-                                        <i class="fas fa-shipping-fast mr-1"></i>
-                                        {{ strtoupper($prospek->tipe) }}
+                                    @php
+                                        $tipeUpper = strtoupper($prospek->tipe);
+                                        $tipeConfig = [
+                                            'FCL' => ['color' => 'bg-purple-100 text-purple-800', 'icon' => 'fa-shipping-fast'],
+                                            'LCL' => ['color' => 'bg-orange-100 text-orange-800', 'icon' => 'fa-box'],
+                                            'CARGO' => ['color' => 'bg-blue-100 text-blue-800', 'icon' => 'fa-truck']
+                                        ];
+                                        $config = $tipeConfig[$tipeUpper] ?? ['color' => 'bg-gray-100 text-gray-800', 'icon' => 'fa-shipping-fast'];
+                                    @endphp
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $config['color'] }}">
+                                        <i class="fas {{ $config['icon'] }} mr-1"></i>
+                                        {{ $tipeUpper }}
                                     </span>
                                 @else
                                     <span class="text-gray-400">-</span>

@@ -252,10 +252,11 @@
                     @endif
                 </div>
 
-                <div>
+                <div id="size_container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
                     <select name="size"
-                            onchange="updateUangJalan(); updateKontainerRules();"
+                            id="size-select"
+                            onchange="updateKontainerRules(); checkSizeWarning();"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('size') border-red-500 @enderror">
                         <option value="">Pilih Size</option>
                         @php $selectedSize = old('size', $selectedOrder ? $selectedOrder->size_kontainer ?? '' : ''); @endphp
@@ -266,21 +267,59 @@
                     @error('size')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    
+                    <!-- Warning for size mismatch -->
+                    <div id="size-warning" class="hidden mt-2 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div class="flex items-start">
+                            <svg class="h-5 w-5 text-yellow-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.464 0L4.732 15.5c-.77.833.192 2.5 1.732 2.5z"></path>
+                            </svg>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-yellow-800">Peringatan: Size Kontainer Berbeda</h4>
+                                <p class="mt-1 text-sm text-yellow-700" id="size-warning-text">
+                                    Size kontainer yang dipilih berbeda dengan size kontainer pada order.
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    
                     <p class="text-xs text-gray-500 mt-1">Uang jalan akan diperbarui berdasarkan size kontainer</p>
+                    @if($selectedOrder && $selectedOrder->size_kontainer)
+                        <input type="hidden" id="original-size" value="{{ $selectedOrder->size_kontainer }}">
+                        <p class="text-xs text-blue-600 mt-1">Size kontainer dari order: {{ $selectedOrder->size_kontainer }} ft</p>
+                    @endif
                 </div>
 
-                <div>
+                <div id="jumlah_kontainer_container">
                     <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Kontainer</label>
                     <input type="number"
                            name="jumlah_kontainer"
+                           id="jumlah_kontainer_input"
                            value="{{ old('jumlah_kontainer', 1) }}"
                            min="1"
                            placeholder="Jumlah kontainer"
                            onchange="updateKontainerRules()"
+                           oninput="updateKontainerRules()"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_kontainer') border-red-500 @enderror">
                     @error('jumlah_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="text-xs text-gray-500 mt-1" id="jumlah_kontainer_note">Untuk size 40ft dan 45ft, hanya bisa 1 kontainer per surat jalan</p>
+                    
+                    <!-- Pricelist notification -->
+                    <div id="pricelist-info" class="hidden mt-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start">
+                            <svg class="h-5 w-5 text-blue-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <div class="flex-1">
+                                <h4 class="text-sm font-medium text-blue-800">Informasi Pricelist</h4>
+                                <p class="mt-1 text-sm text-blue-700" id="pricelist-info-text">
+                                    Menggunakan pricelist 40ft untuk 2 kontainer 20ft
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Packaging Information -->
@@ -466,7 +505,7 @@
                     @error('uang_jalan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Uang jalan otomatis berdasarkan tujuan pengambilan. Nilai akan diisi otomatis ketika size dipilih.</p>
+                    <p class="text-xs text-gray-500 mt-1">Uang jalan otomatis berdasarkan tujuan pengambilan dan size kontainer. Untuk 2 kontainer 20ft akan menggunakan pricelist 40ft.</p>
                 </div>
 
                 <div>
@@ -553,10 +592,13 @@ function updateUangJalan() {
     if (tujuanPengambilan) {
         let size = sizeSelect ? sizeSelect.value : '';
 
-        // Jika jumlah kontainer = 2, gunakan perhitungan untuk 40ft meskipun size 20ft
+        // Untuk size 20ft dengan 2 kontainer, gunakan tarif 40ft
         let calculationSize = size;
         if (jumlahKontainer === 2 && size === '20') {
             calculationSize = '40';
+            console.log('Menggunakan pricelist 40ft untuk 2 kontainer 20ft');
+        } else {
+            console.log(`Menggunakan pricelist ${size}ft untuk ${jumlahKontainer} kontainer ${size}ft`);
         }
 
         // Fetch uang jalan based on tujuan pengambilan and container size
@@ -589,9 +631,10 @@ function updateUangJalan() {
                 }
                 displayField.value = data.uang_jalan; // Keep formatted version for display
 
-                console.log('Uang Jalan - Raw:', rawValue, 'Formatted:', data.uang_jalan);
+                console.log(`Uang Jalan Updated - Original Size: ${size}, Jumlah: ${jumlahKontainer}, Calculation Size: ${calculationSize}, Raw: ${rawValue}, Formatted: ${data.uang_jalan}`);
             } else {
                 uangJalanInput.value = '0';
+                console.log('Uang jalan tidak ditemukan untuk tujuan:', tujuanPengambilan);
             }
         })
         .catch(error => {
@@ -603,55 +646,165 @@ function updateUangJalan() {
     }
 }
 
+
+
 function updateKontainerRules() {
-    const jumlahKontainer = parseInt(document.querySelector('input[name="jumlah_kontainer"]').value) || 1;
     const sizeSelect = document.querySelector('select[name="size"]');
-
-    if (jumlahKontainer === 2) {
-        // Jika jumlah kontainer = 2, set size ke 20ft dan disable
-        sizeSelect.value = '20';
-        sizeSelect.disabled = true;
-        sizeSelect.style.backgroundColor = '#F3F4F6';
-        sizeSelect.style.color = '#6B7280';
-
-        // Update uang jalan
-        updateUangJalan();
-
-        // Tambahkan keterangan
-        let existingNote = document.getElementById('kontainer-rule-note');
-        if (!existingNote) {
-            const note = document.createElement('p');
-            note.id = 'kontainer-rule-note';
-            note.className = 'text-xs text-blue-600 mt-1';
-            note.innerHTML = '<strong>Catatan:</strong> Untuk 2 kontainer, size otomatis 20ft dengan tarif 40ft';
-            sizeSelect.parentNode.appendChild(note);
+    const jumlahKontainerInput = document.getElementById('jumlah_kontainer_input');
+    const jumlahKontainerNote = document.getElementById('jumlah_kontainer_note');
+    const pricelistInfo = document.getElementById('pricelist-info');
+    const pricelistInfoText = document.getElementById('pricelist-info-text');
+    
+    if (sizeSelect && jumlahKontainerInput) {
+        const selectedSize = sizeSelect.value;
+        const jumlahKontainer = parseInt(jumlahKontainerInput.value) || 1;
+        
+        // Hide pricelist info by default
+        if (pricelistInfo) {
+            pricelistInfo.classList.add('hidden');
         }
-    } else {
-        // Jika bukan 2 kontainer, enable kembali size select
-        sizeSelect.disabled = false;
-        sizeSelect.style.backgroundColor = '';
-        sizeSelect.style.color = '';
-
-        // Hapus keterangan jika ada
-        const existingNote = document.getElementById('kontainer-rule-note');
-        if (existingNote) {
-            existingNote.remove();
+        
+        if (selectedSize === '40' || selectedSize === '45') {
+            // Untuk size 40ft dan 45ft, hanya bisa 1 kontainer
+            jumlahKontainerInput.value = '1';
+            jumlahKontainerInput.max = '1';
+            jumlahKontainerInput.disabled = true;
+            jumlahKontainerInput.style.backgroundColor = '#F3F4F6';
+            jumlahKontainerInput.style.color = '#6B7280';
+            
+            if (jumlahKontainerNote) {
+                jumlahKontainerNote.textContent = `Untuk size ${selectedSize}ft, hanya bisa 1 kontainer per surat jalan`;
+                jumlahKontainerNote.className = 'text-xs text-orange-600 mt-1 font-medium';
+            }
+        } else if (selectedSize === '20') {
+            // Untuk size 20ft, bisa lebih dari 1 kontainer
+            jumlahKontainerInput.disabled = false;
+            jumlahKontainerInput.removeAttribute('max');
+            jumlahKontainerInput.style.backgroundColor = '';
+            jumlahKontainerInput.style.color = '';
+            
+            if (jumlahKontainerNote) {
+                jumlahKontainerNote.textContent = 'Untuk size 20ft, bisa menggunakan multiple kontainer per surat jalan';
+                jumlahKontainerNote.className = 'text-xs text-green-600 mt-1';
+            }
+            
+            // Show pricelist info for 2 kontainer 20ft
+            if (jumlahKontainer === 2) {
+                if (pricelistInfo && pricelistInfoText) {
+                    pricelistInfo.classList.remove('hidden');
+                    pricelistInfoText.textContent = 'Menggunakan pricelist 40ft untuk 2 kontainer 20ft';
+                }
+            }
+        } else {
+            // Jika belum pilih size, reset
+            jumlahKontainerInput.disabled = false;
+            jumlahKontainerInput.removeAttribute('max');
+            jumlahKontainerInput.style.backgroundColor = '';
+            jumlahKontainerInput.style.color = '';
+            
+            if (jumlahKontainerNote) {
+                jumlahKontainerNote.textContent = 'Pilih size kontainer terlebih dahulu';
+                jumlahKontainerNote.className = 'text-xs text-gray-500 mt-1';
+            }
         }
-
-        // Update uang jalan
+        
+        // Update uang jalan setelah rules diterapkan
         updateUangJalan();
     }
 }
 
+function checkSizeWarning() {
+    const originalSizeInput = document.getElementById('original-size');
+    const sizeSelect = document.getElementById('size-select');
+    const sizeWarning = document.getElementById('size-warning');
+    const sizeWarningText = document.getElementById('size-warning-text');
+    
+    if (originalSizeInput && sizeSelect && sizeWarning && sizeWarningText) {
+        const originalSize = originalSizeInput.value;
+        const selectedSize = sizeSelect.value;
+        
+        if (originalSize && selectedSize && originalSize !== selectedSize) {
+            // Show warning if sizes are different
+            sizeWarning.classList.remove('hidden');
+            sizeWarningText.innerHTML = `Size kontainer yang dipilih (${selectedSize} ft) berbeda dengan size kontainer pada order (${originalSize} ft). Pastikan ini sesuai dengan kebutuhan pengiriman.`;
+        } else {
+            // Hide warning if sizes match or no selection
+            sizeWarning.classList.add('hidden');
+        }
+    }
+}
+
+function handleTipeKontainerVisibility() {
+    const tipeKontainer = document.querySelector('input[name="tipe_kontainer"]').value.toLowerCase();
+    const sizeContainer = document.getElementById('size_container');
+    const jumlahKontainerContainer = document.getElementById('jumlah_kontainer_container');
+    const sizeSelect = document.querySelector('select[name="size"]');
+    const jumlahKontainerInput = document.querySelector('input[name="jumlah_kontainer"]');
+
+    if (tipeKontainer === 'cargo') {
+        // Hide size and jumlah kontainer fields for cargo
+        sizeContainer.style.display = 'none';
+        jumlahKontainerContainer.style.display = 'none';
+        
+        // Remove required attributes and clear values
+        sizeSelect.removeAttribute('required');
+        jumlahKontainerInput.removeAttribute('required');
+        sizeSelect.value = '';
+        jumlahKontainerInput.value = '';
+        
+        console.log('Cargo type detected - hiding size and jumlah kontainer fields');
+    } else {
+        // Show size and jumlah kontainer fields for other types
+        sizeContainer.style.display = 'block';
+        jumlahKontainerContainer.style.display = 'block';
+        
+        // Set default values if empty
+        if (!jumlahKontainerInput.value) {
+            jumlahKontainerInput.value = '1';
+        }
+        
+        console.log('Non-cargo type detected - showing size and jumlah kontainer fields');
+    }
+}
+
+// Handle form submission for cargo type
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            const tipeKontainer = document.querySelector('input[name="tipe_kontainer"]').value.toLowerCase();
+            
+            if (tipeKontainer === 'cargo') {
+                // For cargo, remove size and jumlah_kontainer from submission if they're hidden
+                const sizeSelect = document.querySelector('select[name="size"]');
+                const jumlahKontainerInput = document.querySelector('input[name="jumlah_kontainer"]');
+                
+                if (sizeSelect && sizeSelect.parentElement.style.display === 'none') {
+                    sizeSelect.removeAttribute('name');
+                }
+                
+                if (jumlahKontainerInput && jumlahKontainerInput.parentElement.style.display === 'none') {
+                    jumlahKontainerInput.removeAttribute('name');
+                }
+                
+                console.log('Cargo form submission - removed hidden fields');
+            }
+        });
+    }
+});
+
 // Auto-populate uang jalan when page loads if order is selected
 @if($selectedOrder && $selectedOrder->tujuan_ambil)
 document.addEventListener('DOMContentLoaded', function() {
-    updateUangJalan();
+    handleTipeKontainerVisibility(); // Check tipe kontainer visibility
     updateKontainerRules(); // Check kontainer rules on load
+    checkSizeWarning(); // Check size warning on load
 });
 @else
 document.addEventListener('DOMContentLoaded', function() {
+    handleTipeKontainerVisibility(); // Check tipe kontainer visibility
     updateKontainerRules(); // Check kontainer rules on load
+    checkSizeWarning(); // Check size warning on load
 });
 @endif
 </script>

@@ -10,7 +10,21 @@
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 border-b border-gray-200">
             <div>
                 <h1 class="text-xl font-semibold text-gray-900">Buat Tanda Terima Tanpa Surat Jalan</h1>
-                <p class="text-xs text-gray-600 mt-1">Isi form di bawah untuk membuat tanda terima baru</p>
+                <div class="flex items-center gap-2 mt-1">
+                    <p class="text-xs text-gray-600">Isi form di bawah untuk membuat tanda terima baru</p>
+                    @if(isset($tipe))
+                        @php
+                            $tipeLabel = strtoupper($tipe);
+                            $tipeColor = $tipe === 'fcl' ? 'blue' : ($tipe === 'lcl' ? 'green' : 'orange');
+                        @endphp
+                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-{{ $tipeColor }}-100 text-{{ $tipeColor }}-800">
+                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                            </svg>
+                            Tipe: {{ $tipeLabel }}
+                        </span>
+                    @endif
+                </div>
             </div>
             <div>
                 <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}"
@@ -48,6 +62,11 @@
 
             <form action="{{ route('tanda-terima-tanpa-surat-jalan.store') }}" method="POST" class="space-y-6">
                 @csrf
+                
+                {{-- Hidden input untuk tipe kontainer --}}
+                @if(isset($tipe))
+                    <input type="hidden" name="tipe_kontainer_selected" value="{{ $tipe }}">
+                @endif
 
                 <!-- Informasi Dasar -->
                 <div class="bg-gray-50 p-4 rounded-lg">
@@ -579,7 +598,9 @@
                 <!-- Informasi Tujuan dan Transportasi -->
                 <div class="bg-gray-50 p-4 rounded-lg">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Tujuan dan Transportasi</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+                    
+                    <!-- Baris 1: Tujuan Pengiriman -->
+                    <div class="grid grid-cols-1 gap-4 mb-4">
                         <div>
                             <label for="tujuan_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">
                                 Tujuan Pengiriman <span class="text-red-500">*</span>
@@ -603,40 +624,56 @@
                                 <!-- Dropdown options -->
                                 <div id="tujuanPengirimanDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                                     <div class="p-2 border-b border-gray-200">
-                                        <a href="{{ route('tujuan-kirim.create') }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                                        <a href="{{ route('master.tujuan-kirim.create') }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
                                             <i class="fas fa-plus mr-1"></i> Tambah Tujuan Baru
                                         </a>
                                     </div>
-                                    @foreach($tujuan_kirims as $tujuan)
-                                        <div class="tujuan-pengiriman-option px-3 py-2 hover:bg-gray-50 cursor-pointer"
-                                             data-value="{{ $tujuan->nama_tujuan }}"
-                                             data-text="{{ $tujuan->nama_tujuan }}">
-                                            <div class="flex flex-col">
-                                                <span class="font-medium">{{ $tujuan->nama_tujuan }}</span>
-                                                @if($tujuan->alamat)
-                                                    <span class="text-xs text-gray-500">{{ $tujuan->alamat }}</span>
-                                                @endif
+                                    @if(isset($tujuan_kirims) && $tujuan_kirims->count() > 0)
+                                        @foreach($tujuan_kirims as $tujuan)
+                                            <div class="tujuan-pengiriman-option px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm border-b border-gray-100"
+                                                 data-value="{{ $tujuan->nama_tujuan }}"
+                                                 data-text="{{ $tujuan->nama_tujuan }}">
+                                                <div class="flex flex-col">
+                                                    <span class="font-medium">{{ $tujuan->nama_tujuan }}</span>
+                                                    @if(isset($tujuan->catatan) && $tujuan->catatan)
+                                                        <span class="text-xs text-gray-500">{{ $tujuan->catatan }}</span>
+                                                    @endif
+                                                </div>
                                             </div>
+                                        @endforeach
+                                    @else
+                                        <div class="px-3 py-2 text-sm text-gray-500">
+                                            Tidak ada data tujuan pengiriman
                                         </div>
-                                    @endforeach
+                                    @endif
                                 </div>
                             </div>
                             @error('tujuan_pengiriman')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
+                    </div>
+
+                    <!-- Baris 2: Informasi Kontainer -->
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                         <div>
-                            <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
-                                No. Kontainer
+                            <label for="tipe_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tipe Kontainer
                             </label>
-                            <input type="text" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer') }}"
-                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror"
-                                   placeholder="Nomor kontainer">
-                            @error('no_kontainer')
+                            <select name="tipe_kontainer" id="tipe_kontainer"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tipe_kontainer') border-red-500 @enderror"
+                                    onchange="handleTipeKontainerChange()">
+                                <option value="">-- Pilih Tipe --</option>
+                                <option value="fcl" {{ (old('tipe_kontainer', $tipe ?? '') == 'fcl') ? 'selected' : '' }}>FCL</option>
+                                <option value="lcl" {{ (old('tipe_kontainer', $tipe ?? '') == 'lcl') ? 'selected' : '' }}>LCL</option>
+                                <option value="cargo" {{ (old('tipe_kontainer', $tipe ?? '') == 'cargo') ? 'selected' : '' }}>Cargo</option>
+                            </select>
+                            @error('tipe_kontainer')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div>
+
+                        <div id="size_kontainer_field">
                             <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
                                 Size Kontainer
                             </label>
@@ -654,7 +691,20 @@
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
-                        <div>
+
+                        <div id="no_kontainer_field">
+                            <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                No. Kontainer
+                            </label>
+                            <input type="text" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror"
+                                   placeholder="Nomor kontainer">
+                            @error('no_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div id="no_seal_field">
                             <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">
                                 No. Seal
                             </label>
@@ -662,6 +712,20 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror"
                                    placeholder="Nomor seal">
                             @error('no_seal')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <!-- Baris 3: Tanggal Seal -->
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mt-4">
+                        <div id="tanggal_seal_field">
+                            <label for="tanggal_seal" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tanggal Seal
+                            </label>
+                            <input type="date" name="tanggal_seal" id="tanggal_seal" value="{{ old('tanggal_seal') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_seal') border-red-500 @enderror">
+                            @error('tanggal_seal')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -888,6 +952,38 @@
         calculateAllVolumesAndTotals();
     }
 
+    function handleTipeKontainerChange() {
+        const tipeKontainer = document.getElementById('tipe_kontainer').value;
+        const sizeKontainerField = document.getElementById('size_kontainer_field');
+        const noKontainerField = document.getElementById('no_kontainer_field');
+        const noSealField = document.getElementById('no_seal_field');
+        const tanggalSealField = document.getElementById('tanggal_seal_field');
+        
+        if (tipeKontainer === 'cargo') {
+            // Hide kontainer fields for cargo
+            sizeKontainerField.style.display = 'none';
+            noKontainerField.style.display = 'none';
+            noSealField.style.display = 'none';
+            tanggalSealField.style.display = 'none';
+            // Clear kontainer fields when cargo is selected
+            document.getElementById('no_kontainer').value = '';
+            document.getElementById('size_kontainer').value = '';
+            document.getElementById('no_seal').value = '';
+            document.getElementById('tanggal_seal').value = '';
+        } else {
+            // Show kontainer fields for FCL and LCL
+            sizeKontainerField.style.display = 'block';
+            noKontainerField.style.display = 'block';
+            noSealField.style.display = 'block';
+            tanggalSealField.style.display = 'block';
+        }
+    }
+
+    // Call on page load to handle old values
+    document.addEventListener('DOMContentLoaded', function() {
+        handleTipeKontainerChange();
+    });
+
     function initializeTermDropdown() {
         const searchInput = document.getElementById('termSearch');
         const dropdown = document.getElementById('termDropdown');
@@ -955,18 +1051,26 @@
         }
     }
 
-
-
-
-
     function initializeTujuanPengirimanDropdown() {
         const searchInput = document.getElementById('tujuanPengirimanSearch');
         const dropdown = document.getElementById('tujuanPengirimanDropdown');
         const hiddenSelect = document.getElementById('tujuan_pengiriman');
         const options = document.querySelectorAll('.tujuan-pengiriman-option');
 
+        console.log('Initializing Tujuan Pengiriman Dropdown');
+        console.log('Search Input:', searchInput);
+        console.log('Dropdown:', dropdown);
+        console.log('Hidden Select:', hiddenSelect);
+        console.log('Options found:', options.length);
+
+        if (!searchInput || !dropdown || !hiddenSelect) {
+            console.error('Required elements not found for tujuan pengiriman dropdown');
+            return;
+        }
+
         // Show dropdown when search input is focused
         searchInput.addEventListener('focus', function() {
+            console.log('Search input focused, showing dropdown');
             dropdown.classList.remove('hidden');
         });
 
@@ -989,10 +1093,13 @@
         });
 
         // Handle option selection
-        options.forEach(option => {
+        options.forEach((option, index) => {
+            console.log(`Setting up click handler for tujuan option ${index}:`, option.textContent || option.innerHTML);
             option.addEventListener('click', function() {
                 const value = this.getAttribute('data-value');
                 const text = this.getAttribute('data-text');
+
+                console.log('Tujuan option clicked:', { value, text });
 
                 // Set the hidden select value
                 hiddenSelect.value = value;
@@ -1002,6 +1109,8 @@
 
                 // Hide dropdown
                 dropdown.classList.add('hidden');
+
+                console.log('Tujuan values set:', { hiddenValue: hiddenSelect.value, searchValue: searchInput.value });
             });
         });
 

@@ -107,14 +107,26 @@
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">
-                                            {{ $approval->suratJalan->no_kontainer ?: 'Belum diisi' }}
-                                        </code>
+                                        @if(strtolower($approval->suratJalan->tipe_kontainer ?? '') === 'cargo')
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                                Cargo
+                                            </span>
+                                        @else
+                                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                                {{ $approval->suratJalan->no_kontainer ?: 'Belum diisi' }}
+                                            </code>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">
-                                            {{ $approval->suratJalan->no_seal ?: 'Belum diisi' }}
-                                        </code>
+                                        @if(strtolower($approval->suratJalan->tipe_kontainer ?? '') === 'cargo')
+                                            <span class="text-xs text-gray-500 italic">
+                                                Cargo tidak menggunakan seal
+                                            </span>
+                                        @else
+                                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">
+                                                {{ $approval->suratJalan->no_seal ?: 'Belum diisi' }}
+                                            </code>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="flex items-center text-sm text-gray-500">

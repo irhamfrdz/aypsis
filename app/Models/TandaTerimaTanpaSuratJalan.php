@@ -18,6 +18,7 @@ class TandaTerimaTanpaSuratJalan extends Model
         'nomor_tanda_terima', // Keep both for backward compatibility
         'term_id',
         'aktifitas',
+        'tipe_kontainer',
         'no_kontainer',
         'size_kontainer',
         'pengirim',
@@ -29,6 +30,7 @@ class TandaTerimaTanpaSuratJalan extends Model
         'tujuan_pengiriman',
         'estimasi_naik_kapal',
         'no_seal',
+        'tanggal_seal',
         'penerima',
         'nama_barang',
         'alamat_pengirim',
@@ -52,6 +54,7 @@ class TandaTerimaTanpaSuratJalan extends Model
 
     protected $casts = [
         'tanggal_tanda_terima' => 'date',
+        'tanggal_seal' => 'date',
         'berat' => 'decimal:2',
         'panjang' => 'decimal:2',
         'lebar' => 'decimal:2',
@@ -115,6 +118,22 @@ class TandaTerimaTanpaSuratJalan extends Model
     public function term()
     {
         return $this->belongsTo(Term::class);
+    }
+
+    /**
+     * Relationship with Creator (User who created the record)
+     */
+    public function creator()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'created_by');
+    }
+
+    /**
+     * Relationship with Updater (User who last updated the record)
+     */
+    public function updater()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'updated_by');
     }
 
     /**

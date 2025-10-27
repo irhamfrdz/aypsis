@@ -159,7 +159,7 @@
                         <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
-                        <strong>Info:</strong> Surat jalan dengan tipe FCL akan otomatis dibuat menjadi data prospek setelah pembayaran.
+                        <strong>Info:</strong> Surat jalan dengan tipe FCL/CARGO akan otomatis dibuat menjadi data prospek setelah pembayaran.
                     </p>
                 </div>
                 <div class="overflow-x-auto max-h-60">
@@ -209,13 +209,14 @@
                                         @if($pranota->suratJalans && $pranota->suratJalans->count() > 0)
                                             @php
                                                 $tipeKontainers = $pranota->suratJalans->pluck('tipe_kontainer')->filter()->unique();
-                                                $hasFcl = $tipeKontainers->contains(function($tipe) {
-                                                    return strtoupper($tipe) === 'FCL';
+                                                $hasProspekType = $tipeKontainers->contains(function($tipe) {
+                                                    $tipeUpper = strtoupper($tipe);
+                                                    return $tipeUpper === 'FCL' || $tipeUpper === 'CARGO';
                                                 });
                                             @endphp
                                             @if($tipeKontainers->count() > 0)
                                                 {{ $tipeKontainers->take(2)->implode(', ') }}
-                                                @if($hasFcl)
+                                                @if($hasProspekType)
                                                     <span class="ml-1 px-1 py-0.5 text-xs bg-blue-100 text-blue-600 rounded">→ Prospek</span>
                                                 @endif
                                             @else

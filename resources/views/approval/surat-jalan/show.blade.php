@@ -84,6 +84,7 @@
                                     {{ $suratJalan->no_plat ?: '-' }}
                                 </p>
                             </div>
+                            @if($suratJalan->tipe_kontainer !== 'cargo')
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Ukuran Kontainer</label>
                                 <p class="text-sm text-gray-900">{{ $suratJalan->size ?: '-' }} {{ $suratJalan->size ? 'ft' : '' }}</p>
@@ -92,13 +93,36 @@
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Jumlah Kontainer</label>
                                 <p class="text-sm text-gray-900">{{ $suratJalan->jumlah_kontainer }} unit</p>
                             </div>
+                            @endif
+                            <div>
+                                <label class="block text-sm font-medium text-gray-500 mb-1">Tipe Kontainer</label>
+                                @if($suratJalan->tipe_kontainer === 'cargo')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        Cargo
+                                    </span>
+                                @else
+                                    <p class="text-sm text-gray-900">{{ $suratJalan->tipe_kontainer ?: 'Kontainer' }}</p>
+                                @endif
+                            </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Nomor Kontainer</label>
-                                <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_kontainer ?: 'Belum diisi' }}</code>
+                                @if($suratJalan->tipe_kontainer === 'cargo')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        Cargo tidak menggunakan nomor kontainer
+                                    </span>
+                                @else
+                                    <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_kontainer ?: 'Belum diisi' }}</code>
+                                @endif
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 mb-1">No. Seal</label>
-                                <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_seal ?: 'Belum diisi' }}</code>
+                                @if($suratJalan->tipe_kontainer === 'cargo')
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        Cargo tidak menggunakan seal
+                                    </span>
+                                @else
+                                    <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_seal ?: 'Belum diisi' }}</code>
+                                @endif
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-gray-500 mb-1">Tujuan Pengambilan</label>

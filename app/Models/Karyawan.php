@@ -27,6 +27,15 @@ class Karyawan extends Model
         'tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya', 'verified_at'
     ];
 
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+        'tanggal_masuk' => 'date',
+        'tanggal_berhenti' => 'date',
+        'tanggal_masuk_sebelumnya' => 'date',
+        'tanggal_berhenti_sebelumnya' => 'date',
+        'verified_at' => 'datetime',
+    ];
+
     // In this codebase users table has nullable karyawan_id; keep inverse relation here.
     public function user()
     {

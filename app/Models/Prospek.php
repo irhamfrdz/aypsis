@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\Auditable;
+use App\Models\User;
 
 class Prospek extends Model
 {
@@ -19,6 +20,8 @@ class Prospek extends Model
         'pt_pengirim',
         'ukuran',
         'tipe',
+        'no_surat_jalan',
+        'surat_jalan_id',
         'nomor_kontainer',
         'no_seal',
         'tujuan_pengiriman',

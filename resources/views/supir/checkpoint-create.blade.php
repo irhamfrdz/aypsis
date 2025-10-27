@@ -180,9 +180,18 @@
                             @endif
 
                             {{-- Common fields --}}
-                            <div>
-                                <label for="no_seal_permohonan" class="block text-sm font-medium text-gray-700">No. Seal</label>
-                                <input type="text" id="no_seal_permohonan" name="no_seal" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" placeholder="Masukkan nomor seal kontainer">
+                            <div id="no_seal_section_permohonan">
+                                <label class="block text-sm font-medium text-gray-700">No. Seal</label>
+                                @for ($i = 0; $i < $permohonan->jumlah_kontainer; $i++)
+                                    <div class="relative mt-1">
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Seal Kontainer #{{ $i + 1 }}</label>
+                                        <input type="text" 
+                                               name="no_seal[]" 
+                                               class="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" 
+                                               placeholder="Masukkan nomor seal kontainer #{{ $i + 1 }}">
+                                    </div>
+                                @endfor
+                                <p class="text-xs text-gray-500 mt-1">Masukkan nomor seal untuk setiap kontainer sesuai jumlah di permohonan ({{ $permohonan->jumlah_kontainer }} kontainer).</p>
                             </div>
                             <div>
                                 <label for="surat_jalan_vendor" class="block text-sm font-medium text-gray-700">Surat Jalan Vendor</label>
@@ -254,7 +263,7 @@
                             </div>
 
                             {{-- Container inputs for surat jalan --}}
-                            <div class="space-y-2">
+                            <div class="space-y-2" id="container_input_section">
                                 <label class="block text-sm font-medium text-gray-700">Pilih Nomor Kontainer ({{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} - {{ $suratJalan->size }}ft)</label>
                                 @for ($i = 0; $i < $suratJalan->jumlah_kontainer; $i++)
                                     <div class="relative mt-1">
@@ -272,10 +281,34 @@
                                 <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer tipe {{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} ukuran {{ $suratJalan->size }}ft sesuai jumlah di surat jalan.</p>
                             </div>
 
+                            {{-- Cargo type information --}}
+                            <div class="space-y-2" id="cargo_info_section" style="display: none;">
+                                <div class="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                                    <div class="flex items-start">
+                                        <svg class="h-5 w-5 text-orange-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <div>
+                                            <h4 class="text-sm font-medium text-orange-800">Tipe Kontainer: Cargo</h4>
+                                            <p class="text-sm text-orange-700 mt-1">Untuk tipe cargo, input nomor kontainer dan nomor seal tidak diperlukan.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             {{-- Common fields --}}
-                            <div>
-                                <label for="no_seal_surat_jalan" class="block text-sm font-medium text-gray-700">No. Seal</label>
-                                <input type="text" id="no_seal_surat_jalan" name="no_seal" class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" placeholder="Masukkan nomor seal kontainer">
+                            <div id="no_seal_section">
+                                <label class="block text-sm font-medium text-gray-700">No. Seal</label>
+                                @for ($i = 0; $i < $suratJalan->jumlah_kontainer; $i++)
+                                    <div class="relative mt-1">
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">Seal Kontainer #{{ $i + 1 }}</label>
+                                        <input type="text" 
+                                               name="no_seal[]" 
+                                               class="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" 
+                                               placeholder="Masukkan nomor seal kontainer #{{ $i + 1 }}">
+                                    </div>
+                                @endfor
+                                <p class="text-xs text-gray-500 mt-1">Masukkan nomor seal untuk setiap kontainer sesuai jumlah di surat jalan ({{ $suratJalan->jumlah_kontainer }} kontainer).</p>
                             </div>
                             <div>
                                 <label for="surat_jalan_vendor" class="block text-sm font-medium text-gray-700">Surat Jalan Vendor</label>
@@ -426,7 +459,105 @@
                     }
                 });
             });
+
+            // Handle cargo type visibility
+            handleCargoTypeVisibility();
+            
+            // Add form submission handler for cargo type
+            const forms = document.querySelectorAll('form');
+            forms.forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    @if(isset($suratJalan))
+                        const tipeKontainer = '{{ strtolower($suratJalan->tipe_kontainer ?? '') }}';
+                        
+                        if (tipeKontainer === 'cargo') {
+                            // Remove nomor_kontainer fields from form submission
+                            const containerSelects = form.querySelectorAll('select[name="nomor_kontainer[]"]');
+                            containerSelects.forEach(select => {
+                                select.removeAttribute('name');
+                                select.removeAttribute('required');
+                            });
+                            
+                            console.log('Cargo type form submission - removed container fields');
+                        }
+                    @endif
+                });
+            });
         });
+
+        function handleCargoTypeVisibility() {
+            @if(isset($suratJalan))
+                const tipeKontainer = '{{ strtolower($suratJalan->tipe_kontainer ?? '') }}';
+                
+                if (tipeKontainer === 'cargo') {
+                    // Hide container input and no seal sections for cargo
+                    const containerSection = document.getElementById('container_input_section');
+                    const noSealSection = document.getElementById('no_seal_section');
+                    const cargoInfoSection = document.getElementById('cargo_info_section');
+                    
+                    if (containerSection) {
+                        containerSection.style.display = 'none';
+                        // Remove required attribute from container selects
+                        containerSection.querySelectorAll('select[name="nomor_kontainer[]"]').forEach(select => {
+                            select.removeAttribute('required');
+                            select.removeAttribute('name'); // Don't send this field
+                        });
+                    }
+                    
+                    if (noSealSection) {
+                        noSealSection.style.display = 'none';
+                        // Remove name attribute from all no_seal inputs
+                        const noSealInputs = noSealSection.querySelectorAll('input[name="no_seal[]"]');
+                        noSealInputs.forEach(input => {
+                            input.removeAttribute('name');
+                        });
+                    }
+                    
+                    if (cargoInfoSection) {
+                        cargoInfoSection.style.display = 'block';
+                    }
+                    
+                    console.log('Cargo type detected - hiding container and seal inputs');
+                } else {
+                    // Show all sections for non-cargo types
+                    const containerSection = document.getElementById('container_input_section');
+                    const noSealSection = document.getElementById('no_seal_section');
+                    const cargoInfoSection = document.getElementById('cargo_info_section');
+                    
+                    if (containerSection) {
+                        containerSection.style.display = 'block';
+                    }
+                    
+                    if (noSealSection) {
+                        noSealSection.style.display = 'block';
+                    }
+                    
+                    if (cargoInfoSection) {
+                        cargoInfoSection.style.display = 'none';
+                    }
+                    
+                    console.log('Non-cargo type detected - showing all inputs');
+                }
+            @elseif(isset($permohonan))
+                const tipeKontainer = '{{ strtolower($permohonan->tipe ?? '') }}';
+                
+                if (tipeKontainer === 'cargo') {
+                    // Hide no seal section for cargo in permohonan
+                    const noSealSection = document.getElementById('no_seal_section_permohonan');
+                    
+                    if (noSealSection) {
+                        noSealSection.style.display = 'none';
+                        // Remove name attribute from all no_seal inputs
+                        const noSealInputs = noSealSection.querySelectorAll('input[name="no_seal[]"]');
+                        noSealInputs.forEach(input => {
+                            input.removeAttribute('name');
+                        });
+                    }
+                    
+                    console.log('Cargo type detected in permohonan - hiding seal input');
+                }
+            @endif
+        }
 
         // Preview file function untuk Permohonan
         function previewFilePermohonan(input) {

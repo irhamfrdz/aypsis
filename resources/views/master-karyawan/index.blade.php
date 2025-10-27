@@ -113,7 +113,7 @@
                                 </svg>
                             </button>
                             <!-- Dropdown Menu -->
-                            <div class="absolute right-0 top-full mt-2 w-56 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
+                            <div class="absolute right-0 top-full mt-2 w-72 bg-white rounded-lg shadow-xl border border-gray-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50 overflow-hidden">
                                 <div class="py-2">
                                     <a href="{{ route('master.karyawan.export') }}?sep=%3B"
                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
@@ -121,18 +121,39 @@
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
                                         <div>
-                                            <div class="font-medium">Export CSV</div>
+                                            <div class="font-medium">Export CSV (Semicolon)</div>
                                             <div class="text-xs text-gray-500">Format CSV dengan separator ;</div>
                                         </div>
                                     </a>
+                                    <a href="{{ route('master.karyawan.export') }}?sep=,"
+                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
+                                        <svg class="w-4 h-4 mr-3 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <div>
+                                            <div class="font-medium">Export CSV (Comma)</div>
+                                            <div class="text-xs text-gray-500">Format CSV dengan separator ,</div>
+                                        </div>
+                                    </a>
+                                    <div class="border-t border-gray-200 my-1"></div>
                                     <a href="{{ route('master.karyawan.export-excel') }}"
                                        class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors">
-                                        <svg class="w-4 h-4 mr-3 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-4 h-4 mr-3 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                         </svg>
                                         <div>
-                                            <div class="font-medium">Export Excel</div>
-                                            <div class="text-xs text-gray-500">Anti scientific notation</div>
+                                            <div class="font-medium">Export Excel (Semicolon)</div>
+                                            <div class="text-xs text-gray-500">Anti scientific notation, delimiter ;</div>
+                                        </div>
+                                    </a>
+                                    <a href="{{ route('master.karyawan.export-excel-indonesia') }}"
+                                       class="flex items-center px-4 py-3 text-sm text-gray-700 hover:bg-purple-50 hover:text-purple-700 transition-colors border-l-4 border-orange-400">
+                                        <svg class="w-4 h-4 mr-3 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                        </svg>
+                                        <div>
+                                            <div class="font-medium">Export Excel Indonesia</div>
+                                            <div class="text-xs text-gray-500">Comma delimiter + quotes (Recommended)</div>
                                         </div>
                                     </a>
                                 </div>

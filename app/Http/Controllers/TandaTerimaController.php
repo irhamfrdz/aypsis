@@ -3,8 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\TandaTerima;
-use App\Models\MasterKapal;
-use App\Models\MasterKegiatan;
+use App\Models\Prospek;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -44,115 +43,7 @@ class TandaTerimaController extends Controller
         return view('tanda-terima.index', compact('tandaTerimas'));
     }
 
-    /**
-     * Show the form for creating a new tanda terima
-     */
-    public function create()
-    {
-        // Get master data for dropdowns
-        $masterKapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
-        $masterKegiatans = MasterKegiatan::where('status', 'aktif')->orderBy('nama_kegiatan')->get();
 
-        return view('tanda-terima.create', compact('masterKapals', 'masterKegiatans'));
-    }
-
-    /**
-     * Store a newly created tanda terima in storage
-     */
-    public function store(Request $request)
-    {
-        $request->validate([
-            'no_surat_jalan' => 'required|string|max:255|unique:tanda_terimas,no_surat_jalan',
-            'tanggal_surat_jalan' => 'required|date',
-            'supir' => 'nullable|string|max:255',
-            'kegiatan' => 'nullable|string|max:255',
-            'size' => 'nullable|string|max:50',
-            'jumlah_kontainer' => 'nullable|integer|min:1',
-            'no_kontainer' => 'nullable|string',
-            'no_seal' => 'nullable|string|max:255',
-            'tujuan_pengiriman' => 'nullable|string|max:255',
-            'pengirim' => 'nullable|string|max:255',
-            'estimasi_nama_kapal' => 'nullable|string|max:255',
-            'tanggal_ambil_kontainer' => 'nullable|date',
-            'tanggal_terima_pelabuhan' => 'nullable|date',
-            'tanggal_garasi' => 'nullable|date',
-            'jumlah' => 'nullable|integer|min:0',
-            'satuan' => 'nullable|string|max:50',
-            'panjang' => 'nullable|numeric|min:0',
-            'lebar' => 'nullable|numeric|min:0',
-            'tinggi' => 'nullable|numeric|min:0',
-            'meter_kubik' => 'nullable|numeric|min:0',
-            'tonase' => 'nullable|numeric|min:0',
-            'gambar_checkpoint' => 'nullable|image|mimes:jpeg,jpg,png,gif|max:2048',
-            'dimensi_items' => 'nullable|array',
-            'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
-            'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
-            'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
-            'dimensi_items.*.meter_kubik' => 'nullable|numeric|min:0',
-            'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
-        ]);
-
-        DB::beginTransaction();
-        try {
-            $data = [
-                'surat_jalan_id' => null, // Manual entry, no surat jalan
-                'no_surat_jalan' => $request->no_surat_jalan,
-                'tanggal_surat_jalan' => $request->tanggal_surat_jalan,
-                'supir' => $request->supir,
-                'kegiatan' => $request->kegiatan,
-                'size' => $request->size,
-                'jumlah_kontainer' => $request->jumlah_kontainer ?? 1,
-                'no_kontainer' => $request->no_kontainer,
-                'no_seal' => $request->no_seal,
-                'tujuan_pengiriman' => $request->tujuan_pengiriman,
-                'pengirim' => $request->pengirim,
-                'estimasi_nama_kapal' => $request->estimasi_nama_kapal,
-                'tanggal_ambil_kontainer' => $request->tanggal_ambil_kontainer,
-                'tanggal_terima_pelabuhan' => $request->tanggal_terima_pelabuhan,
-                'tanggal_garasi' => $request->tanggal_garasi,
-                'jumlah' => $request->jumlah,
-                'satuan' => $request->satuan,
-                'panjang' => $request->panjang,
-                'lebar' => $request->lebar,
-                'tinggi' => $request->tinggi,
-                'meter_kubik' => $request->meter_kubik,
-                'tonase' => $request->tonase,
-                'status' => 'draft',
-                'created_by' => Auth::id(),
-            ];
-
-            // If dimensi_items is present, store it as JSON
-            if ($request->has('dimensi_items') && is_array($request->dimensi_items)) {
-                $data['dimensi_items'] = json_encode($request->dimensi_items);
-            }
-
-            // Handle gambar checkpoint upload
-            if ($request->hasFile('gambar_checkpoint')) {
-                $file = $request->file('gambar_checkpoint');
-                $filename = time() . '_' . $file->getClientOriginalName();
-                $path = $file->storeAs('gambar_checkpoint', $filename, 'public');
-                $data['gambar_checkpoint'] = $path;
-            }
-
-            $tandaTerima = TandaTerima::create($data);
-
-            Log::info('Tanda terima created manually', [
-                'tanda_terima_id' => $tandaTerima->id,
-                'no_surat_jalan' => $tandaTerima->no_surat_jalan,
-                'created_by' => Auth::user()->name,
-            ]);
-
-            DB::commit();
-            return redirect()->route('tanda-terima.index')
-                ->with('success', 'Tanda terima berhasil dibuat!');
-
-        } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('Error creating tanda terima: ' . $e->getMessage());
-            return back()->with('error', 'Gagal membuat tanda terima: ' . $e->getMessage())
-                ->withInput();
-        }
-    }
 
     /**
      * Show the form for editing the specified tanda terima
@@ -188,6 +79,24 @@ class TandaTerimaController extends Controller
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'nullable|in:draft,submitted,approved,completed,cancelled',
+            'nomor_kontainer' => 'nullable|array',
+            'nomor_kontainer.*' => 'nullable|string|max:255',
+            'no_seal' => 'nullable|array',
+            'no_seal.*' => 'nullable|string|max:255',
+            'jumlah_kontainer' => 'nullable|array',
+            'jumlah_kontainer.*' => 'nullable|integer|min:0',
+            'satuan_kontainer' => 'nullable|array',
+            'satuan_kontainer.*' => 'nullable|string|max:50',
+            'panjang_kontainer' => 'nullable|array',
+            'panjang_kontainer.*' => 'nullable|numeric|min:0',
+            'lebar_kontainer' => 'nullable|array',
+            'lebar_kontainer.*' => 'nullable|numeric|min:0',
+            'tinggi_kontainer' => 'nullable|array',
+            'tinggi_kontainer.*' => 'nullable|numeric|min:0',
+            'meter_kubik_kontainer' => 'nullable|array',
+            'meter_kubik_kontainer.*' => 'nullable|numeric|min:0',
+            'tonase_kontainer' => 'nullable|array',
+            'tonase_kontainer.*' => 'nullable|numeric|min:0',
             'dimensi_items' => 'nullable|array',
             'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
             'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
@@ -214,6 +123,96 @@ class TandaTerimaController extends Controller
                 'catatan' => $request->catatan,
                 'updated_by' => Auth::id(),
             ];
+
+            // Handle multiple container numbers
+            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
+                $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
+                    return !empty(trim($value));
+                });
+                if (!empty($nomorKontainers)) {
+                    $updateData['no_kontainer'] = implode(',', $nomorKontainers);
+                }
+            }
+
+            // Handle multiple seal numbers
+            if ($request->has('no_seal') && is_array($request->no_seal)) {
+                $noSeals = array_filter($request->no_seal, function($value) {
+                    return !empty(trim($value));
+                });
+                if (!empty($noSeals)) {
+                    $updateData['no_seal'] = implode(',', $noSeals);
+                }
+            }
+
+            // Handle multiple jumlah per kontainer
+            if ($request->has('jumlah_kontainer') && is_array($request->jumlah_kontainer)) {
+                $jumlahKontainers = array_filter($request->jumlah_kontainer, function($value) {
+                    return !empty(trim($value)) && is_numeric($value);
+                });
+                if (!empty($jumlahKontainers)) {
+                    $updateData['jumlah'] = implode(',', $jumlahKontainers);
+                }
+            }
+
+            // Handle multiple satuan per kontainer
+            if ($request->has('satuan_kontainer') && is_array($request->satuan_kontainer)) {
+                $satuanKontainers = array_filter($request->satuan_kontainer, function($value) {
+                    return !empty(trim($value));
+                });
+                if (!empty($satuanKontainers)) {
+                    $updateData['satuan'] = implode(',', $satuanKontainers);
+                }
+            }
+
+            // Handle multiple panjang per kontainer
+            if ($request->has('panjang_kontainer') && is_array($request->panjang_kontainer)) {
+                $panjangKontainers = array_filter($request->panjang_kontainer, function($value) {
+                    return !empty(trim($value)) && is_numeric($value);
+                });
+                if (!empty($panjangKontainers)) {
+                    $updateData['panjang'] = implode(',', $panjangKontainers);
+                }
+            }
+
+            // Handle multiple lebar per kontainer
+            if ($request->has('lebar_kontainer') && is_array($request->lebar_kontainer)) {
+                $lebarKontainers = array_filter($request->lebar_kontainer, function($value) {
+                    return !empty(trim($value)) && is_numeric($value);
+                });
+                if (!empty($lebarKontainers)) {
+                    $updateData['lebar'] = implode(',', $lebarKontainers);
+                }
+            }
+
+            // Handle multiple tinggi per kontainer
+            if ($request->has('tinggi_kontainer') && is_array($request->tinggi_kontainer)) {
+                $tinggiKontainers = array_filter($request->tinggi_kontainer, function($value) {
+                    return !empty(trim($value)) && is_numeric($value);
+                });
+                if (!empty($tinggiKontainers)) {
+                    $updateData['tinggi'] = implode(',', $tinggiKontainers);
+                }
+            }
+
+            // Handle multiple meter_kubik per kontainer
+            if ($request->has('meter_kubik_kontainer') && is_array($request->meter_kubik_kontainer)) {
+                $meterKubikKontainers = array_filter($request->meter_kubik_kontainer, function($value) {
+                    return !empty(trim($value)) && is_numeric($value);
+                });
+                if (!empty($meterKubikKontainers)) {
+                    $updateData['meter_kubik'] = implode(',', $meterKubikKontainers);
+                }
+            }
+
+            // Handle multiple tonase per kontainer
+            if ($request->has('tonase_kontainer') && is_array($request->tonase_kontainer)) {
+                $tonaseKontainers = array_filter($request->tonase_kontainer, function($value) {
+                    return !empty(trim($value)) && is_numeric($value);
+                });
+                if (!empty($tonaseKontainers)) {
+                    $updateData['tonase'] = implode(',', $tonaseKontainers);
+                }
+            }
 
             // Only include status if the column exists and request has status
             if ($request->has('status') && Schema::hasColumn('tanda_terimas', 'status')) {
@@ -279,6 +278,55 @@ class TandaTerimaController extends Controller
             DB::rollBack();
             Log::error('Error deleting tanda terima: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus tanda terima: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Add cargo container to prospek
+     */
+    public function addToProspek(TandaTerima $tandaTerima)
+    {
+        try {
+            // Validasi no kontainer harus CARGO
+            if (strtoupper($tandaTerima->no_kontainer) !== 'CARGO') {
+                return back()->with('error', 'Hanya kontainer dengan no. kontainer CARGO yang dapat dimasukkan ke prospek!');
+            }
+
+            // Tentukan ukuran kontainer yang valid (hanya 20 atau 40)
+            $ukuran = null;
+            if ($tandaTerima->size) {
+                // Jika size adalah '20' atau '40', gunakan langsung
+                if (in_array($tandaTerima->size, ['20', '40'])) {
+                    $ukuran = $tandaTerima->size;
+                }
+            }
+
+            // Buat data prospek dari tanda terima
+            $prospekData = [
+                'tanggal' => $tandaTerima->tanggal_surat_jalan,
+                'nama_supir' => $tandaTerima->supir ?: 'Tidak ada supir',
+                'barang' => $tandaTerima->jenis_barang ?: 'CARGO',
+                'pt_pengirim' => $tandaTerima->pengirim ?: 'Tidak ada pengirim',
+                'ukuran' => $ukuran, // Hanya '20', '40', atau null
+                'tipe' => 'CARGO', // Set tipe sebagai CARGO untuk kontainer cargo
+                'nomor_kontainer' => $tandaTerima->no_kontainer,
+                'no_seal' => $tandaTerima->no_seal ?: 'Tidak ada seal',
+                'tujuan_pengiriman' => $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan',
+                'nama_kapal' => $tandaTerima->estimasi_nama_kapal ?: 'Tidak ada nama kapal',
+                'keterangan' => "Data dari tanda terima: {$tandaTerima->no_surat_jalan}. Kegiatan: {$tandaTerima->kegiatan}",
+                'status' => 'aktif',
+                'created_by' => Auth::id(),
+                'updated_by' => Auth::id(),
+            ];
+
+            $createdProspek = Prospek::create($prospekData);
+
+            return back()->with('success', "Kontainer CARGO dari surat jalan {$tandaTerima->no_surat_jalan} berhasil dimasukkan ke prospek (ID: {$createdProspek->id})!");
+
+        } catch (\Exception $e) {
+            Log::error('Error adding cargo to prospek: ' . $e->getMessage());
+            Log::error('TandaTerima data: ' . json_encode($tandaTerima->toArray()));
+            return back()->with('error', 'Gagal memasukkan kontainer ke prospek: ' . $e->getMessage());
         }
     }
 }

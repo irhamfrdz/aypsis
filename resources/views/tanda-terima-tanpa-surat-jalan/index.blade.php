@@ -92,7 +92,7 @@
                             Reset
                         </a>
                         @can('tanda-terima-tanpa-surat-jalan-create')
-                            <a href="{{ route('tanda-terima-tanpa-surat-jalan.create') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm ml-auto">
+                            <a href="{{ route('tanda-terima-tanpa-surat-jalan.pilih-tipe') }}" class="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm ml-auto">
                                 <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                 </svg>
@@ -197,7 +197,7 @@
                         <h3 class="text-base font-medium text-gray-500 mb-1">Belum ada tanda terima</h3>
                         <p class="text-sm text-gray-400">Mulai dengan membuat tanda terima baru.</p>
                         @can('tanda-terima-tanpa-surat-jalan-create')
-                            <a href="{{ route('tanda-terima-tanpa-surat-jalan.create') }}"
+                            <a href="{{ route('tanda-terima-tanpa-surat-jalan.pilih-tipe') }}"
                                class="inline-flex items-center px-4 py-2 mt-4 bg-indigo-600 text-white rounded-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm">
                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>

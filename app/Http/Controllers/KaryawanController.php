@@ -133,9 +133,32 @@ class KaryawanController extends Controller
      */
     public function export(\Illuminate\Http\Request $request)
     {
+        // Clear all possible caches to ensure fresh data
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
+        
+        // Clear Laravel caches
+        \Illuminate\Support\Facades\Cache::flush();
+        
+        // Force database connection refresh
+        \Illuminate\Support\Facades\DB::reconnect();
+        
         // Allow caller to specify separator via ?sep=, default to semicolon for Excel compatibility
         $sep = $request->query('sep', ';');
-        $delimiter = $sep === ',' ? ',' : ';'; // Default to semicolon
+        
+        // Decode URL encoded separator
+        $sep = urldecode($sep);
+        
+        // Determine delimiter - force semicolon as default for better Excel compatibility
+        $delimiter = ';';
+        if ($sep === ',') {
+            $delimiter = ',';
+        } elseif ($sep === ';') {
+            $delimiter = ';';
+        } elseif ($sep === "\t") {
+            $delimiter = "\t";
+        }
 
         // Check if this is a template request
         $isTemplate = $request->query('template', false);
@@ -152,8 +175,8 @@ class KaryawanController extends Controller
             // Write UTF-8 BOM for Excel recognition
             fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
-            // Write header row with proper delimiter
-            fputcsv($out, $columns, $delimiter, '"');
+            // Write header row with proper delimiter using manual method to avoid unwanted quotes
+            fwrite($out, implode($delimiter, $columns) . "\r\n");
 
             if ($isTemplate) {
                 // Add sample data row for template
@@ -197,38 +220,51 @@ class KaryawanController extends Controller
                     '', // nik_supervisor
                     '' // supervisor
                 ];
-                fputcsv($out, $sampleData, $delimiter, '"');
+                fwrite($out, implode($delimiter, $sampleData) . "\r\n");
             } else {
-                // stream rows for actual export
-                Karyawan::chunk(200, function($rows) use ($out, $columns, $delimiter) {
-                    foreach ($rows as $r) {
-                        $line = [];
-                        foreach ($columns as $col) {
-                            $val = $r->{$col} ?? '';
+                // Use database transaction to ensure data consistency
+                \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns, $delimiter) {
+                    // Stream rows for actual export - use fresh() to ensure latest data
+                    Karyawan::chunk(200, function($rows) use ($out, $columns, $delimiter) {
+                        foreach ($rows as $r) {
+                            // Get completely fresh instance to ensure we have the latest data
+                            $r = Karyawan::find($r->id);
+                            
+                            $line = [];
+                            foreach ($columns as $col) {
+                                $val = $r->{$col} ?? '';
 
-                            // Format dates to dd/mmm/yyyy for CSV export
-                            if ($val instanceof \DateTimeInterface) {
-                                $val = $val->format('d/M/Y');
-                            } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya']) && !empty($val)) {
-                                // Parse string dates and format to dd/mmm/yyyy
-                                try {
-                                    $ts = strtotime($val);
-                                    if ($ts !== false && $ts !== -1) {
-                                        $val = date('d/M/Y', $ts);
+                                // Format dates to dd/mmm/yyyy for CSV export
+                                if ($val instanceof \DateTimeInterface) {
+                                    $val = $val->format('d/M/Y');
+                                } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
+                                    // Handle date fields - format if not empty, keep empty if null
+                                    if (!empty($val)) {
+                                        try {
+                                            $ts = strtotime($val);
+                                            if ($ts !== false && $ts !== -1) {
+                                                $val = date('d/M/Y', $ts);
+                                            }
+                                        } catch (\Throwable $e) {
+                                            // Keep original value if parsing fails
+                                        }
+                                    } else {
+                                        // Keep empty for null dates
+                                        $val = '';
                                     }
-                                } catch (\Throwable $e) {
-                                    // Keep original value if parsing fails
                                 }
-                            }
 
-                        // Add zero-width space to numeric fields to prevent scientific notation in Excel
-                        // This is invisible but forces Excel to treat as text
-                        if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                            $val = "\u{200B}" . $val;
-                        }                            $line[] = $val;
+                                // Add zero-width space to numeric fields to prevent scientific notation in Excel
+                                // This is invisible but forces Excel to treat as text
+                                if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
+                                    $val = "\u{200B}" . $val;
+                                }
+                                
+                                $line[] = $val;
+                            }
+                            fwrite($out, implode($delimiter, $line) . "\r\n");
                         }
-                        fputcsv($out, $line, $delimiter, '"');
-                    }
+                    });
                 });
             }
             fclose($out);
@@ -237,6 +273,10 @@ class KaryawanController extends Controller
         return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+            'Last-Modified' => gmdate('D, d M Y H:i:s') . ' GMT'
         ]);
     }
 
@@ -245,6 +285,17 @@ class KaryawanController extends Controller
      */
     public function exportExcel()
     {
+        // Clear all possible caches to ensure fresh data
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
+        
+        // Clear Laravel caches
+        \Illuminate\Support\Facades\Cache::flush();
+        
+        // Force database connection refresh
+        \Illuminate\Support\Facades\DB::reconnect();
+        
         $columns = [
             'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
         ];
@@ -260,43 +311,52 @@ class KaryawanController extends Controller
             // Write header row with semicolon delimiter for Excel CSV compatibility
             fwrite($out, implode(";", $columns) . "\r\n");
 
-            // Stream rows for actual export with proper formatting
-            Karyawan::chunk(200, function($rows) use ($out, $columns) {
-                foreach ($rows as $r) {
-                    $line = [];
-                    foreach ($columns as $col) {
-                        $val = $r->{$col} ?? '';
+            // Use database transaction to ensure data consistency
+            \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns) {
+                // Stream rows for actual export with proper formatting - get fresh data
+                Karyawan::chunk(200, function($rows) use ($out, $columns) {
+                    foreach ($rows as $r) {
+                        // Get completely fresh instance to ensure we have the latest data
+                        $r = Karyawan::find($r->id);
+                        
+                        $line = [];
+                        foreach ($columns as $col) {
+                            $val = $r->{$col} ?? '';
 
-                        // Format dates to dd/mmm/yyyy for Excel export
-                        if ($val instanceof \DateTimeInterface) {
-                            $val = $val->format('d/M/Y');
-                        } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya']) && !empty($val)) {
-                            // Parse string dates and format to dd/mmm/yyyy
-                            try {
-                                $ts = strtotime($val);
-                                if ($ts !== false && $ts !== -1) {
-                                    $val = date('d/M/Y', $ts);
+                            // Format dates to dd/mmm/yyyy for Excel export
+                            if ($val instanceof \DateTimeInterface) {
+                                $val = $val->format('d/M/Y');
+                            } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
+                                // Handle date fields - format if not empty, keep empty if null
+                                if (!empty($val)) {
+                                    try {
+                                        $ts = strtotime($val);
+                                        if ($ts !== false && $ts !== -1) {
+                                            $val = date('d/M/Y', $ts);
+                                        }
+                                    } catch (\Throwable $e) {
+                                        // Keep original value if parsing fails
+                                    }
+                                } else {
+                                    // Keep empty for null dates
+                                    $val = '';
                                 }
-                            } catch (\Throwable $e) {
-                                // Keep original value if parsing fails
                             }
-                        }
 
-                        // For numeric fields, add invisible zero-width space to prevent scientific notation
-                        // This forces Excel to treat as text without showing visible characters
-                        if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
-                            $val = "\u{200B}" . $val; // Zero-width space
-                        }
+                            // For numeric fields, add invisible zero-width space to prevent scientific notation
+                            // This forces Excel to treat as text without showing visible characters
+                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
+                                $val = "\u{200B}" . $val; // Zero-width space
+                            }
 
-                        // Escape fields that contain semicolons, quotes, or line breaks
-                        if (strpos($val, ";") !== false || strpos($val, '"') !== false || strpos($val, "\n") !== false || strpos($val, "\r") !== false) {
-                            $val = '"' . str_replace('"', '""', $val) . '"';
-                        }
+                            // Clean any problematic characters that might cause issues in CSV
+                            $val = str_replace(["\r", "\n"], ' ', $val); // Replace line breaks with space
 
-                        $line[] = $val;
+                            $line[] = $val;
+                        }
+                        fwrite($out, implode(";", $line) . "\r\n");
                     }
-                    fwrite($out, implode(";", $line) . "\r\n");
-                }
+                });
             });
 
             fclose($out);
@@ -305,6 +365,10 @@ class KaryawanController extends Controller
         return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+            'Last-Modified' => gmdate('D, d M Y H:i:s') . ' GMT'
         ]);
     }
 
@@ -413,27 +477,21 @@ class KaryawanController extends Controller
             // Write header manually with semicolon delimiter
             fwrite($out, implode(';', $columns) . "\r\n");
 
-            // Write instruction row for format guidance
-            $escapedInstructions = array_map(function($field) {
-                // Escape fields that contain semicolons, quotes, or line breaks
-                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
-                    return '"' . str_replace('"', '""', $field) . '"';
-                }
-                return $field;
+            // Write instruction row for format guidance (clean data without quotes)
+            $cleanInstructions = array_map(function($field) {
+                // Clean any problematic characters
+                return str_replace(["\r", "\n"], ' ', $field);
             }, $instructionData);
 
-            fwrite($out, implode(';', $escapedInstructions) . "\r\n");
+            fwrite($out, implode(';', $cleanInstructions) . "\r\n");
 
-            // Write sample data manually with semicolon delimiter
-            $escapedData = array_map(function($field) {
-                // Escape fields that contain semicolons, quotes, or line breaks
-                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
-                    return '"' . str_replace('"', '""', $field) . '"';
-                }
-                return $field;
+            // Write sample data manually with semicolon delimiter (clean data without quotes)
+            $cleanData = array_map(function($field) {
+                // Clean any problematic characters
+                return str_replace(["\r", "\n"], ' ', $field);
             }, $sampleData);
 
-            fwrite($out, implode(';', $escapedData) . "\r\n");
+            fwrite($out, implode(';', $cleanData) . "\r\n");
             fclose($out);
         };
 
@@ -505,15 +563,13 @@ class KaryawanController extends Controller
             // Write header manually with semicolon delimiter for Excel
             fwrite($out, implode(';', $columns) . "\r\n");
 
-            // Write instruction row only (no sample data)
-            $escapedInstructions = array_map(function($field) {
-                if (strpos($field, ';') !== false || strpos($field, '"') !== false || strpos($field, "\n") !== false || strpos($field, "\r") !== false) {
-                    return '"' . str_replace('"', '""', $field) . '"';
-                }
-                return $field;
+            // Write instruction row only (no sample data, clean without quotes)
+            $cleanInstructions = array_map(function($field) {
+                // Clean any problematic characters
+                return str_replace(["\r", "\n"], ' ', $field);
             }, $instructionData);
 
-            fwrite($out, implode(';', $escapedInstructions) . "\r\n");
+            fwrite($out, implode(';', $cleanInstructions) . "\r\n");
 
             // Add one empty row for user to start entering data
             $emptyRow = array_fill(0, count($columns), '');
@@ -559,6 +615,96 @@ class KaryawanController extends Controller
         return response()->stream($callback, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
             'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ]);
+    }
+
+    /**
+     * Export karyawan dengan format Excel Indonesia (koma delimiter, quotes untuk koma dalam data)
+     */
+    public function exportExcelIndonesia()
+    {
+        // Clear all possible caches to ensure fresh data
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
+        }
+        
+        // Clear Laravel caches
+        \Illuminate\Support\Facades\Cache::flush();
+        
+        // Force database connection refresh
+        \Illuminate\Support\Facades\DB::reconnect();
+        
+        $columns = [
+            'nik','nama_panggilan','nama_lengkap','plat','email','ktp','kk','alamat','rt_rw','kelurahan','kecamatan','kabupaten','provinsi','kode_pos','alamat_lengkap','tempat_lahir','tanggal_lahir','no_hp','jenis_kelamin','status_perkawinan','agama','divisi','pekerjaan','tanggal_masuk','tanggal_berhenti','tanggal_masuk_sebelumnya','tanggal_berhenti_sebelumnya','catatan','status_pajak','nama_bank','bank_cabang','akun_bank','atas_nama','jkn','no_ketenagakerjaan','cabang','nik_supervisor','supervisor'
+        ];
+
+        $fileName = 'karyawans_excel_indonesia_' . date('Ymd_His') . '.csv';
+
+        $callback = function() use ($columns) {
+            $out = fopen('php://output', 'w');
+
+            // Write UTF-8 BOM for Excel recognition
+            fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+            // Write header row using fputcsv with comma delimiter and quotes
+            fputcsv($out, $columns, ',', '"');
+
+            // Use database transaction to ensure data consistency
+            \Illuminate\Support\Facades\DB::transaction(function() use ($out, $columns) {
+                // Stream rows for actual export with proper formatting - get fresh data
+                Karyawan::chunk(200, function($rows) use ($out, $columns) {
+                    foreach ($rows as $r) {
+                        // Get completely fresh instance to ensure we have the latest data
+                        $r = Karyawan::find($r->id);
+                        
+                        $line = [];
+                        foreach ($columns as $col) {
+                            $val = $r->{$col} ?? '';
+
+                            // Format dates to dd/mmm/yyyy for Excel export
+                            if ($val instanceof \DateTimeInterface) {
+                                $val = $val->format('d/M/Y');
+                            } elseif (in_array($col, ['tanggal_lahir', 'tanggal_masuk', 'tanggal_berhenti', 'tanggal_masuk_sebelumnya', 'tanggal_berhenti_sebelumnya'])) {
+                                // Handle date fields - format if not empty, keep empty if null
+                                if (!empty($val)) {
+                                    try {
+                                        $ts = strtotime($val);
+                                        if ($ts !== false && $ts !== -1) {
+                                            $val = date('d/M/Y', $ts);
+                                        }
+                                    } catch (\Throwable $e) {
+                                        // Keep original value if parsing fails
+                                    }
+                                } else {
+                                    // Keep empty for null dates
+                                    $val = '';
+                                }
+                            }
+
+                            // For numeric fields, add invisible zero-width space to prevent scientific notation
+                            // This forces Excel to treat as text without showing visible characters
+                            if (in_array($col, ['nik', 'ktp', 'kk', 'no_hp', 'akun_bank', 'jkn', 'no_ketenagakerjaan']) && !empty($val)) {
+                                $val = "\u{200B}" . $val; // Zero-width space
+                            }
+
+                            $line[] = $val;
+                        }
+                        // Use fputcsv with comma delimiter and quotes to handle commas in data
+                        fputcsv($out, $line, ',', '"');
+                    }
+                });
+            });
+
+            fclose($out);
+        };
+
+        return response()->stream($callback, 200, [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+            'Cache-Control' => 'no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma' => 'no-cache',
+            'Expires' => 'Thu, 01 Jan 1970 00:00:00 GMT',
+            'Last-Modified' => gmdate('D, d M Y H:i:s') . ' GMT'
         ]);
     }
 
@@ -841,40 +987,48 @@ class KaryawanController extends Controller
             }
         }
 
-        $karyawan->update($validated);
+        // Use database transaction to ensure data integrity
+        \DB::transaction(function () use ($karyawan, $validated, $familyMembers) {
+            $karyawan->update($validated);
 
-        // Handle family members update
-        if (isset($familyMembers)) {
-            // Get existing family member IDs to track which ones to keep
-            $existingIds = collect($familyMembers)->pluck('id')->filter()->toArray();
+            // Handle family members update
+            if (isset($familyMembers)) {
+                // Get existing family member IDs to track which ones to keep
+                $existingIds = collect($familyMembers)->pluck('id')->filter()->toArray();
 
-            // Delete family members that are no longer in the form
-            $karyawan->familyMembers()->whereNotIn('id', $existingIds)->delete();
+                // Delete family members that are no longer in the form
+                $karyawan->familyMembers()->whereNotIn('id', $existingIds)->delete();
 
-            // Update or create family members
-            foreach ($familyMembers as $memberData) {
-                if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
-                    // Convert family member data to uppercase except date fields
-                    foreach ($memberData as $key => $value) {
-                        if ($value !== null && $key !== 'tanggal_lahir' && $key !== 'id') {
-                            $memberData[$key] = strtoupper($value);
+                // Update or create family members
+                foreach ($familyMembers as $memberData) {
+                    if (!empty($memberData['hubungan']) && !empty($memberData['nama'])) {
+                        // Convert family member data to uppercase except date fields
+                        foreach ($memberData as $key => $value) {
+                            if ($value !== null && $key !== 'tanggal_lahir' && $key !== 'id') {
+                                $memberData[$key] = strtoupper($value);
+                            }
                         }
-                    }
 
-                    if (!empty($memberData['id'])) {
-                        // Update existing family member
-                        $familyMember = $karyawan->familyMembers()->find($memberData['id']);
-                        if ($familyMember) {
-                            unset($memberData['id']); // Remove id from update data
-                            $familyMember->update($memberData);
+                        if (!empty($memberData['id'])) {
+                            // Update existing family member
+                            $familyMember = $karyawan->familyMembers()->find($memberData['id']);
+                            if ($familyMember) {
+                                unset($memberData['id']); // Remove id from update data
+                                $familyMember->update($memberData);
+                            }
+                        } else {
+                            // Create new family member
+                            unset($memberData['id']); // Remove id field for new records
+                            $karyawan->familyMembers()->create($memberData);
                         }
-                    } else {
-                        // Create new family member
-                        unset($memberData['id']); // Remove id field for new records
-                        $karyawan->familyMembers()->create($memberData);
                     }
                 }
             }
+        });
+
+        // Clear any potential cache after update to ensure fresh data
+        if (function_exists('opcache_reset')) {
+            opcache_reset();
         }
 
         // Jika akses dari onboarding, redirect ke crew checklist

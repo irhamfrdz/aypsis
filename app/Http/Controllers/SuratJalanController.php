@@ -201,6 +201,20 @@ class SuratJalanController extends Controller
             $data['input_date'] = now();
             $data['status'] = 'belum masuk checkpoint'; // Set default status to belum masuk checkpoint
 
+            // Handle cargo type - set default values for size and jumlah_kontainer if empty
+            if (isset($data['tipe_kontainer']) && strtolower($data['tipe_kontainer']) === 'cargo') {
+                if (empty($data['size'])) {
+                    $data['size'] = null;
+                }
+                if (empty($data['jumlah_kontainer'])) {
+                    $data['jumlah_kontainer'] = 1; // Default to 1 for cargo
+                }
+                Log::info('Cargo type detected, adjusting size and jumlah_kontainer', [
+                    'size' => $data['size'],
+                    'jumlah_kontainer' => $data['jumlah_kontainer']
+                ]);
+            }
+
             Log::info('Prepared data for saving:', $data);
 
             // Handle image upload
