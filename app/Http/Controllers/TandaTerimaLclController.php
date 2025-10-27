@@ -72,7 +72,7 @@ class TandaTerimaLclController extends Controller
             'kuantitas' => 'required|integer|min:1',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
-            'tujuan_pengiriman' => 'required|exists:tujuan_kegiatan_utamas,id',
+            'tujuan_pengiriman' => 'required|exists:master_tujuan_kirims,id',
             'dimensi_items' => 'required|array|min:1',
             'dimensi_items.*.panjang' => 'nullable|numeric|min:0',
             'dimensi_items.*.lebar' => 'nullable|numeric|min:0',
@@ -186,7 +186,7 @@ class TandaTerimaLclController extends Controller
             'kuantitas' => 'required|integer|min:1',
             'supir' => 'required|string|max:255',
             'no_plat' => 'required|string|max:255',
-            'tujuan_pengiriman' => 'required|exists:tujuan_kegiatan_utamas,id',
+            'tujuan_pengiriman' => 'required|exists:master_tujuan_kirims,id',
             'dimensi_items' => 'required|array|min:1',
         ]);
 

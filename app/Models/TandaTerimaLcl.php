@@ -58,7 +58,7 @@ class TandaTerimaLcl extends Model
     
     public function tujuanPengiriman(): BelongsTo
     {
-        return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_pengiriman_id');
+        return $this->belongsTo(MasterTujuanKirim::class, 'tujuan_pengiriman_id');
     }
     
     public function items(): HasMany
