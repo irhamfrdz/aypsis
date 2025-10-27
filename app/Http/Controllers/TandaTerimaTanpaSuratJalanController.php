@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TandaTerimaTanpaSuratJalan;
 use App\Models\TandaTerimaDimensiItem;
+use App\Models\TandaTerimaLcl;
 use App\Models\Term;
 use App\Models\Pengirim;
 use App\Models\Karyawan;
@@ -28,34 +29,75 @@ class TandaTerimaTanpaSuratJalanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = TandaTerimaTanpaSuratJalan::query();
+        $tipe = $request->get('tipe');
+        
+        // Jika tipe LCL dipilih, ambil data dari tabel tanda_terima_lcl
+        if ($tipe == 'lcl') {
+            $query = \App\Models\TandaTerimaLcl::query();
+            
+            // Search functionality untuk LCL
+            if ($request->filled('search')) {
+                $query->where(function($q) use ($request) {
+                    $q->where('nomor_tanda_terima', 'LIKE', '%' . $request->search . '%')
+                      ->orWhere('nama_penerima', 'LIKE', '%' . $request->search . '%')
+                      ->orWhere('nama_pengirim', 'LIKE', '%' . $request->search . '%')
+                      ->orWhere('nama_barang', 'LIKE', '%' . $request->search . '%');
+                });
+            }
 
-        // Search functionality
-        if ($request->filled('search')) {
-            $query->search($request->search);
+            // Date range filter untuk LCL
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $query->whereBetween('tanggal_tanda_terima', [$request->start_date, $request->end_date]);
+            }
+
+            $tandaTerimas = $query->with(['term', 'jenisBarang', 'tujuanPengiriman', 'createdBy'])
+                                  ->orderBy('created_at', 'desc')
+                                  ->paginate(15);
+
+            // Statistics untuk LCL
+            $stats = [
+                'total' => \App\Models\TandaTerimaLcl::count(),
+                'draft' => 0,
+                'terkirim' => 0,
+                'selesai' => 0,
+            ];
+            
+            // Set flag untuk view bahwa ini data LCL
+            $isLclData = true;
+        } else {
+            // Data default dari tabel tanda_terima_tanpa_surat_jalan untuk FCL dan Cargo
+            $query = TandaTerimaTanpaSuratJalan::query();
+
+            // Filter berdasarkan tipe jika bukan LCL
+            if ($request->filled('tipe') && in_array($tipe, ['fcl', 'cargo'])) {
+                // Asumsi ada kolom tipe atau logika untuk membedakan FCL dan Cargo
+                // Untuk sementara kita skip filter ini karena belum ada kolom tipe
+            }
+
+            // Search functionality
+            if ($request->filled('search')) {
+                $query->search($request->search);
+            }
+
+            // Date range filter
+            if ($request->filled('start_date') && $request->filled('end_date')) {
+                $query->byDateRange($request->start_date, $request->end_date);
+            }
+
+            $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(15);
+
+            // Statistics
+            $stats = [
+                'total' => TandaTerimaTanpaSuratJalan::count(),
+                'draft' => 0,
+                'terkirim' => 0,
+                'selesai' => 0,
+            ];
+            
+            $isLclData = false;
         }
 
-        // Status filter - skip since this table doesn't have status column
-        // if ($request->filled('status')) {
-        //     $query->where('status', $request->status);
-        // }
-
-        // Date range filter
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->byDateRange($request->start_date, $request->end_date);
-        }
-
-        $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(15);
-
-        // Statistics
-        $stats = [
-            'total' => TandaTerimaTanpaSuratJalan::count(),
-            'draft' => 0, // TandaTerimaTanpaSuratJalan tidak memiliki kolom status
-            'terkirim' => 0, // Akan diisi jika ada logika status berdasarkan field lain
-            'selesai' => 0, // Akan diisi jika ada logika status berdasarkan field lain
-        ];
-
-        return view('tanda-terima-tanpa-surat-jalan.index', compact('tandaTerimas', 'stats'));
+        return view('tanda-terima-tanpa-surat-jalan.index', compact('tandaTerimas', 'stats', 'isLclData'));
     }
 
     /**

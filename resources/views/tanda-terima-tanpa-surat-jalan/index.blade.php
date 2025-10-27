@@ -65,11 +65,13 @@
                                class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
-                        <select name="status" disabled class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm bg-gray-100 cursor-not-allowed">
-                            <option value="">Status tidak tersedia</option>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Tipe</label>
+                        <select name="tipe" class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                            <option value="">Semua Tipe</option>
+                            <option value="fcl" {{ request('tipe') == 'fcl' ? 'selected' : '' }}>FCL (Full Container Load)</option>
+                            <option value="cargo" {{ request('tipe') == 'cargo' ? 'selected' : '' }}>Cargo</option>
+                            <option value="lcl" {{ request('tipe') == 'lcl' ? 'selected' : '' }}>LCL (Less Container Load)</option>
                         </select>
-                        <p class="text-xs text-gray-500 mt-1">Tabel ini belum memiliki kolom status</p>
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
@@ -123,60 +125,120 @@
                             @foreach($tandaTerimas as $tandaTerima)
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $tandaTerima->no_tanda_terima }}</div>
+                                        @if(isset($isLclData) && $isLclData)
+                                            <div class="text-sm font-medium text-gray-900">{{ $tandaTerima->nomor_tanda_terima }}</div>
+                                        @else
+                                            <div class="text-sm font-medium text-gray-900">{{ $tandaTerima->no_tanda_terima }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <div class="text-sm text-gray-900">{{ $tandaTerima->tanggal_tanda_terima->format('d/m/Y') }}</div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->penerima }}">{{ $tandaTerima->penerima }}</div>
+                                        @if(isset($isLclData) && $isLclData)
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->nama_penerima }}">{{ $tandaTerima->nama_penerima }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->penerima }}">{{ $tandaTerima->penerima }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->pengirim }}">{{ $tandaTerima->pengirim }}</div>
+                                        @if(isset($isLclData) && $isLclData)
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->nama_pengirim }}">{{ $tandaTerima->nama_pengirim }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->pengirim }}">{{ $tandaTerima->pengirim }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $tandaTerima->jenis_barang }}</div>
+                                        @if(isset($isLclData) && $isLclData)
+                                            <div class="text-sm text-gray-900">{{ $tandaTerima->jenisBarang->nama_barang ?? $tandaTerima->nama_barang }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-900">{{ $tandaTerima->jenis_barang }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengambilan }}">{{ $tandaTerima->tujuan_pengambilan }}</div>
+                                        @if(isset($isLclData) && $isLclData)
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->alamat_pengirim }}">{{ $tandaTerima->alamat_pengirim }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengambilan }}">{{ $tandaTerima->tujuan_pengambilan }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengiriman }}">{{ $tandaTerima->tujuan_pengiriman }}</div>
+                                        @if(isset($isLclData) && $isLclData)
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuanPengiriman->nama_tujuan_kegiatan_utama ?? '' }}">{{ $tandaTerima->tujuanPengiriman->nama_tujuan_kegiatan_utama ?? 'Tidak ada' }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengiriman }}">{{ $tandaTerima->tujuan_pengiriman }}</div>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                            Tidak Ada Status
-                                        </span>
+                                        @if(isset($isLclData) && $isLclData)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                LCL
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                {{ request('tipe') == 'fcl' ? 'FCL' : (request('tipe') == 'cargo' ? 'Cargo' : 'Standard') }}
+                                            </span>
+                                        @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-center">
                                         <div class="flex justify-center gap-2">
-                                            <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $tandaTerima) }}"
-                                               class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
-                                                </svg>
-                                            </a>
-                                            @can('tanda-terima-tanpa-surat-jalan-update')
-                                                <a href="{{ route('tanda-terima-tanpa-surat-jalan.edit', $tandaTerima) }}"
-                                                   class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                            @if(isset($isLclData) && $isLclData)
+                                                <a href="{{ route('tanda-terima-lcl.show', $tandaTerima) }}"
+                                                   class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
                                                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                                     </svg>
                                                 </a>
-                                            @endcan
-                                            @can('tanda-terima-tanpa-surat-jalan-delete')
-                                                <form action="{{ route('tanda-terima-tanpa-surat-jalan.destroy', $tandaTerima) }}" method="POST" class="inline"
-                                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?')">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
+                                                @can('tanda-terima-tanpa-surat-jalan-update')
+                                                    <a href="{{ route('tanda-terima-lcl.edit', $tandaTerima) }}"
+                                                       class="text-yellow-600 hover:text-yellow-900" title="Edit">
                                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                         </svg>
-                                                    </button>
-                                                </form>
-                                            @endcan
+                                                    </a>
+                                                @endcan
+                                                @can('tanda-terima-tanpa-surat-jalan-delete')
+                                                    <form action="{{ route('tanda-terima-lcl.destroy', $tandaTerima) }}" method="POST" class="inline"
+                                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima LCL ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            @else
+                                                <a href="{{ route('tanda-terima-tanpa-surat-jalan.show', $tandaTerima) }}"
+                                                   class="text-indigo-600 hover:text-indigo-900" title="Lihat Detail">
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                                    </svg>
+                                                </a>
+                                                @can('tanda-terima-tanpa-surat-jalan-update')
+                                                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.edit', $tandaTerima) }}"
+                                                       class="text-yellow-600 hover:text-yellow-900" title="Edit">
+                                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                        </svg>
+                                                    </a>
+                                                @endcan
+                                                @can('tanda-terima-tanpa-surat-jalan-delete')
+                                                    <form action="{{ route('tanda-terima-tanpa-surat-jalan.destroy', $tandaTerima) }}" method="POST" class="inline"
+                                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?')">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
+                                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                                            </svg>
+                                                        </button>
+                                                    </form>
+                                                @endcan
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
