@@ -20,17 +20,8 @@ class TandaTerimaLclController extends Controller
      */
     public function index()
     {
-        $tandaTerimas = TandaTerimaLcl::with([
-            'term', 
-            'jenisBarang', 
-            'tujuanPengiriman',
-            'items',
-            'createdBy'
-        ])
-        ->latest()
-        ->paginate(20);
-        
-        return view('tanda-terima-lcl.index', compact('tandaTerimas'));
+        // Redirect to main index with LCL filter
+        return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl']);
     }
 
     /**
@@ -122,7 +113,7 @@ class TandaTerimaLclController extends Controller
             }
         });
 
-        return redirect()->route('tanda-terima-lcl.index')
+        return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
                         ->with('success', 'Tanda Terima LCL berhasil dibuat.');
     }
 
@@ -232,7 +223,7 @@ class TandaTerimaLclController extends Controller
             }
         });
 
-        return redirect()->route('tanda-terima-lcl.index')
+        return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
                         ->with('success', 'Tanda Terima LCL berhasil diperbarui.');
     }
 
@@ -248,7 +239,7 @@ class TandaTerimaLclController extends Controller
             $tandaTerima->delete();
         });
         
-        return redirect()->route('tanda-terima-lcl.index')
+        return redirect()->route('tanda-terima-tanpa-surat-jalan.index', ['tipe' => 'lcl'])
                         ->with('success', 'Tanda Terima LCL berhasil dihapus.');
     }
 }

@@ -164,7 +164,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if(isset($isLclData) && $isLclData)
-                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuanPengiriman->nama_tujuan_kegiatan_utama ?? '' }}">{{ $tandaTerima->tujuanPengiriman->nama_tujuan_kegiatan_utama ?? 'Tidak ada' }}</div>
+                                            <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuanPengiriman->nama_tujuan ?? '' }}">{{ $tandaTerima->tujuanPengiriman->nama_tujuan ?? 'Tidak ada' }}</div>
                                         @else
                                             <div class="text-sm text-gray-900 max-w-xs truncate" title="{{ $tandaTerima->tujuan_pengiriman }}">{{ $tandaTerima->tujuan_pengiriman }}</div>
                                         @endif
