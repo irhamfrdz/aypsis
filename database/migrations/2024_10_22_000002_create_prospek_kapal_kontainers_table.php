@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prospek_kapal_kontainers', function (Blueprint $table) {
+        // Check if table already exists to prevent conflicts
+        if (!Schema::hasTable('prospek_kapal_kontainers')) {
+            Schema::create('prospek_kapal_kontainers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('prospek_kapal_id')->constrained('prospek_kapal')->onDelete('cascade');
             $table->foreignId('tanda_terima_id')->nullable()->constrained('tanda_terimas')->onDelete('cascade');
@@ -35,7 +37,8 @@ return new class extends Migration
             $table->index(['prospek_kapal_id', 'status_loading']);
             $table->index('nomor_kontainer');
             $table->index('loading_sequence');
-        });
+            });
+        }
     }
 
     /**

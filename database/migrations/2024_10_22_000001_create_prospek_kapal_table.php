@@ -11,7 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('prospek_kapal', function (Blueprint $table) {
+        // Check if table already exists to prevent conflicts
+        if (!Schema::hasTable('prospek_kapal')) {
+            Schema::create('prospek_kapal', function (Blueprint $table) {
             $table->id();
             $table->foreignId('pergerakan_kapal_id')->nullable()->constrained('pergerakan_kapal')->onDelete('set null');
             $table->string('voyage')->index();
@@ -28,7 +30,8 @@ return new class extends Migration
 
             $table->index(['voyage', 'status']);
             $table->index('tanggal_loading');
-        });
+            });
+        }
     }
 
     /**
