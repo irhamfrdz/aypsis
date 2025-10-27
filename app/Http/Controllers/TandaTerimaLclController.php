@@ -11,7 +11,7 @@ use App\Models\TandaTerimaLclItem;
 use App\Models\Term;
 use App\Models\JenisBarang;
 use App\Models\TujuanKegiatanUtama;
-use App\Models\Supir;
+use App\Models\Karyawan;
 
 class TandaTerimaLclController extends Controller
 {
@@ -41,7 +41,10 @@ class TandaTerimaLclController extends Controller
         $terms = Term::all();
         $jenisBarangs = JenisBarang::all();
         $tujuanKegiatanUtamas = TujuanKegiatanUtama::all();
-        $supirs = Supir::all();
+        // Ambil karyawan yang memiliki divisi 'supir'
+        $supirs = Karyawan::where('divisi', 'supir')
+            ->select('nama_lengkap as nama_supir', 'plat as no_plat')
+            ->get();
         
         return view('tanda-terima-lcl.create', compact(
             'terms', 

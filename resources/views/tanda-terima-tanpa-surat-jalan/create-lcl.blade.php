@@ -481,7 +481,7 @@
                                              data-text="{{ $supir->nama_supir }}"
                                              data-plat="{{ $supir->no_plat }}">
                                             <div class="font-medium">{{ $supir->nama_supir }}</div>
-                                            <div class="text-xs text-gray-500">{{ $supir->no_plat }}</div>
+                                            <div class="text-xs text-gray-500">{{ $supir->no_plat ?? 'Tidak ada plat' }}</div>
                                         </div>
                                     @endforeach
                                 </div>
