@@ -46,7 +46,7 @@ class TandaTerimaLclController extends Controller
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
             ->get();
         
-        return view('tanda-terima-lcl.create', compact(
+        return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
             'terms', 
             'jenisBarangs', 
             'tujuanKegiatanUtamas', 
