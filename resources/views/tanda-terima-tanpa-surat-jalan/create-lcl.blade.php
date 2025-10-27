@@ -119,8 +119,8 @@
                                 <div id="termDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                                     @foreach($terms as $term)
                                         <div class="term-option px-3 py-2 hover:bg-green-50 cursor-pointer text-sm border-b border-gray-100"
-                                             data-value="{{ $term->id }}" data-text="{{ $term->nama_term }}">
-                                            {{ $term->nama_term }}
+                                             data-value="{{ $term->id }}" data-text="{{ $term->nama_status }}">
+                                            {{ $term->nama_status }}
                                         </div>
                                     @endforeach
                                 </div>
@@ -128,7 +128,7 @@
                                     <option value="">Pilih Term</option>
                                     @foreach($terms as $term)
                                         <option value="{{ $term->id }}" {{ old('term_id') == $term->id ? 'selected' : '' }}>
-                                            {{ $term->nama_term }}
+                                            {{ $term->nama_status }}
                                         </option>
                                     @endforeach
                                 </select>
