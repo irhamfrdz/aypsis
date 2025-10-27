@@ -473,7 +473,8 @@
                             <div class="relative">
                                 <input type="text" id="supirSearch" 
                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
-                                       placeholder="Cari atau ketik nama supir..." autocomplete="off" required>
+                                       placeholder="Cari atau ketik nama supir..." autocomplete="off" required 
+                                       value="{{ old('supir', 'Supir Customer') }}">
                                 <div id="supirDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                                     @foreach($supirs as $supir)
                                         <div class="supir-option px-3 py-2 hover:bg-gray-50 cursor-pointer text-sm border-b border-gray-100"
@@ -481,11 +482,11 @@
                                              data-text="{{ $supir->nama_supir }}"
                                              data-plat="{{ $supir->no_plat }}">
                                             <div class="font-medium">{{ $supir->nama_supir }}</div>
-                                            <div class="text-xs text-gray-500">{{ $supir->no_plat ?? 'Tidak ada plat' }}</div>
+                                            <div class="text-xs text-gray-500">{{ $supir->no_plat }}</div>
                                         </div>
                                     @endforeach
                                 </div>
-                                <input type="hidden" name="supir" id="supir" required>
+                                <input type="hidden" name="supir" id="supir" required value="{{ old('supir', 'Supir Customer') }}">
                             </div>
                             @error('supir')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -499,7 +500,7 @@
                             </label>
                             <input type="text" name="no_plat" id="no_plat"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-gray-500 focus:border-gray-500"
-                                   value="{{ old('no_plat') }}" required
+                                   value="{{ old('no_plat', 'Plat Customer') }}" required
                                    placeholder="B 1234 XYZ">
                             @error('no_plat')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -526,18 +527,18 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                    placeholder="Cari tujuan pengiriman..." autocomplete="off" required>
                             <div id="tujuanPengirimanDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
-                                @foreach($tujuanKegiatanUtamas as $tujuan)
+                                @foreach($masterTujuanKirims as $tujuan)
                                     <div class="tujuan-pengiriman-option px-3 py-2 hover:bg-indigo-50 cursor-pointer text-sm border-b border-gray-100"
-                                         data-value="{{ $tujuan->id }}" data-text="{{ $tujuan->nama_tujuan_kegiatan_utama }}">
-                                        {{ $tujuan->nama_tujuan_kegiatan_utama }}
+                                         data-value="{{ $tujuan->id }}" data-text="{{ $tujuan->nama_tujuan }}">
+                                        {{ $tujuan->nama_tujuan }}
                                     </div>
                                 @endforeach
                             </div>
                             <select name="tujuan_pengiriman" id="tujuan_pengiriman" class="hidden" required>
                                 <option value="">Pilih Tujuan Pengiriman</option>
-                                @foreach($tujuanKegiatanUtamas as $tujuan)
+                                @foreach($masterTujuanKirims as $tujuan)
                                     <option value="{{ $tujuan->id }}" {{ old('tujuan_pengiriman') == $tujuan->id ? 'selected' : '' }}>
-                                        {{ $tujuan->nama_tujuan_kegiatan_utama }}
+                                        {{ $tujuan->nama_tujuan }}
                                     </option>
                                 @endforeach
                             </select>

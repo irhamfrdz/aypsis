@@ -10,7 +10,7 @@ use App\Models\TandaTerimaLcl;
 use App\Models\TandaTerimaLclItem;
 use App\Models\Term;
 use App\Models\JenisBarang;
-use App\Models\TujuanKegiatanUtama;
+use App\Models\MasterTujuanKirim;
 use App\Models\Karyawan;
 
 class TandaTerimaLclController extends Controller
@@ -40,7 +40,7 @@ class TandaTerimaLclController extends Controller
     {
         $terms = Term::all();
         $jenisBarangs = JenisBarang::all();
-        $tujuanKegiatanUtamas = TujuanKegiatanUtama::all();
+        $masterTujuanKirims = MasterTujuanKirim::all();
         // Ambil karyawan yang memiliki divisi 'supir'
         $supirs = Karyawan::where('divisi', 'supir')
             ->select('nama_lengkap as nama_supir', 'plat as no_plat')
@@ -49,7 +49,7 @@ class TandaTerimaLclController extends Controller
         return view('tanda-terima-tanpa-surat-jalan.create-lcl', compact(
             'terms', 
             'jenisBarangs', 
-            'tujuanKegiatanUtamas', 
+            'masterTujuanKirims', 
             'supirs'
         ));
     }
@@ -151,14 +151,17 @@ class TandaTerimaLclController extends Controller
         $tandaTerima = TandaTerimaLcl::with('items')->findOrFail($id);
         $terms = Term::all();
         $jenisBarangs = JenisBarang::all();
-        $tujuanKegiatanUtamas = TujuanKegiatanUtama::all();
-        $supirs = Supir::all();
+        $masterTujuanKirims = MasterTujuanKirim::all();
+        // Ambil karyawan yang memiliki divisi 'supir'
+        $supirs = Karyawan::where('divisi', 'supir')
+            ->select('nama_lengkap as nama_supir', 'plat as no_plat')
+            ->get();
         
         return view('tanda-terima-lcl.edit', compact(
             'tandaTerima',
             'terms',
             'jenisBarangs',
-            'tujuanKegiatanUtamas',
+            'masterTujuanKirims',
             'supirs'
         ));
     }
