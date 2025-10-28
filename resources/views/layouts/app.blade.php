@@ -283,6 +283,20 @@
                 </a>
                 @endif
 
+                <!-- BL (Bill of Lading) Menu -->
+                @php
+                    $isBLRoute = Request::routeIs('bl.*');
+                @endphp
+
+                @if($user && $user->can('bl-view'))
+                <a href="{{ route('bl.select') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isBLRoute ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isBLRoute ? 'bg-blue-200' : 'bg-blue-50 group-hover:bg-blue-200' }}">
+                        <i class="fas fa-file-contract text-xs {{ $isBLRoute ? 'text-blue-700' : 'text-blue-600 group-hover:text-blue-700' }}"></i>
+                    </div>
+                    <span class="text-xs font-medium menu-text">BL (Bill of Lading)</span>
+                </a>
+                @endif
+
                 <!-- Master Data Section -->
                 @php
                     $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');

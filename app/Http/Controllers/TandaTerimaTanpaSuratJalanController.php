@@ -41,7 +41,11 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                     $q->where('nomor_tanda_terima', 'LIKE', '%' . $request->search . '%')
                       ->orWhere('nama_penerima', 'LIKE', '%' . $request->search . '%')
                       ->orWhere('nama_pengirim', 'LIKE', '%' . $request->search . '%')
-                      ->orWhere('nama_barang', 'LIKE', '%' . $request->search . '%');
+                      ->orWhere('nama_barang', 'LIKE', '%' . $request->search . '%')
+                      ->orWhere('nomor_kontainer', 'LIKE', '%' . $request->search . '%')
+                      ->orWhere('nomor_seal', 'LIKE', '%' . $request->search . '%')
+                      ->orWhere('supir', 'LIKE', '%' . $request->search . '%')
+                      ->orWhere('no_plat', 'LIKE', '%' . $request->search . '%');
                 });
             }
 

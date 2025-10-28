@@ -116,7 +116,7 @@ foreach (\$bulanan as \$tagihan) {
         \$tagihan->update(['dpp' => \$correctDPP]);
         \$fixed++;
     }
-}
+}ini
 echo 'Fixed ' . \$fixed . ' bulanan DPP records';
 "
 

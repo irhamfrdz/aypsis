@@ -357,13 +357,13 @@
                                             No.
                                         </th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Panjang (cm)
+                                            Panjang (m)
                                         </th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Lebar (cm)
+                                            Lebar (m)
                                         </th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                            Tinggi (cm)
+                                            Tinggi (m)
                                         </th>
                                         <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                             Volume (m³)
@@ -386,9 +386,9 @@
                                             <input type="number"
                                                    name="dimensi_items[0][panjang]"
                                                    class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                                   placeholder="0"
+                                                   placeholder="0.000"
                                                    min="0"
-                                                   step="0.01"
+                                                   step="0.001"
                                                    value="{{ old('dimensi_items.0.panjang', old('panjang')) }}"
                                                    onchange="calculateItemVolume(this)">
                                         </td>
@@ -396,9 +396,9 @@
                                             <input type="number"
                                                    name="dimensi_items[0][lebar]"
                                                    class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                                   placeholder="0"
+                                                   placeholder="0.000"
                                                    min="0"
-                                                   step="0.01"
+                                                   step="0.001"
                                                    value="{{ old('dimensi_items.0.lebar', old('lebar')) }}"
                                                    onchange="calculateItemVolume(this)">
                                         </td>
@@ -406,9 +406,9 @@
                                             <input type="number"
                                                    name="dimensi_items[0][tinggi]"
                                                    class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                                   placeholder="0"
+                                                   placeholder="0.000"
                                                    min="0"
-                                                   step="0.01"
+                                                   step="0.001"
                                                    value="{{ old('dimensi_items.0.tinggi', old('tinggi')) }}"
                                                    onchange="calculateItemVolume(this)">
                                         </td>
@@ -416,7 +416,7 @@
                                             <input type="number"
                                                    name="dimensi_items[0][meter_kubik]"
                                                    class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm focus:outline-none"
-                                                   placeholder="0.000000"
+                                                   placeholder="0.000"
                                                    readonly
                                                    step="0.000001"
                                                    value="{{ old('dimensi_items.0.meter_kubik', old('meter_kubik')) }}">
@@ -425,9 +425,9 @@
                                             <input type="number"
                                                    name="dimensi_items[0][tonase]"
                                                    class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                                                   placeholder="0.00"
+                                                   placeholder="0.000"
                                                    min="0"
-                                                   step="0.01"
+                                                   step="0.001"
                                                    value="{{ old('dimensi_items.0.tonase', old('tonase')) }}"
                                                    onchange="calculateTotals()">
                                         </td>
@@ -624,7 +624,7 @@
                                 <!-- Dropdown options -->
                                 <div id="tujuanPengirimanDropdown" class="absolute z-10 w-full bg-white border border-gray-300 rounded-md shadow-lg hidden max-h-60 overflow-y-auto">
                                     <div class="p-2 border-b border-gray-200">
-                                        <a href="{{ route('master.tujuan-kirim.create') }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
+                                        <a href="{{ route('tujuan-kirim.create') }}" target="_blank" class="text-indigo-600 hover:text-indigo-800 text-sm">
                                             <i class="fas fa-plus mr-1"></i> Tambah Tujuan Baru
                                         </a>
                                     </div>
@@ -813,44 +813,44 @@
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][panjang]"
                        class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       placeholder="0"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateItemVolume(this)">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][lebar]"
                        class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       placeholder="0"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateItemVolume(this)">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][tinggi]"
                        class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       placeholder="0"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateItemVolume(this)">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][meter_kubik]"
                        class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm focus:outline-none"
-                       placeholder="0.000000"
+                       placeholder="0.000"
                        readonly
-                       step="0.000001">
+                       step="0.001">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][tonase]"
                        class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-                       placeholder="0.00"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateTotals()">
             </td>
             <td class="px-4 py-3 whitespace-nowrap text-center">
@@ -893,10 +893,16 @@
 
         let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            volume = (panjang * lebar * tinggi) / 1000000;
+            // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
+            volume = panjang * lebar * tinggi;
         }
 
-        row.querySelector('.item-meter-kubik').value = volume > 0 ? volume.toFixed(6) : '';
+        const volumeInput = row.querySelector('.item-meter-kubik');
+        if (volume > 0) {
+            volumeInput.value = formatVolumeForDatabase(volume);
+        } else {
+            volumeInput.value = '';
+        }
         calculateTotals();
     }
 
@@ -909,10 +915,16 @@
 
             let volume = 0;
             if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                volume = (panjang * lebar * tinggi) / 1000000;
+                // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
+                volume = panjang * lebar * tinggi;
             }
 
-            row.querySelector('.item-meter-kubik').value = volume > 0 ? volume.toFixed(6) : '';
+            const volumeInput = row.querySelector('.item-meter-kubik');
+            if (volume > 0) {
+                volumeInput.value = formatVolumeForDatabase(volume);
+            } else {
+                volumeInput.value = '';
+            }
         });
         calculateTotals();
         updateRemoveButtons();
@@ -932,8 +944,8 @@
         });
 
         // Update summary display
-        document.getElementById('totalVolume').textContent = totalVolume.toFixed(6) + ' m³';
-        document.getElementById('totalTonase').textContent = totalTonase.toFixed(2) + ' Ton';
+        document.getElementById('totalVolume').textContent = formatVolumeDisplay(totalVolume) + ' m³';
+        document.getElementById('totalTonase').textContent = formatWeightDisplay(totalTonase) + ' Ton';
 
         // Update hidden fields for backward compatibility
         // Use first item's values or totals
@@ -943,8 +955,103 @@
             document.getElementById('hiddenLebar').value = firstRow.querySelector('.dimensi-lebar').value || '';
             document.getElementById('hiddenTinggi').value = firstRow.querySelector('.dimensi-tinggi').value || '';
         }
-        document.getElementById('hiddenMeterKubik').value = totalVolume > 0 ? totalVolume.toFixed(6) : '';
-        document.getElementById('hiddenTonase').value = totalTonase > 0 ? totalTonase.toFixed(2) : '';
+        document.getElementById('hiddenMeterKubik').value = formatVolumeForDatabase(totalVolume);
+        document.getElementById('hiddenTonase').value = formatWeightForDatabase(totalTonase);
+    }
+
+    // Formatting functions for input fields (clean whole numbers, smart decimal display)
+    function formatVolume(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Show as "1000" not "1000.000"
+        }
+        
+        return rounded.toFixed(3); // Show decimals when needed
+    }
+
+    function formatWeight(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Show as "5" not "5.000"
+        }
+        
+        return rounded.toFixed(3); // Show decimals when needed
+    }
+
+    // Formatting functions for display totals (with thousand separator)
+    function formatVolumeDisplay(value) {
+        if (!value || value === 0) return '0';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toLocaleString('id-ID'); // Show as "1,000" not "1,000.000"
+        }
+        
+        return rounded.toLocaleString('id-ID', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        }); // Show decimals with thousand separator
+    }
+
+    function formatWeightDisplay(value) {
+        if (!value || value === 0) return '0';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toLocaleString('id-ID'); // Show as "5" not "5.000"
+        }
+        
+        return rounded.toLocaleString('id-ID', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        }); // Show decimals with thousand separator
+    }
+
+    // Formatting functions for database (clean values, no excessive decimals)
+    function formatVolumeForDatabase(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Send as "1000" not "1000.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
+    }
+
+    function formatWeightForDatabase(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Send as "5" not "5.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
     }
 
     // Legacy function for backward compatibility

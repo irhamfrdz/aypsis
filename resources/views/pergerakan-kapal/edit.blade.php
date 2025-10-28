@@ -113,36 +113,36 @@
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Rute</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label for="pelabuhan_asal" class="block text-sm font-medium text-gray-700 mb-1">
-                                Pelabuhan Asal <span class="text-red-500">*</span>
+                            <label for="tujuan_asal" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tujuan Asal <span class="text-red-500">*</span>
                             </label>
-                            <select name="pelabuhan_asal" id="pelabuhan_asal" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('pelabuhan_asal') border-red-500 @enderror">
-                                <option value="">-- Pilih Pelabuhan Asal --</option>
-                                @foreach($masterPelabuhans as $pelabuhan)
-                                    <option value="{{ $pelabuhan->nama_pelabuhan }}" {{ old('pelabuhan_asal', $pergerakanKapal->pelabuhan_asal) == $pelabuhan->nama_pelabuhan ? 'selected' : '' }}>
-                                        {{ $pelabuhan->nama_pelabuhan }} - {{ $pelabuhan->kota }}
+                            <select name="tujuan_asal" id="tujuan_asal" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_asal') border-red-500 @enderror">
+                                <option value="">-- Pilih Tujuan Asal --</option>
+                                @foreach($tujuanKirims as $tujuan)
+                                    <option value="{{ $tujuan->nama_tujuan }}" {{ old('tujuan_asal', $pergerakanKapal->tujuan_asal) == $tujuan->nama_tujuan ? 'selected' : '' }}>
+                                        {{ $tujuan->nama_tujuan }} - {{ $tujuan->kota }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('pelabuhan_asal')
+                            @error('tujuan_asal')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
                         <div>
-                            <label for="pelabuhan_tujuan" class="block text-sm font-medium text-gray-700 mb-1">
-                                Pelabuhan Tujuan <span class="text-red-500">*</span>
+                            <label for="tujuan_tujuan" class="block text-sm font-medium text-gray-700 mb-1">
+                                Tujuan Pengiriman <span class="text-red-500">*</span>
                             </label>
-                            <select name="pelabuhan_tujuan" id="pelabuhan_tujuan" required
-                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('pelabuhan_tujuan') border-red-500 @enderror">
-                                <option value="">-- Pilih Pelabuhan Tujuan --</option>
-                                @foreach($masterPelabuhans as $pelabuhan)
-                                    <option value="{{ $pelabuhan->nama_pelabuhan }}" {{ old('pelabuhan_tujuan', $pergerakanKapal->pelabuhan_tujuan) == $pelabuhan->nama_pelabuhan ? 'selected' : '' }}>
-                                        {{ $pelabuhan->nama_pelabuhan }} - {{ $pelabuhan->kota }}
+                            <select name="tujuan_tujuan" id="tujuan_tujuan" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_tujuan') border-red-500 @enderror">
+                                <option value="">-- Pilih Tujuan Pengiriman --</option>
+                                @foreach($tujuanKirims as $tujuan)
+                                    <option value="{{ $tujuan->nama_tujuan }}" {{ old('tujuan_tujuan', $pergerakanKapal->tujuan_tujuan) == $tujuan->nama_tujuan ? 'selected' : '' }}>
+                                        {{ $tujuan->nama_tujuan }} - {{ $tujuan->kota }}
                                     </option>
                                 @endforeach
                             </select>
-                            @error('pelabuhan_tujuan')
+                            @error('tujuan_tujuan')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -302,19 +302,19 @@
 
     function generateVoyage() {
         const namaKapal = document.getElementById('nama_kapal').value;
-        const pelabuhanAsal = document.getElementById('pelabuhan_asal').value;
-        const pelabuhanTujuan = document.getElementById('pelabuhan_tujuan').value;
+        const tujuanAsal = document.getElementById('tujuan_asal').value;
+        const tujuanTujuan = document.getElementById('tujuan_tujuan').value;
 
-        if (!namaKapal || !pelabuhanAsal || !pelabuhanTujuan) {
-            alert('Silakan pilih Nama Kapal, Pelabuhan Asal, dan Pelabuhan Tujuan terlebih dahulu');
+        if (!namaKapal || !tujuanAsal || !tujuanTujuan) {
+            alert('Silakan pilih Nama Kapal, Tujuan Asal, dan Tujuan Pengiriman terlebih dahulu');
             return;
         }
 
         // Call API to generate voyage number
         const params = new URLSearchParams({
             nama_kapal: namaKapal,
-            pelabuhan_asal: pelabuhanAsal,
-            pelabuhan_tujuan: pelabuhanTujuan
+            tujuan_asal: tujuanAsal,
+            tujuan_tujuan: tujuanTujuan
         });
 
         fetch(`{{ route('api.pergerakan-kapal.generate-voyage') }}?${params}`)

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\TandaTerima;
 use App\Models\Prospek;
+use App\Models\MasterKapal;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -114,11 +115,12 @@ class TandaTerimaController extends Controller
                 'tanggal_garasi' => $request->tanggal_garasi,
                 'jumlah' => $request->jumlah,
                 'satuan' => $request->satuan,
-                'panjang' => $request->panjang,
-                'lebar' => $request->lebar,
-                'tinggi' => $request->tinggi,
-                'meter_kubik' => $request->meter_kubik,
-                'tonase' => $request->tonase,
+                // Format numeric fields to avoid excessive decimals
+                'panjang' => $request->panjang ? round((float) $request->panjang, 3) : null,
+                'lebar' => $request->lebar ? round((float) $request->lebar, 3) : null,
+                'tinggi' => $request->tinggi ? round((float) $request->tinggi, 3) : null,
+                'meter_kubik' => $request->meter_kubik ? round((float) $request->meter_kubik, 3) : null,
+                'tonase' => $request->tonase ? round((float) $request->tonase, 3) : null,
                 'tujuan_pengiriman' => $request->tujuan_pengiriman,
                 'catatan' => $request->catatan,
                 'updated_by' => Auth::id(),
@@ -219,12 +221,28 @@ class TandaTerimaController extends Controller
                 $updateData['status'] = $request->status;
             }
 
-            // If dimensi_items is present, store it as JSON
+            // If dimensi_items is present, format numeric values and store as JSON
             if ($request->has('dimensi_items') && is_array($request->dimensi_items)) {
-                $updateData['dimensi_items'] = json_encode($request->dimensi_items);
+                $formattedDimensiItems = [];
+                foreach ($request->dimensi_items as $item) {
+                    $formattedItem = [];
+                    foreach ($item as $key => $value) {
+                        if (in_array($key, ['panjang', 'lebar', 'tinggi', 'meter_kubik', 'tonase']) && is_numeric($value)) {
+                            // Round to 3 decimal places to avoid excessive precision
+                            $formattedItem[$key] = round((float) $value, 3);
+                        } else {
+                            $formattedItem[$key] = $value;
+                        }
+                    }
+                    $formattedDimensiItems[] = $formattedItem;
+                }
+                $updateData['dimensi_items'] = json_encode($formattedDimensiItems);
             }
 
             $tandaTerima->update($updateData);
+
+            // Update related Prospek data
+            $this->updateRelatedProspekData($tandaTerima, $request);
 
             Log::info('Tanda terima updated', [
                 'tanda_terima_id' => $tandaTerima->id,
@@ -327,6 +345,111 @@ class TandaTerimaController extends Controller
             Log::error('Error adding cargo to prospek: ' . $e->getMessage());
             Log::error('TandaTerima data: ' . json_encode($tandaTerima->toArray()));
             return back()->with('error', 'Gagal memasukkan kontainer ke prospek: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Update related Prospek data when TandaTerima is updated
+     */
+    private function updateRelatedProspekData(TandaTerima $tandaTerima, Request $request)
+    {
+        try {
+            // Calculate totals from dimensi items or fallback to single values
+            $totalVolume = 0;
+            $totalTonase = 0;
+            $kuantitas = 0;
+
+            // Priority 1: Calculate from dimensi_items if available
+            if ($request->has('dimensi_items') && is_array($request->dimensi_items)) {
+                foreach ($request->dimensi_items as $item) {
+                    if (isset($item['meter_kubik']) && is_numeric($item['meter_kubik'])) {
+                        // Round to 3 decimal places to avoid excessive precision
+                        $volume = round((float) $item['meter_kubik'], 3);
+                        $totalVolume += $volume;
+                    }
+                    if (isset($item['tonase']) && is_numeric($item['tonase'])) {
+                        // Round to 3 decimal places to avoid excessive precision
+                        $tonase = round((float) $item['tonase'], 3);
+                        $totalTonase += $tonase;
+                    }
+                }
+            }
+
+            // Priority 2: Use single meter_kubik and tonase values if dimensi_items not available
+            if ($totalVolume == 0 && $request->filled('meter_kubik')) {
+                // Round to 3 decimal places to avoid excessive precision
+                $totalVolume = round((float) $request->meter_kubik, 3);
+            }
+            if ($totalTonase == 0 && $request->filled('tonase')) {
+                // Round to 3 decimal places to avoid excessive precision
+                $totalTonase = round((float) $request->tonase, 3);
+            }
+
+            // Calculate kuantitas from jumlah_kontainer array or single jumlah
+            if ($request->has('jumlah_kontainer') && is_array($request->jumlah_kontainer)) {
+                foreach ($request->jumlah_kontainer as $jumlah) {
+                    if (is_numeric($jumlah)) {
+                        $kuantitas += (int) $jumlah;
+                    }
+                }
+            } elseif ($request->filled('jumlah')) {
+                // Handle comma-separated values in jumlah field
+                $jumlahArray = explode(',', $request->jumlah);
+                foreach ($jumlahArray as $jumlah) {
+                    if (is_numeric(trim($jumlah))) {
+                        $kuantitas += (int) trim($jumlah);
+                    }
+                }
+            }
+
+            // Find related prospek records by nomor_kontainer
+            $prospeksToUpdate = collect();
+            
+            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
+                $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
+                    return !empty(trim($value));
+                });
+                
+                if (!empty($nomorKontainers)) {
+                    $prospeksToUpdate = \App\Models\Prospek::whereIn('nomor_kontainer', $nomorKontainers)->get();
+                }
+            }
+
+            // Update each related prospek
+            foreach ($prospeksToUpdate as $prospek) {
+                $prospek->update([
+                    'tanda_terima_id' => $tandaTerima->id,
+                    'total_volume' => $totalVolume,
+                    'total_ton' => $totalTonase,
+                    'kuantitas' => $kuantitas,
+                    'updated_by' => Auth::id(),
+                ]);
+
+                Log::info('Prospek updated from TandaTerima', [
+                    'prospek_id' => $prospek->id,
+                    'tanda_terima_id' => $tandaTerima->id,
+                    'nomor_kontainer' => $prospek->nomor_kontainer,
+                    'total_volume' => $totalVolume,
+                    'total_ton' => $totalTonase,
+                    'kuantitas' => $kuantitas,
+                ]);
+            }
+
+            Log::info('Updated related prospek data', [
+                'tanda_terima_id' => $tandaTerima->id,
+                'prospeks_updated' => $prospeksToUpdate->count(),
+                'total_volume' => $totalVolume,
+                'total_tonase' => $totalTonase,
+                'kuantitas' => $kuantitas,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating related prospek data: ' . $e->getMessage(), [
+                'tanda_terima_id' => $tandaTerima->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            // Don't throw exception to avoid breaking the main update process
         }
     }
 }

@@ -359,9 +359,9 @@
                             <thead class="bg-purple-100">
                                 <tr>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Item</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Panjang (cm)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Lebar (cm)</th>
-                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Tinggi (cm)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Panjang (m)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Lebar (m)</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Tinggi (m)</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Volume (m³)</th>
                                     <th class="px-4 py-3 text-left text-xs font-medium text-purple-800 uppercase tracking-wider">Berat (Ton)</th>
                                     <th class="px-4 py-3 text-center text-xs font-medium text-purple-800 uppercase tracking-wider">Aksi</th>
@@ -376,44 +376,44 @@
                                         <input type="number"
                                                name="dimensi_items[0][panjang]"
                                                class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0"
+                                               placeholder="0.000"
                                                min="0"
-                                               step="0.01"
+                                               step="0.001"
                                                onchange="calculateItemVolume(this)">
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="number"
                                                name="dimensi_items[0][lebar]"
                                                class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0"
+                                               placeholder="0.000"
                                                min="0"
-                                               step="0.01"
+                                               step="0.001"
                                                onchange="calculateItemVolume(this)">
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="number"
                                                name="dimensi_items[0][tinggi]"
                                                class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0"
+                                               placeholder="0.000"
                                                min="0"
-                                               step="0.01"
+                                               step="0.001"
                                                onchange="calculateItemVolume(this)">
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="number"
                                                name="dimensi_items[0][meter_kubik]"
                                                class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm focus:outline-none"
-                                               placeholder="0.000000"
+                                               placeholder="0.000"
                                                readonly
-                                               step="0.000001">
+                                               step="0.001">
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap">
                                         <input type="number"
                                                name="dimensi_items[0][tonase]"
                                                class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                                               placeholder="0.00"
+                                               placeholder="0.000"
                                                min="0"
-                                               step="0.01"
+                                               step="0.001"
                                                onchange="calculateTotals()">
                                     </td>
                                     <td class="px-4 py-3 whitespace-nowrap text-center">
@@ -440,10 +440,10 @@
 
                         <div class="text-right">
                             <div class="text-sm text-gray-600">
-                                Total Volume: <span id="totalVolume" class="font-medium text-purple-600">0.000000 m³</span>
+                                Total Volume: <span id="totalVolume" class="font-medium text-purple-600">0.000 m³</span>
                             </div>
                             <div class="text-sm text-gray-600">
-                                Total Berat: <span id="totalTonase" class="font-medium text-purple-600">0.00 Ton</span>
+                                Total Berat: <span id="totalTonase" class="font-medium text-purple-600">0.000 Ton</span>
                             </div>
                         </div>
                     </div>
@@ -509,7 +509,55 @@
                     </div>
                 </div>
 
-                <!-- 6. Tujuan Pengiriman -->
+                <!-- 6. Informasi Kontainer -->
+                <div class="bg-teal-50 p-4 rounded-lg border border-teal-200">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                        <svg class="w-5 h-5 mr-2 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                        </svg>
+                        Informasi Kontainer
+                    </h3>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <!-- Nomor Kontainer -->
+                        <div>
+                            <label for="nomor_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                Nomor Kontainer
+                            </label>
+                            <input type="text" name="nomor_kontainer" id="nomor_kontainer"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                                   value="{{ old('nomor_kontainer') }}"
+                                   placeholder="Contoh: MRKU1234567">
+                            <p class="mt-1 text-xs text-gray-500">Isi jika sudah ditentukan kontainernya, kosongkan jika belum</p>
+                            @error('nomor_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Size Kontainer -->
+                        <div>
+                            <label for="size_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
+                                Size Kontainer
+                            </label>
+                            <select name="size_kontainer" id="size_kontainer"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500">
+                                <option value="">Pilih Size Kontainer</option>
+                                <option value="20ft" {{ old('size_kontainer') == '20ft' ? 'selected' : '' }}>20 Feet</option>
+                                <option value="40ft" {{ old('size_kontainer') == '40ft' ? 'selected' : '' }}>40 Feet</option>
+                                <option value="40hc" {{ old('size_kontainer') == '40hc' ? 'selected' : '' }}>40 Feet High Cube</option>
+                                <option value="45ft" {{ old('size_kontainer') == '45ft' ? 'selected' : '' }}>45 Feet</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Ukuran kontainer yang akan digunakan</p>
+                            @error('size_kontainer')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+
+                </div>
+
+                <!-- 7. Tujuan Pengiriman -->
                 <div class="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
                     <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
                         <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -597,9 +645,118 @@
                 updateRemoveButtons();
             }
         });
+
+        // Format input values on blur with smart decimal handling
+        document.addEventListener('blur', function(e) {
+            if (e.target.matches('.dimensi-panjang, .dimensi-lebar, .dimensi-tinggi, .dimensi-tonase')) {
+                const value = parseFloat(e.target.value);
+                if (!isNaN(value) && value > 0) {
+                    if (e.target.matches('.dimensi-tonase')) {
+                        e.target.value = formatWeight(value);
+                    } else {
+                        e.target.value = formatVolume(value);
+                    }
+                }
+            }
+        }, true);
     });
 
     let dimensiItemIndex = 1;
+
+    // Formatting functions for input fields (clean whole numbers, smart decimal display)
+    function formatVolume(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Show as "1000" not "1000.000"
+        }
+        
+        return rounded.toFixed(3); // Show decimals when needed
+    }
+
+    function formatWeight(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Show as "5" not "5.000"
+        }
+        
+        return rounded.toFixed(3); // Show decimals when needed
+    }
+
+    // Formatting functions for display totals (with thousand separator)
+    function formatVolumeDisplay(value) {
+        if (!value || value === 0) return '0';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toLocaleString('id-ID'); // Show as "1,000" not "1,000.000"
+        }
+        
+        return rounded.toLocaleString('id-ID', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        }); // Show decimals with thousand separator
+    }
+
+    function formatWeightDisplay(value) {
+        if (!value || value === 0) return '0';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toLocaleString('id-ID'); // Show as "5" not "5.000"
+        }
+        
+        return rounded.toLocaleString('id-ID', {
+            minimumFractionDigits: 3,
+            maximumFractionDigits: 3
+        }); // Show decimals with thousand separator
+    }
+
+    // Formatting functions for database (clean values, no excessive decimals)
+    function formatVolumeForDatabase(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Send as "1000" not "1000.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
+    }
+
+    function formatWeightForDatabase(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Send as "5" not "5.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
+    }
 
     function addNewDimensiItem() {
         const newRow = document.createElement('tr');
@@ -613,44 +770,44 @@
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][panjang]"
                        class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateItemVolume(this)">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][lebar]"
                        class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateItemVolume(this)">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][tinggi]"
                        class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateItemVolume(this)">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][meter_kubik]"
                        class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm focus:outline-none"
-                       placeholder="0.000000"
+                       placeholder="0.000"
                        readonly
-                       step="0.000001">
+                       step="0.001">
             </td>
             <td class="px-4 py-3 whitespace-nowrap">
                 <input type="number"
                        name="dimensi_items[${dimensiItemIndex}][tonase]"
                        class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                       placeholder="0.00"
+                       placeholder="0.000"
                        min="0"
-                       step="0.01"
+                       step="0.001"
                        onchange="calculateTotals()">
             </td>
             <td class="px-4 py-3 whitespace-nowrap text-center">
@@ -693,10 +850,16 @@
 
         let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            volume = (panjang * lebar * tinggi) / 1000000;
+            // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
+            volume = panjang * lebar * tinggi;
         }
 
-        row.querySelector('.item-meter-kubik').value = volume > 0 ? volume.toFixed(6) : '';
+        const volumeInput = row.querySelector('.item-meter-kubik');
+        if (volume > 0) {
+            volumeInput.value = formatVolumeForDatabase(volume);
+        } else {
+            volumeInput.value = '';
+        }
         calculateTotals();
     }
 
@@ -709,10 +872,16 @@
 
             let volume = 0;
             if (panjang > 0 && lebar > 0 && tinggi > 0) {
-                volume = (panjang * lebar * tinggi) / 1000000;
+                // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
+                volume = panjang * lebar * tinggi;
             }
 
-            row.querySelector('.item-meter-kubik').value = volume > 0 ? volume.toFixed(6) : '';
+            const volumeInput = row.querySelector('.item-meter-kubik');
+            if (volume > 0) {
+                volumeInput.value = formatVolumeForDatabase(volume);
+            } else {
+                volumeInput.value = '';
+            }
         });
         calculateTotals();
         updateRemoveButtons();
@@ -731,19 +900,23 @@
             totalTonase += tonase;
         });
 
-        // Update summary display
-        document.getElementById('totalVolume').textContent = totalVolume.toFixed(6) + ' m³';
-        document.getElementById('totalTonase').textContent = totalTonase.toFixed(2) + ' Ton';
+        // Update summary display - with thousand separator
+        document.getElementById('totalVolume').textContent = formatVolumeDisplay(totalVolume) + ' m³';
+        document.getElementById('totalTonase').textContent = formatWeightDisplay(totalTonase) + ' Ton';
 
-        // Update hidden fields for backward compatibility
+        // Update hidden fields for backward compatibility - use smart formatting
         const firstRow = document.querySelector('#dimensiTableBody .dimensi-item');
         if (firstRow) {
-            document.getElementById('hiddenPanjang').value = firstRow.querySelector('.dimensi-panjang').value || '';
-            document.getElementById('hiddenLebar').value = firstRow.querySelector('.dimensi-lebar').value || '';
-            document.getElementById('hiddenTinggi').value = firstRow.querySelector('.dimensi-tinggi').value || '';
+            const panjang = parseFloat(firstRow.querySelector('.dimensi-panjang').value) || 0;
+            const lebar = parseFloat(firstRow.querySelector('.dimensi-lebar').value) || 0;
+            const tinggi = parseFloat(firstRow.querySelector('.dimensi-tinggi').value) || 0;
+            
+            document.getElementById('hiddenPanjang').value = panjang > 0 ? formatVolumeForDatabase(panjang) : '';
+            document.getElementById('hiddenLebar').value = lebar > 0 ? formatVolumeForDatabase(lebar) : '';
+            document.getElementById('hiddenTinggi').value = tinggi > 0 ? formatVolumeForDatabase(tinggi) : '';
         }
-        document.getElementById('hiddenMeterKubik').value = totalVolume > 0 ? totalVolume.toFixed(6) : '';
-        document.getElementById('hiddenTonase').value = totalTonase > 0 ? totalTonase.toFixed(2) : '';
+        document.getElementById('hiddenMeterKubik').value = totalVolume > 0 ? formatVolumeForDatabase(totalVolume) : '';
+        document.getElementById('hiddenTonase').value = totalTonase > 0 ? formatWeightForDatabase(totalTonase) : '';
     }
 
     function initializeTermDropdown() {

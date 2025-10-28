@@ -22,10 +22,18 @@ class Prospek extends Model
         'tipe',
         'no_surat_jalan',
         'surat_jalan_id',
+        'tanda_terima_id',
         'nomor_kontainer',
         'no_seal',
         'tujuan_pengiriman',
+        'total_ton',
+        'kuantitas',
+        'total_volume',
         'nama_kapal',
+        'kapal_id',
+        'no_voyage',
+        'pelabuhan_asal',
+        'tanggal_muat',
         'keterangan',
         'status',
         'created_by',
@@ -34,12 +42,15 @@ class Prospek extends Model
 
     protected $dates = [
         'tanggal',
+        'tanggal_muat',
         'created_at',
         'updated_at'
     ];
 
     protected $casts = [
         'tanggal' => 'date',
+        'total_ton' => 'decimal:3',
+        'total_volume' => 'decimal:3',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
@@ -79,6 +90,16 @@ class Prospek extends Model
     public function updatedBy()
     {
         return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function tandaTerima()
+    {
+        return $this->belongsTo(\App\Models\TandaTerima::class, 'tanda_terima_id');
+    }
+
+    public function bls()
+    {
+        return $this->hasMany(Bl::class);
     }
 
     // Scopes

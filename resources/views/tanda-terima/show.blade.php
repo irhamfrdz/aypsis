@@ -175,8 +175,9 @@
                                 $totalVolume = 0;
                                 $totalTonase = 0;
                             @endphp
+                            
                             @if(is_array($dimensiItems) && count($dimensiItems) > 0)
-                                <div>
+                                <div class="col-span-2">
                                     <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi & Volume</dt>
                                     <dd class="text-sm text-gray-900">
                                         <div class="space-y-2">
@@ -191,17 +192,23 @@
                                                         @if(isset($item['panjang']) || isset($item['lebar']) || isset($item['tinggi']))
                                                             <div class="text-xs text-gray-600">
                                                                 Dimensi:
-                                                                @if(isset($item['panjang'])){{ number_format($item['panjang'], 2) }} cm@endif
-                                                                @if(isset($item['lebar'])) × {{ number_format($item['lebar'], 2) }} cm@endif
-                                                                @if(isset($item['tinggi'])) × {{ number_format($item['tinggi'], 2) }} cm@endif
+                                                                @if(isset($item['panjang']))
+                                                                    {{ rtrim(rtrim(number_format($item['panjang'], 3, '.', ''), '0'), '.') }} m
+                                                                @endif
+                                                                @if(isset($item['lebar']))
+                                                                    × {{ rtrim(rtrim(number_format($item['lebar'], 3, '.', ''), '0'), '.') }} m
+                                                                @endif
+                                                                @if(isset($item['tinggi']))
+                                                                    × {{ rtrim(rtrim(number_format($item['tinggi'], 3, '.', ''), '0'), '.') }} m
+                                                                @endif
                                                             </div>
                                                         @endif
                                                         <div class="grid grid-cols-2 gap-2 mt-1">
                                                             @if(isset($item['meter_kubik']) && $item['meter_kubik'] > 0)
-                                                                <div class="text-xs">Volume: {{ number_format($item['meter_kubik'], 6) }} m³</div>
+                                                                <div class="text-xs">Volume: {{ rtrim(rtrim(number_format($item['meter_kubik'], 3, '.', ''), '0'), '.') }} m³</div>
                                                             @endif
                                                             @if(isset($item['tonase']) && $item['tonase'] > 0)
-                                                                <div class="text-xs">Tonase: {{ number_format($item['tonase'], 2) }} Ton</div>
+                                                                <div class="text-xs">Tonase: {{ rtrim(rtrim(number_format($item['tonase'], 3, '.', ''), '0'), '.') }} Ton</div>
                                                             @endif
                                                         </div>
                                                     </div>
@@ -212,25 +219,68 @@
                                                 <div class="bg-blue-50 p-3 rounded-lg border-l-4 border-blue-400">
                                                     <div class="font-medium text-blue-800 mb-1">Total Keseluruhan</div>
                                                     <div class="grid grid-cols-2 gap-2">
-                                                        <div class="text-sm text-blue-700">Volume: {{ number_format($totalVolume, 6) }} m³</div>
-                                                        <div class="text-sm text-blue-700">Tonase: {{ number_format($totalTonase, 2) }} Ton</div>
+                                                        <div class="text-sm text-blue-700">Volume: {{ rtrim(rtrim(number_format($totalVolume, 3, '.', ''), '0'), '.') }} m³</div>
+                                                        <div class="text-sm text-blue-700">Tonase: {{ rtrim(rtrim(number_format($totalTonase, 3, '.', ''), '0'), '.') }} Ton</div>
                                                     </div>
                                                 </div>
                                             @endif
                                         </div>
                                     </dd>
                                 </div>
+                            @else
+                                <!-- Fallback to legacy single dimension display when dimensi_items exists but empty -->
+                                @if($tandaTerima->panjang || $tandaTerima->lebar || $tandaTerima->tinggi)
+                                    <div>
+                                        <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi</dt>
+                                        <dd class="text-sm text-gray-900">
+                                            @if($tandaTerima->panjang)
+                                                {{ rtrim(rtrim(number_format($tandaTerima->panjang, 3, '.', ''), '0'), '.') }} m
+                                            @endif
+                                            @if($tandaTerima->lebar)
+                                                × {{ rtrim(rtrim(number_format($tandaTerima->lebar, 3, '.', ''), '0'), '.') }} m
+                                            @endif
+                                            @if($tandaTerima->tinggi)
+                                                × {{ rtrim(rtrim(number_format($tandaTerima->tinggi, 3, '.', ''), '0'), '.') }} m
+                                            @endif
+                                            @if(!$tandaTerima->panjang && !$tandaTerima->lebar && !$tandaTerima->tinggi)
+                                                -
+                                            @endif
+                                        </dd>
+                                    </div>
+                                @endif
+
+                                @if($tandaTerima->meter_kubik)
+                                    <div>
+                                        <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Volume</dt>
+                                        <dd class="text-sm text-gray-900">{{ rtrim(rtrim(number_format($tandaTerima->meter_kubik, 3, '.', ''), '0'), '.') }} m³</dd>
+                                    </div>
+                                @endif
+
+                                @if($tandaTerima->tonase)
+                                    <div>
+                                        <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tonase</dt>
+                                        <dd class="text-sm text-gray-900">{{ rtrim(rtrim(number_format($tandaTerima->tonase, 3, '.', ''), '0'), '.') }} Ton</dd>
+                                    </div>
+                                @endif
                             @endif
                         @else
-                            <!-- Fallback to legacy single dimension display -->
+                            <!-- Fallback when no dimensi_items at all -->
                             @if($tandaTerima->panjang || $tandaTerima->lebar || $tandaTerima->tinggi)
                                 <div>
                                     <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Dimensi</dt>
                                     <dd class="text-sm text-gray-900">
-                                        @if($tandaTerima->panjang){{ number_format($tandaTerima->panjang, 2) }} cm@endif
-                                        @if($tandaTerima->lebar) × {{ number_format($tandaTerima->lebar, 2) }} cm@endif
-                                        @if($tandaTerima->tinggi) × {{ number_format($tandaTerima->tinggi, 2) }} cm@endif
-                                        @if(!$tandaTerima->panjang && !$tandaTerima->lebar && !$tandaTerima->tinggi) - @endif
+                                        @if($tandaTerima->panjang)
+                                            {{ rtrim(rtrim(number_format($tandaTerima->panjang, 3, '.', ''), '0'), '.') }} m
+                                        @endif
+                                        @if($tandaTerima->lebar)
+                                            × {{ rtrim(rtrim(number_format($tandaTerima->lebar, 3, '.', ''), '0'), '.') }} m
+                                        @endif
+                                        @if($tandaTerima->tinggi)
+                                            × {{ rtrim(rtrim(number_format($tandaTerima->tinggi, 3, '.', ''), '0'), '.') }} m
+                                        @endif
+                                        @if(!$tandaTerima->panjang && !$tandaTerima->lebar && !$tandaTerima->tinggi)
+                                            -
+                                        @endif
                                     </dd>
                                 </div>
                             @endif
@@ -238,14 +288,14 @@
                             @if($tandaTerima->meter_kubik)
                                 <div>
                                     <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Volume</dt>
-                                    <dd class="text-sm text-gray-900">{{ number_format($tandaTerima->meter_kubik, 6) }} m³</dd>
+                                    <dd class="text-sm text-gray-900">{{ rtrim(rtrim(number_format($tandaTerima->meter_kubik, 3, '.', ''), '0'), '.') }} m³</dd>
                                 </div>
                             @endif
 
                             @if($tandaTerima->tonase)
                                 <div>
                                     <dt class="text-xs font-medium text-gray-500 uppercase mb-1">Tonase</dt>
-                                    <dd class="text-sm text-gray-900">{{ number_format($tandaTerima->tonase, 2) }} Ton</dd>
+                                    <dd class="text-sm text-gray-900">{{ rtrim(rtrim(number_format($tandaTerima->tonase, 3, '.', ''), '0'), '.') }} Ton</dd>
                                 </div>
                             @endif
                         @endif

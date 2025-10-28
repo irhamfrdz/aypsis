@@ -96,6 +96,14 @@
                         Reset
                     </a>
                 </div>
+                
+                {{-- Tombol Naik Kapal untuk prospek aktif --}}
+                <div class="flex gap-2">
+                    <a href="{{ route('prospek.pilih-tujuan') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 inline-flex items-center">
+                        <i class="fas fa-ship mr-2"></i>
+                        Naik Kapal
+                    </a>
+                </div>
             </div>
         </form>
     </div>
@@ -242,45 +250,44 @@
 
     {{-- Summary Cards --}}
     <div class="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-        {{-- Total Prospek --}}
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-blue-500">
+        {{-- Total Prospek (Belum Muat) --}}
+        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-yellow-500">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-blue-100 rounded-full p-3">
-                    <i class="fas fa-box text-2xl text-blue-600"></i>
+                <div class="flex-shrink-0 bg-yellow-100 rounded-full p-3">
+                    <i class="fas fa-hourglass-half text-2xl text-yellow-600"></i>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Total Prospek</p>
-                    <p class="text-2xl font-bold text-gray-900">{{ $prospeks->total() }}</p>
-                </div>
-            </div>
-        </div>
-
-        {{-- Status Aktif --}}
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
-            <div class="flex items-center">
-                <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
-                    <i class="fas fa-check-circle text-2xl text-green-600"></i>
-                </div>
-                <div class="ml-4">
-                    <p class="text-sm font-medium text-gray-500">Status Aktif</p>
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ $prospeks->where('status', 'aktif')->count() }}
-                    </p>
+                    <p class="text-xs text-gray-400">Belum dimuat ke kapal</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $totalBelumMuat }}</p>
                 </div>
             </div>
         </div>
 
         {{-- Sudah Muat --}}
-        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-purple-500">
+        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-green-500">
             <div class="flex items-center">
-                <div class="flex-shrink-0 bg-purple-100 rounded-full p-3">
-                    <i class="fas fa-ship text-2xl text-purple-600"></i>
+                <div class="flex-shrink-0 bg-green-100 rounded-full p-3">
+                    <i class="fas fa-ship text-2xl text-green-600"></i>
                 </div>
                 <div class="ml-4">
                     <p class="text-sm font-medium text-gray-500">Sudah Muat</p>
-                    <p class="text-2xl font-bold text-gray-900">
-                        {{ $prospeks->where('status', 'sudah_muat')->count() }}
-                    </p>
+                    <p class="text-xs text-gray-400">Dimuat ke kapal</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $totalSudahMuat }}</p>
+                </div>
+            </div>
+        </div>
+
+        {{-- Batal --}}
+        <div class="bg-white rounded-lg shadow-sm p-6 border-l-4 border-red-500">
+            <div class="flex items-center">
+                <div class="flex-shrink-0 bg-red-100 rounded-full p-3">
+                    <i class="fas fa-times-circle text-2xl text-red-600"></i>
+                </div>
+                <div class="ml-4">
+                    <p class="text-sm font-medium text-gray-500">Batal</p>
+                    <p class="text-xs text-gray-400">Tidak jadi dimuat</p>
+                    <p class="text-2xl font-bold text-gray-900">{{ $totalBatal }}</p>
                 </div>
             </div>
         </div>

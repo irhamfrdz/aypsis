@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use App\Traits\Auditable;
 
 class TandaTerimaLcl extends Model
@@ -35,6 +36,10 @@ class TandaTerimaLcl extends Model
         'no_plat',
         'tujuan_pengiriman_id',
         'tipe_kontainer',
+        'nomor_kontainer',
+        'size_kontainer',
+        'nomor_seal',
+        'tanggal_seal',
         'status',
         'created_by',
         'updated_by'
@@ -42,6 +47,7 @@ class TandaTerimaLcl extends Model
     
     protected $casts = [
         'tanggal_tanda_terima' => 'date',
+        'tanggal_seal' => 'date',
         'kuantitas' => 'integer',
     ];
     
@@ -107,4 +113,6 @@ class TandaTerimaLcl extends Model
     {
         return $query->where('tipe_kontainer', 'lcl');
     }
+    
+
 }

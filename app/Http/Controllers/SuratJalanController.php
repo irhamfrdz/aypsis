@@ -262,9 +262,9 @@ class SuratJalanController extends Controller
                 }
             }
 
-            // Redirect to checkpoint supir for surat jalan
-            return redirect()->route('supir.checkpoint.create-surat-jalan', $suratJalan->id)
-                           ->with('success', 'Surat jalan berhasil dibuat. Silakan input nomor kontainer.');
+            // Redirect to surat jalan index page
+            return redirect()->route('surat-jalan.index')
+                           ->with('success', 'Surat jalan berhasil dibuat dengan nomor: ' . $suratJalan->no_surat_jalan);
 
         } catch (\Exception $e) {
             Log::error('Error creating surat jalan: ' . $e->getMessage());

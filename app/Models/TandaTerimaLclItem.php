@@ -27,7 +27,7 @@ class TandaTerimaLclItem extends Model
         'panjang' => 'decimal:2',
         'lebar' => 'decimal:2',
         'tinggi' => 'decimal:2',
-        'meter_kubik' => 'decimal:6',
+        'meter_kubik' => 'decimal:3', // 3 digit di belakang koma
         'tonase' => 'decimal:2'
     ];
     
@@ -40,7 +40,7 @@ class TandaTerimaLclItem extends Model
     // Helper methods
     public function getFormattedVolumeAttribute(): string
     {
-        return number_format($this->meter_kubik ?? 0, 6) . ' m³';
+        return number_format($this->meter_kubik ?? 0, 3) . ' m³';
     }
     
     public function getFormattedWeightAttribute(): string
@@ -63,6 +63,17 @@ class TandaTerimaLclItem extends Model
         return 0;
     }
     
+    // Mutator: Round volume to 3 decimal places
+    public function setMeterKubikAttribute($value)
+    {
+        if ($value !== null && is_numeric($value)) {
+            // Selalu bulatkan ke 3 digit desimal
+            $this->attributes['meter_kubik'] = round(floatval($value), 3);
+        } else {
+            $this->attributes['meter_kubik'] = $value;
+        }
+    }
+    
     // Auto-calculate volume when dimensions are set
     protected static function boot()
     {
@@ -70,7 +81,8 @@ class TandaTerimaLclItem extends Model
         
         static::saving(function ($item) {
             if ($item->panjang && $item->lebar && $item->tinggi) {
-                $item->meter_kubik = $item->calculateVolume();
+                $volume = floatval($item->panjang) * floatval($item->lebar) * floatval($item->tinggi);
+                $item->meter_kubik = $volume; // Akan otomatis dibulatkan via mutator
             }
         });
     }

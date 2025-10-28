@@ -355,16 +355,14 @@
                             </p>
                         </div>
 
-                        <!-- Dimensi & Volume per Kontainer -->
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Dimensi & Volume per Kontainer
-                                </label>
-                                <span class="text-xs text-gray-500">
-                                    {{ $jumlahKontainer }} Kontainer
-                                </span>
-                            </div>
+                        <!-- Dimensi & Volume -->
+                        <div class="bg-purple-50 p-4 rounded-lg border border-purple-200">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                </svg>
+                                Dimensi dan Volume
+                            </h3>
 
                             @php
                                 $panjangArray = [];
@@ -394,93 +392,56 @@
                                 }
                             @endphp
 
-                            <!-- Loop untuk setiap kontainer -->
-                            <div class="space-y-6">
-                                @for($kontainerIndex = 1; $kontainerIndex <= $jumlahKontainer; $kontainerIndex++)
-                                    <div class="border border-gray-200 rounded-lg p-4 bg-gray-50">
-                                        <div class="flex items-center justify-between mb-4">
-                                            <h4 class="text-md font-semibold text-gray-700">
-                                                <span class="inline-flex items-center">
-                                                    <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
-                                                        <span class="text-sm font-medium text-blue-600">#{{ $kontainerIndex }}</span>
-                                                    </div>
-                                                    @if(isset($nomorKontainerArray[$kontainerIndex-1]) && !empty($nomorKontainerArray[$kontainerIndex-1]))
-                                                        {{ $nomorKontainerArray[$kontainerIndex-1] }}
-                                                    @else
-                                                        Kontainer {{ $kontainerIndex }}
-                                                    @endif
-                                                </span>
-                                            </h4>
-                                            <button type="button" 
-                                                    onclick="addRowToKontainer({{ $kontainerIndex }})" 
-                                                    class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition duration-200">
-                                                <i class="fas fa-plus mr-2"></i>
-                                                Tambah Item
-                                            </button>
-                                        </div>
+                            <!-- Dimensi Table -->
+                            <div class="overflow-x-auto border border-gray-200 rounded-lg mb-4">
+                                <table class="min-w-full divide-y divide-gray-200">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                No
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Panjang (m)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Lebar (m)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tinggi (m)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Volume (m³)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Tonase (Ton)
+                                            </th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Aksi
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="dimensiTableBody" class="bg-white divide-y divide-gray-200">
+                                        <!-- Dimensi items will be added here -->
+                                    </tbody>
+                                </table>
+                            </div>
 
-                                        <!-- Table untuk kontainer ini -->
-                                        <div class="overflow-x-auto border border-gray-300 rounded-lg bg-white">
-                                            <table class="min-w-full divide-y divide-gray-200">
-                                                <thead class="bg-gray-50">
-                                                    <tr>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            NO.
-                                                        </th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Panjang (cm)
-                                                        </th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Lebar (cm)
-                                                        </th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Tinggi (cm)
-                                                        </th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Volume (m³)
-                                                        </th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Tonase (Ton)
-                                                        </th>
-                                                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                            Aksi
-                                                        </th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="dimensiTableBody{{ $kontainerIndex }}" class="bg-white divide-y divide-gray-200">
-                                                    <!-- Items akan ditambahkan secara dinamis -->
-                                                </tbody>
-                                                <tfoot class="bg-purple-50">
-                                                    <tr>
-                                                        <td colspan="4" class="px-4 py-3 text-right font-medium text-gray-700">
-                                                            Total Kontainer {{ $kontainerIndex }}:
-                                                        </td>
-                                                        <td class="px-4 py-3">
-                                                            <span id="totalVolumeKontainer{{ $kontainerIndex }}" class="font-semibold text-purple-700">0.000000 m³</span>
-                                                        </td>
-                                                        <td class="px-4 py-3">
-                                                            <span id="totalTonaseKontainer{{ $kontainerIndex }}" class="font-semibold text-purple-700">0.00 Ton</span>
-                                                        </td>
-                                                        <td class="px-4 py-3"></td>
-                                                    </tr>
-                                                </tfoot>
-                                            </table>
-                                        </div>
+                            <!-- Add Dimensi Button & Summary -->
+                            <div class="flex justify-between items-center">
+                                <button type="button" id="addDimensiItem"
+                                        class="inline-flex items-center px-4 py-2 border border-purple-300 rounded-md shadow-sm text-sm font-medium text-purple-700 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                                    </svg>
+                                    Tambah Item Dimensi
+                                </button>
+
+                                <div class="text-right">
+                                    <div class="text-sm text-gray-600">
+                                        <span class="font-medium">Total Volume:</span> <span id="totalVolume" class="text-purple-600 font-semibold">0.000 m³</span>
                                     </div>
-                                @endfor
-
-                                <!-- Grand Total -->
-                                <div class="border-2 border-purple-200 rounded-lg p-4 bg-purple-50">
-                                    <h4 class="text-lg font-semibold text-purple-700 mb-3">Total Keseluruhan</h4>
-                                    <div class="grid grid-cols-2 gap-4">
-                                        <div class="text-center">
-                                            <p class="text-sm text-gray-600">Total Volume</p>
-                                            <p id="grandTotalVolume" class="text-xl font-bold text-purple-700">0.000000 m³</p>
-                                        </div>
-                                        <div class="text-center">
-                                            <p class="text-sm text-gray-600">Total Tonase</p>
-                                            <p id="grandTotalTonase" class="text-xl font-bold text-purple-700">0.00 Ton</p>
-                                        </div>
+                                    <div class="text-sm text-gray-600 mt-1">
+                                        <span class="font-medium">Total Tonase:</span> <span id="totalTonase" class="text-purple-600 font-semibold">0.000 Ton</span>
                                     </div>
                                 </div>
                             </div>
@@ -491,21 +452,6 @@
                             <input type="hidden" name="tinggi" id="hiddenTinggi">
                             <input type="hidden" name="meter_kubik" id="hiddenMeterKubik">
                             <input type="hidden" name="tonase" id="hiddenTonase">
-                            
-                            <div class="text-xs text-gray-500 mt-4 space-y-1">
-                                <p>
-                                    <i class="fas fa-info-circle mr-1"></i>
-                                    Setiap kontainer memiliki tabel terpisah untuk memudahkan pengelolaan data
-                                </p>
-                                <p>
-                                    <i class="fas fa-calculator mr-1"></i>
-                                    Volume dihitung otomatis dari P × L × T (cm ke m³)
-                                </p>
-                                <p>
-                                    <i class="fas fa-chart-bar mr-1"></i>
-                                    Total per kontainer dan grand total ditampilkan secara otomatis
-                                </p>
-                            </div>
                         </div>
 
                         <!-- Informasi Tambahan Table -->
@@ -730,15 +676,9 @@
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
-    let dimensiItemCounters = {}; // Counter untuk setiap kontainer
+    let dimensiItemIndex = 1;
 
     $(document).ready(function() {
-        // Initialize counters for each kontainer
-        const jumlahKontainer = {{ $jumlahKontainer }};
-        for (let i = 1; i <= jumlahKontainer; i++) {
-            dimensiItemCounters[i] = 0;
-        }
-
         // Initialize Select2 for kapal dropdown
         $('.select2-kapal').select2({
             placeholder: '-- Pilih Kapal --',
@@ -754,17 +694,40 @@
             }
         });
 
-        // Initialize existing dimensi items from database
-        initializeExistingDimensiItems();
+        // Calculate initial volumes and totals
+        calculateAllVolumesAndTotals();
 
-        // Calculate dimension volumes when inputs change
-        $(document).on('input', 'input[name="panjang_kontainer[]"], input[name="lebar_kontainer[]"], input[name="tinggi_kontainer[]"]', function() {
-            calculateKontainerVolume(this);
+        // Add new dimensi item
+        document.getElementById('addDimensiItem').addEventListener('click', function() {
+            addNewDimensiItem();
         });
 
-        $(document).on('input', 'input[name="tonase_kontainer[]"]', function() {
-            calculateAllTotals();
+        // Remove dimensi item
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('.remove-dimensi-item')) {
+                e.target.closest('.dimensi-item').remove();
+                updateItemNumbers();
+                calculateAllVolumesAndTotals();
+                updateRemoveButtons();
+            }
         });
+
+        // Format input values on blur with smart decimal handling
+        document.addEventListener('blur', function(e) {
+            if (e.target.matches('.dimensi-panjang, .dimensi-lebar, .dimensi-tinggi, .dimensi-tonase')) {
+                const value = parseFloat(e.target.value);
+                if (!isNaN(value) && value > 0) {
+                    if (e.target.matches('.dimensi-tonase')) {
+                        e.target.value = formatWeight(value);
+                    } else {
+                        e.target.value = formatVolume(value);
+                    }
+                }
+            }
+        }, true);
+
+        // Initialize existing data
+        initializeExistingData();
 
         // Update hidden fields when inputs change
         $(document).on('input', 'input[name="jumlah_kontainer[]"]', function() {
@@ -777,116 +740,326 @@
 
         // Initialize hidden quantity fields
         updateHiddenQuantityFields();
+
+        // Format all numeric inputs before form submission
+        $('form').on('submit', function(e) {
+            // Format all dimensi inputs to clean values
+            $('.dimensi-panjang, .dimensi-lebar, .dimensi-tinggi').each(function() {
+                const value = parseFloat($(this).val());
+                if (!isNaN(value) && value > 0) {
+                    $(this).val(formatVolumeForDatabase(value));
+                }
+            });
+
+            $('.dimensi-tonase').each(function() {
+                const value = parseFloat($(this).val());
+                if (!isNaN(value) && value > 0) {
+                    $(this).val(formatWeightForDatabase(value));
+                }
+            });
+
+            // Format volume fields
+            $('.item-meter-kubik').each(function() {
+                const value = parseFloat($(this).val());
+                if (!isNaN(value) && value > 0) {
+                    $(this).val(formatVolumeForDatabase(value));
+                }
+            });
+        });
     });
 
-    // Calculate volume for individual kontainer
-    function calculateKontainerVolume(element) {
-        const row = $(element).closest('tr');
-        const panjang = parseFloat(row.find('.panjang-kontainer').val()) || 0;
-        const lebar = parseFloat(row.find('.lebar-kontainer').val()) || 0;
-        const tinggi = parseFloat(row.find('.tinggi-kontainer').val()) || 0;
+
+
+    // Formatting functions for input fields (clean format, same as database)
+    function formatVolume(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Show as "1000" not "1000.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
+    }
+
+    function formatWeight(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Show as "5" not "5.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
+    }
+
+    // Formatting functions for display totals (with thousand separator)
+    function formatVolumeDisplay(value) {
+        if (value === 0) return '0';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (rounded % 1 === 0) {
+            // It's a whole number, format without decimals
+            return rounded.toLocaleString('id-ID');
+        } else {
+            // It has decimals, show with 3 decimal places
+            return rounded.toLocaleString('id-ID', {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            });
+        }
+    }
+
+    function formatWeightDisplay(value) {
+        if (value === 0) return '0';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (rounded % 1 === 0) {
+            // It's a whole number, format without decimals
+            return rounded.toLocaleString('id-ID');
+        } else {
+            // It has decimals, show with 3 decimal places
+            return rounded.toLocaleString('id-ID', {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            });
+        }
+    }
+
+    // Formatting functions for database (clean values, no excessive decimals)
+    function formatVolumeForDatabase(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Send as "8000" not "8000.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
+    }
+
+    function formatWeightForDatabase(value) {
+        if (!value || value === 0) return '';
+        
+        // Round to 3 decimal places
+        const rounded = Math.round(value * 1000) / 1000;
+        
+        // Check if it's a whole number
+        if (Number.isInteger(rounded)) {
+            return rounded.toString(); // Send as "50" not "50.000"
+        }
+        
+        // Remove trailing zeros from decimals
+        return parseFloat(rounded.toFixed(3)).toString();
+    }
+
+    function initializeExistingData() {
+        @php
+            $maxItems = max(
+                count($panjangArray),
+                count($lebarArray), 
+                count($tinggiArray),
+                count($meterKubikArray),
+                count($tonaseArray),
+                1 // At least 1 item
+            );
+        @endphp
+
+        @for($i = 0; $i < $maxItems; $i++)
+            addNewDimensiItem(
+                '{{ isset($panjangArray[$i]) ? $panjangArray[$i] : '' }}',
+                '{{ isset($lebarArray[$i]) ? $lebarArray[$i] : '' }}',
+                '{{ isset($tinggiArray[$i]) ? $tinggiArray[$i] : '' }}',
+                '{{ isset($meterKubikArray[$i]) ? $meterKubikArray[$i] : '' }}',
+                '{{ isset($tonaseArray[$i]) ? $tonaseArray[$i] : '' }}'
+            );
+        @endfor
+
+        calculateAllVolumesAndTotals();
+        updateRemoveButtons();
+    }
+
+    function addNewDimensiItem(panjang = '', lebar = '', tinggi = '', volume = '', tonase = '') {
+        const newRow = document.createElement('tr');
+        newRow.className = 'dimensi-item hover:bg-gray-50';
+        newRow.setAttribute('data-index', dimensiItemIndex);
+        newRow.innerHTML = `
+            <td class="px-4 py-3 whitespace-nowrap">
+                <span class="item-number text-sm font-medium text-gray-900">${dimensiItemIndex + 1}</span>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <input type="number"
+                       name="dimensi_items[${dimensiItemIndex}][panjang]"
+                       class="dimensi-panjang w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                       placeholder="0.000"
+                       min="0"
+                       step="0.001"
+                       value="${panjang}"
+                       onchange="calculateItemVolume(this)">
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <input type="number"
+                       name="dimensi_items[${dimensiItemIndex}][lebar]"
+                       class="dimensi-lebar w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                       placeholder="0.000"
+                       min="0"
+                       step="0.001"
+                       value="${lebar}"
+                       onchange="calculateItemVolume(this)">
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <input type="number"
+                       name="dimensi_items[${dimensiItemIndex}][tinggi]"
+                       class="dimensi-tinggi w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                       placeholder="0.000"
+                       min="0"
+                       step="0.001"
+                       value="${tinggi}"
+                       onchange="calculateItemVolume(this)">
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <input type="text"
+                       name="dimensi_items[${dimensiItemIndex}][meter_kubik]"
+                       class="item-meter-kubik w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-sm focus:outline-none"
+                       placeholder="0"
+                       readonly
+                       value="${volume}">
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap">
+                <input type="number"
+                       name="dimensi_items[${dimensiItemIndex}][tonase]"
+                       class="dimensi-tonase w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                       placeholder="0.000"
+                       min="0"
+                       step="0.001"
+                       value="${tonase}"
+                       onchange="calculateTotals()">
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap text-center">
+                <button type="button" class="remove-dimensi-item text-red-600 hover:text-red-800 p-1">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                </button>
+            </td>
+        `;
+
+        document.getElementById('dimensiTableBody').appendChild(newRow);
+        dimensiItemIndex++;
+        updateItemNumbers();
+        updateRemoveButtons();
+    }
+
+    function updateItemNumbers() {
+        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
+        rows.forEach((row, index) => {
+            row.querySelector('.item-number').textContent = index + 1;
+            row.setAttribute('data-index', index);
+        });
+    }
+
+    function updateRemoveButtons() {
+        const removeButtons = document.querySelectorAll('.remove-dimensi-item');
+        if (removeButtons.length === 1) {
+            removeButtons[0].style.display = 'none';
+        } else {
+            removeButtons.forEach(btn => btn.style.display = 'block');
+        }
+    }
+
+    function calculateItemVolume(element) {
+        const row = element.closest('.dimensi-item');
+        const panjang = parseFloat(row.querySelector('.dimensi-panjang').value) || 0;
+        const lebar = parseFloat(row.querySelector('.dimensi-lebar').value) || 0;
+        const tinggi = parseFloat(row.querySelector('.dimensi-tinggi').value) || 0;
 
         let volume = 0;
         if (panjang > 0 && lebar > 0 && tinggi > 0) {
-            volume = (panjang * lebar * tinggi) / 1000000;
+            // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
+            volume = panjang * lebar * tinggi;
         }
 
-        row.find('.meter-kubik-kontainer').val(volume > 0 ? volume.toFixed(6) : '');
-        calculateDimensiTotals();
-        updateHiddenDimensiFields();
+        const volumeInput = row.querySelector('.item-meter-kubik');
+        if (volume > 0) {
+            volumeInput.value = formatVolumeForDatabase(volume);
+        } else {
+            volumeInput.value = '';
+        }
+        calculateTotals();
     }
 
-    // Calculate totals for all kontainers
-    function calculateAllTotals() {
-        const jumlahKontainer = {{ $jumlahKontainer }};
-        let grandTotalVolume = 0;
-        let grandTotalTonase = 0;
+    function calculateAllVolumesAndTotals() {
+        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
+        rows.forEach(row => {
+            const panjang = parseFloat(row.querySelector('.dimensi-panjang').value) || 0;
+            const lebar = parseFloat(row.querySelector('.dimensi-lebar').value) || 0;
+            const tinggi = parseFloat(row.querySelector('.dimensi-tinggi').value) || 0;
 
-        // Calculate for each kontainer
-        for (let i = 1; i <= jumlahKontainer; i++) {
-            let kontainerVolume = 0;
-            let kontainerTonase = 0;
+            let volume = 0;
+            if (panjang > 0 && lebar > 0 && tinggi > 0) {
+                // Kalkulasi langsung dalam meter kubik (m × m × m = m³)
+                volume = panjang * lebar * tinggi;
+            }
 
-            $(`#dimensiTableBody${i} input[name="meter_kubik_kontainer[]"]`).each(function() {
-                const volume = parseFloat($(this).val()) || 0;
-                kontainerVolume += volume;
-            });
-
-            $(`#dimensiTableBody${i} input[name="tonase_kontainer[]"]`).each(function() {
-                const tonase = parseFloat($(this).val()) || 0;
-                kontainerTonase += tonase;
-            });
-
-            // Update kontainer totals
-            $(`#totalVolumeKontainer${i}`).text(kontainerVolume.toFixed(6) + ' m³');
-            $(`#totalTonaseKontainer${i}`).text(kontainerTonase.toFixed(2) + ' Ton');
-
-            // Add to grand totals
-            grandTotalVolume += kontainerVolume;
-            grandTotalTonase += kontainerTonase;
-        }
-
-        // Update grand totals
-        $('#grandTotalVolume').text(grandTotalVolume.toFixed(6) + ' m³');
-        $('#grandTotalTonase').text(grandTotalTonase.toFixed(2) + ' Ton');
-
-        updateHiddenDimensiFields();
+            const volumeInput = row.querySelector('.item-meter-kubik');
+            if (volume > 0) {
+                volumeInput.value = formatVolumeForDatabase(volume);
+            } else {
+                volumeInput.value = '';
+            }
+        });
+        calculateTotals();
+        updateRemoveButtons();
     }
 
-    // Update hidden dimension fields for backward compatibility
-    function updateHiddenDimensiFields() {
-        let panjangArray = [];
-        let lebarArray = [];
-        let tinggiArray = [];
-        let meterKubikArray = [];
-        let tonaseArray = [];
+    function calculateTotals() {
+        let totalVolume = 0;
+        let totalTonase = 0;
 
-        const jumlahKontainer = {{ $jumlahKontainer }};
+        const rows = document.querySelectorAll('#dimensiTableBody .dimensi-item');
+        rows.forEach(row => {
+            const volume = parseFloat(row.querySelector('.item-meter-kubik').value) || 0;
+            const tonase = parseFloat(row.querySelector('.dimensi-tonase').value) || 0;
 
-        // Collect data from all kontainer tables
-        for (let i = 1; i <= jumlahKontainer; i++) {
-            $(`#dimensiTableBody${i} input[name="panjang_kontainer[]"]`).each(function() {
-                const value = $(this).val().trim();
-                if (value && parseFloat(value) > 0) {
-                    panjangArray.push(value);
-                }
-            });
+            totalVolume += volume;
+            totalTonase += tonase;
+        });
 
-            $(`#dimensiTableBody${i} input[name="lebar_kontainer[]"]`).each(function() {
-                const value = $(this).val().trim();
-                if (value && parseFloat(value) > 0) {
-                    lebarArray.push(value);
-                }
-            });
+        // Update summary display - with thousand separator
+        document.getElementById('totalVolume').textContent = formatVolumeDisplay(totalVolume) + ' m³';
+        document.getElementById('totalTonase').textContent = formatWeightDisplay(totalTonase) + ' Ton';
 
-            $(`#dimensiTableBody${i} input[name="tinggi_kontainer[]"]`).each(function() {
-                const value = $(this).val().trim();
-                if (value && parseFloat(value) > 0) {
-                    tinggiArray.push(value);
-                }
-            });
-
-            $(`#dimensiTableBody${i} input[name="meter_kubik_kontainer[]"]`).each(function() {
-                const value = $(this).val().trim();
-                if (value && parseFloat(value) > 0) {
-                    meterKubikArray.push(value);
-                }
-            });
-
-            $(`#dimensiTableBody${i} input[name="tonase_kontainer[]"]`).each(function() {
-                const value = $(this).val().trim();
-                if (value && parseFloat(value) > 0) {
-                    tonaseArray.push(value);
-                }
-            });
+        // Update hidden fields for backward compatibility - use smart formatting
+        const firstRow = document.querySelector('#dimensiTableBody .dimensi-item');
+        if (firstRow) {
+            const panjang = parseFloat(firstRow.querySelector('.dimensi-panjang').value) || 0;
+            const lebar = parseFloat(firstRow.querySelector('.dimensi-lebar').value) || 0;
+            const tinggi = parseFloat(firstRow.querySelector('.dimensi-tinggi').value) || 0;
+            
+            document.getElementById('hiddenPanjang').value = panjang > 0 ? formatVolumeForDatabase(panjang) : '';
+            document.getElementById('hiddenLebar').value = lebar > 0 ? formatVolumeForDatabase(lebar) : '';
+            document.getElementById('hiddenTinggi').value = tinggi > 0 ? formatVolumeForDatabase(tinggi) : '';
         }
-
-        // Update hidden fields for backward compatibility
-        $('#hiddenPanjang').val(panjangArray.join(','));
-        $('#hiddenLebar').val(lebarArray.join(','));
-        $('#hiddenTinggi').val(tinggiArray.join(','));
-        $('#hiddenMeterKubik').val(meterKubikArray.join(','));
-        $('#hiddenTonase').val(tonaseArray.join(','));
+        document.getElementById('hiddenMeterKubik').value = totalVolume > 0 ? formatVolumeForDatabase(totalVolume) : '';
+        document.getElementById('hiddenTonase').value = totalTonase > 0 ? formatWeightForDatabase(totalTonase) : '';
     }
 
     // Update hidden quantity fields
@@ -917,124 +1090,6 @@
 
         // Update hidden field for backward compatibility  
         $('#hiddenSatuan').val(satuanArray.join(','));
-    }
-
-    // Initialize existing dimensi items from database
-    function initializeExistingDimensiItems() {
-        @php
-            $maxItems = max(
-                count($panjangArray),
-                count($lebarArray), 
-                count($tinggiArray),
-                count($meterKubikArray),
-                count($tonaseArray),
-                1 // At least 1 item
-            );
-        @endphp
-
-        const jumlahKontainer = {{ $jumlahKontainer }};
-        
-        @for($i = 0; $i < $maxItems; $i++)
-            const kontainerTarget = ({{ $i }} % jumlahKontainer) + 1;
-            addRowToKontainer(
-                kontainerTarget,
-                '{{ isset($panjangArray[$i]) ? $panjangArray[$i] : '' }}',
-                '{{ isset($lebarArray[$i]) ? $lebarArray[$i] : '' }}',
-                '{{ isset($tinggiArray[$i]) ? $tinggiArray[$i] : '' }}',
-                '{{ isset($meterKubikArray[$i]) ? $meterKubikArray[$i] : '' }}',
-                '{{ isset($tonaseArray[$i]) ? $tonaseArray[$i] : '' }}'
-            );
-        @endfor
-
-        calculateAllTotals();
-    }
-
-    // Add row to specific kontainer table
-    function addRowToKontainer(kontainerIndex, panjang = '', lebar = '', tinggi = '', volume = '', tonase = '') {
-        dimensiItemCounters[kontainerIndex]++;
-        
-        const newRow = `
-            <tr class="hover:bg-gray-50" data-kontainer="${kontainerIndex}" data-row="${dimensiItemCounters[kontainerIndex]}">
-                <td class="px-4 py-3 whitespace-nowrap text-center">
-                    <span class="inline-flex items-center justify-center w-8 h-8 bg-blue-100 text-blue-600 rounded-full text-sm font-medium">
-                        ${dimensiItemCounters[kontainerIndex]}
-                    </span>
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="panjang_kontainer[]"
-                           class="panjang-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="100"
-                           value="${panjang}"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateKontainerVolume(this)">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="lebar_kontainer[]"
-                           class="lebar-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="1000"
-                           value="${lebar}"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateKontainerVolume(this)">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="tinggi_kontainer[]"
-                           class="tinggi-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="1000"
-                           value="${tinggi}"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateKontainerVolume(this)">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="meter_kubik_kontainer[]"
-                           class="meter-kubik-kontainer w-full px-3 py-2 border border-gray-300 rounded bg-gray-50 text-sm"
-                           placeholder="0.000000"
-                           value="${volume}"
-                           readonly
-                           step="0.000001">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap">
-                    <input type="number"
-                           name="tonase_kontainer[]"
-                           class="tonase-kontainer w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                           placeholder="0.00"
-                           value="${tonase}"
-                           min="0"
-                           step="0.01"
-                           onchange="calculateAllTotals()">
-                </td>
-                <td class="px-4 py-3 whitespace-nowrap text-center">
-                    <button type="button" 
-                            onclick="removeDimensiRow(this)"
-                            class="inline-flex items-center justify-center w-8 h-8 bg-red-100 hover:bg-red-200 text-red-600 rounded-full transition duration-200">
-                        <i class="fas fa-trash text-xs"></i>
-                    </button>
-                </td>
-            </tr>
-        `;
-        
-        $(`#dimensiTableBody${kontainerIndex}`).append(newRow);
-        
-        // Calculate volume if all dimension inputs have values
-        const lastRow = $(`#dimensiTableBody${kontainerIndex} tr`).last();
-        if (panjang && lebar && tinggi) {
-            calculateKontainerVolume(lastRow.find('.panjang-kontainer')[0]);
-        }
-        
-        calculateAllTotals();
-    }
-
-    // Remove dimensi row
-    function removeDimensiRow(button) {
-        $(button).closest('tr').remove();
-        calculateAllTotals();
-        updateHiddenDimensiFields();
     }
 </script>
 @endpush

@@ -1096,7 +1096,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('tanda-terima-tanpa-surat-jalan.pilih-tipe')
          ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
 
-    // Routes untuk LCL khusus menggunakan controller terpisah
+    // Routes untuk bulk actions LCL (harus sebelum resource route)
+    Route::get('tanda-terima-lcl/export', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkExport'])
+         ->name('tanda-terima-lcl.export')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+
+    Route::get('tanda-terima-lcl/print', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkPrint'])
+         ->name('tanda-terima-lcl.print')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+
+    Route::delete('tanda-terima-lcl/bulk-delete', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkDelete'])
+         ->name('tanda-terima-lcl.bulk-delete')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-delete');
+
+    Route::post('tanda-terima-lcl/validate-containers', [\App\Http\Controllers\TandaTerimaLclController::class, 'validateContainers'])
+         ->name('tanda-terima-lcl.validate-containers')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-view');
+
+    Route::patch('tanda-terima-lcl/bulk-seal', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkSeal'])
+         ->name('tanda-terima-lcl.bulk-seal')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-update');
+
+    Route::post('tanda-terima-lcl/bulk-split', [\App\Http\Controllers\TandaTerimaLclController::class, 'bulkSplit'])
+         ->name('tanda-terima-lcl.bulk-split')
+         ->middleware('can:tanda-terima-tanpa-surat-jalan-create');
+
+    // Routes untuk LCL khusus menggunakan controller terpisah (setelah route spesifik)
     Route::resource('tanda-terima-lcl', \App\Http\Controllers\TandaTerimaLclController::class)
          ->middleware([
              'index' => 'can:tanda-terima-tanpa-surat-jalan-view',
@@ -2279,6 +2304,31 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('prospek', [ProspekController::class, 'index'])->name('prospek.index')
          ->middleware('can:prospek-view');
 
-    Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
+    Route::get('prospek/pilih-tujuan', [ProspekController::class, 'pilihTujuan'])->name('prospek.pilih-tujuan')
+         ->middleware('can:prospek-edit');
+
+    Route::post('prospek/proses-naik-kapal', [ProspekController::class, 'prosesNaikKapal'])->name('prospek.proses-naik-kapal')
+         ->middleware('can:prospek-edit');
+
+    Route::post('prospek/execute-naik-kapal', [ProspekController::class, 'executeNaikKapal'])->name('prospek.execute-naik-kapal')
+         ->middleware('can:prospek-edit');
+
+    Route::get('prospek/get-voyage-by-kapal', [ProspekController::class, 'getVoyageByKapal'])->name('prospek.get-voyage-by-kapal')
          ->middleware('can:prospek-view');
+
+          Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
+                     ->middleware('can:prospek-view');
+
+          // BL (Bill of Lading) quick create - step 1: pilih kapal & voyage
+          Route::get('bl/select', function () {
+                    $masterKapals = \App\Models\MasterKapal::orderBy('nama_kapal')->get();
+                    return view('bl.select', compact('masterKapals'));
+          })->name('bl.select')
+               ->middleware('can:bl-view');
+
+          Route::post('bl', function (\Illuminate\Http\Request $request) {
+                    // For now just return a simple confirmation. Later this should go to BLController@store
+                    return redirect()->back()->with('success', 'BL request received for kapal ' . $request->kapal_id . ' voyage ' . $request->no_voyage);
+          })->name('bl.store')
+               ->middleware('can:bl-create');
 });

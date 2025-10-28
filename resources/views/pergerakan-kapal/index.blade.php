@@ -181,10 +181,10 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm text-gray-900">
-                                    {{ $pergerakan->pelabuhan_asal }} → {{ $pergerakan->pelabuhan_tujuan }}
+                                    {{ $pergerakan->tujuan_asal }} → {{ $pergerakan->tujuan_tujuan }}
                                 </div>
-                                @if($pergerakan->transit && $pergerakan->pelabuhan_transit)
-                                    <div class="text-sm text-gray-500">via {{ $pergerakan->pelabuhan_transit }}</div>
+                                @if($pergerakan->transit && $pergerakan->tujuan_transit)
+                                    <div class="text-sm text-gray-500">via {{ $pergerakan->tujuan_transit }}</div>
                                 @endif
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">

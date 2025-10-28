@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PergerakanKapal;
 use App\Models\MasterKapal;
-use App\Models\MasterPelabuhan;
+use App\Models\MasterTujuanKirim;
 use App\Models\Karyawan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -76,11 +76,11 @@ class PergerakanKapalController extends Controller
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
-        $masterPelabuhans = MasterPelabuhan::where('status', 'aktif')
-            ->orderBy('nama_pelabuhan', 'asc')
+        $tujuanKirims = MasterTujuanKirim::where('status', 'active')
+            ->orderBy('nama_tujuan', 'asc')
             ->get();
 
-        return view('pergerakan-kapal.create', compact('masterKapals', 'nahkodas', 'masterPelabuhans'));
+        return view('pergerakan-kapal.create', compact('masterKapals', 'nahkodas', 'tujuanKirims'));
     }
 
     /**
@@ -93,9 +93,9 @@ class PergerakanKapalController extends Controller
             'kapten' => 'nullable|string|max:255',
             'voyage' => 'nullable|string|max:255',
             'transit' => 'boolean',
-            'pelabuhan_asal' => 'required|string|max:255',
-            'pelabuhan_tujuan' => 'required|string|max:255',
-            'pelabuhan_transit' => 'nullable|string|max:255',
+            'tujuan_asal' => 'required|string|max:255',
+            'tujuan_tujuan' => 'required|string|max:255',
+            'tujuan_transit' => 'nullable|string|max:255',
             'voyage_transit' => 'nullable|string|max:255',
             'tanggal_sandar' => 'nullable|date',
             'tanggal_labuh' => 'nullable|date',
@@ -135,11 +135,11 @@ class PergerakanKapalController extends Controller
             ->orderBy('nama_lengkap', 'asc')
             ->get();
 
-        $masterPelabuhans = MasterPelabuhan::where('status', 'aktif')
-            ->orderBy('nama_pelabuhan', 'asc')
+        $tujuanKirims = MasterTujuanKirim::where('status', 'aktif')
+            ->orderBy('nama_tujuan', 'asc')
             ->get();
 
-        return view('pergerakan-kapal.edit', compact('pergerakanKapal', 'masterKapals', 'nahkodas', 'masterPelabuhans'));
+        return view('pergerakan-kapal.edit', compact('pergerakanKapal', 'masterKapals', 'nahkodas', 'tujuanKirims'));
     }
 
     /**
@@ -189,10 +189,10 @@ class PergerakanKapalController extends Controller
     public function generateVoyageNumber(Request $request)
     {
         $namaKapal = $request->nama_kapal;
-        $pelabuhanAsal = $request->pelabuhan_asal;
-        $pelabuhanTujuan = $request->pelabuhan_tujuan;
+        $tujuanAsal = $request->tujuan_asal;
+        $tujuanTujuan = $request->tujuan_tujuan;
 
-        if (!$namaKapal || !$pelabuhanAsal || !$pelabuhanTujuan) {
+        if (!$namaKapal || !$tujuanAsal || !$tujuanTujuan) {
             return response()->json(['error' => 'Missing required parameters'], 400);
         }
 
@@ -229,19 +229,19 @@ class PergerakanKapalController extends Controller
             'Ambon' => 'A'
         ];
 
-        // Ambil kota pelabuhan asal dan tujuan
-        $pelabuhanAsalData = MasterPelabuhan::where('nama_pelabuhan', $pelabuhanAsal)->first();
-        $pelabuhanTujuanData = MasterPelabuhan::where('nama_pelabuhan', $pelabuhanTujuan)->first();
+        // Ambil kota tujuan asal dan tujuan kirim
+        $tujuanAsalData = MasterTujuanKirim::where('nama_tujuan', $tujuanAsal)->first();
+        $tujuanTujuanData = MasterTujuanKirim::where('nama_tujuan', $tujuanTujuan)->first();
 
-        if (!$pelabuhanAsalData || !$pelabuhanTujuanData) {
-            return response()->json(['error' => 'Data pelabuhan tidak ditemukan'], 400);
+        if (!$tujuanAsalData || !$tujuanTujuanData) {
+            return response()->json(['error' => 'Data tujuan tidak ditemukan'], 400);
         }
 
-        // 1 Digit Pelabuhan Asal (berdasarkan kota)
-        $kodeAsal = $kotaCodes[$pelabuhanAsalData->kota] ?? strtoupper(substr($pelabuhanAsalData->kota, 0, 1));
+        // 1 Digit Tujuan Asal (berdasarkan kota)
+        $kodeAsal = $kotaCodes[$tujuanAsalData->kota] ?? strtoupper(substr($tujuanAsalData->kota, 0, 1));
 
-        // 1 Digit Pelabuhan Tujuan (berdasarkan kota)
-        $kodeTujuan = $kotaCodes[$pelabuhanTujuanData->kota] ?? strtoupper(substr($pelabuhanTujuanData->kota, 0, 1));
+        // 1 Digit Tujuan Kirim (berdasarkan kota)
+        $kodeTujuan = $kotaCodes[$tujuanTujuanData->kota] ?? strtoupper(substr($tujuanTujuanData->kota, 0, 1));
 
         // 2 Digit Tahun
         $tahun = date('y');
