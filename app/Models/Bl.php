@@ -13,6 +13,7 @@ class Bl extends Model
 
     protected $fillable = [
         'prospek_id',
+        'nomor_bl',
         'nomor_kontainer',
         'no_seal',
         'tipe_kontainer',

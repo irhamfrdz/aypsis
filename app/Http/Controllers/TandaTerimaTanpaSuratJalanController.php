@@ -181,21 +181,15 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'no_kontainer' => 'nullable|string|max:255',
             'size_kontainer' => 'nullable|string|max:50',
             // Penerima dan Pengirim
-            'nama_penerima' => 'required|string|max:255',
-            'nama_pengirim' => 'required|string|max:255',
-            'pic_penerima' => 'nullable|string|max:255',
-            'pic_pengirim' => 'nullable|string|max:255',
-            'telepon_penerima' => 'nullable|string|max:50',
-            'telepon_pengirim' => 'nullable|string|max:50',
-            'alamat_penerima' => 'required|string',
-            'alamat_pengirim' => 'required|string',
-            // Legacy fields for backward compatibility
-            'pengirim' => 'nullable|string|max:255',
-            'penerima' => 'nullable|string|max:255',
-            'telepon' => 'nullable|string|max:50',
+            'penerima' => 'required|string|max:255',
+            'pengirim' => 'required|string|max:255',
             'pic' => 'nullable|string|max:255',
-            'alamat_pengirim' => 'nullable|string',
+            'telepon' => 'nullable|string|max:50',
             'alamat_penerima' => 'nullable|string',
+            'alamat_pengirim' => 'nullable|string',
+            // Legacy fields for backward compatibility (if needed)
+            'nama_penerima' => 'nullable|string|max:255',
+            'nama_pengirim' => 'nullable|string|max:255',
             // Supir dan transportasi
             'supir' => 'required|string|max:255',
             'kenek' => 'nullable|string|max:255',
@@ -227,6 +221,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
             'dimensi_items.*.tinggi' => 'nullable|numeric|min:0',
             'dimensi_items.*.meter_kubik' => 'nullable|numeric|min:0',
             'dimensi_items.*.tonase' => 'nullable|numeric|min:0',
+            // Auto-save to prospek
+            'simpan_ke_prospek' => 'nullable|string|max:1',
         ]);
 
         try {
@@ -259,8 +255,8 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                 }
             }
 
-            // Create prospek automatically if FCL with no_seal filled OR if cargo type
-            if ($validated['tipe_kontainer'] === 'fcl' && !empty($validated['no_seal'])) {
+            // Auto-create prospek for all tanda terima (sesuai permintaan user)
+            if ($request->filled('simpan_ke_prospek') || true) { // Always create prospek
                 // Extract size from size_kontainer (e.g., "20 ft" -> "20")
                 $ukuran = null;
                 if (!empty($validated['size_kontainer'])) {
@@ -269,60 +265,54 @@ class TandaTerimaTanpaSuratJalanController extends Controller
                         $ukuran = '20';
                     } elseif (strpos($sizeStr, '40') !== false) {
                         $ukuran = '40';
+                    } elseif (strpos($sizeStr, '45') !== false) {
+                        $ukuran = '45';
+                    } elseif (strpos($sizeStr, '53') !== false) {
+                        $ukuran = '53';
                     }
                 }
 
-                Prospek::create([
-                    'tanggal' => $validated['tanggal_tanda_terima'],
-                    'nama_supir' => $validated['supir'],
-                    'barang' => $validated['jenis_barang'],
-                    'pt_pengirim' => $validated['pengirim'],
-                    'ukuran' => $ukuran,
-                    'tipe' => 'FCL',
-                    'nomor_kontainer' => $validated['no_kontainer'],
-                    'no_seal' => $validated['no_seal'],
-                    'tujuan_pengiriman' => $validated['tujuan_pengiriman'],
-                    'nama_kapal' => $validated['estimasi_naik_kapal'],
-                    'keterangan' => 'Auto-generated from Tanda Terima: ' . $tandaTerima->no_tanda_terima,
-                    'status' => 'aktif',
-                    'created_by' => Auth::id() // Gunakan Auth::id() untuk mendapatkan user ID
-                ]);
-            } elseif ($validated['tipe_kontainer'] === 'cargo') {
-                // Auto-create prospek for cargo type
-                $ukuran = null;
-                if (!empty($validated['size_kontainer'])) {
-                    $sizeStr = $validated['size_kontainer'];
-                    if (strpos($sizeStr, '20') !== false) {
-                        $ukuran = '20';
-                    } elseif (strpos($sizeStr, '40') !== false) {
-                        $ukuran = '40';
-                    }
+                // Determine tipe based on tipe_kontainer
+                $tipeProspek = 'FCL'; // Default
+                if ($validated['tipe_kontainer'] === 'lcl') {
+                    $tipeProspek = 'LCL';
+                } elseif ($validated['tipe_kontainer'] === 'cargo') {
+                    $tipeProspek = 'CARGO';
                 }
+
+                // Use correct field names based on validation rules
+                $penerima = $validated['penerima'] ?? $validated['nama_penerima'] ?? 'Tidak diketahui';
+                $pengirim = $validated['pengirim'] ?? $validated['nama_pengirim'] ?? 'Tidak diketahui';
 
                 Prospek::create([
                     'tanggal' => $validated['tanggal_tanda_terima'],
                     'nama_supir' => $validated['supir'] ?: 'Supir Customer',
-                    'barang' => $validated['jenis_barang'] ?: 'CARGO',
-                    'pt_pengirim' => $validated['pengirim'],
+                    'barang' => $validated['nama_barang'] ?: $validated['jenis_barang'] ?: 'Barang',
+                    'pt_pengirim' => $pengirim,
                     'ukuran' => $ukuran,
-                    'tipe' => 'CARGO',
-                    'nomor_kontainer' => 'CARGO', // Set nomor kontainer sebagai CARGO
-                    'no_seal' => $validated['no_seal'] ?: 'Tidak ada seal',
+                    'tipe' => $tipeProspek,
+                    'nomor_kontainer' => $validated['no_kontainer'] ?: ($tipeProspek === 'CARGO' ? 'CARGO' : null),
+                    'no_seal' => $validated['no_seal'] ?: null,
                     'tujuan_pengiriman' => $validated['tujuan_pengiriman'],
-                    'nama_kapal' => $validated['estimasi_naik_kapal'] ?: 'Tidak ada nama kapal',
-                    'keterangan' => 'Auto-generated from Tanda Terima Tanpa Surat Jalan: ' . $tandaTerima->no_tanda_terima,
+                    'nama_kapal' => $validated['estimasi_naik_kapal'] ?: null,
+                    'total_ton' => $validated['tonase'] ?: null,
+                    'total_volume' => $validated['meter_kubik'] ?: null,
+                    'kuantitas' => $validated['jumlah_barang'] ?: 1,
+                    'keterangan' => 'Auto-generated from Tanda Terima Tanpa Surat Jalan: ' . $tandaTerima->no_tanda_terima . 
+                                  ($validated['catatan'] ? ' | Catatan: ' . $validated['catatan'] : '') .
+                                  ($penerima !== 'Tidak diketahui' ? ' | Penerima: ' . $penerima : ''),
                     'status' => 'aktif',
                     'created_by' => Auth::id()
                 ]);
+
+                $prospekCreated = true;
             }
 
             DB::commit();
 
             $message = 'Tanda terima berhasil dibuat.';
-            if ($validated['tipe_kontainer'] === 'fcl' && !empty($validated['no_seal'])) {
-                $message .= ' Prospek FCL juga telah dibuat secara otomatis.';
-            } elseif ($validated['tipe_kontainer'] === 'cargo') {
-                $message .= ' Prospek CARGO juga telah dibuat secara otomatis.';
+            if (isset($prospekCreated) && $prospekCreated) {
+                $message .= ' Data juga telah tersimpan sebagai prospek.';
             }
 
             return redirect()->route('tanda-terima-tanpa-surat-jalan.index')

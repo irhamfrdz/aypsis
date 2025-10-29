@@ -54,6 +54,7 @@ use App\Http\Controllers\PranotaSuratJalanController;
 use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ProspekController;
+use App\Http\Controllers\NaikKapalController;
 
 /*
 |--------------------------------------------------------------------------
@@ -2307,7 +2308,7 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('prospek/pilih-tujuan', [ProspekController::class, 'pilihTujuan'])->name('prospek.pilih-tujuan')
          ->middleware('can:prospek-edit');
 
-    Route::post('prospek/proses-naik-kapal', [ProspekController::class, 'prosesNaikKapal'])->name('prospek.proses-naik-kapal')
+    Route::post('prospek/proses-naik-kapal', [ProspekController::class, 'prosesNaikKapal'])->name('prospek.proses-naik-kapal-batch')
          ->middleware('can:prospek-edit');
 
     Route::post('prospek/execute-naik-kapal', [ProspekController::class, 'executeNaikKapal'])->name('prospek.execute-naik-kapal')
@@ -2319,16 +2320,26 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
           Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
                      ->middleware('can:prospek-view');
 
-          // BL (Bill of Lading) quick create - step 1: pilih kapal & voyage
-          Route::get('bl/select', function () {
-                    $masterKapals = \App\Models\MasterKapal::orderBy('nama_kapal')->get();
-                    return view('bl.select', compact('masterKapals'));
-          })->name('bl.select')
+          // 🚢 Naik Kapal Management
+          Route::resource('naik-kapal', NaikKapalController::class)
+                     ->middleware('can:prospek-edit');
+
+          // BL (Bill of Lading) Management
+          Route::get('bl', [\App\Http\Controllers\BlController::class, 'select'])->name('bl.select')
+               ->middleware('can:bl-view');
+               
+          Route::get('bl/index', [\App\Http\Controllers\BlController::class, 'index'])->name('bl.index')
                ->middleware('can:bl-view');
 
-          Route::post('bl', function (\Illuminate\Http\Request $request) {
-                    // For now just return a simple confirmation. Later this should go to BLController@store
-                    return redirect()->back()->with('success', 'BL request received for kapal ' . $request->kapal_id . ' voyage ' . $request->no_voyage);
-          })->name('bl.store')
+          Route::post('bl', [\App\Http\Controllers\BlController::class, 'store'])->name('bl.store')
                ->middleware('can:bl-create');
+               
+          Route::get('bl/{bl}', [\App\Http\Controllers\BlController::class, 'show'])->name('bl.show')
+               ->middleware('can:bl-view');
+               
+          Route::patch('bl/{bl}/nomor-bl', [\App\Http\Controllers\BlController::class, 'updateNomorBl'])->name('bl.update-nomor-bl')
+               ->middleware('can:bl-edit');
+               
+          Route::get('bl-api/by-kapal-voyage', [\App\Http\Controllers\BlController::class, 'getByKapalVoyage'])->name('bl.api.by-kapal-voyage')
+               ->middleware('can:bl-view');
 });

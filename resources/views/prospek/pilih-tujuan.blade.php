@@ -23,7 +23,7 @@
     <div class="bg-white rounded-lg shadow-sm p-6">
         <h3 class="text-lg font-semibold text-gray-800 mb-6">Pilih Tujuan Pengiriman</h3>
         
-        <form action="{{ route('prospek.proses-naik-kapal') }}" method="POST">
+        <form action="{{ route('prospek.proses-naik-kapal-batch') }}" method="POST">
             @csrf
             
             {{-- Daftar Tujuan --}}

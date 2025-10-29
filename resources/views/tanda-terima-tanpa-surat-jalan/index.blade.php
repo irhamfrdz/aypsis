@@ -159,6 +159,8 @@
                                     </th>
                                 @endif
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Tanda Terima</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                                <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe Kontainer</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Penerima</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
@@ -166,7 +168,6 @@
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
                                 <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
                                 @if(request('tipe') == 'lcl')
-                                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Seal</th>
                                 @endif
@@ -188,6 +189,32 @@
                                             <div class="text-sm font-medium text-gray-900">{{ $tandaTerima->nomor_tanda_terima }}</div>
                                         @else
                                             <div class="text-sm font-medium text-gray-900">{{ $tandaTerima->no_tanda_terima }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if(isset($isLclData) && $isLclData)
+                                            <div class="text-sm text-gray-900">{{ $tandaTerima->nomor_kontainer ?? '-' }}</div>
+                                        @else
+                                            <div class="text-sm text-gray-900">{{ $tandaTerima->no_kontainer ?? '-' }}</div>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @if(isset($isLclData) && $isLclData)
+                                            @if($tandaTerima->tipe_kontainer)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {{ strtoupper($tandaTerima->tipe_kontainer) }}
+                                                </span>
+                                            @else
+                                                <span class="text-sm text-gray-500">-</span>
+                                            @endif
+                                        @else
+                                            @if($tandaTerima->tipe_kontainer)
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                    {{ strtoupper($tandaTerima->tipe_kontainer) }}
+                                                </span>
+                                            @else
+                                                <span class="text-sm text-gray-500">-</span>
+                                            @endif
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -229,14 +256,10 @@
                                         @endif
                                     </td>
                                     @if(request('tipe') == 'lcl' && isset($isLclData) && $isLclData)
-                                        <!-- Nomor Kontainer -->
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <div class="text-sm text-gray-900">{{ $tandaTerima->nomor_kontainer ?? '-' }}</div>
-                                        </td>
                                         <!-- Size Kontainer -->
                                         <td class="px-6 py-4 whitespace-nowrap">
                                             @if($tandaTerima->size_kontainer)
-                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                     {{ $tandaTerima->size_kontainer }}
                                                 </span>
                                             @else
@@ -260,11 +283,11 @@
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         @if(isset($isLclData) && $isLclData)
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                LCL
+                                                LCL Data
                                             </span>
                                         @else
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                {{ request('tipe') == 'fcl' ? 'FCL' : (request('tipe') == 'cargo' ? 'Cargo' : 'Standard') }}
+                                                Standard
                                             </span>
                                         @endif
                                     </td>

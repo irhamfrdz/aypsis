@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Prospek;
 use App\Models\User;
 use App\Models\MasterKapal;
+use App\Models\NaikKapal;
+use App\Models\Bl;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -256,6 +258,7 @@ class ProspekController extends Controller
     {
         try {
             $user = Auth::user();
+            
             if (!$this->hasProspekPermission($user, 'prospek-edit')) {
                 abort(403, "Tidak memiliki akses untuk mengubah status prospek");
             }
@@ -308,8 +311,9 @@ class ProspekController extends Controller
             $updatedCount = 0;
             $updatedKontainers = [];
 
-            // Update semua prospek yang dipilih
+            // Update semua prospek yang dipilih dan simpan ke tabel naik_kapal
             foreach ($prospeks as $prospek) {
+                // Update status prospek
                 $prospek->update([
                     'status' => 'sudah_muat',
                     'tanggal_muat' => $request->tanggal,
@@ -319,15 +323,70 @@ class ProspekController extends Controller
                     'pelabuhan_asal' => $request->pelabuhan_asal,
                     'updated_by' => $user->id
                 ]);
+
+                // Simpan data ke tabel naik_kapal
+                $naikKapalData = [
+                    'prospek_id' => $prospek->id,
+                    'nomor_kontainer' => $prospek->nomor_kontainer ?: 'CARGO-' . $prospek->id, // Handle null
+                    'jenis_barang' => $prospek->barang,
+                    'tipe_kontainer' => $prospek->tipe,
+                    'ukuran_kontainer' => $prospek->ukuran ? $prospek->ukuran . ' Feet' : null,
+                    'nama_kapal' => $masterKapal->nama_kapal,
+                    'no_voyage' => $request->no_voyage,
+                    'pelabuhan_asal' => $request->pelabuhan_asal,
+                    'pelabuhan_tujuan' => $tujuanData['nama'],
+                    'tanggal_muat' => $request->tanggal,
+                    'total_volume' => $prospek->volume_m3,
+                    'total_tonase' => $prospek->tonase,
+                    'kuantitas' => $prospek->kuantitas,
+                    'created_by' => $user->id,
+                    'updated_by' => $user->id
+                ];
                 
-                $updatedCount++;
-                $updatedKontainers[] = $prospek->nomor_kontainer;
+                try {
+                    // Simpan ke naik_kapal
+                    $naikKapal = NaikKapal::create($naikKapalData);
+                    
+                    // Simpan data ke tabel bls juga
+                    $blData = [
+                        'prospek_id' => $prospek->id,
+                        'nomor_kontainer' => $naikKapalData['nomor_kontainer'],
+                        'no_seal' => $prospek->no_seal,
+                        'tipe_kontainer' => $prospek->tipe,
+                        'no_voyage' => $request->no_voyage,
+                        'nama_kapal' => $masterKapal->nama_kapal,
+                        'nama_barang' => $prospek->barang,
+                        'tonnage' => $prospek->tonase,
+                        'kuantitas' => $prospek->kuantitas,
+                    ];
+                    
+                    try {
+                        $bl = Bl::create($blData);
+                    } catch (\Exception $blError) {
+                        \Log::error('Failed to create BL record', [
+                            'prospek_id' => $prospek->id,
+                            'error' => $blError->getMessage(),
+                            'data' => $blData
+                        ]);
+                        // Lanjutkan meski BL gagal dibuat
+                    }
+                    
+                    $updatedCount++;
+                    $updatedKontainers[] = $naikKapalData['nomor_kontainer'];
+                    
+                } catch (\Exception $createError) {
+                    \Log::error('Failed to create NaikKapal record', [
+                        'prospek_id' => $prospek->id,
+                        'error' => $createError->getMessage()
+                    ]);
+                    // Lanjutkan ke prospek berikutnya meski ada error
+                }
             }
 
             $kontainerList = implode(', ', $updatedKontainers);
             
             return redirect()->route('prospek.index')
-                ->with('success', "Berhasil memproses {$updatedCount} prospek ({$kontainerList}) untuk naik kapal {$masterKapal->nama_kapal} ke {$tujuanData['nama']}.");
+                ->with('success', "Berhasil memproses {$updatedCount} prospek ({$kontainerList}) untuk naik kapal {$masterKapal->nama_kapal} ke {$tujuanData['nama']}. Data telah disimpan ke tabel naik kapal dan BL.");
         
         } catch (\Exception $e) {
             return redirect()->back()

@@ -283,6 +283,20 @@
                 </a>
                 @endif
 
+                <!-- Naik Kapal Menu -->
+                @php
+                    $isNaikKapalRoute = Request::routeIs('naik-kapal.*');
+                @endphp
+
+                @if($user && $user->can('prospek-edit'))
+                <a href="{{ route('naik-kapal.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isNaikKapalRoute ? 'bg-purple-100 text-purple-700 font-bold' : 'text-gray-700 hover:bg-purple-100 hover:text-purple-700' }}">
+                    <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isNaikKapalRoute ? 'bg-purple-200' : 'bg-purple-50 group-hover:bg-purple-200' }}">
+                        <i class="fas fa-ship text-xs {{ $isNaikKapalRoute ? 'text-purple-700' : 'text-purple-600 group-hover:text-purple-700' }}"></i>
+                    </div>
+                    <span class="text-xs font-medium menu-text">Naik Kapal</span>
+                </a>
+                @endif
+
                 <!-- BL (Bill of Lading) Menu -->
                 @php
                     $isBLRoute = Request::routeIs('bl.*');

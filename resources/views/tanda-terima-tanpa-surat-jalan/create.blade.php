@@ -694,9 +694,9 @@
 
                         <div id="no_kontainer_field">
                             <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">
-                                No. Kontainer
+                                No. Kontainer <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer') }}"
+                            <input type="text" name="no_kontainer" id="no_kontainer" value="{{ old('no_kontainer') }}" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_kontainer') border-red-500 @enderror"
                                    placeholder="Nomor kontainer">
                             @error('no_kontainer')
@@ -706,9 +706,9 @@
 
                         <div id="no_seal_field">
                             <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">
-                                No. Seal
+                                No. Seal <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" name="no_seal" id="no_seal" value="{{ old('no_seal') }}"
+                            <input type="text" name="no_seal" id="no_seal" value="{{ old('no_seal') }}" required
                                    class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror"
                                    placeholder="Nomor seal">
                             @error('no_seal')
@@ -742,6 +742,21 @@
                         <textarea name="catatan" id="catatan" rows="4"
                                   class="w-full px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                   placeholder="Catatan atau informasi tambahan (opsional)">{{ old('catatan') }}</textarea>
+                    </div>
+
+                    <!-- Hidden input untuk auto-save ke prospek -->
+                    <input type="hidden" name="simpan_ke_prospek" value="1">
+                    
+                    <!-- Info notification -->
+                    <div class="mt-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+                        <div class="flex items-center">
+                            <svg class="w-4 h-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            <p class="text-xs text-blue-800">
+                                <strong>Info:</strong> Data ini akan otomatis tersimpan juga ke tabel prospek untuk keperluan follow-up bisnis.
+                            </p>
+                        </div>
                     </div>
                 </div>
 
@@ -1065,6 +1080,8 @@
         const noKontainerField = document.getElementById('no_kontainer_field');
         const noSealField = document.getElementById('no_seal_field');
         const tanggalSealField = document.getElementById('tanggal_seal_field');
+        const noKontainerInput = document.getElementById('no_kontainer');
+        const noSealInput = document.getElementById('no_seal');
         
         if (tipeKontainer === 'cargo') {
             // Hide kontainer fields for cargo
@@ -1072,17 +1089,22 @@
             noKontainerField.style.display = 'none';
             noSealField.style.display = 'none';
             tanggalSealField.style.display = 'none';
-            // Clear kontainer fields when cargo is selected
+            // Clear kontainer fields when cargo is selected and remove required attribute
             document.getElementById('no_kontainer').value = '';
             document.getElementById('size_kontainer').value = '';
             document.getElementById('no_seal').value = '';
             document.getElementById('tanggal_seal').value = '';
+            noKontainerInput.removeAttribute('required');
+            noSealInput.removeAttribute('required');
         } else {
             // Show kontainer fields for FCL and LCL
             sizeKontainerField.style.display = 'block';
             noKontainerField.style.display = 'block';
             noSealField.style.display = 'block';
             tanggalSealField.style.display = 'block';
+            // Add required attribute back for FCL and LCL
+            noKontainerInput.setAttribute('required', 'required');
+            noSealInput.setAttribute('required', 'required');
         }
     }
 

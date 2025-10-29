@@ -12,17 +12,15 @@
                 </div>
             </div>
             <div>
-                <a href="{{ url()->previous() }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
-                    Kembali
+                <a href="{{ route('bl.index') }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md">
+                    Kembali ke Daftar BL
                 </a>
             </div>
         </div>
     </div>
 
     <div class="bg-white rounded-lg shadow-sm p-6">
-        <form method="POST" action="{{ route('bl.store') }}" id="blSelectForm">
-            @csrf
-
+        <div id="blSelectForm">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
                     <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-2">Kapal <span class="text-red-500">*</span></label>
@@ -43,9 +41,11 @@
             </div>
 
             <div class="mt-6">
-                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">Lanjutkan ke BL</button>
+                <button type="button" id="goToIndexFiltered" class="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-md">
+                    <i class="fas fa-list mr-2"></i>Ke Halaman Index BL
+                </button>
             </div>
-        </form>
+        </div>
     </div>
 </div>
 
@@ -53,6 +53,7 @@
 document.addEventListener('DOMContentLoaded', function() {
     const kapalSelect = document.getElementById('kapal_id');
     const voyageSelect = document.getElementById('no_voyage');
+    const goToIndexFilteredBtn = document.getElementById('goToIndexFiltered');
 
     kapalSelect.addEventListener('change', function() {
         const kapalId = this.value;
@@ -88,6 +89,26 @@ document.addEventListener('DOMContentLoaded', function() {
             voyageSelect.disabled = false;
             console.error(err);
         });
+    });
+
+    // Go to index with filter
+    goToIndexFilteredBtn.addEventListener('click', function() {
+        const kapalId = kapalSelect.value;
+        const voyage = voyageSelect.value;
+
+        if (!kapalId || !voyage) {
+            alert('Silakan pilih kapal dan voyage terlebih dahulu');
+            return;
+        }
+
+        const kapalName = kapalSelect.options[kapalSelect.selectedIndex].text.split(' (')[0];
+        
+        // Redirect to BL index with filter parameters
+        const url = new URL('{{ route("bl.index") }}', window.location.origin);
+        url.searchParams.set('nama_kapal', kapalName);
+        url.searchParams.set('no_voyage', voyage);
+        
+        window.location.href = url.toString();
     });
 });
 </script>

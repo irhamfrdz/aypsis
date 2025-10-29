@@ -57,6 +57,7 @@ class Prospek extends Model
 
     // Status constants
     const STATUS_AKTIF = 'aktif';
+    const STATUS_MENUNGGU_KAPAL = 'menunggu_kapal';
     const STATUS_SUDAH_MUAT = 'sudah_muat';
     const STATUS_BATAL = 'batal';
 
@@ -68,6 +69,7 @@ class Prospek extends Model
     {
         return [
             self::STATUS_AKTIF => 'Aktif',
+            self::STATUS_MENUNGGU_KAPAL => 'Menunggu Kapal',
             self::STATUS_SUDAH_MUAT => 'Sudah Muat',
             self::STATUS_BATAL => 'Batal'
         ];
@@ -100,6 +102,11 @@ class Prospek extends Model
     public function bls()
     {
         return $this->hasMany(Bl::class);
+    }
+
+    public function naikKapal()
+    {
+        return $this->hasMany(NaikKapal::class);
     }
 
     // Scopes
