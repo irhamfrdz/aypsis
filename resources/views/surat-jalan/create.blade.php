@@ -676,11 +676,26 @@ function filterNomorKontainerBySize() {
             
             const optionUkuran = $(this).data('ukuran');
             
-            // Map size to ukuran format (20 -> 20ft, 40 -> 40ft, etc)
-            const sizeFormatted = selectedSize + 'ft';
+            // Debug log to see actual ukuran values
+            if (optionValue) {
+                console.log(`Option: ${optionValue}, Ukuran from DB: "${optionUkuran}", Selected Size: "${selectedSize}"`);
+            }
+            
+            // Normalize both values for comparison - remove spaces, convert to lowercase
+            const normalizedUkuran = optionUkuran ? String(optionUkuran).toLowerCase().replace(/\s+/g, '') : '';
+            const normalizedSize = selectedSize.toLowerCase().replace(/\s+/g, '');
+            
+            // Check multiple possible formats:
+            // - "20ft", "40ft", "45ft"
+            // - "20 ft", "40 ft", "45 ft"  
+            // - "20", "40", "45"
+            const sizeMatches = 
+                normalizedUkuran === normalizedSize + 'ft' || 
+                normalizedUkuran === normalizedSize ||
+                normalizedUkuran.startsWith(normalizedSize);
             
             // Enable/disable option based on size match
-            if (optionUkuran === sizeFormatted) {
+            if (sizeMatches) {
                 $(this).prop('disabled', false);
             } else {
                 $(this).prop('disabled', true);
