@@ -622,6 +622,19 @@
 <script>
 // Initialize Select2 for nomor kontainer - Must run after DOM is ready
 $(document).ready(function() {
+    // Store original options for filtering
+    window.allKontainerOptions = [];
+    $('#nomor-kontainer-select option').each(function() {
+        if ($(this).val() !== '') {
+            window.allKontainerOptions.push({
+                value: $(this).val(),
+                text: $(this).text(),
+                ukuran: $(this).data('ukuran'),
+                tipe: $(this).data('tipe')
+            });
+        }
+    });
+    
     // Initialize Select2 with search functionality
     $('#nomor-kontainer-select').select2({
         placeholder: 'Cari nomor kontainer...',
@@ -638,6 +651,7 @@ $(document).ready(function() {
     });
     
     console.log('Select2 initialized for nomor kontainer');
+    console.log('Total kontainer options stored:', window.allKontainerOptions.length);
     
     // Filter kontainer on page load if size is already selected
     if ($('#size-select').val()) {
@@ -650,62 +664,50 @@ function filterNomorKontainerBySize() {
     const kontainerSelect = $('#nomor-kontainer-select');
     const selectedSize = sizeSelect ? sizeSelect.value : '';
     
-    // Reset Select2 and clear selection
+    // Clear current selection
     kontainerSelect.val(null).trigger('change');
     
-    // Get all options
-    const allOptions = kontainerSelect.find('option');
+    // Remove all options except placeholder
+    kontainerSelect.find('option:not(:first)').remove();
     
     if (!selectedSize) {
         // Show all options if no size selected
-        allOptions.each(function() {
-            if ($(this).val() !== '') {
-                $(this).prop('disabled', false);
-            }
+        window.allKontainerOptions.forEach(function(option) {
+            const newOption = new Option(option.text, option.value, false, false);
+            $(newOption).data('ukuran', option.ukuran);
+            $(newOption).data('tipe', option.tipe);
+            kontainerSelect.append(newOption);
         });
-        console.log('No size selected - showing all kontainers');
+        console.log('No size selected - showing all kontainers:', window.allKontainerOptions.length);
     } else {
         // Filter options based on size
-        allOptions.each(function() {
-            const optionValue = $(this).val();
-            if (optionValue === '') {
-                // Keep placeholder
-                $(this).prop('disabled', false);
-                return;
-            }
+        let filteredCount = 0;
+        window.allKontainerOptions.forEach(function(option) {
+            const optionUkuran = option.ukuran;
             
-            const optionUkuran = $(this).data('ukuran');
-            
-            // Debug log to see actual ukuran values
-            if (optionValue) {
-                console.log(`Option: ${optionValue}, Ukuran from DB: "${optionUkuran}", Selected Size: "${selectedSize}"`);
-            }
-            
-            // Normalize both values for comparison - remove spaces, convert to lowercase
+            // Normalize both values for comparison
             const normalizedUkuran = optionUkuran ? String(optionUkuran).toLowerCase().replace(/\s+/g, '') : '';
             const normalizedSize = selectedSize.toLowerCase().replace(/\s+/g, '');
             
-            // Check multiple possible formats:
-            // - "20ft", "40ft", "45ft"
-            // - "20 ft", "40 ft", "45 ft"  
-            // - "20", "40", "45"
+            // Check multiple possible formats
             const sizeMatches = 
                 normalizedUkuran === normalizedSize + 'ft' || 
                 normalizedUkuran === normalizedSize ||
                 normalizedUkuran.startsWith(normalizedSize);
             
-            // Enable/disable option based on size match
             if (sizeMatches) {
-                $(this).prop('disabled', false);
-            } else {
-                $(this).prop('disabled', true);
+                const newOption = new Option(option.text, option.value, false, false);
+                $(newOption).data('ukuran', option.ukuran);
+                $(newOption).data('tipe', option.tipe);
+                kontainerSelect.append(newOption);
+                filteredCount++;
             }
         });
         
-        console.log(`Filtered kontainers for size: ${selectedSize}ft`);
+        console.log(`Filtered kontainers for size ${selectedSize}ft: ${filteredCount} items found`);
     }
     
-    // Refresh Select2 to apply changes
+    // Refresh Select2 to show updated options
     kontainerSelect.trigger('change.select2');
 }
 
