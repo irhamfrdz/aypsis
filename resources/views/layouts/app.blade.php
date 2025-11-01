@@ -186,9 +186,9 @@
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden transition-opacity duration-300"></div>
     
     <!-- Sidebar -->
-    <div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-80 lg:w-64 bg-gradient-to-b from-blue-50 via-white to-gray-100 shadow-2xl border-r border-gray-300 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:flex lg:flex-col lg:top-16 rounded-r-2xl lg:rounded-r-2xl overflow-hidden">
+    <div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-80 lg:w-64 bg-gradient-to-b from-blue-50 via-white to-gray-100 shadow-2xl border-r border-gray-300 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out flex flex-col lg:top-16 rounded-r-2xl lg:rounded-r-2xl overflow-y-auto">
             <!-- Mobile Header with close button -->
-            <div class="lg:hidden flex items-center justify-between p-4 bg-blue-600 shadow-md">
+            <div class="lg:hidden flex items-center justify-between p-4 bg-blue-600 shadow-md flex-shrink-0 sticky top-0 z-10">
                 <div class="flex items-center text-white">
                     <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center mr-3 shadow-lg">
                         <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -244,7 +244,7 @@
             </div>
 
             <!-- Navigation Menu -->
-            <nav class="flex-1 overflow-y-auto p-4 space-y-2 sidebar-scroll">
+            <nav class="flex-1 overflow-y-auto p-4 space-y-2 pb-20">
                 @php
                     $user = Auth::user();
                     $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
@@ -1477,25 +1477,36 @@
         const closeSidebar = document.getElementById('close-sidebar');
         const sidebar = document.getElementById('sidebar');
         const overlay = document.getElementById('sidebar-overlay');
+        const mainContent = document.querySelector('main') || document.querySelector('.flex.flex-1');
 
         function openSidebar() {
             if (sidebar) {
                 sidebar.classList.remove('-translate-x-full');
-                document.body.style.overflow = 'hidden'; // Prevent body scroll when sidebar is open
             }
             if (overlay) {
                 overlay.classList.remove('hidden');
             }
+            // Only prevent main content scroll, not sidebar scroll
+            if (mainContent) {
+                mainContent.style.overflow = 'hidden';
+            }
+            // Prevent background scroll on mobile
+            document.documentElement.style.overflow = 'hidden';
         }
 
         function closeSidebarMenu() {
             if (sidebar) {
                 sidebar.classList.add('-translate-x-full');
-                document.body.style.overflow = ''; // Restore body scroll
             }
             if (overlay) {
                 overlay.classList.add('hidden');
             }
+            // Restore main content scroll
+            if (mainContent) {
+                mainContent.style.overflow = '';
+            }
+            // Restore background scroll
+            document.documentElement.style.overflow = '';
         }
 
         if (mobileMenuButton) {
@@ -1511,14 +1522,24 @@
         }
 
         // Close sidebar when clicking on a menu item (on mobile)
-        const menuLinks = sidebar?.querySelectorAll('a');
-        if (menuLinks && window.innerWidth < 1024) {
+        if (sidebar && window.innerWidth < 1024) {
+            const menuLinks = sidebar.querySelectorAll('a');
             menuLinks.forEach(link => {
                 link.addEventListener('click', () => {
                     setTimeout(closeSidebarMenu, 150); // Small delay for better UX
                 });
             });
         }
+
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth >= 1024) {
+                // Reset everything on desktop
+                if (mainContent) mainContent.style.overflow = '';
+                document.documentElement.style.overflow = '';
+                if (overlay) overlay.classList.add('hidden');
+            }
+        });
 
         setupDropdown('master-menu-toggle', 'master-menu-content');
         setupDropdown('user-menu-toggle', 'user-menu-content');
