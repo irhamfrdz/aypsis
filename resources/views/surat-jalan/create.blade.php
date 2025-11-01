@@ -1,6 +1,34 @@
 @extends('layouts.app')
 
 @section('content')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<style>
+    /* Customize Select2 to match Tailwind styling */
+    .select2-container--default .select2-selection--single {
+        height: 42px;
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__rendered {
+        line-height: 42px;
+        padding-left: 12px;
+        color: #374151;
+    }
+    .select2-container--default .select2-selection--single .select2-selection__arrow {
+        height: 40px;
+    }
+    .select2-dropdown {
+        border: 1px solid #d1d5db;
+        border-radius: 0.5rem;
+    }
+    .select2-container--default .select2-search--dropdown .select2-search__field {
+        border: 1px solid #d1d5db;
+        border-radius: 0.375rem;
+        padding: 0.5rem 0.75rem;
+    }
+</style>
+
 <div class="container mx-auto px-4 py-4">
     <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
         <!-- Header -->
@@ -322,6 +350,42 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
+                    <select name="nomor_kontainer"
+                            id="nomor-kontainer-select"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
+                        <option value="">Pilih Nomor Kontainer</option>
+                        @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
+                            @foreach($stockKontainers as $stock)
+                                <option value="{{ $stock->nomor_seri_gabungan }}" 
+                                        data-ukuran="{{ $stock->ukuran }}"
+                                        data-tipe="{{ $stock->tipe_kontainer }}"
+                                        {{ old('nomor_kontainer') == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
+                                    {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
+                    @error('nomor_kontainer')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia)</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Seal</label>
+                    <input type="text"
+                           name="nomor_seal"
+                           value="{{ old('nomor_seal') }}"
+                           placeholder="Contoh: SL123456"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_seal') border-red-500 @enderror">
+                    @error('nomor_seal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">Nomor seal/segel kontainer untuk keamanan</p>
+                </div>
+
                 <!-- Packaging Information -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Kemasan</h3>
@@ -552,7 +616,30 @@
     </div>
 </div>
 
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
+// Initialize Select2 for nomor kontainer - Must run after DOM is ready
+$(document).ready(function() {
+    // Initialize Select2 with search functionality
+    $('#nomor-kontainer-select').select2({
+        placeholder: 'Cari nomor kontainer...',
+        allowClear: true,
+        width: '100%',
+        language: {
+            noResults: function() {
+                return "Tidak ada kontainer yang ditemukan";
+            },
+            searching: function() {
+                return "Mencari...";
+            }
+        }
+    });
+    
+    console.log('Select2 initialized for nomor kontainer');
+});
+
 function generateNomorSuratJalan() {
     fetch('{{ route("surat-jalan.generate-nomor") }}')
         .then(response => response.json())

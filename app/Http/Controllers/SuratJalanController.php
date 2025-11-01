@@ -144,7 +144,12 @@ class SuratJalanController extends Controller
                                                         ->orderBy('nama_kegiatan')
                                                         ->get(['id', 'nama_kegiatan']);
 
-        return view('surat-jalan.create', compact('selectedOrder', 'supirs', 'keneks', 'kegiatanSuratJalan'));
+        // Get stock kontainer data - hanya yang available
+        $stockKontainers = \App\Models\StockKontainer::whereIn('status', ['available', 'tersedia'])
+                                                     ->orderBy('nomor_seri_gabungan')
+                                                     ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+
+        return view('surat-jalan.create', compact('selectedOrder', 'supirs', 'keneks', 'kegiatanSuratJalan', 'stockKontainers'));
     }
 
     /**
