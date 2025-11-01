@@ -284,7 +284,7 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
                     <select name="size"
                             id="size-select"
-                            onchange="updateKontainerRules(); checkSizeWarning();"
+                            onchange="updateKontainerRules(); checkSizeWarning(); filterNomorKontainerBySize();"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('size') border-red-500 @enderror">
                         <option value="">Pilih Size</option>
                         @php $selectedSize = old('size', $selectedOrder ? $selectedOrder->size_kontainer ?? '' : ''); @endphp
@@ -638,7 +638,61 @@ $(document).ready(function() {
     });
     
     console.log('Select2 initialized for nomor kontainer');
+    
+    // Filter kontainer on page load if size is already selected
+    if ($('#size-select').val()) {
+        filterNomorKontainerBySize();
+    }
 });
+
+function filterNomorKontainerBySize() {
+    const sizeSelect = document.getElementById('size-select');
+    const kontainerSelect = $('#nomor-kontainer-select');
+    const selectedSize = sizeSelect ? sizeSelect.value : '';
+    
+    // Reset Select2 and clear selection
+    kontainerSelect.val(null).trigger('change');
+    
+    // Get all options
+    const allOptions = kontainerSelect.find('option');
+    
+    if (!selectedSize) {
+        // Show all options if no size selected
+        allOptions.each(function() {
+            if ($(this).val() !== '') {
+                $(this).prop('disabled', false);
+            }
+        });
+        console.log('No size selected - showing all kontainers');
+    } else {
+        // Filter options based on size
+        allOptions.each(function() {
+            const optionValue = $(this).val();
+            if (optionValue === '') {
+                // Keep placeholder
+                $(this).prop('disabled', false);
+                return;
+            }
+            
+            const optionUkuran = $(this).data('ukuran');
+            
+            // Map size to ukuran format (20 -> 20ft, 40 -> 40ft, etc)
+            const sizeFormatted = selectedSize + 'ft';
+            
+            // Enable/disable option based on size match
+            if (optionUkuran === sizeFormatted) {
+                $(this).prop('disabled', false);
+            } else {
+                $(this).prop('disabled', true);
+            }
+        });
+        
+        console.log(`Filtered kontainers for size: ${selectedSize}ft`);
+    }
+    
+    // Refresh Select2 to apply changes
+    kontainerSelect.trigger('change.select2');
+}
 
 function generateNomorSuratJalan() {
     fetch('{{ route("surat-jalan.generate-nomor") }}')
