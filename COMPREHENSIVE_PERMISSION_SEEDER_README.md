@@ -3,28 +3,30 @@
 ## 📋 Deskripsi
 
 Seeder komprehensif untuk **SEMUA permission** yang ada di sistem AYPSIS. Seeder ini dibuat berdasarkan analisis mendalam dari:
-- `routes/web.php` (semua middleware `can:` permissions)
-- `PermissionSeeder.php` yang sudah ada
-- `ComprehensiveSystemPermissionSeeder.php`
+
+-   `routes/web.php` (semua middleware `can:` permissions)
+-   `PermissionSeeder.php` yang sudah ada
+-   `ComprehensiveSystemPermissionSeeder.php`
 
 ## 📊 Total Permissions
 
 **300+ permissions** yang mencakup:
-- 🏠 System & Authentication (4 permissions)
-- 👤 Master User (8 permissions)
-- 👥 Master Karyawan (10 permissions)
-- 📦 Master Kontainer (4 permissions)
-- 🎯 Master Tujuan (6 permissions)
-- 🚗 Master Mobil (4 permissions)
-- 💰 Pricelist (12 permissions)
-- 🏢 Master Divisi, Cabang, COA (12 permissions)
-- 🏦 Master Bank, Pajak (10 permissions)
-- 📦 Master Data lainnya (50+ permissions)
-- 📋 Order & Operational (50+ permissions)
-- 💳 Pembayaran (60+ permissions)
-- 📄 Pranota (50+ permissions)
-- 🎨 CAT & Perbaikan (30+ permissions)
-- 📊 Dashboard & Reports (15+ permissions)
+
+-   🏠 System & Authentication (4 permissions)
+-   👤 Master User (8 permissions)
+-   👥 Master Karyawan (10 permissions)
+-   📦 Master Kontainer (4 permissions)
+-   🎯 Master Tujuan (6 permissions)
+-   🚗 Master Mobil (4 permissions)
+-   💰 Pricelist (12 permissions)
+-   🏢 Master Divisi, Cabang, COA (12 permissions)
+-   🏦 Master Bank, Pajak (10 permissions)
+-   📦 Master Data lainnya (50+ permissions)
+-   📋 Order & Operational (50+ permissions)
+-   💳 Pembayaran (60+ permissions)
+-   📄 Pranota (50+ permissions)
+-   🎨 CAT & Perbaikan (30+ permissions)
+-   📊 Dashboard & Reports (15+ permissions)
 
 ## 🚀 Cara Menjalankan
 
@@ -65,25 +67,29 @@ php artisan db:seed
 ## ✨ Fitur
 
 ### 1. ✅ Auto Create/Update
-- Membuat permission baru jika belum ada
-- Update deskripsi jika berbeda dari yang sudah ada
-- Skip jika permission sudah sama persis
+
+-   Membuat permission baru jika belum ada
+-   Update deskripsi jika berbeda dari yang sudah ada
+-   Skip jika permission sudah sama persis
 
 ### 2. 📊 Detailed Reporting
-- Menampilkan summary lengkap setelah seeding
-- Menghitung jumlah permission baru yang dibuat
-- Menghitung jumlah permission yang di-update
-- Menampilkan jumlah permission yang sudah ada
+
+-   Menampilkan summary lengkap setelah seeding
+-   Menghitung jumlah permission baru yang dibuat
+-   Menghitung jumlah permission yang di-update
+-   Menampilkan jumlah permission yang sudah ada
 
 ### 3. 🔒 Database Safety
-- Menggunakan transaction untuk keamanan
-- Temporary disable foreign key checks
-- Re-enable foreign key checks setelah selesai
+
+-   Menggunakan transaction untuk keamanan
+-   Temporary disable foreign key checks
+-   Re-enable foreign key checks setelah selesai
 
 ### 4. 📝 Well Organized
-- Permission dikelompokkan berdasarkan modul
-- Setiap modul memiliki komentar jelas
-- Deskripsi lengkap dalam bahasa Indonesia
+
+-   Permission dikelompokkan berdasarkan modul
+-   Setiap modul memiliki komentar jelas
+-   Deskripsi lengkap dalam bahasa Indonesia
 
 ## 📦 Struktur Permission
 
@@ -94,61 +100,67 @@ Semua permission mengikuti konvensi penamaan:
 ```
 
 Contoh:
-- `master-user-view` = Melihat Data User
-- `master-user-create` = Membuat User Baru
-- `pranota-supir-print` = Print Pranota Supir
-- `pembayaran-ob-delete` = Menghapus Pembayaran OB
+
+-   `master-user-view` = Melihat Data User
+-   `master-user-create` = Membuat User Baru
+-   `pranota-supir-print` = Print Pranota Supir
+-   `pembayaran-ob-delete` = Menghapus Pembayaran OB
 
 ### Action Types
 
-- `view` = Melihat/Read
-- `create` = Membuat/Create
-- `update` = Mengupdate/Update
-- `edit` = Edit (biasanya untuk form edit)
-- `delete` = Menghapus/Delete
-- `destroy` = Destroy (hard delete)
-- `print` = Print/Cetak
-- `export` = Export data
-- `import` = Import data
-- `approve` = Approve/Menyetujui
-- `mark-paid` = Menandai sudah dibayar
+-   `view` = Melihat/Read
+-   `create` = Membuat/Create
+-   `update` = Mengupdate/Update
+-   `edit` = Edit (biasanya untuk form edit)
+-   `delete` = Menghapus/Delete
+-   `destroy` = Destroy (hard delete)
+-   `print` = Print/Cetak
+-   `export` = Export data
+-   `import` = Import data
+-   `approve` = Approve/Menyetujui
+-   `mark-paid` = Menandai sudah dibayar
 
 ## 📋 Kategori Permission
 
 ### 🏠 System & Core
-- Dashboard
-- Login/Logout
-- Storage
+
+-   Dashboard
+-   Login/Logout
+-   Storage
 
 ### 👥 Master Data
-- User
-- Karyawan
-- Kontainer
-- Tujuan
-- Kegiatan
-- Mobil
-- Kapal
-- Dan lainnya...
+
+-   User
+-   Karyawan
+-   Kontainer
+-   Tujuan
+-   Kegiatan
+-   Mobil
+-   Kapal
+-   Dan lainnya...
 
 ### 💰 Financial
-- Pricelist
-- Pembayaran
-- Pranota
-- Tagihan
-- Uang Muka
-- Realisasi
+
+-   Pricelist
+-   Pembayaran
+-   Pranota
+-   Tagihan
+-   Uang Muka
+-   Realisasi
 
 ### 📋 Operational
-- Order
-- Surat Jalan
-- Tanda Terima
-- Gate In
-- Pergerakan Kapal
+
+-   Order
+-   Surat Jalan
+-   Tanda Terima
+-   Gate In
+-   Pergerakan Kapal
 
 ### 📊 Reports & Admin
-- Dashboard
-- Audit Logs
-- Reports
+
+-   Dashboard
+-   Audit Logs
+-   Reports
 
 ## 🔄 Update Strategy
 
@@ -190,6 +202,7 @@ Ini membuat seeder **AMAN untuk dijalankan berulang kali** tanpa membuat duplika
 ### Permission Tidak Muncul
 
 **Solusi:**
+
 1. Pastikan seeder sudah dijalankan
 2. Check database langsung: `SELECT * FROM permissions;`
 3. Clear cache: `php artisan cache:clear`
@@ -197,6 +210,7 @@ Ini membuat seeder **AMAN untuk dijalankan berulang kali** tanpa membuat duplika
 ### Duplicate Entry Error
 
 **Solusi:**
+
 1. Seeder ini sudah handle duplikat, error ini seharusnya tidak terjadi
 2. Jika terjadi, cek apakah ada permission dengan nama sama di database
 3. Gunakan `firstOrCreate` untuk safety
@@ -204,6 +218,7 @@ Ini membuat seeder **AMAN untuk dijalankan berulang kali** tanpa membuat duplika
 ### Foreign Key Constraint Error
 
 **Solusi:**
+
 1. Seeder ini sudah disable/enable foreign key checks
 2. Pastikan tabel `permissions` ada
 3. Jalankan migration terlebih dahulu: `php artisan migrate`
@@ -275,14 +290,15 @@ php artisan tinker
 
 ## 📄 File Terkait
 
-- `database/seeders/ComprehensivePermissionSeeder.php` - Seeder utama
-- `database/seeders/AdminPermissionSeeder.php` - Assign ke admin
-- `database/seeders/UserSeeder.php` - User seeder
-- `routes/web.php` - Route dengan permission middleware
+-   `database/seeders/ComprehensivePermissionSeeder.php` - Seeder utama
+-   `database/seeders/AdminPermissionSeeder.php` - Assign ke admin
+-   `database/seeders/UserSeeder.php` - User seeder
+-   `routes/web.php` - Route dengan permission middleware
 
 ## 👨‍💻 Developer Notes
 
 Seeder ini dibuat dengan tujuan:
+
 1. ✅ **Consolidation**: Menggabungkan semua permission ke satu seeder
 2. ✅ **Maintainability**: Mudah di-maintain dan di-update
 3. ✅ **Safety**: Aman dijalankan berulang kali

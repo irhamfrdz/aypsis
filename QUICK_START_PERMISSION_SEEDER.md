@@ -22,11 +22,12 @@ Saya telah membuat **sistem permission seeder lengkap** untuk AYPSIS dengan **30
 ```
 
 **Pilih menu:**
-- **1** = Seed permission saja
-- **2** = Seed permission + assign ke admin
-- **3** = Full seed (karyawan + permission + user + admin)
-- **4** = Reset database + full seed (⚠️ HATI-HATI)
-- **5** = Verifikasi jumlah permission
+
+-   **1** = Seed permission saja
+-   **2** = Seed permission + assign ke admin
+-   **3** = Full seed (karyawan + permission + user + admin)
+-   **4** = Reset database + full seed (⚠️ HATI-HATI)
+-   **5** = Verifikasi jumlah permission
 
 ### 2. Menggunakan Artisan Command
 
@@ -43,15 +44,16 @@ php artisan db:seed --class=AdminPermissionSeeder
 ## 📊 Total: 300+ Permissions
 
 ### Kategori Utama:
-- 👤 Master User (8)
-- 👥 Master Karyawan (10)
-- 📦 Master Data (80+)
-- 💰 Pricelist (12)
-- 📋 Operational (50+)
-- 💳 Pembayaran (60+)
-- 📄 Pranota (50+)
-- 🎨 CAT & Perbaikan (30+)
-- 📊 Dashboard & Reports (15+)
+
+-   👤 Master User (8)
+-   👥 Master Karyawan (10)
+-   📦 Master Data (80+)
+-   💰 Pricelist (12)
+-   📋 Operational (50+)
+-   💳 Pembayaran (60+)
+-   📄 Pranota (50+)
+-   🎨 CAT & Perbaikan (30+)
+-   📊 Dashboard & Reports (15+)
 
 ---
 
@@ -62,7 +64,7 @@ php artisan db:seed --class=AdminPermissionSeeder
 ✅ **Auto update** description jika berbeda  
 ✅ **Well organized** dengan komentar per modul  
 ✅ **Well documented** dengan README lengkap  
-✅ **User friendly** dengan PowerShell menu  
+✅ **User friendly** dengan PowerShell menu
 
 ---
 
@@ -84,9 +86,10 @@ php artisan tinker
 ## 📚 Dokumentasi Lengkap
 
 Lihat file-file berikut:
-- **COMPREHENSIVE_PERMISSION_SEEDER_README.md** - Panduan lengkap
-- **PERMISSION_REFERENCE.md** - List 300+ permissions
-- **ComprehensivePermissionSeeder.php** - Source code
+
+-   **COMPREHENSIVE_PERMISSION_SEEDER_README.md** - Panduan lengkap
+-   **PERMISSION_REFERENCE.md** - List 300+ permissions
+-   **ComprehensivePermissionSeeder.php** - Source code
 
 ---
 
