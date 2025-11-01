@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
             if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'kegiatan')) {
-                $table->string('kegiatan')->nullable()->after('aktivitas_pembayaran');
+                $table->string('kegiatan')->nullable();
             }
             if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'plat_nomor')) {
-                $table->string('plat_nomor')->nullable()->after('kegiatan');
+                $table->string('plat_nomor')->nullable();
             }
         });
     }

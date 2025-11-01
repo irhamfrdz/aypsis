@@ -101,10 +101,12 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktiva</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Rangka</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode No</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Polisi</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
                     <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
@@ -112,10 +114,12 @@
                 @forelse ($mobils as $index => $mobil)
                     <tr class="hover:bg-gray-50">
                         <td class="py-4 px-6">{{ $mobils->firstItem() + $index }}</td>
-                        <td class="py-4 px-6 font-mono text-sm">{{ $mobil->aktiva }}</td>
-                        <td class="py-4 px-6">{{ $mobil->plat }}</td>
-                        <td class="py-4 px-6">{{ $mobil->nomor_rangka }}</td>
-                        <td class="py-4 px-6">{{ $mobil->ukuran }}</td>
+                        <td class="py-4 px-6 font-mono text-sm">{{ $mobil->kode_no }}</td>
+                        <td class="py-4 px-6">{{ $mobil->nomor_polisi }}</td>
+                        <td class="py-4 px-6">{{ $mobil->merek ?? '-' }}</td>
+                        <td class="py-4 px-6">{{ $mobil->jenis ?? '-' }}</td>
+                        <td class="py-4 px-6">{{ $mobil->tahun_pembuatan ?? '-' }}</td>
+                        <td class="py-4 px-6">{{ $mobil->karyawan->nama_lengkap ?? '-' }}</td>
                         <td class="py-4 px-6 text-center">
                             <div class="flex item-center justify-center space-x-2">
                                 <!-- Tombol Edit -->
@@ -127,7 +131,7 @@
                                     <button type="button" class="audit-log-btn bg-purple-500 text-white py-1 px-3 rounded-md hover:bg-purple-600 transition-colors duration-200 text-sm"
                                             data-model-type="{{ get_class($mobil) }}"
                                             data-model-id="{{ $mobil->id }}"
-                                            data-item-name="{{ $mobil->aktiva }}"
+                                            data-item-name="{{ $mobil->kode_no }}"
                                             title="Lihat Riwayat">
                                         Riwayat
                                     </button>
@@ -146,7 +150,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="py-4 px-6 text-center text-gray-500">
+                        <td colspan="8" class="py-4 px-6 text-center text-gray-500">
                             Tidak ada data mobil yang ditemukan.
                         </td>
                     </tr>

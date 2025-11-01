@@ -99,6 +99,52 @@ class Prospek extends Model
         return $this->belongsTo(\App\Models\TandaTerima::class, 'tanda_terima_id');
     }
 
+    /**
+     * Boot method untuk auto-linking
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-link dengan TandaTerima ketika Prospek dibuat atau diupdate
+        static::created(function (self $prospek) {
+            $prospek->autoLinkTandaTerima();
+        });
+
+        static::updated(function (self $prospek) {
+            if (($prospek->isDirty('surat_jalan_id') || $prospek->isDirty('no_surat_jalan')) && !$prospek->tanda_terima_id) {
+                $prospek->autoLinkTandaTerima();
+            }
+        });
+    }
+
+    /**
+     * Auto-link dengan TandaTerima berdasarkan surat_jalan_id dan no_surat_jalan
+     */
+    public function autoLinkTandaTerima()
+    {
+        if ($this->tanda_terima_id) {
+            return; // Sudah ter-link
+        }
+
+        $tandaTerima = null;
+
+        // Cari berdasarkan surat_jalan_id terlebih dahulu
+        if ($this->surat_jalan_id) {
+            $tandaTerima = \App\Models\TandaTerima::where('surat_jalan_id', $this->surat_jalan_id)->first();
+        }
+
+        // Jika tidak ditemukan, cari berdasarkan no_surat_jalan
+        if (!$tandaTerima && $this->no_surat_jalan) {
+            $tandaTerima = \App\Models\TandaTerima::where('no_surat_jalan', $this->no_surat_jalan)->first();
+        }
+
+        // Update jika ditemukan
+        if ($tandaTerima) {
+            $this->update(['tanda_terima_id' => $tandaTerima->id]);
+        }
+    }
+
     public function bls()
     {
         return $this->hasMany(Bl::class);

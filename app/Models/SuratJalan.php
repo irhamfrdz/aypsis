@@ -53,6 +53,8 @@ class SuratJalan extends Model
         'input_date',
         'status',
         'status_pembayaran',
+        'status_pembayaran_uang_rit',
+        'status_pembayaran_uang_rit_kenek',
         'total_tarif',
         'jumlah_terbayar'
     ];
@@ -123,6 +125,75 @@ class SuratJalan extends Model
     public function pranotaSuratJalan()
     {
         return $this->belongsToMany(PranotaSuratJalan::class, 'pranota_surat_jalan_items', 'surat_jalan_id', 'pranota_surat_jalan_id');
+    }
+
+    public function pranotaUangRit()
+    {
+        return $this->hasMany(PranotaUangRit::class);
+    }
+
+    // Helper method to check if this surat jalan already has a pranota uang rit
+    public function hasPranotaUangRit()
+    {
+        return $this->pranotaUangRit()->whereNotIn('status', ['cancelled'])->exists();
+    }
+
+    // Helper method to check if this surat jalan uses rit
+    public function usesRit()
+    {
+        return $this->rit === 'menggunakan_rit';
+    }
+
+    // Status pembayaran uang rit constants
+    const STATUS_UANG_RIT_BELUM_DIBAYAR = 'belum_dibayar';
+    const STATUS_UANG_RIT_PROSES_PRANOTA = 'proses_pranota';
+    const STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA = 'sudah_masuk_pranota';
+    const STATUS_UANG_RIT_PRANOTA_SUBMITTED = 'pranota_submitted';
+    const STATUS_UANG_RIT_PRANOTA_APPROVED = 'pranota_approved';
+    const STATUS_UANG_RIT_DIBAYAR = 'dibayar';
+
+    public static function getStatusPembayaranUangRitOptions()
+    {
+        return [
+            self::STATUS_UANG_RIT_BELUM_DIBAYAR => 'Belum Dibayar',
+            self::STATUS_UANG_RIT_PROSES_PRANOTA => 'Proses Pranota',
+            self::STATUS_UANG_RIT_SUDAH_MASUK_PRANOTA => 'Sudah Masuk Pranota',
+            self::STATUS_UANG_RIT_PRANOTA_SUBMITTED => 'Pranota Submitted',
+            self::STATUS_UANG_RIT_PRANOTA_APPROVED => 'Pranota Approved',
+            self::STATUS_UANG_RIT_DIBAYAR => 'Dibayar'
+        ];
+    }
+
+    public function getStatusPembayaranUangRitLabelAttribute()
+    {
+        $statuses = self::getStatusPembayaranUangRitOptions();
+        return $statuses[$this->status_pembayaran_uang_rit] ?? $this->status_pembayaran_uang_rit;
+    }
+
+    // Status pembayaran uang rit kenek constants
+    const STATUS_UANG_RIT_KENEK_BELUM_DIBAYAR = 'belum_dibayar';
+    const STATUS_UANG_RIT_KENEK_PROSES_PRANOTA = 'proses_pranota';
+    const STATUS_UANG_RIT_KENEK_SUDAH_MASUK_PRANOTA = 'sudah_masuk_pranota';
+    const STATUS_UANG_RIT_KENEK_PRANOTA_SUBMITTED = 'pranota_submitted';
+    const STATUS_UANG_RIT_KENEK_PRANOTA_APPROVED = 'pranota_approved';
+    const STATUS_UANG_RIT_KENEK_DIBAYAR = 'dibayar';
+
+    public static function getStatusPembayaranUangRitKenekOptions()
+    {
+        return [
+            self::STATUS_UANG_RIT_KENEK_BELUM_DIBAYAR => 'Belum Dibayar',
+            self::STATUS_UANG_RIT_KENEK_PROSES_PRANOTA => 'Proses Pranota',
+            self::STATUS_UANG_RIT_KENEK_SUDAH_MASUK_PRANOTA => 'Sudah Masuk Pranota',
+            self::STATUS_UANG_RIT_KENEK_PRANOTA_SUBMITTED => 'Pranota Submitted',
+            self::STATUS_UANG_RIT_KENEK_PRANOTA_APPROVED => 'Pranota Approved',
+            self::STATUS_UANG_RIT_KENEK_DIBAYAR => 'Dibayar'
+        ];
+    }
+
+    public function getStatusPembayaranUangRitKenekLabelAttribute()
+    {
+        $statuses = self::getStatusPembayaranUangRitKenekOptions();
+        return $statuses[$this->status_pembayaran_uang_rit_kenek] ?? $this->status_pembayaran_uang_rit_kenek;
     }
 
     // Helper methods for approval status

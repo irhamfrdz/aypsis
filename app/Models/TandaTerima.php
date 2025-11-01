@@ -36,6 +36,7 @@ class TandaTerima extends Model
         'meter_kubik',
         'tonase',
         'catatan',
+        'term',
         'created_by',
         'updated_by',
         'dimensi_items',
@@ -86,6 +87,45 @@ class TandaTerima extends Model
     public function prospeks()
     {
         return $this->hasMany(\App\Models\Prospek::class, 'tanda_terima_id');
+    }
+
+    /**
+     * Boot method untuk auto-linking
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-link prospek ketika TandaTerima dibuat atau diupdate
+        static::created(function (self $tandaTerima) {
+            $tandaTerima->autoLinkProspek();
+        });
+
+        static::updated(function (self $tandaTerima) {
+            if ($tandaTerima->isDirty('surat_jalan_id') || $tandaTerima->isDirty('no_surat_jalan')) {
+                $tandaTerima->autoLinkProspek();
+            }
+        });
+    }
+
+    /**
+     * Auto-link prospek berdasarkan surat_jalan_id dan no_surat_jalan
+     */
+    public function autoLinkProspek()
+    {
+        // Cari prospek yang belum ter-link dan memiliki surat_jalan_id yang sama
+        if ($this->surat_jalan_id) {
+            \App\Models\Prospek::where('surat_jalan_id', $this->surat_jalan_id)
+                ->whereNull('tanda_terima_id')
+                ->update(['tanda_terima_id' => $this->id]);
+        }
+
+        // Alternatif: cari berdasarkan no_surat_jalan jika surat_jalan_id tidak ada
+        if ($this->no_surat_jalan && !$this->surat_jalan_id) {
+            \App\Models\Prospek::where('no_surat_jalan', $this->no_surat_jalan)
+                ->whereNull('tanda_terima_id')
+                ->update(['tanda_terima_id' => $this->id]);
+        }
     }
 
     /**

@@ -13,16 +13,30 @@ return new class extends Migration
     {
         Schema::create('pembayaran_pranota_perbaikan_kontainers', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('pranota_perbaikan_kontainer_id')->constrained('pranota_perbaikan_kontainers', 'fk_pembayaran_pranota')->onDelete('cascade');
+            $table->unsignedBigInteger('pranota_perbaikan_kontainer_id');
             $table->date('tanggal_pembayaran');
             $table->decimal('nominal_pembayaran', 15, 2);
             $table->string('nomor_invoice')->nullable();
             $table->enum('metode_pembayaran', ['cash', 'transfer', 'check', 'credit_card'])->default('transfer');
             $table->text('keterangan')->nullable();
             $table->enum('status_pembayaran', ['pending', 'paid', 'cancelled'])->default('pending');
-            $table->foreignId('created_by')->constrained('users', 'fk_pembayaran_created_by');
-            $table->foreignId('updated_by')->constrained('users', 'fk_pembayaran_updated_by');
+            $table->unsignedBigInteger('created_by');
+            $table->unsignedBigInteger('updated_by');
             $table->timestamps();
+
+            // Add foreign keys with custom shorter names
+            $table->foreign('pranota_perbaikan_kontainer_id', 'fk_pembayaran_pranota_pk_id')
+                  ->references('id')
+                  ->on('pranota_perbaikan_kontainers')
+                  ->onDelete('cascade');
+            
+            $table->foreign('created_by', 'fk_pembayaran_created_by')
+                  ->references('id')
+                  ->on('users');
+                  
+            $table->foreign('updated_by', 'fk_pembayaran_updated_by')
+                  ->references('id')
+                  ->on('users');
         });
     }
 

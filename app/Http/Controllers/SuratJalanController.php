@@ -10,11 +10,13 @@ use App\Models\Karyawan;
 use App\Models\TujuanKegiatanUtama;
 use App\Models\Permohonan;
 use App\Models\MasterKegiatan;
+use App\Models\MasterTujuanKirim;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use PDF;
 
 class SuratJalanController extends Controller
 {
@@ -82,10 +84,10 @@ class SuratJalanController extends Controller
                   ->orWhere('tujuan_kirim', 'like', "%{$search}%")
                   ->orWhere('tujuan_ambil', 'like', "%{$search}%")
                   ->orWhereHas('pengirim', function($q) use ($search) {
-                      $q->where('nama', 'like', "%{$search}%");
+                      $q->where('nama_pengirim', 'like', "%{$search}%");
                   })
                   ->orWhereHas('jenisBarang', function($q) use ($search) {
-                      $q->where('nama', 'like', "%{$search}%");
+                      $q->where('nama_barang', 'like', "%{$search}%");
                   });
             });
         }
@@ -138,7 +140,7 @@ class SuratJalanController extends Controller
 
         // Get kegiatan surat jalan from master kegiatan
         $kegiatanSuratJalan = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
-                                                        ->where('status', 'aktif')
+                                                        ->where('status', 'Aktif')
                                                         ->orderBy('nama_kegiatan')
                                                         ->get(['id', 'nama_kegiatan']);
 
@@ -574,6 +576,162 @@ class SuratJalanController extends Controller
                 'uang_jalan' => '0',
                 'message' => 'Terjadi kesalahan saat mengambil data uang jalan'
             ], 500);
+        }
+    }
+
+    /**
+     * Print surat jalan
+     */
+    public function print(SuratJalan $suratJalan)
+    {
+        // Load all related data
+        $suratJalan->load([
+            'order.pengirim',
+            'tujuanPengambilanRelation',
+            'tujuanPengirimanRelation',
+            'order.jenisBarang'
+        ]);
+
+        return view('surat-jalan.print', compact('suratJalan'));
+    }
+
+    /**
+     * Download PDF surat jalan
+     */
+    public function downloadPdf(SuratJalan $suratJalan)
+    {
+        // Load all related data
+        $suratJalan->load([
+            'order.pengirim',
+            'tujuanPengambilanRelation',
+            'tujuanPengirimanRelation',
+            'order.jenisBarang'
+        ]);
+
+        // Generate PDF using DOMPDF
+        $pdf = PDF::loadView('surat-jalan.print', compact('suratJalan'))
+                  ->setPaper('A4', 'portrait')
+                  ->setOptions([
+                      'dpi' => 150,
+                      'defaultFont' => 'Arial',
+                      'isRemoteEnabled' => false,
+                      'isHtml5ParserEnabled' => true,
+                      'isPhpEnabled' => false
+                  ]);
+
+        $filename = 'Surat_Jalan_' . $suratJalan->no_surat_jalan . '_' . now()->format('Y-m-d') . '.pdf';
+
+        return $pdf->download($filename);
+    }
+
+    /**
+     * Show form for creating surat jalan without order.
+     */
+    public function createWithoutOrder()
+    {
+        // Get karyawan supir data - hanya divisi supir
+        $supirs = Karyawan::where('divisi', 'supir')
+                         ->whereNotNull('nama_lengkap')
+                         ->orderBy('nama_lengkap')
+                         ->get(['id', 'nama_lengkap', 'plat']);
+
+        // Get karyawan kenek data - hanya divisi krani
+        $keneks = Karyawan::where('divisi', 'krani')
+                         ->whereNotNull('nama_lengkap')
+                         ->orderBy('nama_lengkap')
+                         ->get(['id', 'nama_lengkap']);
+
+        // Get kegiatan surat jalan from master kegiatan
+        $kegiatanSuratJalan = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                                        ->where('status', 'Aktif')
+                                                        ->orderBy('nama_kegiatan')
+                                                        ->get(['id', 'nama_kegiatan']);
+
+        // Get data untuk dropdown
+        $pengirimOptions = \App\Models\Pengirim::where('status', 'active')
+                                               ->orderBy('nama_pengirim')
+                                               ->get(['id', 'nama_pengirim']);
+
+        $jenisBarangOptions = \App\Models\JenisBarang::where('status', 'active')
+                                                     ->orderBy('nama_barang')
+                                                     ->get(['id', 'nama_barang']);
+
+        // Get tujuan kirim untuk tujuan pengambilan dan pengiriman
+        $tujuanKirimOptions = \App\Models\MasterTujuanKirim::where('status', 'active')
+                                                           ->orderBy('nama_tujuan')
+                                                           ->get(['id', 'nama_tujuan']);
+
+        $tujuanOptions = \App\Models\TujuanKegiatanUtama::where('aktif', true)
+                                                        ->orderBy('ke')
+                                                        ->get(['id', 'ke', 'dari']);
+
+        return view('surat-jalan.create-without-order', compact(
+            'supirs', 
+            'keneks', 
+            'kegiatanSuratJalan',
+            'pengirimOptions',
+            'jenisBarangOptions',
+            'tujuanKirimOptions',
+            'tujuanOptions'
+        ));
+    }
+
+    /**
+     * Store surat jalan without order.
+     */
+    public function storeWithoutOrder(Request $request)
+    {
+        // Validation rules
+        $request->validate([
+            'no_surat_jalan' => 'required|string|max:255|unique:surat_jalans',
+            'tanggal_surat_jalan' => 'required|date',
+            'pengirim_id' => 'required|exists:pengirims,id',
+            'alamat' => 'required|string',
+            'jenis_barang_id' => 'required|exists:jenis_barangs,id',
+            'tujuan_pengambilan_id' => 'required|exists:master_tujuan_kirim,id',
+            'tujuan_pengiriman_id' => 'required|exists:master_tujuan_kirim,id',
+            'supir' => 'required|string|max:255',
+            'kenek' => 'nullable|string|max:255',
+            'no_plat' => 'required|string|max:20',
+            'kegiatan' => 'required|string|max:255',
+            'catatan' => 'nullable|string',
+        ]);
+
+        try {
+            // Get pengirim, jenis barang, dan tujuan names from database
+            $pengirim = \App\Models\Pengirim::findOrFail($request->pengirim_id);
+            $jenisBarang = \App\Models\JenisBarang::findOrFail($request->jenis_barang_id);
+            $tujuanPengambilan = \App\Models\MasterTujuanKirim::findOrFail($request->tujuan_pengambilan_id);
+            $tujuanPengiriman = \App\Models\MasterTujuanKirim::findOrFail($request->tujuan_pengiriman_id);
+
+            // Create surat jalan without order
+            $suratJalan = SuratJalan::create([
+                'order_id' => null, // No order associated
+                'no_surat_jalan' => $request->no_surat_jalan,
+                'tanggal_surat_jalan' => $request->tanggal_surat_jalan,
+                'pengirim' => $pengirim->nama_pengirim,
+                'alamat' => $request->alamat,
+                'jenis_barang' => $jenisBarang->nama_barang,
+                'tujuan_pengambilan' => $tujuanPengambilan->nama_tujuan,
+                'tujuan_pengiriman' => $tujuanPengiriman->nama_tujuan,
+                'supir' => $request->supir,
+                'kenek' => $request->kenek,
+                'no_plat' => $request->no_plat,
+                'kegiatan' => $request->kegiatan,
+                'catatan' => $request->catatan,
+                'status' => 'draft',
+                'status_pembayaran' => 'belum_dibayar',
+                'created_by' => Auth::id(),
+            ]);
+
+            return redirect()->route('surat-jalan.show', $suratJalan->id)
+                           ->with('success', 'Surat jalan berhasil dibuat tanpa order.');
+
+        } catch (\Exception $e) {
+            Log::error('Error creating surat jalan without order: ' . $e->getMessage());
+            return redirect()->back()
+                           ->withInput()
+                           ->with('error', 'Terjadi kesalahan saat menyimpan surat jalan. Silakan coba lagi.');
         }
     }
 }

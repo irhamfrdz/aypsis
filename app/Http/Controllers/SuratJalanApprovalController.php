@@ -165,6 +165,7 @@ class SuratJalanApprovalController extends Controller
             'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman,
             'pengirim' => $suratJalan->pengirim,
             'gambar_checkpoint' => $suratJalan->gambar_checkpoint,
+            'term' => $suratJalan->term,
             'status' => 'draft', // Default status
             'created_by' => Auth::id(),
         ]);

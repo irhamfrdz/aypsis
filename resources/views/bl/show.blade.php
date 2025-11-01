@@ -91,6 +91,16 @@
                 </div>
                 
                 <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Volume:</span>
+                    <span class="text-gray-900">{{ $bl->volume ? number_format($bl->volume, 3) . ' m³' : '-' }}</span>
+                </div>
+                
+                <div class="flex justify-between py-2 border-b border-gray-100">
+                    <span class="font-medium text-gray-600">Term:</span>
+                    <span class="text-gray-900">{{ $bl->term ?: '-' }}</span>
+                </div>
+                
+                <div class="flex justify-between py-2 border-b border-gray-100">
                     <span class="font-medium text-gray-600">Kuantitas:</span>
                     <span class="text-gray-900">{{ $bl->kuantitas ?: '-' }}</span>
                 </div>

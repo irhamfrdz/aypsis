@@ -31,6 +31,7 @@
             try {
                 window.opener.postMessage({
                     type: 'tujuan-kirim-added',
+                    windowName: window.name, // Include window name for distinction
                     data: tujuanKirimData
                 }, '*');
                 console.log('Message sent successfully');

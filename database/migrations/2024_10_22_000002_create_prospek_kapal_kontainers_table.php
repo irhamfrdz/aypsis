@@ -16,7 +16,7 @@ return new class extends Migration
             Schema::create('prospek_kapal_kontainers', function (Blueprint $table) {
             $table->id();
             $table->foreignId('prospek_kapal_id')->constrained('prospek_kapal')->onDelete('cascade');
-            $table->foreignId('tanda_terima_id')->nullable()->constrained('tanda_terimas')->onDelete('cascade');
+            $table->unsignedBigInteger('tanda_terima_id')->nullable(); // Will add foreign key later
             $table->unsignedBigInteger('tanda_terima_tanpa_sj_id')->nullable();
             $table->string('nomor_kontainer');
             $table->string('ukuran_kontainer'); // 20ft, 40ft, etc.

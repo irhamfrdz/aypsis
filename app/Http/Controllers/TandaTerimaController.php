@@ -241,18 +241,26 @@ class TandaTerimaController extends Controller
 
             $tandaTerima->update($updateData);
 
-            // Update related Prospek data
-            $this->updateRelatedProspekData($tandaTerima, $request);
+            // Update related Prospek data and get count of updated prospeks
+            $updatedProspekCount = $this->updateRelatedProspekData($tandaTerima, $request);
 
             Log::info('Tanda terima updated', [
                 'tanda_terima_id' => $tandaTerima->id,
                 'no_surat_jalan' => $tandaTerima->no_surat_jalan,
                 'updated_by' => Auth::user()->name,
+                'prospeks_updated' => $updatedProspekCount,
             ]);
 
             DB::commit();
+            
+            // Create success message with prospek update info
+            $successMessage = 'Tanda terima berhasil diperbarui!';
+            if ($updatedProspekCount > 0) {
+                $successMessage .= " Berhasil mengupdate {$updatedProspekCount} prospek terkait dengan data volume, tonase, dan kuantitas terbaru.";
+            }
+            
             return redirect()->route('tanda-terima.index')
-                ->with('success', 'Tanda terima berhasil diperbarui!');
+                ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -402,46 +410,87 @@ class TandaTerimaController extends Controller
                 }
             }
 
-            // Find related prospek records by nomor_kontainer
+            // Find related prospek records using multiple methods
             $prospeksToUpdate = collect();
             
+            // Method 1: Find by surat_jalan_id (most reliable)
+            if ($tandaTerima->surat_jalan_id) {
+                $prospeksBySuratJalan = \App\Models\Prospek::where('surat_jalan_id', $tandaTerima->surat_jalan_id)->get();
+                $prospeksToUpdate = $prospeksToUpdate->merge($prospeksBySuratJalan);
+            }
+            
+            // Method 2: Find by no_surat_jalan if surat_jalan_id didn't yield results
+            if ($prospeksToUpdate->isEmpty() && $tandaTerima->no_surat_jalan) {
+                $prospeksByNoSuratJalan = \App\Models\Prospek::where('no_surat_jalan', $tandaTerima->no_surat_jalan)->get();
+                $prospeksToUpdate = $prospeksToUpdate->merge($prospeksByNoSuratJalan);
+            }
+            
+            // Method 3: Find by nomor_kontainer (fallback)
             if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
                 $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
                     return !empty(trim($value));
                 });
                 
                 if (!empty($nomorKontainers)) {
-                    $prospeksToUpdate = \App\Models\Prospek::whereIn('nomor_kontainer', $nomorKontainers)->get();
+                    $prospeksByKontainer = \App\Models\Prospek::whereIn('nomor_kontainer', $nomorKontainers)->get();
+                    $prospeksToUpdate = $prospeksToUpdate->merge($prospeksByKontainer);
                 }
             }
 
+            // Remove duplicates based on ID
+            $prospeksToUpdate = $prospeksToUpdate->unique('id');
+
             // Update each related prospek
+            $updatedCount = 0;
             foreach ($prospeksToUpdate as $prospek) {
-                $prospek->update([
+                $updateFields = [
                     'tanda_terima_id' => $tandaTerima->id,
-                    'total_volume' => $totalVolume,
-                    'total_ton' => $totalTonase,
-                    'kuantitas' => $kuantitas,
                     'updated_by' => Auth::id(),
-                ]);
+                ];
+
+                // Only update volume, tonase, kuantitas if we have calculated values
+                if ($totalVolume > 0) {
+                    $updateFields['total_volume'] = $totalVolume;
+                }
+                if ($totalTonase > 0) {
+                    $updateFields['total_ton'] = $totalTonase;
+                }
+                if ($kuantitas > 0) {
+                    $updateFields['kuantitas'] = $kuantitas;
+                }
+
+                $prospek->update($updateFields);
+                $updatedCount++;
 
                 Log::info('Prospek updated from TandaTerima', [
                     'prospek_id' => $prospek->id,
                     'tanda_terima_id' => $tandaTerima->id,
                     'nomor_kontainer' => $prospek->nomor_kontainer,
+                    'surat_jalan_id' => $prospek->surat_jalan_id,
+                    'no_surat_jalan' => $prospek->no_surat_jalan,
                     'total_volume' => $totalVolume,
                     'total_ton' => $totalTonase,
                     'kuantitas' => $kuantitas,
+                    'update_method' => $prospek->surat_jalan_id == $tandaTerima->surat_jalan_id ? 'surat_jalan_id' : 
+                                     ($prospek->no_surat_jalan == $tandaTerima->no_surat_jalan ? 'no_surat_jalan' : 'nomor_kontainer')
                 ]);
             }
 
             Log::info('Updated related prospek data', [
                 'tanda_terima_id' => $tandaTerima->id,
-                'prospeks_updated' => $prospeksToUpdate->count(),
+                'prospeks_found_total' => $prospeksToUpdate->count(),
+                'prospeks_updated' => $updatedCount,
                 'total_volume' => $totalVolume,
                 'total_tonase' => $totalTonase,
                 'kuantitas' => $kuantitas,
+                'search_methods_used' => [
+                    'surat_jalan_id' => $tandaTerima->surat_jalan_id ? true : false,
+                    'no_surat_jalan' => $tandaTerima->no_surat_jalan ? true : false,
+                    'nomor_kontainer' => $request->has('nomor_kontainer') ? true : false
+                ]
             ]);
+
+            return $updatedCount;
 
         } catch (\Exception $e) {
             Log::error('Error updating related prospek data: ' . $e->getMessage(), [
@@ -450,6 +499,7 @@ class TandaTerimaController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             // Don't throw exception to avoid breaking the main update process
+            return 0;
         }
     }
 }

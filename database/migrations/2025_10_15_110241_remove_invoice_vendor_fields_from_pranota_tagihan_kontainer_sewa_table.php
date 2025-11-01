@@ -12,7 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('pranota_tagihan_kontainer_sewa', function (Blueprint $table) {
-            $table->dropColumn(['no_invoice_vendor', 'tgl_invoice_vendor']);
+            if (Schema::hasColumn('pranota_tagihan_kontainer_sewa', 'no_invoice_vendor')) {
+                $table->dropColumn('no_invoice_vendor');
+            }
+            if (Schema::hasColumn('pranota_tagihan_kontainer_sewa', 'tgl_invoice_vendor')) {
+                $table->dropColumn('tgl_invoice_vendor');
+            }
         });
     }
 

@@ -210,6 +210,170 @@ class BlController extends Controller
     }
 
     /**
+     * Validate containers for bulk operations
+     */
+    public function validateContainers(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            
+            if (!$hasPermission) {
+                return response()->json(['error' => 'Unauthorized'], 403);
+            }
+        }
+
+        $request->validate([
+            'ids' => 'required|array',
+            'ids.*' => 'exists:bls,id'
+        ]);
+
+        $bls = Bl::whereIn('id', $request->ids)->get();
+        
+        // Check if all selected items have the same container number
+        $containerNumbers = $bls->pluck('nomor_kontainer')->filter()->unique();
+        $hasDifferentContainers = $containerNumbers->count() > 1;
+        
+        // Check if any items don't have container numbers
+        $hasNoContainer = $bls->whereNull('nomor_kontainer')->count() > 0 || 
+                         $bls->where('nomor_kontainer', '')->count() > 0;
+        
+        $containerInfo = '';
+        if ($hasDifferentContainers) {
+            $containerInfo = "Nomor kontainer yang ditemukan:\n" . $containerNumbers->implode("\n");
+        }
+
+        return response()->json([
+            'success' => true,
+            'has_different_containers' => $hasDifferentContainers,
+            'has_no_container' => $hasNoContainer,
+            'container_info' => $containerInfo,
+            'selected_count' => $bls->count()
+        ]);
+    }
+
+    /**
+     * Bulk split selected BL records - create new BL with same container but different tonnage
+     */
+    public function bulkSplit(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            
+            if (!$hasPermission) {
+                return redirect()->back()->with('error', 'Tidak memiliki akses untuk melakukan operasi ini.');
+            }
+        }
+
+        $request->validate([
+            'ids' => 'required|string',
+            'tonnage_dipindah' => 'required|numeric|min:0.01',
+            'volume_dipindah' => 'required|numeric|min:0.001',
+            'nama_barang_dipindah' => 'required|string|max:255',
+            'term_baru' => 'nullable|string|max:100',
+            'keterangan' => 'required|string|max:1000'
+        ]);
+
+        $ids = json_decode($request->input('ids'), true);
+        
+        if (empty($ids)) {
+            return redirect()->back()->with('error', 'Tidak ada item yang dipilih.');
+        }
+
+        $tonnageDipindah = $request->tonnage_dipindah;
+        $volumeDipindah = $request->volume_dipindah;
+        $processedCount = 0;
+        
+        DB::transaction(function () use ($ids, $request, $tonnageDipindah, $volumeDipindah, &$processedCount) {
+            
+            foreach ($ids as $originalId) {
+                $originalBl = Bl::findOrFail($originalId);
+                
+                // Check if we have enough tonnage and volume to split
+                $currentTonnage = $originalBl->tonnage ?? 0;
+                $currentVolume = $originalBl->volume ?? 0;
+                
+                if ($currentTonnage < $tonnageDipindah) {
+                    continue; // Skip this item if not enough tonnage
+                }
+                
+                if ($currentVolume < $volumeDipindah) {
+                    continue; // Skip this item if not enough volume
+                }
+                
+                // Generate new BL number with suffix
+                $newNomorBl = ($originalBl->nomor_bl ?: 'BL-AUTO') . '-SPLIT';
+                
+                // Create new BL record for split - same container, different tonnage and cargo name
+                $newBl = Bl::create([
+                    'nomor_bl' => $newNomorBl,
+                    'nomor_kontainer' => $originalBl->nomor_kontainer, // Same container
+                    'tipe_kontainer' => $originalBl->tipe_kontainer,   // Same type
+                    'no_seal' => $originalBl->no_seal,                 // Same seal
+                    'nama_kapal' => $originalBl->nama_kapal,
+                    'no_voyage' => $originalBl->no_voyage,
+                    'nama_barang' => $request->nama_barang_dipindah,   // Different cargo name
+                    'tonnage' => $tonnageDipindah,                     // Split tonnage
+                    'volume' => $volumeDipindah,                       // Split volume
+                    'term' => $request->term_baru ?: $originalBl->term, // New term or same as original
+                    'prospek_id' => $originalBl->prospek_id,
+                    'keterangan' => $request->keterangan,
+                    'created_by' => Auth::id(),
+                    'updated_by' => Auth::id()
+                ]);
+                
+                // Update original BL - reduce tonnage and volume
+                $remainingTonnage = $currentTonnage - $tonnageDipindah;
+                $remainingVolume = $currentVolume - $volumeDipindah;
+                
+                $originalBl->update([
+                    'tonnage' => max(0, $remainingTonnage),
+                    'volume' => max(0, $remainingVolume),
+                    'keterangan' => ($originalBl->keterangan ?? '') . ' [SEBAGIAN DIPINDAH KE: ' . $newNomorBl . ']',
+                    'updated_by' => Auth::id(),
+                ]);
+                
+                $processedCount++;
+            }
+        });
+
+        if ($processedCount == 0) {
+            // Get first selected item to show current capacity
+            $firstId = $ids[0] ?? null;
+            if ($firstId) {
+                $firstBl = Bl::find($firstId);
+                if ($firstBl) {
+                    $currentTonnage = $firstBl->tonnage ?? 0;
+                    $currentVolume = $firstBl->volume ?? 0;
+                    $message = "Tidak ada BL yang dapat dipecah. Kapasitas tersedia pada BL pertama: {$currentTonnage} ton, {$currentVolume} m³. Pastikan tonnage dan volume yang diminta tidak melebihi kapasitas ini.";
+                } else {
+                    $message = 'Tidak ada BL yang dapat dipecah. Pastikan tonnage dan volume yang diminta tidak melebihi kapasitas yang tersedia.';
+                }
+            } else {
+                $message = 'Tidak ada BL yang dapat dipecah. Pastikan tonnage dan volume yang diminta tidak melebihi kapasitas yang tersedia.';
+            }
+            
+            return redirect()->back()->with('error', $message);
+        }
+        
+        return redirect()->route('bl.index')
+                        ->with('success', "Berhasil memecah {$processedCount} BL. BL baru telah dibuat dengan tonnage {$tonnageDipindah} ton dan volume {$volumeDipindah} m³ (kontainer tetap sama).");
+    }
+
+    /**
      * Get BL data by kapal and voyage (API endpoint)
      */
     public function getByKapalVoyage(Request $request)

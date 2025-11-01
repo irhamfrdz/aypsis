@@ -25,9 +25,40 @@ class Mobil extends Model
      * @var array<int, string>
      */
     protected $fillable = [
-        'aktiva',
-        'plat',
+        'kode_no',
+        'nomor_polisi',
+        'lokasi',
+        'merek',
+        'jenis',
+        'tahun_pembuatan',
+        'bpkb',
+        'no_mesin',
         'nomor_rangka',
-        'ukuran',
+        'pajak_stnk',
+        'pajak_plat',
+        'no_kir',
+        'pajak_kir',
+        'atas_nama',
+        'karyawan_id',
     ];
+
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        'pajak_stnk' => 'date',
+        'pajak_plat' => 'date',
+        'pajak_kir' => 'date',
+        'tahun_pembuatan' => 'integer',
+    ];
+
+    /**
+     * Relationship with Karyawan model
+     */
+    public function karyawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'karyawan_id');
+    }
 }

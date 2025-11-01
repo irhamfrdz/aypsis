@@ -28,7 +28,7 @@ return new class extends Migration
                       ->on('tanda_terima_tanpa_surat_jalan')
                       ->onDelete('cascade');
 
-                $table->index(['tanda_terima_tanpa_surat_jalan_id', 'urutan']);
+                $table->index(['tanda_terima_tanpa_surat_jalan_id', 'urutan'], 'idx_dimensi_items_sj_urutan');
             });
         }
     }

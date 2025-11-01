@@ -51,6 +51,7 @@ use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OutstandingController;
 use App\Http\Controllers\PranotaSuratJalanController;
+use App\Http\Controllers\PranotaUangKenekController;
 use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ProspekController;
@@ -1047,6 +1048,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('surat-jalan.select-order')
          ->middleware('can:surat-jalan-create');
 
+    // Surat Jalan Without Order
+    Route::get('/surat-jalan/create-without-order', [\App\Http\Controllers\SuratJalanController::class, 'createWithoutOrder'])
+         ->name('surat-jalan.create-without-order')
+         ->middleware('can:surat-jalan-create');
+
+    // Store Surat Jalan Without Order
+    Route::post('/surat-jalan/store-without-order', [\App\Http\Controllers\SuratJalanController::class, 'storeWithoutOrder'])
+         ->name('surat-jalan.store-without-order')
+         ->middleware('can:surat-jalan-create');
+
     // Surat Jalan Management with permissions
     Route::resource('surat-jalan', \App\Http\Controllers\SuratJalanController::class)
          ->middleware([
@@ -1064,13 +1075,131 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('surat-jalan.generate-nomor')
          ->middleware('can:surat-jalan-create');
 
+    // Print surat jalan
+    Route::get('/surat-jalan/{suratJalan}/print', [\App\Http\Controllers\SuratJalanController::class, 'print'])
+         ->name('surat-jalan.print')
+         ->middleware('can:surat-jalan-view');
+
+    // Download PDF surat jalan
+    Route::get('/surat-jalan/{suratJalan}/download', [\App\Http\Controllers\SuratJalanController::class, 'downloadPdf'])
+         ->name('surat-jalan.download')
+         ->middleware('can:surat-jalan-view');
+
     // AJAX route for getting uang jalan by tujuan
     Route::post('/api/get-uang-jalan-by-tujuan', [\App\Http\Controllers\SuratJalanController::class, 'getUangJalanByTujuan'])
          ->name('surat-jalan.get-uang-jalan')
          ->middleware('can:surat-jalan-create');
 
     // ═══════════════════════════════════════════════════════════════════════
-    // 📋 TANDA TERIMA MANAGEMENT
+    // � PRANOTA UANG RIT MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Pranota Uang Rit Management with permissions
+    Route::resource('pranota-uang-rit', \App\Http\Controllers\PranotaUangRitController::class)
+         ->middleware([
+             'index' => 'can:pranota-uang-rit-view',
+             'create' => 'can:pranota-uang-rit-create',
+             'store' => 'can:pranota-uang-rit-create',
+             'show' => 'can:pranota-uang-rit-view',
+             'edit' => 'can:pranota-uang-rit-update',
+             'update' => 'can:pranota-uang-rit-update',
+             'destroy' => 'can:pranota-uang-rit-delete'
+         ]);
+
+    // Special route for selecting uang jalan
+    Route::get('pranota-uang-rit/select-uang-jalan', [\App\Http\Controllers\PranotaUangRitController::class, 'selectUangJalan'])
+         ->name('pranota-uang-rit.select-uang-jalan')
+         ->middleware('can:pranota-uang-rit-create');
+
+    Route::post('pranota-uang-rit/from-selection', [\App\Http\Controllers\PranotaUangRitController::class, 'createFromSelection'])
+         ->name('pranota-uang-rit.from-selection')
+         ->middleware('can:pranota-uang-rit-create');
+
+    // Additional Pranota Uang Rit routes for workflow
+    Route::post('pranota-uang-rit/{pranotaUangRit}/submit', [\App\Http\Controllers\PranotaUangRitController::class, 'submit'])
+         ->name('pranota-uang-rit.submit')
+         ->middleware('can:pranota-uang-rit-update');
+
+    Route::post('pranota-uang-rit/{pranotaUangRit}/approve', [\App\Http\Controllers\PranotaUangRitController::class, 'approve'])
+         ->name('pranota-uang-rit.approve')
+         ->middleware('can:pranota-uang-rit-approve');
+
+    Route::post('pranota-uang-rit/{pranotaUangRit}/mark-as-paid', [\App\Http\Controllers\PranotaUangRitController::class, 'markAsPaid'])
+         ->name('pranota-uang-rit.mark-as-paid')
+         ->middleware('can:pranota-uang-rit-mark-paid');
+
+    Route::get('pranota-uang-rit/{pranotaUangRit}/print', [\App\Http\Controllers\PranotaUangRitController::class, 'print'])
+         ->name('pranota-uang-rit.print')
+         ->middleware('can:pranota-uang-rit-view');
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // 🚚 PRANOTA UANG KENEK MANAGEMENT
+    // ═══════════════════════════════════════════════════════════════════════
+
+    // Pranota Uang Kenek Management with permissions
+    Route::resource('pranota-uang-kenek', \App\Http\Controllers\PranotaUangKenekController::class)
+         ->middleware([
+             'index' => 'can:pranota-uang-kenek-view',
+             'create' => 'can:pranota-uang-kenek-create',
+             'store' => 'can:pranota-uang-kenek-create',
+             'show' => 'can:pranota-uang-kenek-view',
+             'edit' => 'can:pranota-uang-kenek-update',
+             'update' => 'can:pranota-uang-kenek-update',
+             'destroy' => 'can:pranota-uang-kenek-delete'
+         ]);
+
+    // Additional Pranota Uang Kenek routes for workflow
+    Route::patch('pranota-uang-kenek/{pranotaUangKenek}/submit', [\App\Http\Controllers\PranotaUangKenekController::class, 'submit'])
+         ->name('pranota-uang-kenek.submit')
+         ->middleware('can:pranota-uang-kenek-update');
+
+    Route::patch('pranota-uang-kenek/{pranotaUangKenek}/approve', [\App\Http\Controllers\PranotaUangKenekController::class, 'approve'])
+         ->name('pranota-uang-kenek.approve')
+         ->middleware('can:pranota-uang-kenek-approve');
+
+    Route::patch('pranota-uang-kenek/{pranotaUangKenek}/mark-as-paid', [\App\Http\Controllers\PranotaUangKenekController::class, 'markAsPaid'])
+         ->name('pranota-uang-kenek.mark-as-paid')
+         ->middleware('can:pranota-uang-kenek-mark-paid');
+
+    // Print pranota uang kenek
+    Route::get('pranota-uang-kenek/{pranotaUangKenek}/print', [\App\Http\Controllers\PranotaUangKenekController::class, 'print'])
+         ->name('pranota-uang-kenek.print')
+         ->middleware('can:pranota-uang-kenek-view');
+
+    // Debug route untuk surat jalan
+    Route::get('/debug-surat-jalan', function() {
+        $data = [];
+        
+        // Check total surat jalans
+        $data['total_surat_jalans'] = \App\Models\SuratJalan::count();
+        
+        // Check approved
+        $data['approved_count'] = \App\Models\SuratJalan::where('status', 'approved')->count();
+        
+        // Check dengan rit
+        $data['menggunakan_rit_count'] = \App\Models\SuratJalan::where('rit', 'menggunakan_rit')->count();
+        
+        // Check both conditions
+        $data['both_conditions'] = \App\Models\SuratJalan::where('status', 'approved')
+            ->where('rit', 'menggunakan_rit')
+            ->count();
+        
+        // Sample data
+        $data['sample_data'] = \App\Models\SuratJalan::select('id', 'no_surat_jalan', 'status', 'rit', 'supir_nama', 'kenek_nama')
+            ->limit(5)
+            ->get();
+        
+        // Recent surat jalans
+        $data['recent_data'] = \App\Models\SuratJalan::select('id', 'no_surat_jalan', 'status', 'rit', 'supir_nama', 'kenek_nama')
+            ->latest()
+            ->limit(3)
+            ->get();
+        
+        return response()->json($data, 200, [], JSON_PRETTY_PRINT);
+    })->name('debug.surat-jalan');
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // �📋 TANDA TERIMA MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
 
     Route::resource('tanda-terima', \App\Http\Controllers\TandaTerimaController::class)
@@ -1491,11 +1620,11 @@ Route::get('/test-gate-in-ajax', function () {
     });
 
      // === Approval Surat Jalan (HARUS SEBELUM route dengan parameter) ===
-     Route::prefix('approval/surat-jalan')->name('approval.surat-jalan.')->middleware(['auth', 'can:surat-jalan-approval-dashboard'])->group(function () {
+     Route::prefix('approval/surat-jalan')->name('approval.surat-jalan.')->middleware(['auth', 'can:approval-surat-jalan-view'])->group(function () {
          Route::get('/', [\App\Http\Controllers\SuratJalanApprovalController::class, 'index'])->name('index');
          Route::get('/{suratJalan}', [\App\Http\Controllers\SuratJalanApprovalController::class, 'show'])->name('show');
-         Route::post('/{suratJalan}/approve', [\App\Http\Controllers\SuratJalanApprovalController::class, 'approve'])->name('approve');
-         Route::post('/{suratJalan}/reject', [\App\Http\Controllers\SuratJalanApprovalController::class, 'reject'])->name('reject');
+         Route::post('/{suratJalan}/approve', [\App\Http\Controllers\SuratJalanApprovalController::class, 'approve'])->name('approve')->middleware('can:approval-surat-jalan-approve');
+         Route::post('/{suratJalan}/reject', [\App\Http\Controllers\SuratJalanApprovalController::class, 'reject'])->name('reject')->middleware('can:approval-surat-jalan-approve');
      });
 
          // --- Rute Penyelesaian Tugas ---
@@ -2338,6 +2467,13 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->middleware('can:bl-view');
                
           Route::patch('bl/{bl}/nomor-bl', [\App\Http\Controllers\BlController::class, 'updateNomorBl'])->name('bl.update-nomor-bl')
+               ->middleware('can:bl-edit');
+               
+          // BL Bulk Operations
+          Route::post('bl/validate-containers', [\App\Http\Controllers\BlController::class, 'validateContainers'])->name('bl.validate-containers')
+               ->middleware('can:bl-edit');
+               
+          Route::post('bl/bulk-split', [\App\Http\Controllers\BlController::class, 'bulkSplit'])->name('bl.bulk-split')
                ->middleware('can:bl-edit');
                
           Route::get('bl-api/by-kapal-voyage', [\App\Http\Controllers\BlController::class, 'getByKapalVoyage'])->name('bl.api.by-kapal-voyage')

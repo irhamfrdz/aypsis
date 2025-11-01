@@ -21,6 +21,8 @@ class Bl extends Model
         'nama_kapal',
         'nama_barang',
         'tonnage',
+        'volume',
+        'term',
         'kuantitas',
     ];
 

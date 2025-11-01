@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 return new class extends Migration
 {
@@ -25,26 +26,25 @@ return new class extends Migration
 
         // Step 2: Drop foreign key dan kolom service_id dari tabel gate_ins
         if (Schema::hasTable('gate_ins') && Schema::hasColumn('gate_ins', 'service_id')) {
+            // Drop foreign key constraints that might exist
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            
             Schema::table('gate_ins', function (Blueprint $table) {
-                try {
-                    $table->dropForeign(['service_id']);
-                } catch (Exception $e) {
-                    // Foreign key might not exist, continue
-                }
                 $table->dropColumn('service_id');
             });
+            
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         }
 
         // Step 3: Drop foreign key dan kolom service_id dari tabel kontainers
         if (Schema::hasTable('kontainers') && Schema::hasColumn('kontainers', 'service_id')) {
+            DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+            
             Schema::table('kontainers', function (Blueprint $table) {
-                try {
-                    $table->dropForeign(['service_id']);
-                } catch (Exception $e) {
-                    // Foreign key might not exist, continue
-                }
                 $table->dropColumn('service_id');
             });
+            
+            DB::statement('SET FOREIGN_KEY_CHECKS=1;');
         }
 
         // Step 4: Drop any other tables that might reference master_services
@@ -52,14 +52,13 @@ return new class extends Migration
 
         foreach ($tablesToCheck as $tableName) {
             if (Schema::hasTable($tableName) && Schema::hasColumn($tableName, 'service_id')) {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+                
                 Schema::table($tableName, function (Blueprint $table) {
-                    try {
-                        $table->dropForeign(['service_id']);
-                    } catch (Exception $e) {
-                        // Foreign key might not exist, continue
-                    }
                     $table->dropColumn('service_id');
                 });
+                
+                DB::statement('SET FOREIGN_KEY_CHECKS=1;');
             }
         }
 

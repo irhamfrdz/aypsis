@@ -512,6 +512,27 @@
                             <i class="fas fa-save mr-2"></i> Simpan Perubahan
                         </button>
                     </div>
+
+                    <!-- Info tentang update otomatis -->
+                    <div class="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div class="flex items-start">
+                            <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
+                            <div class="text-sm text-blue-800">
+                                <p class="font-medium mb-1">Update Otomatis Prospek Terkait</p>
+                                <p>Saat Anda menyimpan perubahan pada tanda terima ini, sistem akan secara otomatis:</p>
+                                <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li><strong>Mengupdate volume total</strong> pada prospek terkait berdasarkan dimensi yang diinput</li>
+                                    <li><strong>Mengupdate tonase total</strong> pada prospek terkait berdasarkan tonase yang diinput</li>
+                                    <li><strong>Mengupdate kuantitas</strong> pada prospek terkait berdasarkan jumlah per kontainer</li>
+                                    <li><strong>Menghubungkan prospek</strong> dengan tanda terima ini jika belum terhubung</li>
+                                </ul>
+                                <p class="mt-2 text-xs text-blue-600">
+                                    <i class="fas fa-link mr-1"></i>
+                                    Prospek akan dicari berdasarkan: Surat Jalan ID → No. Surat Jalan → Nomor Kontainer
+                                </p>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>
@@ -604,7 +625,7 @@
             </div>
 
             <!-- Location Info -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
                 <h3 class="text-md font-semibold text-gray-900 mb-4">Lokasi</h3>
                 <dl class="space-y-3">
                     <div>
@@ -617,6 +638,110 @@
                     </div>
                 </dl>
             </div>
+
+            <!-- Prospek Terkait Info -->
+            @php
+                $relatedProspeks = collect();
+                
+                // Find prospeks by surat_jalan_id
+                if ($tandaTerima->surat_jalan_id) {
+                    $prospeksBySuratJalan = \App\Models\Prospek::where('surat_jalan_id', $tandaTerima->surat_jalan_id)->get();
+                    $relatedProspeks = $relatedProspeks->merge($prospeksBySuratJalan);
+                }
+                
+                // Find prospeks by no_surat_jalan as fallback
+                if ($relatedProspeks->isEmpty() && $tandaTerima->no_surat_jalan) {
+                    $prospeksByNoSuratJalan = \App\Models\Prospek::where('no_surat_jalan', $tandaTerima->no_surat_jalan)->get();
+                    $relatedProspeks = $relatedProspeks->merge($prospeksByNoSuratJalan);
+                }
+                
+                // Remove duplicates
+                $relatedProspeks = $relatedProspeks->unique('id');
+            @endphp
+            
+            @if($relatedProspeks->isNotEmpty())
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-link text-blue-600 mr-2"></i>
+                    Prospek Terkait
+                    <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        {{ $relatedProspeks->count() }}
+                    </span>
+                </h3>
+                <div class="text-xs text-green-600 mb-3 flex items-center">
+                    <i class="fas fa-sync-alt mr-1"></i>
+                    <span>Akan diupdate otomatis saat menyimpan</span>
+                </div>
+                <div class="space-y-3">
+                    @foreach($relatedProspeks->take(5) as $prospek)
+                    <div class="border border-gray-100 rounded-lg p-3 bg-gray-50">
+                        <div class="flex items-center justify-between mb-2">
+                            <span class="text-sm font-medium text-gray-900">Prospek #{{ $prospek->id }}</span>
+                            <span class="text-xs text-gray-500">{{ $prospek->status }}</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                            <div>
+                                <span class="text-gray-500">Volume:</span>
+                                <span class="font-medium">{{ $prospek->total_volume ?: '0' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">Tonase:</span>
+                                <span class="font-medium">{{ $prospek->total_ton ?: '0' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">Kuantitas:</span>
+                                <span class="font-medium">{{ $prospek->kuantitas ?: '0' }}</span>
+                            </div>
+                            <div>
+                                <span class="text-gray-500">Kontainer:</span>
+                                <span class="font-medium">{{ $prospek->nomor_kontainer ?: '-' }}</span>
+                            </div>
+                        </div>
+                        @if($prospek->tanda_terima_id == $tandaTerima->id)
+                        <div class="mt-2 text-xs text-green-600 flex items-center">
+                            <i class="fas fa-check-circle mr-1"></i>
+                            <span>Sudah terhubung</span>
+                        </div>
+                        @else
+                        <div class="mt-2 text-xs text-blue-600 flex items-center">
+                            <i class="fas fa-link mr-1"></i>
+                            <span>Akan dihubungkan</span>
+                        </div>
+                        @endif
+                    </div>
+                    @endforeach
+                    
+                    @if($relatedProspeks->count() > 5)
+                    <div class="text-xs text-gray-500 text-center py-2">
+                        ... dan {{ $relatedProspeks->count() - 5 }} prospek lainnya
+                    </div>
+                    @endif
+                </div>
+                
+                <div class="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-md">
+                    <p class="text-xs text-blue-800">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        <strong>Update Otomatis:</strong> Ketika Anda menyimpan perubahan, volume, tonase, dan kuantitas dari prospek-prospek ini akan diupdate sesuai dengan data dimensi yang Anda input.
+                    </p>
+                </div>
+            </div>
+            @else
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <h3 class="text-md font-semibold text-gray-900 mb-4 flex items-center">
+                    <i class="fas fa-search text-gray-400 mr-2"></i>
+                    Prospek Terkait
+                </h3>
+                <div class="text-center py-4">
+                    <div class="text-gray-400 mb-2">
+                        <i class="fas fa-unlink text-2xl"></i>
+                    </div>
+                    <p class="text-sm text-gray-500">Tidak ada prospek yang terhubung</p>
+                    <p class="text-xs text-gray-400 mt-1">
+                        Prospek akan dicari berdasarkan Surat Jalan ID atau No. Surat Jalan
+                    </p>
+                </div>
+            </div>
+            @endif
         </div>
     </div>
 </div>

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::table('pembayaran_aktivitas_lainnya', function (Blueprint $table) {
             if (!Schema::hasColumn('pembayaran_aktivitas_lainnya', 'jenis_transaksi')) {
-                $table->enum('jenis_transaksi', ['debit', 'kredit'])->default('kredit')->after('pilih_bank');
+                $table->enum('jenis_transaksi', ['debit', 'kredit'])->default('kredit');
             }
         });
     }

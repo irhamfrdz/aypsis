@@ -357,6 +357,8 @@ class ProspekController extends Controller
                         'nama_kapal' => $masterKapal->nama_kapal,
                         'nama_barang' => $prospek->barang,
                         'tonnage' => $prospek->tonase,
+                        'volume' => $naikKapalData['total_volume'],
+                        'term' => $prospek->tandaTerima ? $prospek->tandaTerima->term : null,
                         'kuantitas' => $prospek->kuantitas,
                     ];
                     

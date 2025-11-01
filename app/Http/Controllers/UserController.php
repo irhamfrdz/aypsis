@@ -497,14 +497,37 @@ class UserController extends Controller
                 }
             }
 
+            // Special handling for approval-surat-jalan permissions (dash notation)
+            if (strpos($permissionName, 'approval-surat-jalan-') === 0) {
+                $module = 'approval-surat-jalan';
+                $action = str_replace('approval-surat-jalan-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'approve' => 'approve',
+                    'reject' => 'reject',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             $operationalModules = [
                 'order-management' => 'order', // Map order-management to order for permission names
                 'surat-jalan' => 'surat-jalan',
                 'tanda-terima' => 'tanda-terima',
                 'gate-in' => 'gate-in',
-                'pranota-surat-jalan' => 'pranota-surat-jalan',
-                'approval-surat-jalan' => 'approval-surat-jalan'
+                'pranota-surat-jalan' => 'pranota-surat-jalan'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -701,6 +724,115 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for BL (Bill of Lading) permissions (bl-view, bl-create, etc.) - MUST BE BEFORE Pattern 3
+            if (strpos($permissionName, 'bl-') === 0) {
+                $module = 'bl';
+                $action = str_replace('bl-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map BL actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'print' => 'print',
+                    'export' => 'export',
+                    'approve' => 'approve'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+            // Special handling for master-kapal permissions (master-kapal-view, master-kapal-create, etc.) - MUST BE BEFORE Pattern 3
+            if (strpos($permissionName, 'master-kapal-') === 0) {
+                $module = 'master-kapal';
+                $action = str_replace('master-kapal-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map master-kapal actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'store' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'destroy' => 'delete',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+            // Special handling for pranota-rit-kenek permissions (pranota-rit-kenek-view, pranota-rit-kenek-create, etc.) - MUST BE BEFORE pranota-rit handler
+            if (strpos($permissionName, 'pranota-rit-kenek-') === 0) {
+                $module = 'pranota-rit-kenek';
+                $action = str_replace('pranota-rit-kenek-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map pranota-rit-kenek actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'print' => 'print',
+                    'export' => 'export',
+                    'approve' => 'approve'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
+            // Special handling for pranota-rit permissions (pranota-rit-view, pranota-rit-create, etc.) - MUST BE AFTER pranota-rit-kenek handler
+            if (strpos($permissionName, 'pranota-rit-') === 0) {
+                $module = 'pranota-rit';
+                $action = str_replace('pranota-rit-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map pranota-rit actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'edit' => 'update',
+                    'update' => 'update',
+                    'delete' => 'delete',
+                    'print' => 'print',
+                    'export' => 'export',
+                    'approve' => 'approve'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // Pattern 3: module-action (e.g., dashboard-view, master-karyawan-view)
             if (strpos($permissionName, '-') !== false) {
                 $parts = explode('-', $permissionName, 2);
@@ -784,6 +916,18 @@ class UserController extends Controller
                     if ($module === 'pranota' && strpos($action, 'supir-') === 0) {
                         $action = str_replace('supir-', '', $action);
                         $module = 'pranota-supir';
+                    }
+
+                    // Special handling for pranota-rit-* permissions
+                    if ($module === 'pranota' && strpos($action, 'rit-') === 0) {
+                        // Handle both pranota-rit-* and pranota-rit-kenek-* permissions
+                        if (strpos($action, 'rit-kenek-') === 0) {
+                            $action = str_replace('rit-kenek-', '', $action);
+                            $module = 'pranota-rit-kenek';
+                        } else {
+                            $action = str_replace('rit-', '', $action);
+                            $module = 'pranota-rit';
+                        }
                     }
 
                     // Special handling for pembayaran-pranota-supir-* permissions
@@ -1019,8 +1163,39 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
-            // Pattern 8: Standalone dashboard permission
+            // Dashboard permissions handling (dashboard-view, dashboard-admin, etc.) - MUST BE BEFORE Pattern 3
+            if (strpos($permissionName, 'dashboard-') === 0) {
+                $module = 'dashboard';
+                $action = str_replace('dashboard-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map dashboard permission types to view action (since we only want 1 permission)
+                $dashboardActions = ['view', 'admin', 'operational', 'financial', 'reports', 'analytics', 'widgets', 'export', 'print'];
+                if (in_array($action, $dashboardActions)) {
+                    $matrixPermissions[$module]['view'] = true; // Map all dashboard permissions to view
+                }
+                continue; // Skip other patterns
+            }
+
+            // Main dashboard permission (required by DashboardController)
             if ($permissionName === 'dashboard') {
+                $module = 'dashboard';
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                $matrixPermissions[$module]['view'] = true;
+                continue; // Skip other patterns
+            }
+
+            // Pattern 8: Standalone dashboard permission (legacy - keep for compatibility)
+            if ($permissionName === 'dashboard-old') {
                 $module = 'system';
 
                 // Initialize module array if not exists
@@ -1081,21 +1256,41 @@ class UserController extends Controller
             // Skip if no actions are selected for this module
             if (!is_array($actions)) continue;
 
-                // Handle system module permissions
-                if ($module === 'system') {
-                    // Explicitly check for dashboard permission (handle both checked and unchecked states)
-                    $dashboardEnabled = isset($actions['dashboard']) && ($actions['dashboard'] == '1' || $actions['dashboard'] === true);
+            // Handle dashboard module permissions (simple single permission)
+            if ($module === 'dashboard') {
+                $viewEnabled = isset($actions['view']) && ($actions['view'] == '1' || $actions['view'] === true);
 
-                    if ($dashboardEnabled) {
-                        $permission = Permission::where('name', 'dashboard')->first();
-                        if ($permission) {
-                            $permissionIds[] = $permission->id;
-                        }
+                if ($viewEnabled) {
+                    // Add main dashboard permission (required by DashboardController)
+                    $dashboardPerm = Permission::where('name', 'dashboard')->first();
+                    if ($dashboardPerm) {
+                        $permissionIds[] = $dashboardPerm->id;
                     }
-                    // Note: if dashboard is not enabled (unchecked), it won't be added to $permissionIds
-                    // This ensures sync() will remove it from user permissions
-                    continue;
+
+                    // Also add dashboard-view permission (for UI consistency)
+                    $dashboardViewPerm = Permission::where('name', 'dashboard-view')->first();
+                    if ($dashboardViewPerm) {
+                        $permissionIds[] = $dashboardViewPerm->id;
+                    }
                 }
+                continue;
+            }
+
+            // Handle system module permissions
+            if ($module === 'system') {
+                // Explicitly check for dashboard permission (handle both checked and unchecked states)
+                $dashboardEnabled = isset($actions['dashboard']) && ($actions['dashboard'] == '1' || $actions['dashboard'] === true);
+
+                if ($dashboardEnabled) {
+                    $permission = Permission::where('name', 'dashboard')->first();
+                    if ($permission) {
+                        $permissionIds[] = $permission->id;
+                    }
+                }
+                // Note: if dashboard is not enabled (unchecked), it won't be added to $permissionIds
+                // This ensures sync() will remove it from user permissions
+                continue;
+            }
 
 
             foreach ($actions as $action => $value) {
@@ -1179,6 +1374,49 @@ class UserController extends Controller
                                         $fourDotPermission = Permission::where('name', 'master.karyawan.print.single')->first();
                                         if ($fourDotPermission) {
                                             $permissionIds[] = $fourDotPermission->id;
+                                            $found = true;
+                                            continue;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // DIRECT FIX: Handle master-kapal permissions explicitly
+                            if ($module === 'master-kapal' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-kapal-view',
+                                    'create' => 'master-kapal-create',
+                                    'update' => 'master-kapal-update',
+                                    'delete' => 'master-kapal-delete',
+                                    'print' => 'master-kapal-print',
+                                    'export' => 'master-kapal-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+
+                                    // Fallback: Try dot notation format (master-kapal.view)
+                                    $dotActionMap = [
+                                        'view' => 'master-kapal.view',
+                                        'create' => 'master-kapal.create',
+                                        'update' => 'master-kapal.edit',
+                                        'delete' => 'master-kapal.delete',
+                                        'print' => 'master-kapal.print',
+                                        'export' => 'master-kapal.export'
+                                    ];
+
+                                    if (isset($dotActionMap[$action])) {
+                                        $dotPermissionName = $dotActionMap[$action];
+                                        $dotPermission = Permission::where('name', $dotPermissionName)->first();
+                                        if ($dotPermission) {
+                                            $permissionIds[] = $dotPermission->id;
                                             $found = true;
                                             continue;
                                         }
@@ -1390,7 +1628,7 @@ class UserController extends Controller
                             }
 
                             // DIRECT FIX: Handle master-user permissions explicitly
-                            if ($module === 'master-user' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                            if ($module === 'master-user' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve', 'suspend', 'activate'])) {
                                 // Map action to correct permission name
                                 $actionMap = [
                                     'view' => 'master-user-view',
@@ -1398,7 +1636,10 @@ class UserController extends Controller
                                     'update' => 'master-user-update',
                                     'delete' => 'master-user-delete',
                                     'print' => 'master-user-print',
-                                    'export' => 'master-user-export'
+                                    'export' => 'master-user-export',
+                                    'approve' => 'master-user-approve',
+                                    'suspend' => 'master-user-suspend',
+                                    'activate' => 'master-user-activate'
                                 ];
 
                                 if (isset($actionMap[$action])) {
@@ -1409,7 +1650,7 @@ class UserController extends Controller
                                         $found = true;
                                     }
 
-                                    // Also include legacy dot notation permissions for backward compatibility
+                                    // Also include legacy dot notation permissions for backward compatibility (only for CRUD operations)
                                     $legacyActionMap = [
                                         'view' => 'master.user.index',
                                         'create' => 'master.user.create',
@@ -2566,6 +2807,93 @@ class UserController extends Controller
                             if ($directPermission) {
                                 $permissionIds[] = $directPermission->id;
                                 $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle BL (Bill of Lading) permissions explicitly
+                    if ($module === 'bl' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve'])) {
+                        $actionMap = [
+                            'view' => 'bl-view',
+                            'create' => 'bl-create',
+                            'update' => 'bl-edit', // Map to bl-edit first, then bl-update as fallback
+                            'delete' => 'bl-delete',
+                            'print' => 'bl-print',
+                            'export' => 'bl-export',
+                            'approve' => 'bl-approve'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            } else if ($action === 'update') {
+                                // Fallback: try bl-update if bl-edit not found
+                                $fallbackPermission = Permission::where('name', 'bl-update')->first();
+                                if ($fallbackPermission) {
+                                    $permissionIds[] = $fallbackPermission->id;
+                                    $found = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // Handle pranota-rit permissions explicitly
+                    if ($module === 'pranota-rit' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve'])) {
+                        $actionMap = [
+                            'view' => 'pranota-rit-view',
+                            'create' => 'pranota-rit-create',
+                            'update' => 'pranota-rit-edit', // Map to pranota-rit-edit first, then pranota-rit-update as fallback
+                            'delete' => 'pranota-rit-delete',
+                            'print' => 'pranota-rit-print',
+                            'export' => 'pranota-rit-export',
+                            'approve' => 'pranota-rit-approve'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            } else if ($action === 'update') {
+                                // Fallback: try pranota-rit-update if pranota-rit-edit not found
+                                $fallbackPermission = Permission::where('name', 'pranota-rit-update')->first();
+                                if ($fallbackPermission) {
+                                    $permissionIds[] = $fallbackPermission->id;
+                                    $found = true;
+                                }
+                            }
+                        }
+                    }
+
+                    // Handle pranota-rit-kenek permissions explicitly
+                    if ($module === 'pranota-rit-kenek' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export', 'approve'])) {
+                        $actionMap = [
+                            'view' => 'pranota-rit-kenek-view',
+                            'create' => 'pranota-rit-kenek-create',
+                            'update' => 'pranota-rit-kenek-edit', // Map to pranota-rit-kenek-edit first, then pranota-rit-kenek-update as fallback
+                            'delete' => 'pranota-rit-kenek-delete',
+                            'print' => 'pranota-rit-kenek-print',
+                            'export' => 'pranota-rit-kenek-export',
+                            'approve' => 'pranota-rit-kenek-approve'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            } else if ($action === 'update') {
+                                // Fallback: try pranota-rit-kenek-update if pranota-rit-kenek-edit not found
+                                $fallbackPermission = Permission::where('name', 'pranota-rit-kenek-update')->first();
+                                if ($fallbackPermission) {
+                                    $permissionIds[] = $fallbackPermission->id;
+                                    $found = true;
+                                }
                             }
                         }
                     }
