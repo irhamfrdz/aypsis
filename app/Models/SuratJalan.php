@@ -366,4 +366,20 @@ class SuratJalan extends Model
 
         $this->save();
     }
+
+    /**
+     * Accessor for nomor_kontainer (alias for no_kontainer)
+     */
+    public function getNomorKontainerAttribute()
+    {
+        return $this->no_kontainer;
+    }
+
+    /**
+     * Accessor for nomor_seal (alias for no_seal)
+     */
+    public function getNomorSealAttribute()
+    {
+        return $this->no_seal;
+    }
 }

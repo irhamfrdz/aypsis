@@ -264,21 +264,44 @@
 
                             {{-- Container inputs for surat jalan --}}
                             <div class="space-y-2" id="container_input_section">
-                                <label class="block text-sm font-medium text-gray-700">Pilih Nomor Kontainer ({{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} - {{ $suratJalan->size }}ft)</label>
+                                <label class="block text-sm font-medium text-gray-700">
+                                    Nomor Kontainer ({{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} - {{ $suratJalan->size }}ft)
+                                    @if($suratJalan->nomor_kontainer)
+                                        <span class="ml-2 text-xs font-normal text-green-600">✓ Sudah diisi dari surat jalan</span>
+                                    @endif
+                                </label>
                                 @for ($i = 0; $i < $suratJalan->jumlah_kontainer; $i++)
                                     <div class="relative mt-1">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Kontainer #{{ $i + 1 }}</label>
-                                        <select name="nomor_kontainer[]" class="select-kontainer block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5 pr-10" required>
-                                            <option value="">-- Pilih Kontainer #{{ $i + 1 }} --</option>
-                                            @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
-                                                @foreach($stockKontainers as $stock)
-                                                    <option value="{{ $stock->nomor_seri_gabungan }}">{{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }}ft ({{ ucfirst($stock->status) }})</option>
-                                                @endforeach
-                                            @endif
-                                        </select>
+                                        
+                                        @if($suratJalan->nomor_kontainer && $i == 0)
+                                            {{-- If nomor kontainer already filled in surat jalan, show as input (editable) --}}
+                                            <div class="flex items-center gap-2">
+                                                <input type="text" 
+                                                       name="nomor_kontainer[]" 
+                                                       value="{{ $suratJalan->nomor_kontainer }}"
+                                                       class="flex-1 block w-full rounded-lg border-2 border-green-300 bg-green-50 shadow focus:ring-2 focus:ring-green-500 focus:border-green-500 transition p-2.5" 
+                                                       placeholder="Nomor kontainer"
+                                                       required>
+                                                <span class="text-xs text-green-600 whitespace-nowrap">Pre-filled</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">Data dari surat jalan. Anda bisa mengubah jika ada perubahan.</p>
+                                        @else
+                                            {{-- Otherwise show dropdown to select --}}
+                                            <select name="nomor_kontainer[]" class="select-kontainer block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5 pr-10" required>
+                                                <option value="">-- Pilih Kontainer #{{ $i + 1 }} --</option>
+                                                @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
+                                                    @foreach($stockKontainers as $stock)
+                                                        <option value="{{ $stock->nomor_seri_gabungan }}">{{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }}ft ({{ ucfirst($stock->status) }})</option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
+                                        @endif
                                     </div>
                                 @endfor
-                                <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer tipe {{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} ukuran {{ $suratJalan->size }}ft sesuai jumlah di surat jalan.</p>
+                                @if(!$suratJalan->nomor_kontainer)
+                                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer tipe {{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }} ukuran {{ $suratJalan->size }}ft sesuai jumlah di surat jalan.</p>
+                                @endif
                             </div>
 
                             {{-- Cargo type information --}}
@@ -298,17 +321,38 @@
 
                             {{-- Common fields --}}
                             <div id="no_seal_section">
-                                <label class="block text-sm font-medium text-gray-700">No. Seal</label>
+                                <label class="block text-sm font-medium text-gray-700">
+                                    No. Seal
+                                    @if($suratJalan->nomor_seal)
+                                        <span class="ml-2 text-xs font-normal text-green-600">✓ Sudah diisi dari surat jalan</span>
+                                    @endif
+                                </label>
                                 @for ($i = 0; $i < $suratJalan->jumlah_kontainer; $i++)
                                     <div class="relative mt-1">
                                         <label class="block text-xs font-medium text-gray-500 mb-1">Seal Kontainer #{{ $i + 1 }}</label>
-                                        <input type="text" 
-                                               name="no_seal[]" 
-                                               class="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" 
-                                               placeholder="Masukkan nomor seal kontainer #{{ $i + 1 }}">
+                                        
+                                        @if($suratJalan->nomor_seal && $i == 0)
+                                            {{-- If nomor seal already filled in surat jalan, pre-fill it --}}
+                                            <div class="flex items-center gap-2">
+                                                <input type="text" 
+                                                       name="no_seal[]" 
+                                                       value="{{ $suratJalan->nomor_seal }}"
+                                                       class="flex-1 block w-full rounded-md border-2 border-green-300 bg-green-50 shadow-sm p-2.5" 
+                                                       placeholder="Masukkan nomor seal kontainer #{{ $i + 1 }}">
+                                                <span class="text-xs text-green-600 whitespace-nowrap">Pre-filled</span>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">Data dari surat jalan. Anda bisa mengubah jika ada perubahan.</p>
+                                        @else
+                                            <input type="text" 
+                                                   name="no_seal[]" 
+                                                   class="block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm p-2.5" 
+                                                   placeholder="Masukkan nomor seal kontainer #{{ $i + 1 }}">
+                                        @endif
                                     </div>
                                 @endfor
-                                <p class="text-xs text-gray-500 mt-1">Masukkan nomor seal untuk setiap kontainer sesuai jumlah di surat jalan ({{ $suratJalan->jumlah_kontainer }} kontainer).</p>
+                                @if(!$suratJalan->nomor_seal)
+                                    <p class="text-xs text-gray-500 mt-1">Masukkan nomor seal untuk setiap kontainer sesuai jumlah di surat jalan ({{ $suratJalan->jumlah_kontainer }} kontainer).</p>
+                                @endif
                             </div>
                             <div>
                                 <label for="surat_jalan_vendor" class="block text-sm font-medium text-gray-700">Surat Jalan Vendor</label>

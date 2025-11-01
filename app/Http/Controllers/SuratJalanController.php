@@ -181,6 +181,7 @@ class SuratJalanController extends Controller
             'no_plat' => 'nullable|string|max:20',
             'kenek' => 'nullable|string|max:255',
             'tipe_kontainer' => 'nullable|string|max:50',
+            'nomor_kontainer' => 'nullable|string|max:255',
             'no_seal' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'jumlah_kontainer' => 'nullable|integer|min:1',
@@ -207,6 +208,12 @@ class SuratJalanController extends Controller
             $data['input_by'] = Auth::id();
             $data['input_date'] = now();
             $data['status'] = 'belum masuk checkpoint'; // Set default status to belum masuk checkpoint
+
+            // Map nomor_kontainer to no_kontainer (database column name)
+            if (isset($data['nomor_kontainer'])) {
+                $data['no_kontainer'] = $data['nomor_kontainer'];
+                unset($data['nomor_kontainer']);
+            }
 
             // Handle cargo type - set default values for size and jumlah_kontainer if empty
             if (isset($data['tipe_kontainer']) && strtolower($data['tipe_kontainer']) === 'cargo') {
