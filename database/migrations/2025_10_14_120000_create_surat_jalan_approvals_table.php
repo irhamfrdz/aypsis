@@ -11,22 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('surat_jalan_approvals', function (Blueprint $table) {
-            $table->id();
-            $table->unsignedBigInteger('surat_jalan_id');
-            $table->string('approval_level'); // 'tugas-1' atau 'tugas-2'
-            $table->string('status')->default('pending'); // 'pending', 'approved', 'rejected'
-            $table->unsignedBigInteger('approved_by')->nullable();
-            $table->text('approval_notes')->nullable();
-            $table->timestamp('approved_at')->nullable();
-            $table->timestamps();
+        // Check if table already exists
+        if (!Schema::hasTable('surat_jalan_approvals')) {
+            Schema::create('surat_jalan_approvals', function (Blueprint $table) {
+                $table->id();
+                $table->unsignedBigInteger('surat_jalan_id');
+                $table->string('approval_level'); // 'tugas-1' atau 'tugas-2'
+                $table->string('status')->default('pending'); // 'pending', 'approved', 'rejected'
+                $table->unsignedBigInteger('approved_by')->nullable();
+                $table->text('approval_notes')->nullable();
+                $table->timestamp('approved_at')->nullable();
+                $table->timestamps();
 
-            $table->foreign('surat_jalan_id')->references('id')->on('surat_jalans')->onDelete('cascade');
-            $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');
-            
-            // Unique constraint untuk mencegah duplikasi approval per level
-            $table->unique(['surat_jalan_id', 'approval_level']);
-        });
+                $table->foreign('surat_jalan_id')->references('id')->on('surat_jalans')->onDelete('cascade');
+                $table->foreign('approved_by')->references('id')->on('users')->onDelete('set null');
+                
+                // Unique constraint untuk mencegah duplikasi approval per level
+                $table->unique(['surat_jalan_id', 'approval_level']);
+            });
+        }
     }
 
     /**
