@@ -182,19 +182,33 @@
     @endphp
 
     @if($showSidebar)
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden lg:hidden transition-opacity duration-300"></div>
+    
     <!-- Sidebar -->
-    <div id="sidebar" class="hidden lg:flex lg:flex-col lg:w-64 bg-gradient-to-b from-blue-50 via-white to-gray-100 shadow-2xl border-r border-gray-300 fixed top-16 bottom-0 left-0 z-50 translate-x-0 transition-transform rounded-r-2xl">
-            <!-- Mobile close button -->
-            <div class="lg:hidden absolute top-4 right-4">
-                <button id="close-sidebar" class="text-gray-600 hover:text-gray-900">
+    <div id="sidebar" class="fixed top-0 bottom-0 left-0 z-50 w-80 lg:w-64 bg-gradient-to-b from-blue-50 via-white to-gray-100 shadow-2xl border-r border-gray-300 transform -translate-x-full lg:translate-x-0 transition-transform duration-300 ease-in-out lg:flex lg:flex-col lg:top-16 rounded-r-2xl lg:rounded-r-2xl overflow-hidden">
+            <!-- Mobile Header with close button -->
+            <div class="lg:hidden flex items-center justify-between p-4 bg-blue-600 shadow-md">
+                <div class="flex items-center text-white">
+                    <div class="w-10 h-10 bg-white rounded-xl flex items-center justify-center mr-3 shadow-lg">
+                        <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"/>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="font-bold text-lg tracking-wide">AYPSIS</h2>
+                        <p class="text-xs opacity-90 font-medium">Management System</p>
+                    </div>
+                </div>
+                <button id="close-sidebar" class="text-white hover:bg-blue-700 p-2 rounded-lg transition-colors">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
 
-            <!-- Sidebar Header -->
-            <div class="p-6 border-b border-gray-300 flex-shrink-0 bg-white rounded-tr-2xl shadow-md">
+            <!-- Sidebar Header (Desktop Only) -->
+            <div class="hidden lg:block p-6 border-b border-gray-300 flex-shrink-0 bg-white rounded-tr-2xl shadow-md">
                 <div class="flex items-center text-gray-800 mb-4">
                     <div class="w-8 h-8 bg-blue-600 rounded-xl flex items-center justify-center mr-3 shadow-lg">
                         <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1465,17 +1479,23 @@
         const overlay = document.getElementById('sidebar-overlay');
 
         function openSidebar() {
-            sidebar.classList.remove('hidden');
-            sidebar.classList.remove('-translate-x-full');
-            overlay.classList.remove('hidden');
+            if (sidebar) {
+                sidebar.classList.remove('-translate-x-full');
+                document.body.style.overflow = 'hidden'; // Prevent body scroll when sidebar is open
+            }
+            if (overlay) {
+                overlay.classList.remove('hidden');
+            }
         }
 
         function closeSidebarMenu() {
-            sidebar.classList.add('-translate-x-full');
-            overlay.classList.add('hidden');
-            setTimeout(() => {
-                sidebar.classList.add('hidden');
-            }, 300);
+            if (sidebar) {
+                sidebar.classList.add('-translate-x-full');
+                document.body.style.overflow = ''; // Restore body scroll
+            }
+            if (overlay) {
+                overlay.classList.add('hidden');
+            }
         }
 
         if (mobileMenuButton) {
@@ -1488,6 +1508,16 @@
 
         if (overlay) {
             overlay.addEventListener('click', closeSidebarMenu);
+        }
+
+        // Close sidebar when clicking on a menu item (on mobile)
+        const menuLinks = sidebar?.querySelectorAll('a');
+        if (menuLinks && window.innerWidth < 1024) {
+            menuLinks.forEach(link => {
+                link.addEventListener('click', () => {
+                    setTimeout(closeSidebarMenu, 150); // Small delay for better UX
+                });
+            });
         }
 
         setupDropdown('master-menu-toggle', 'master-menu-content');
