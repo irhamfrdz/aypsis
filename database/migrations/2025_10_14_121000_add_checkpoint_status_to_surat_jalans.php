@@ -12,14 +12,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Check if column exists and needs update
-        try {
-            // Update enum values untuk kolom status di tabel surat_jalans
-            DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status ENUM('draft', 'active', 'completed', 'cancelled', 'belum masuk checkpoint', 'sudah_checkpoint', 'fully_approved', 'rejected') DEFAULT 'belum masuk checkpoint'");
-        } catch (\Exception $e) {
-            // If error occurs (column already updated), skip
-            \Log::info('Surat jalans status column already updated or error: ' . $e->getMessage());
-        }
+        // Update enum values untuk kolom status di tabel surat_jalans
+        DB::statement("ALTER TABLE surat_jalans MODIFY COLUMN status ENUM('draft', 'active', 'completed', 'cancelled', 'belum masuk checkpoint', 'sudah_checkpoint', 'fully_approved', 'rejected') DEFAULT 'belum masuk checkpoint'");
     }
 
     /**

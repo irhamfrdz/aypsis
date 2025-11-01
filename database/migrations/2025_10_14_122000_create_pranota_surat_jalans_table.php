@@ -11,28 +11,25 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Check if table already exists
-        if (!Schema::hasTable('pranota_surat_jalans')) {
-            Schema::create('pranota_surat_jalans', function (Blueprint $table) {
-                $table->id();
-                $table->string('nomor_pranota')->unique();
-                $table->date('tanggal_pranota');
-                $table->string('periode_tagihan', 20);
-                $table->integer('jumlah_surat_jalan')->default(0);
-                $table->decimal('total_amount', 15, 2)->default(0);
-                $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
-                $table->text('catatan')->nullable();
-                $table->unsignedBigInteger('created_by');
-                $table->unsignedBigInteger('updated_by')->nullable();
-                $table->timestamps();
+        Schema::create('pranota_surat_jalans', function (Blueprint $table) {
+            $table->id();
+            $table->string('nomor_pranota')->unique();
+            $table->date('tanggal_pranota');
+            $table->string('periode_tagihan', 20);
+            $table->integer('jumlah_surat_jalan')->default(0);
+            $table->decimal('total_amount', 15, 2)->default(0);
+            $table->enum('status', ['pending', 'paid', 'cancelled'])->default('pending');
+            $table->text('catatan')->nullable();
+            $table->unsignedBigInteger('created_by');
+            $table->unsignedBigInteger('updated_by')->nullable();
+            $table->timestamps();
 
-                $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
-                $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
-                
-                $table->index(['status', 'tanggal_pranota']);
-                $table->index('periode_tagihan');
-            });
-        }
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('cascade');
+            $table->foreign('updated_by')->references('id')->on('users')->onDelete('set null');
+            
+            $table->index(['status', 'tanggal_pranota']);
+            $table->index('periode_tagihan');
+        });
     }
 
     /**
