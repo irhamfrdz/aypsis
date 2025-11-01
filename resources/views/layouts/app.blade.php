@@ -1568,7 +1568,7 @@
         // Sidebar search functionality
         const sidebarSearch = document.getElementById('sidebar-search');
         const clearSearch = document.getElementById('clear-search');
-        const nav = document.querySelector('nav.sidebar-scroll');
+        const nav = document.querySelector('nav');
 
         if (sidebarSearch && nav) {
             // Function to filter menu items
