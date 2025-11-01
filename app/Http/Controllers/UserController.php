@@ -544,6 +544,7 @@ class UserController extends Controller
                     $actionMap = [
                         'view' => 'view',
                         'create' => 'create',
+                        'edit' => 'update',     // Map 'edit' to 'update' for checkbox
                         'update' => 'update',
                         'delete' => 'delete',
                         'print' => 'print',
@@ -2733,18 +2734,20 @@ class UserController extends Controller
                         $actionMap = [
                             'view' => 'tanda-terima-view',
                             'create' => 'tanda-terima-create',
-                            'update' => 'tanda-terima-update',
+                            'update' => ['tanda-terima-update', 'tanda-terima-edit'], // Both update and edit permissions
                             'delete' => 'tanda-terima-delete',
                             'print' => 'tanda-terima-print',
                             'export' => 'tanda-terima-export'
                         ];
 
                         if (isset($actionMap[$action])) {
-                            $permissionName = $actionMap[$action];
-                            $directPermission = Permission::where('name', $permissionName)->first();
-                            if ($directPermission) {
-                                $permissionIds[] = $directPermission->id;
-                                $found = true;
+                            $permissionNames = is_array($actionMap[$action]) ? $actionMap[$action] : [$actionMap[$action]];
+                            foreach ($permissionNames as $permissionName) {
+                                $directPermission = Permission::where('name', $permissionName)->first();
+                                if ($directPermission) {
+                                    $permissionIds[] = $directPermission->id;
+                                    $found = true;
+                                }
                             }
                         }
                     }
