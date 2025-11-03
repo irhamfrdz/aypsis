@@ -48,8 +48,32 @@ php artisan migrate --force
 
 # 7. Build Vite assets (PENTING untuk offline support)
 echo "🎨 7. Building Vite assets..."
+echo "⚠️  This may take a few minutes..."
+
+# Remove old node_modules and lock file to ensure clean install
+rm -rf node_modules package-lock.json
+
+# Install ALL dependencies (including devDependencies for build)
 npm install
-npm run build
+
+# Check if vite is installed
+if [ ! -f "node_modules/.bin/vite" ]; then
+    echo "❌ ERROR: Vite not found after npm install"
+    echo "🔧 Trying to install vite explicitly..."
+    npm install --save-dev vite@^5.0
+fi
+
+# Build with npx to ensure it uses local vite
+npx vite build
+
+# Verify build output
+if [ ! -f "public/build/manifest.json" ]; then
+    echo "❌ ERROR: Build failed - manifest.json not found"
+    exit 1
+else
+    echo "✅ Vite build completed successfully"
+    ls -lh public/build/manifest.json
+fi
 
 # 7b. Clear all caches (PENTING untuk Report Tagihan menu)
 echo "🧹 7b. Clearing application caches..."

@@ -7,11 +7,17 @@ Error ini muncul karena file build Vite belum ada di server production setelah g
 ```bash
 cd /var/www/aypsis
 
-# Install dependencies
+# Hapus node_modules dan package-lock yang corrupt
+rm -rf node_modules package-lock.json
+
+# Install SEMUA dependencies (termasuk devDependencies)
 npm install
 
-# Build assets untuk production
-npm run build
+# Build dengan npx (langsung dari node_modules)
+npx vite build
+
+# Verify build berhasil
+ls -la public/build/manifest.json
 
 # Clear cache Laravel
 php artisan view:clear
@@ -22,6 +28,27 @@ php artisan cache:clear
 sudo systemctl restart nginx
 # atau
 sudo systemctl restart apache2
+```
+
+## 🚨 Jika `npm install` Gagal
+
+```bash
+# Check Node.js version (minimal v16)
+node --version
+
+# Jika terlalu lama, update Node.js:
+# Ubuntu/Debian:
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# Verify npm version
+npm --version
+
+# Clean npm cache
+npm cache clean --force
+
+# Install ulang
+npm install
 ```
 
 ## 📋 Penjelasan
@@ -105,7 +132,28 @@ sudo chmod -R 755 /var/www/aypsis/public/build
 
 ### Error: `npm: command not found`
 ```bash
-# Install Node.js terlebih dahulu (lihat Requirements di atas)
+# Install Node.js terlebih dahulu
+# Ubuntu/Debian:
+curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
+sudo apt-get install -y nodejs
+
+# CentOS/RHEL:
+curl -fsSL https://rpm.nodesource.com/setup_18.x | sudo bash -
+sudo yum install -y nodejs
+```
+
+### Error: `vite: not found` setelah npm install
+```bash
+# Hapus dan install ulang
+rm -rf node_modules package-lock.json
+npm install
+
+# Gunakan npx untuk build (langsung execute dari node_modules)
+npx vite build
+
+# Atau install vite secara explicit
+npm install --save-dev vite@^5.0
+npm run build
 ```
 
 ### Error: `EACCES: permission denied`
