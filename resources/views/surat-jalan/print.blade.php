@@ -29,6 +29,15 @@
                 height: 0 !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+            
+            body {
+                margin: 0;
+                padding: 0;
+                background: white;
             }
         }
         .form-container {
@@ -65,17 +74,25 @@
                 size: 467.72px 609.45px;
                 margin: 0;
             }
+            
             .no-print {
                 display: none !important;
                 visibility: hidden !important;
                 height: 0 !important;
                 margin: 0 !important;
                 padding: 0 !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
             }
+            
             body {
                 margin: 0;
                 padding: 0;
+                background: white;
+                color: black;
             }
+            
             .form-container {
                 width: 467.72px;
                 height: 609.45px;
@@ -83,6 +100,7 @@
                 position: absolute;
                 top: 0;
                 left: 0;
+                background: white;
             }
         }
     </style>
