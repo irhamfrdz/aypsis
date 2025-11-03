@@ -97,6 +97,11 @@ class Order extends Model
         return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_ambil_id');
     }
 
+    public function suratJalans()
+    {
+        return $this->hasMany(SuratJalan::class);
+    }
+
     // Outstanding Scopes
     public function scopeOutstanding($query)
     {

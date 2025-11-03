@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\Order;
+use App\Models\SuratJalan;
 use App\Models\Term;
 use App\Models\Pengirim;
 use App\Models\JenisBarang;
@@ -356,7 +357,75 @@ class OrderController extends Controller
 
         $order->update($data);
 
-        return redirect()->route('orders.index')->with('success', 'Order berhasil diperbarui.');
+        // Auto-sync related Surat Jalan data
+        $this->syncSuratJalanData($order);
+
+        return redirect()->route('orders.index')->with('success', 'Order berhasil diperbarui. Data surat jalan terkait juga telah disinkronkan.');
+    }
+
+    /**
+     * Sync related SuratJalan data when Order is updated
+     */
+    private function syncSuratJalanData(Order $order)
+    {
+        $suratJalans = $order->suratJalans;
+        
+        if ($suratJalans->isEmpty()) {
+            return;
+        }
+
+        // Prepare sync data based on updated order
+        $syncData = [];
+
+        // Only update fields that exist in both Order and SuratJalan
+        if ($order->pengirim && $order->pengirim->nama_pengirim) {
+            $syncData['pengirim'] = $order->pengirim->nama_pengirim;
+        }
+
+        if ($order->tujuan_ambil) {
+            $syncData['tujuan_pengambilan'] = $order->tujuan_ambil;
+        }
+
+        if ($order->tujuan_kirim) {
+            $syncData['tujuan_pengiriman'] = $order->tujuan_kirim;
+        }
+
+        if ($order->tipe_kontainer) {
+            $syncData['tipe_kontainer'] = $order->tipe_kontainer;
+        }
+
+        if ($order->size_kontainer) {
+            $syncData['size'] = $order->size_kontainer;
+        }
+
+        if ($order->unit_kontainer) {
+            $syncData['jumlah_kontainer'] = $order->unit_kontainer;
+        }
+
+        if ($order->jenisBarang && $order->jenisBarang->id) {
+            $syncData['jenis_barang'] = $order->jenisBarang->id;
+        }
+
+        if ($order->term && $order->term->id) {
+            $syncData['term'] = $order->term->id;
+        }
+
+        // Only update if there's data to sync
+        if (!empty($syncData)) {
+            // Add metadata about the sync
+            $syncData['updated_at'] = now();
+            
+            // Update all related surat jalans
+            $order->suratJalans()->update($syncData);
+            
+            // Log the sync activity
+            \Log::info('SuratJalan data synced', [
+                'order_id' => $order->id,
+                'surat_jalan_count' => $suratJalans->count(),
+                'synced_fields' => array_keys($syncData),
+                'user_id' => auth()->id()
+            ]);
+        }
     }
 
     /**
