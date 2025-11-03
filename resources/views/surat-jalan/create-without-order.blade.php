@@ -396,6 +396,34 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
+                    <input type="text"
+                           name="nomor_kontainer"
+                           value="{{ old('nomor_kontainer') }}"
+                           placeholder="Masukkan nomor kontainer"
+                           autocomplete="off"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
+                    @error('nomor_kontainer')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">Nomor kontainer untuk pengiriman</p>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Seal</label>
+                    <input type="text"
+                           name="nomor_seal"
+                           value="{{ old('nomor_seal') }}"
+                           placeholder="Masukkan nomor seal"
+                           autocomplete="off"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_seal') border-red-500 @enderror">
+                    @error('nomor_seal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">Nomor seal/segel kontainer untuk keamanan</p>
+                </div>
+
                 <!-- Packaging Information -->
                 <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Kemasan</h3>

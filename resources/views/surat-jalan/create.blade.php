@@ -616,6 +616,9 @@
     </div>
 </div>
 
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -957,6 +960,12 @@ document.addEventListener('DOMContentLoaded', function() {
     handleTipeKontainerVisibility(); // Check tipe kontainer visibility
     updateKontainerRules(); // Check kontainer rules on load
     checkSizeWarning(); // Check size warning on load
+    
+    // Force update uang jalan after page load
+    setTimeout(function() {
+        updateUangJalan();
+        console.log('Auto-updating uang jalan for selected order');
+    }, 500);
 });
 @else
 document.addEventListener('DOMContentLoaded', function() {

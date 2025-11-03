@@ -725,6 +725,8 @@ class SuratJalanController extends Controller
             'no_plat' => 'required|string|max:20',
             'kegiatan' => 'required|string|max:255',
             'catatan' => 'nullable|string',
+            'nomor_kontainer' => 'nullable|string|max:255',
+            'nomor_seal' => 'nullable|string|max:255',
         ]);
 
         try {
@@ -749,6 +751,8 @@ class SuratJalanController extends Controller
                 'no_plat' => $request->no_plat,
                 'kegiatan' => $request->kegiatan,
                 'catatan' => $request->catatan,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'nomor_seal' => $request->nomor_seal,
                 'status' => 'draft',
                 'status_pembayaran' => 'belum_dibayar',
                 'created_by' => Auth::id(),
