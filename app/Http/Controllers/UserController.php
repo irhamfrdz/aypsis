@@ -949,6 +949,12 @@ class UserController extends Controller
                         $module = 'pembayaran-pranota-cat';
                     }
 
+                    // Special handling for pembayaran-pranota-surat-jalan-* permissions
+                    if ($module === 'pembayaran' && strpos($action, 'pranota-surat-jalan-') === 0) {
+                        $action = str_replace('pranota-surat-jalan-', '', $action);
+                        $module = 'pembayaran-pranota-surat-jalan';
+                    }
+
                     // Special handling for aktivitas-lainnya-* permissions
                     if (strpos($permissionName, 'aktivitas-lainnya-') === 0) {
                         $module = 'aktivitas-lainnya';
@@ -977,6 +983,12 @@ class UserController extends Controller
                     if (strpos($permissionName, 'pembayaran-ob-') === 0) {
                         $module = 'pembayaran-ob';
                         $action = str_replace('pembayaran-ob-', '', $permissionName);
+                    }
+
+                    // Special handling for pembayaran-pranota-surat-jalan-* permissions
+                    if (strpos($permissionName, 'pembayaran-pranota-surat-jalan-') === 0) {
+                        $module = 'pembayaran-pranota-surat-jalan';
+                        $action = str_replace('pembayaran-pranota-surat-jalan-', '', $permissionName);
                     }
 
                     // Special handling for pranota-perbaikan-kontainer-* permissions
@@ -2137,6 +2149,29 @@ class UserController extends Controller
                                 error_log("DEBUG: Found permission ID: {$permission->id}");
                             } else {
                                 error_log("DEBUG: Permission not found");
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-pranota-surat-jalan
+                    if ($module === 'pembayaran-pranota-surat-jalan') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'edit',
+                            'delete' => 'delete',
+                            'approve' => 'approve',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = 'pembayaran-pranota-surat-jalan-' . $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
                             }
                         }
                     }

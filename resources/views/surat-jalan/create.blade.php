@@ -173,6 +173,7 @@
                            value="{{ old('pengirim', $selectedOrder ? $selectedOrder->pengirim->nama_pengirim ?? '' : '') }}"
                            placeholder="Nama pengirim"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('pengirim') border-red-500 @enderror">
                     @error('pengirim')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -194,6 +195,7 @@
                            value="{{ old('jenis_barang', $selectedOrder ? $selectedOrder->jenisBarang->nama_barang ?? '' : '') }}"
                            placeholder="Jenis/nama barang"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('jenis_barang') border-red-500 @enderror">
                     @error('jenis_barang')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -210,6 +212,7 @@
                            value="{{ old('tujuan_pengambilan', $selectedOrder ? $selectedOrder->tujuan_ambil ?? '' : '') }}"
                            placeholder="Lokasi pengambilan"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('tujuan_pengambilan') border-red-500 @enderror">
                     @error('tujuan_pengambilan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -226,6 +229,7 @@
                            value="{{ old('tujuan_pengiriman', $selectedOrder ? $selectedOrder->tujuan_kirim ?? '' : '') }}"
                            placeholder="Lokasi tujuan pengiriman"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('tujuan_pengiriman') border-red-500 @enderror">
                     @error('tujuan_pengiriman')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -271,6 +275,7 @@
                            value="{{ old('tipe_kontainer', $selectedOrder ? $selectedOrder->tipe_kontainer ?? '' : '') }}"
                            placeholder="Tipe kontainer"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('tipe_kontainer') border-red-500 @enderror">
                     @error('tipe_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -530,6 +535,7 @@
                            value="{{ old('term', $selectedOrder && $selectedOrder->term ? $selectedOrder->term->nama_status ?? '' : '') }}"
                            placeholder="Term pembayaran"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('term') border-red-500 @enderror">
                     @error('term')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -565,6 +571,7 @@
                            value="{{ old('uang_jalan', '0') }}"
                            placeholder="0"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('uang_jalan') border-red-500 @enderror">
                     @error('uang_jalan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -579,6 +586,7 @@
                            value="{{ old('no_pemesanan', $selectedOrder ? $selectedOrder->nomor_order ?? '' : '') }}"
                            placeholder="Nomor pemesanan"
                            readonly
+                           tabindex="-1"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_pemesanan') border-red-500 @enderror">
                     @error('no_pemesanan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -954,12 +962,64 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+// Fix for "not focusable" error on readonly fields
+function preventReadonlyFocus() {
+    // Get all readonly input fields
+    const readonlyFields = document.querySelectorAll('input[readonly]');
+    
+    readonlyFields.forEach(function(field) {
+        // Add event listener to prevent focus
+        field.addEventListener('focus', function(event) {
+            event.preventDefault();
+            event.target.blur();
+            console.log('Prevented focus on readonly field:', event.target.name);
+        });
+        
+        // Also handle click events
+        field.addEventListener('click', function(event) {
+            event.preventDefault();
+            event.target.blur();
+        });
+    });
+    
+    console.log('Applied focus prevention to', readonlyFields.length, 'readonly fields');
+}
+
+// Handle form validation errors for readonly fields
+function handleReadonlyValidationErrors() {
+    // Override browser's default validation focusing
+    const form = document.querySelector('form');
+    if (form) {
+        form.addEventListener('invalid', function(event) {
+            const target = event.target;
+            
+            // If the invalid field is readonly, prevent focus
+            if (target.hasAttribute('readonly')) {
+                event.preventDefault();
+                console.log('Prevented validation focus on readonly field:', target.name);
+                
+                // Scroll to the field instead of focusing
+                target.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                
+                // Show custom error message
+                const errorMsg = target.validationMessage || 'Field ini perlu diisi';
+                console.warn('Validation error on readonly field:', target.name, '-', errorMsg);
+            }
+        }, true);
+    }
+}
+
 // Auto-populate uang jalan when page loads if order is selected
 @if($selectedOrder && $selectedOrder->tujuan_ambil)
 document.addEventListener('DOMContentLoaded', function() {
     handleTipeKontainerVisibility(); // Check tipe kontainer visibility
     updateKontainerRules(); // Check kontainer rules on load
     checkSizeWarning(); // Check size warning on load
+    preventReadonlyFocus(); // Prevent focus on readonly fields
+    handleReadonlyValidationErrors(); // Handle validation errors for readonly fields
     
     // Force update uang jalan after page load
     setTimeout(function() {
@@ -972,6 +1032,8 @@ document.addEventListener('DOMContentLoaded', function() {
     handleTipeKontainerVisibility(); // Check tipe kontainer visibility
     updateKontainerRules(); // Check kontainer rules on load
     checkSizeWarning(); // Check size warning on load
+    preventReadonlyFocus(); // Prevent focus on readonly fields
+    handleReadonlyValidationErrors(); // Handle validation errors for readonly fields
 });
 @endif
 </script>
