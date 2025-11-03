@@ -303,17 +303,20 @@ class TujuanKegiatanUtamaController extends Controller
         $errorCount = 0;
 
         if (($handle = fopen($path, 'r')) !== FALSE) {
-            $headers = fgetcsv($handle, 0, ';'); // Menggunakan semicolon sebagai delimiter
-            if (!$headers) {
-                $headers = fgetcsv($handle, 0, ','); // Fallback ke comma jika semicolon gagal
-                fseek($handle, 0); // Reset file pointer
-                $headers = fgetcsv($handle, 0, ',');
-                $delimiter = ',';
-            } else {
-                $delimiter = ';';
-            }
-
-            $rowNumber = 1;
+            // Detect delimiter by checking first line
+            $firstLine = fgets($handle);
+            rewind($handle); // Reset to beginning
+            
+            // Count delimiters to detect which one is used
+            $semicolonCount = substr_count($firstLine, ';');
+            $commaCount = substr_count($firstLine, ',');
+            
+            $delimiter = ($semicolonCount > $commaCount) ? ';' : ',';
+            
+            // Read and skip header row
+            $headers = fgetcsv($handle, 0, $delimiter);
+            
+            $rowNumber = 1; // Header is row 1, data starts from row 2
 
             while (($row = fgetcsv($handle, 0, $delimiter)) !== FALSE) {
                 $rowNumber++;
@@ -358,25 +361,26 @@ class TujuanKegiatanUtamaController extends Controller
                             'aktif' => true, // Default aktif untuk file user
                         ];
                     } else {
-                        // Format template standard (comma separated)
+                        // Format CSV dengan comma (user's format)
+                        // Index: 0=ID, 1=Kode, 2=Cabang, 3=Wilayah, 4=Dari, 5=Ke, 6=Uang Jalan 20ft, dll
                         $rowData = [
-                            'kode' => $row[0] ?? null,
-                            'cabang' => $row[1] ?? null,
-                            'wilayah' => $row[2] ?? null,
-                            'dari' => $row[3] ?? null,
-                            'ke' => $row[4] ?? null,
-                            'uang_jalan_20ft' => is_numeric($row[5] ?? null) ? (float)$row[5] : null,
-                            'uang_jalan_40ft' => is_numeric($row[6] ?? null) ? (float)$row[6] : null,
-                            'keterangan' => $row[7] ?? null,
-                            'liter' => is_numeric($row[8] ?? null) ? (float)$row[8] : null,
-                            'jarak_dari_penjaringan_km' => is_numeric($row[9] ?? null) ? (float)$row[9] : null,
-                            'mel_20ft' => is_numeric($row[10] ?? null) ? (float)$row[10] : null,
-                            'mel_40ft' => is_numeric($row[11] ?? null) ? (float)$row[11] : null,
-                            'ongkos_truk_20ft' => is_numeric($row[12] ?? null) ? (float)$row[12] : null,
-                            'ongkos_truk_40ft' => is_numeric($row[13] ?? null) ? (float)$row[13] : null,
-                            'antar_lokasi_20ft' => is_numeric($row[14] ?? null) ? (float)$row[14] : null,
-                            'antar_lokasi_40ft' => is_numeric($row[15] ?? null) ? (float)$row[15] : null,
-                            'aktif' => isset($row[16]) ? (bool)$row[16] : true,
+                            'kode' => trim($row[1] ?? '') ?: null,
+                            'cabang' => trim($row[2] ?? '') ?: null,
+                            'wilayah' => trim($row[3] ?? '') ?: null,
+                            'dari' => trim($row[4] ?? '') ?: null,
+                            'ke' => trim($row[5] ?? '') ?: null,
+                            'uang_jalan_20ft' => $cleanNumber($row[6] ?? null),
+                            'uang_jalan_40ft' => $cleanNumber($row[7] ?? null),
+                            'keterangan' => trim($row[8] ?? '') ?: null,
+                            'liter' => $cleanNumber($row[9] ?? null),
+                            'jarak_dari_penjaringan_km' => $cleanNumber($row[10] ?? null),
+                            'mel_20ft' => $cleanNumber($row[11] ?? null),
+                            'mel_40ft' => $cleanNumber($row[12] ?? null),
+                            'ongkos_truk_20ft' => $cleanNumber($row[13] ?? null),
+                            'ongkos_truk_40ft' => $cleanNumber($row[14] ?? null),
+                            'antar_lokasi_20ft' => $cleanNumber($row[15] ?? null),
+                            'antar_lokasi_40ft' => $cleanNumber($row[16] ?? null),
+                            'aktif' => true, // Default aktif
                         ];
                     }
 

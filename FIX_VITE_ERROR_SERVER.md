@@ -56,10 +56,10 @@ npm install
 Sejak kita mengubah dari CDN ke local assets (offline support), aplikasi membutuhkan:
 
 1. **File manifest**: `/var/www/aypsis/public/build/manifest.json`
-2. **Asset files**: 
-   - `/var/www/aypsis/public/build/assets/app-*.css`
-   - `/var/www/aypsis/public/build/assets/app-*.js`
-   - `/var/www/aypsis/public/build/assets/*.woff2` (Font Awesome fonts)
+2. **Asset files**:
+    - `/var/www/aypsis/public/build/assets/app-*.css`
+    - `/var/www/aypsis/public/build/assets/app-*.js`
+    - `/var/www/aypsis/public/build/assets/*.woff2` (Font Awesome fonts)
 
 File-file ini **TIDAK di-commit ke Git** (ada di `.gitignore`), jadi harus di-build di server.
 
@@ -71,6 +71,7 @@ ls -la /var/www/aypsis/public/build/assets/
 ```
 
 Harusnya ada:
+
 ```
 build/
 ├── manifest.json          # Wajib ada!
@@ -114,10 +115,11 @@ bash server_pull_commands.sh
 ```
 
 Script sekarang include:
-- ✅ `npm install` - Install dependencies
-- ✅ `npm run build` - Build Vite assets
-- ✅ Cache clear
-- ✅ Permissions fix
+
+-   ✅ `npm install` - Install dependencies
+-   ✅ `npm run build` - Build Vite assets
+-   ✅ Cache clear
+-   ✅ Permissions fix
 
 ## 🔐 Permissions Check
 
@@ -131,6 +133,7 @@ sudo chmod -R 755 /var/www/aypsis/public/build
 ## 🐛 Troubleshooting
 
 ### Error: `npm: command not found`
+
 ```bash
 # Install Node.js terlebih dahulu
 # Ubuntu/Debian:
@@ -143,6 +146,7 @@ sudo yum install -y nodejs
 ```
 
 ### Error: `vite: not found` setelah npm install
+
 ```bash
 # Hapus dan install ulang
 rm -rf node_modules package-lock.json
@@ -157,6 +161,7 @@ npm run build
 ```
 
 ### Error: `EACCES: permission denied`
+
 ```bash
 # Run dengan sudo atau fix npm permissions
 sudo npm install
@@ -164,6 +169,7 @@ sudo npm run build
 ```
 
 ### Build berhasil tapi masih error
+
 ```bash
 # Clear semua cache
 php artisan optimize:clear
@@ -176,6 +182,7 @@ sudo systemctl restart nginx
 ```
 
 ### File manifest.json ada tapi masih error
+
 ```bash
 # Check isi file manifest
 cat /var/www/aypsis/public/build/manifest.json
@@ -220,6 +227,7 @@ Setelah fix error ini:
 ---
 
 **🆘 Jika masih error, kirim output dari:**
+
 ```bash
 npm run build
 ls -la /var/www/aypsis/public/build/
