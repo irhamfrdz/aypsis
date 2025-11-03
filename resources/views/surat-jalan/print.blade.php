@@ -6,16 +6,8 @@
     <title>Surat Jalan</title>
     <style>
         @page {
-            size: A4;
-            margin: 20mm;
-            margin-header: 0mm;
-            margin-footer: 0mm;
-            @top-left { content: ""; }
-            @top-center { content: ""; }
-            @top-right { content: ""; }
-            @bottom-left { content: ""; }
-            @bottom-center { content: ""; }
-            @bottom-right { content: ""; }
+            size: 215mm 165mm;
+            margin: 0mm;
         }
         
         body {
@@ -26,152 +18,298 @@
         }
         
         .container {
-            width: 100%;
-            max-width: 100%;
+            width: 215mm;
+            height: 165mm;
             margin: 0;
-            padding: 40mm 30mm;
+            padding: 10mm 5mm 5mm 5mm;
             box-sizing: border-box;
-            min-height: 100vh;
             position: relative;
         }
         
+        /* Header Section */
         .date-header {
             text-align: right;
-            margin-bottom: 80px;
-            font-size: 16px;
-            font-weight: bold;
-        }
-        
-        .container-number {
-            text-align: center;
-            font-size: 24px;
-            font-weight: bold;
-            margin: 80px 0;
-            letter-spacing: 2px;
-        }
-        
-        .content {
-            margin: 80px 0;
-        }
-        
-        .row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 60px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-        
-        .left-col {
-            flex: 1;
-            text-align: left;
-        }
-        
-        .right-col {
-            flex: 1;
-            text-align: right;
-        }
-        
-        .company-name {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 5px;
-            text-align: center;
-        }
-        
-        .route-section {
-            margin: 100px 0;
-        }
-        
-        .route-from {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 100px;
-        }
-        
-        .route-to {
-            font-size: 18px;
-            font-weight: bold;
-            text-align: right;
-        }
-        
-        .footer {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
+            margin-bottom: 15mm;
             font-size: 14px;
             font-weight: bold;
         }
         
+        /* No Plat Section */
+        .no-plat {
+            text-align: right;
+            margin-bottom: 20mm;
+            font-size: 14px;
+            font-weight: bold;
+            padding-right: 20mm;
+        }
+        
+        /* Tabel 3 Kolom */
+        .table-section {
+            margin-bottom: 15mm;
+        }
+        
+        .table-row {
+            display: flex;
+            margin-bottom: 7mm;
+        }
+        
+        .col {
+            width: 50mm;
+            font-size: 11px;
+            font-weight: bold;
+            text-align: left;
+            padding-right: 5mm;
+        }
+        
+        .col-center {
+            text-align: center;
+        }
+        
+        /* Baris SEAL, UKURAN, PENGIRIM */
+        .seal-row {
+            display: flex;
+            margin-bottom: 15mm;
+        }
+        
+        .seal-col {
+            width: 50mm;
+            font-size: 14px;
+            font-weight: bold;
+            padding-right: 5mm;
+        }
+        
+        .ukuran-col {
+            width: 50mm;
+            font-size: 14px;
+            font-weight: bold;
+            font-family: 'Times New Roman', serif;
+            padding-right: 5mm;
+        }
+        
+        .pengirim-col {
+            width: 50mm;
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
+        /* Baris Bawah: Tujuan */
+        .bottom-row {
+            display: flex;
+            margin-bottom: 10mm;
+        }
+        
+        /* TTD Section */
+        .ttd-section {
+            position: absolute;
+            bottom: 15mm;
+            left: 5mm;
+            right: 5mm;
+        }
+        
+        .ttd-row {
+            display: flex;
+            text-align: center;
+            margin-bottom: 5mm;
+        }
+        
+        .ttd-col {
+            width: 50mm;
+            font-size: 9px;
+            font-weight: bold;
+        }
+        
+        .supir-name {
+            margin-top: 15mm;
+            text-align: center;
+        }
+        
         @media print {
-            body {
-                margin: 0;
-                padding: 0;
+            @page { 
+                margin: 0 !important; 
+                size: 215mm 165mm !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+            }
+            
+            html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+                background: white !important;
+                color: black !important;
             }
             
             .container {
-                box-shadow: none;
-                min-height: 100vh;
-                padding: 30mm 25mm;
+                box-shadow: none !important;
+                padding: 10mm 5mm 5mm 5mm !important;
+                page-break-inside: avoid !important;
+                margin: 0 !important;
+                background: white !important;
+            }
+            
+            /* Aggressively hide browser headers/footers */
+            @page { margin: 0 !important; }
+            @page :first { margin-top: 0 !important; }
+            @page :left { margin: 0 !important; }
+            @page :right { margin: 0 !important; }
+            
+            /* Hide print instructions when printing */
+            div[style*="background: #f0f0f0"] {
+                display: none !important;
+            }
+            
+            /* Hide all possible header/footer elements */
+            header, .header, .print-header, 
+            footer, .footer:not(.ttd-section .ttd-col), .print-footer,
+            nav, .nav, .navigation,
+            .page-header, .page-footer { 
+                display: none !important; 
+                visibility: hidden !important;
+                height: 0 !important;
+                margin: 0 !important;
+                padding: 0 !important;
+            }
+            
+            /* Prevent page breaks */
+            * { 
+                page-break-inside: avoid !important;
+                -webkit-region-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
     </style>
 </head>
 <body>
+    <!-- Print Instructions (only visible on screen) -->
+    <div style="display: block; padding: 10px; background: #f0f0f0; margin-bottom: 10px; font-size: 12px; border: 1px solid #ccc;">
+        <strong>PETUNJUK PRINT:</strong> Untuk menghilangkan URL dan nomor halaman, pastikan <strong>"Headers and footers"</strong> dinonaktifkan di pengaturan print browser (Ctrl+P → More settings → hapus centang "Headers and footers")
+    </div>
+
     <div class="container">
-        <!-- Date Header -->
+        <!-- SESI 1: HEADER -->
         <div class="date-header">
             {{ \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan ?? now())->format('d-M-Y') }}
         </div>
         
-        <!-- Container Number -->
-        <div class="container-number">
-            {{ $suratJalan->no_kontainer ?? 'B 9902 UEK' }}
+        <!-- SESI 2: NO PLAT KENDARAAN -->
+        <div class="no-plat">
+            {{ $suratJalan->no_plat ?? ($suratJalan->no_plat != '--Pilih No Plat' ? $suratJalan->no_plat : '') }}
         </div>
         
-        <!-- FCL and Volume -->
-        <div class="content">
-            <div class="row">
-                <div class="left-col">FCL</div>
-                <div class="right-col">{{ $suratJalan->size ?? '4 x 1500 ML' }}</div>
+        <!-- SESI 3: TABEL BARANG (3 Kolom) -->
+        <div class="table-section">
+            <!-- Baris 1: No Kontainer | Kosong | Jenis Barang -->
+            <div class="table-row">
+                <div class="col">{{ $suratJalan->no_kontainer ?? '' }}</div>
+                <div class="col"></div>
+                <div class="col">{{ $suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA' }}</div>
             </div>
             
-            <!-- Seal Number and Company -->
-            <div class="row">
-                <div class="left-col">SEAL {{ $suratJalan->no_seal ?? 'AYP0036824' }}</div>
-                <div class="right-col">
-                    <div class="company-name">{{ $suratJalan->pengirim ?? 'PT TIRTA INVESTAMA' }}</div>
-                </div>
+            <!-- Baris 2 & 3: Kosong -->
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <!-- Baris 4: SEAL | KOSONG | NAMA PENGIRIM -->
+            <div class="seal-row">
+                <div class="seal-col">SEAL AYP{{ $suratJalan->no_seal ?? '0036824' }}</div>
+                <div class="ukuran-col"></div>
+                <div class="pengirim-col">{{ $suratJalan->pengirim ?? 'PT TIRTA INVESTAMA' }}</div>
+            </div>
+            
+            <!-- Baris 5, 6, 7: Kosong -->
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <div class="table-row">
+                <div class="col"></div>
+                <div class="col"></div>
+                <div class="col"></div>
+            </div>
+            
+            <!-- Baris 8: Tujuan Akhir | Kosong | Tujuan Kirim -->
+            <div class="bottom-row">
+                <div class="col">{{ $suratJalan->tujuan_pengiriman ?? 'SUKABUMI' }}</div>
+                <div class="col"></div>
+                <div class="col">{{ $suratJalan->tujuan_pengambilan ?? 'Batam' }}</div>
             </div>
         </div>
         
-        <!-- Route Information -->
-        <div class="route-section">
-            <div class="route-from">
-                {{ $suratJalan->tujuan_pengambilan ?? 'Batam' }}
+        <!-- SESI 4: TTD AREA -->
+        <div class="ttd-section">
+            <div class="ttd-row">
+                <div class="ttd-col"></div>
+                <div class="ttd-col supir-name">{{ $suratJalan->supir ?? 'SUMANTA' }}</div>
+                <div class="ttd-col"></div>
             </div>
-            <div class="route-to">
-                {{ $suratJalan->tujuan_pengiriman ?? 'SUKABUMI' }}
-            </div>
-        </div>
-        
-        <!-- Footer -->
-        <div class="footer">
-            {{ $suratJalan->supir ?? 'SUMANTA' }}
         </div>
     </div>
     
     <script>
-        // Auto print when page loads with clean headers
+        // Aggressive clean print function
         window.onload = function() {
-            // Try to set print settings programmatically
-            if (window.chrome) {
-                // For Chrome - this may require user permission
-                document.title = 'Surat Jalan';
+            // Remove title completely
+            document.title = '';
+            
+            // Remove any meta info
+            var metas = document.getElementsByTagName('meta');
+            for(var i = 0; i < metas.length; i++) {
+                if(metas[i].name === 'description' || metas[i].name === 'keywords') {
+                    metas[i].remove();
+                }
             }
-            window.print();
+            
+            // Print with delay
+            setTimeout(function() {
+                // Try to override browser print settings
+                try {
+                    var printSettings = {
+                        silent: true,
+                        printBackground: false,
+                        deviceName: ''
+                    };
+                } catch(e) {}
+                
+                window.print();
+            }, 300);
         }
+        
+        // Clean up before print
+        window.addEventListener('beforeprint', function() {
+            document.title = '';
+            
+            // Hide any remaining elements
+            var elementsToHide = ['header', 'nav', '.header', '.nav'];
+            elementsToHide.forEach(function(selector) {
+                var elements = document.querySelectorAll(selector);
+                elements.forEach(function(el) {
+                    el.style.display = 'none';
+                });
+            });
+        });
+        
+        // Clean up after print
+        window.addEventListener('afterprint', function() {
+            document.title = '';
+        });
     </script>
 </body>
 </html>
