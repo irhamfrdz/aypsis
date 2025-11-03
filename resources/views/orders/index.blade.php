@@ -15,11 +15,11 @@
                     <p class="mt-1 text-sm text-gray-600">Kelola data order dalam sistem</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
-                    <a href="{{ route('orders.approval.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-yellow-600 text-white text-sm font-medium rounded-lg hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500 transition-colors duration-200 shadow-sm">
+                    <a href="{{ route('orders.approval.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
-                        Persetujuan Order
+                        Kelola Data Order
                     </a>
                     <a href="{{ route('outstanding.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -42,15 +42,15 @@
             <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
                 <div class="flex items-center">
                     <div class="flex-shrink-0">
-                        <div class="w-8 h-8 bg-yellow-100 rounded-lg flex items-center justify-center">
-                            <svg class="w-4 h-4 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center">
+                            <svg class="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z"></path>
                             </svg>
                         </div>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Order Menunggu</p>
-                        <p class="text-2xl font-bold text-gray-900" id="pendingOrdersCount">-</p>
+                        <p class="text-sm font-medium text-gray-600">Order Belum Lengkap</p>
+                        <p class="text-2xl font-bold text-gray-900" id="incompleteOrdersCount">-</p>
                     </div>
                 </div>
             </div>
@@ -165,7 +165,6 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Approval</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
@@ -192,9 +191,6 @@
                                     @else
                                         {{ $order->size_kontainer }} ({{ $order->unit_kontainer }})
                                     @endif
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    {!! $order->approval_status_badge !!}
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full
@@ -243,7 +239,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="8" class="px-6 py-4 text-center text-sm text-gray-500">
                                     <div class="flex flex-col items-center justify-center py-8">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
