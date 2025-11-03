@@ -126,21 +126,43 @@
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     @php
-                                        $missingFields = collect([
-                                            'pengirim_id' => $order->pengirim_id,
-                                            'tujuan_ambil' => $order->tujuan_ambil,
-                                            'tujuan_kirim' => $order->tujuan_kirim,
-                                            'tipe_kontainer' => $order->tipe_kontainer,
-                                            'size_kontainer' => $order->size_kontainer,
-                                            'unit_kontainer' => $order->unit_kontainer,
-                                            'units' => $order->units,
-                                        ])->filter(function($value) {
-                                            return empty($value);
-                                        })->count();
+                                        $missingFields = collect();
+                                        
+                                        // Check pengirim
+                                        if (!$order->pengirim_id || !$order->pengirim) {
+                                            $missingFields->push('Pengirim');
+                                        }
+                                        
+                                        // Check tujuan
+                                        if (!$order->tujuan_ambil) {
+                                            $missingFields->push('Tujuan Ambil');
+                                        }
+                                        if (!$order->tujuan_kirim) {
+                                            $missingFields->push('Tujuan Kirim');
+                                        }
+                                        
+                                        // Check kontainer info
+                                        if (!$order->tipe_kontainer) {
+                                            $missingFields->push('Tipe Kontainer');
+                                        } else if ($order->tipe_kontainer !== 'cargo') {
+                                            if (!$order->size_kontainer) {
+                                                $missingFields->push('Size Kontainer');
+                                            }
+                                            if (!$order->unit_kontainer) {
+                                                $missingFields->push('Unit Kontainer');
+                                            }
+                                        }
+                                        
+                                        // Check units (allow 0 as valid value)
+                                        if (is_null($order->units) || $order->units === '') {
+                                            $missingFields->push('Units');
+                                        }
+                                        
+                                        $missingCount = $missingFields->count();
                                     @endphp
-                                    @if($missingFields > 0)
-                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                            {{ $missingFields }} field belum lengkap
+                                    @if($missingCount > 0)
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800" title="{{ $missingFields->join(', ') }}">
+                                            {{ $missingCount }} field belum lengkap
                                         </span>
                                     @else
                                         <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
