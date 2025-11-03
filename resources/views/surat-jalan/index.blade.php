@@ -156,8 +156,13 @@
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                 {{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $suratJalan->no_surat_jalan }}
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" 
+                                   class="text-indigo-600 hover:text-indigo-900 hover:underline font-medium"
+                                   title="Klik untuk print surat jalan"
+                                   target="_blank">
+                                    {{ $suratJalan->no_surat_jalan }}
+                                </a>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $suratJalan->formatted_tanggal_surat_jalan }}
