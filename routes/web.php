@@ -56,6 +56,8 @@ use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ProspekController;
 use App\Http\Controllers\NaikKapalController;
+use App\Http\Controllers\OrderApprovalController;
+use App\Http\Controllers\NotificationController;
 
 /*
 |--------------------------------------------------------------------------
@@ -1010,6 +1012,14 @@ Route::middleware([
 // ═══════════════════════════════════════════════════════════════════════
 
 Route::middleware(['auth', 'verified'])->group(function () {
+    // Order Approval Routes (HARUS SEBELUM Route::resource('orders'))
+    Route::prefix('orders/approval')->name('orders.approval.')->group(function () {
+        Route::get('/', [OrderApprovalController::class, 'index'])->name('index');
+        Route::post('/{order}/approve', [OrderApprovalController::class, 'approve'])->name('approve');
+        Route::post('/{order}/reject', [OrderApprovalController::class, 'reject'])->name('reject');
+        Route::post('/bulk-approve', [OrderApprovalController::class, 'bulkApprove'])->name('bulk-approve');
+    });
+
     // 📋 Order Management with permissions
     Route::resource('orders', OrderController::class)
          ->middleware([
@@ -1021,6 +1031,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
              'update' => 'can:order-update',
              'destroy' => 'can:order-delete'
          ]);
+
+    // Notification Routes
+    Route::prefix('notifications')->name('notifications.')->group(function () {
+        Route::get('/', [NotificationController::class, 'index'])->name('index');
+        Route::post('/{id}/read', [NotificationController::class, 'markAsRead'])->name('mark-as-read');
+        Route::post('/mark-all-read', [NotificationController::class, 'markAllAsRead'])->name('mark-all-read');
+        Route::get('/unread-count', [NotificationController::class, 'getUnreadCount'])->name('unread-count');
+    });
 
     // AJAX route for generating order number
     Route::post('/orders/generate-number', [OrderController::class, 'generateOrderNumber'])

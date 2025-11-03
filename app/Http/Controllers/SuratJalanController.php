@@ -74,7 +74,8 @@ class SuratJalanController extends Controller
     public function selectOrder(Request $request)
     {
         $query = Order::with(['pengirim', 'jenisBarang', 'tujuanAmbil'])
-                     ->whereIn('status', ['active', 'confirmed', 'processing']);
+                     ->whereIn('status', ['active', 'confirmed', 'processing'])
+                     ->where('approval_status', 'approved'); // Hanya order yang sudah approved
 
         // Search functionality
         if ($request->filled('search')) {
@@ -116,9 +117,16 @@ class SuratJalanController extends Controller
             $selectedOrder = Order::with(['pengirim', 'jenisBarang', 'tujuanAmbil', 'term'])
                                   ->find($request->order_id);
 
+            // Validasi order exists dan status valid
             if (!$selectedOrder || !in_array($selectedOrder->status, ['active', 'confirmed', 'processing'])) {
                 return redirect()->route('surat-jalan.select-order')
                                 ->with('error', 'Order tidak valid atau tidak tersedia untuk membuat surat jalan.');
+            }
+
+            // Validasi approval status - harus approved
+            if ($selectedOrder->approval_status !== 'approved') {
+                return redirect()->route('surat-jalan.select-order')
+                                ->with('error', 'Order harus disetujui terlebih dahulu sebelum dapat dibuatkan surat jalan.');
             }
         } else {
             // Jika tidak ada order yang dipilih, redirect ke halaman select order
@@ -199,6 +207,16 @@ class SuratJalanController extends Controller
         ]);
 
         Log::info('Validation passed successfully');
+
+        // Validasi approval status jika ada order_id
+        if ($request->filled('order_id')) {
+            $order = Order::find($request->order_id);
+            if ($order && $order->approval_status !== 'approved') {
+                return redirect()->back()
+                               ->with('error', 'Order harus disetujui terlebih dahulu sebelum dapat dibuatkan surat jalan.')
+                               ->withInput();
+            }
+        }
 
         try {
             Log::info('Starting surat jalan creation process');

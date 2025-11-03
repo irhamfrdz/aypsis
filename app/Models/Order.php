@@ -36,13 +36,18 @@ class Order extends Model
         'pengirim_id',
         'jenis_barang_id',
         'status',
-        'catatan'
+        'catatan',
+        'approval_status',
+        'approved_by',
+        'approved_at',
+        'approval_notes'
     ];
 
     protected $casts = [
         'tanggal_order' => 'date',
         'tanggal_pickup' => 'date',
         'completed_at' => 'datetime',
+        'approved_at' => 'datetime',
         'processing_history' => 'array',
         'exclude_ftz03' => 'boolean',
         'include_ftz03' => 'boolean',
@@ -82,6 +87,11 @@ class Order extends Model
         return $this->belongsTo(JenisBarang::class, 'jenis_barang_id');
     }
 
+    public function approvedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
     public function tujuanAmbil(): BelongsTo
     {
         return $this->belongsTo(TujuanKegiatanUtama::class, 'tujuan_ambil_id');
@@ -108,6 +118,22 @@ class Order extends Model
         return $query->where('outstanding_status', 'pending')->where('sisa', '=', function($query) {
             $query->selectRaw('units');
         });
+    }
+
+    // Approval Scopes
+    public function scopeApproved($query)
+    {
+        return $query->where('approval_status', 'approved');
+    }
+
+    public function scopePendingApproval($query)
+    {
+        return $query->where('approval_status', 'pending');
+    }
+
+    public function scopeRejected($query)
+    {
+        return $query->where('approval_status', 'rejected');
     }
 
     // Outstanding Helper Methods
@@ -176,7 +202,15 @@ class Order extends Model
     public function getOutstandingStatusBadgeAttribute()
     {
         $status = $this->outstanding_status ?? 'pending';
-        $text = ucfirst($status);
+        
+        // Map status to Indonesian
+        $statusMap = [
+            'pending' => 'Menunggu',
+            'partial' => 'Sedang Dikerjakan',
+            'completed' => 'Selesai'
+        ];
+        
+        $text = $statusMap[$status] ?? ucfirst($status);
 
         switch ($status) {
             case 'pending':
@@ -186,7 +220,69 @@ class Order extends Model
             case 'completed':
                 return '<span class="badge badge-success">' . $text . '</span>';
             default:
-                return '<span class="badge badge-secondary">Unknown</span>';
+                return '<span class="badge badge-secondary">Tidak Diketahui</span>';
         }
     }
+
+    public function getApprovalStatusBadgeAttribute()
+    {
+        $status = $this->approval_status ?? 'pending';
+        
+        $statusMap = [
+            'pending' => 'Menunggu Persetujuan',
+            'approved' => 'Disetujui',
+            'rejected' => 'Ditolak'
+        ];
+        
+        $text = $statusMap[$status] ?? ucfirst($status);
+
+        switch ($status) {
+            case 'pending':
+                return '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">' . $text . '</span>';
+            case 'approved':
+                return '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">' . $text . '</span>';
+            case 'rejected':
+                return '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-red-100 text-red-800">' . $text . '</span>';
+            default:
+                return '<span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">Tidak Diketahui</span>';
+        }
+    }
+
+    public function approve($approvedBy, $notes = null)
+    {
+        $this->approval_status = 'approved';
+        $this->approved_by = $approvedBy;
+        $this->approved_at = now();
+        $this->approval_notes = $notes;
+        $this->save();
+
+        return $this;
+    }
+
+    public function reject($rejectedBy, $notes = null)
+    {
+        $this->approval_status = 'rejected';
+        $this->approved_by = $rejectedBy;
+        $this->approved_at = now();
+        $this->approval_notes = $notes;
+        $this->save();
+
+        return $this;
+    }
+
+    public function isApproved()
+    {
+        return $this->approval_status === 'approved';
+    }
+
+    public function isPendingApproval()
+    {
+        return $this->approval_status === 'pending';
+    }
+
+    public function isRejected()
+    {
+        return $this->approval_status === 'rejected';
+    }
 }
+

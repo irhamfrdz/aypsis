@@ -31,7 +31,7 @@
                 <div class="flex items-center">
                     <div class="flex-1">
                         <div class="text-xs font-bold text-yellow-600 uppercase tracking-wide mb-1">
-                            Pending Orders
+                            Order Menunggu
                         </div>
                         <div class="text-2xl font-bold text-gray-900" id="pendingCount">
                             <svg class="animate-spin h-5 w-5 inline" fill="none" viewBox="0 0 24 24">
@@ -54,7 +54,7 @@
                 <div class="flex items-center">
                     <div class="flex-1">
                         <div class="text-xs font-bold text-blue-600 uppercase tracking-wide mb-1">
-                            Partial Orders
+                            Order Sedang Dikerjakan
                         </div>
                         <div class="text-2xl font-bold text-gray-900" id="partialCount">
                             <svg class="animate-spin h-5 w-5 inline" fill="none" viewBox="0 0 24 24">
@@ -77,7 +77,7 @@
                 <div class="flex items-center">
                     <div class="flex-1">
                         <div class="text-xs font-bold text-green-600 uppercase tracking-wide mb-1">
-                            Completed Orders
+                            Order Selesai
                         </div>
                         <div class="text-2xl font-bold text-gray-900" id="completedCount">
                             <svg class="animate-spin h-5 w-5 inline" fill="none" viewBox="0 0 24 24">
@@ -135,10 +135,10 @@
                     <div class="space-y-1">
                         <label for="status" class="block text-sm font-medium text-gray-700">Status</label>
                         <select name="status" id="status" class="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                            <option value="">All Status</option>
-                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                            <option value="partial" {{ request('status') == 'partial' ? 'selected' : '' }}>Partial</option>
-                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completed</option>
+                            <option value="">Semua Status</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Menunggu</option>
+                            <option value="partial" {{ request('status') == 'partial' ? 'selected' : '' }}>Sedang Dikerjakan</option>
+                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Selesai</option>
                         </select>
                     </div>
 
@@ -233,7 +233,7 @@
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Sisa</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Completion</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                         <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
                     </tr>
                 </thead>
