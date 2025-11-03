@@ -6,7 +6,7 @@
     <title>Surat Jalan</title>
     <style>
         @page {
-            size: 215mm 165mm;
+            size: 165mm 215mm;
             margin: 0mm;
         }
         
@@ -18,8 +18,8 @@
         }
         
         .container {
-            width: 215mm;
-            height: 165mm;
+            width: 165mm;
+            height: 215mm;
             margin: 0;
             padding: 10mm 5mm 5mm 5mm;
             box-sizing: border-box;
@@ -126,7 +126,7 @@
         @media print {
             @page { 
                 margin: 0 !important; 
-                size: 215mm 165mm !important;
+                size: 165mm 215mm !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
@@ -199,10 +199,10 @@
         
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
         <div class="table-section">
-            <!-- Baris 1: No Kontainer | Kosong | Jenis Barang -->
+            <!-- Baris 1: No Kontainer | Tipe Kontainer | Jenis Barang -->
             <div class="table-row">
                 <div class="col">{{ $suratJalan->no_kontainer ?? '' }}</div>
-                <div class="col"></div>
+                <div class="col">{{ $suratJalan->tipe_kontainer ?? 'FCL' }}</div>
                 <div class="col">{{ $suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA' }}</div>
             </div>
             
