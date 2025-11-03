@@ -25,7 +25,7 @@
 
         <!-- Form Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-            <form action="{{ route('orders.store') }}" method="POST" class="space-y-6">
+            <form action="{{ route('orders.store') }}" method="POST" class="space-y-6" autocomplete="off">
                 @csrf
 
                 <!-- Basic Information -->
@@ -38,7 +38,7 @@
                                 Nomor Order <span class="text-red-500">*</span>
                             </label>
                             <div class="flex">
-                                <input type="text" name="nomor_order" id="nomor_order" value="{{ old('nomor_order', $nextOrderNumber ?? '') }}" required readonly
+                                <input type="text" name="nomor_order" id="nomor_order" value="{{ old('nomor_order', $nextOrderNumber ?? '') }}" required readonly autocomplete="off"
                                        class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_order') border-red-500 @enderror"
                                        placeholder="Otomatis tergenerate">
                                 <button type="button" id="generate_nomor_order"
@@ -57,7 +57,7 @@
                             <label for="tanggal_order" class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Order <span class="text-red-500">*</span>
                             </label>
-                            <input type="date" name="tanggal_order" id="tanggal_order" value="{{ old('tanggal_order') }}" required
+                            <input type="date" name="tanggal_order" id="tanggal_order" value="{{ old('tanggal_order') }}" required autocomplete="off"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_order') border-red-500 @enderror">
                             @error('tanggal_order')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -69,7 +69,7 @@
                             <label for="no_tiket_do" class="block text-sm font-medium text-gray-700 mb-2">
                                 No Tiket/DO
                             </label>
-                            <input type="text" name="no_tiket_do" id="no_tiket_do" value="{{ old('no_tiket_do') }}"
+                            <input type="text" name="no_tiket_do" id="no_tiket_do" value="{{ old('no_tiket_do') }}" autocomplete="off"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('no_tiket_do') border-red-500 @enderror"
                                    placeholder="Masukkan no tiket/DO">
                             @error('no_tiket_do')
@@ -99,7 +99,7 @@
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container">
-                                    <input type="text" id="search_tujuan_kirim" placeholder="Search..."
+                                    <input type="text" id="search_tujuan_kirim" placeholder="Search..." autocomplete="off"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
                                     <select name="tujuan_kirim_id" id="tujuan_kirim_id" required
                                             class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_kirim_id') border-red-500 @enderror">
@@ -134,7 +134,7 @@
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-ambil">
-                                    <input type="text" id="search_tujuan_ambil" placeholder="Search..."
+                                    <input type="text" id="search_tujuan_ambil" placeholder="Search..." autocomplete="off"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
                                     <select name="tujuan_ambil_id" id="tujuan_ambil_id" required
                                             class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('tujuan_ambil_id') border-red-500 @enderror">
@@ -175,7 +175,7 @@
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-term">
-                                    <input type="text" id="search_term" placeholder="Search..."
+                                    <input type="text" id="search_term" placeholder="Search..." autocomplete="off"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
                                     <select name="term_id" id="term_id"
                                             class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('term_id') border-red-500 @enderror">
@@ -210,7 +210,7 @@
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-pengirim">
-                                    <input type="text" id="search_pengirim" placeholder="Search..."
+                                    <input type="text" id="search_pengirim" placeholder="Search..." autocomplete="off"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
                                     <select name="pengirim_id" id="pengirim_id"
                                             class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('pengirim_id') border-red-500 @enderror">
@@ -245,7 +245,7 @@
                             </div>
                             <div class="relative">
                                 <div class="dropdown-container-jenis-barang">
-                                    <input type="text" id="search_jenis_barang" placeholder="Search..."
+                                    <input type="text" id="search_jenis_barang" placeholder="Search..." autocomplete="off"
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 bg-white">
                                     <select name="jenis_barang_id" id="jenis_barang_id"
                                             class="hidden w-full px-3 py-2 border border-gray-300 rounded focus:outline-none focus:border-blue-500 @error('jenis_barang_id') border-red-500 @enderror">
@@ -296,7 +296,7 @@
                             <label for="unit_kontainer" class="block text-sm font-medium text-gray-700 mb-2">
                                 Unit Kontainer <span class="text-red-500">*</span>
                             </label>
-                            <input type="number" name="unit_kontainer" id="unit_kontainer" value="{{ old('unit_kontainer') }}" required min="1"
+                            <input type="number" name="unit_kontainer" id="unit_kontainer" value="{{ old('unit_kontainer') }}" required min="1" autocomplete="off"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('unit_kontainer') border-red-500 @enderror"
                                    placeholder="Jumlah unit kontainer">
                             <small class="text-gray-500">Akan digunakan untuk outstanding tracking</small>
@@ -328,7 +328,7 @@
                             <label for="tanggal_pickup" class="block text-sm font-medium text-gray-700 mb-2">
                                 Tanggal Pickup
                             </label>
-                            <input type="date" name="tanggal_pickup" id="tanggal_pickup" value="{{ old('tanggal_pickup') }}"
+                            <input type="date" name="tanggal_pickup" id="tanggal_pickup" value="{{ old('tanggal_pickup') }}" autocomplete="off"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_pickup') border-red-500 @enderror">
                             @error('tanggal_pickup')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
