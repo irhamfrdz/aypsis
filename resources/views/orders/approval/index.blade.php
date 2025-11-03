@@ -128,33 +128,57 @@
                                     @php
                                         $missingFields = collect();
                                         
+                                        // Check basic order info
+                                        if (!$order->nomor_order) {
+                                            $missingFields->push('Nomor Order');
+                                        }
+                                        if (!$order->tanggal_order) {
+                                            $missingFields->push('Tanggal Order');
+                                        }
+                                        if (!$order->no_tiket_do || trim($order->no_tiket_do) === '') {
+                                            $missingFields->push('No Tiket/DO');
+                                        }
+                                        if (!$order->status || trim($order->status) === '') {
+                                            $missingFields->push('Status');
+                                        }
+                                        
                                         // Check pengirim
-                                        if (!$order->pengirim_id || !$order->pengirim) {
+                                        if (!$order->pengirim_id) {
                                             $missingFields->push('Pengirim');
                                         }
                                         
                                         // Check tujuan
-                                        if (!$order->tujuan_ambil) {
+                                        if (!$order->tujuan_ambil || trim($order->tujuan_ambil) === '') {
                                             $missingFields->push('Tujuan Ambil');
                                         }
-                                        if (!$order->tujuan_kirim) {
+                                        if (!$order->tujuan_kirim || trim($order->tujuan_kirim) === '') {
                                             $missingFields->push('Tujuan Kirim');
                                         }
                                         
+                                        // Check master data
+                                        if (!$order->term_id) {
+                                            $missingFields->push('Term');
+                                        }
+                                        if (!$order->jenis_barang_id) {
+                                            $missingFields->push('Jenis Barang');
+                                        }
+                                        
                                         // Check kontainer info
-                                        if (!$order->tipe_kontainer) {
+                                        if (!$order->tipe_kontainer || trim($order->tipe_kontainer) === '') {
                                             $missingFields->push('Tipe Kontainer');
-                                        } else if ($order->tipe_kontainer !== 'cargo') {
-                                            if (!$order->size_kontainer) {
-                                                $missingFields->push('Size Kontainer');
-                                            }
-                                            if (!$order->unit_kontainer) {
-                                                $missingFields->push('Unit Kontainer');
+                                        } else {
+                                            if ($order->tipe_kontainer !== 'cargo') {
+                                                if (!$order->size_kontainer) {
+                                                    $missingFields->push('Size Kontainer');
+                                                }
+                                                if (!$order->unit_kontainer || (is_numeric($order->unit_kontainer) && $order->unit_kontainer <= 0)) {
+                                                    $missingFields->push('Unit Kontainer');
+                                                }
                                             }
                                         }
                                         
-                                        // Check units (allow 0 as valid value)
-                                        if (is_null($order->units) || $order->units === '') {
+                                        // Check units (allow 0 as valid value, but not null or empty)
+                                        if (is_null($order->units) || $order->units === '' || !is_numeric($order->units)) {
                                             $missingFields->push('Units');
                                         }
                                         
