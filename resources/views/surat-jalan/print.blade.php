@@ -3,156 +3,175 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Surat Jalan - {{ $suratJalan->no_surat_jalan }}</title>
+    <title>Surat Jalan</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        @page {
+            size: A4;
+            margin: 20mm;
+            margin-header: 0mm;
+            margin-footer: 0mm;
+            @top-left { content: ""; }
+            @top-center { content: ""; }
+            @top-right { content: ""; }
+            @bottom-left { content: ""; }
+            @bottom-center { content: ""; }
+            @bottom-right { content: ""; }
         }
+        
         body {
             font-family: Arial, sans-serif;
-            font-size: 9px;
-            line-height: 1.2;
-            color: #000;
+            margin: 0;
+            padding: 0;
+            background: white;
         }
-        .no-print {
-            margin-bottom: 20px;
-            padding: 10px;
-            background: #f0f0f0;
+        
+        .container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 40mm 30mm;
+            box-sizing: border-box;
+            min-height: 100vh;
+            position: relative;
+        }
+        
+        .date-header {
+            text-align: right;
+            margin-bottom: 80px;
+            font-size: 16px;
+            font-weight: bold;
+        }
+        
+        .container-number {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin: 80px 0;
+            letter-spacing: 2px;
+        }
+        
+        .content {
+            margin: 80px 0;
+        }
+        
+        .row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 60px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .left-col {
+            flex: 1;
+            text-align: left;
+        }
+        
+        .right-col {
+            flex: 1;
+            text-align: right;
+        }
+        
+        .company-name {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 5px;
+            text-align: center;
+        }
+        
+        .route-section {
+            margin: 100px 0;
+        }
+        
+        .route-from {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 100px;
+        }
+        
+        .route-to {
+            font-size: 18px;
+            font-weight: bold;
+            text-align: right;
+        }
+        
+        .footer {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 14px;
+            font-weight: bold;
         }
         
         @media print {
-            .no-print {
-                display: none !important;
-                visibility: hidden !important;
-                height: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: hidden !important;
-                position: absolute !important;
-                left: -9999px !important;
-            }
-            
             body {
                 margin: 0;
                 padding: 0;
-                background: white;
-            }
-        }
-        .form-container {
-            position: relative;
-            width: 467.72px;
-            height: 609.45px;
-            margin: 0 auto;
-            transform-origin: top left;
-        }
-        .field {
-            position: absolute;
-            font-family: Arial, sans-serif;
-            font-size: 11px;
-            font-weight: normal;
-            color: #000;
-        }
-        .field-bold {
-            font-weight: bold;
-        }
-        .field-small {
-            font-size: 10px;
-        }
-        .field-medium {
-            font-size: 12px;
-        }
-        .field-large {
-            font-size: 14px;
-        }
-        .field-xlarge {
-            font-size: 16px;
-        }
-        @media print {
-            @page {
-                size: 467.72px 609.45px;
-                margin: 0;
             }
             
-            .no-print {
-                display: none !important;
-                visibility: hidden !important;
-                height: 0 !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: hidden !important;
-                position: absolute !important;
-                left: -9999px !important;
-            }
-            
-            body {
-                margin: 0;
-                padding: 0;
-                background: white;
-                color: black;
-            }
-            
-            .form-container {
-                width: 467.72px;
-                height: 609.45px;
-                margin: 0;
-                position: absolute;
-                top: 0;
-                left: 0;
-                background: white;
+            .container {
+                box-shadow: none;
+                min-height: 100vh;
+                padding: 30mm 25mm;
             }
         }
     </style>
 </head>
 <body>
-    <!-- Print button (hidden when printing) -->
-    <div class="no-print">
-        <button onclick="window.print()" style="padding: 8px 15px; font-size: 12px;">Cetak</button>
-        <button onclick="window.close()" style="padding: 8px 15px; font-size: 12px; margin-left: 10px;">Tutup</button>
-        <p style="margin-top: 10px; font-size: 11px; color: #666;">
-            Template ini dirancang untuk dicetak pada form surat jalan pre-printed yang sudah ada.
-        </p>
-    </div>
-
-    <div class="form-container">
-        <!-- Posisi disesuaikan identik dengan PDF form -->
-        
-        <!-- Tanggal - Kanan Atas -->
-        <div class="field" style="top: 32px; right: 15px;">
-            {{ $suratJalan->formatted_tanggal_surat_jalan }}
+    <div class="container">
+        <!-- Date Header -->
+        <div class="date-header">
+            {{ \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan ?? now())->format('d-M-Y') }}
         </div>
         
-        <!-- Jenis Barang - Kolom Kiri -->
-        <div class="field" style="top: 203px; left: 45px;">
-            {{ $suratJalan->jenis_barang ?? ($suratJalan->order->jenisBarang->nama ?? '') }}
+        <!-- Container Number -->
+        <div class="container-number">
+            {{ $suratJalan->no_kontainer ?? 'B 9902 UEK' }}
         </div>
         
-        <!-- Tipe/Size Kontainer - Kolom Kanan -->
-        <div class="field" style="top: 203px; left: 262px;">
-            {{ $suratJalan->tipe_kontainer ?? '' }}{{ $suratJalan->size ? ' = ' . $suratJalan->size : '' }}
+        <!-- FCL and Volume -->
+        <div class="content">
+            <div class="row">
+                <div class="left-col">FCL</div>
+                <div class="right-col">{{ $suratJalan->size ?? '4 x 1500 ML' }}</div>
+            </div>
+            
+            <!-- Seal Number and Company -->
+            <div class="row">
+                <div class="left-col">SEAL {{ $suratJalan->no_seal ?? 'AYP0036824' }}</div>
+                <div class="right-col">
+                    <div class="company-name">{{ $suratJalan->pengirim ?? 'PT TIRTA INVESTAMA' }}</div>
+                </div>
+            </div>
         </div>
         
-        <!-- No. Seal - Kolom Kiri Baris 2 -->
-        <div class="field field-bold" style="top: 248px; left: 45px;">
-            {{ $suratJalan->no_seal ?? '' }}
+        <!-- Route Information -->
+        <div class="route-section">
+            <div class="route-from">
+                {{ $suratJalan->tujuan_pengambilan ?? 'Batam' }}
+            </div>
+            <div class="route-to">
+                {{ $suratJalan->tujuan_pengiriman ?? 'SUKABUMI' }}
+            </div>
         </div>
         
-        <!-- Tujuan Pengiriman - Kolom Kanan Baris 2 -->
-        <div class="field" style="top: 248px; left: 262px; width: 190px;">
-            {{ $suratJalan->tujuanPengirimanRelation->nama ?? ($suratJalan->order->tujuan_kirim ?? '') }}
-        </div>
-        
-        <!-- Alamat/Penerima - Kolom Kiri Baris 3 -->
-        <div class="field" style="top: 321px; left: 45px;">
-            {{ $suratJalan->alamat ?? ($suratJalan->tujuanPengambilanRelation->nama ?? ($suratJalan->order->tujuan_ambil ?? '')) }}
-        </div>
-        
-        <!-- Tujuan Pengambilan - Kolom Kanan Baris 3 -->
-        <div class="field" style="top: 321px; left: 262px;">
-            {{ $suratJalan->tujuanPengambilanRelation->nama ?? ($suratJalan->order->tujuan_ambil ?? '') }}
+        <!-- Footer -->
+        <div class="footer">
+            {{ $suratJalan->supir ?? 'SUMANTA' }}
         </div>
     </div>
-
+    
+    <script>
+        // Auto print when page loads with clean headers
+        window.onload = function() {
+            // Try to set print settings programmatically
+            if (window.chrome) {
+                // For Chrome - this may require user permission
+                document.title = 'Surat Jalan';
+            }
+            window.print();
+        }
+    </script>
 </body>
 </html>
