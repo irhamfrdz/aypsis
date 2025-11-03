@@ -25,12 +25,20 @@ class MasterMobilImportController extends Controller
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ];
 
-            // CSV content dengan header dan contoh data
+            // CSV content dengan header sesuai format asli
             $csvData = [
-                ['Aktiva', 'Plat', 'Nomor Rangka', 'Ukuran'],
-                ['MOB001', 'B 1234 ABC', 'MH4GD1234A567890', '20ft'],
-                ['MOB002', 'B 5678 DEF', 'MH4GD5678B123456', '40ft'],
-                ['MOB003', 'D 9876 GHI', 'MH4GD9876C654321', '20ft']
+                [
+                    'Kode Aktiva', 'NO.POLISI', 'nik', 'nama_lengkap', 'LOKASI', 'MEREK', 'JENIS', 
+                    'TAHUN PEMBUATAN', 'BPKB', 'NO. MESIN', 'NO. RANGKA', 'PAJAK STNK', 'PAJAK PLAT', 
+                    'NO. KIR', 'PAJAK KIR', 'ATAS NAMA', 'PEMAKAI', 'ASURANSI', 'JTE ASURANSI', 
+                    'WARNA PLAT', 'Catatan'
+                ],
+                [
+                    'AT1122500001', 'B5598BBA', '1234', 'NAMA KARYAWAN', 'JKT', 'HONDA', 'SEPEDA MOTOR',
+                    '2020', 'R12345678', 'JBK1E1714025', 'MH1JBK116LK717264', '24 Sep 26', '24 Sep 30',
+                    '', '', 'FERRY KURNIAWAN', 'OWEN', 'ZURICH ASURANSI INDONESIA, PT', '26 Jun 26',
+                    'HITAM', 'MTR-JKT.031'
+                ]
             ];
 
             $callback = function() use ($csvData) {
@@ -39,9 +47,9 @@ class MasterMobilImportController extends Controller
                 // Add BOM for UTF-8
                 fputs($file, "\xEF\xBB\xBF");
 
-                // Set CSV dengan semicolon delimiter
+                // Set CSV dengan comma delimiter (default Excel)
                 foreach ($csvData as $row) {
-                    fputcsv($file, $row, ';');
+                    fputcsv($file, $row);
                 }
 
                 fclose($file);
@@ -65,12 +73,12 @@ class MasterMobilImportController extends Controller
                 'required',
                 'file',
                 'mimes:csv,txt',
-                'max:5120' // 5MB
+                'max:10240' // 10MB
             ]
         ], [
             'csv_file.required' => 'File CSV harus dipilih.',
             'csv_file.mimes' => 'File harus berformat .csv',
-            'csv_file.max' => 'Ukuran file maksimal 5MB.'
+            'csv_file.max' => 'Ukuran file maksimal 10MB.'
         ]);
 
         if ($validator->fails()) {
@@ -81,22 +89,16 @@ class MasterMobilImportController extends Controller
             $file = $request->file('csv_file');
             $path = $file->getRealPath();
 
-            // Read CSV file with semicolon delimiter
+            // Read CSV file
             $csvData = [];
             if (($handle = fopen($path, 'r')) !== FALSE) {
-                while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
+                while (($data = fgetcsv($handle, 10000)) !== FALSE) {
                     $csvData[] = $data;
                 }
                 fclose($handle);
             }
 
             $header = array_shift($csvData); // Remove header row
-
-            // Validate header format
-            $expectedHeader = ['Aktiva', 'Plat', 'Nomor Rangka', 'Ukuran'];
-            if ($header !== $expectedHeader) {
-                return back()->with('error', 'Format header CSV tidak sesuai template. Gunakan template yang telah disediakan.');
-            }
 
             $stats = [
                 'success' => 0,
@@ -112,48 +114,85 @@ class MasterMobilImportController extends Controller
             foreach ($csvData as $rowIndex => $row) {
                 $rowNumber = $rowIndex + 2; // +2 because we removed header and start from 1
 
-                // Skip empty rows atau contoh data
+                // Skip empty rows
                 if (empty(array_filter($row))) {
                     continue;
                 }
 
-                // Validate row has enough columns
-                if (count($row) < 4) {
-                    $stats['errors']++;
-                    $stats['error_details'][] = "Baris {$rowNumber}: Data tidak lengkap";
-                    continue;
-                }
-
                 try {
-                    $aktiva = trim($row[0]);
-                    $plat = trim($row[1]);
-                    $nomorRangka = trim($row[2]);
-                    $ukuran = trim($row[3]);
+                    // Map CSV columns to variables
+                    $kodeAktiva = trim($row[0] ?? '');
+                    $nomorPolisi = trim($row[1] ?? '');
+                    $nik = trim($row[2] ?? '');
+                    $namaLengkap = trim($row[3] ?? '');
+                    $lokasi = trim($row[4] ?? '');
+                    $merek = trim($row[5] ?? '');
+                    $jenis = trim($row[6] ?? '');
+                    $tahunPembuatan = trim($row[7] ?? '');
+                    $bpkb = trim($row[8] ?? '');
+                    $noMesin = trim($row[9] ?? '');
+                    $noRangka = trim($row[10] ?? '');
+                    $pajakStnk = trim($row[11] ?? '');
+                    $pajakPlat = trim($row[12] ?? '');
+                    $noKir = trim($row[13] ?? '');
+                    $pajakKir = trim($row[14] ?? '');
+                    $atasNama = trim($row[15] ?? '');
+                    $pemakai = trim($row[16] ?? '');
+                    $asuransi = trim($row[17] ?? '');
+                    $jteAsuransi = trim($row[18] ?? '');
+                    $warnaPlat = trim($row[19] ?? '');
+                    $catatan = trim($row[20] ?? '');
 
-                    // Validation
-                    if (empty($aktiva) || empty($plat)) {
-                        $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Aktiva dan Plat tidak boleh kosong";
+                    // Skip if no nomor polisi
+                    if (empty($nomorPolisi)) {
+                        $stats['skipped']++;
+                        $stats['warnings'][] = "Baris {$rowNumber}: Tidak ada nomor polisi, dilewati.";
                         continue;
                     }
 
-                    // Validate ukuran format
-                    $validUkuran = ['20ft', '40ft', '45ft'];
-                    if (!empty($ukuran) && !in_array($ukuran, $validUkuran)) {
-                        $stats['warnings'][] = "Baris {$rowNumber}: Ukuran '{$ukuran}' tidak valid, menggunakan default '20ft'";
-                        $ukuran = '20ft';
+                    // Find karyawan by NIK if provided
+                    $karyawanId = null;
+                    if (!empty($nik)) {
+                        $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
+                        if ($karyawan) {
+                            $karyawanId = $karyawan->id;
+                            // Update plat karyawan
+                            $karyawan->update(['plat' => $nomorPolisi]);
+                        } else {
+                            $stats['warnings'][] = "Baris {$rowNumber}: NIK $nik tidak ditemukan di database karyawan.";
+                        }
                     }
 
-                    // Check if mobil already exists (based on aktiva or plat)
-                    $existingMobil = Mobil::where('aktiva', $aktiva)
-                        ->orWhere('plat', $plat)
-                        ->first();
+                    // Parse dates
+                    $pajakStnkDate = $this->parseDate($pajakStnk);
+                    $pajakPlatDate = $this->parseDate($pajakPlat);
+                    $pajakKirDate = $this->parseDate($pajakKir);
+                    $jteAsuransiDate = $this->parseDate($jteAsuransi);
+
+                    // Check if mobil already exists
+                    $existingMobil = Mobil::where('nomor_polisi', $nomorPolisi)->first();
 
                     $data = [
-                        'aktiva' => $aktiva,
-                        'plat' => $plat,
-                        'nomor_rangka' => $nomorRangka ?: null,
-                        'ukuran' => $ukuran ?: '20ft',
+                        'kode_no' => $kodeAktiva ?: null,
+                        'nomor_polisi' => $nomorPolisi,
+                        'lokasi' => $lokasi ?: null,
+                        'merek' => $merek ?: null,
+                        'jenis' => $jenis ?: null,
+                        'tahun_pembuatan' => is_numeric($tahunPembuatan) ? (int)$tahunPembuatan : null,
+                        'bpkb' => $bpkb ?: null,
+                        'no_mesin' => $noMesin ?: null,
+                        'nomor_rangka' => $noRangka ?: null,
+                        'pajak_stnk' => $pajakStnkDate,
+                        'pajak_plat' => $pajakPlatDate,
+                        'no_kir' => $noKir ?: null,
+                        'pajak_kir' => $pajakKirDate,
+                        'atas_nama' => $atasNama ?: null,
+                        'pemakai' => $pemakai ?: null,
+                        'asuransi' => $asuransi ?: null,
+                        'jatuh_tempo_asuransi' => $jteAsuransiDate,
+                        'warna_plat' => $warnaPlat ?: null,
+                        'catatan' => $catatan ?: null,
+                        'karyawan_id' => $karyawanId,
                         'updated_at' => now()
                     ];
 
@@ -184,6 +223,9 @@ class MasterMobilImportController extends Controller
             if ($stats['updated'] > 0) {
                 $message .= "{$stats['updated']} data berhasil diperbarui. ";
             }
+            if ($stats['skipped'] > 0) {
+                $message .= "{$stats['skipped']} data dilewati. ";
+            }
             if ($stats['errors'] > 0) {
                 $message .= "{$stats['errors']} data gagal diproses.";
             }
@@ -206,5 +248,44 @@ class MasterMobilImportController extends Controller
             DB::rollback();
             return back()->with('error', 'Error saat import: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Parse tanggal dari berbagai format.
+     */
+    private function parseDate($dateString)
+    {
+        if (empty($dateString)) {
+            return null;
+        }
+
+        // Try different date formats
+        $formats = [
+            'd M y',  // 24 Sep 26
+            'd M Y',  // 24 Sep 2026
+            'd/m/Y',  // 24/09/2026
+            'Y-m-d',  // 2026-09-24
+            'd-m-Y',  // 24-09-2026
+            'd-m-y',  // 24-09-26
+        ];
+
+        foreach ($formats as $format) {
+            $date = \DateTime::createFromFormat($format, $dateString);
+            if ($date !== false) {
+                // Convert 2-digit year to 4-digit
+                $year = $date->format('Y');
+                if (strlen($year) == 2) {
+                    $yearInt = (int)$year;
+                    if ($yearInt < 50) {
+                        $date->setDate(2000 + $yearInt, $date->format('m'), $date->format('d'));
+                    } else {
+                        $date->setDate(1900 + $yearInt, $date->format('m'), $date->format('d'));
+                    }
+                }
+                return $date->format('Y-m-d');
+            }
+        }
+
+        return null;
     }
 }

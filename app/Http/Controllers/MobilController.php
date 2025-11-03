@@ -143,4 +143,164 @@ class MobilController extends Controller
         return redirect()->route('master-mobil.index')
                          ->with('success', 'Mobil berhasil dihapus.');
     }
+
+    /**
+     * Import data mobil dari CSV.
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'csv_file' => 'required|file|mimes:csv,txt|max:10240', // Max 10MB
+        ]);
+
+        $file = $request->file('csv_file');
+        $path = $file->getRealPath();
+        
+        $csvData = array_map('str_getcsv', file($path));
+        $header = array_shift($csvData); // Remove header row
+        
+        $imported = 0;
+        $skipped = 0;
+        $errors = [];
+        $warnings = [];
+
+        foreach ($csvData as $index => $row) {
+            $rowNumber = $index + 2; // +2 because index starts at 0 and we removed header
+            
+            // Skip empty rows
+            if (empty(array_filter($row))) {
+                continue;
+            }
+
+            try {
+                // Map CSV columns to database fields
+                $kodeAktiva = trim($row[0] ?? '');
+                $nomorPolisi = trim($row[1] ?? '');
+                $nik = trim($row[2] ?? '');
+                $namaLengkap = trim($row[3] ?? '');
+                $lokasi = trim($row[4] ?? '');
+                $merek = trim($row[5] ?? '');
+                $jenis = trim($row[6] ?? '');
+                $tahunPembuatan = trim($row[7] ?? '');
+                $bpkb = trim($row[8] ?? '');
+                $noMesin = trim($row[9] ?? '');
+                $noRangka = trim($row[10] ?? '');
+                $pajakStnk = trim($row[11] ?? '');
+                $pajakPlat = trim($row[12] ?? '');
+                $noKir = trim($row[13] ?? '');
+                $pajakKir = trim($row[14] ?? '');
+                $atasNama = trim($row[15] ?? '');
+                $pemakai = trim($row[16] ?? '');
+                $asuransi = trim($row[17] ?? '');
+                $jteAsuransi = trim($row[18] ?? '');
+                $warnaPlat = trim($row[19] ?? '');
+                $catatan = trim($row[20] ?? '');
+
+                // Skip if no nomor polisi
+                if (empty($nomorPolisi)) {
+                    $warnings[] = "Baris $rowNumber: Tidak ada nomor polisi, dilewati.";
+                    $skipped++;
+                    continue;
+                }
+
+                // Check if nomor polisi already exists
+                if (Mobil::where('nomor_polisi', $nomorPolisi)->exists()) {
+                    $warnings[] = "Baris $rowNumber: Nomor polisi $nomorPolisi sudah ada, dilewati.";
+                    $skipped++;
+                    continue;
+                }
+
+                // Find karyawan by NIK if provided
+                $karyawanId = null;
+                if (!empty($nik)) {
+                    $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
+                    if ($karyawan) {
+                        $karyawanId = $karyawan->id;
+                    } else {
+                        $warnings[] = "Baris $rowNumber: NIK $nik tidak ditemukan di database karyawan.";
+                    }
+                }
+
+                // Parse dates
+                $pajakStnkDate = $this->parseDate($pajakStnk);
+                $pajakPlatDate = $this->parseDate($pajakPlat);
+                $pajakKirDate = $this->parseDate($pajakKir);
+                $jteAsuransiDate = $this->parseDate($jteAsuransi);
+
+                // Create mobil record
+                Mobil::create([
+                    'kode_no' => $kodeAktiva ?: null,
+                    'nomor_polisi' => $nomorPolisi,
+                    'lokasi' => $lokasi ?: null,
+                    'merek' => $merek ?: null,
+                    'jenis' => $jenis ?: null,
+                    'tahun_pembuatan' => is_numeric($tahunPembuatan) ? (int)$tahunPembuatan : null,
+                    'bpkb' => $bpkb ?: null,
+                    'no_mesin' => $noMesin ?: null,
+                    'nomor_rangka' => $noRangka ?: null,
+                    'pajak_stnk' => $pajakStnkDate,
+                    'pajak_plat' => $pajakPlatDate,
+                    'no_kir' => $noKir ?: null,
+                    'pajak_kir' => $pajakKirDate,
+                    'atas_nama' => $atasNama ?: null,
+                    'pemakai' => $pemakai ?: null,
+                    'asuransi' => $asuransi ?: null,
+                    'jatuh_tempo_asuransi' => $jteAsuransiDate,
+                    'warna_plat' => $warnaPlat ?: null,
+                    'catatan' => $catatan ?: null,
+                    'karyawan_id' => $karyawanId,
+                ]);
+
+                $imported++;
+
+            } catch (\Exception $e) {
+                $errors[] = "Baris $rowNumber: " . $e->getMessage();
+                $skipped++;
+            }
+        }
+
+        $message = "Import selesai. $imported data berhasil diimport, $skipped data dilewati.";
+
+        return redirect()->route('master-mobil.index')
+                         ->with('success', $message)
+                         ->with('import_errors', count($errors) > 0 ? $errors : null)
+                         ->with('import_warnings', count($warnings) > 0 ? $warnings : null);
+    }
+
+    /**
+     * Parse tanggal dari berbagai format.
+     */
+    private function parseDate($dateString)
+    {
+        if (empty($dateString)) {
+            return null;
+        }
+
+        // Try different date formats
+        $formats = [
+            'd M y',  // 24 Sep 26
+            'd M Y',  // 24 Sep 2026
+            'd/m/Y',  // 24/09/2026
+            'Y-m-d',  // 2026-09-24
+            'd-m-Y',  // 24-09-2026
+        ];
+
+        foreach ($formats as $format) {
+            $date = \DateTime::createFromFormat($format, $dateString);
+            if ($date !== false) {
+                // Convert 2-digit year to 4-digit
+                if (strlen($dateString) <= 9 && strpos($format, 'y') !== false) {
+                    $year = $date->format('y');
+                    if ($year < 50) {
+                        $date->setDate(2000 + (int)$year, $date->format('m'), $date->format('d'));
+                    } else {
+                        $date->setDate(1900 + (int)$year, $date->format('m'), $date->format('d'));
+                    }
+                }
+                return $date->format('Y-m-d');
+            }
+        }
+
+        return null;
+    }
 }

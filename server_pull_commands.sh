@@ -46,15 +46,20 @@ echo "🗄️ 6. Checking migration status..."
 echo "🗄️ 6c. Running database migrations..."
 php artisan migrate --force
 
-# 7. Clear all caches (PENTING untuk Report Tagihan menu)
-echo "🧹 7. Clearing application caches..."
+# 7. Build Vite assets (PENTING untuk offline support)
+echo "🎨 7. Building Vite assets..."
+npm install
+npm run build
+
+# 7b. Clear all caches (PENTING untuk Report Tagihan menu)
+echo "🧹 7b. Clearing application caches..."
 php artisan config:clear
 php artisan cache:clear
 php artisan route:clear
 php artisan view:clear
 
-# 7.1 🏭 VENDOR KONTAINER SEWA PERMISSIONS SETUP (BARU DITAMBAHKAN)
-echo "🏭 7.1 Setting up Vendor Kontainer Sewa permissions..."
+# 7c. 🏭 VENDOR KONTAINER SEWA PERMISSIONS SETUP (BARU DITAMBAHKAN)
+echo "🏭 7c. Setting up Vendor Kontainer Sewa permissions..."
 echo "ℹ️  This will add vendor kontainer sewa management permissions"
 echo "📋 Compatible with custom permission system (no Spatie dependency)"
 
@@ -64,8 +69,8 @@ php setup_vendor_kontainer_sewa_custom_permissions.php
 echo "✅ Vendor Kontainer Sewa permissions setup completed!"
 echo "🌐 Access URL: /vendor-kontainer-sewa"
 
-# 7a. 📋 VENDOR CSV UPDATE (JIKA DIPERLUKAN)
-echo "📋 7a. Vendor CSV Update Commands Available..."
+# 7d. 📋 VENDOR CSV UPDATE (JIKA DIPERLUKAN)
+echo "📋 7d. Vendor CSV Update Commands Available..."
 echo "ℹ️  To update vendor invoices from CSV, follow these steps:"
 echo "   1. Upload CSV file to server: scp Zona.csv user@server:/var/www/aypsis/"
 echo "   2. Run backup: php backup_vendor_data.php"
@@ -75,8 +80,8 @@ echo "   - php artisan vendor:update-from-csv [file_path]"
 echo "   - php update_vendor_from_csv.php (standalone)"
 echo "   - php backup_vendor_data.php (backup first!)"
 
-# 7b. 🔧 PERBAIKAN DPP TAGIHAN KONTAINER (BARU DITAMBAHKAN)
-echo "💰 7b. Fixing DPP calculations..."
+# 7e. 🔧 PERBAIKAN DPP TAGIHAN KONTAINER (BARU DITAMBAHKAN)
+echo "💰 7e. Fixing DPP calculations..."
 echo "⚠️  IMPORTANT: This will fix incorrect DPP values in tagihan kontainer"
 
 # Fix tarif harian (Rp 42,042 × hari)
