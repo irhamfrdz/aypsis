@@ -176,7 +176,7 @@
         .supir-name {
             position: absolute;
             top: 190mm;  /* 19cm dari atas */
-            left: 70mm;  /* 7cm dari kiri */
+            left: 60mm;  /* 6cm dari kiri */
             text-align: center;
         }
         

@@ -30,8 +30,24 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <!-- Kode No -->
                 <div>
-                    <label for="kode_no" class="block text-sm font-medium text-gray-700">Kode No <span class="text-red-500">*</span></label>
-                    <input type="text" name="kode_no" id="kode_no" value="{{ old('kode_no') }}" class="{{ $inputClasses }}" required maxlength="50" placeholder="Contoh: MOB001">
+                    <label for="kode_no" class="block text-sm font-medium text-gray-700">
+                        Kode No <span class="text-red-500">*</span>
+                        <span class="text-xs text-blue-600 ml-2">(Auto Generated)</span>
+                    </label>
+                    <input type="text" 
+                           name="kode_no" 
+                           id="kode_no" 
+                           value="{{ old('kode_no', $nextKodeNomor) }}" 
+                           class="{{ $inputClasses }} bg-gray-200 cursor-not-allowed" 
+                           readonly 
+                           required 
+                           maxlength="50" 
+                           placeholder="Auto Generated">
+                    <p class="mt-1 text-xs text-gray-500">
+                        Format: AT1 + Bulan(2digit) + Tahun(2digit) + Running Number(5digit)
+                        <br>
+                        Contoh: {{ $nextKodeNomor }}
+                    </p>
                     @error('kode_no')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror

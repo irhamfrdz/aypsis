@@ -57,8 +57,11 @@ class MobilController extends Controller
             ->where('divisi', 'Supir')
             ->orderBy('nama_panggilan')
             ->get();
+        
+        // Generate kode nomor otomatis untuk ditampilkan di form
+        $nextKodeNomor = $this->generateKodeNomor();
             
-        return view('master-mobil.create', compact('karyawans'));
+        return view('master-mobil.create', compact('karyawans', 'nextKodeNomor'));
     }
 
     /**
@@ -66,8 +69,13 @@ class MobilController extends Controller
      */
     public function store(Request $request)
     {
+        // Generate kode nomor otomatis jika tidak diisi
+        if (empty($request->kode_no)) {
+            $request->merge(['kode_no' => $this->generateKodeNomor()]);
+        }
+
         $validated = $request->validate([
-            'kode_no' => 'required|string|max:50|unique:mobils,kode_no',
+            'kode_no' => 'nullable|string|max:50|unique:mobils,kode_no',
             'nomor_polisi' => 'required|string|max:20|unique:mobils,nomor_polisi',
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
@@ -101,6 +109,38 @@ class MobilController extends Controller
     }
 
     /**
+     * Generate kode nomor otomatis dengan format: AT1 + MMYY + XXXXX
+     * Running number berjalan global tanpa reset per bulan/tahun
+     */
+    private function generateKodeNomor()
+    {
+        $prefix = 'AT1';
+        $month = date('m'); // 2 digit bulan
+        $year = date('y');  // 2 digit tahun
+        
+        // Format pattern untuk bulan dan tahun saat ini
+        $pattern = $prefix . $month . $year;
+        
+        // Cari nomor terakhir dari SELURUH database (tidak hanya bulan ini)
+        // untuk mendapatkan running number yang terus berjalan
+        $lastRecord = Mobil::orderBy('kode_no', 'desc')->first();
+        
+        $runningNumber = 1;
+        
+        if ($lastRecord) {
+            // Extract running number dari kode terakhir di database
+            $lastKode = $lastRecord->kode_no;
+            $lastRunning = substr($lastKode, -5); // Ambil 5 digit terakhir
+            $runningNumber = intval($lastRunning) + 1;
+        }
+        
+        // Format running number menjadi 5 digit dengan leading zeros
+        $formattedRunning = str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
+        
+        return $pattern . $formattedRunning;
+    }
+
+    /**
      * Menampilkan detail mobil.
      */
     public function show($id)
@@ -129,6 +169,11 @@ class MobilController extends Controller
     public function update(Request $request, $id)
     {
         $mobil = Mobil::findOrFail($id);
+        
+        // Jika kode_no kosong pada form edit, generate otomatis
+        if (empty($request->kode_no)) {
+            $request->merge(['kode_no' => $this->generateKodeNomor()]);
+        }
         
         $validated = $request->validate([
             'kode_no' => 'required|string|max:50|unique:mobils,kode_no,' . $id,
