@@ -63,6 +63,24 @@
             padding-right: 5mm;
         }
         
+        /* Tipe Kontainer dengan posisi absolut */
+        .tipe-kontainer {
+            position: absolute;
+            top: 90mm;  /* 9cm dari atas */
+            left: 60mm; /* 6cm dari kiri */
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        /* Nama Pengirim dengan posisi absolut */
+        .nama-pengirim {
+            position: absolute;
+            top: 115mm;  /* 11.5cm dari atas */
+            left: 110mm; /* 11cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
         .col-center {
             text-align: center;
         }
@@ -199,12 +217,22 @@
             {{ $suratJalan->no_plat ?? ($suratJalan->no_plat != '--Pilih No Plat' ? $suratJalan->no_plat : '') }}
         </div>
         
+        <!-- TIPE KONTAINER dengan posisi absolut -->
+        <div class="tipe-kontainer">
+            {{ $suratJalan->tipe_kontainer ?? 'FCL' }}
+        </div>
+        
+        <!-- NAMA PENGIRIM dengan posisi absolut -->
+        <div class="nama-pengirim">
+            {{ $suratJalan->pengirim ?? 'PT TIRTA INVESTAMA' }}
+        </div>
+        
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
         <div class="table-section">
-            <!-- Baris 1: No Kontainer | Tipe Kontainer | Jenis Barang -->
+            <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Jenis Barang -->
             <div class="table-row">
                 <div class="col">{{ $suratJalan->no_kontainer ?? '' }}</div>
-                <div class="col">{{ $suratJalan->tipe_kontainer ?? 'FCL' }}</div>
+                <div class="col"></div>
                 <div class="col">{{ $suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA' }}</div>
             </div>
             
@@ -221,11 +249,11 @@
                 <div class="col"></div>
             </div>
             
-            <!-- Baris 4: SEAL | KOSONG | NAMA PENGIRIM -->
+            <!-- Baris 4: SEAL | KOSONG | KOSONG (Pengirim dipindah ke posisi absolut) -->
             <div class="seal-row">
                 <div class="seal-col">SEAL AYP{{ $suratJalan->no_seal ?? '0036824' }}</div>
                 <div class="ukuran-col"></div>
-                <div class="pengirim-col">{{ $suratJalan->pengirim ?? 'PT TIRTA INVESTAMA' }}</div>
+                <div class="pengirim-col"></div>
             </div>
             
             <!-- Baris 5, 6, 7: Kosong -->
