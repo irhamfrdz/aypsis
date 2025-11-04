@@ -74,8 +74,7 @@ class SuratJalanController extends Controller
     public function selectOrder(Request $request)
     {
         $query = Order::with(['pengirim', 'jenisBarang', 'tujuanAmbil'])
-                     ->whereIn('status', ['active', 'confirmed', 'processing'])
-                     ->where('approval_status', 'approved'); // Hanya order yang sudah approved
+                     ->whereIn('status', ['active', 'confirmed', 'processing']); // Order dengan status valid
 
         // Search functionality
         if ($request->filled('search')) {
@@ -123,11 +122,7 @@ class SuratJalanController extends Controller
                                 ->with('error', 'Order tidak valid atau tidak tersedia untuk membuat surat jalan.');
             }
 
-            // Validasi approval status - harus approved
-            if ($selectedOrder->approval_status !== 'approved') {
-                return redirect()->route('surat-jalan.select-order')
-                                ->with('error', 'Order harus disetujui terlebih dahulu sebelum dapat dibuatkan surat jalan.');
-            }
+            // Approval system removed - no validation needed
         } else {
             // Jika tidak ada order yang dipilih, redirect ke halaman select order
             return redirect()->route('surat-jalan.select-order')
@@ -208,15 +203,7 @@ class SuratJalanController extends Controller
 
         Log::info('Validation passed successfully');
 
-        // Validasi approval status jika ada order_id
-        if ($request->filled('order_id')) {
-            $order = Order::find($request->order_id);
-            if ($order && $order->approval_status !== 'approved') {
-                return redirect()->back()
-                               ->with('error', 'Order harus disetujui terlebih dahulu sebelum dapat dibuatkan surat jalan.')
-                               ->withInput();
-            }
-        }
+        // Approval system removed - no validation needed for approval status
 
         try {
             Log::info('Starting surat jalan creation process');

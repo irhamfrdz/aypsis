@@ -116,9 +116,6 @@ class OrderController extends Controller
 
         // Auto set status to confirmed for new orders
         $data['status'] = 'confirmed';
-        
-        // Set default approval status to pending
-        $data['approval_status'] = 'pending';
 
         // Get tujuan kirim name from database
         $tujuanKirim = MasterTujuanKirim::find($request->tujuan_kirim_id);
