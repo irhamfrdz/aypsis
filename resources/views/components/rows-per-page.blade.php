@@ -1,15 +1,9 @@
 {{-- Rows Per Page Selection Component --}}
-{{-- Usage: @include('components.rows-per-page', [
-    'routeName' => 'your.route.name',
-    'paginator' => $yourPaginator,
-    'entityName' => 'nama entity (karyawan, user, dll)',
-    'entityNamePlural' => 'nama entity plural (karyawan, user, dll)'
-]) --}}
-
 @php
-    $routeName = $routeName ?? Route::currentRouteName();
+    $routeName = $routeName ?? Route::currentRouteName() ?? 'master-kapal.index';
     $entityName = $entityName ?? 'data';
     $entityNamePlural = $entityNamePlural ?? 'data';
+    $currentPerPage = request('per_page', 10);
 @endphp
 
 {{-- Rows Per Page Selection --}}
@@ -27,16 +21,16 @@
             <select name="per_page"
                     onchange="this.form.submit()"
                     class="mx-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
-                <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
-                <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
-                <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
-                <option value="100" {{ request('per_page', 10) == 100 ? 'selected' : '' }}>100</option>
+                <option value="10" {{ $currentPerPage == 10 ? 'selected' : '' }}>10</option>
+                <option value="25" {{ $currentPerPage == 25 ? 'selected' : '' }}>25</option>
+                <option value="50" {{ $currentPerPage == 50 ? 'selected' : '' }}>50</option>
+                <option value="100" {{ $currentPerPage == 100 ? 'selected' : '' }}>100</option>
             </select>
         </form>
         <span>baris per halaman</span>
     </div>
 
-    @if($paginator->total() > 0)
+    @if(isset($paginator) && $paginator->total() > 0)
         <div class="text-sm text-gray-500">
             Menampilkan {{ $paginator->firstItem() }} - {{ $paginator->lastItem() }} dari {{ $paginator->total() }} total {{ $entityNamePlural }}
         </div>

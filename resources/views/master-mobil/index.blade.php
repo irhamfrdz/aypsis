@@ -14,7 +14,7 @@
                 <input type="text" 
                        name="search" 
                        value="{{ request('search') }}" 
-                       placeholder="Cari kode aktiva, nomor polisi, merek, jenis, atau nama karyawan..." 
+                       placeholder="Cari kode aktiva, nomor polisi, nomor KIR, merek, jenis, atau nama karyawan..." 
                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                        autocomplete="off">
             </div>
@@ -177,7 +177,7 @@
                 <tr>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode No</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Polisi</th>
+                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
                     <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
@@ -190,7 +190,27 @@
                     <tr class="hover:bg-gray-50">
                         <td class="py-4 px-6">{{ $mobils->firstItem() + $index }}</td>
                         <td class="py-4 px-6 font-mono text-sm">{{ $mobil->kode_no }}</td>
-                        <td class="py-4 px-6">{{ $mobil->nomor_polisi }}</td>
+                        <td class="py-4 px-6">
+                            <div class="space-y-1">
+                                @if($mobil->nomor_polisi)
+                                    <div class="text-sm">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                            Plat: {{ $mobil->nomor_polisi }}
+                                        </span>
+                                    </div>
+                                @endif
+                                @if($mobil->no_kir)
+                                    <div class="text-sm">
+                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            KIR: {{ $mobil->no_kir }}
+                                        </span>
+                                    </div>
+                                @endif
+                                @if(!$mobil->nomor_polisi && !$mobil->no_kir)
+                                    <span class="text-gray-400 text-sm">-</span>
+                                @endif
+                            </div>
+                        </td>
                         <td class="py-4 px-6">{{ $mobil->merek ?? '-' }}</td>
                         <td class="py-4 px-6">{{ $mobil->jenis ?? '-' }}</td>
                         <td class="py-4 px-6">{{ $mobil->tahun_pembuatan ?? '-' }}</td>

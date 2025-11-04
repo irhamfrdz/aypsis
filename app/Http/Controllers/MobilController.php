@@ -20,6 +20,7 @@ class MobilController extends Controller
             $query->where(function($q) use ($search) {
                 $q->where('kode_no', 'like', "%{$search}%")
                   ->orWhere('nomor_polisi', 'like', "%{$search}%")
+                  ->orWhere('no_kir', 'like', "%{$search}%")
                   ->orWhere('merek', 'like', "%{$search}%")
                   ->orWhere('jenis', 'like', "%{$search}%")
                   ->orWhere('lokasi', 'like', "%{$search}%")

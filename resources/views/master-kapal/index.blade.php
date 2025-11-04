@@ -130,12 +130,35 @@
             <!-- Table -->
             <div class="overflow-x-auto">
                 <!-- Rows per page selector -->
-                @include('components.rows-per-page', [
-                    'routeName' => 'master-kapal.index',
-                    'paginator' => $kapals,
-                    'entityName' => 'kapal',
-                    'entityNamePlural' => 'kapal'
-                ])
+                <div class="mt-3 flex items-center justify-between text-sm text-gray-600">
+                    <div class="flex items-center space-x-2">
+                        <span>Tampilkan</span>
+                        <form method="GET" action="{{ route('master-kapal.index') }}" class="inline">
+                            {{-- Preserve existing search and sort parameters --}}
+                            @foreach(request()->query() as $key => $value)
+                                @if($key !== 'per_page' && $key !== 'page')
+                                    <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endif
+                            @endforeach
+
+                            <select name="per_page"
+                                    onchange="this.form.submit()"
+                                    class="mx-1 px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 bg-white">
+                                <option value="10" {{ request('per_page', 10) == 10 ? 'selected' : '' }}>10</option>
+                                <option value="25" {{ request('per_page', 10) == 25 ? 'selected' : '' }}>25</option>
+                                <option value="50" {{ request('per_page', 10) == 50 ? 'selected' : '' }}>50</option>
+                                <option value="100" {{ request('per_page', 10) == 100 ? 'selected' : '' }}>100</option>
+                            </select>
+                        </form>
+                        <span>baris per halaman</span>
+                    </div>
+
+                    @if($kapals->total() > 0)
+                        <div class="text-sm text-gray-500">
+                            Menampilkan {{ $kapals->firstItem() }} - {{ $kapals->lastItem() }} dari {{ $kapals->total() }} total kapal
+                        </div>
+                    @endif
+                </div>
                 
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">

@@ -807,6 +807,19 @@ Route::middleware([
              'destroy' => 'can:master-kapal.delete'
          ]);
 
+    // 💰 Tarif Batam Management with permissions
+    Route::resource('tarif-batam', \App\Http\Controllers\TarifBatamController::class)
+         ->names('tarif-batam')
+         ->middleware([
+             'index' => 'can:tarif-batam.view',
+             'show' => 'can:tarif-batam.view',
+             'create' => 'can:tarif-batam.create',
+             'store' => 'can:tarif-batam.create',
+             'edit' => 'can:tarif-batam.edit',
+             'update' => 'can:tarif-batam.edit',
+             'destroy' => 'can:tarif-batam.delete'
+         ]);
+
     // ⚓ Master Pelabuhan (Port Master) Management with permissions
     Route::resource('master-pelabuhan', \App\Http\Controllers\MasterPelabuhanController::class)
          ->names([

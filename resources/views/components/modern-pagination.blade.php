@@ -1,5 +1,9 @@
 {{-- Modern Pagination Component --}}
-{{-- Usage: @include('components.modern-pagination', ['paginator' => $yourPaginator, 'routeName' => 'your.route.name']) --}}
+{{-- Usage: @include('components.modern-pagination', ['paginator' => $yourPaginator]) --}}
+
+@php
+    $routeName = $routeName ?? Route::currentRouteName() ?? request()->route()->getName();
+@endphp
 
 @if($paginator->hasPages())
     <div class="px-4 py-2 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
