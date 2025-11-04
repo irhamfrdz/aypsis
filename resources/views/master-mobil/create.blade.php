@@ -55,8 +55,8 @@
 
                 <!-- Nomor Polisi -->
                 <div>
-                    <label for="nomor_polisi" class="block text-sm font-medium text-gray-700">Nomor Polisi <span class="text-red-500">*</span></label>
-                    <input type="text" name="nomor_polisi" id="nomor_polisi" value="{{ old('nomor_polisi') }}" class="{{ $inputClasses }}" required maxlength="20" placeholder="Contoh: B 1234 ABC">
+                    <label for="nomor_polisi" class="block text-sm font-medium text-gray-700">Nomor Polisi</label>
+                    <input type="text" name="nomor_polisi" id="nomor_polisi" value="{{ old('nomor_polisi') }}" class="{{ $inputClasses }}" maxlength="20" placeholder="Contoh: B 1234 ABC">
                     @error('nomor_polisi')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror

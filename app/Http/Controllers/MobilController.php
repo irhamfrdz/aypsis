@@ -76,7 +76,7 @@ class MobilController extends Controller
 
         $validated = $request->validate([
             'kode_no' => 'nullable|string|max:50|unique:mobils,kode_no',
-            'nomor_polisi' => 'required|string|max:20|unique:mobils,nomor_polisi',
+            'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi',
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
@@ -99,8 +99,8 @@ class MobilController extends Controller
 
         $mobil = Mobil::create($validated);
 
-        // Update nomor polisi pada karyawan jika ada
-        if ($validated['karyawan_id']) {
+        // Update nomor polisi pada karyawan jika ada karyawan dan nomor polisi diisi
+        if ($validated['karyawan_id'] && !empty($validated['nomor_polisi'])) {
             \App\Models\Karyawan::where('id', $validated['karyawan_id'])
                 ->update(['plat' => $validated['nomor_polisi']]);
         }
@@ -177,7 +177,7 @@ class MobilController extends Controller
         
         $validated = $request->validate([
             'kode_no' => 'required|string|max:50|unique:mobils,kode_no,' . $id,
-            'nomor_polisi' => 'required|string|max:20|unique:mobils,nomor_polisi,' . $id,
+            'nomor_polisi' => 'nullable|string|max:20|unique:mobils,nomor_polisi,' . $id,
             'lokasi' => 'nullable|string|max:100',
             'merek' => 'nullable|string|max:50',
             'jenis' => 'nullable|string|max:50',
@@ -207,8 +207,8 @@ class MobilController extends Controller
         // Update data mobil
         $mobil->update($validated);
 
-        // Update nomor polisi pada karyawan baru jika ada
-        if ($validated['karyawan_id']) {
+        // Update nomor polisi pada karyawan baru jika ada karyawan dan nomor polisi diisi
+        if ($validated['karyawan_id'] && !empty($validated['nomor_polisi'])) {
             \App\Models\Karyawan::where('id', $validated['karyawan_id'])
                 ->update(['plat' => $validated['nomor_polisi']]);
         }
@@ -285,15 +285,8 @@ class MobilController extends Controller
                 $warnaPlat = trim($row[19] ?? '');
                 $catatan = trim($row[20] ?? '');
 
-                // Skip if no nomor polisi
-                if (empty($nomorPolisi)) {
-                    $warnings[] = "Baris $rowNumber: Tidak ada nomor polisi, dilewati.";
-                    $skipped++;
-                    continue;
-                }
-
-                // Check if nomor polisi already exists
-                if (Mobil::where('nomor_polisi', $nomorPolisi)->exists()) {
+                // Check if nomor polisi already exists (hanya jika nomor polisi diisi)
+                if (!empty($nomorPolisi) && Mobil::where('nomor_polisi', $nomorPolisi)->exists()) {
                     $warnings[] = "Baris $rowNumber: Nomor polisi $nomorPolisi sudah ada, dilewati.";
                     $skipped++;
                     continue;
