@@ -7,63 +7,70 @@
     <style>
         @page {
             size: A4;
-            margin: 1.5cm 2cm;
+            margin: 1cm 1.5cm;
         }
         
         body {
             font-family: Arial, sans-serif;
-            font-size: 11pt;
-            line-height: 1.3;
+            font-size: 12pt;
+            line-height: 1.4;
             color: #000;
             margin: 0;
             padding: 0;
+            width: 100%;
+            max-width: 100%;
         }
         
         .letterhead {
             border-bottom: 3px solid #000;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
+            padding-bottom: 15px;
+            margin-bottom: 25px;
             display: flex;
             align-items: center;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .logo-section {
-            width: 120px;
-            margin-right: 20px;
+            width: 150px;
+            margin-right: 30px;
             text-align: center;
+            flex-shrink: 0;
         }
         
         .logo {
-            width: 100px;
-            height: 100px;
+            width: 120px;
+            height: 120px;
+            object-fit: contain;
         }
         
         .company-info {
             flex: 1;
             text-align: center;
+            width: 100%;
         }
         
         .company-tagline {
             color: #000;
-            font-size: 10pt;
-            font-weight: bold;
-            margin-bottom: 2px;
-        }
-        
-        .company-name {
-            color: #dc3545;
-            font-size: 16pt;
+            font-size: 11pt;
             font-weight: bold;
             margin-bottom: 3px;
         }
         
+        .company-name {
+            color: #dc3545;
+            font-size: 18pt;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
         .company-address {
-            font-size: 9pt;
-            margin-bottom: 2px;
+            font-size: 10pt;
+            margin-bottom: 3px;
         }
         
         .company-contact {
-            font-size: 9pt;
+            font-size: 10pt;
         }
         
         .memo-title {
@@ -77,17 +84,21 @@
         }
         
         .memo-content {
-            margin: 20px 0;
+            margin: 25px 0;
+            width: 100%;
+            box-sizing: border-box;
         }
         
         .memo-field {
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             display: flex;
+            width: 100%;
         }
         
         .memo-label {
-            width: 100px;
+            width: 120px;
             font-weight: normal;
+            flex-shrink: 0;
         }
         
         .memo-value {
@@ -95,23 +106,27 @@
         }
         
         .memo-description {
-            margin: 20px 0;
+            margin: 25px 0;
             text-align: justify;
-            line-height: 1.4;
+            line-height: 1.5;
+            width: 100%;
         }
         
         .memo-details {
-            margin: 20px 0 30px 0;
+            margin: 25px 0 35px 0;
+            width: 100%;
         }
         
         .memo-detail-item {
-            margin-bottom: 8px;
+            margin-bottom: 12px;
             display: flex;
+            width: 100%;
         }
         
         .memo-detail-label {
-            width: 80px;
+            width: 100px;
             font-weight: normal;
+            flex-shrink: 0;
         }
         
         .signature-section {
@@ -129,13 +144,32 @@
         }
         
         @media print {
+            * {
+                box-sizing: border-box;
+            }
+            
             body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+                max-width: none !important;
+            }
+            
+            .letterhead,
+            .memo-content,
+            .memo-field,
+            .memo-description,
+            .memo-details,
+            .memo-detail-item,
+            .signature-section {
+                width: 100% !important;
+                max-width: none !important;
             }
             
             .no-print {
-                display: none;
+                display: none !important;
             }
         }
     </style>
