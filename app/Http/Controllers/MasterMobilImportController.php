@@ -143,10 +143,10 @@ class MasterMobilImportController extends Controller
                     $warnaPlat = trim($row[19] ?? '');
                     $catatan = trim($row[20] ?? '');
 
-                    // Skip if no nomor polisi
-                    if (empty($nomorPolisi)) {
+                    // Skip only if both kode aktiva and nomor polisi are empty
+                    if (empty($kodeAktiva) && empty($nomorPolisi)) {
                         $stats['skipped']++;
-                        $stats['warnings'][] = "Baris {$rowNumber}: Tidak ada nomor polisi, dilewati.";
+                        $stats['warnings'][] = "Baris {$rowNumber}: Tidak ada kode aktiva dan nomor polisi, dilewati.";
                         continue;
                     }
 
@@ -156,8 +156,10 @@ class MasterMobilImportController extends Controller
                         $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
                         if ($karyawan) {
                             $karyawanId = $karyawan->id;
-                            // Update plat karyawan
-                            $karyawan->update(['plat' => $nomorPolisi]);
+                            // Update plat karyawan only if nomor polisi exists
+                            if (!empty($nomorPolisi)) {
+                                $karyawan->update(['plat' => $nomorPolisi]);
+                            }
                         } else {
                             $stats['warnings'][] = "Baris {$rowNumber}: NIK $nik tidak ditemukan di database karyawan.";
                         }
@@ -169,12 +171,17 @@ class MasterMobilImportController extends Controller
                     $pajakKirDate = $this->parseDate($pajakKir);
                     $jteAsuransiDate = $this->parseDate($jteAsuransi);
 
-                    // Check if mobil already exists
-                    $existingMobil = Mobil::where('nomor_polisi', $nomorPolisi)->first();
+                    // Check if mobil already exists - prioritize by kode_aktiva, fallback to nomor_polisi
+                    $existingMobil = null;
+                    if (!empty($kodeAktiva)) {
+                        $existingMobil = Mobil::where('kode_no', $kodeAktiva)->first();
+                    } elseif (!empty($nomorPolisi)) {
+                        $existingMobil = Mobil::where('nomor_polisi', $nomorPolisi)->first();
+                    }
 
                     $data = [
                         'kode_no' => $kodeAktiva ?: null,
-                        'nomor_polisi' => $nomorPolisi,
+                        'nomor_polisi' => $nomorPolisi ?: null,
                         'lokasi' => $lokasi ?: null,
                         'merek' => $merek ?: null,
                         'jenis' => $jenis ?: null,

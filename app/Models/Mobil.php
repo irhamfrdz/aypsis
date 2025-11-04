@@ -39,6 +39,11 @@ class Mobil extends Model
         'no_kir',
         'pajak_kir',
         'atas_nama',
+        'pemakai',
+        'asuransi',
+        'jatuh_tempo_asuransi',
+        'warna_plat',
+        'catatan',
         'karyawan_id',
     ];
 
@@ -51,6 +56,7 @@ class Mobil extends Model
         'pajak_stnk' => 'date',
         'pajak_plat' => 'date',
         'pajak_kir' => 'date',
+        'jatuh_tempo_asuransi' => 'date',
         'tahun_pembuatan' => 'integer',
     ];
 
