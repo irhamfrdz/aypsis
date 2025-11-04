@@ -90,6 +90,15 @@
             font-weight: bold;
         }
         
+        /* Tujuan Ambil dengan posisi absolut */
+        .tujuan-ambil {
+            position: absolute;
+            top: 140mm;  /* 14cm dari atas */
+            left: 110mm; /* 11cm dari kiri */
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
         .col-center {
             text-align: center;
         }
@@ -241,6 +250,11 @@
             {{ $suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA' }}
         </div>
         
+        <!-- TUJUAN AMBIL dengan posisi absolut -->
+        <div class="tujuan-ambil">
+            {{ $suratJalan->tujuan_pengambilan ?? 'Batam' }}
+        </div>
+        
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
         <div class="table-section">
             <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Kosong (Jenis Barang dipindah) -->
@@ -289,11 +303,11 @@
                 <div class="col"></div>
             </div>
             
-            <!-- Baris 8: Tujuan Akhir | Kosong | Tujuan Kirim -->
+            <!-- Baris 8: Tujuan Akhir | Kosong | Kosong (Tujuan Ambil dipindah ke posisi absolut) -->
             <div class="bottom-row">
                 <div class="col">{{ $suratJalan->tujuan_pengiriman ?? 'SUKABUMI' }}</div>
                 <div class="col"></div>
-                <div class="col">{{ $suratJalan->tujuan_pengambilan ?? 'Batam' }}</div>
+                <div class="col"></div>
             </div>
         </div>
         
