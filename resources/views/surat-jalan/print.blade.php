@@ -99,6 +99,15 @@
             font-weight: bold;
         }
         
+        /* Nomor Seal dengan posisi absolut */
+        .nomor-seal {
+            position: absolute;
+            top: 115mm;  /* 11.5cm dari atas */
+            left: 10mm;  /* 1cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
         .col-center {
             text-align: center;
         }
@@ -255,6 +264,11 @@
             {{ $suratJalan->tujuan_pengambilan ?? 'Batam' }}
         </div>
         
+        <!-- NOMOR SEAL dengan posisi absolut -->
+        <div class="nomor-seal">
+            SEAL AYP{{ $suratJalan->no_seal ?? '0036824' }}
+        </div>
+        
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
         <div class="table-section">
             <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Kosong (Jenis Barang dipindah) -->
@@ -277,9 +291,9 @@
                 <div class="col"></div>
             </div>
             
-            <!-- Baris 4: SEAL | KOSONG | KOSONG (Pengirim dipindah ke posisi absolut) -->
+            <!-- Baris 4: KOSONG (Seal dipindah ke posisi absolut) | KOSONG | KOSONG (Pengirim dipindah ke posisi absolut) -->
             <div class="seal-row">
-                <div class="seal-col">SEAL AYP{{ $suratJalan->no_seal ?? '0036824' }}</div>
+                <div class="seal-col"></div>
                 <div class="ukuran-col"></div>
                 <div class="pengirim-col"></div>
             </div>
