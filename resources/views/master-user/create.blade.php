@@ -149,7 +149,7 @@
                 <select name="karyawan_id" id="karyawan_id">
                     <option value="">-- Tidak dihubungkan --</option>
                     @foreach ($karyawans as $karyawan)
-                        <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_lengkap }}">{{ $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
+                        <option value="{{ $karyawan->id }}" data-nama="{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }}">{{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik) ({{ $karyawan->nik }}) @endif</option>
                     @endforeach
                 </select>
             </div>
