@@ -175,7 +175,9 @@
         }
         
         .supir-name {
-            margin-top: 15mm;
+            position: absolute;
+            top: 190mm;  /* 19cm dari atas */
+            left: 70mm;  /* 7cm dari kiri */
             text-align: center;
         }
         
@@ -339,11 +341,16 @@
             </div>
         </div>
         
+        <!-- NAMA SUPIR dengan posisi absolut -->
+        <div class="supir-name">
+            {{ strtoupper($suratJalan->supir ?? 'SUMANTA') }}
+        </div>
+        
         <!-- SESI 4: TTD AREA -->
         <div class="ttd-section">
             <div class="ttd-row">
                 <div class="ttd-col"></div>
-                <div class="ttd-col supir-name">{{ strtoupper($suratJalan->supir ?? 'SUMANTA') }}</div>
+                <div class="ttd-col"></div>
                 <div class="ttd-col"></div>
             </div>
         </div>
