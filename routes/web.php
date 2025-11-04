@@ -807,6 +807,19 @@ Route::middleware([
              'destroy' => 'can:master-kapal.delete'
          ]);
 
+    // 💰 Uang Jalan Batam Management with permissions
+    Route::resource('uang-jalan-batam', \App\Http\Controllers\UangJalanBatamController::class)
+         ->names('uang-jalan-batam')
+         ->middleware([
+             'index' => 'can:uang-jalan-batam.view',
+             'show' => 'can:uang-jalan-batam.view',
+             'create' => 'can:uang-jalan-batam.create',
+             'store' => 'can:uang-jalan-batam.create',
+             'edit' => 'can:uang-jalan-batam.edit',
+             'update' => 'can:uang-jalan-batam.edit',
+             'destroy' => 'can:uang-jalan-batam.delete'
+         ]);
+
     // ⚓ Master Pelabuhan (Port Master) Management with permissions
     Route::resource('master-pelabuhan', \App\Http\Controllers\MasterPelabuhanController::class)
          ->names([
