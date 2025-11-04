@@ -52,9 +52,9 @@ class MobilController extends Controller
      */
     public function create()
     {
-        $karyawans = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nik', 'divisi')
+        $karyawans = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi')
             ->where('divisi', 'Supir')
-            ->orderBy('nama_lengkap')
+            ->orderBy('nama_panggilan')
             ->get();
             
         return view('master-mobil.create', compact('karyawans'));
@@ -114,9 +114,9 @@ class MobilController extends Controller
     public function edit($id)
     {
         $mobil = Mobil::findOrFail($id);
-        $karyawans = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nik', 'divisi')
+        $karyawans = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi')
             ->where('divisi', 'Supir')
-            ->orderBy('nama_lengkap')
+            ->orderBy('nama_panggilan')
             ->get();
             
         return view('master-mobil.edit', compact('mobil', 'karyawans'));

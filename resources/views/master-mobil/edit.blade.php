@@ -234,7 +234,7 @@
                         <option value="">-- Pilih Supir --</option>
                         @foreach($karyawans as $karyawan)
                             <option value="{{ $karyawan->id }}" {{ old('karyawan_id', $mobil->karyawan_id) == $karyawan->id ? 'selected' : '' }}>
-                                {{ $karyawan->nama_lengkap }} @if($karyawan->nik)({{ $karyawan->nik }}) - {{ $karyawan->divisi }}@endif
+                                {{ $karyawan->nama_panggilan ?: $karyawan->nama_lengkap }} @if($karyawan->nik)({{ $karyawan->nik }}) - {{ $karyawan->divisi }}@endif
                             </option>
                         @endforeach
                     </select>
