@@ -8,6 +8,14 @@ use Illuminate\Http\Request;
 
 class UangJalanBatamController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('permission:uang-jalan-batam.view')->only(['index', 'show']);
+        $this->middleware('permission:uang-jalan-batam.create')->only(['create', 'store']);
+        $this->middleware('permission:uang-jalan-batam.edit')->only(['edit', 'update']);
+        $this->middleware('permission:uang-jalan-batam.delete')->only(['destroy']);
+    }
+
     /**
      * Display a listing of the resource.
      */
