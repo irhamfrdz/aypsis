@@ -197,6 +197,11 @@
                         <td class="py-4 px-6">{{ $mobil->karyawan->nama_lengkap ?? '-' }}</td>
                         <td class="py-4 px-6 text-center">
                             <div class="flex item-center justify-center space-x-2">
+                                <!-- Tombol Detail -->
+                                <a href="{{ route('master.mobil.show', $mobil->id) }}" class="bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition-colors duration-200 text-sm">
+                                    Detail
+                                </a>
+                                <span class="text-gray-300">|</span>
                                 <!-- Tombol Edit -->
                                 <a href="{{ route('master.mobil.edit', $mobil->id) }}" class="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200 text-sm">
                                     Edit
