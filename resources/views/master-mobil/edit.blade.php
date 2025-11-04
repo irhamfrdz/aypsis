@@ -17,7 +17,7 @@
 @endif
 
 <div class="bg-white shadow-md rounded-lg p-6">
-    <form action="{{ route('master-mobil.update', $mobil->id) }}" method="POST">
+    <form action="{{ route('master.mobil.update', $mobil->id) }}" method="POST">
         @csrf
         @method('PUT')
 
@@ -195,7 +195,7 @@
         </fieldset>
 
         <div class="flex justify-end space-x-4">
-            <a href="{{ route('master-mobil.index') }}" class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            <a href="{{ route('master.mobil.index') }}" class="inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                 Batal
             </a>
             <button type="submit" class="inline-flex justify-center rounded-md border border-transparent bg-indigo-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
