@@ -27,6 +27,16 @@ git pull origin main
 echo "📦 5. Fixing composer dependencies..."
 composer config disable-tls true
 composer config secure-http false
+
+# 5a. Install required PhpSpreadsheet for CSV import functionality
+echo "📊 5a. Installing PhpSpreadsheet for CSV import..."
+composer require phpoffice/phpspreadsheet:^1.29 --no-interaction
+
+# 5b. Install Laravel Excel (Maatwebsite) for Excel/CSV handling
+echo "📋 5b. Installing Laravel Excel..."
+composer require maatwebsite/excel:^3.1 --no-interaction
+
+# 5c. Update all dependencies
 rm -rf composer.lock vendor/
 composer update --no-dev --lock
 composer install --no-dev --optimize-autoloader --no-interaction
@@ -75,9 +85,16 @@ else
     ls -lh public/build/manifest.json
 fi
 
-# 7b. Clear all caches (PENTING untuk Report Tagihan menu)
-echo "🧹 7b. Clearing application caches..."
+# 7b. Clear all caches and optimize autoloader (PENTING untuk dependencies baru)
+echo "🧹 7b. Clearing application caches and optimizing..."
 php artisan config:clear
+php artisan cache:clear
+php artisan route:clear
+php artisan view:clear
+composer dump-autoload --optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
 php artisan cache:clear
 php artisan route:clear
 php artisan view:clear

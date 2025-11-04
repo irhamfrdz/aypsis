@@ -1,0 +1,49 @@
+# 🚨 QUICK FIX UNTUK PHPSPREADSHEET ERROR DI SERVER PHP 8.4
+# Copy-paste perintah ini satu per satu di terminal server
+
+# 1. Set environment variables
+export COMPOSER_ALLOW_SUPERUSER=1
+export COMPOSER_DISABLE_XDEBUG_WARN=1
+
+# 2. Maintenance mode
+php artisan down --message="Fixing Dependencies"
+
+# 3. Configure composer
+composer config disable-tls true
+composer config secure-http false
+
+# 4. Clean install dengan ignore platform requirements
+rm -rf vendor/ composer.lock
+composer install --ignore-platform-reqs --no-dev --optimize-autoloader
+
+# 5. Install PhpSpreadsheet dengan versi yang compatible
+composer require phpoffice/phpspreadsheet:^1.28 --ignore-platform-reqs --no-interaction
+
+# 6. Install Laravel Excel
+composer require maatwebsite/excel:^3.1 --ignore-platform-reqs --no-interaction
+
+# 7. Optimize autoloader
+composer dump-autoload --optimize
+
+# 8. Clear cache
+php artisan config:clear
+php artisan cache:clear
+php artisan view:clear
+php artisan route:clear
+
+# 9. Test installation
+php -r "
+require_once 'vendor/autoload.php';
+use PhpOffice\PhpSpreadsheet\Reader\Csv;
+echo 'PhpSpreadsheet loaded successfully!' . PHP_EOL;
+"
+
+# 10. Cache optimize
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+
+# 11. Back online
+php artisan up
+
+echo "✅ DONE! CSV import should work now."
