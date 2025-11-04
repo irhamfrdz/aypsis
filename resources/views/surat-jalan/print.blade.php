@@ -68,7 +68,7 @@
             position: absolute;
             top: 90mm;  /* 9cm dari atas */
             left: 60mm; /* 6cm dari kiri */
-            font-size: 11px;
+            font-size: 15px;
             font-weight: bold;
         }
         
@@ -77,7 +77,7 @@
             position: absolute;
             top: 115mm;  /* 11.5cm dari atas */
             left: 110mm; /* 11cm dari kiri */
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
         }
         
@@ -86,7 +86,7 @@
             position: absolute;
             top: 90mm;  /* 9cm dari atas */
             left: 110mm; /* 11cm dari kiri */
-            font-size: 11px;
+            font-size: 15px;
             font-weight: bold;
         }
         
@@ -95,7 +95,7 @@
             position: absolute;
             top: 140mm;  /* 14cm dari atas */
             left: 110mm; /* 11cm dari kiri */
-            font-size: 11px;
+            font-size: 15px;
             font-weight: bold;
         }
         
@@ -104,7 +104,7 @@
             position: absolute;
             top: 140mm;  /* 14cm dari atas */
             left: 10mm;  /* 1cm dari kiri */
-            font-size: 14px;
+            font-size: 15px;
             font-weight: bold;
         }
         
@@ -113,7 +113,7 @@
             position: absolute;
             top: 110mm;  /* 11cm dari atas */
             left: 10mm;  /* 1cm dari kiri */
-            font-size: 11px;
+            font-size: 15px;
             font-weight: bold;
         }
         
@@ -170,7 +170,7 @@
         
         .ttd-col {
             width: 50mm;
-            font-size: 9px;
+            font-size: 15px;
             font-weight: bold;
         }
         
