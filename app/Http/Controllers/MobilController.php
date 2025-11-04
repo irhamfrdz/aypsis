@@ -79,6 +79,11 @@ class MobilController extends Controller
             'no_kir' => 'nullable|string|max:50',
             'pajak_kir' => 'nullable|date',
             'atas_nama' => 'nullable|string|max:100',
+            'pemakai' => 'nullable|string|max:100',
+            'asuransi' => 'nullable|string|max:100',
+            'jatuh_tempo_asuransi' => 'nullable|date',
+            'warna_plat' => 'nullable|string|max:20',
+            'catatan' => 'nullable|string|max:500',
             'karyawan_id' => 'nullable|exists:karyawans,id',
         ]);
 
@@ -90,7 +95,7 @@ class MobilController extends Controller
                 ->update(['plat' => $validated['nomor_polisi']]);
         }
 
-        return redirect()->route('master-mobil.index')->with('success', 'Data mobil berhasil ditambahkan.');
+        return redirect()->route('master.mobil.index')->with('success', 'Data mobil berhasil ditambahkan.');
     }
 
     /**
@@ -137,6 +142,11 @@ class MobilController extends Controller
             'no_kir' => 'nullable|string|max:50',
             'pajak_kir' => 'nullable|date',
             'atas_nama' => 'nullable|string|max:100',
+            'pemakai' => 'nullable|string|max:100',
+            'asuransi' => 'nullable|string|max:100',
+            'jatuh_tempo_asuransi' => 'nullable|date',
+            'warna_plat' => 'nullable|string|max:20',
+            'catatan' => 'nullable|string|max:500',
             'karyawan_id' => 'nullable|exists:karyawans,id',
         ]);
 
@@ -155,7 +165,7 @@ class MobilController extends Controller
                 ->update(['plat' => $validated['nomor_polisi']]);
         }
 
-        return redirect()->route('master-mobil.index')->with('success', 'Data mobil berhasil diperbarui.');
+        return redirect()->route('master.mobil.index')->with('success', 'Data mobil berhasil diperbarui.');
     }
 
     /**
@@ -171,7 +181,7 @@ class MobilController extends Controller
 
         $mobil->delete();
 
-        return redirect()->route('master-mobil.index')
+        return redirect()->route('master.mobil.index')
                          ->with('success', 'Mobil berhasil dihapus.');
     }
 
@@ -292,7 +302,7 @@ class MobilController extends Controller
 
         $message = "Import selesai. $imported data berhasil diimport, $skipped data dilewati.";
 
-        return redirect()->route('master-mobil.index')
+        return redirect()->route('master.mobil.index')
                          ->with('success', $message)
                          ->with('import_errors', count($errors) > 0 ? $errors : null)
                          ->with('import_warnings', count($warnings) > 0 ? $warnings : null);

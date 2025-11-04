@@ -168,6 +168,63 @@
         </fieldset>
 
         <fieldset class="mb-6">
+            <legend class="text-lg font-semibold text-gray-800 mb-4">Informasi Asuransi & Lainnya</legend>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Pemakai -->
+                <div>
+                    <label for="pemakai" class="block text-sm font-medium text-gray-700">Pemakai</label>
+                    <input type="text" name="pemakai" id="pemakai" value="{{ old('pemakai', $mobil->pemakai) }}" class="{{ $inputClasses }}" maxlength="100" placeholder="Nama pemakai kendaraan">
+                    @error('pemakai')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Asuransi -->
+                <div>
+                    <label for="asuransi" class="block text-sm font-medium text-gray-700">Perusahaan Asuransi</label>
+                    <input type="text" name="asuransi" id="asuransi" value="{{ old('asuransi', $mobil->asuransi) }}" class="{{ $inputClasses }}" maxlength="100" placeholder="Nama perusahaan asuransi">
+                    @error('asuransi')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Jatuh Tempo Asuransi -->
+                <div>
+                    <label for="jatuh_tempo_asuransi" class="block text-sm font-medium text-gray-700">Jatuh Tempo Asuransi</label>
+                    <input type="date" name="jatuh_tempo_asuransi" id="jatuh_tempo_asuransi" value="{{ old('jatuh_tempo_asuransi', $mobil->jatuh_tempo_asuransi ? $mobil->jatuh_tempo_asuransi->format('Y-m-d') : '') }}" class="{{ $inputClasses }}">
+                    @error('jatuh_tempo_asuransi')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Warna Plat -->
+                <div>
+                    <label for="warna_plat" class="block text-sm font-medium text-gray-700">Warna Plat</label>
+                    <select name="warna_plat" id="warna_plat" class="{{ $inputClasses }}">
+                        <option value="">-- Pilih Warna Plat --</option>
+                        <option value="Hitam" {{ old('warna_plat', $mobil->warna_plat) == 'Hitam' ? 'selected' : '' }}>Hitam</option>
+                        <option value="Kuning" {{ old('warna_plat', $mobil->warna_plat) == 'Kuning' ? 'selected' : '' }}>Kuning</option>
+                        <option value="Merah" {{ old('warna_plat', $mobil->warna_plat) == 'Merah' ? 'selected' : '' }}>Merah</option>
+                        <option value="Biru" {{ old('warna_plat', $mobil->warna_plat) == 'Biru' ? 'selected' : '' }}>Biru</option>
+                        <option value="Putih" {{ old('warna_plat', $mobil->warna_plat) == 'Putih' ? 'selected' : '' }}>Putih</option>
+                    </select>
+                    @error('warna_plat')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+            </div>
+
+            <!-- Catatan -->
+            <div class="mt-4">
+                <label for="catatan" class="block text-sm font-medium text-gray-700">Catatan</label>
+                <textarea name="catatan" id="catatan" rows="3" class="{{ $inputClasses }}" placeholder="Catatan tambahan mengenai kendaraan">{{ old('catatan', $mobil->catatan) }}</textarea>
+                @error('catatan')
+                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                @enderror
+            </div>
+        </fieldset>
+
+        <fieldset class="mb-6">
             <legend class="text-lg font-semibold text-gray-800 mb-4">Penugasan Karyawan</legend>
             <div class="grid grid-cols-1 gap-4">
                 <!-- Karyawan -->
