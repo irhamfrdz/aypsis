@@ -108,6 +108,15 @@
             font-weight: bold;
         }
         
+        /* Tujuan Kirim dengan posisi absolut */
+        .tujuan-kirim {
+            position: absolute;
+            top: 110mm;  /* 11cm dari atas */
+            left: 10mm;  /* 1cm dari kiri */
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
         .col-center {
             text-align: center;
         }
@@ -269,6 +278,11 @@
             SEAL AYP{{ $suratJalan->no_seal ?? '0036824' }}
         </div>
         
+        <!-- TUJUAN KIRIM dengan posisi absolut -->
+        <div class="tujuan-kirim">
+            {{ $suratJalan->tujuan_pengiriman ?? 'SUKABUMI' }}
+        </div>
+        
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
         <div class="table-section">
             <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Kosong (Jenis Barang dipindah) -->
@@ -317,9 +331,9 @@
                 <div class="col"></div>
             </div>
             
-            <!-- Baris 8: Tujuan Akhir | Kosong | Kosong (Tujuan Ambil dipindah ke posisi absolut) -->
+            <!-- Baris 8: KOSONG (Tujuan Kirim dipindah ke posisi absolut) | Kosong | Kosong (Tujuan Ambil dipindah ke posisi absolut) -->
             <div class="bottom-row">
-                <div class="col">{{ $suratJalan->tujuan_pengiriman ?? 'SUKABUMI' }}</div>
+                <div class="col"></div>
                 <div class="col"></div>
                 <div class="col"></div>
             </div>
