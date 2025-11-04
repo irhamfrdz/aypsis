@@ -10,9 +10,38 @@ class MobilController extends Controller
     /**
      * Menampilkan daftar semua mobil.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $mobils = Mobil::with('karyawan')->latest()->paginate(10);
+        $query = Mobil::with('karyawan');
+
+        // Search functionality
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('kode_no', 'like', "%{$search}%")
+                  ->orWhere('nomor_polisi', 'like', "%{$search}%")
+                  ->orWhere('merek', 'like', "%{$search}%")
+                  ->orWhere('jenis', 'like', "%{$search}%")
+                  ->orWhere('lokasi', 'like', "%{$search}%")
+                  ->orWhere('no_mesin', 'like', "%{$search}%")
+                  ->orWhere('nomor_rangka', 'like', "%{$search}%")
+                  ->orWhere('bpkb', 'like', "%{$search}%")
+                  ->orWhere('atas_nama', 'like', "%{$search}%")
+                  ->orWhere('pemakai', 'like', "%{$search}%")
+                  ->orWhereHas('karyawan', function($subQ) use ($search) {
+                      $subQ->where('nama_lengkap', 'like', "%{$search}%")
+                           ->orWhere('nik', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $mobils = $query->latest()->paginate(10);
+        
+        // Preserve search query in pagination links
+        if ($request->filled('search')) {
+            $mobils->appends(['search' => $request->search]);
+        }
+
         return view('master-mobil.index', compact('mobils'));
     }
 

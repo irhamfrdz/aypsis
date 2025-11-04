@@ -7,6 +7,36 @@
 <div class="bg-white p-6 rounded-lg shadow-md">
     <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Mobil</h2>
 
+    <!-- Search Form -->
+    <div class="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <form method="GET" action="{{ route('master.mobil.index') }}" class="flex flex-col sm:flex-row gap-3">
+            <div class="flex-1">
+                <input type="text" 
+                       name="search" 
+                       value="{{ request('search') }}" 
+                       placeholder="Cari kode aktiva, nomor polisi, merek, jenis, atau nama karyawan..." 
+                       class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
+                       autocomplete="off">
+            </div>
+            <div class="flex gap-2">
+                <button type="submit" class="inline-flex items-center bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700 transition-colors duration-200">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Cari
+                </button>
+                @if(request('search'))
+                    <a href="{{ route('master.mobil.index') }}" class="inline-flex items-center bg-gray-600 text-white px-4 py-2 rounded-md hover:bg-gray-700 transition-colors duration-200">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6m0 0l6-6m-6 6l6 6"/>
+                        </svg>
+                        Reset
+                    </a>
+                @endif
+            </div>
+        </form>
+    </div>
+
     <!-- Tombol Tambah Mobil -->
     <div class="mb-4 flex flex-wrap gap-3">
         <a href="{{ route('master.mobil.create') }}" class="inline-flex items-center bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 transition-colors duration-200">
@@ -95,6 +125,20 @@
         </div>
     @endif
 
+    <!-- Search Result Info -->
+    @if(request('search'))
+        <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-blue-800 text-sm">
+                    Menampilkan <strong>{{ $mobils->total() }}</strong> hasil pencarian untuk "<strong>{{ request('search') }}</strong>"
+                </span>
+            </div>
+        </div>
+    @endif
+
     <!-- Tabel Daftar Mobil -->
     <div class="overflow-x-auto shadow-md sm:rounded-lg">
         <table class="min-w-full bg-white divide-y divide-gray-200">
@@ -151,15 +195,31 @@
                 @empty
                     <tr>
                         <td colspan="8" class="py-4 px-6 text-center text-gray-500">
-                            Tidak ada data mobil yang ditemukan.
+                            <div class="flex flex-col items-center py-8">
+                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                                </svg>
+                                @if(request('search'))
+                                    <p class="text-lg font-medium text-gray-600">Tidak ada mobil ditemukan</p>
+                                    <p class="text-sm text-gray-500 mt-1">Tidak ada hasil untuk pencarian "<strong>{{ request('search') }}</strong>"</p>
+                                    <a href="{{ route('master.mobil.index') }}" class="mt-3 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                        Lihat semua mobil
+                                    </a>
+                                @else
+                                    <p class="text-lg font-medium text-gray-600">Belum ada data mobil</p>
+                                    <p class="text-sm text-gray-500 mt-1">Silakan tambah mobil baru atau import data CSV</p>
+                                @endif
+                            </div>
                         </td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
+    
+    <!-- Pagination -->
     <div class="mt-4">
-        {{ $mobils->links() }}
+        {{ $mobils->appends(request()->query())->links() }}
     </div>
 </div>
 
