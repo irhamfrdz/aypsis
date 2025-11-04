@@ -17,6 +17,12 @@
                 <p class="text-gray-600 mt-1">Kelola data kapal dalam sistem</p>
             </div>
             <div class="flex gap-2">
+                @can('master-kapal.view')
+                <a href="{{ route('master-kapal.export') }}{{ request()->getQueryString() ? '?' . request()->getQueryString() : '' }}" 
+                   class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-lg transition duration-200 inline-flex items-center">
+                    <i class="fas fa-file-export mr-2"></i> Export CSV
+                </a>
+                @endcan
                 @can('master-kapal.create')
                 <a href="{{ route('master-kapal.import-form') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-200 inline-flex items-center">
                     <i class="fas fa-file-import mr-2"></i> Import CSV
@@ -88,7 +94,7 @@
                         <input type="text"
                                name="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Cari kode, nama, atau lokasi..."
+                               placeholder="Cari kode, nama kapal, nickname, atau pelayaran..."
                                value="{{ request('search') }}">
                     </div>
                     <div class="md:col-span-3">

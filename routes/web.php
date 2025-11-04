@@ -790,6 +790,10 @@ Route::middleware([
          ->name('master-kapal.import')
          ->middleware('can:master-kapal.create');
 
+    Route::get('master-kapal/export', [\App\Http\Controllers\MasterKapalController::class, 'export'])
+         ->name('master-kapal.export')
+         ->middleware('can:master-kapal.view');
+
     // 🚢 Master Kapal (Ship Master) Management with permissions
     Route::resource('master-kapal', \App\Http\Controllers\MasterKapalController::class)
          ->names('master-kapal')

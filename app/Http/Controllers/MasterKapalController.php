@@ -23,7 +23,8 @@ class MasterKapalController extends Controller
                 $q->where('kode', 'like', "%{$search}%")
                   ->orWhere('kode_kapal', 'like', "%{$search}%")
                   ->orWhere('nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('lokasi', 'like', "%{$search}%");
+                  ->orWhere('nickname', 'like', "%{$search}%")
+                  ->orWhere('pelayaran', 'like', "%{$search}%");
             });
         }
 
@@ -208,6 +209,13 @@ class MasterKapalController extends Controller
                 return str_getcsv($line, ';');
             }, file($path));
 
+            // If semicolon delimiter doesn't work, try comma
+            if (count($csvData[0]) === 1) {
+                $csvData = array_map(function($line) {
+                    return str_getcsv($line, ',');
+                }, file($path));
+            }
+
             // Remove header
             $header = array_shift($csvData);
 
@@ -215,15 +223,23 @@ class MasterKapalController extends Controller
             $header = array_map(function($value) {
                 // Remove BOM (﻿) from UTF-8 encoded files
                 $value = str_replace("\xEF\xBB\xBF", '', $value);
-                return trim($value);
+                return trim($value, '"');
             }, $header);
 
-            // Validate header
-            $expectedHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status'];
-            if ($header !== $expectedHeader) {
+            // Validate header - Support both import template and export format
+            $expectedImportHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status'];
+            $expectedExportHeader = ['No', 'Kode', 'Kode Kapal', 'Nama Kapal', 'Nickname', 'Pelayaran (Pemilik)', 'Kapasitas Palka', 'Kapasitas Deck', 'Gross Tonnage', 'Total Kapasitas', 'Catatan', 'Status', 'Tanggal Dibuat', 'Tanggal Diperbarui'];
+            
+            $isImportFormat = ($header === $expectedImportHeader);
+            $isExportFormat = ($header === $expectedExportHeader);
+            
+            if (!$isImportFormat && !$isExportFormat) {
                 return redirect()
                     ->back()
-                    ->with('error', 'Format header CSV tidak sesuai. Expected: ' . implode(';', $expectedHeader) . ' | Got: ' . implode(';', $header));
+                    ->with('error', 'Format header CSV tidak sesuai. 
+                    Format Import: ' . implode(';', $expectedImportHeader) . ' 
+                    Format Export: ' . implode(',', $expectedExportHeader) . ' 
+                    | Got: ' . implode(',', $header));
             }
 
             $imported = 0;
@@ -241,20 +257,40 @@ class MasterKapalController extends Controller
                     continue;
                 }
 
+                // Parse data based on format
+                if ($isImportFormat) {
+                    // Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status
+                    $kode = trim($row[0]);
+                    $kode_kapal = !empty(trim($row[1])) ? trim($row[1]) : null;
+                    $nama_kapal = trim($row[2]);
+                    $nickname = !empty(trim($row[3])) ? trim($row[3]) : null;
+                    $pelayaran = !empty(trim($row[4])) ? trim($row[4]) : null;
+                    $catatan = !empty(trim($row[5])) ? trim($row[5]) : null;
+                    $status = trim($row[6]);
+                } else {
+                    // Export format: No,Kode,Kode Kapal,Nama Kapal,Nickname,Pelayaran (Pemilik),Kapasitas Palka,Kapasitas Deck,Gross Tonnage,Total Kapasitas,Catatan,Status,Tanggal Dibuat,Tanggal Diperbarui
+                    // Make sure we have enough columns
+                    if (count($row) < 12) {
+                        $errors[] = "Baris {$rowNumber}: Format export tidak lengkap, minimal 12 kolom diperlukan";
+                        $skipped++;
+                        continue;
+                    }
+                    
+                    $kode = trim($row[1]); // Column B: Kode
+                    $kode_kapal = !empty(trim($row[2])) ? trim($row[2]) : null; // Column C: Kode Kapal
+                    $nama_kapal = trim($row[3]); // Column D: Nama Kapal
+                    $nickname = !empty(trim($row[4])) ? trim($row[4]) : null; // Column E: Nickname
+                    $pelayaran = !empty(trim($row[5])) ? trim($row[5]) : null; // Column F: Pelayaran (Pemilik)
+                    $catatan = isset($row[10]) && !empty(trim($row[10])) ? trim($row[10]) : null; // Column K: Catatan
+                    $status = trim($row[11]); // Column L: Status
+                }
+
                 // Skip if kode is empty
-                if (empty(trim($row[0]))) {
+                if (empty($kode)) {
                     $errors[] = "Baris {$rowNumber}: Kode tidak boleh kosong";
                     $skipped++;
                     continue;
                 }
-
-                $kode = trim($row[0]);
-                $kode_kapal = !empty(trim($row[1])) ? trim($row[1]) : null;
-                $nama_kapal = trim($row[2]);
-                $nickname = !empty(trim($row[3])) ? trim($row[3]) : null;
-                $pelayaran = !empty(trim($row[4])) ? trim($row[4]) : null;
-                $catatan = !empty(trim($row[5])) ? trim($row[5]) : null;
-                $status = trim($row[6]);
 
                 // Validate required fields
                 if (empty($nama_kapal)) {
@@ -328,5 +364,94 @@ class MasterKapalController extends Controller
                 ->back()
                 ->with('error', 'Gagal mengimport data: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Export data to CSV
+     */
+    public function export(Request $request)
+    {
+        $query = MasterKapal::query();
+
+        // Apply same filters as index method
+        if ($request->has('search') && $request->search != '') {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('kode', 'like', "%{$search}%")
+                  ->orWhere('kode_kapal', 'like', "%{$search}%")
+                  ->orWhere('nama_kapal', 'like', "%{$search}%")
+                  ->orWhere('nickname', 'like', "%{$search}%")
+                  ->orWhere('pelayaran', 'like', "%{$search}%");
+            });
+        }
+
+        if ($request->has('status') && $request->status != '') {
+            $query->where('status', $request->status);
+        }
+
+        // Sort
+        $sortBy = $request->get('sort_by', 'created_at');
+        $sortOrder = $request->get('sort_order', 'desc');
+        $query->orderBy($sortBy, $sortOrder);
+
+        $kapals = $query->get();
+
+        $filename = 'master-kapal-' . date('Y-m-d-H-i-s') . '.csv';
+
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($kapals) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+
+            // CSV Headers
+            fputcsv($file, [
+                'No',
+                'Kode',
+                'Kode Kapal',
+                'Nama Kapal',
+                'Nickname',
+                'Pelayaran (Pemilik)',
+                'Kapasitas Palka',
+                'Kapasitas Deck',
+                'Gross Tonnage',
+                'Total Kapasitas',
+                'Catatan',
+                'Status',
+                'Tanggal Dibuat',
+                'Tanggal Diperbarui'
+            ]);
+
+            // Data rows
+            foreach ($kapals as $index => $kapal) {
+                $totalKapasitas = ($kapal->kapasitas_kontainer_palka ?? 0) + ($kapal->kapasitas_kontainer_deck ?? 0);
+                
+                fputcsv($file, [
+                    $index + 1,
+                    $kapal->kode,
+                    $kapal->kode_kapal ?? '',
+                    $kapal->nama_kapal,
+                    $kapal->nickname ?? '',
+                    $kapal->pelayaran ?? '',
+                    $kapal->kapasitas_kontainer_palka ?? '',
+                    $kapal->kapasitas_kontainer_deck ?? '',
+                    $kapal->gross_tonnage ?? '',
+                    $totalKapasitas > 0 ? $totalKapasitas : '',
+                    $kapal->catatan ?? '',
+                    ucfirst($kapal->status),
+                    $kapal->created_at ? $kapal->created_at->format('Y-m-d H:i:s') : '',
+                    $kapal->updated_at ? $kapal->updated_at->format('Y-m-d H:i:s') : ''
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

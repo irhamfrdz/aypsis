@@ -106,17 +106,36 @@
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-yellow-800">Petunjuk Import</h3>
                             <div class="mt-2 text-sm text-yellow-700">
-                                <ul class="list-disc pl-5 space-y-1">
-                                    <li>Pastikan file CSV menggunakan delimiter titik koma (;)</li>
-                                    <li>Header kolom harus: <code class="bg-yellow-100 px-1 rounded text-xs">kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status</code></li>
-                                    <li>Kolom <strong>kode</strong> dan <strong>nama_kapal</strong> wajib diisi</li>
-                                    <li>Kolom status harus berisi: <strong>aktif/active</strong> atau <strong>nonaktif/inactive</strong> (mendukung Bahasa Indonesia dan English)</li>
-                                    <li>Data yang sudah ada dengan kode sama akan diupdate</li>
-                                    <li>Baris dengan kode kosong akan diabaikan</li>
-                                    <li>Kolom kode_kapal, nickname, pelayaran, dan catatan bersifat opsional</li>
-                                    <li><strong>nickname</strong> = Nama panggilan kapal (contoh: "SEJAHTERA", "NUSA")</li>
-                                    <li><strong>pelayaran</strong> = Nama perusahaan pelayaran/pemilik kapal (contoh: "PT Pelayaran Indonesia")</li>
-                                </ul>
+                                <p class="mb-3"><strong>Sistem mendukung 2 format CSV:</strong></p>
+                                
+                                <div class="mb-4">
+                                    <h4 class="font-semibold text-yellow-800 mb-2">📋 Format 1: Template Import (Recommended)</h4>
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li>Gunakan delimiter titik koma (;)</li>
+                                        <li>Header: <code class="bg-yellow-100 px-1 rounded text-xs">kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status</code></li>
+                                        <li>Download template untuk format yang tepat</li>
+                                    </ul>
+                                </div>
+
+                                <div class="mb-4">
+                                    <h4 class="font-semibold text-yellow-800 mb-2">📤 Format 2: File Export CSV</h4>
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li>Bisa menggunakan file hasil export dari sistem ini</li>
+                                        <li>Sistem akan otomatis mendeteksi format export</li>
+                                        <li>Delimiter koma (,) dengan header lengkap</li>
+                                    </ul>
+                                </div>
+
+                                <div class="border-t border-yellow-300 pt-3 mt-3">
+                                    <h4 class="font-semibold text-yellow-800 mb-2">📌 Aturan Umum:</h4>
+                                    <ul class="list-disc pl-5 space-y-1">
+                                        <li>Kolom <strong>kode</strong> dan <strong>nama_kapal</strong> wajib diisi</li>
+                                        <li>Kolom status harus berisi: <strong>aktif/active</strong> atau <strong>nonaktif/inactive</strong></li>
+                                        <li>Data yang sudah ada dengan kode sama akan diupdate</li>
+                                        <li>Baris dengan kode kosong akan diabaikan</li>
+                                        <li>Kolom kode_kapal, nickname, pelayaran, dan catatan bersifat opsional</li>
+                                    </ul>
+                                </div>
                             </div>
                         </div>
                     </div>
