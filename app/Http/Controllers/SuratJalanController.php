@@ -755,4 +755,68 @@ class SuratJalanController extends Controller
                            ->with('error', 'Terjadi kesalahan saat menyimpan surat jalan. Silakan coba lagi.');
         }
     }
+
+    /**
+     * Update status of surat jalan
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        try {
+            $suratJalan = SuratJalan::findOrFail($id);
+            
+            $request->validate([
+                'status' => 'required|in:draft,active,completed,cancelled'
+            ]);
+
+            $suratJalan->status = $request->status;
+            $suratJalan->save();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status berhasil diubah'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error updating surat jalan status: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengubah status'
+            ], 500);
+        }
+    }
+
+    /**
+     * Print memo for surat jalan
+     */
+    public function printMemo($id)
+    {
+        try {
+            $suratJalan = SuratJalan::with(['order', 'tujuanPengambilanRelation', 'tujuanPengirimanRelation'])->findOrFail($id);
+            
+            return view('surat-jalan.print-memo', compact('suratJalan'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error printing memo for surat jalan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal menampilkan halaman memo');
+        }
+    }
+
+    /**
+     * Print preprinted surat jalan
+     */
+    public function printPreprinted($id)
+    {
+        try {
+            $suratJalan = SuratJalan::with(['order', 'tujuanPengambilanRelation', 'tujuanPengirimanRelation'])->findOrFail($id);
+            
+            $pdf = PDF::loadView('surat-jalan.print-preprinted', compact('suratJalan'));
+            $pdf->setPaper('A4', 'portrait');
+            
+            return $pdf->stream('surat-jalan-preprinted-' . $suratJalan->no_surat_jalan . '.pdf');
+            
+        } catch (\Exception $e) {
+            Log::error('Error printing preprinted surat jalan: ' . $e->getMessage());
+            return redirect()->back()->with('error', 'Gagal mencetak surat jalan preprinted');
+        }
+    }
 }

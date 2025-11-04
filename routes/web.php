@@ -1130,6 +1130,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('surat-jalan.download')
          ->middleware('can:surat-jalan-view');
 
+    // Print memo for surat jalan
+    Route::get('/surat-jalan/{suratJalan}/print-memo', [\App\Http\Controllers\SuratJalanController::class, 'printMemo'])
+         ->name('surat-jalan.print-memo')
+         ->middleware('can:surat-jalan-view');
+
+    // Print preprinted surat jalan
+    Route::get('/surat-jalan/{suratJalan}/print-preprinted', [\App\Http\Controllers\SuratJalanController::class, 'printPreprinted'])
+         ->name('surat-jalan.print-preprinted')
+         ->middleware('can:surat-jalan-view');
+
+    // Update status surat jalan
+    Route::post('/surat-jalan/{suratJalan}/update-status', [\App\Http\Controllers\SuratJalanController::class, 'updateStatus'])
+         ->name('surat-jalan.update-status')
+         ->middleware('can:surat-jalan-update');
+
     // AJAX route for getting uang jalan by tujuan
     Route::post('/api/get-uang-jalan-by-tujuan', [\App\Http\Controllers\SuratJalanController::class, 'getUangJalanByTujuan'])
          ->name('surat-jalan.get-uang-jalan')
