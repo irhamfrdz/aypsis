@@ -102,7 +102,7 @@
         /* Nomor Seal dengan posisi absolut */
         .nomor-seal {
             position: absolute;
-            top: 115mm;  /* 11.5cm dari atas */
+            top: 140mm;  /* 14cm dari atas */
             left: 10mm;  /* 1cm dari kiri */
             font-size: 14px;
             font-weight: bold;
