@@ -1047,6 +1047,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [OrderDataManagementController::class, 'index'])->name('index');
     });
 
+    // Order Template Download Route
+    Route::get('orders/download-template', [OrderController::class, 'downloadTemplate'])
+         ->name('orders.download.template')
+         ->middleware('can:order-view');
+
     // 📋 Order Management with permissions
     Route::resource('orders', OrderController::class)
          ->middleware([

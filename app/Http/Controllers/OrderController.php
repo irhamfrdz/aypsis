@@ -426,6 +426,102 @@ class OrderController extends Controller
     }
 
     /**
+     * Download template CSV untuk import orders
+     */
+    public function downloadTemplate()
+    {
+        $filename = 'template_orders_' . date('Y-m-d') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            
+            // Write BOM for UTF-8
+            fwrite($file, "\xEF\xBB\xBF");
+            
+            // Header columns
+            $header = [
+                'nomor_order',
+                'tanggal_order',
+                'pengirim_id',
+                'nama_pengirim',
+                'term_id', 
+                'nama_term',
+                'jenis_barang_id',
+                'nama_jenis_barang',
+                'tujuan_ambil',
+                'tujuan_kirim',
+                'tipe_kontainer',
+                'size_kontainer',
+                'unit_kontainer',
+                'no_tiket_do',
+                'jumlah_barang',
+                'berat_barang',
+                'keterangan',
+                'status'
+            ];
+            
+            fputcsv($file, $header);
+            
+            // Example data rows
+            $exampleData = [
+                [
+                    'ORD-' . date('Ymd') . '-001',
+                    date('Y-m-d'),
+                    '1',
+                    'PT CONTOH PENGIRIM',
+                    '1',
+                    'COD',
+                    '1', 
+                    'Elektronik',
+                    'Jakarta Utara',
+                    'Surabaya',
+                    'kontainer',
+                    '20',
+                    'ft',
+                    'TKT001',
+                    '100',
+                    '1000',
+                    'Barang elektronik untuk toko',
+                    'draft'
+                ],
+                [
+                    'ORD-' . date('Ymd') . '-002',
+                    date('Y-m-d'),
+                    '2',
+                    'PT CONTOH LAINNYA',
+                    '2',
+                    'Credit 30',
+                    '2',
+                    'Makanan',
+                    'Bandung',
+                    'Medan',
+                    'cargo',
+                    '',
+                    '',
+                    'TKT002',
+                    '50',
+                    '500',
+                    'Produk makanan ringan',
+                    'confirmed'
+                ]
+            ];
+            
+            foreach ($exampleData as $row) {
+                fputcsv($file, $row);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
