@@ -90,18 +90,28 @@
             <!-- Filter & Search -->
             <form method="GET" action="{{ route('master-kapal.index') }}" class="mb-6">
                 <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
-                    <div class="md:col-span-4">
+                    <div class="md:col-span-3">
                         <input type="text"
                                name="search"
                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Cari kode, nama kapal, nickname, atau pelayaran..."
+                               placeholder="Cari kode, nama kapal, nickname..."
                                value="{{ request('search') }}">
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-2">
                         <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
                             <option value="">Semua Status</option>
                             <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                             <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
+                        </select>
+                    </div>
+                    <div class="md:col-span-3">
+                        <select name="pemilik" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Semua Pemilik</option>
+                            @foreach($pemilikList as $pemilik)
+                                <option value="{{ $pemilik }}" {{ request('pemilik') == $pemilik ? 'selected' : '' }}>
+                                    {{ $pemilik }}
+                                </option>
+                            @endforeach
                         </select>
                     </div>
                     <div class="md:col-span-2">
@@ -109,7 +119,7 @@
                             <i class="fas fa-search mr-2"></i> Cari
                         </button>
                     </div>
-                    <div class="md:col-span-3">
+                    <div class="md:col-span-2">
                         <a href="{{ route('master-kapal.index') }}" class="block text-center w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
                             <i class="fas fa-redo mr-2"></i> Reset
                         </a>
@@ -119,6 +129,14 @@
 
             <!-- Table -->
             <div class="overflow-x-auto">
+                <!-- Rows per page selector -->
+                @include('components.rows-per-page', [
+                    'routeName' => 'master-kapal.index',
+                    'paginator' => $kapals,
+                    'entityName' => 'kapal',
+                    'entityNamePlural' => 'kapal'
+                ])
+                
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
@@ -127,9 +145,6 @@
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Kode
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Kode Kapal
                             </th>
                             <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Nama Kapal
@@ -171,9 +186,6 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <span class="text-sm font-semibold text-gray-900">{{ $kapal->kode }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {{ $kapal->kode_kapal ?? '-' }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $kapal->nama_kapal }}</div>
@@ -293,7 +305,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13" class="px-6 py-12 text-center">
+                            <td colspan="12" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center justify-center">
                                     <i class="fas fa-ship text-gray-300 text-6xl mb-4"></i>
                                     <p class="text-gray-500 text-lg font-medium">Tidak ada data kapal</p>
@@ -308,45 +320,7 @@
 
             <!-- Pagination -->
             @if($kapals->hasPages())
-            <div class="flex items-center justify-between border-t border-gray-200 bg-white px-4 py-3 sm:px-6 mt-4">
-                <div class="flex flex-1 justify-between sm:hidden">
-                    @if($kapals->onFirstPage())
-                        <span class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
-                            Previous
-                        </span>
-                    @else
-                        <a href="{{ $kapals->previousPageUrl() }}" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Previous
-                        </a>
-                    @endif
-
-                    @if($kapals->hasMorePages())
-                        <a href="{{ $kapals->nextPageUrl() }}" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50">
-                            Next
-                        </a>
-                    @else
-                        <span class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-400">
-                            Next
-                        </span>
-                    @endif
-                </div>
-                <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-                    <div>
-                        <p class="text-sm text-gray-700">
-                            Menampilkan
-                            <span class="font-medium">{{ $kapals->firstItem() ?? 0 }}</span>
-                            sampai
-                            <span class="font-medium">{{ $kapals->lastItem() ?? 0 }}</span>
-                            dari
-                            <span class="font-medium">{{ $kapals->total() }}</span>
-                            data
-                        </p>
-                    </div>
-                    <div>
-                        {{ $kapals->links() }}
-                    </div>
-                </div>
-            </div>
+                @include('components.modern-pagination', ['paginator' => $kapals])
             @endif
         </div>
     </div>

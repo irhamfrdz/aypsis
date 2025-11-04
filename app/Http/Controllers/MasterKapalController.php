@@ -33,14 +33,30 @@ class MasterKapalController extends Controller
             $query->where('status', $request->status);
         }
 
+        // Filter by pemilik/pelayaran
+        if ($request->has('pemilik') && $request->pemilik != '') {
+            $query->where('pelayaran', $request->pemilik);
+        }
+
         // Sort
         $sortBy = $request->get('sort_by', 'created_at');
         $sortOrder = $request->get('sort_order', 'desc');
         $query->orderBy($sortBy, $sortOrder);
 
-        $kapals = $query->paginate(10)->withQueryString();
+        // Rows per page
+        $perPage = $request->get('per_page', 10);
+        $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 10;
 
-        return view('master-kapal.index', compact('kapals'));
+        $kapals = $query->paginate($perPage)->withQueryString();
+
+        // Get distinct pemilik list for filter dropdown
+        $pemilikList = MasterKapal::whereNotNull('pelayaran')
+            ->where('pelayaran', '!=', '')
+            ->distinct()
+            ->orderBy('pelayaran')
+            ->pluck('pelayaran');
+
+        return view('master-kapal.index', compact('kapals', 'pemilikList'));
     }
 
     /**
