@@ -66,7 +66,7 @@
                            id="kode"
                            name="kode"
                            value="{{ old('kode') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kode') border-red-500 @enderror"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kode') border-red-500 @else border-gray-300 @enderror"
                            placeholder="Masukkan kode kapal"
                            required>
                     @error('kode')
@@ -83,7 +83,7 @@
                            id="kode_kapal"
                            name="kode_kapal"
                            value="{{ old('kode_kapal') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kode_kapal') border-red-500 @enderror"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kode_kapal') border-red-500 @else border-gray-300 @enderror"
                            placeholder="Masukkan kode alternatif kapal">
                     @error('kode_kapal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -101,7 +101,7 @@
                        id="nama_kapal"
                        name="nama_kapal"
                        value="{{ old('nama_kapal') }}"
-                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_kapal') border-red-500 @enderror"
+                       class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nama_kapal') border-red-500 @else border-gray-300 @enderror"
                        placeholder="Masukkan nama kapal"
                        required>
                 @error('nama_kapal')
@@ -119,7 +119,7 @@
                            id="nickname"
                            name="nickname"
                            value="{{ old('nickname') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nickname') border-red-500 @enderror"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nickname') border-red-500 @else border-gray-300 @enderror"
                            placeholder="Masukkan nickname kapal">
                     @error('nickname')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -135,7 +135,7 @@
                            id="pelayaran"
                            name="pelayaran"
                            value="{{ old('pelayaran') }}"
-                           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pelayaran') border-red-500 @enderror"
+                           class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('pelayaran') border-red-500 @else border-gray-300 @enderror"
                            placeholder="Masukkan nama pelayaran/pemilik kapal">
                     @error('pelayaran')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -156,7 +156,7 @@
                                name="kapasitas_kontainer_palka"
                                value="{{ old('kapasitas_kontainer_palka') }}"
                                min="0"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kapasitas_kontainer_palka') border-red-500 @enderror"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kapasitas_kontainer_palka') border-red-500 @else border-gray-300 @enderror"
                                placeholder="0">
                     </div>
                     @error('kapasitas_kontainer_palka')
@@ -175,7 +175,7 @@
                                name="kapasitas_kontainer_deck"
                                value="{{ old('kapasitas_kontainer_deck') }}"
                                min="0"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kapasitas_kontainer_deck') border-red-500 @enderror"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('kapasitas_kontainer_deck') border-red-500 @else border-gray-300 @enderror"
                                placeholder="0">
                     </div>
                     @error('kapasitas_kontainer_deck')
@@ -195,7 +195,7 @@
                                value="{{ old('gross_tonnage') }}"
                                min="0"
                                step="0.01"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('gross_tonnage') border-red-500 @enderror"
+                               class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('gross_tonnage') border-red-500 @else border_gray-300 @enderror"
                                placeholder="0.00">
                     </div>
                     @error('gross_tonnage')
@@ -213,7 +213,7 @@
                 <textarea id="catatan"
                           name="catatan"
                           rows="4"
-                          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('catatan') border-red-500 @enderror"
+                          class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('catatan') border-red-500 @else border-gray-300 @enderror"
                           placeholder="Masukkan catatan tambahan tentang kapal">{{ old('catatan') }}</textarea>
                 @error('catatan')
                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -227,7 +227,7 @@
                 </label>
                 <select id="status"
                         name="status"
-                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status') border-red-500 @enderror"
+                        class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('status') border-red-500 @else border-gray-300 @enderror"
                         required>
                     <option value="">Pilih Status</option>
                     <option value="aktif" {{ old('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
