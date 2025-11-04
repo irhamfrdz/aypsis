@@ -250,27 +250,27 @@
         
         <!-- SESI 2: NO PLAT KENDARAAN -->
         <div class="no-plat">
-            {{ $suratJalan->no_plat ?? ($suratJalan->no_plat != '--Pilih No Plat' ? $suratJalan->no_plat : '') }}
+            {{ strtoupper($suratJalan->no_plat ?? ($suratJalan->no_plat != '--Pilih No Plat' ? $suratJalan->no_plat : '')) }}
         </div>
         
         <!-- TIPE KONTAINER dengan posisi absolut -->
         <div class="tipe-kontainer">
-            {{ $suratJalan->tipe_kontainer ?? 'FCL' }}
+            {{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }}
         </div>
         
         <!-- NAMA PENGIRIM dengan posisi absolut -->
         <div class="nama-pengirim">
-            {{ $suratJalan->pengirim ?? 'PT TIRTA INVESTAMA' }}
+            {{ strtoupper($suratJalan->pengirim ?? 'PT TIRTA INVESTAMA') }}
         </div>
         
         <!-- NAMA BARANG dengan posisi absolut -->
         <div class="nama-barang">
-            {{ $suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA' }}
+            {{ strtoupper($suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA') }}
         </div>
         
         <!-- TUJUAN AMBIL dengan posisi absolut -->
         <div class="tujuan-ambil">
-            {{ $suratJalan->tujuan_pengambilan ?? 'Batam' }}
+            {{ strtoupper($suratJalan->tujuan_pengambilan ?? 'BATAM') }}
         </div>
         
         <!-- NOMOR SEAL dengan posisi absolut -->
@@ -280,14 +280,14 @@
         
         <!-- TUJUAN KIRIM dengan posisi absolut -->
         <div class="tujuan-kirim">
-            {{ $suratJalan->tujuan_pengiriman ?? 'SUKABUMI' }}
+            {{ strtoupper($suratJalan->tujuan_pengiriman ?? 'SUKABUMI') }}
         </div>
         
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
         <div class="table-section">
             <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Kosong (Jenis Barang dipindah) -->
             <div class="table-row">
-                <div class="col">{{ $suratJalan->no_kontainer ?? '' }}</div>
+                <div class="col">{{ strtoupper($suratJalan->no_kontainer ?? '') }}</div>
                 <div class="col"></div>
                 <div class="col"></div>
             </div>
@@ -343,7 +343,7 @@
         <div class="ttd-section">
             <div class="ttd-row">
                 <div class="ttd-col"></div>
-                <div class="ttd-col supir-name">{{ $suratJalan->supir ?? 'SUMANTA' }}</div>
+                <div class="ttd-col supir-name">{{ strtoupper($suratJalan->supir ?? 'SUMANTA') }}</div>
                 <div class="ttd-col"></div>
             </div>
         </div>
