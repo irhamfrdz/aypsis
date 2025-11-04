@@ -35,12 +35,14 @@ class MobilController extends Controller
             });
         }
 
-        $mobils = $query->latest()->paginate(10);
+        // Get per_page from request, default to 15
+        $perPage = $request->get('per_page', 15);
+        $perPage = in_array($perPage, [15, 50, 100]) ? $perPage : 15;
         
-        // Preserve search query in pagination links
-        if ($request->filled('search')) {
-            $mobils->appends(['search' => $request->search]);
-        }
+        $mobils = $query->latest()->paginate($perPage);
+        
+        // Preserve all query parameters in pagination links
+        $mobils->appends($request->query());
 
         return view('master-mobil.index', compact('mobils'));
     }
