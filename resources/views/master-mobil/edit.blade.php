@@ -229,12 +229,12 @@
             <div class="grid grid-cols-1 gap-4">
                 <!-- Karyawan -->
                 <div>
-                    <label for="karyawan_id" class="block text-sm font-medium text-gray-700">Karyawan</label>
+                    <label for="karyawan_id" class="block text-sm font-medium text-gray-700">Karyawan Supir</label>
                     <select name="karyawan_id" id="karyawan_id" class="{{ $inputClasses }}">
-                        <option value="">-- Pilih Karyawan --</option>
+                        <option value="">-- Pilih Supir --</option>
                         @foreach($karyawans as $karyawan)
                             <option value="{{ $karyawan->id }}" {{ old('karyawan_id', $mobil->karyawan_id) == $karyawan->id ? 'selected' : '' }}>
-                                {{ $karyawan->nama_lengkap }} @if($karyawan->nik)({{ $karyawan->nik }})@endif
+                                {{ $karyawan->nama_lengkap }} @if($karyawan->nik)({{ $karyawan->nik }}) - {{ $karyawan->divisi }}@endif
                             </option>
                         @endforeach
                     </select>
@@ -242,7 +242,7 @@
                         <svg class="inline h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Nomor polisi akan otomatis diupdate ke data karyawan yang dipilih
+                        Hanya menampilkan karyawan dari divisi Supir. Nomor polisi akan otomatis diupdate ke data supir yang dipilih.
                     </p>
                     @error('karyawan_id')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
