@@ -168,14 +168,14 @@ class MasterKapalController extends Controller
             // Add BOM for UTF-8
             fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
 
-            // Header with new fields: nickname and pelayaran (changed from lokasi)
-            fputcsv($file, ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status'], ';');
+            // Header with capacity fields included
+            fputcsv($file, ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'catatan', 'status'], ';');
 
-            // Example data rows
-            fputcsv($file, ['K001', 'KP-001', 'MV SEJAHTERA', 'SEJAHTERA', 'PT Pelayaran Indonesia', 'Kapal kontainer 20 feet', 'aktif'], ';');
-            fputcsv($file, ['K002', 'KP-002', 'MV NUSANTARA', 'NUSA', 'PT Samudera Lines', 'Kapal cargo besar', 'aktif'], ';');
-            fputcsv($file, ['K003', 'KP-003', 'MV BAHARI', '', 'PT Pelni', 'Kapal penumpang', 'nonaktif'], ';');
-            fputcsv($file, ['K004', '', 'MV SRIKANDI', 'KANDI', 'PT Berlian Shipping', '', 'aktif'], ';');
+            // Example data rows with capacity examples
+            fputcsv($file, ['K001', 'KP-001', 'MV SEJAHTERA', 'SEJAHTERA', 'PT Pelayaran Indonesia', '120', '80', '2500.50', 'Kapal kontainer 20 feet', 'aktif'], ';');
+            fputcsv($file, ['K002', 'KP-002', 'MV NUSANTARA', 'NUSA', 'PT Samudera Lines', '150', '100', '3200.75', 'Kapal cargo besar', 'aktif'], ';');
+            fputcsv($file, ['K003', 'KP-003', 'MV BAHARI', '', 'PT Pelni', '', '', '1800.00', 'Kapal penumpang', 'nonaktif'], ';');
+            fputcsv($file, ['K004', '', 'MV SRIKANDI', 'KANDI', 'PT Berlian Shipping', '90', '60', '', '', 'aktif'], ';');
 
             fclose($file);
         };
@@ -227,17 +227,20 @@ class MasterKapalController extends Controller
             }, $header);
 
             // Validate header - Support both import template and export format
-            $expectedImportHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status'];
+            $expectedImportHeader = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'kapasitas_kontainer_palka', 'kapasitas_kontainer_deck', 'gross_tonnage', 'catatan', 'status'];
+            $expectedImportHeaderOld = ['kode', 'kode_kapal', 'nama_kapal', 'nickname', 'pelayaran', 'catatan', 'status']; // Legacy format
             $expectedExportHeader = ['No', 'Kode', 'Kode Kapal', 'Nama Kapal', 'Nickname', 'Pelayaran (Pemilik)', 'Kapasitas Palka', 'Kapasitas Deck', 'Gross Tonnage', 'Total Kapasitas', 'Catatan', 'Status', 'Tanggal Dibuat', 'Tanggal Diperbarui'];
             
             $isImportFormat = ($header === $expectedImportHeader);
+            $isImportFormatOld = ($header === $expectedImportHeaderOld);
             $isExportFormat = ($header === $expectedExportHeader);
             
-            if (!$isImportFormat && !$isExportFormat) {
+            if (!$isImportFormat && !$isImportFormatOld && !$isExportFormat) {
                 return redirect()
                     ->back()
                     ->with('error', 'Format header CSV tidak sesuai. 
-                    Format Import: ' . implode(';', $expectedImportHeader) . ' 
+                    Format Import Baru: ' . implode(';', $expectedImportHeader) . ' 
+                    Format Import Lama: ' . implode(';', $expectedImportHeaderOld) . ' 
                     Format Export: ' . implode(',', $expectedExportHeader) . ' 
                     | Got: ' . implode(',', $header));
             }
@@ -259,7 +262,19 @@ class MasterKapalController extends Controller
 
                 // Parse data based on format
                 if ($isImportFormat) {
-                    // Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status
+                    // New Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;kapasitas_kontainer_palka;kapasitas_kontainer_deck;gross_tonnage;catatan;status
+                    $kode = trim($row[0]);
+                    $kode_kapal = !empty(trim($row[1])) ? trim($row[1]) : null;
+                    $nama_kapal = trim($row[2]);
+                    $nickname = !empty(trim($row[3])) ? trim($row[3]) : null;
+                    $pelayaran = !empty(trim($row[4])) ? trim($row[4]) : null;
+                    $kapasitas_palka = isset($row[5]) && !empty(trim($row[5])) ? (float)trim($row[5]) : null;
+                    $kapasitas_deck = isset($row[6]) && !empty(trim($row[6])) ? (float)trim($row[6]) : null;
+                    $gross_tonnage = isset($row[7]) && !empty(trim($row[7])) ? (float)trim($row[7]) : null;
+                    $catatan = !empty(trim($row[8])) ? trim($row[8]) : null;
+                    $status = trim($row[9]);
+                } elseif ($isImportFormatOld) {
+                    // Old Import template format: kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status
                     $kode = trim($row[0]);
                     $kode_kapal = !empty(trim($row[1])) ? trim($row[1]) : null;
                     $nama_kapal = trim($row[2]);
@@ -267,6 +282,10 @@ class MasterKapalController extends Controller
                     $pelayaran = !empty(trim($row[4])) ? trim($row[4]) : null;
                     $catatan = !empty(trim($row[5])) ? trim($row[5]) : null;
                     $status = trim($row[6]);
+                    // Old template doesn't include capacity fields
+                    $kapasitas_palka = null;
+                    $kapasitas_deck = null;
+                    $gross_tonnage = null;
                 } else {
                     // Export format: No,Kode,Kode Kapal,Nama Kapal,Nickname,Pelayaran (Pemilik),Kapasitas Palka,Kapasitas Deck,Gross Tonnage,Total Kapasitas,Catatan,Status,Tanggal Dibuat,Tanggal Diperbarui
                     // Make sure we have enough columns
@@ -281,6 +300,9 @@ class MasterKapalController extends Controller
                     $nama_kapal = trim($row[3]); // Column D: Nama Kapal
                     $nickname = !empty(trim($row[4])) ? trim($row[4]) : null; // Column E: Nickname
                     $pelayaran = !empty(trim($row[5])) ? trim($row[5]) : null; // Column F: Pelayaran (Pemilik)
+                    $kapasitas_palka = isset($row[6]) && !empty(trim($row[6])) ? (float)trim($row[6]) : null; // Column G: Kapasitas Palka
+                    $kapasitas_deck = isset($row[7]) && !empty(trim($row[7])) ? (float)trim($row[7]) : null; // Column H: Kapasitas Deck
+                    $gross_tonnage = isset($row[8]) && !empty(trim($row[8])) ? (float)trim($row[8]) : null; // Column I: Gross Tonnage
                     $catatan = isset($row[10]) && !empty(trim($row[10])) ? trim($row[10]) : null; // Column K: Catatan
                     $status = trim($row[11]); // Column L: Status
                 }
@@ -313,15 +335,28 @@ class MasterKapalController extends Controller
                 $existing = MasterKapal::where('kode', $kode)->first();
 
                 if ($existing) {
-                    // Update existing
-                    $existing->update([
+                    // Update existing - only update capacity fields if they have values (not null)
+                    $updateData = [
                         'kode_kapal' => $kode_kapal,
                         'nama_kapal' => $nama_kapal,
                         'nickname' => $nickname,
                         'pelayaran' => $pelayaran,
                         'catatan' => $catatan,
                         'status' => $normalizedStatus,
-                    ]);
+                    ];
+                    
+                    // Only update capacity fields if they have values (to preserve existing data)
+                    if ($kapasitas_palka !== null) {
+                        $updateData['kapasitas_kontainer_palka'] = $kapasitas_palka;
+                    }
+                    if ($kapasitas_deck !== null) {
+                        $updateData['kapasitas_kontainer_deck'] = $kapasitas_deck;
+                    }
+                    if ($gross_tonnage !== null) {
+                        $updateData['gross_tonnage'] = $gross_tonnage;
+                    }
+                    
+                    $existing->update($updateData);
                     $updated++;
                 } else {
                     // Create new
@@ -331,6 +366,9 @@ class MasterKapalController extends Controller
                         'nama_kapal' => $nama_kapal,
                         'nickname' => $nickname,
                         'pelayaran' => $pelayaran,
+                        'kapasitas_kontainer_palka' => $kapasitas_palka,
+                        'kapasitas_kontainer_deck' => $kapasitas_deck,
+                        'gross_tonnage' => $gross_tonnage,
                         'catatan' => $catatan,
                         'status' => $normalizedStatus,
                     ]);

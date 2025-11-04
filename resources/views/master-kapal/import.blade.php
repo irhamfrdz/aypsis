@@ -112,8 +112,11 @@
                                     <h4 class="font-semibold text-yellow-800 mb-2">📋 Format 1: Template Import (Recommended)</h4>
                                     <ul class="list-disc pl-5 space-y-1">
                                         <li>Gunakan delimiter titik koma (;)</li>
-                                        <li>Header: <code class="bg-yellow-100 px-1 rounded text-xs">kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status</code></li>
+                                        <li>Header Lengkap (Baru): <code class="bg-yellow-100 px-1 rounded text-xs">kode;kode_kapal;nama_kapal;nickname;pelayaran;kapasitas_kontainer_palka;kapasitas_kontainer_deck;gross_tonnage;catatan;status</code></li>
+                                        <li>Header Sederhana (Lama): <code class="bg-yellow-100 px-1 rounded text-xs">kode;kode_kapal;nama_kapal;nickname;pelayaran;catatan;status</code></li>
                                         <li>Download template untuk format yang tepat</li>
+                                        <li><strong>Kapasitas Palka/Deck:</strong> Angka dalam satuan TEU (Twenty-foot Equivalent Unit)</li>
+                                        <li><strong>Gross Tonnage:</strong> Angka desimal untuk berat kapal</li>
                                     </ul>
                                 </div>
 
