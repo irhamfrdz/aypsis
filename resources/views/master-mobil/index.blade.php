@@ -126,25 +126,30 @@
     @endif
 
     <!-- Search Result Info & Data Summary -->
-    <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-        @if(request('search'))
-            <div class="bg-blue-50 border border-blue-200 rounded-lg p-3 flex-1">
-                <div class="flex items-center">
-                    <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                    </svg>
-                    <span class="text-blue-800 text-sm">
-                        Menampilkan <strong>{{ $mobils->total() }}</strong> hasil pencarian untuk "<strong>{{ request('search') }}</strong>"
-                    </span>
-                </div>
+    @if(request('search'))
+        <div class="mb-4 bg-blue-50 border border-blue-200 rounded-lg p-3">
+            <div class="flex items-center">
+                <svg class="w-5 h-5 text-blue-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <span class="text-blue-800 text-sm">
+                    Menampilkan <strong>{{ $mobils->total() }}</strong> hasil pencarian untuk "<strong>{{ request('search') }}</strong>"
+                </span>
             </div>
-        @else
-            <div class="text-sm text-gray-600">
-                Total <strong>{{ $mobils->total() }}</strong> mobil terdaftar
-            </div>
-        @endif
+        </div>
+    @endif
+
+    <!-- Table Header with Data Info and Rows Per Page Control -->
+    <div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <div class="text-sm text-gray-600">
+            @if(request('search'))
+                Menampilkan {{ $mobils->firstItem() ?? 0 }} - {{ $mobils->lastItem() ?? 0 }} dari {{ $mobils->total() }} hasil pencarian
+            @else
+                Total <strong>{{ $mobils->total() }}</strong> mobil terdaftar ({{ $mobils->firstItem() ?? 0 }} - {{ $mobils->lastItem() ?? 0 }})
+            @endif
+        </div>
         
-        <!-- Rows Per Page Quick Control -->
+        <!-- Rows Per Page Control -->
         <div class="flex items-center space-x-2">
             <label class="text-sm text-gray-600">Tampilkan:</label>
             <form method="GET" action="{{ route('master.mobil.index') }}" class="inline">
@@ -155,13 +160,13 @@
                 @endforeach
                 <select name="per_page"
                         onchange="this.form.submit()"
-                        class="px-2 py-1 border border-gray-300 rounded text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
+                        class="px-3 py-1 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-white">
                     <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
                     <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
                     <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
                 </select>
             </form>
-            <span class="text-sm text-gray-600">per halaman</span>
+            <span class="text-sm text-gray-600">baris per halaman</span>
         </div>
     </div>
 
@@ -242,14 +247,6 @@
             </tbody>
         </table>
     </div>
-    
-    <!-- Rows Per Page Selection -->
-    @include('components.rows-per-page', [
-        'routeName' => 'master.mobil.index',
-        'paginator' => $mobils,
-        'entityName' => 'mobil',
-        'entityNamePlural' => 'mobil'
-    ])
 
     <!-- Modern Pagination -->
     <div class="mt-4 bg-white rounded-lg border border-gray-200 shadow-sm">
