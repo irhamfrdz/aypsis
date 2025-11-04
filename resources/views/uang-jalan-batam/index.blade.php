@@ -9,11 +9,27 @@
         <h2 class="text-2xl font-bold text-gray-900">Data Uang Jalan Batam</h2>
         <p class="mt-1 text-sm text-gray-600">Kelola data tarif uang jalan untuk wilayah Batam</p>
     </div>
-    <a href="{{ route('uang-jalan-batam.create') }}" 
-       class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
-        <i class="fas fa-plus mr-2"></i>
-        Tambah Data
-    </a>
+    <div class="flex flex-col sm:flex-row gap-2">
+        @can('uang-jalan-batam.create')
+            <a href="{{ route('uang-jalan-batam.download-template') }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                <i class="fas fa-download mr-2"></i>
+                Download Template
+            </a>
+            <a href="{{ route('uang-jalan-batam.import-form') }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md shadow-sm text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                <i class="fas fa-upload mr-2"></i>
+                Import Data
+            </a>
+        @endcan
+        @can('uang-jalan-batam.create')
+            <a href="{{ route('uang-jalan-batam.create') }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
+                <i class="fas fa-plus mr-2"></i>
+                Tambah Data
+            </a>
+        @endcan
+    </div>
 </div>
 
 @if (session('success'))

@@ -820,6 +820,19 @@ Route::middleware([
              'destroy' => 'can:uang-jalan-batam.delete'
          ]);
 
+    // 💰 Uang Jalan Batam Import/Export routes
+    Route::prefix('uang-jalan-batam')->group(function () {
+        Route::get('/download-template', [\App\Http\Controllers\UangJalanBatamController::class, 'downloadTemplate'])
+             ->name('uang-jalan-batam.download-template')
+             ->middleware('can:uang-jalan-batam.create');
+        Route::get('/import', [\App\Http\Controllers\UangJalanBatamController::class, 'importForm'])
+             ->name('uang-jalan-batam.import-form')
+             ->middleware('can:uang-jalan-batam.create');
+        Route::post('/import', [\App\Http\Controllers\UangJalanBatamController::class, 'import'])
+             ->name('uang-jalan-batam.import')
+             ->middleware('can:uang-jalan-batam.create');
+    });
+
     // ⚓ Master Pelabuhan (Port Master) Management with permissions
     Route::resource('master-pelabuhan', \App\Http\Controllers\MasterPelabuhanController::class)
          ->names([

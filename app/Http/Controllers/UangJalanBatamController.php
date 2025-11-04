@@ -4,7 +4,10 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Controller;
 use App\Models\UangJalanBatam;
+use App\Exports\UangJalanBatamTemplateExport;
+use App\Imports\UangJalanBatamImport;
 use Illuminate\Http\Request;
+use Maatwebsite\Excel\Facades\Excel;
 
 class UangJalanBatamController extends Controller
 {
@@ -126,5 +129,68 @@ class UangJalanBatamController extends Controller
 
         return redirect()->route('uang-jalan-batam.index')
                         ->with('success', 'Data uang jalan Batam berhasil dihapus.');
+    }
+
+    /**
+     * Download template for import
+     */
+    public function downloadTemplate()
+    {
+        return Excel::download(
+            new UangJalanBatamTemplateExport, 
+            'template_uang_jalan_batam.xlsx'
+        );
+    }
+
+    /**
+     * Show import form
+     */
+    public function importForm()
+    {
+        return view('uang-jalan-batam.import');
+    }
+
+    /**
+     * Import data from CSV/Excel
+     */
+    public function import(Request $request)
+    {
+        $request->validate([
+            'file' => 'required|mimes:xlsx,xls,csv|max:2048',
+        ]);
+
+        try {
+            $import = new UangJalanBatamImport();
+            Excel::import($import, $request->file('file'));
+
+            $importedCount = $import->getImportedCount();
+            $skippedCount = $import->getSkippedCount();
+            $failures = $import->failures();
+            $errors = $import->errors();
+
+            $message = "Import berhasil! {$importedCount} data berhasil diimport.";
+            
+            if ($skippedCount > 0) {
+                $message .= " {$skippedCount} data dilewati karena error.";
+            }
+
+            if ($failures->count() > 0) {
+                $errorMessages = [];
+                foreach ($failures as $failure) {
+                    $errorMessages[] = "Baris {$failure->row()}: " . implode(', ', $failure->errors());
+                }
+                
+                return redirect()->route('uang-jalan-batam.import-form')
+                    ->with('import_errors', $errorMessages)
+                    ->with('success', $message);
+            }
+
+            return redirect()->route('uang-jalan-batam.index')
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            return redirect()->route('uang-jalan-batam.import-form')
+                ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
     }
 }
