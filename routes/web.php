@@ -56,7 +56,7 @@ use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
 use App\Http\Controllers\ProspekController;
 use App\Http\Controllers\NaikKapalController;
-use App\Http\Controllers\OrderApprovalController;
+use App\Http\Controllers\OrderDataManagementController;
 use App\Http\Controllers\NotificationController;
 
 /*
@@ -1012,12 +1012,9 @@ Route::middleware([
 // ═══════════════════════════════════════════════════════════════════════
 
 Route::middleware(['auth', 'verified'])->group(function () {
-    // Order Approval Routes (HARUS SEBELUM Route::resource('orders'))
+    // Order Data Management Routes (formerly approval)
     Route::prefix('orders/approval')->name('orders.approval.')->group(function () {
-        Route::get('/', [OrderApprovalController::class, 'index'])->name('index');
-        Route::post('/{order}/approve', [OrderApprovalController::class, 'approve'])->name('approve');
-        Route::post('/{order}/reject', [OrderApprovalController::class, 'reject'])->name('reject');
-        Route::post('/bulk-approve', [OrderApprovalController::class, 'bulkApprove'])->name('bulk-approve');
+        Route::get('/', [OrderDataManagementController::class, 'index'])->name('index');
     });
 
     // 📋 Order Management with permissions
@@ -1637,13 +1634,7 @@ Route::get('/test-gate-in-ajax', function () {
             ->name('checkpoint.store-surat-jalan');
     });
 
-     // === Approval Surat Jalan (HARUS SEBELUM route dengan parameter) ===
-     Route::prefix('approval/surat-jalan')->name('approval.surat-jalan.')->middleware(['auth', 'can:approval-surat-jalan-view'])->group(function () {
-         Route::get('/', [\App\Http\Controllers\SuratJalanApprovalController::class, 'index'])->name('index');
-         Route::get('/{suratJalan}', [\App\Http\Controllers\SuratJalanApprovalController::class, 'show'])->name('show');
-         Route::post('/{suratJalan}/approve', [\App\Http\Controllers\SuratJalanApprovalController::class, 'approve'])->name('approve')->middleware('can:approval-surat-jalan-approve');
-         Route::post('/{suratJalan}/reject', [\App\Http\Controllers\SuratJalanApprovalController::class, 'reject'])->name('reject')->middleware('can:approval-surat-jalan-approve');
-     });
+     // === Approval Surat Jalan - REMOVED (No longer needed) ===
 
          // --- Rute Penyelesaian Tugas ---
         // Menggunakan PenyelesaianController yang sudah kita kembangkan

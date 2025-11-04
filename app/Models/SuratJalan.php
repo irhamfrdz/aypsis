@@ -117,10 +117,7 @@ class SuratJalan extends Model
         return $this->belongsTo(User::class, 'input_by', 'id');
     }
 
-    public function approvals()
-    {
-        return $this->hasMany(SuratJalanApproval::class);
-    }
+
 
     public function pranotaSuratJalan()
     {
@@ -196,22 +193,7 @@ class SuratJalan extends Model
         return $statuses[$this->status_pembayaran_uang_rit_kenek] ?? $this->status_pembayaran_uang_rit_kenek;
     }
 
-    // Helper methods for approval status
-    public function getApprovalStatus($level)
-    {
-        $approval = $this->approvals()->where('approval_level', $level)->first();
-        return $approval ? $approval->status : 'pending';
-    }
 
-    public function isApprovedByLevel($level)
-    {
-        return $this->getApprovalStatus($level) === 'approved';
-    }
-
-    public function isFullyApproved()
-    {
-        return $this->isApprovedByLevel('tugas-1') && $this->isApprovedByLevel('tugas-2');
-    }
 
     public function hasPranota()
     {
