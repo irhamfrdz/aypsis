@@ -81,6 +81,15 @@
             font-weight: bold;
         }
         
+        /* Nama Barang dengan posisi absolut */
+        .nama-barang {
+            position: absolute;
+            top: 90mm;  /* 9cm dari atas */
+            left: 110mm; /* 11cm dari kiri */
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
         .col-center {
             text-align: center;
         }
@@ -227,13 +236,18 @@
             {{ $suratJalan->pengirim ?? 'PT TIRTA INVESTAMA' }}
         </div>
         
+        <!-- NAMA BARANG dengan posisi absolut -->
+        <div class="nama-barang">
+            {{ $suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA' }}
+        </div>
+        
         <!-- SESI 3: TABEL BARANG (3 Kolom) -->
         <div class="table-section">
-            <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Jenis Barang -->
+            <!-- Baris 1: No Kontainer | Kosong (Tipe Kontainer dipindah) | Kosong (Jenis Barang dipindah) -->
             <div class="table-row">
                 <div class="col">{{ $suratJalan->no_kontainer ?? '' }}</div>
                 <div class="col"></div>
-                <div class="col">{{ $suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA' }}</div>
+                <div class="col"></div>
             </div>
             
             <!-- Baris 2 & 3: Kosong -->
