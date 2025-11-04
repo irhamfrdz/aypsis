@@ -29,7 +29,7 @@
         /* Header Section */
         .date-header {
             position: absolute;
-            top: 5mm;  /* 0.5cm dari atas */
+            top: 15mm;  /* 1.5cm dari atas */
             left: 100mm;  /* 10cm dari kiri */
             font-size: 14px;
             font-weight: bold;
@@ -37,12 +37,11 @@
         
         /* No Plat Section */
         .no-plat {
-            text-align: right;
-            margin-top: -5mm;  /* Mengurangi jarak untuk menyesuaikan dengan posisi tanggal */
-            margin-bottom: 20mm;
+            position: absolute;
+            top: 55mm;  /* 5.5cm dari atas */
+            left: 85mm; /* 8.5cm dari kiri */
             font-size: 14px;
             font-weight: bold;
-            padding-right: 20mm;
         }
         
         /* Tabel 3 Kolom */
