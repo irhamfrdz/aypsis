@@ -7,65 +7,73 @@
     <style>
         @page {
             size: A4;
-            margin: 2cm 1.5cm;
+            margin: 1.5cm 2cm;
         }
         
         body {
-            font-family: 'Times New Roman', serif;
-            font-size: 12pt;
-            line-height: 1.4;
+            font-family: Arial, sans-serif;
+            font-size: 11pt;
+            line-height: 1.3;
             color: #000;
             margin: 0;
             padding: 0;
         }
         
-        .header {
-            text-align: center;
-            margin-bottom: 30px;
-            border-bottom: 2px solid #000;
-            padding-bottom: 15px;
+        .letterhead {
+            border-bottom: 3px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
         }
         
-        .company-logo {
-            width: 80px;
-            height: 80px;
-            float: left;
+        .logo-section {
+            width: 120px;
             margin-right: 20px;
+            text-align: center;
+        }
+        
+        .logo {
+            width: 100px;
+            height: 100px;
         }
         
         .company-info {
+            flex: 1;
             text-align: center;
-            margin-top: 10px;
-        }
-        
-        .company-name {
-            font-size: 18pt;
-            font-weight: bold;
-            color: #d32f2f;
-            margin-bottom: 5px;
         }
         
         .company-tagline {
-            font-size: 12pt;
+            color: #000;
+            font-size: 10pt;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+        
+        .company-name {
+            color: #dc3545;
+            font-size: 16pt;
             font-weight: bold;
             margin-bottom: 3px;
         }
         
         .company-address {
-            font-size: 10pt;
-            margin-bottom: 5px;
+            font-size: 9pt;
+            margin-bottom: 2px;
         }
         
         .company-contact {
-            font-size: 10pt;
+            font-size: 9pt;
         }
         
         .memo-title {
             text-align: center;
             font-size: 16pt;
             font-weight: bold;
-            margin: 30px 0 20px 0;
+            margin: 25px auto 20px auto;
             text-decoration: underline;
+            width: 100%;
+            display: block;
         }
         
         .memo-content {
@@ -73,58 +81,51 @@
         }
         
         .memo-field {
-            margin-bottom: 15px;
+            margin-bottom: 5px;
             display: flex;
-            align-items: flex-start;
         }
         
         .memo-label {
-            width: 120px;
+            width: 100px;
             font-weight: normal;
-            display: inline-block;
         }
         
         .memo-value {
             flex: 1;
-            border-bottom: 1px dotted #666;
-            min-height: 20px;
-            padding-bottom: 2px;
         }
         
         .memo-description {
-            margin: 30px 0;
-            min-height: 100px;
+            margin: 20px 0;
+            text-align: justify;
+            line-height: 1.4;
         }
         
-        .memo-description-label {
-            font-weight: bold;
-            margin-bottom: 10px;
+        .memo-details {
+            margin: 20px 0 30px 0;
         }
         
-        .memo-description-content {
-            border: 1px solid #000;
-            min-height: 80px;
-            padding: 10px;
+        .memo-detail-item {
+            margin-bottom: 8px;
+            display: flex;
+        }
+        
+        .memo-detail-label {
+            width: 80px;
+            font-weight: normal;
         }
         
         .signature-section {
-            margin-top: 50px;
-            text-align: right;
+            margin-top: 40px;
+            text-align: left;
         }
         
         .signature-city {
-            margin-bottom: 80px;
+            margin-bottom: 50px;
         }
         
         .signature-name {
             text-decoration: underline;
             font-weight: bold;
-        }
-        
-        .clearfix::after {
-            content: "";
-            display: table;
-            clear: both;
         }
         
         @media print {
@@ -140,14 +141,9 @@
     </style>
 </head>
 <body>
-    <div class="header clearfix">
-        <div class="company-logo">
-            <!-- Logo placeholder - ganti dengan logo perusahaan -->
-            <svg width="80" height="80" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="50" cy="50" r="45" stroke="#d32f2f" stroke-width="3" fill="none"/>
-                <text x="50" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="14" font-weight="bold" fill="#d32f2f">AYP</text>
-                <text x="50" y="65" text-anchor="middle" font-family="Arial, sans-serif" font-size="8" fill="#d32f2f">EXPEDISI</text>
-            </svg>
+    <div class="letterhead">
+        <div class="logo-section">
+            <img src="{{ asset('images/logo.png') }}" alt="PT ALEXINDO YAKINPRIMA Logo" class="logo">
         </div>
         
         <div class="company-info">
@@ -162,71 +158,92 @@
     
     <div class="memo-content">
         <div class="memo-field">
-            <span class="memo-label">Jakarta</span>
-            <span>, {{ \Carbon\Carbon::now()->format('Y-m-d') }}</span>
+            <span class="memo-label">Jakarta,</span>
+            <span class="memo-value">{{ \Carbon\Carbon::parse($suratJalan->tanggal_kirim ?? $suratJalan->created_at)->locale('id')->isoFormat('D MMMM Y') }}</span>
         </div>
         
+        <br>
+        
         <div class="memo-field">
-            <span class="memo-label">Kepada Yth</span>
-            <span>,</span>
+            <span class="memo-label">Kepada Yth,</span>
+            <span class="memo-value"></span>
         </div>
         
         <div class="memo-field">
             <span class="memo-label"></span>
-            <span class="memo-value">{{ $suratJalan->penerima ?? 'PT. ................................' }}</span>
+            <span class="memo-value">{{ $suratJalan->pengirim ?? 'PT. ...............................' }}</span>
         </div>
         
         <div class="memo-field">
-            <span class="memo-label">UP</span>
-            <span>, Bpk/Ibu</span>
+            <span class="memo-label">Bpk/Ibu,</span>
+            <span class="memo-value"></span>
         </div>
         
         <div class="memo-field">
             <span class="memo-label">Di</span>
-            <span>. {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->tujuan_kirim ?? 'SUKABUMI' }}</span>
+            <span class="memo-value">{{ $suratJalan->tujuan_pengambilan ?? 'JAKARTA' }}</span>
         </div>
         
-        <div class="memo-field">
-            <span class="memo-label">Dengan Hormat</span>
-            <span>,</span>
+        <br>
+        
+        <div class="memo-description">
+            <p>Dengan Hormat,</p>
         </div>
         
         <div class="memo-description">
-            <div class="memo-description-content">
-                Mohon dapat diberikan muatan, kepada pembawa memo ini ;<br><br>
-                
-                Mobil : {{ $suratJalan->no_plat ?? 'B 9366 UIX' }}<br><br>
-                
-                Muatan : {{ $suratJalan->jenis_barang ?? 'PRODUK MINUMAN' }}<br><br>
-                
-                Tujuan : {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->tujuan_kirim ?? 'Batam' }}<br><br>
-                
-                Demikianlah surat permohonan ini kami sampaikan, atas perhatian
+            <p>Mohon dapat diberikan muatan, kepada pembawa memo ini ;</p>
+        </div>
+        
+        <div class="memo-details">
+            <div class="memo-detail-item">
+                <span class="memo-detail-label">Mobil</span>
+                <span>: {{ $suratJalan->no_plat ?? 'B 9366 UIX' }}</span>
             </div>
+            
+            <div class="memo-detail-item">
+                <span class="memo-detail-label">Muatan</span>
+                <span>: {{ $suratJalan->nama_barang ?? 'PRODUK MINUMAN' }}</span>
+            </div>
+            
+            <div class="memo-detail-item">
+                <span class="memo-detail-label">Tujuan</span>
+                <span>: {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? 'Batam' }}</span>
+            </div>
+        </div>
+        
+        <div class="memo-description">
+            <p>Demikian surat permohonan ini kami sampaikan, atas perhatian dan kerja samanya kami ucapkan terima kasih.</p>
         </div>
     </div>
     
     <div class="signature-section">
-        <div class="signature-city">Jakarta, {{ \Carbon\Carbon::now()->format('Y-m-d') }}</div>
-        <div class="signature-name">(.............................)</div>
+        <div style="margin-bottom: 10px; font-weight: bold;">Hormat Kami,</div>
+        <div style="margin-bottom: 50px;"></div>
+        <div class="signature-name">Alex</div>
     </div>
     
     <!-- Print button for web view -->
     <div class="no-print" style="position: fixed; top: 20px; right: 20px; z-index: 1000;">
-        <button onclick="window.print()" style="background: #4F46E5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px;">
-            Print Memo
+        <button onclick="window.print()" style="background: #4F46E5; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-right: 5px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            <svg width="16" height="16" style="vertical-align: middle; margin-right: 5px;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M5 4v3H4a2 2 0 00-2 2v3a2 2 0 002 2h1v2a2 2 0 002 2h6a2 2 0 002-2v-2h1a2 2 0 002-2V9a2 2 0 00-2-2h-1V4a2 2 0 00-2-2H7a2 2 0 00-2 2zm8 0H7v3h6V4zM5 14H4v-3h1v3zm2 0v2h6v-2H7zm0-1h6v-2H7v2z" clip-rule="evenodd"></path>
+            </svg>
+            Print
         </button>
-        <button onclick="window.close()" style="background: #6B7280; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; margin-left: 5px;">
+        <button onclick="window.close()" style="background: #6B7280; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-size: 14px; box-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+            <svg width="16" height="16" style="vertical-align: middle; margin-right: 5px;" fill="currentColor" viewBox="0 0 20 20">
+                <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+            </svg>
             Tutup
         </button>
     </div>
     
     <script>
-        // Auto print when opened
-        window.onload = function() {
-            // Uncomment the line below if you want auto print
-            // window.print();
-        }
+        // Format tanggal Indonesia
+        document.addEventListener('DOMContentLoaded', function() {
+            // Auto focus untuk print
+            console.log('Memo siap untuk dicetak');
+        });
     </script>
 </body>
 </html>
