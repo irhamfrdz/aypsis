@@ -21,15 +21,16 @@
             width: 165mm;
             height: 215mm;
             margin: 0;
-            padding: 10mm 5mm 5mm 5mm;
+            padding: 20mm 5mm 5mm 5mm;  /* Menambah padding top untuk memberi ruang tanggal */
             box-sizing: border-box;
             position: relative;
         }
         
         /* Header Section */
         .date-header {
-            text-align: right;
-            margin-bottom: 15mm;
+            position: absolute;
+            top: 5mm;  /* 0.5cm dari atas */
+            left: 100mm;  /* 10cm dari kiri */
             font-size: 14px;
             font-weight: bold;
         }
@@ -37,6 +38,7 @@
         /* No Plat Section */
         .no-plat {
             text-align: right;
+            margin-top: -5mm;  /* Mengurangi jarak untuk menyesuaikan dengan posisi tanggal */
             margin-bottom: 20mm;
             font-size: 14px;
             font-weight: bold;
@@ -142,7 +144,7 @@
             
             .container {
                 box-shadow: none !important;
-                padding: 10mm 5mm 5mm 5mm !important;
+                padding: 20mm 5mm 5mm 5mm !important;  /* Konsisten dengan padding non-print */
                 page-break-inside: avoid !important;
                 margin: 0 !important;
                 background: white !important;
