@@ -20,12 +20,14 @@ class UangJalanBatam extends Model
         'f_e',
         'tarif',
         'status',
-        'tanggal_berlaku'
+        'tanggal_awal_berlaku',
+        'tanggal_akhir_berlaku'
     ];
 
     protected $casts = [
         'tarif' => 'decimal:2',
-        'tanggal_berlaku' => 'date'
+        'tanggal_awal_berlaku' => 'date',
+        'tanggal_akhir_berlaku' => 'date'
     ];
 
     // Scope untuk filter berdasarkan wilayah
@@ -46,9 +48,11 @@ class UangJalanBatam extends Model
         return $query->where('expedisi', $expedisi);
     }
 
-    // Scope untuk tarif yang masih berlaku
+    // Scope untuk tarif yang masih berlaku (dalam range tanggal)
     public function scopeAktif($query)
     {
-        return $query->where('tanggal_berlaku', '<=', now());
+        $today = now()->format('Y-m-d');
+        return $query->where('tanggal_awal_berlaku', '<=', $today)
+                    ->where('tanggal_akhir_berlaku', '>=', $today);
     }
 }

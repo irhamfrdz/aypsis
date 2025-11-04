@@ -90,19 +90,33 @@
                 </div>
             </div>
             <div>
-                <label class="block text-sm font-medium text-gray-500">Tanggal Berlaku</label>
-                <p class="mt-1 text-sm text-gray-900">{{ $uangJalanBatam->tanggal_berlaku->format('d F Y') }}</p>
-                @if($uangJalanBatam->tanggal_berlaku->isPast())
+                <label class="block text-sm font-medium text-gray-500">Tanggal Awal Berlaku</label>
+                <p class="mt-1 text-sm text-gray-900">{{ $uangJalanBatam->tanggal_awal_berlaku->format('d F Y') }}</p>
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-500">Tanggal Akhir Berlaku</label>
+                <p class="mt-1 text-sm text-gray-900">{{ $uangJalanBatam->tanggal_akhir_berlaku->format('d F Y') }}</p>
+                @php
+                    $today = now();
+                    $isActive = $today->between($uangJalanBatam->tanggal_awal_berlaku, $uangJalanBatam->tanggal_akhir_berlaku);
+                    $isExpired = $today->greaterThan($uangJalanBatam->tanggal_akhir_berlaku);
+                    $isUpcoming = $today->lessThan($uangJalanBatam->tanggal_awal_berlaku);
+                @endphp
+                
+                @if($isExpired)
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800 mt-1">
-                        Sudah Lewat
+                        <i class="fas fa-times-circle mr-1"></i>
+                        Sudah Berakhir
                     </span>
-                @elseif($uangJalanBatam->tanggal_berlaku->isToday())
-                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
-                        Hari Ini
-                    </span>
-                @else
+                @elseif($isActive)
                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mt-1">
-                        Aktif
+                        <i class="fas fa-check-circle mr-1"></i>
+                        Sedang Berlaku
+                    </span>
+                @elseif($isUpcoming)
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 mt-1">
+                        <i class="fas fa-clock mr-1"></i>
+                        Akan Berlaku
                     </span>
                 @endif
             </div>

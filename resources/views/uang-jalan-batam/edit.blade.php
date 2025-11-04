@@ -152,15 +152,28 @@
                     @enderror
                 </div>
 
-                <!-- Tanggal Berlaku -->
+                <!-- Tanggal Awal Berlaku -->
                 <div>
-                    <label for="tanggal_berlaku" class="block text-sm font-medium text-gray-700">
-                        Tanggal Berlaku <span class="text-red-500">*</span>
+                    <label for="tanggal_awal_berlaku" class="block text-sm font-medium text-gray-700">
+                        Tanggal Awal Berlaku <span class="text-red-500">*</span>
                     </label>
-                    <input type="date" name="tanggal_berlaku" id="tanggal_berlaku" 
-                           value="{{ old('tanggal_berlaku', $uangJalanBatam->tanggal_berlaku->format('Y-m-d')) }}" 
+                    <input type="date" name="tanggal_awal_berlaku" id="tanggal_awal_berlaku" 
+                           value="{{ old('tanggal_awal_berlaku', $uangJalanBatam->tanggal_awal_berlaku->format('Y-m-d')) }}" 
                            class="{{ $inputClasses }}" required>
-                    @error('tanggal_berlaku')
+                    @error('tanggal_awal_berlaku')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Tanggal Akhir Berlaku -->
+                <div>
+                    <label for="tanggal_akhir_berlaku" class="block text-sm font-medium text-gray-700">
+                        Tanggal Akhir Berlaku <span class="text-red-500">*</span>
+                    </label>
+                    <input type="date" name="tanggal_akhir_berlaku" id="tanggal_akhir_berlaku" 
+                           value="{{ old('tanggal_akhir_berlaku', $uangJalanBatam->tanggal_akhir_berlaku->format('Y-m-d')) }}" 
+                           class="{{ $inputClasses }}" required>
+                    @error('tanggal_akhir_berlaku')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -179,4 +192,27 @@
         </div>
     </form>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tanggalAwal = document.getElementById('tanggal_awal_berlaku');
+    const tanggalAkhir = document.getElementById('tanggal_akhir_berlaku');
+
+    function updateMinDate() {
+        if (tanggalAwal.value) {
+            tanggalAkhir.min = tanggalAwal.value;
+            
+            // Reset tanggal akhir jika lebih kecil dari tanggal awal
+            if (tanggalAkhir.value && tanggalAkhir.value < tanggalAwal.value) {
+                tanggalAkhir.value = tanggalAwal.value;
+            }
+        }
+    }
+
+    tanggalAwal.addEventListener('change', updateMinDate);
+    
+    // Set initial min date if values exist
+    updateMinDate();
+});
+</script>
 @endsection

@@ -67,7 +67,8 @@ class UangJalanBatamController extends Controller
             'f_e' => 'required|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'nullable|string|in:aqua,chasis PB',
-            'tanggal_berlaku' => 'required|date',
+            'tanggal_awal_berlaku' => 'required|date',
+            'tanggal_akhir_berlaku' => 'required|date|after_or_equal:tanggal_awal_berlaku',
         ]);
 
         UangJalanBatam::create($validated);
@@ -106,7 +107,8 @@ class UangJalanBatamController extends Controller
             'f_e' => 'required|string|max:255',
             'tarif' => 'required|numeric|min:0',
             'status' => 'nullable|string|in:aqua,chasis PB',
-            'tanggal_berlaku' => 'required|date',
+            'tanggal_awal_berlaku' => 'required|date',
+            'tanggal_akhir_berlaku' => 'required|date|after_or_equal:tanggal_awal_berlaku',
         ]);
 
         $uangJalanBatam->update($validated);
