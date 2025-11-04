@@ -119,6 +119,53 @@
                 </div>
             </div>
 
+            <!-- Informasi Asuransi & Lainnya -->
+            <div class="bg-gray-50 p-6 rounded-lg">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Informasi Asuransi & Lainnya</h3>
+                <div class="space-y-3">
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-600">Pemakai:</span>
+                        <span class="text-gray-900">{{ $mobil->pemakai ?: '-' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-600">Asuransi:</span>
+                        <span class="text-gray-900">{{ $mobil->asuransi ?: '-' }}</span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-600">Jatuh Tempo Asuransi:</span>
+                        <span class="text-gray-900 {{ $mobil->jatuh_tempo_asuransi && $mobil->jatuh_tempo_asuransi->isPast() ? 'text-red-600 font-semibold' : '' }}">
+                            {{ $mobil->jatuh_tempo_asuransi ? $mobil->jatuh_tempo_asuransi->format('d/m/Y') : '-' }}
+                            @if($mobil->jatuh_tempo_asuransi && $mobil->jatuh_tempo_asuransi->isPast())
+                                <span class="text-xs">(Expired)</span>
+                            @endif
+                        </span>
+                    </div>
+                    <div class="flex justify-between">
+                        <span class="font-medium text-gray-600">Warna Plat:</span>
+                        <span class="text-gray-900">
+                            @if($mobil->warna_plat)
+                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                    @if($mobil->warna_plat == 'Hitam') bg-gray-100 text-gray-800
+                                    @elseif($mobil->warna_plat == 'Kuning') bg-yellow-100 text-yellow-800
+                                    @elseif($mobil->warna_plat == 'Merah') bg-red-100 text-red-800
+                                    @elseif($mobil->warna_plat == 'Putih') bg-gray-100 text-gray-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ $mobil->warna_plat }}
+                                </span>
+                            @else
+                                -
+                            @endif
+                        </span>
+                    </div>
+                    @if($mobil->catatan)
+                        <div class="pt-3 border-t border-gray-200">
+                            <span class="font-medium text-gray-600 block mb-2">Catatan:</span>
+                            <div class="bg-white p-3 rounded border text-gray-900 text-sm whitespace-pre-line">{{ $mobil->catatan }}</div>
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             <!-- Penugasan Karyawan -->
             <div class="bg-gray-50 p-6 rounded-lg">
                 <h3 class="text-lg font-semibold text-gray-800 mb-4 border-b border-gray-200 pb-2">Penugasan Karyawan</h3>
