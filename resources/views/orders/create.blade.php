@@ -174,6 +174,51 @@
                     </div>
                 </div>
 
+                <!-- Recipient Information -->
+                <div class="border-b border-gray-200 pb-6">
+                    <h3 class="text-lg font-medium text-gray-900 mb-4">Informasi Penerima</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <!-- Penerima -->
+                        <div>
+                            <label for="penerima" class="block text-sm font-medium text-gray-700 mb-2">
+                                Penerima
+                            </label>
+                            <input type="text" name="penerima" id="penerima" value="{{ old('penerima') }}" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('penerima') border-red-500 @enderror"
+                                   placeholder="Nama penerima">
+                            @error('penerima')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Kontak Penerima -->
+                        <div>
+                            <label for="kontak_penerima" class="block text-sm font-medium text-gray-700 mb-2">
+                                Kontak Penerima
+                            </label>
+                            <input type="text" name="kontak_penerima" id="kontak_penerima" value="{{ old('kontak_penerima') }}" autocomplete="off"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('kontak_penerima') border-red-500 @enderror"
+                                   placeholder="Nomor telepon/HP penerima">
+                            @error('kontak_penerima')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Alamat Penerima -->
+                        <div class="md:col-span-2">
+                            <label for="alamat_penerima" class="block text-sm font-medium text-gray-700 mb-2">
+                                Alamat Penerima
+                            </label>
+                            <textarea name="alamat_penerima" id="alamat_penerima" rows="3"
+                                      class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('alamat_penerima') border-red-500 @enderror"
+                                      placeholder="Alamat lengkap penerima">{{ old('alamat_penerima') }}</textarea>
+                            @error('alamat_penerima')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Master Data Relations -->
                 <div class="border-b border-gray-200 pb-6">
                     <h3 class="text-lg font-medium text-gray-900 mb-4">Data Master</h3>
@@ -348,6 +393,29 @@
                             <input type="date" name="tanggal_pickup" id="tanggal_pickup" value="{{ old('tanggal_pickup') }}" autocomplete="off"
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_pickup') border-red-500 @enderror">
                             @error('tanggal_pickup')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Satuan -->
+                        <div>
+                            <label for="satuan" class="block text-sm font-medium text-gray-700 mb-2">
+                                Satuan
+                            </label>
+                            <select name="satuan" id="satuan"
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('satuan') border-red-500 @enderror">
+                                <option value="">Pilih Satuan</option>
+                                <option value="kg" {{ old('satuan') === 'kg' ? 'selected' : '' }}>Kilogram (kg)</option>
+                                <option value="ton" {{ old('satuan') === 'ton' ? 'selected' : '' }}>Ton</option>
+                                <option value="m3" {{ old('satuan') === 'm3' ? 'selected' : '' }}>Meter Kubik (m³)</option>
+                                <option value="unit" {{ old('satuan') === 'unit' ? 'selected' : '' }}>Unit</option>
+                                <option value="pcs" {{ old('satuan') === 'pcs' ? 'selected' : '' }}>Pieces (pcs)</option>
+                                <option value="dus" {{ old('satuan') === 'dus' ? 'selected' : '' }}>Dus</option>
+                                <option value="karung" {{ old('satuan') === 'karung' ? 'selected' : '' }}>Karung</option>
+                                <option value="kontainer" {{ old('satuan') === 'kontainer' ? 'selected' : '' }}>Kontainer</option>
+                            </select>
+                            <small class="text-gray-500">Satuan untuk pengukuran barang</small>
+                            @error('satuan')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>

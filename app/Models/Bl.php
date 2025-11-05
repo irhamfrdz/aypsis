@@ -24,6 +24,7 @@ class Bl extends Model
         'volume',
         'term',
         'kuantitas',
+        'supir_ob',
     ];
 
     /**

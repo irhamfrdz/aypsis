@@ -739,7 +739,7 @@ class SuratJalanController extends Controller
                 'kegiatan' => $request->kegiatan,
                 'catatan' => $request->catatan,
                 'nomor_kontainer' => $request->nomor_kontainer,
-                'nomor_seal' => $request->nomor_seal,
+                'no_seal' => $request->nomor_seal,
                 'status' => 'draft',
                 'status_pembayaran' => 'belum_dibayar',
                 'created_by' => Auth::id(),

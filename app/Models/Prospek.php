@@ -99,6 +99,11 @@ class Prospek extends Model
         return $this->belongsTo(\App\Models\TandaTerima::class, 'tanda_terima_id');
     }
 
+    public function suratJalan()
+    {
+        return $this->belongsTo(\App\Models\SuratJalan::class, 'surat_jalan_id');
+    }
+
     /**
      * Boot method untuk auto-linking
      */

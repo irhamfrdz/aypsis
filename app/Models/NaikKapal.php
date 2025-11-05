@@ -18,7 +18,7 @@ class NaikKapal extends Model
         'jenis_barang',
         'no_seal',
         'tipe_kontainer',
-        'tipe_kontainer_detail',
+        'size_kontainer',
         'ukuran_kontainer',
         'nama_kapal',
         'no_voyage',

@@ -2551,6 +2551,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
                 ->middleware('can:prospek-view');
 
+    // Route untuk update seal (inline edit)
+    Route::patch('prospek/{prospek}/update-seal', [ProspekController::class, 'updateSeal'])->name('prospek.update-seal')
+         ->middleware('can:prospek-edit');
+
           // 🚢 Naik Kapal Management
           Route::get('naik-kapal/download-template', [NaikKapalController::class, 'downloadTemplate'])
                ->name('naik-kapal.download.template')

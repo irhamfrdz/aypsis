@@ -180,7 +180,28 @@
                                 {{ $prospek->nomor_kontainer ?? '-' }}
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900 font-mono">
-                                {{ $prospek->no_seal ?? '-' }}
+                                @can('prospek-edit')
+                                    <div class="seal-edit-container" data-prospek-id="{{ $prospek->id }}">
+                                        <span class="seal-display cursor-pointer hover:bg-gray-100 px-2 py-1 rounded border-2 border-transparent hover:border-blue-300 transition-all duration-200" 
+                                              title="Klik untuk edit seal">
+                                            {{ $prospek->no_seal ?? 'Klik untuk edit' }}
+                                        </span>
+                                        <input type="text" 
+                                               class="seal-input hidden w-full px-2 py-1 border border-blue-500 rounded focus:outline-none focus:ring-2 focus:ring-blue-500" 
+                                               value="{{ $prospek->no_seal ?? '' }}"
+                                               placeholder="Masukkan nomor seal">
+                                        <div class="seal-buttons mt-1 gap-1" style="display: none;">
+                                            <button class="save-seal bg-green-500 hover:bg-green-600 text-white px-2 py-1 rounded text-xs transition-colors">
+                                                <i class="fas fa-check"></i>
+                                            </button>
+                                            <button class="cancel-seal bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs transition-colors">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                @else
+                                    <span class="font-mono">{{ $prospek->no_seal ?? '-' }}</span>
+                                @endcan
                             </td>
                             <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $prospek->tujuan_pengiriman ?? '-' }}
@@ -294,4 +315,158 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Handle seal inline editing
+    const sealContainers = document.querySelectorAll('.seal-edit-container');
+    
+    sealContainers.forEach(container => {
+        const prospekId = container.dataset.prospekId;
+        const sealDisplay = container.querySelector('.seal-display');
+        const sealInput = container.querySelector('.seal-input');
+        const sealButtons = container.querySelector('.seal-buttons');
+        const saveBtn = container.querySelector('.save-seal');
+        const cancelBtn = container.querySelector('.cancel-seal');
+        
+        let originalValue = sealInput.value;
+        
+        // Enter edit mode
+        sealDisplay.addEventListener('click', function() {
+            sealDisplay.style.display = 'none';
+            sealInput.classList.remove('hidden');
+            sealButtons.style.display = 'flex';
+            sealInput.focus();
+            sealInput.select();
+            originalValue = sealInput.value;
+        });
+        
+        // Cancel edit
+        cancelBtn.addEventListener('click', function() {
+            exitEditMode();
+            sealInput.value = originalValue;
+        });
+        
+        // Save edit
+        saveBtn.addEventListener('click', function() {
+            saveSeal(prospekId, sealInput.value, container);
+        });
+        
+        // Save on Enter key
+        sealInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                saveSeal(prospekId, sealInput.value, container);
+            } else if (e.key === 'Escape') {
+                exitEditMode();
+                sealInput.value = originalValue;
+            }
+        });
+        
+        // Exit edit mode on blur (with delay to allow button clicks)
+        sealInput.addEventListener('blur', function() {
+            setTimeout(() => {
+                if (!container.querySelector('.save-seal:hover') && !container.querySelector('.cancel-seal:hover')) {
+                    exitEditMode();
+                    sealInput.value = originalValue;
+                }
+            }, 100);
+        });
+        
+        function exitEditMode() {
+            sealDisplay.style.display = 'inline';
+            sealInput.classList.add('hidden');
+            sealButtons.style.display = 'none';
+        }
+    });
+    
+    function saveSeal(prospekId, newValue, container) {
+        const saveBtn = container.querySelector('.save-seal');
+        const originalText = saveBtn.innerHTML;
+        
+        // Show loading
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        saveBtn.disabled = true;
+        
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('no_seal', newValue);
+        formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+        formData.append('_method', 'PATCH');
+        
+        fetch(`/prospek/${prospekId}/update-seal`, {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update display
+                const sealDisplay = container.querySelector('.seal-display');
+                sealDisplay.textContent = data.data.no_seal || 'Klik untuk edit';
+                
+                // Exit edit mode
+                exitEditMode(container);
+                
+                // Show success message
+                showToast('success', 'Nomor seal berhasil diperbarui');
+            } else {
+                throw new Error(data.error || 'Terjadi kesalahan');
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            showToast('error', error.message || 'Terjadi kesalahan saat mengupdate seal');
+            
+            // Reset input value
+            const sealInput = container.querySelector('.seal-input');
+            sealInput.value = sealInput.dataset.originalValue || '';
+        })
+        .finally(() => {
+            // Reset button
+            saveBtn.innerHTML = originalText;
+            saveBtn.disabled = false;
+        });
+    }
+    
+    function exitEditMode(container) {
+        const sealDisplay = container.querySelector('.seal-display');
+        const sealInput = container.querySelector('.seal-input');
+        const sealButtons = container.querySelector('.seal-buttons');
+        
+        sealDisplay.style.display = 'inline';
+        sealInput.classList.add('hidden');
+        sealButtons.style.display = 'none';
+    }
+    
+    function showToast(type, message) {
+        const toast = document.createElement('div');
+        toast.className = `fixed top-4 right-4 z-50 max-w-sm p-4 rounded-lg shadow-lg transition-all duration-300 ${
+            type === 'success' ? 'bg-green-100 border border-green-400 text-green-700' : 'bg-red-100 border border-red-400 text-red-700'
+        }`;
+        
+        toast.innerHTML = `
+            <div class="flex items-center">
+                <i class="fas ${type === 'success' ? 'fa-check-circle' : 'fa-exclamation-circle'} mr-2"></i>
+                <span>${message}</span>
+                <button onclick="this.parentElement.parentElement.remove()" class="ml-auto text-lg leading-none hover:opacity-75">&times;</button>
+            </div>
+        `;
+        
+        document.body.appendChild(toast);
+        
+        // Auto remove after 3 seconds
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(100%)';
+                setTimeout(() => toast.remove(), 300);
+            }
+        }, 3000);
+    }
+});
+</script>
+
 @endsection

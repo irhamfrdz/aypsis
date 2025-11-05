@@ -276,7 +276,7 @@
         
         <!-- NOMOR SEAL dengan posisi absolut -->
         <div class="nomor-seal">
-            SEAL AYP{{ $suratJalan->no_seal ?? '0036824' }}
+            {{ $suratJalan->no_seal ? strtoupper($suratJalan->no_seal) : '' }}
         </div>
         
         <!-- TUJUAN KIRIM dengan posisi absolut -->

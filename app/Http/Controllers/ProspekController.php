@@ -256,15 +256,22 @@ class ProspekController extends Controller
      */
     public function executeNaikKapal(Request $request)
     {
+        // Debug - buat file debug sederhana
+        file_put_contents('debug_submit.txt', 'Submit attempt at: ' . now() . "\n", FILE_APPEND);
+        file_put_contents('debug_submit.txt', 'Request data: ' . json_encode($request->all()) . "\n", FILE_APPEND);
+        
         try {
             $user = Auth::user();
+            
+            // Log incoming request data
+            \Log::info('Execute Naik Kapal - Request Data:', $request->all());
             
             if (!$this->hasProspekPermission($user, 'prospek-edit')) {
                 abort(403, "Tidak memiliki akses untuk mengubah status prospek");
             }
 
             // Validate input
-            $request->validate([
+            $validatedData = $request->validate([
                 'tujuan_id' => 'required|string|in:jakarta,batam,pinang,surabaya,medan',
                 'tanggal' => 'required|date',
                 'kapal_id' => 'required|exists:master_kapals,id',
@@ -273,6 +280,9 @@ class ProspekController extends Controller
                 'prospek_ids.*' => 'exists:prospek,id',
                 'pelabuhan_asal' => 'required|string|max:100'
             ]);
+            
+            file_put_contents('debug_submit.txt', 'Validation passed' . "\n", FILE_APPEND);
+            \Log::info('Validation passed successfully');
 
             $tujuanId = $request->tujuan_id;
             
@@ -298,11 +308,16 @@ class ProspekController extends Controller
 
             // Get prospek yang dipilih berdasarkan prospek_ids
             $prospekIds = $request->prospek_ids;
+            \Log::info('Selected Prospek IDs:', $prospekIds);
+            
             $prospeks = Prospek::whereIn('id', $prospekIds)
                 ->where('status', 'aktif')
                 ->get();
 
+            \Log::info('Found ' . $prospeks->count() . ' active prospeks');
+
             if ($prospeks->isEmpty()) {
+                \Log::warning('No active prospeks found for selected IDs');
                 return redirect()->back()
                     ->with('error', 'Tidak ada prospek aktif yang dipilih')
                     ->withInput();
@@ -313,6 +328,8 @@ class ProspekController extends Controller
 
             // Update semua prospek yang dipilih dan simpan ke tabel naik_kapal
             foreach ($prospeks as $prospek) {
+                \Log::info('Processing prospek ID: ' . $prospek->id);
+                
                 // Update status prospek
                 $prospek->update([
                     'status' => 'sudah_muat',
@@ -323,6 +340,8 @@ class ProspekController extends Controller
                     'pelabuhan_asal' => $request->pelabuhan_asal,
                     'updated_by' => $user->id
                 ]);
+                
+                \Log::info('Updated prospek status for ID: ' . $prospek->id);
 
                 // Simpan data ke tabel naik_kapal
                 $naikKapalData = [
@@ -345,7 +364,9 @@ class ProspekController extends Controller
                 
                 try {
                     // Simpan ke naik_kapal
+                    \Log::info('Creating NaikKapal record with data:', $naikKapalData);
                     $naikKapal = NaikKapal::create($naikKapalData);
+                    \Log::info('Successfully created NaikKapal record with ID: ' . $naikKapal->id);
                     
                     // Simpan data ke tabel bls juga
                     $blData = [
@@ -387,10 +408,16 @@ class ProspekController extends Controller
 
             $kontainerList = implode(', ', $updatedKontainers);
             
+            \Log::info('Successfully processed ' . $updatedCount . ' prospeks');
+            
             return redirect()->route('prospek.index')
                 ->with('success', "Berhasil memproses {$updatedCount} prospek ({$kontainerList}) untuk naik kapal {$masterKapal->nama_kapal} ke {$tujuanData['nama']}. Data telah disimpan ke tabel naik kapal dan BL.");
         
         } catch (\Exception $e) {
+            file_put_contents('debug_submit.txt', 'ERROR: ' . $e->getMessage() . "\n", FILE_APPEND);
+            file_put_contents('debug_submit.txt', 'Stack trace: ' . $e->getTraceAsString() . "\n", FILE_APPEND);
+            \Log::error('Error in executeNaikKapal: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
             return redirect()->back()
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage())
                 ->withInput();
@@ -430,6 +457,61 @@ class ProspekController extends Controller
 
         } catch (\Exception $e) {
             return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
+    /**
+     * Update seal for prospek (inline edit)
+     */
+    public function updateSeal(Request $request, Prospek $prospek)
+    {
+        try {
+            $user = Auth::user();
+            if (!$this->hasProspekPermission($user, 'prospek-edit')) {
+                return response()->json(['error' => 'Tidak memiliki akses untuk mengubah data prospek'], 403);
+            }
+
+            $request->validate([
+                'no_seal' => 'required|string|max:255'
+            ]);
+
+            $oldSeal = $prospek->no_seal;
+            
+            $prospek->update([
+                'no_seal' => $request->no_seal,
+                'updated_by' => Auth::id()
+            ]);
+
+            // Log the update
+            \Log::info('Seal updated for prospek (inline edit)', [
+                'prospek_id' => $prospek->id,
+                'old_seal' => $oldSeal,
+                'new_seal' => $request->no_seal,
+                'updated_by' => Auth::user()->name,
+                'supir' => $prospek->nama_supir
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nomor seal berhasil diperbarui',
+                'data' => [
+                    'id' => $prospek->id,
+                    'no_seal' => $prospek->no_seal
+                ]
+            ]);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'error' => 'Validasi gagal',
+                'errors' => $e->errors()
+            ], 422);
+        } catch (\Exception $e) {
+            \Log::error('Error updating seal (inline edit)', [
+                'prospek_id' => $prospek->id ?? null,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json(['error' => 'Terjadi kesalahan: ' . $e->getMessage()], 500);
         }
     }
 
