@@ -47,9 +47,9 @@ class MasterMobilImportController extends Controller
                 // Add BOM for UTF-8
                 fputs($file, "\xEF\xBB\xBF");
 
-                // Set CSV dengan comma delimiter (default Excel)
+                // Set CSV dengan pipe delimiter
                 foreach ($csvData as $row) {
-                    fputcsv($file, $row);
+                    fputcsv($file, $row, '|');
                 }
 
                 fclose($file);
@@ -89,10 +89,10 @@ class MasterMobilImportController extends Controller
             $file = $request->file('csv_file');
             $path = $file->getRealPath();
 
-            // Read CSV file
+            // Read CSV file with pipe delimiter
             $csvData = [];
             if (($handle = fopen($path, 'r')) !== FALSE) {
-                while (($data = fgetcsv($handle, 10000)) !== FALSE) {
+                while (($data = fgetcsv($handle, 10000, '|')) !== FALSE) {
                     $csvData[] = $data;
                 }
                 fclose($handle);
@@ -396,7 +396,7 @@ class MasterMobilImportController extends Controller
                 'Catatan',
                 'Dibuat Tanggal',
                 'Diperbarui Tanggal'
-            ], ',');
+            ], '|');
 
             // Data rows
             foreach ($mobils as $index => $mobil) {
@@ -425,7 +425,7 @@ class MasterMobilImportController extends Controller
                     $mobil->catatan ?? '',
                     $mobil->created_at ? $mobil->created_at->format('d M Y H:i') : '',
                     $mobil->updated_at ? $mobil->updated_at->format('d M Y H:i') : '',
-                ], ',');
+                ], '|');
             }
 
             fclose($file);
