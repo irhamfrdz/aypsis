@@ -119,7 +119,7 @@
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                                     </svg>
                                 </div>
-                                <input type="text" id="searchSuratJalan" placeholder="Cari nomor surat jalan, pengirim, tujuan... (Ctrl+F)" class="pl-8 pr-3 py-1.5 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64 transition-colors" title="Tekan Ctrl+F untuk fokus search, ESC untuk clear">
+                                <input type="text" id="searchSuratJalan" placeholder="Cari nomor surat jalan, supir, pengirim, tujuan... (Ctrl+F)" class="pl-8 pr-3 py-1.5 border border-gray-300 rounded-md text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-full sm:w-64 transition-colors" title="Tekan Ctrl+F untuk fokus search, ESC untuk clear">
                             </div>
                             <button type="button" id="clearSearch" class="inline-flex items-center justify-center px-2 py-1.5 border border-gray-300 rounded-md text-xs text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors" title="Clear search">
                                 <svg class="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -164,6 +164,7 @@
                                 </th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
                                 <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
@@ -174,6 +175,7 @@
                             @forelse($approvedSuratJalans as $suratJalan)
                                 <tr class="surat-jalan-row hover:bg-gray-50 transition-colors"
                                     data-nomor="{{ strtolower($suratJalan->no_surat_jalan ?? $suratJalan->nomor_surat_jalan ?? '') }}"
+                                    data-supir="{{ strtolower($suratJalan->supir ?? '') }}"
                                     data-pengirim="{{ strtolower($suratJalan->pengirim ?? '') }}"
                                     data-tujuan="{{ strtolower($suratJalan->tujuan_pengambilan ?? '') }}"
                                     data-jenis-barang="{{ strtolower($suratJalan->jenis_barang ?? '') }}">
@@ -187,6 +189,7 @@
                                     </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $suratJalan->no_surat_jalan ?? $suratJalan->nomor_surat_jalan ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs text-center">{{ $suratJalan->tanggal_surat_jalan ? \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan)->format('d/m/Y') : '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->supir ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->pengirim ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->tujuan_pengambilan ?? '-' }}</td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">{{ $suratJalan->jenis_barang ?? '-' }}</td>
@@ -196,7 +199,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="7" class="px-2 py-4 text-center text-xs text-gray-500">
+                                    <td colspan="8" class="px-2 py-4 text-center text-xs text-gray-500">
                                         <div class="flex flex-col items-center py-4">
                                             <svg class="h-8 w-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2 2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
@@ -375,11 +378,13 @@
 
                 tableRows.forEach(row => {
                     const nomor = row.dataset.nomor || '';
+                    const supir = row.dataset.supir || '';
                     const pengirim = row.dataset.pengirim || '';
                     const tujuan = row.dataset.tujuan || '';
                     const jenisBarang = row.dataset.jenisBarang || '';
 
                     const isVisible = nomor.includes(term) ||
+                                    supir.includes(term) ||
                                     pengirim.includes(term) ||
                                     tujuan.includes(term) ||
                                     jenisBarang.includes(term);
