@@ -12,8 +12,8 @@
         
         body {
             font-family: Arial, sans-serif;
-            font-size: 11pt;
-            line-height: 1.3;
+            font-size: 13pt;
+            line-height: 1.4;
             color: #000;
             margin: 0;
             padding: 0;
@@ -53,30 +53,30 @@
         
         .company-tagline {
             color: #000;
-            font-size: 10pt;
+            font-size: 12pt;
             font-weight: bold;
             margin-bottom: 2px;
         }
         
         .company-name {
             color: #dc3545;
-            font-size: 16pt;
+            font-size: 18pt;
             font-weight: bold;
             margin-bottom: 3px;
         }
         
         .company-address {
-            font-size: 9pt;
+            font-size: 11pt;
             margin-bottom: 2px;
         }
         
         .company-contact {
-            font-size: 9pt;
+            font-size: 11pt;
         }
         
         .memo-title {
             text-align: center;
-            font-size: 14pt;
+            font-size: 16pt;
             font-weight: bold;
             margin: 15px auto 15px auto;
             text-decoration: underline;
@@ -91,13 +91,13 @@
         }
         
         .memo-field {
-            margin-bottom: 6px;
+            margin-bottom: 8px;
             display: flex;
             width: 100%;
         }
         
         .memo-label {
-            width: 120px;
+            width: 130px;
             font-weight: normal;
             flex-shrink: 0;
         }
@@ -107,25 +107,25 @@
         }
         
         .memo-description {
-            margin: 15px 0;
+            margin: 18px 0;
             text-align: justify;
-            line-height: 1.4;
+            line-height: 1.5;
             width: 100%;
         }
         
         .memo-details {
-            margin: 15px 0 20px 0;
+            margin: 18px 0 22px 0;
             width: 100%;
         }
         
         .memo-detail-item {
-            margin-bottom: 8px;
+            margin-bottom: 10px;
             display: flex;
             width: 100%;
         }
         
         .memo-detail-label {
-            width: 90px;
+            width: 100px;
             font-weight: normal;
             flex-shrink: 0;
         }
@@ -239,8 +239,8 @@
         <br>
         
         <div class="memo-description">
-            <p style="margin: 8px 0;">Dengan Hormat,</p>
-            <p style="margin: 8px 0;">Mohon dapat diberikan muatan, kepada pembawa memo ini ;</p>
+            <p style="margin: 10px 0;">Dengan Hormat,</p>
+            <p style="margin: 10px 0;">Mohon dapat diberikan muatan, kepada pembawa memo ini ;</p>
         </div>
         
         <div class="memo-details">
@@ -261,7 +261,7 @@
         </div>
         
         <div class="memo-description">
-            <p style="margin: 8px 0;">Demikian surat permohonan ini kami sampaikan, atas perhatian dan kerja samanya kami ucapkan terima kasih.</p>
+            <p style="margin: 10px 0;">Demikian surat permohonan ini kami sampaikan, atas perhatian dan kerja samanya kami ucapkan terima kasih.</p>
         </div>
     </div>
     
