@@ -658,6 +658,25 @@
 </div>
 @endif
 
+{{-- Surat Jalan Bongkaran Management Section --}}
+@php
+    $isSuratJalanBongkaranRoute = Request::routeIs('surat-jalan-bongkaran.*');
+    $hasSuratJalanBongkaranPermissions = $user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
+@endphp
+
+@if($hasSuratJalanBongkaranPermissions)
+<div class="mt-4 mb-4">
+    <a href="{{ route('surat-jalan-bongkaran.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isSuratJalanBongkaranRoute ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
+        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isSuratJalanBongkaranRoute ? 'bg-orange-200' : 'bg-orange-50 group-hover:bg-orange-200' }}">
+            <svg class="w-4 h-4 {{ $isSuratJalanBongkaranRoute ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+            </svg>
+        </div>
+        <span class="text-xs font-medium menu-text">Bongkaran</span>
+    </a>
+</div>
+@endif
+
 {{-- Tanda Terima Management Section --}}
 @php
     $isTandaTerimaRoute = Request::routeIs('tanda-terima.*');

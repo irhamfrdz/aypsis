@@ -58,6 +58,8 @@ use App\Http\Controllers\ProspekController;
 use App\Http\Controllers\NaikKapalController;
 use App\Http\Controllers\OrderDataManagementController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\SuratJalanController;
+use App\Http\Controllers\SuratJalanBongkaranController;
 
 /*
 |--------------------------------------------------------------------------
@@ -1147,6 +1149,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/surat-jalan/{suratJalan}/print-preprinted', [\App\Http\Controllers\SuratJalanController::class, 'printPreprinted'])
          ->name('surat-jalan.print-preprinted')
          ->middleware('can:surat-jalan-view');
+
+    // ============= SURAT JALAN BONGKARAN ROUTES =============
+    
+    // Surat Jalan Bongkaran resource routes
+    Route::resource('surat-jalan-bongkaran', \App\Http\Controllers\SuratJalanBongkaranController::class)
+         ->middleware([
+             'index' => 'can:surat-jalan-bongkaran-view',
+             'create' => 'can:surat-jalan-bongkaran-create',
+             'store' => 'can:surat-jalan-bongkaran-create',
+             'show' => 'can:surat-jalan-bongkaran-view',
+             'edit' => 'can:surat-jalan-bongkaran-update',
+             'update' => 'can:surat-jalan-bongkaran-update',
+             'destroy' => 'can:surat-jalan-bongkaran-delete'
+         ]);
+
+    // Print surat jalan bongkaran
+    Route::get('/surat-jalan-bongkaran/{suratJalanBongkaran}/print', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'print'])
+         ->name('surat-jalan-bongkaran.print')
+         ->middleware('can:surat-jalan-bongkaran-view');
+
+    // Download PDF surat jalan bongkaran
+    Route::get('/surat-jalan-bongkaran/{suratJalanBongkaran}/download', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'downloadPdf'])
+         ->name('surat-jalan-bongkaran.download')
+         ->middleware('can:surat-jalan-bongkaran-view');
 
     // Update status surat jalan
     Route::post('/surat-jalan/{suratJalan}/update-status', [\App\Http\Controllers\SuratJalanController::class, 'updateStatus'])
