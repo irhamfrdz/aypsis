@@ -1318,7 +1318,7 @@ input[required]:focus {
 <script>
 
 
-// Checkbox functionality
+// Checkbox functionality with state persistence
 document.addEventListener('DOMContentLoaded', function() {
     const selectAllCheckbox = document.getElementById('select-all');
     const rowCheckboxes = document.querySelectorAll('.row-checkbox');
@@ -1339,6 +1339,9 @@ document.addEventListener('DOMContentLoaded', function() {
         btnBulkPranota: !!btnBulkPranota
     });
 
+    // Restore checkbox state from localStorage on page load
+    restoreCheckboxState();
+    
     // Initialize bulk actions on page load
     updateBulkActions();
 
@@ -1396,6 +1399,7 @@ document.addEventListener('DOMContentLoaded', function() {
             checkbox.checked = isChecked;
         });
         updateBulkActions();
+        saveCheckboxState(); // Save state after change
     });
 
     // Handle individual checkboxes
@@ -1404,6 +1408,77 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('Individual checkbox changed:', this.checked, 'ID:', this.value);
             updateSelectAllState();
             updateBulkActions();
+            saveCheckboxState(); // Save state after change
+        });
+    });
+
+    // Save checkbox state to localStorage
+    function saveCheckboxState() {
+        const checkedIds = [];
+        rowCheckboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                checkedIds.push(checkbox.value);
+            }
+        });
+        localStorage.setItem('daftar_tagihan_checked_ids', JSON.stringify(checkedIds));
+        console.log('Saved checkbox state:', checkedIds);
+    }
+
+    // Restore checkbox state from localStorage
+    function restoreCheckboxState() {
+        try {
+            const savedIds = JSON.parse(localStorage.getItem('daftar_tagihan_checked_ids') || '[]');
+            console.log('Restoring checkbox state:', savedIds);
+            
+            if (savedIds.length > 0) {
+                rowCheckboxes.forEach(checkbox => {
+                    if (savedIds.includes(checkbox.value)) {
+                        checkbox.checked = true;
+                    }
+                });
+                updateSelectAllState();
+                updateBulkActions();
+                
+                // Show notification that selections were restored
+                setTimeout(() => {
+                    showNotification('success', 'Centangan Dipulihkan', 
+                        `${savedIds.length} item yang sebelumnya dicentang telah dipulihkan.`);
+                }, 500);
+            }
+        } catch (error) {
+            console.error('Error restoring checkbox state:', error);
+            localStorage.removeItem('daftar_tagihan_checked_ids');
+        }
+    }
+
+    // Clear saved state when explicitly cancelled
+    function clearSavedState() {
+        localStorage.removeItem('daftar_tagihan_checked_ids');
+        console.log('Cleared saved checkbox state');
+    }
+
+    // Handle search form submission to preserve checkbox state
+    const searchForm = document.querySelector('form[action*="daftar-tagihan-kontainer-sewa.index"]');
+    if (searchForm) {
+        searchForm.addEventListener('submit', function() {
+            saveCheckboxState(); // Save current state before form submission
+            console.log('Search form submitted, checkbox state saved');
+        });
+    }
+
+    // Handle pagination links to preserve checkbox state  
+    document.querySelectorAll('a[href*="daftar-tagihan-kontainer-sewa.index"]').forEach(link => {
+        link.addEventListener('click', function() {
+            saveCheckboxState(); // Save current state before navigation
+            console.log('Pagination link clicked, checkbox state saved');
+        });
+    });
+
+    // Handle filter buttons to preserve checkbox state
+    document.querySelectorAll('a[href*="status="], a[href*="status_pranota="]').forEach(link => {
+        link.addEventListener('click', function() {
+            saveCheckboxState(); // Save current state before navigation
+            console.log('Filter link clicked, checkbox state saved');
         });
     });
 
@@ -1517,6 +1592,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = false;
         updateBulkActions();
+        clearSavedState(); // Clear saved state when cancelled
     });
 
     // Bulk delete handler
@@ -1559,6 +1635,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     input.value = id;
                     form.appendChild(input);
                 });
+
+                // Clear saved state before submission since we're deleting items
+                clearSavedState();
 
                 document.body.appendChild(form);
                 form.submit();
@@ -2429,6 +2508,9 @@ document.addEventListener('DOMContentLoaded', function() {
                             // Show success notification
                             showSuccess(successTitle, successMessage);
 
+                            // Clear saved checkbox state after successful operation
+                            clearSavedState();
+
                             // Close modal
                             closeModal();
 
@@ -2464,6 +2546,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
                         // Show success notification
                         showSuccess(successTitle, successMessage);
+
+                        // Clear saved checkbox state after successful operation
+                        clearSavedState();
 
                         // Close modal
                         closeModal();
