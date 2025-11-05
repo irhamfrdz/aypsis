@@ -2535,6 +2535,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('prospek/pilih-tujuan', [ProspekController::class, 'pilihTujuan'])->name('prospek.pilih-tujuan')
          ->middleware('can:prospek-edit');
 
+    Route::get('prospek/proses-naik-kapal', [ProspekController::class, 'prosesNaikKapal'])->name('prospek.proses-naik-kapal')
+         ->middleware('can:prospek-edit');
+
     Route::post('prospek/proses-naik-kapal', [ProspekController::class, 'prosesNaikKapal'])->name('prospek.proses-naik-kapal-batch')
          ->middleware('can:prospek-edit');
 
@@ -2544,8 +2547,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
     Route::get('prospek/get-voyage-by-kapal', [ProspekController::class, 'getVoyageByKapal'])->name('prospek.get-voyage-by-kapal')
          ->middleware('can:prospek-view');
 
-          Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
-                     ->middleware('can:prospek-view');
+    // NOTE: Route dengan parameter harus di bawah route spesifik
+    Route::get('prospek/{prospek}', [ProspekController::class, 'show'])->name('prospek.show')
+                ->middleware('can:prospek-view');
 
           // 🚢 Naik Kapal Management
           Route::get('naik-kapal/download-template', [NaikKapalController::class, 'downloadTemplate'])
