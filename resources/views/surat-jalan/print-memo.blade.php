@@ -239,8 +239,6 @@
         <br>
         
         <div class="memo-description">
-            <p style="margin: 8px 0;">&nbsp;</p>
-            <p style="margin: 8px 0;">&nbsp;</p>
             <p style="margin: 8px 0;">Dengan Hormat,</p>
             <p style="margin: 8px 0;">Mohon dapat diberikan muatan, kepada pembawa memo ini ;</p>
         </div>
@@ -264,8 +262,6 @@
         
         <div class="memo-description">
             <p style="margin: 8px 0;">Demikian surat permohonan ini kami sampaikan, atas perhatian dan kerja samanya kami ucapkan terima kasih.</p>
-            <p style="margin: 8px 0;">&nbsp;</p>
-            <p style="margin: 8px 0;">&nbsp;</p>
         </div>
     </div>
     
