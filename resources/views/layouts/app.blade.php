@@ -672,7 +672,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
             </svg>
         </div>
-        <span class="text-xs font-medium menu-text">Bongkaran</span>
+        <span class="text-xs font-medium menu-text">Surat Jalan Bongkaran</span>
     </a>
 </div>
 @endif
