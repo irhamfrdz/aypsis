@@ -184,25 +184,36 @@ class Order extends Model
     {
         $status = $this->outstanding_status ?? 'pending';
         
-        // Map status to Indonesian
-        $statusMap = [
-            'pending' => 'Menunggu',
-            'partial' => 'Sedang Dikerjakan',
-            'completed' => 'Selesai'
-        ];
-        
-        $text = $statusMap[$status] ?? ucfirst($status);
-
-        switch ($status) {
-            case 'pending':
-                return '<span class="badge badge-warning">' . $text . '</span>';
-            case 'partial':
-                return '<span class="badge badge-info">' . $text . '</span>';
-            case 'completed':
-                return '<span class="badge badge-success">' . $text . '</span>';
-            default:
-                return '<span class="badge badge-secondary">Tidak Diketahui</span>';
+        // Map status to Indonesian based on context
+        if ($status === 'pending') {
+            // Check if order is confirmed and ready to process
+            if ($this->status === 'confirmed' && $this->sisa == $this->units) {
+                $text = 'Siap Dikerjakan';
+                $badgeClass = 'badge-info';
+            } else {
+                $text = 'Menunggu';
+                $badgeClass = 'badge-warning';
+            }
+        } else {
+            $statusMap = [
+                'partial' => 'Sedang Dikerjakan',
+                'completed' => 'Selesai'
+            ];
+            $text = $statusMap[$status] ?? ucfirst($status);
+            
+            switch ($status) {
+                case 'partial':
+                    $badgeClass = 'badge-primary';
+                    break;
+                case 'completed':
+                    $badgeClass = 'badge-success';
+                    break;
+                default:
+                    $badgeClass = 'badge-secondary';
+            }
         }
+
+        return '<span class="' . $badgeClass . '">' . $text . '</span>';
     }
 
 

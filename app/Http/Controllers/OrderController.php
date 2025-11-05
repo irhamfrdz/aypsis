@@ -153,7 +153,7 @@ class OrderController extends Controller
         
         // Set outstanding_status based on order status
         if ($data['status'] === 'confirmed') {
-            $data['outstanding_status'] = 'active'; // Ready to be processed
+            $data['outstanding_status'] = 'pending'; // Ready to be processed (enum only has pending, partial, completed)
         } else {
             $data['outstanding_status'] = 'pending'; // Draft or pending orders
         }
