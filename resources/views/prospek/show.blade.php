@@ -72,6 +72,13 @@
                             </p>
                         </div>
                         <div>
+                            <label class="block text-sm font-medium text-gray-500">Supir OB</label>
+                            <p class="mt-1 text-sm text-gray-900">
+                                <i class="fas fa-user-tie mr-2 text-blue-600"></i>
+                                {{ $prospek->supir_ob ?? '-' }}
+                            </p>
+                        </div>
+                        <div>
                             <label class="block text-sm font-medium text-gray-500">PT/Pengirim</label>
                             <p class="mt-1 text-sm text-gray-900">
                                 <i class="fas fa-building mr-2 text-purple-600"></i>

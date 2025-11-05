@@ -16,6 +16,7 @@ class Prospek extends Model
     protected $fillable = [
         'tanggal',
         'nama_supir',
+        'supir_ob',
         'barang',
         'pt_pengirim',
         'ukuran',
