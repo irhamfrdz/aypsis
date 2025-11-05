@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\SuratJalanBongkaran;
 use App\Models\Order;
 use App\Models\MasterKapal;
+use App\Models\Bl;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -71,11 +72,60 @@ class SuratJalanBongkaranController extends Controller
     /**
      * Show the form for selecting kapal and voyage before creating.
      */
-    public function selectKapal()
+    public function selectKapal(Request $request)
     {
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
         
-        return view('surat-jalan-bongkaran.select-kapal', compact('kapals'));
+        // Get BL data based on selected kapal
+        $bls = collect();
+        if ($request->filled('kapal_id')) {
+            $bls = \App\Models\Bl::where('nama_kapal', function($query) use ($request) {
+                $query->select('nama_kapal')
+                      ->from('master_kapals')
+                      ->where('id', $request->kapal_id)
+                      ->limit(1);
+            })
+            ->distinct()
+            ->get(['no_voyage', 'nomor_bl'])
+            ->groupBy('no_voyage');
+        }
+        
+        return view('surat-jalan-bongkaran.select-kapal', compact('kapals', 'bls'));
+    }
+
+    /**
+     * Get BL data based on kapal selection (AJAX endpoint)
+     */
+    public function getBlData(Request $request)
+    {
+        if (!$request->filled('kapal_id')) {
+            return response()->json(['voyages' => [], 'bls' => []]);
+        }
+
+        // Get kapal name
+        $kapal = MasterKapal::find($request->kapal_id);
+        if (!$kapal) {
+            return response()->json(['voyages' => [], 'bls' => []]);
+        }
+
+        // Get BL data for this kapal
+        $bls = Bl::where('nama_kapal', $kapal->nama_kapal)
+              ->whereNotNull('no_voyage')
+              ->whereNotNull('nomor_bl')
+              ->get(['no_voyage', 'nomor_bl']);
+
+        // Group by voyage and get unique voyages
+        $voyages = $bls->pluck('no_voyage')->unique()->values();
+        
+        // Get BLs grouped by voyage
+        $blsByVoyage = $bls->groupBy('no_voyage')->map(function($items) {
+            return $items->pluck('nomor_bl')->unique()->values();
+        });
+
+        return response()->json([
+            'voyages' => $voyages,
+            'bls' => $blsByVoyage
+        ]);
     }
 
     /**

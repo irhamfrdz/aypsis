@@ -44,20 +44,22 @@
                     <!-- No Voyage -->
                     <div>
                         <label for="no_voyage" class="block text-sm font-medium text-gray-700 mb-2">No Voyage</label>
-                        <input type="text" name="no_voyage" id="no_voyage" required
-                               value="{{ request('no_voyage') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                               placeholder="-PILIH-">
+                        <select name="no_voyage" id="no_voyage" required
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">-PILIH-</option>
+                            <option value="" id="loading-option" style="display: none;">Loading...</option>
+                        </select>
                     </div>
                 </div>
 
                 <!-- No BL -->
                 <div>
                     <label for="no_bl" class="block text-sm font-medium text-gray-700 mb-2">No BL</label>
-                    <input type="text" name="no_bl" id="no_bl"
-                           value="{{ request('no_bl') }}"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                           placeholder="-PILIH-">
+                    <select name="no_bl" id="no_bl"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                        <option value="">-PILIH-</option>
+                        <option value="" id="loading-bl-option" style="display: none;">Loading...</option>
+                    </select>
                 </div>
 
                 <!-- Action Buttons -->
@@ -81,44 +83,113 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-fill placeholder suggestions
     const kapalSelect = document.getElementById('kapal_id');
-    const voyageInput = document.getElementById('no_voyage');
-    const blInput = document.getElementById('no_bl');
+    const voyageSelect = document.getElementById('no_voyage');
+    const blSelect = document.getElementById('no_bl');
+    const loadingOption = document.getElementById('loading-option');
+    const loadingBlOption = document.getElementById('loading-bl-option');
+    
+    let blData = {};
     
     kapalSelect.addEventListener('change', function() {
-        if (this.value) {
-            // Auto suggest voyage format based on current date
-            const today = new Date();
-            const year = today.getFullYear().toString().substr(-2);
-            const month = String(today.getMonth() + 1).padStart(2, '0');
-            
-            if (!voyageInput.value || voyageInput.value === '-PILIH-') {
-                voyageInput.value = `${year}${month}001`;
-                voyageInput.placeholder = `Contoh: ${year}${month}001`;
-            }
-            
-            if (!blInput.value || blInput.value === '-PILIH-') {
-                blInput.placeholder = `Contoh: BL${year}${month}001`;
-            }
-        } else {
-            voyageInput.placeholder = '-PILIH-';
-            blInput.placeholder = '-PILIH-';
+        const kapalId = this.value;
+        
+        // Reset voyage and BL dropdowns
+        voyageSelect.innerHTML = '<option value="">-PILIH-</option>';
+        blSelect.innerHTML = '<option value="">-PILIH-</option>';
+        
+        if (!kapalId) {
+            return;
         }
+        
+        // Show loading
+        loadingOption.style.display = 'block';
+        voyageSelect.appendChild(loadingOption);
+        
+        // Fetch BL data via AJAX
+        fetch(`{{ route('surat-jalan-bongkaran.bl-data') }}?kapal_id=${kapalId}`)
+            .then(response => response.json())
+            .then(data => {
+                // Hide loading
+                loadingOption.style.display = 'none';
+                
+                // Store BL data for later use
+                blData = data.bls;
+                
+                // Populate voyage dropdown
+                if (data.voyages && data.voyages.length > 0) {
+                    data.voyages.forEach(voyage => {
+                        const option = document.createElement('option');
+                        option.value = voyage;
+                        option.textContent = voyage;
+                        // Maintain selected value if exists
+                        if (voyage === "{{ request('no_voyage') }}") {
+                            option.selected = true;
+                        }
+                        voyageSelect.appendChild(option);
+                    });
+                    
+                    // If there's a selected voyage, populate BL dropdown
+                    const selectedVoyage = voyageSelect.value;
+                    if (selectedVoyage && blData[selectedVoyage]) {
+                        populateBlDropdown(selectedVoyage);
+                    }
+                } else {
+                    const option = document.createElement('option');
+                    option.value = '';
+                    option.textContent = 'Tidak ada data voyage';
+                    option.disabled = true;
+                    voyageSelect.appendChild(option);
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching BL data:', error);
+                loadingOption.style.display = 'none';
+                
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = 'Error loading data';
+                option.disabled = true;
+                voyageSelect.appendChild(option);
+            });
     });
     
-    // Format input suggestions
-    voyageInput.addEventListener('focus', function() {
-        if (this.value === '-PILIH-') {
-            this.value = '';
-        }
+    voyageSelect.addEventListener('change', function() {
+        const selectedVoyage = this.value;
+        populateBlDropdown(selectedVoyage);
     });
     
-    blInput.addEventListener('focus', function() {
-        if (this.value === '-PILIH-') {
-            this.value = '';
+    function populateBlDropdown(voyage) {
+        // Reset BL dropdown
+        blSelect.innerHTML = '<option value="">-PILIH-</option>';
+        
+        if (!voyage || !blData[voyage]) {
+            return;
         }
-    });
+        
+        // Populate BL dropdown
+        blData[voyage].forEach(bl => {
+            const option = document.createElement('option');
+            option.value = bl;
+            option.textContent = bl;
+            // Maintain selected value if exists
+            if (bl === "{{ request('no_bl') }}") {
+                option.selected = true;
+            }
+            blSelect.appendChild(option);
+        });
+        
+        // Add option for no BL selected
+        const noneOption = document.createElement('option');
+        noneOption.value = '';
+        noneOption.textContent = 'Tanpa BL';
+        blSelect.appendChild(noneOption);
+    }
+    
+    // Trigger kapal change if there's a pre-selected value
+    if (kapalSelect.value) {
+        kapalSelect.dispatchEvent(new Event('change'));
+    }
 });
 </script>
 @endpush

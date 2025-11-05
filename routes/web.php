@@ -1157,6 +1157,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('surat-jalan-bongkaran.select-kapal')
          ->middleware('can:surat-jalan-bongkaran-create');
     
+    // API endpoint for getting BL data
+    Route::get('/surat-jalan-bongkaran/api/bl-data', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'getBlData'])
+         ->name('surat-jalan-bongkaran.bl-data')
+         ->middleware('can:surat-jalan-bongkaran-create');
+    
     // Surat Jalan Bongkaran resource routes
     Route::resource('surat-jalan-bongkaran', \App\Http\Controllers\SuratJalanBongkaranController::class)
          ->middleware([
