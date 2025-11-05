@@ -40,8 +40,25 @@
             @endif
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <!-- Basic Information -->
+                <!-- Order Information -->
                 <div class="md:col-span-2">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Order</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Order ID</label>
+                    <input type="number"
+                           name="order_id"
+                           value="{{ old('order_id', $suratJalan->order_id) }}"
+                           placeholder="ID Order"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('order_id') border-red-500 @enderror">
+                    @error('order_id')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Basic Information -->
+                <div class="md:col-span-2 mt-4">
                     <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Dasar</h3>
                 </div>
 
@@ -66,6 +83,21 @@
                            placeholder="Contoh: SJ/2025/10/0001"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_surat_jalan') border-red-500 @enderror">
                     @error('no_surat_jalan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kegiatan</label>
+                    <select name="kegiatan"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kegiatan') border-red-500 @enderror">
+                        <option value="">Pilih Kegiatan</option>
+                        <option value="ANTAR ISI" {{ old('kegiatan', $suratJalan->kegiatan) == 'ANTAR ISI' ? 'selected' : '' }}>ANTAR ISI</option>
+                        <option value="ANTAR KOSONG" {{ old('kegiatan', $suratJalan->kegiatan) == 'ANTAR KOSONG' ? 'selected' : '' }}>ANTAR KOSONG</option>
+                        <option value="AMBIL ISI" {{ old('kegiatan', $suratJalan->kegiatan) == 'AMBIL ISI' ? 'selected' : '' }}>AMBIL ISI</option>
+                        <option value="AMBIL KOSONG" {{ old('kegiatan', $suratJalan->kegiatan) == 'AMBIL KOSONG' ? 'selected' : '' }}>AMBIL KOSONG</option>
+                    </select>
+                    @error('kegiatan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -124,6 +156,85 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
+                    <input type="text"
+                           name="tujuan_pengambilan"
+                           value="{{ old('tujuan_pengambilan', $suratJalan->tujuan_pengambilan) }}"
+                           placeholder="Tujuan pengambilan"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_pengambilan') border-red-500 @enderror">
+                    @error('tujuan_pengambilan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengiriman</label>
+                    <input type="text"
+                           name="tujuan_pengiriman"
+                           value="{{ old('tujuan_pengiriman', $suratJalan->tujuan_pengiriman) }}"
+                           placeholder="Tujuan pengiriman"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tujuan_pengiriman') border-red-500 @enderror">
+                    @error('tujuan_pengiriman')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Retur Barang</label>
+                    <input type="text"
+                           name="retur_barang"
+                           value="{{ old('retur_barang', $suratJalan->retur_barang) }}"
+                           placeholder="Retur barang"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('retur_barang') border-red-500 @enderror">
+                    @error('retur_barang')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Retur</label>
+                    <input type="number"
+                           name="jumlah_retur"
+                           value="{{ old('jumlah_retur', $suratJalan->jumlah_retur) }}"
+                           min="0"
+                           placeholder="Jumlah retur"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_retur') border-red-500 @enderror">
+                    @error('jumlah_retur')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Container Information -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Kontainer</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tipe Kontainer</label>
+                    <input type="text"
+                           name="tipe_kontainer"
+                           value="{{ old('tipe_kontainer', $suratJalan->tipe_kontainer) }}"
+                           placeholder="Tipe kontainer (FCL/LCL)"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tipe_kontainer') border-red-500 @enderror">
+                    @error('tipe_kontainer')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                    <select name="size"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('size') border-red-500 @enderror">
+                        <option value="">Pilih Size</option>
+                        <option value="20" {{ old('size', $suratJalan->size) == '20' ? 'selected' : '' }}>20ft</option>
+                        <option value="40" {{ old('size', $suratJalan->size) == '40' ? 'selected' : '' }}>40ft</option>
+                    </select>
+                    @error('size')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
                     <input type="text"
                            name="no_kontainer"
@@ -150,6 +261,67 @@
                 </div>
 
                 <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Seal</label>
+                    <input type="text"
+                           name="no_seal"
+                           value="{{ old('no_seal', $suratJalan->no_seal) }}"
+                           placeholder="Nomor seal"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror">
+                    @error('no_seal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Kemasan Information -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Kemasan</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
+                    <select name="karton"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('karton') border-red-500 @enderror">
+                        <option value="">Pilih Karton</option>
+                        <option value="1" {{ old('karton', $suratJalan->karton) == '1' ? 'selected' : '' }}>Ada</option>
+                        <option value="0" {{ old('karton', $suratJalan->karton) == '0' ? 'selected' : '' }}>Tidak Ada</option>
+                    </select>
+                    @error('karton')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
+                    <select name="plastik"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('plastik') border-red-500 @enderror">
+                        <option value="">Pilih Plastik</option>
+                        <option value="1" {{ old('plastik', $suratJalan->plastik) == '1' ? 'selected' : '' }}>Ada</option>
+                        <option value="0" {{ old('plastik', $suratJalan->plastik) == '0' ? 'selected' : '' }}>Tidak Ada</option>
+                    </select>
+                    @error('plastik')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
+                    <select name="terpal"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('terpal') border-red-500 @enderror">
+                        <option value="">Pilih Terpal</option>
+                        <option value="1" {{ old('terpal', $suratJalan->terpal) == '1' ? 'selected' : '' }}>Ada</option>
+                        <option value="0" {{ old('terpal', $suratJalan->terpal) == '0' ? 'selected' : '' }}>Tidak Ada</option>
+                    </select>
+                    @error('terpal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Transportasi Information -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Transportasi</h3>
+                </div>
+
+                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
                     <input type="text"
                            name="supir"
@@ -157,6 +329,42 @@
                            placeholder="Nama supir utama"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
                     @error('supir')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Supir 2</label>
+                    <input type="text"
+                           name="supir2"
+                           value="{{ old('supir2', $suratJalan->supir2) }}"
+                           placeholder="Nama supir kedua (opsional)"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir2') border-red-500 @enderror">
+                    @error('supir2')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
+                    <input type="text"
+                           name="kenek"
+                           value="{{ old('kenek', $suratJalan->kenek) }}"
+                           placeholder="Nama kenek"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kenek') border-red-500 @enderror">
+                    @error('kenek')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Karyawan</label>
+                    <input type="text"
+                           name="karyawan"
+                           value="{{ old('karyawan', $suratJalan->karyawan) }}"
+                           placeholder="Nama karyawan"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('karyawan') border-red-500 @enderror">
+                    @error('karyawan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
@@ -183,6 +391,217 @@
                            placeholder="0.00"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('uang_jalan') border-red-500 @enderror">
                     @error('uang_jalan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Schedule Information -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Waktu</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Tanggal Muat</label>
+                    <input type="date"
+                           name="tanggal_muat"
+                           value="{{ old('tanggal_muat', $suratJalan->tanggal_muat?->format('Y-m-d')) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_muat') border-red-500 @enderror">
+                    @error('tanggal_muat')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Waktu Berangkat</label>
+                    <input type="datetime-local"
+                           name="waktu_berangkat"
+                           value="{{ old('waktu_berangkat', $suratJalan->waktu_berangkat?->format('Y-m-d\TH:i')) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('waktu_berangkat') border-red-500 @enderror">
+                    @error('waktu_berangkat')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Term</label>
+                    <input type="text"
+                           name="term"
+                           value="{{ old('term', $suratJalan->term) }}"
+                           placeholder="Term/syarat pembayaran"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('term') border-red-500 @enderror">
+                    @error('term')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Rit</label>
+                    <select name="rit"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('rit') border-red-500 @enderror">
+                        <option value="">Pilih Rit</option>
+                        <option value="menggunakan_rit" {{ old('rit', $suratJalan->rit) == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
+                        <option value="tidak_menggunakan_rit" {{ old('rit', $suratJalan->rit) == 'tidak_menggunakan_rit' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
+                    </select>
+                    @error('rit')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">No. Pemesanan</label>
+                    <input type="text"
+                           name="no_pemesanan"
+                           value="{{ old('no_pemesanan', $suratJalan->no_pemesanan) }}"
+                           placeholder="Nomor pemesanan"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_pemesanan') border-red-500 @enderror">
+                    @error('no_pemesanan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Financial Information -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Keuangan</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Pembayaran</label>
+                    <select name="status_pembayaran"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status_pembayaran') border-red-500 @enderror">
+                        <option value="">Pilih Status Pembayaran</option>
+                        <option value="belum_bayar" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
+                        <option value="lunas" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                        <option value="sebagian" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'sebagian' ? 'selected' : '' }}>Sebagian</option>
+                    </select>
+                    @error('status_pembayaran')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Total Tarif</label>
+                    <input type="number"
+                           name="total_tarif"
+                           value="{{ old('total_tarif', $suratJalan->total_tarif) }}"
+                           step="0.01"
+                           min="0"
+                           placeholder="0.00"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('total_tarif') border-red-500 @enderror">
+                    @error('total_tarif')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jumlah Terbayar</label>
+                    <input type="number"
+                           name="jumlah_terbayar"
+                           value="{{ old('jumlah_terbayar', $suratJalan->jumlah_terbayar) }}"
+                           step="0.01"
+                           min="0"
+                           placeholder="0.00"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_terbayar') border-red-500 @enderror">
+                    @error('jumlah_terbayar')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Sisa Tagihan</label>
+                    <input type="number"
+                           name="sisa_tagihan"
+                           value="{{ old('sisa_tagihan', $suratJalan->sisa_tagihan) }}"
+                           step="0.01"
+                           min="0"
+                           placeholder="0.00"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('sisa_tagihan') border-red-500 @enderror">
+                    @error('sisa_tagihan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Pembayaran Uang Rit</label>
+                    <select name="status_pembayaran_uang_rit"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status_pembayaran_uang_rit') border-red-500 @enderror">
+                        <option value="">Pilih Status</option>
+                        <option value="belum_bayar" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
+                        <option value="lunas" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                    </select>
+                    @error('status_pembayaran_uang_rit')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Status Pembayaran Uang Rit Kenek</label>
+                    <select name="status_pembayaran_uang_rit_kenek"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status_pembayaran_uang_rit_kenek') border-red-500 @enderror">
+                        <option value="">Pilih Status</option>
+                        <option value="belum_bayar" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
+                        <option value="lunas" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                    </select>
+                    @error('status_pembayaran_uang_rit_kenek')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Jam Berangkat</label>
+                    <input type="time"
+                           name="jam_berangkat"
+                           value="{{ old('jam_berangkat', $suratJalan->jam_berangkat) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jam_berangkat') border-red-500 @enderror">
+                    @error('jam_berangkat')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Additional Images -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Gambar Checkpoint</h3>
+                </div>
+
+                <div class="md:col-span-2">
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Gambar Checkpoint</label>
+                    <input type="file"
+                           name="gambar_checkpoint"
+                           accept="image/*"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('gambar_checkpoint') border-red-500 @enderror">
+                    @if($suratJalan->gambar_checkpoint)
+                        <div class="mt-2">
+                            <p class="text-sm text-gray-600">File saat ini: {{ basename($suratJalan->gambar_checkpoint) }}</p>
+                        </div>
+                    @endif
+                    @error('gambar_checkpoint')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- System Information -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Sistem</h3>
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Input By</label>
+                    <input type="text"
+                           name="input_by"
+                           value="{{ old('input_by', $suratJalan->input_by) }}"
+                           placeholder="Diinput oleh"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('input_by') border-red-500 @enderror">
+                    @error('input_by')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Input Date</label>
+                    <input type="datetime-local"
+                           name="input_date"
+                           value="{{ old('input_date', $suratJalan->input_date?->format('Y-m-d\TH:i')) }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('input_date') border-red-500 @enderror">
+                    @error('input_date')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
