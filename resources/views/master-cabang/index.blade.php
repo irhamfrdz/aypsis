@@ -35,6 +35,11 @@
         </form>
     </div>
 
+    <!-- Rows per page control -->
+    <div class="mb-4">
+        @include('components.rows-per-page')
+    </div>
+
     <div class="overflow-x-auto">
         <table class="min-w-full bg-white divide-y divide-gray-200">
             <thead class="bg-gray-50">
@@ -75,16 +80,7 @@
                                 </form>
                             </div>
                         </td>
-                    
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('MasterCabang', {{ $master_cabang->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                    </tr>
                 @empty
                     <tr>
                         <td colspan="4" class="py-8 px-6 text-center text-gray-500">
@@ -96,26 +92,13 @@
                                 <p class="text-sm text-gray-400 mt-1">Tambah cabang pertama untuk memulai</p>
                             </div>
                         </td>
-                    
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm" 
-                                                    onclick="showAuditLog('MasterCabang', {{ $master_cabang->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                    </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
 
     <!-- Pagination -->
-    @if($cabangs->hasPages())
-        <div class="mt-6">
-            {{ $cabangs->appends(request()->query())->links() }}
-        </div>
-    @endif
+    @include('components.modern-pagination', ['paginator' => $cabangs, 'routeName' => 'master.cabang.index'])
 </div>
 @endsection

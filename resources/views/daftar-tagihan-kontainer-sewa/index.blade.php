@@ -576,6 +576,11 @@ input[required]:focus {
 
     <div class="max-w-full mx-auto px-4">
         <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+            <!-- Rows per page control -->
+            <div class="px-6 py-3 border-b border-gray-200">
+                @include('components.rows-per-page')
+            </div>
+            
             <!-- Table Section with Sticky Header -->
             <div class="table-container overflow-x-auto max-h-screen">
                 <table class="min-w-full divide-y divide-gray-200" style="min-width: 2650px;">
@@ -778,7 +783,7 @@ input[required]:focus {
                                 <span class="font-semibold">{{ optional($tagihan)->vendor ?? '-' }}</span>
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono text-gray-900 ">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono ">
                             {{ optional($tagihan)->nomor_kontainer ?? '-' }}
                         </td>
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
@@ -892,7 +897,7 @@ input[required]:focus {
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                             @php
                                 $tarif = optional($tagihan)->tarif ?? '-';
                                 $isHarian = strtolower($tarif) === 'harian';
@@ -1261,7 +1266,7 @@ input[required]:focus {
                     @endif
                 </div>
                 <div class="flex items-center space-x-2">
-                    {{ $tagihans->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $tagihans])
                 </div>
             </div>
         </div>

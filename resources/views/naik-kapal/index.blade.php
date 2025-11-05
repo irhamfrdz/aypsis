@@ -12,7 +12,10 @@
                     <p class="text-gray-600">Pilih kapal dan nomor voyage untuk melihat data naik kapal</p>
                 </div>
             </div>
-            <div>
+            <div class="flex gap-3">
+                <a href="{{ route('naik-kapal.download.template') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-download mr-2"></i>Download Template
+                </a>
                 <a href="{{ url()->previous() }}" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-arrow-left mr-2"></i>
                     Kembali
@@ -187,7 +190,8 @@
         {{-- Pagination --}}
         @if($naikKapals->hasPages())
             <div class="px-6 py-4 border-t border-gray-200">
-                {{ $naikKapals->appends(request()->query())->links() }}
+                @include('components.modern-pagination', ['paginator' => $naikKapals])
+                @include('components.rows-per-page')
             </div>
         @endif
     </div>

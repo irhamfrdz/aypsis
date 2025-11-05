@@ -410,4 +410,97 @@ class BlController extends Controller
             'count' => $bls->count()
         ]);
     }
+
+    /**
+     * Download template CSV untuk import BL
+     */
+    public function downloadTemplate()
+    {
+        $filename = 'template_bl_' . date('Y-m-d') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            
+            // Write BOM for UTF-8
+            fwrite($file, "\xEF\xBB\xBF");
+            
+            // Header columns
+            $header = [
+                'nomor_bl',
+                'nomor_kontainer',
+                'no_seal',
+                'nama_kapal',
+                'no_voyage',
+                'pelabuhan_tujuan',
+                'nama_barang',
+                'tipe_kontainer',
+                'ukuran_kontainer',
+                'tonnage',
+                'volume',
+                'kuantitas',
+                'term',
+                'tanggal_muat',
+                'jam_muat',
+                'prospek_id',
+                'keterangan'
+            ];
+            
+            fputcsv($file, $header);
+            
+            // Example data rows
+            $exampleData = [
+                [
+                    'BL-' . date('Ymd') . '-001',
+                    'CONT' . date('Ymd') . '001',
+                    'SEAL001',
+                    'KM SINAR HARAPAN',
+                    'SH001',
+                    'Batam',
+                    'Elektronik',
+                    '20 FT',
+                    '20x8x8.6',
+                    '15.500',
+                    '25.750',
+                    '100',
+                    'COD',
+                    date('Y-m-d'),
+                    '08:00',
+                    '1',
+                    'Contoh data BL untuk import'
+                ],
+                [
+                    'BL-' . date('Ymd') . '-002',
+                    'CONT' . date('Ymd') . '002', 
+                    'SEAL002',
+                    'KM CAHAYA LAUT',
+                    'CL002',
+                    'Jakarta',
+                    'Makanan & Minuman',
+                    '40 FT',
+                    '40x8x8.6',
+                    '25.000',
+                    '45.300',
+                    '200',
+                    'Credit 30',
+                    date('Y-m-d'),
+                    '14:30',
+                    '2',
+                    'Contoh data BL kedua'
+                ]
+            ];
+            
+            foreach ($exampleData as $row) {
+                fputcsv($file, $row);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

@@ -140,12 +140,15 @@
                 <p class="mt-1 text-sm text-gray-600">Total: {{ $terms->total() }} term</p>
             </div>
 
+            <!-- Rows per page control -->
+            <div class="px-6 py-3 border-b border-gray-200">
+                @include('components.rows-per-page')
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
@@ -155,8 +158,6 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse ($terms as $term)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $term->id }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $term->kode }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $term->nama_status }}</td>
                                 <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $term->catatan }}">{{ $term->catatan }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -200,7 +201,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
+                                <td colspan="4" class="px-6 py-4 text-center text-sm text-gray-500">
                                     <div class="flex flex-col items-center justify-center py-8">
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m8-5v2m0 0v2m0-2h2m-2 0h-2"></path>
@@ -216,11 +217,7 @@
             </div>
 
             <!-- Pagination -->
-            @if ($terms->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $terms->appends(request()->query())->links() }}
-                </div>
-            @endif
+            @include('components.modern-pagination', ['paginator' => $terms, 'routeName' => 'term.index'])
         </div>
     </div>
 </div>

@@ -229,10 +229,16 @@
                     </table>
                 </div>
 
+                {{-- Rows Per Page Selection --}}
+                @include('components.rows-per-page', [
+                    'routeName' => 'vendor-kontainer-sewa.index',
+                    'paginator' => $vendors,
+                    'entityName' => 'vendor',
+                    'entityNamePlural' => 'vendor'
+                ])
+
                 <!-- Pagination -->
-                <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $vendors->links() }}
-                </div>
+                @include('components.modern-pagination', ['paginator' => $vendors, 'routeName' => 'vendor-kontainer-sewa.index'])
             @else
                 <div class="text-center py-12">
                     <svg class="w-16 h-16 mx-auto mb-4 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">

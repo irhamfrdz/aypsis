@@ -272,7 +272,8 @@
                     Menampilkan <span class="font-medium">{{ $banks->firstItem() }}</span> sampai <span class="font-medium">{{ $banks->lastItem() }}</span> dari <span class="font-medium">{{ $banks->total() }}</span> hasil
                 </div>
                 <div class="flex-1 flex justify-center">
-                    {{ $banks->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $banks])
+                    @include('components.rows-per-page')
                 </div>
             </div>
         @endif

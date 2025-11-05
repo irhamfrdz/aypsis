@@ -152,7 +152,8 @@
 
     <!-- Pagination -->
     <div class="mt-6">
-        {{ $pranotas->links() }}
+        @include('components.modern-pagination', ['paginator' => $pranotas])
+        @include('components.rows-per-page')
     </div>
 </div>
 

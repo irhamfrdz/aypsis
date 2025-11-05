@@ -403,7 +403,8 @@
         <!-- Pagination -->
         @if($tagihanCats->hasPages())
         <div class="mt-6">
-            {{ $tagihanCats->appends(request()->query())->links() }}
+            @include('components.modern-pagination', ['paginator' => $tagihanCats])
+            @include('components.rows-per-page')
         </div>
         @endif
     </div>

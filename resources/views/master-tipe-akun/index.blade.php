@@ -123,7 +123,8 @@
             <!-- Pagination -->
             @if($tipeAkuns->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $tipeAkuns->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $tipeAkuns])
+                    @include('components.rows-per-page')
                 </div>
             @endif
         </div>

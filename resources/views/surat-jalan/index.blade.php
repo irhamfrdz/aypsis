@@ -320,7 +320,8 @@
             <!-- Pagination -->
             @if($suratJalans->hasPages())
             <div class="px-6 py-4 border-t border-gray-200">
-                {{ $suratJalans->appends(request()->query())->links() }}
+                @include('components.modern-pagination', ['paginator' => $suratJalans])
+                @include('components.rows-per-page')
             </div>
             @endif
         </div>

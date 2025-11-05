@@ -162,7 +162,8 @@
                 </div>
 
                 <div class="flex justify-center mt-4">
-                    {{ $pendingApprovals->links() }}
+                    @include('components.modern-pagination', ['paginator' => $pendingApprovals])
+                    @include('components.rows-per-page')
                 </div>
             @else
                 <div class="text-center py-8">

@@ -149,7 +149,8 @@
             <!-- Pagination -->
             @if($pricelistGateIns->hasPages())
             <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
-                {{ $pricelistGateIns->links() }}
+                @include('components.modern-pagination', ['paginator' => $pricelistGateIns])
+                @include('components.rows-per-page')
             </div>
             @endif
         </div>

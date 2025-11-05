@@ -184,7 +184,8 @@
 {{-- Pagination --}}
 @if ($stockKontainers->hasPages())
 <div class="mt-4">
-    {{ $stockKontainers->appends(request()->query())->links() }}
+    @include('components.modern-pagination', ['paginator' => $stockKontainers])
+    @include('components.rows-per-page')
 </div>
 @endif
 

@@ -367,7 +367,8 @@
         <!-- Pagination -->
         @if($perbaikanKontainers->hasPages())
         <div class="mt-6">
-            {{ $perbaikanKontainers->appends(request()->query())->links() }}
+            @include('components.modern-pagination', ['paginator' => $perbaikanKontainers])
+            @include('components.rows-per-page')
         </div>
         @endif
     </div>

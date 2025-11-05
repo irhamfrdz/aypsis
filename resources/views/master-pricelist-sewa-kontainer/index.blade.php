@@ -100,7 +100,8 @@
         </table>
     </div>
     <div class="mt-4">
-        {{ $pricelists->links() }}
+        @include('components.modern-pagination', ['paginator' => $pricelists])
+        @include('components.rows-per-page')
     </div>
 </div>
 

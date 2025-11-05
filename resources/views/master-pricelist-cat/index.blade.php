@@ -156,7 +156,8 @@
     <!-- Pagination -->
     @if($pricelists->hasPages())
     <div class="mt-6">
-        {{ $pricelists->appends(request()->query())->links() }}
+        @include('components.modern-pagination', ['paginator' => $pricelists])
+        @include('components.rows-per-page')
     </div>
     @endif
 </div>

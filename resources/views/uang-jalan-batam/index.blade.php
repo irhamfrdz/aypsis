@@ -214,7 +214,8 @@
                 </p>
             </div>
             <div>
-                {{ $uangJalanBatams->withQueryString()->links() }}
+                @include('components.modern-pagination', ['paginator' => $uangJalanBatams])
+                @include('components.rows-per-page')
             </div>
         </div>
     </div>

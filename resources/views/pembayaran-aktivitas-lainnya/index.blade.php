@@ -186,7 +186,8 @@
                         </span>
                     </div>
                     <div>
-                        {{ $pembayaran->appends(request()->query())->links() }}
+                        @include('components.modern-pagination', ['paginator' => $pembayaran])
+                        @include('components.rows-per-page')
                     </div>
                 </div>
             </div>

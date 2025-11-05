@@ -203,7 +203,8 @@
 
                 <!-- Pagination -->
                 <div class="flex justify-center mt-6">
-                    {{ $pranotaUangRits->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $pranotaUangRits])
+                    @include('components.rows-per-page')
                 </div>
                 @else
                 <div class="text-center py-12">

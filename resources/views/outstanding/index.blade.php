@@ -316,7 +316,7 @@
         <!-- Pagination -->
         <div class="bg-white px-6 py-3 border-t border-gray-200 flex items-center justify-between">
             <div class="flex-1 flex justify-between sm:hidden">
-                {{ $orders->appends(request()->query())->links() }}
+                @include('components.modern-pagination', ['paginator' => $orders])
             </div>
             <div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                 <div>
@@ -326,10 +326,11 @@
                     </p>
                 </div>
                 <div>
-                    {{ $orders->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $orders])
                 </div>
             </div>
         </div>
+        @include('components.rows-per-page')
     </div>
 </div>
 

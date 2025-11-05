@@ -244,7 +244,8 @@
 
             <!-- Pagination -->
             <div class="mt-6">
-                {{ $realisasiList->withQueryString()->links() }}
+                @include('components.modern-pagination', ['paginator' => $realisasiList])
+                @include('components.rows-per-page')
             </div>
         </div>
     </div>

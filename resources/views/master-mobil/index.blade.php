@@ -63,6 +63,48 @@
             </svg>
             Import CSV
         </button>
+
+        <!-- Export Button -->
+        <div class="relative">
+            <button type="button" id="export-dropdown-button"
+                    class="inline-flex items-center bg-orange-600 text-white py-2 px-4 rounded-md hover:bg-orange-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-orange-500 focus:ring-offset-2"
+                    onclick="toggleExportDropdown()">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                </svg>
+                Export Data
+                <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            
+            <!-- Export Dropdown Menu -->
+            <div id="export-dropdown" class="absolute left-0 mt-2 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50 hidden">
+                <div class="py-1">
+                    <a href="{{ route('master.mobil.export', ['format' => 'excel']) }}"
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                        <svg class="w-4 h-4 mr-3 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export to Excel
+                    </a>
+                    <a href="{{ route('master.mobil.export', ['format' => 'csv']) }}"
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                        <svg class="w-4 h-4 mr-3 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Export to CSV
+                    </a>
+                    <a href="{{ route('master.mobil.export', ['format' => 'pdf']) }}"
+                       class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                        <svg class="w-4 h-4 mr-3 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3M3 17V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                        </svg>
+                        Export to PDF
+                    </a>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- Notifikasi Sukses -->
@@ -350,5 +392,49 @@
 
 <!-- Include Audit Log Modal -->
 @include('components.audit-log-modal')
+
+@push('scripts')
+<script>
+function toggleExportDropdown() {
+    const dropdown = document.getElementById('export-dropdown');
+    dropdown.classList.toggle('hidden');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('export-dropdown');
+    const button = document.getElementById('export-dropdown-button');
+    
+    if (!button.contains(event.target) && !dropdown.contains(event.target)) {
+        dropdown.classList.add('hidden');
+    }
+});
+
+// Handle export with current filters
+function exportWithFilters(format) {
+    const searchParam = new URLSearchParams(window.location.search).get('search');
+    let exportUrl = `{{ route('master.mobil.export', ['format' => '__FORMAT__']) }}`.replace('__FORMAT__', format);
+    
+    if (searchParam) {
+        exportUrl += `&search=${encodeURIComponent(searchParam)}`;
+    }
+    
+    window.location.href = exportUrl;
+}
+
+// Update export links to include current search
+document.addEventListener('DOMContentLoaded', function() {
+    const searchParam = new URLSearchParams(window.location.search).get('search');
+    if (searchParam) {
+        const exportLinks = document.querySelectorAll('#export-dropdown a');
+        exportLinks.forEach(link => {
+            const url = new URL(link.href);
+            url.searchParams.set('search', searchParam);
+            link.href = url.toString();
+        });
+    }
+});
+</script>
+@endpush
 
 @endsection

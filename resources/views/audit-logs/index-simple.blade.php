@@ -100,7 +100,8 @@
                     <!-- Pagination -->
                     @if($auditLogs->hasPages())
                         <div class="mt-4">
-                            {{ $auditLogs->appends(request()->all())->links() }}
+                            @include('components.modern-pagination', ['paginator' => $auditLogs])
+                            @include('components.rows-per-page')
                         </div>
                     @endif
                 </div>

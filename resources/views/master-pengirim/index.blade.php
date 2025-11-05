@@ -97,52 +97,54 @@
                 <p class="mt-1 text-sm text-gray-600">Total: {{ $pengirims->total() }} pengirim</p>
             </div>
 
+            <!-- Rows per page control -->
+            <div class="px-6 py-3 border-b border-gray-200">
+                @include('components.rows-per-page')
+            </div>
+
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengirim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Pengirim</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Catatan</th>
+                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200">
+                    <tbody class="bg-white divide-y divide-gray-200 text-xs">
                         @forelse ($pengirims as $pengirim)
                             <tr class="hover:bg-gray-50">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $pengirim->id }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pengirim->kode }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pengirim->nama_pengirim }}</td>
-                                <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $pengirim->catatan }}">{{ $pengirim->catatan }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap">
-                                    <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $pengirim->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
+                                <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 font-medium">{{ $pengirim->nama_pengirim }}</td>
+                                <td class="px-3 py-2 text-xs text-gray-900 max-w-xs truncate" title="{{ $pengirim->catatan }}">{{ $pengirim->catatan ?: '-' }}</td>
+                                <td class="px-3 py-2 whitespace-nowrap">
+                                    <span class="inline-flex px-2 py-0.5 text-xs font-semibold rounded-full {{ $pengirim->status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800' }}">
                                         {{ $pengirim->status === 'active' ? 'Aktif' : 'Tidak Aktif' }}
                                     </span>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                    <div class="flex space-x-2">
-                                        <a href="{{ route('pengirim.edit', $pengirim) }}" class="text-indigo-600 hover:text-indigo-900">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <td class="px-3 py-2 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center space-x-1">
+                                        <a href="{{ route('pengirim.edit', $pengirim) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
-                                        </a><span class="text-gray-300">|</span>
-                                    <!-- Audit Log Link -->
-                                    <button type="button"
-                                            class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
-                                            data-model-type="{{ get_class($pengirim) }}"
-                                            data-model-id="{{ $pengirim->id }}"
-                                            data-item-name="{{ $pengirim->nama_pengirim }}"
-                                            title="Lihat Riwayat Perubahan">
-                                        Riwayat
-                                    </button>
-                                    <span class="text-gray-300">|</span>
+                                        </a>
+                                        <span class="text-gray-300 text-xs">|</span>
+                                        <!-- Audit Log Link -->
+                                        <button type="button"
+                                                class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline text-xs font-medium cursor-pointer"
+                                                data-model-type="{{ get_class($pengirim) }}"
+                                                data-model-id="{{ $pengirim->id }}"
+                                                data-item-name="{{ $pengirim->nama_pengirim }}"
+                                                title="Lihat Riwayat Perubahan">
+                                            Riwayat
+                                        </button>
+                                        <span class="text-gray-300 text-xs">|</span>
                                         <form action="{{ route('pengirim.destroy', $pengirim) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pengirim ini?')">
                                             @csrf
                                             @method('DELETE')
-                                            <button type="submit" class="text-red-600 hover:text-red-900">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                 </svg>
                                             </button>
@@ -152,13 +154,13 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="6" class="px-6 py-4 text-center text-sm text-gray-500">
-                                    <div class="flex flex-col items-center justify-center py-8">
-                                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <td colspan="4" class="px-3 py-6 text-center text-xs text-gray-500">
+                                    <div class="flex flex-col items-center justify-center">
+                                        <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2M4 13h2m8-5v2m0 0v2m0-2h2m-2 0h-2"></path>
                                         </svg>
-                                        <p class="text-gray-500 text-base">Belum ada data pengirim</p>
-                                        <p class="text-gray-400 text-sm mt-1">Tambah pengirim pertama untuk memulai</p>
+                                        <p class="text-gray-500 text-xs font-medium">Belum ada data pengirim</p>
+                                        <p class="text-gray-400 text-xs mt-1">Tambah pengirim pertama untuk memulai</p>
                                     </div>
                                 </td>
                             </tr>
@@ -168,11 +170,7 @@
             </div>
 
             <!-- Pagination -->
-            @if ($pengirims->hasPages())
-                <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $pengirims->appends(request()->query())->links() }}
-                </div>
-            @endif
+            @include('components.modern-pagination', ['paginator' => $pengirims, 'routeName' => 'pengirim.index'])
         </div>
     </div>
 </div>

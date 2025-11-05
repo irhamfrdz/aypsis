@@ -243,7 +243,8 @@
         {{-- Pagination --}}
         @if($prospeks->hasPages())
             <div class="bg-gray-50 px-4 py-3 border-t border-gray-200 sm:px-6">
-                {{ $prospeks->links() }}
+                @include('components.modern-pagination', ['paginator' => $prospeks])
+                @include('components.rows-per-page')
             </div>
         @endif
     </div>

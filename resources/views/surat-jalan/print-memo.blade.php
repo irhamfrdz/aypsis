@@ -7,24 +7,26 @@
     <style>
         @page {
             size: A4;
-            margin: 1cm 1.5cm;
+            margin: 0.8cm 1.2cm;
         }
         
         body {
             font-family: Arial, sans-serif;
-            font-size: 12pt;
-            line-height: 1.4;
+            font-size: 11pt;
+            line-height: 1.3;
             color: #000;
             margin: 0;
             padding: 0;
             width: 100%;
             max-width: 100%;
+            height: 100vh;
+            box-sizing: border-box;
         }
         
         .letterhead {
-            border-bottom: 3px solid #000;
-            padding-bottom: 15px;
-            margin-bottom: 25px;
+            border-bottom: 2px solid #000;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
             display: flex;
             align-items: center;
             width: 100%;
@@ -32,15 +34,15 @@
         }
         
         .logo-section {
-            width: 150px;
-            margin-right: 30px;
+            width: 120px;
+            margin-right: 25px;
             text-align: center;
             flex-shrink: 0;
         }
         
         .logo {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             object-fit: contain;
         }
         
@@ -52,45 +54,45 @@
         
         .company-tagline {
             color: #000;
-            font-size: 11pt;
+            font-size: 10pt;
             font-weight: bold;
-            margin-bottom: 3px;
+            margin-bottom: 2px;
         }
         
         .company-name {
             color: #dc3545;
-            font-size: 18pt;
+            font-size: 16pt;
             font-weight: bold;
-            margin-bottom: 5px;
-        }
-        
-        .company-address {
-            font-size: 10pt;
             margin-bottom: 3px;
         }
         
+        .company-address {
+            font-size: 9pt;
+            margin-bottom: 2px;
+        }
+        
         .company-contact {
-            font-size: 10pt;
+            font-size: 9pt;
         }
         
         .memo-title {
             text-align: center;
-            font-size: 16pt;
+            font-size: 14pt;
             font-weight: bold;
-            margin: 25px auto 20px auto;
+            margin: 15px auto 15px auto;
             text-decoration: underline;
             width: 100%;
             display: block;
         }
         
         .memo-content {
-            margin: 25px 0;
+            margin: 15px 0;
             width: 100%;
             box-sizing: border-box;
         }
         
         .memo-field {
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             display: flex;
             width: 100%;
         }
@@ -106,36 +108,36 @@
         }
         
         .memo-description {
-            margin: 25px 0;
+            margin: 15px 0;
             text-align: justify;
-            line-height: 1.5;
+            line-height: 1.4;
             width: 100%;
         }
         
         .memo-details {
-            margin: 25px 0 35px 0;
+            margin: 15px 0 20px 0;
             width: 100%;
         }
         
         .memo-detail-item {
-            margin-bottom: 12px;
+            margin-bottom: 8px;
             display: flex;
             width: 100%;
         }
         
         .memo-detail-label {
-            width: 100px;
+            width: 90px;
             font-weight: normal;
             flex-shrink: 0;
         }
         
         .signature-section {
-            margin-top: 40px;
+            margin-top: 25px;
             text-align: left;
         }
         
         .signature-city {
-            margin-bottom: 50px;
+            margin-bottom: 35px;
         }
         
         .signature-name {
@@ -155,6 +157,8 @@
                 padding: 0 !important;
                 width: 100% !important;
                 max-width: none !important;
+                height: auto !important;
+                min-height: 100vh !important;
             }
             
             .letterhead,
@@ -166,10 +170,26 @@
             .signature-section {
                 width: 100% !important;
                 max-width: none !important;
+                page-break-inside: avoid;
+            }
+            
+            .memo-description p {
+                margin: 8px 0 !important;
+            }
+            
+            .signature-section {
+                page-break-inside: avoid;
+                margin-top: 20px !important;
             }
             
             .no-print {
                 display: none !important;
+            }
+            
+            /* Force single page */
+            html, body {
+                height: 100vh !important;
+                overflow: hidden !important;
             }
         }
     </style>
@@ -221,11 +241,8 @@
         <br>
         
         <div class="memo-description">
-            <p>Dengan Hormat,</p>
-        </div>
-        
-        <div class="memo-description">
-            <p>Mohon dapat diberikan muatan, kepada pembawa memo ini ;</p>
+            <p style="margin: 8px 0;">Dengan Hormat,</p>
+            <p style="margin: 8px 0;">Mohon dapat diberikan muatan, kepada pembawa memo ini ;</p>
         </div>
         
         <div class="memo-details">
@@ -246,13 +263,13 @@
         </div>
         
         <div class="memo-description">
-            <p>Demikian surat permohonan ini kami sampaikan, atas perhatian dan kerja samanya kami ucapkan terima kasih.</p>
+            <p style="margin: 8px 0;">Demikian surat permohonan ini kami sampaikan, atas perhatian dan kerja samanya kami ucapkan terima kasih.</p>
         </div>
     </div>
     
     <div class="signature-section">
-        <div style="margin-bottom: 10px; font-weight: bold;">Hormat Kami,</div>
-        <div style="margin-bottom: 50px;"></div>
+        <div style="margin-bottom: 8px; font-weight: bold;">Hormat Kami,</div>
+        <div style="margin-bottom: 35px;"></div>
         <div class="signature-name">Alex</div>
     </div>
     

@@ -238,7 +238,8 @@
             @if($pranotaSuratJalans->hasPages())
                 <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
                     <div class="flex justify-center">
-                        {{ $pranotaSuratJalans->appends(request()->query())->links() }}
+                        @include('components.modern-pagination', ['paginator' => $pranotaSuratJalans])
+                        @include('components.rows-per-page')
                     </div>
                 </div>
             @endif

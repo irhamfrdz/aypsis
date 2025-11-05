@@ -29,6 +29,11 @@
                     @endif
                 </div>
             </div>
+            <div>
+                <a href="{{ route('bl.download.template') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 mr-3">
+                    <i class="fas fa-download mr-2"></i>Download Template
+                </a>
+            </div>
         </div>
     </div>
 
@@ -287,12 +292,16 @@
                 </table>
             </div>
 
+            {{-- Rows Per Page Selection --}}
+            @include('components.rows-per-page', [
+                'routeName' => 'bl.index',
+                'paginator' => $bls,
+                'entityName' => 'bl',
+                'entityNamePlural' => 'bl'
+            ])
+
             {{-- Pagination --}}
-            @if($bls->hasPages())
-                <div class="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    {{ $bls->links() }}
-                </div>
-            @endif
+            @include('components.modern-pagination', ['paginator' => $bls, 'routeName' => 'bl.index'])
         @else
             <div class="text-center py-12">
                 <i class="fas fa-file-contract text-6xl text-gray-400 mb-4"></i>

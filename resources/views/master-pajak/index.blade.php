@@ -136,30 +136,30 @@
                 <table class="min-w-full divide-y divide-gray-200">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center justify-center">
                                     <span>No</span>
                                 </div>
                             </th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center justify-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
                                     </svg>
                                     Nama Status
                                 </div>
                             </th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center justify-left">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path>
                                     </svg>
                                     Keterangan
                                 </div>
                             </th>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center justify-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                                     </svg>
                                     Aksi
@@ -167,55 +167,57 @@
                             </th>
                         </tr>
                     </thead>
-                    <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
+                    <tbody class="bg-white divide-y divide-gray-200 text-xs">
                         @forelse ($pajaks as $index => $pajak)
                             <tr class="hover:bg-gray-50 transition-colors duration-200">
-                                <td class="px-6 py-4 whitespace-nowrap text-center text-[10px] font-medium text-gray-900">
+                                <td class="px-3 py-2 whitespace-nowrap text-center text-xs font-medium text-gray-900">
                                     {{ $pajaks->firstItem() + $index }}
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="text-[10px] font-medium text-gray-900">{{ $pajak->nama_status }}</div>
+                                <td class="px-3 py-2 whitespace-nowrap text-center">
+                                    <div class="text-xs font-medium text-gray-900">{{ $pajak->nama_status }}</div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-left">
-                                    <div class="text-[10px] text-gray-900">{{ $pajak->keterangan ?: '-' }}</div>
+                                <td class="px-3 py-2 text-left">
+                                    <div class="text-xs text-gray-900 max-w-xs truncate" title="{{ $pajak->keterangan }}">
+                                        {{ $pajak->keterangan ?: '-' }}
+                                    </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-center">
-                                    <div class="flex items-center justify-center space-x-2">
+                                <td class="px-3 py-2 whitespace-nowrap text-center">
+                                    <div class="flex items-center justify-center space-x-1">
                                         <a href="{{ route('master.pajak.show', $pajak->id) }}"
                                            class="text-indigo-600 hover:text-indigo-900 transition-colors duration-150" title="Lihat Detail">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                             </svg>
                                         </a>
-                                        <span class="text-gray-300">|</span>
+                                        <span class="text-gray-300 text-xs">|</span>
 
                                         <a href="{{ route('master.pajak.edit', $pajak->id) }}"
                                            class="text-yellow-600 hover:text-yellow-900 transition-colors duration-150" title="Edit">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                             </svg>
                                         </a>
-                                        <span class="text-gray-300">|</span>
+                                        <span class="text-gray-300 text-xs">|</span>
 
                                         <!-- Audit Log Button -->
                                         @can('audit-log-view')
                                             <button type="button"
-                                                    class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
+                                                    class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline text-xs font-medium cursor-pointer"
                                                     data-model-type="{{ get_class($pajak) }}"
                                                     data-model-id="{{ $pajak->id }}"
                                                     data-item-name="{{ $pajak->nama_status }}"
                                                     title="Lihat Riwayat Perubahan">
                                                 Riwayat
                                             </button>
-                                            <span class="text-gray-300">|</span>
+                                            <span class="text-gray-300 text-xs">|</span>
                                         @endcan
 
                                         <form action="{{ route('master.pajak.destroy', $pajak->id) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pajak ini?');">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900 transition-colors duration-150" title="Hapus">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                                 </svg>
                                             </button>
@@ -225,16 +227,16 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="4" class="px-6 py-12 text-center">
+                                <td colspan="4" class="px-3 py-8 text-center">
                                     <div class="flex flex-col items-center">
-                                        <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-8 h-8 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                         </svg>
-                                        <h3 class="text-sm font-medium text-gray-900 mb-1">Tidak ada data pajak</h3>
-                                        <p class="text-sm text-gray-500">Belum ada pajak yang terdaftar dalam sistem.</p>
-                                        <div class="mt-4">
-                                            <a href="{{ route('master.pajak.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
-                                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <h3 class="text-xs font-medium text-gray-900 mb-1">Tidak ada data pajak</h3>
+                                        <p class="text-xs text-gray-500">Belum ada pajak yang terdaftar dalam sistem.</p>
+                                        <div class="mt-2">
+                                            <a href="{{ route('master.pajak.create') }}" class="inline-flex items-center px-3 py-1 border border-transparent shadow-sm text-xs font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                                 </svg>
                                                 Tambah Pajak Pertama
@@ -249,17 +251,16 @@
             </div>
         </div>
 
+        {{-- Rows Per Page Selection --}}
+        @include('components.rows-per-page', [
+            'routeName' => 'master.pajak.index',
+            'paginator' => $pajaks,
+            'entityName' => 'pajak',
+            'entityNamePlural' => 'pajak'
+        ])
+
         <!-- Pagination -->
-        @if($pajaks->hasPages())
-            <div class="mt-6 flex items-center justify-between">
-                <div class="text-sm text-gray-700">
-                    Menampilkan <span class="font-medium">{{ $pajaks->firstItem() }}</span> sampai <span class="font-medium">{{ $pajaks->lastItem() }}</span> dari <span class="font-medium">{{ $pajaks->total() }}</span> hasil
-                </div>
-                <div class="flex-1 flex justify-center">
-                    {{ $pajaks->appends(request()->query())->links() }}
-                </div>
-            </div>
-        @endif
+        @include('components.modern-pagination', ['paginator' => $pajaks, 'routeName' => 'master.pajak.index'])
 
     </div>
 </div>

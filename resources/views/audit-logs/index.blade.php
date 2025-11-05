@@ -268,7 +268,8 @@
         <!-- Pagination -->
         @if($auditLogs->hasPages())
             <div class="px-6 py-4 bg-gray-50 border-t">
-                {{ $auditLogs->appends(request()->all())->links() }}
+                @include('components.modern-pagination', ['paginator' => $auditLogs])
+                @include('components.rows-per-page')
             </div>
         @endif
     </div>

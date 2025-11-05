@@ -359,7 +359,8 @@
                 </div>
 
                 <div class="flex justify-center mt-4">
-                    {{ $tandaTerimas->links() }}
+                    @include('components.modern-pagination', ['paginator' => $tandaTerimas])
+                    @include('components.rows-per-page')
                 </div>
             @else
                 <div class="text-center py-8">

@@ -295,7 +295,8 @@
                             </p>
                         </div>
                         <div>
-                            {{ $pembayaranList->appends(request()->query())->links() }}
+                            @include('components.modern-pagination', ['paginator' => $pembayaranList])
+                            @include('components.rows-per-page')
                         </div>
                     </div>
                 </div>

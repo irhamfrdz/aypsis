@@ -248,7 +248,8 @@
         <!-- Pagination -->
         @if($pergerakanKapals->hasPages())
             <div class="px-6 py-3 border-t border-gray-200">
-                {{ $pergerakanKapals->withQueryString()->links() }}
+                @include('components.modern-pagination', ['paginator' => $pergerakanKapals])
+                @include('components.rows-per-page')
             </div>
         @endif
     </div>

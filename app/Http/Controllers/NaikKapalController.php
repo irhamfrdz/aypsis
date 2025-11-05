@@ -179,4 +179,97 @@ class NaikKapalController extends Controller
                 ->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Download template CSV untuk import Naik Kapal
+     */
+    public function downloadTemplate()
+    {
+        $filename = 'template_naik_kapal_' . date('Y-m-d') . '.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            
+            // Write BOM for UTF-8
+            fwrite($file, "\xEF\xBB\xBF");
+            
+            // Header columns
+            $header = [
+                'nomor_kontainer',
+                'ukuran_kontainer',
+                'no_seal',
+                'nama_kapal',
+                'no_voyage',
+                'pelabuhan_tujuan',
+                'jenis_barang',
+                'tipe_kontainer',
+                'tipe_kontainer_detail',
+                'volume',
+                'tonase',
+                'kuantitas',
+                'tanggal_muat',
+                'jam_muat',
+                'prospek_id',
+                'nama_supir',
+                'keterangan'
+            ];
+            
+            fputcsv($file, $header);
+            
+            // Example data rows
+            $exampleData = [
+                [
+                    'CONT' . date('Ymd') . '001',
+                    '20x8x8.6',
+                    'SEAL001',
+                    'KM SINAR HARAPAN',
+                    'SH001',
+                    'Batam',
+                    'Elektronik',
+                    '20 FT',
+                    'Dry Container',
+                    '25.750',
+                    '15.500',
+                    '100',
+                    date('Y-m-d'),
+                    '08:00',
+                    '1',
+                    'SUPIR A',
+                    'Contoh data naik kapal untuk import'
+                ],
+                [
+                    'CONT' . date('Ymd') . '002',
+                    '40x8x8.6',
+                    'SEAL002',
+                    'KM CAHAYA LAUT',
+                    'CL002',
+                    'Jakarta',
+                    'Makanan & Minuman',
+                    '40 FT',
+                    'High Cube',
+                    '45.300',
+                    '25.000',
+                    '200',
+                    date('Y-m-d'),
+                    '14:30',
+                    '2',
+                    'SUPIR B',
+                    'Contoh data naik kapal kedua'
+                ]
+            ];
+            
+            foreach ($exampleData as $row) {
+                fputcsv($file, $row);
+            }
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }

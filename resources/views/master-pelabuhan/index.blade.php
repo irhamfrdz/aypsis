@@ -237,7 +237,8 @@
         <!-- Pagination -->
         @if($pelabuhans->hasPages())
             <div class="px-6 py-3 border-t border-gray-200">
-                {{ $pelabuhans->appends(request()->query())->links() }}
+                @include('components.modern-pagination', ['paginator' => $pelabuhans])
+                @include('components.rows-per-page')
             </div>
         @endif
     </div>

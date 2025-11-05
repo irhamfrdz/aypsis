@@ -261,7 +261,8 @@
                             </small>
                         </div>
                         <div>
-                            {{ $aktivitas->appends(request()->query())->links() }}
+                            @include('components.modern-pagination', ['paginator' => $aktivitas])
+                            @include('components.rows-per-page')
                         </div>
                     </div>
                 </div>

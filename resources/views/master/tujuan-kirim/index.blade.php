@@ -211,14 +211,6 @@
                             <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <div class="flex items-center">
                                     <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                                    </svg>
-                                    Kode
-                                </div>
-                            </th>
-                            <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                <div class="flex items-center">
-                                    <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                     </svg>
@@ -256,14 +248,6 @@
                         <tr class="hover:bg-gray-50 transition-colors duration-150">
                             <td class="px-4 py-2 whitespace-nowrap text-sm text-gray-900">
                                 {{ $tujuanKirim->firstItem() + $index }}
-                            </td>
-                            <td class="px-4 py-2 whitespace-nowrap">
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z"></path>
-                                    </svg>
-                                    {{ $tujuan->kode }}
-                                </span>
                             </td>
                             <td class="px-4 py-2 whitespace-nowrap">
                                 <div class="flex items-center">
@@ -368,7 +352,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="5" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
@@ -391,19 +375,16 @@
                 </table>
             </div>
 
+            {{-- Rows Per Page Selection --}}
+            @include('components.rows-per-page', [
+                'routeName' => 'tujuan-kirim.index',
+                'paginator' => $tujuanKirim,
+                'entityName' => 'tujuan kirim',
+                'entityNamePlural' => 'tujuan kirim'
+            ])
+
             <!-- Pagination -->
-            @if($tujuanKirim->hasPages())
-            <div class="bg-white px-6 py-4 border-t border-gray-200">
-                <div class="flex items-center justify-between">
-                    <div class="text-sm text-gray-700">
-                        Menampilkan {{ $tujuanKirim->firstItem() }} sampai {{ $tujuanKirim->lastItem() }} dari {{ $tujuanKirim->total() }} hasil
-                    </div>
-                    <div>
-                        {{ $tujuanKirim->appends(request()->query())->links() }}
-                    </div>
-                </div>
-            </div>
-            @endif
+            @include('components.modern-pagination', ['paginator' => $tujuanKirim, 'routeName' => 'tujuan-kirim.index'])
         </div>
     </div>
 </div>

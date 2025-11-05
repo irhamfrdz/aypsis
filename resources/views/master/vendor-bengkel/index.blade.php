@@ -205,7 +205,8 @@
         <!-- Pagination -->
         @if($vendorBengkel->hasPages())
         <div class="mt-6">
-            {{ $vendorBengkel->appends(request()->query())->links() }}
+            @include('components.modern-pagination', ['paginator' => $vendorBengkel])
+            @include('components.rows-per-page')
         </div>
         @endif
     </div>

@@ -326,7 +326,8 @@
                                 </p>
                             </div>
                             <div>
-                                {{ $pembayaranList->links() }}
+                                @include('components.modern-pagination', ['paginator' => $pembayaranList])
+                                @include('components.rows-per-page')
                             </div>
                         </div>
                     </div>

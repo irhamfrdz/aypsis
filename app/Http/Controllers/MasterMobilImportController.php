@@ -295,4 +295,179 @@ class MasterMobilImportController extends Controller
 
         return null;
     }
+
+    /**
+     * Export data mobil ke berbagai format
+     */
+    public function export(Request $request)
+    {
+        try {
+            $format = $request->get('format', 'excel');
+            
+            // Build query dengan filter yang sama seperti index
+            $query = Mobil::with('karyawan');
+
+            // Apply search filter if exists
+            if ($request->filled('search')) {
+                $search = $request->search;
+                $query->where(function($q) use ($search) {
+                    $q->where('kode_no', 'like', "%{$search}%")
+                      ->orWhere('nomor_polisi', 'like', "%{$search}%")
+                      ->orWhere('no_kir', 'like', "%{$search}%")
+                      ->orWhere('merek', 'like', "%{$search}%")
+                      ->orWhere('jenis', 'like', "%{$search}%")
+                      ->orWhere('lokasi', 'like', "%{$search}%")
+                      ->orWhere('no_mesin', 'like', "%{$search}%")
+                      ->orWhere('nomor_rangka', 'like', "%{$search}%")
+                      ->orWhere('bpkb', 'like', "%{$search}%")
+                      ->orWhere('atas_nama', 'like', "%{$search}%")
+                      ->orWhere('pemakai', 'like', "%{$search}%")
+                      ->orWhereHas('karyawan', function($subQ) use ($search) {
+                          $subQ->where('nama_lengkap', 'like', "%{$search}%")
+                               ->orWhere('nik', 'like', "%{$search}%");
+                      });
+                });
+            }
+
+            $mobils = $query->latest()->get();
+
+            switch ($format) {
+                case 'excel':
+                    return $this->exportToExcel($mobils, $request);
+                case 'csv':
+                    return $this->exportToCsv($mobils, $request);
+                case 'pdf':
+                    return $this->exportToPdf($mobils, $request);
+                default:
+                    return $this->exportToExcel($mobils, $request);
+            }
+
+        } catch (Exception $e) {
+            return back()->with('error', 'Error saat export: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Export ke format Excel
+     */
+    private function exportToExcel($mobils, $request)
+    {
+        $searchTerm = $request->get('search', '');
+        $fileName = 'master_mobil_' . date('Y-m-d_H-i-s') . '.csv';
+        
+        if ($searchTerm) {
+            $fileName = 'master_mobil_search_' . date('Y-m-d_H-i-s') . '.csv';
+        }
+
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+        ];
+
+        $callback = function() use ($mobils) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8
+            fputs($file, "\xEF\xBB\xBF");
+
+            // Headers
+            fputcsv($file, [
+                'No',
+                'Kode Aktiva',
+                'Nomor Polisi', 
+                'NIK Karyawan',
+                'Nama Karyawan',
+                'Lokasi',
+                'Merek',
+                'Jenis',
+                'Tahun Pembuatan',
+                'BPKB',
+                'No. Mesin',
+                'No. Rangka',
+                'Pajak STNK',
+                'Pajak Plat',
+                'No. KIR',
+                'Pajak KIR',
+                'Atas Nama',
+                'Pemakai',
+                'Asuransi',
+                'JTE Asuransi',
+                'Warna Plat',
+                'Catatan',
+                'Dibuat Tanggal',
+                'Diperbarui Tanggal'
+            ], ',');
+
+            // Data rows
+            foreach ($mobils as $index => $mobil) {
+                fputcsv($file, [
+                    $index + 1,
+                    $mobil->kode_no ?? '',
+                    $mobil->nomor_polisi ?? '',
+                    $mobil->karyawan->nik ?? '',
+                    $mobil->karyawan->nama_lengkap ?? '',
+                    $mobil->lokasi ?? '',
+                    $mobil->merek ?? '',
+                    $mobil->jenis ?? '',
+                    $mobil->tahun_pembuatan ?? '',
+                    $mobil->bpkb ?? '',
+                    $mobil->no_mesin ?? '',
+                    $mobil->nomor_rangka ?? '',
+                    $mobil->pajak_stnk ? date('d M Y', strtotime($mobil->pajak_stnk)) : '',
+                    $mobil->pajak_plat ? date('d M Y', strtotime($mobil->pajak_plat)) : '',
+                    $mobil->no_kir ?? '',
+                    $mobil->pajak_kir ? date('d M Y', strtotime($mobil->pajak_kir)) : '',
+                    $mobil->atas_nama ?? '',
+                    $mobil->pemakai ?? '',
+                    $mobil->asuransi ?? '',
+                    $mobil->jte_asuransi ? date('d M Y', strtotime($mobil->jte_asuransi)) : '',
+                    $mobil->warna_plat ?? '',
+                    $mobil->catatan ?? '',
+                    $mobil->created_at ? $mobil->created_at->format('d M Y H:i') : '',
+                    $mobil->updated_at ? $mobil->updated_at->format('d M Y H:i') : '',
+                ], ',');
+            }
+
+            fclose($file);
+        };
+
+        return Response::stream($callback, 200, $headers);
+    }
+
+    /**
+     * Export ke format CSV
+     */
+    private function exportToCsv($mobils, $request)
+    {
+        return $this->exportToExcel($mobils, $request); // Same as Excel for now
+    }
+
+    /**
+     * Export ke format PDF
+     */
+    private function exportToPdf($mobils, $request)
+    {
+        $searchTerm = $request->get('search', '');
+        
+        // Data untuk PDF
+        $data = [
+            'mobils' => $mobils,
+            'search' => $searchTerm,
+            'total' => $mobils->count(),
+            'exported_at' => now()->format('d F Y H:i:s'),
+            'exported_by' => auth()->user()->name ?? 'System'
+        ];
+
+        // Generate PDF menggunakan view
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('exports.mobil-pdf', $data);
+        $pdf->setPaper('a4', 'landscape');
+
+        $fileName = 'master_mobil_' . date('Y-m-d_H-i-s') . '.pdf';
+        if ($searchTerm) {
+            $fileName = 'master_mobil_search_' . date('Y-m-d_H-i-s') . '.pdf';
+        }
+
+        return $pdf->download($fileName);
+    }
 }

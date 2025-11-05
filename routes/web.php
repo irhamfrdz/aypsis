@@ -480,6 +480,9 @@ Route::middleware([
         Route::post('mobil/import', [App\Http\Controllers\MasterMobilImportController::class, 'import'])
              ->name('mobil.import')
              ->middleware('can:master-mobil-create');
+        Route::get('mobil/export', [App\Http\Controllers\MasterMobilImportController::class, 'export'])
+             ->name('mobil.export')
+             ->middleware('can:master-mobil-view');
 
         Route::resource('mobil', MobilController::class)->middleware([
             'index' => 'can:master-mobil-view',
@@ -2509,10 +2512,18 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                      ->middleware('can:prospek-view');
 
           // 🚢 Naik Kapal Management
+          Route::get('naik-kapal/download-template', [NaikKapalController::class, 'downloadTemplate'])
+               ->name('naik-kapal.download.template')
+               ->middleware('can:prospek-view');
+               
           Route::resource('naik-kapal', NaikKapalController::class)
                      ->middleware('can:prospek-edit');
 
           // BL (Bill of Lading) Management
+          Route::get('bl/download-template', [\App\Http\Controllers\BlController::class, 'downloadTemplate'])
+               ->name('bl.download.template')
+               ->middleware('can:bl-view');
+               
           Route::get('bl', [\App\Http\Controllers\BlController::class, 'select'])->name('bl.select')
                ->middleware('can:bl-view');
                

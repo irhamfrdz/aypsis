@@ -192,7 +192,8 @@
                     </p>
                 </div>
                 <div>
-                    {{ $pranotaUangKeneks->links() }}
+                    @include('components.modern-pagination', ['paginator' => $pranotaUangKeneks])
+                    @include('components.rows-per-page')
                 </div>
             </div>
         </div>

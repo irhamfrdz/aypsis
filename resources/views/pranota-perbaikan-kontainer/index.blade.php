@@ -168,7 +168,8 @@
         <!-- Pagination -->
         @if($pranotaPerbaikanKontainers->hasPages())
         <div class="mt-6">
-            {{ $pranotaPerbaikanKontainers->appends(request()->query())->links() }}
+            @include('components.modern-pagination', ['paginator' => $pranotaPerbaikanKontainers])
+            @include('components.rows-per-page')
         </div>
         @endif
     </div>

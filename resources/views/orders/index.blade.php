@@ -263,7 +263,8 @@
             <!-- Pagination -->
             @if ($orders->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $orders->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $orders])
+                    @include('components.rows-per-page')
                 </div>
             @endif
         </div>

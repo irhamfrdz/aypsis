@@ -121,7 +121,8 @@
             <!-- Pagination -->
             @if($kodeNomors->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $kodeNomors->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $kodeNomors])
+                    @include('components.rows-per-page')
                 </div>
             @endif
         </div>

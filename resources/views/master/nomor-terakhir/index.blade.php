@@ -123,7 +123,8 @@
             <!-- Pagination -->
             @if($nomorTerakhirs->hasPages())
                 <div class="px-6 py-4 border-t border-gray-200">
-                    {{ $nomorTerakhirs->appends(request()->query())->links() }}
+                    @include('components.modern-pagination', ['paginator' => $nomorTerakhirs])
+                    @include('components.rows-per-page')
                 </div>
             @endif
         </div>

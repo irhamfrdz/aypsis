@@ -90,7 +90,6 @@
             <thead class="bg-gray-50">
                 <tr>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode Kegiatan</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Kegiatan</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
                     <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
@@ -102,7 +101,6 @@
                 @forelse ($items as $index => $kegiatan)
                     <tr class="hover:bg-gray-50">
                         <td class="px-4 py-2">{{ $items->firstItem() + $index }}</td>
-                        <td class="px-4 py-2 font-mono text-[10px]">{{ $kegiatan->kode_kegiatan }}</td>
                         <td class="px-4 py-2">{{ $kegiatan->nama_kegiatan }}</td>
                         <td class="px-4 py-2">{{ $kegiatan->type ?? '-' }}</td>
                         <td class="px-4 py-2">{{ $kegiatan->keterangan ?? '-' }}</td>
@@ -141,13 +139,23 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="7" class="px-4 py-2 text-center text-gray-500 text-[10px]">Tidak ada data kegiatan yang ditemukan.</td>
+                        <td colspan="6" class="px-4 py-2 text-center text-gray-500 text-[10px]">Tidak ada data kegiatan yang ditemukan.</td>
                     </tr>
                 @endforelse
             </tbody>
         </table>
     </div>
-    <div class="mt-4">{{ $items->links() }}</div>
+
+    {{-- Rows Per Page Selection --}}
+    @include('components.rows-per-page', [
+        'routeName' => 'master.kegiatan.index',
+        'paginator' => $items,
+        'entityName' => 'kegiatan',
+        'entityNamePlural' => 'kegiatan'
+    ])
+
+    {{-- Modern Pagination --}}
+    @include('components.modern-pagination', ['paginator' => $items, 'routeName' => 'master.kegiatan.index'])
 </div>
 
 <!-- Audit Log Modal -->

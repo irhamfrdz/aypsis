@@ -164,7 +164,8 @@
         <!-- Pagination -->
         @if($pranotaCats->hasPages())
         <div class="mt-6">
-            {{ $pranotaCats->appends(request()->query())->links() }}
+            @include('components.modern-pagination', ['paginator' => $pranotaCats])
+            @include('components.rows-per-page')
         </div>
         @endif
     </div>

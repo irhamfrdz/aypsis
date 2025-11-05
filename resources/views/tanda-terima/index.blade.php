@@ -286,7 +286,8 @@
                         </p>
                     </div>
                     <div>
-                        {{ $tandaTerimas->links() }}
+                        @include('components.modern-pagination', ['paginator' => $tandaTerimas])
+                        @include('components.rows-per-page')
                     </div>
                 </div>
             </div>
