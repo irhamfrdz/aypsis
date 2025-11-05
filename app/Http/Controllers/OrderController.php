@@ -114,8 +114,8 @@ class OrderController extends Controller
 
         $data = $request->all();
 
-        // Auto set status to confirmed for new orders
-        $data['status'] = 'confirmed';
+        // Don't auto set status anymore - use what user selected
+        // $data['status'] = 'confirmed';  // Removed this line
 
         // Get tujuan kirim name from database
         $tujuanKirim = MasterTujuanKirim::find($request->tujuan_kirim_id);
@@ -150,7 +150,14 @@ class OrderController extends Controller
         // Use unit_kontainer for outstanding tracking instead of units input
         $data['units'] = $data['unit_kontainer'] ?? 1; // For outstanding tracking, use actual container units or default to 1
         $data['sisa'] = $data['unit_kontainer'] ?? 1; // Initially, all container units are remaining or default to 1
-        $data['outstanding_status'] = 'pending';
+        
+        // Set outstanding_status based on order status
+        if ($data['status'] === 'confirmed') {
+            $data['outstanding_status'] = 'active'; // Ready to be processed
+        } else {
+            $data['outstanding_status'] = 'pending'; // Draft or pending orders
+        }
+        
         $data['completion_percentage'] = 0.00;
         $data['processing_history'] = json_encode([]);
 

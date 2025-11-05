@@ -77,6 +77,23 @@
                             @enderror
                         </div>
 
+                        <!-- Status Order -->
+                        <div>
+                            <label for="status" class="block text-sm font-medium text-gray-700 mb-2">
+                                Status Order <span class="text-red-500">*</span>
+                            </label>
+                            <select name="status" id="status" required
+                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500 @error('status') border-red-500 @enderror">
+                                <option value="confirmed" {{ old('status', 'confirmed') === 'confirmed' ? 'selected' : '' }}>Confirmed</option>
+                                <option value="pending" {{ old('status') === 'pending' ? 'selected' : '' }}>Pending</option>
+                                <option value="draft" {{ old('status') === 'draft' ? 'selected' : '' }}>Draft</option>
+                            </select>
+                            <p class="mt-1 text-xs text-gray-500">Order dengan status 'Confirmed' langsung aktif untuk diproses</p>
+                            @error('status')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
 
                     </div>
                 </div>
@@ -618,6 +635,49 @@ document.addEventListener('DOMContentLoaded', function() {
     const unitKontainerContainer = document.getElementById('unit_kontainer_container');
     const sizeKontainerSelect = document.getElementById('size_kontainer');
     const unitKontainerInput = document.getElementById('unit_kontainer');
+
+    // Handle Status Order change - Show information about status
+    const statusSelect = document.getElementById('status');
+    if (statusSelect) {
+        statusSelect.addEventListener('change', function() {
+            const selectedStatus = this.value;
+            const helpText = this.parentElement.querySelector('.status-help-text');
+            
+            // Remove existing help text
+            if (helpText) {
+                helpText.remove();
+            }
+            
+            // Add new help text based on selected status
+            let message = '';
+            let colorClass = '';
+            
+            switch(selectedStatus) {
+                case 'confirmed':
+                    message = '✅ Order akan langsung aktif dan siap diproses';
+                    colorClass = 'text-green-600';
+                    break;
+                case 'pending':
+                    message = '⏳ Order akan menunggu konfirmasi sebelum diproses';
+                    colorClass = 'text-yellow-600';
+                    break;
+                case 'draft':
+                    message = '📝 Order disimpan sebagai draft, tidak akan muncul di outstanding';
+                    colorClass = 'text-gray-600';
+                    break;
+            }
+            
+            if (message) {
+                const helpDiv = document.createElement('p');
+                helpDiv.className = `mt-1 text-xs ${colorClass} status-help-text`;
+                helpDiv.textContent = message;
+                this.parentElement.appendChild(helpDiv);
+            }
+        });
+        
+        // Trigger change event on page load to show initial status
+        statusSelect.dispatchEvent(new Event('change'));
+    }
 
     function handleTipeKontainerChange() {
         const selectedTipe = tipeKontainerSelect.value;
