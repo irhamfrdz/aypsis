@@ -19,7 +19,6 @@ class OutstandingController extends Controller
     {
         $query = Order::with(['term', 'pengirim', 'jenisBarang', 'tujuanAmbil'])
                       ->outstanding()
-                      ->approved() // Only show approved orders
                       ->latest();
 
         // Apply filters
@@ -45,8 +44,7 @@ class OutstandingController extends Controller
             abort(404, 'Invalid status');
         }
 
-        $query = Order::with(['term', 'pengirim', 'jenisBarang', 'tujuanAmbil'])
-                      ->approved(); // Only show approved orders
+        $query = Order::with(['term', 'pengirim', 'jenisBarang', 'tujuanAmbil']);
 
         // Apply status filter
         switch ($status) {
@@ -194,12 +192,12 @@ class OutstandingController extends Controller
     private function getOutstandingStats(): array
     {
         return [
-            'total_outstanding' => Order::outstanding()->approved()->count(),
-            'pending' => Order::pending()->approved()->count(),
-            'partial' => Order::partial()->approved()->count(),
-            'completed' => Order::completed()->approved()->count(),
-            'total_units_remaining' => Order::outstanding()->approved()->sum('sisa'),
-            'total_units_ordered' => Order::outstanding()->approved()->sum('units'),
+            'total_outstanding' => Order::outstanding()->count(),
+            'pending' => Order::pending()->count(),
+            'partial' => Order::partial()->count(),
+            'completed' => Order::completed()->count(),
+            'total_units_remaining' => Order::outstanding()->sum('sisa'),
+            'total_units_ordered' => Order::outstanding()->sum('units'),
             'completion_rate' => $this->calculateCompletionRate(),
             'average_completion_time' => $this->getAverageCompletionTime()
         ];
