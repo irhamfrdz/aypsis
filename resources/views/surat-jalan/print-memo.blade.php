@@ -6,8 +6,8 @@
     <title>MEMO - {{ $suratJalan->no_surat_jalan }}</title>
     <style>
         @page {
-            size: A4;
-            margin: 0.8cm 1.2cm;
+            size: A4 portrait;
+            margin: 1cm 1.5cm;
         }
         
         body {
@@ -18,8 +18,7 @@
             margin: 0;
             padding: 0;
             width: 100%;
-            max-width: 100%;
-            height: 100vh;
+            max-width: 210mm;
             box-sizing: border-box;
         }
         
@@ -34,15 +33,15 @@
         }
         
         .logo-section {
-            width: 120px;
-            margin-right: 25px;
+            width: 110px;
+            margin-right: 20px;
             text-align: center;
             flex-shrink: 0;
         }
         
         .logo {
-            width: 100px;
-            height: 100px;
+            width: 90px;
+            height: 90px;
             object-fit: contain;
         }
         
@@ -150,15 +149,20 @@
                 box-sizing: border-box;
             }
             
+            @page {
+                size: A4 portrait;
+                margin: 1cm 1.5cm;
+            }
+            
             body {
                 -webkit-print-color-adjust: exact;
                 print-color-adjust: exact;
                 margin: 0 !important;
                 padding: 0 !important;
                 width: 100% !important;
-                max-width: none !important;
+                max-width: 210mm !important;
                 height: auto !important;
-                min-height: 100vh !important;
+                overflow: visible !important;
             }
             
             .letterhead,
@@ -184,12 +188,6 @@
             
             .no-print {
                 display: none !important;
-            }
-            
-            /* Force single page */
-            html, body {
-                height: 100vh !important;
-                overflow: hidden !important;
             }
         }
     </style>
@@ -294,6 +292,25 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Auto focus untuk print
             console.log('Memo siap untuk dicetak');
+            
+            // Set print orientation to portrait
+            if (window.matchMedia) {
+                var mediaQueryList = window.matchMedia('print');
+                mediaQueryList.addListener(function(mql) {
+                    if (mql.matches) {
+                        // Before print
+                        document.body.style.transform = 'none';
+                        document.body.style.transformOrigin = 'top left';
+                    }
+                });
+            }
+        });
+        
+        // Ensure portrait mode on print
+        window.addEventListener('beforeprint', function() {
+            document.body.style.transform = 'none';
+            document.body.style.width = '210mm';
+            document.body.style.height = 'auto';
         });
     </script>
 </body>
