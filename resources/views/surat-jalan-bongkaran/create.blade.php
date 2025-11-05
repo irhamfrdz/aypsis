@@ -56,6 +56,37 @@
                 <h2 class="text-lg font-semibold text-gray-900">Informasi Dasar</h2>
             </div>
             <div class="p-6">
+                <!-- Selected Kapal & Voyage Info (Read-only) -->
+                @if(isset($selectedKapal) && isset($noVoyage))
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-blue-700 mb-1">Kapal Terpilih</label>
+                                <p class="text-sm font-semibold text-blue-900">{{ $selectedKapal->nama_kapal }}</p>
+                                <input type="hidden" name="kapal_id" value="{{ $selectedKapal->id }}">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-blue-700 mb-1">No Voyage</label>
+                                <p class="text-sm font-semibold text-blue-900">{{ $noVoyage }}</p>
+                                <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-blue-700 mb-1">No BL</label>
+                                <p class="text-sm font-semibold text-blue-900">{{ request('no_bl', '-') }}</p>
+                                @if(request('no_bl'))
+                                    <input type="hidden" name="no_bl" value="{{ request('no_bl') }}">
+                                @endif
+                            </div>
+                        </div>
+                        <div class="mt-3 text-right">
+                            <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" 
+                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
+                                Ubah Pilihan
+                            </a>
+                        </div>
+                    </div>
+                @endif
+
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                     <!-- Order -->
                     <div>
@@ -76,7 +107,8 @@
                         @enderror
                     </div>
 
-                    <!-- Kapal -->
+                    <!-- Kapal (if not pre-selected) -->
+                    @if(!isset($selectedKapal))
                     <div>
                         <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-1">Kapal</label>
                         <select name="kapal_id" id="kapal_id"
@@ -92,6 +124,7 @@
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
+                    @endif
 
                     <!-- Nomor Surat Jalan -->
                     <div>

@@ -69,15 +69,34 @@ class SuratJalanBongkaranController extends Controller
     }
 
     /**
+     * Show the form for selecting kapal and voyage before creating.
+     */
+    public function selectKapal()
+    {
+        $kapals = MasterKapal::orderBy('nama_kapal')->get();
+        
+        return view('surat-jalan-bongkaran.select-kapal', compact('kapals'));
+    }
+
+    /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
+        // Validate that kapal and voyage are provided
+        $request->validate([
+            'kapal_id' => 'required|exists:master_kapals,id',
+            'no_voyage' => 'required|string',
+        ]);
+
         $orders = Order::orderBy('nomor_order')->get();
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
         $users = User::orderBy('name')->get();
+        
+        $selectedKapal = MasterKapal::find($request->kapal_id);
+        $noVoyage = $request->no_voyage;
 
-        return view('surat-jalan-bongkaran.create', compact('orders', 'kapals', 'users'));
+        return view('surat-jalan-bongkaran.create', compact('orders', 'kapals', 'users', 'selectedKapal', 'noVoyage'));
     }
 
     /**

@@ -1152,6 +1152,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // ============= SURAT JALAN BONGKARAN ROUTES =============
     
+    // Select kapal and voyage before creating
+    Route::get('/surat-jalan-bongkaran/select-kapal', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'selectKapal'])
+         ->name('surat-jalan-bongkaran.select-kapal')
+         ->middleware('can:surat-jalan-bongkaran-create');
+    
     // Surat Jalan Bongkaran resource routes
     Route::resource('surat-jalan-bongkaran', \App\Http\Controllers\SuratJalanBongkaranController::class)
          ->middleware([

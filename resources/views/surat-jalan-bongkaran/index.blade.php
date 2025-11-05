@@ -52,7 +52,7 @@
             <div class="flex items-center justify-between">
                 <h2 class="text-lg font-semibold text-gray-900">Daftar Surat Jalan Bongkaran</h2>
                 @can('surat-jalan-bongkaran-create')
-                    <a href="{{ route('surat-jalan-bongkaran.create') }}" 
+                    <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" 
                        class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
@@ -251,7 +251,7 @@
                                         <h3 class="text-lg font-medium text-gray-900 mb-2">Tidak ada surat jalan bongkaran</h3>
                                         <p class="text-gray-500 mb-4">Belum ada data surat jalan bongkaran yang tersedia.</p>
                                         @can('surat-jalan-bongkaran-create')
-                                            <a href="{{ route('surat-jalan-bongkaran.create') }}" 
+                                            <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" 
                                                class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
                                                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
