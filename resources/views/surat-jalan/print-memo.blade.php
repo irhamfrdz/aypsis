@@ -222,8 +222,8 @@
         </div>
         
         <div class="memo-field">
-            <span class="memo-label"></span>
-            <span class="memo-value">{{ $suratJalan->pengirim ?? 'PT. ...............................' }}</span>
+            <span class="memo-label">{{ $suratJalan->pengirim ?? 'PT. ...............................' }}</span>
+            <span class="memo-value"></span>
         </div>
         
         <div class="memo-field">
@@ -232,7 +232,7 @@
         </div>
         
         <div class="memo-field">
-            <span class="memo-label">Di</span>
+            <span style="width: 30px; flex-shrink: 0;">Di</span>
             <span class="memo-value">{{ $suratJalan->tujuan_pengambilan ?? 'JAKARTA' }}</span>
         </div>
         
@@ -267,7 +267,7 @@
     
     <div class="signature-section">
         <div style="margin-bottom: 8px; font-weight: bold;">Hormat Kami,</div>
-        <div style="margin-bottom: 35px;"></div>
+        <div style="margin-bottom: 80px;"></div>
         <div class="signature-name">Alex</div>
     </div>
     
