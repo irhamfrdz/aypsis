@@ -381,11 +381,11 @@
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Seal</label>
                     <input type="text"
-                           name="nomor_seal"
-                           value="{{ old('nomor_seal') }}"
+                           name="no_seal"
+                           value="{{ old('no_seal') }}"
                            placeholder="Contoh: SL123456"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_seal') border-red-500 @enderror">
-                    @error('nomor_seal')
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_seal') border-red-500 @enderror">
+                    @error('no_seal')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                     <p class="text-xs text-gray-500 mt-1">Nomor seal/segel kontainer untuk keamanan</p>
