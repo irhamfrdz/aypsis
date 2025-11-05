@@ -471,7 +471,7 @@
 
 @push('scripts')
 <script>
-$(document).ready(function() {
+document.addEventListener('DOMContentLoaded', function() {
     // Load statistics
     loadStatistics();
 
@@ -479,9 +479,90 @@ $(document).ready(function() {
     setInterval(loadStatistics, 30000);
 
     // Manual refresh button
-    $('#refreshStats').click(function() {
-        loadStatistics();
-    });
+    const refreshButton = document.getElementById('refreshStats');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', function() {
+            loadStatistics();
+        });
+    }
+
+    // Process Units Form handler
+    const processForm = document.getElementById('processUnitsForm');
+    if (processForm) {
+        processForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const orderId = this.getAttribute('data-order-id');
+            const processedUnits = document.getElementById('processedUnits').value;
+            const notes = document.getElementById('processNotes').value;
+
+            if (!processedUnits || processedUnits <= 0) {
+                showAlert('danger', 'Please enter a valid number of units to process');
+                return;
+            }
+
+            // Disable form during processing
+            const submitButton = this.querySelector('button[type="submit"]');
+            submitButton.disabled = true;
+
+            // Create form data
+            const formData = new FormData();
+            formData.append('processed_units', processedUnits);
+            formData.append('notes', notes);
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
+
+            fetch(`{{ route('outstanding.process', '') }}/${orderId}`, {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update the row in table
+                    const row = document.querySelector(`tr[data-order-id="${orderId}"]`);
+                    if (row) {
+                        const sisaElement = row.querySelector('td:nth-child(6) span');
+                        if (sisaElement) {
+                            sisaElement.textContent = new Intl.NumberFormat().format(data.order.sisa);
+                        }
+                        
+                        const progressBar = row.querySelector('.h-2 div');
+                        if (progressBar) {
+                            progressBar.style.width = data.order.completion_percentage + '%';
+                        }
+                        
+                        const progressText = row.querySelector('.text-xs.text-gray-500');
+                        if (progressText) {
+                            progressText.textContent = parseFloat(data.order.completion_percentage).toFixed(1) + '%';
+                        }
+                        
+                        const statusElement = row.querySelector('td:nth-child(8)');
+                        if (statusElement) {
+                            statusElement.innerHTML = data.order.status_badge;
+                        }
+                    }
+
+                    // Close modal and reset form
+                    closeModal();
+
+                    // Refresh statistics
+                    loadStatistics();
+
+                    // Show success message
+                    showAlert('success', 'Units processed successfully!');
+                } else {
+                    showAlert('danger', data.message || 'Failed to process units');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showAlert('danger', 'Error processing units');
+            })
+            .finally(() => {
+                submitButton.disabled = false;
+            });
+        });
+    }
 });
 
 // Toggle filter collapse
@@ -495,91 +576,75 @@ function toggleFilter() {
 }
 
 function loadStatistics() {
-    $.get('{{ route("outstanding.stats") }}', function(data) {
-        $('#pendingCount').html(data.pending);
-        $('#partialCount').html(data.partial);
-        $('#completedCount').html(data.completed);
-        $('#outstandingCount').html(data.total_outstanding);
-    }).fail(function() {
-        // Show error state
-        $('.text-2xl').html('<svg class="w-5 h-5 inline text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>');
-    });
+    fetch('{{ route("outstanding.stats") }}')
+        .then(response => response.json())
+        .then(data => {
+            const pendingCount = document.getElementById('pendingCount');
+            const partialCount = document.getElementById('partialCount');
+            const completedCount = document.getElementById('completedCount');
+            const outstandingCount = document.getElementById('outstandingCount');
+            
+            if (pendingCount) pendingCount.textContent = data.pending;
+            if (partialCount) partialCount.textContent = data.partial;
+            if (completedCount) completedCount.textContent = data.completed;
+            if (outstandingCount) outstandingCount.textContent = data.total_outstanding;
+        })
+        .catch(error => {
+            console.error('Error loading statistics:', error);
+            // Show error state
+            const errorIcon = '<svg class="w-5 h-5 inline text-red-500" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path></svg>';
+            document.querySelectorAll('.text-2xl').forEach(el => {
+                el.innerHTML = errorIcon;
+            });
+        });
 }
 
 function processUnits(orderId) {
-    // Get order details via AJAX
-    $.get(`{{ route('outstanding.details', '') }}/${orderId}`, function(data) {
-        $('#modalOrderNumber').val(data.nomor_order);
-        $('#modalTotalUnits').val(data.units);
-        $('#modalCurrentSisa').val(data.sisa);
-        $('#processedUnits').attr('max', data.sisa);
+    // Get order details via fetch
+    fetch(`{{ route('outstanding.details', '') }}/${orderId}`)
+        .then(response => response.json())
+        .then(data => {
+            const modalOrderNumber = document.getElementById('modalOrderNumber');
+            const modalTotalUnits = document.getElementById('modalTotalUnits');
+            const modalCurrentSisa = document.getElementById('modalCurrentSisa');
+            const processedUnits = document.getElementById('processedUnits');
+            const processForm = document.getElementById('processUnitsForm');
+            
+            if (modalOrderNumber) modalOrderNumber.value = data.nomor_order;
+            if (modalTotalUnits) modalTotalUnits.value = data.units;
+            if (modalCurrentSisa) modalCurrentSisa.value = data.sisa;
+            if (processedUnits) processedUnits.setAttribute('max', data.sisa);
 
-        // Show modal (Tailwind modal)
-        $('#processUnitsModal').removeClass('hidden');
+            // Show modal
+            const modal = document.getElementById('processUnitsModal');
+            if (modal) {
+                modal.classList.remove('hidden');
+            }
 
-        // Store order ID for processing
-        $('#processUnitsForm').data('order-id', orderId);
-    });
+            // Store order ID for processing
+            if (processForm) {
+                processForm.setAttribute('data-order-id', orderId);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading order details:', error);
+            showAlert('danger', 'Error loading order details');
+        });
 }
 
 function closeModal() {
-    $('#processUnitsModal').addClass('hidden');
-    $('#processUnitsForm')[0].reset();
-}
-
-$('#processUnitsForm').submit(function(e) {
-    e.preventDefault();
-
-    const orderId = $(this).data('order-id');
-    const processedUnits = $('#processedUnits').val();
-    const notes = $('#processNotes').val();
-
-    if (!processedUnits || processedUnits <= 0) {
-        showAlert('danger', 'Please enter a valid number of units to process');
-        return;
+    const modal = document.getElementById('processUnitsModal');
+    const form = document.getElementById('processUnitsForm');
+    
+    if (modal) {
+        modal.classList.add('hidden');
     }
-
-    // Disable form during processing
-    $('#processUnitsForm button').prop('disabled', true);
-
-    $.ajax({
-        url: `{{ route('outstanding.process', '') }}/${orderId}`,
-        method: 'POST',
-        data: {
-            processed_units: processedUnits,
-            notes: notes,
-            _token: '{{ csrf_token() }}'
-        },
-        success: function(response) {
-            if (response.success) {
-                // Update the row in table
-                const row = $(`tr[data-order-id="${orderId}"]`);
-                row.find('td:nth-child(6) .badge').text(new Intl.NumberFormat().format(response.order.sisa));
-                row.find('.progress-bar').css('width', response.order.completion_percentage + '%')
-                    .text(response.order.completion_percentage.toFixed(1) + '%');
-                row.find('td:nth-child(8)').html(response.order.status_badge);
-
-                // Close modal and reset form
-                closeModal();
-
-                // Refresh statistics
-                loadStatistics();
-
-                // Show success message
-                showAlert('success', 'Units processed successfully!');
-            } else {
-                showAlert('danger', response.message || 'Failed to process units');
-            }
-        },
-        error: function(xhr) {
-            const response = xhr.responseJSON;
-            showAlert('danger', response?.message || 'Error processing units');
-        },
-        complete: function() {
-            $('#processUnitsForm button').prop('disabled', false);
-        }
-    });
-});
+    
+    if (form) {
+        form.reset();
+        form.removeAttribute('data-order-id');
+    }
+}
 
 function showAlert(type, message) {
     const bgColor = type === 'success' ? 'bg-green-50 border-green-200 text-green-800' : 'bg-red-50 border-red-200 text-red-800';
@@ -601,7 +666,7 @@ function showAlert(type, message) {
                         <p class="text-sm font-medium">${message}</p>
                     </div>
                     <div class="ml-auto pl-3">
-                        <button onclick="$('#alert').fadeOut()" class="inline-flex ${iconColor} hover:text-gray-500">
+                        <button onclick="closeAlert()" class="inline-flex ${iconColor} hover:text-gray-500">
                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                             </svg>
@@ -613,17 +678,29 @@ function showAlert(type, message) {
     `;
 
     // Remove existing alerts
-    $('#alert').remove();
+    const existingAlert = document.getElementById('alert');
+    if (existingAlert) {
+        existingAlert.remove();
+    }
 
     // Add new alert
-    $('body').append(alertHtml);
+    document.body.insertAdjacentHTML('beforeend', alertHtml);
 
     // Auto-remove after 5 seconds
     setTimeout(function() {
-        $('#alert').fadeOut(function() {
-            $(this).remove();
-        });
+        closeAlert();
     }, 5000);
+}
+
+function closeAlert() {
+    const alert = document.getElementById('alert');
+    if (alert) {
+        alert.style.transition = 'opacity 0.3s ease-in-out';
+        alert.style.opacity = '0';
+        setTimeout(() => {
+            alert.remove();
+        }, 300);
+    }
 }
 </script>
 @endpush

@@ -345,7 +345,7 @@ input[required]:focus {
                         type="search"
                         name="q"
                         value="{{ request('q') }}"
-                        placeholder="Cari nomor kontainer (akan menampilkan semua kontainer dalam grup yang sama), vendor, atau group..."
+                        placeholder="Cari berdasarkan: nomor kontainer, vendor, group, atau invoice vendor..."
                         class="w-full border border-gray-300 rounded-lg px-2 py-2 pr-10 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                     />
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
@@ -907,7 +907,7 @@ input[required]:focus {
                                 {{ $tarif }}
                             </span>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
+                        <td class="px-4 py-2 whitespace-nowrap text-[10px] text-gray-900 text-right font-mono">
                             @php
                                 $originalDpp = (float)(optional($tagihan)->dpp ?? 0);
                                 $adjustment = (float)(optional($tagihan)->adjustment ?? 0);

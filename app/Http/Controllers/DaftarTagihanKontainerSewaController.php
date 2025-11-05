@@ -44,8 +44,11 @@ class DaftarTagihanKontainerSewaController extends Controller
         if ($request->filled('q')) {
             $searchTerm = $request->input('q');
 
-            // Find all containers that match the search term
-            $matchingContainers = DaftarTagihanKontainerSewa::where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+            // Find all containers that match the search term for grouping
+            $matchingContainers = DaftarTagihanKontainerSewa::where(function ($q) use ($searchTerm) {
+                    $q->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                      ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+                })
                 ->whereNotNull('group')
                 ->where('group', '!=', '')
                 ->get();
@@ -61,7 +64,8 @@ class DaftarTagihanKontainerSewaController extends Controller
                 $query->where(function ($q) use ($searchTerm) {
                     $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
                       ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('group', 'LIKE', '%' . $searchTerm . '%');
+                      ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
+                      ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
                 });
             }
         }
