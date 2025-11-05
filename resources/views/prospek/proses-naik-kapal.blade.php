@@ -212,6 +212,34 @@
                         </div>
                     </div>
 
+                    {{-- Selected Prospeks Table --}}
+                    <div id="selectedProspeksTable" class="mt-6 hidden">
+                        <div class="bg-gray-50 rounded-lg p-4">
+                            <h4 class="text-md font-semibold text-gray-800 mb-3 flex items-center">
+                                <i class="fas fa-list mr-2"></i>
+                                Kontainer Terpilih
+                            </h4>
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+                                    <thead class="bg-gray-100">
+                                        <tr>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer - Seal</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir OB</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
+                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="selectedProspeksTableBody" class="divide-y divide-gray-200">
+                                        <!-- Dynamic content will be inserted here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
                     {{-- Submit Buttons --}}
                     <div class="mt-6 flex gap-3">
                         <button type="submit" 
@@ -311,6 +339,25 @@
                     border-top: none;
                     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
                 }
+                
+                /* Table Styling */
+                .table-row-prospek {
+                    transition: background-color 0.15s ease;
+                }
+                
+                .table-row-prospek:hover {
+                    background-color: #f9fafb;
+                }
+                
+                .table-row-prospek input[type="text"],
+                .table-row-prospek select {
+                    min-width: 150px;
+                }
+                
+                .table-row-prospek input[type="text"]:focus,
+                .table-row-prospek select:focus {
+                    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+                }
             </style><script>
 document.addEventListener('DOMContentLoaded', function() {
     const kapalSelect = document.getElementById('kapal_id');
@@ -377,6 +424,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const hiddenInputs = document.getElementById('hidden_inputs');
     const clearAllBtn = document.getElementById('clearAllBtn');
     const prospekOptions = document.querySelectorAll('.prospek-option');
+    const selectedProspeksTable = document.getElementById('selectedProspeksTable');
+    const selectedProspeksTableBody = document.getElementById('selectedProspeksTableBody');
     
     let selectedProspeks = [];
     
@@ -414,13 +463,17 @@ document.addEventListener('DOMContentLoaded', function() {
         option.addEventListener('click', function() {
             const id = this.getAttribute('data-id');
             const text = this.getAttribute('data-text');
+            const tipe = this.getAttribute('data-tipe');
+            const supir = this.getAttribute('data-supir');
             const tanggal = this.getAttribute('data-tanggal');
             
             if (!selectedProspeks.find(p => p.id === id)) {
-                selectedProspeks.push({ id, text, tanggal });
+                selectedProspeks.push({ id, text, tipe, supir, tanggal });
                 addChip(id, text, tanggal);
+                addTableRow(id, text, tipe, supir, tanggal);
                 updateSelectedCount();
                 updateHiddenInputs();
+                updateTableVisibility();
                 this.classList.add('selected');
             }
             
@@ -443,24 +496,71 @@ document.addEventListener('DOMContentLoaded', function() {
         selectedChips.appendChild(chip);
     }
     
+    function addTableRow(id, text, tipe, supir, tanggal) {
+        const rowIndex = selectedProspeks.length;
+        const row = document.createElement('tr');
+        row.setAttribute('data-id', id);
+        row.className = 'table-row-prospek';
+        
+        // Generate supir OB dropdown options
+        const supirObOptions = `
+            <option value="">--Pilih Supir OB--</option>
+            @foreach($supirOB as $supir)
+                <option value="{{ $supir->id }}">{{ $supir->nama_lengkap }} ({{ $supir->nama_panggilan }})</option>
+            @endforeach
+        `;
+        
+        row.innerHTML = `
+            <td class="px-4 py-3 text-sm text-gray-900">${rowIndex}</td>
+            <td class="px-4 py-3 text-sm text-gray-900 font-medium">${text}</td>
+            <td class="px-4 py-3 text-sm text-gray-600">
+                <span class="px-2 py-1 text-xs font-medium rounded-full ${tipe === 'CARGO' ? 'bg-orange-100 text-orange-800' : 'bg-blue-100 text-blue-800'}">
+                    ${tipe}
+                </span>
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-900">${supir}</td>
+            <td class="px-4 py-3 text-sm">
+                <select name="supir_ob[${id}]" 
+                        required
+                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
+                    ${supirObOptions}
+                </select>
+            </td>
+            <td class="px-4 py-3 text-sm text-gray-600">${tanggal}</td>
+            <td class="px-4 py-3 text-sm">
+                <button type="button" 
+                        onclick="removeChip('${id}')"
+                        class="text-red-600 hover:text-red-800 transition duration-200">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            </td>
+        `;
+        selectedProspeksTableBody.appendChild(row);
+    }
+    
     // Remove chip function (global scope for onclick)
     window.removeChip = function(id) {
         selectedProspeks = selectedProspeks.filter(p => p.id !== id);
         document.querySelector(`[data-id="${id}"].selected-chip`).remove();
+        document.querySelector(`[data-id="${id}"].table-row-prospek`).remove();
         document.querySelector(`[data-id="${id}"].prospek-option`).classList.remove('selected');
         updateSelectedCount();
         updateHiddenInputs();
+        updateTableVisibility();
+        reorderTableRows();
     };
     
     // Clear All button  
     clearAllBtn.addEventListener('click', function() {
         selectedProspeks = [];
         selectedChips.innerHTML = '';
+        selectedProspeksTableBody.innerHTML = '';
         hiddenInputs.innerHTML = '';
         prospekOptions.forEach(option => {
             option.classList.remove('selected');
         });
         updateSelectedCount();
+        updateTableVisibility();
     });
     
     function updateHiddenInputs() {
@@ -471,6 +571,22 @@ document.addEventListener('DOMContentLoaded', function() {
             input.name = 'prospek_ids[]';
             input.value = prospek.id;
             hiddenInputs.appendChild(input);
+        });
+    }
+    
+    function updateTableVisibility() {
+        if (selectedProspeks.length > 0) {
+            selectedProspeksTable.classList.remove('hidden');
+        } else {
+            selectedProspeksTable.classList.add('hidden');
+        }
+    }
+    
+    function reorderTableRows() {
+        const rows = selectedProspeksTableBody.querySelectorAll('.table-row-prospek');
+        rows.forEach((row, index) => {
+            const numberCell = row.querySelector('td:first-child');
+            numberCell.textContent = index + 1;
         });
     }
     
@@ -507,6 +623,24 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!pelabuhan) {
             e.preventDefault();
             alert('Silakan pilih tujuan kirim asal');
+            return;
+        }
+        
+        // Validate Supir OB selects
+        const supirObSelects = document.querySelectorAll('select[name^="supir_ob["]');
+        let emptySupirOb = false;
+        supirObSelects.forEach(select => {
+            if (!select.value.trim()) {
+                emptySupirOb = true;
+                select.style.borderColor = '#ef4444';
+            } else {
+                select.style.borderColor = '#d1d5db';
+            }
+        });
+        
+        if (emptySupirOb) {
+            e.preventDefault();
+            alert('Silakan pilih Supir OB untuk semua kontainer yang dipilih');
             return;
         }
         

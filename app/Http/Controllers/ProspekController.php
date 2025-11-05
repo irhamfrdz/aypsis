@@ -245,7 +245,13 @@ class ProspekController extends Controller
             $masterTujuanKirims = \App\Models\MasterTujuanKirim::all(); // Debug: get all data first
             \Log::info('Master Tujuan Kirim data:', $masterTujuanKirims->toArray());
 
-            return view('prospek.proses-naik-kapal', compact('tujuan', 'prospeksAktif', 'tujuanId', 'masterKapals', 'masterTujuanKirims'));
+            // Get karyawan divisi supir untuk dropdown Supir OB
+            $supirOB = \App\Models\Karyawan::where('divisi', 'SUPIR')
+                ->whereIn('status', ['aktif', 'active'])
+                ->orderBy('nama_lengkap', 'asc')
+                ->get();
+
+            return view('prospek.proses-naik-kapal', compact('tujuan', 'prospeksAktif', 'tujuanId', 'masterKapals', 'masterTujuanKirims', 'supirOB'));
         } catch (\Exception $e) {
             return redirect()->route('prospek.pilih-tujuan')->with('error', 'Terjadi kesalahan: ' . $e->getMessage());
         }
@@ -278,7 +284,9 @@ class ProspekController extends Controller
                 'no_voyage' => 'required|string|max:50',
                 'prospek_ids' => 'required|array|min:1',
                 'prospek_ids.*' => 'exists:prospek,id',
-                'pelabuhan_asal' => 'required|string|max:100'
+                'pelabuhan_asal' => 'required|string|max:100',
+                'supir_ob' => 'required|array',
+                'supir_ob.*' => 'required|exists:karyawans,id'
             ]);
             
             file_put_contents('debug_submit.txt', 'Validation passed' . "\n", FILE_APPEND);
@@ -330,8 +338,17 @@ class ProspekController extends Controller
             foreach ($prospeks as $prospek) {
                 \Log::info('Processing prospek ID: ' . $prospek->id);
                 
-                // Update status prospek
-                $prospek->update([
+                // Get supir OB untuk prospek ini
+                $supirObId = $request->supir_ob[$prospek->id] ?? null;
+                $supirObData = null;
+                
+                if ($supirObId) {
+                    $supirObData = \App\Models\Karyawan::find($supirObId);
+                    \Log::info('Supir OB found for prospek ' . $prospek->id . ': ' . $supirObData->nama_lengkap);
+                }
+                
+                // Update status prospek dan supir_ob
+                $updateData = [
                     'status' => 'sudah_muat',
                     'tanggal_muat' => $request->tanggal,
                     'nama_kapal' => $masterKapal->nama_kapal,
@@ -339,7 +356,14 @@ class ProspekController extends Controller
                     'no_voyage' => $request->no_voyage,
                     'pelabuhan_asal' => $request->pelabuhan_asal,
                     'updated_by' => $user->id
-                ]);
+                ];
+                
+                // Add supir_ob if available
+                if ($supirObData) {
+                    $updateData['supir_ob'] = $supirObData->nama_lengkap;
+                }
+                
+                $prospek->update($updateData);
                 
                 \Log::info('Updated prospek status for ID: ' . $prospek->id);
 
