@@ -324,8 +324,8 @@ class MasterMobilImportController extends Controller
             // Filter berdasarkan lokasi mobil untuk user cabang BTM
             $currentUser = auth()->user();
             if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-                // Filter mobil berdasarkan lokasi BTH (Batam) untuk user BTM
-                $query->where('lokasi', 'BTH');
+                // Filter mobil berdasarkan lokasi BTM (Batam) untuk user BTM
+                $query->where('lokasi', 'BTM');
             }
 
             // Apply search filter if exists

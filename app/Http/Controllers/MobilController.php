@@ -17,8 +17,8 @@ class MobilController extends Controller
         // Filter berdasarkan lokasi mobil untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-            // Filter mobil berdasarkan lokasi BTH (Batam) untuk user BTM
-            $query->where('lokasi', 'BTH');
+            // Filter mobil berdasarkan lokasi BTM (Batam) untuk user BTM
+            $query->where('lokasi', 'BTM');
         }
 
         // Search functionality
@@ -163,8 +163,8 @@ class MobilController extends Controller
         // Verifikasi akses berdasarkan lokasi mobil - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-            // Cek apakah mobil ini memiliki lokasi BTH (Batam)
-            if ($mobil->lokasi !== 'BTH') {
+            // Cek apakah mobil ini memiliki lokasi BTM (Batam)
+            if ($mobil->lokasi !== 'BTM') {
                 abort(404, 'Data mobil tidak ditemukan.');
             }
         }
@@ -182,8 +182,8 @@ class MobilController extends Controller
         // Verifikasi akses berdasarkan lokasi mobil - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-            // Cek apakah mobil ini memiliki lokasi BTH (Batam)
-            if ($mobil->lokasi !== 'BTH') {
+            // Cek apakah mobil ini memiliki lokasi BTM (Batam)
+            if ($mobil->lokasi !== 'BTM') {
                 abort(404, 'Data mobil tidak ditemukan.');
             }
         }
