@@ -886,7 +886,7 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
+    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
     $hasAktivitasPermissions = $user && (
         $user->can('permohonan-memo-view') ||
         $user->can('pranota-supir-view') ||
@@ -894,6 +894,12 @@
         $user->can('pranota-uang-rit-view') ||
         $user->can('aktivitas-kontainer-view') ||
         $user->can('aktivitas-kapal-view') ||
+        $user->can('pergerakan-kapal-view') ||
+        $user->can('voyage-view') ||
+        $user->can('jadwal-kapal-view') ||
+        $user->can('status-kapal-view') ||
+        $user->can('log-aktivitas-kapal-view') ||
+        $user->can('monitoring-kapal-view') ||
         $user->can('approval-view') ||
         $user->can('approval-approve') ||
         $user->can('approval-print') ||
@@ -1084,8 +1090,8 @@
 
         {{-- Aktivitas Kapal Sub-Dropdown --}}
         @php
-            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*');
-            $hasAktivitasKapalPermissions = $user && $user->can('aktivitas-kapal-view');
+            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*');
+            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view'));
         @endphp
 
         @if($hasAktivitasKapalPermissions)
@@ -1104,13 +1110,66 @@
                 </svg>
             </button>
             <div id="aktivitas-kapal-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasKapalRoute) style="display: block;" @endif>
-                {{-- Add specific aktivitas kapal menu items here --}}
-                <a href="#" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 text-gray-600">
-                    <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                    </svg>
-                    Daftar Aktivitas Kapal
-                </a>
+                {{-- Pergerakan Kapal --}}
+                @if($user && $user->can('pergerakan-kapal-view'))
+                    <a href="{{ route('pergerakan-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
+                        </svg>
+                        Pergerakan Kapal
+                    </a>
+                @endif
+
+                {{-- Daftar Voyage --}}
+                @if($user && $user->can('voyage-view'))
+                    <a href="{{ route('voyage.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('voyage.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
+                        </svg>
+                        Daftar Voyage
+                    </a>
+                @endif
+
+                {{-- Jadwal Kapal --}}
+                @if($user && $user->can('jadwal-kapal-view'))
+                    <a href="{{ route('jadwal-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('jadwal-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        Jadwal Kapal
+                    </a>
+                @endif
+
+                {{-- Status Kapal --}}
+                @if($user && $user->can('status-kapal-view'))
+                    <a href="{{ route('status-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('status-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        Status Kapal
+                    </a>
+                @endif
+
+                {{-- Log Aktivitas --}}
+                @if($user && $user->can('log-aktivitas-kapal-view'))
+                    <a href="{{ route('log-aktivitas-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('log-aktivitas-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Log Aktivitas
+                    </a>
+                @endif
+
+                {{-- Monitoring Kapal --}}
+                @if($user && $user->can('monitoring-kapal-view'))
+                    <a href="{{ route('monitoring-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('monitoring-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                        </svg>
+                        Monitoring Kapal
+                    </a>
+                @endif
             </div>
         </div>
         @endif
