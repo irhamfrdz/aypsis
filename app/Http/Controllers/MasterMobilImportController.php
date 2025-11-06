@@ -321,13 +321,11 @@ class MasterMobilImportController extends Controller
             // Build query dengan filter yang sama seperti index
             $query = Mobil::with('karyawan');
 
-            // Filter berdasarkan cabang user yang login - HANYA untuk user cabang BTM
+            // Filter berdasarkan lokasi mobil untuk user cabang BTM
             $currentUser = auth()->user();
             if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-                // Filter mobil berdasarkan cabang karyawan yang terkait dengan mobil tersebut
-                $query->whereHas('karyawan', function($q) {
-                    $q->where('cabang', 'BTM');
-                });
+                // Filter mobil berdasarkan lokasi BTH (Batam) untuk user BTM
+                $query->where('lokasi', 'BTH');
             }
 
             // Apply search filter if exists

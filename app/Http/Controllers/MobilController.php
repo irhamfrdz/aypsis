@@ -14,14 +14,11 @@ class MobilController extends Controller
     {
         $query = Mobil::with('karyawan');
 
-        // Filter berdasarkan cabang user yang login - HANYA untuk user cabang BTM
+        // Filter berdasarkan lokasi mobil untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-            // Filter mobil berdasarkan cabang karyawan yang terkait dengan mobil tersebut
-            // Jika mobil tidak memiliki karyawan, atau karyawan tidak memiliki cabang, maka tidak ditampilkan
-            $query->whereHas('karyawan', function($q) {
-                $q->where('cabang', 'BTM');
-            });
+            // Filter mobil berdasarkan lokasi BTH (Batam) untuk user BTM
+            $query->where('lokasi', 'BTH');
         }
 
         // Search functionality
@@ -163,11 +160,11 @@ class MobilController extends Controller
     {
         $mobil = Mobil::with('karyawan')->findOrFail($id);
         
-        // Verifikasi akses berdasarkan cabang - HANYA untuk user cabang BTM
+        // Verifikasi akses berdasarkan lokasi mobil - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-            // Cek apakah mobil ini memiliki karyawan dengan cabang BTM
-            if (!$mobil->karyawan || $mobil->karyawan->cabang !== 'BTM') {
+            // Cek apakah mobil ini memiliki lokasi BTH (Batam)
+            if ($mobil->lokasi !== 'BTH') {
                 abort(404, 'Data mobil tidak ditemukan.');
             }
         }
@@ -182,11 +179,11 @@ class MobilController extends Controller
     {
         $mobil = Mobil::with('karyawan')->findOrFail($id);
         
-        // Verifikasi akses berdasarkan cabang - HANYA untuk user cabang BTM
+        // Verifikasi akses berdasarkan lokasi mobil - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
-            // Cek apakah mobil ini memiliki karyawan dengan cabang BTM
-            if (!$mobil->karyawan || $mobil->karyawan->cabang !== 'BTM') {
+            // Cek apakah mobil ini memiliki lokasi BTH (Batam)
+            if ($mobil->lokasi !== 'BTH') {
                 abort(404, 'Data mobil tidak ditemukan.');
             }
         }
