@@ -214,63 +214,63 @@
 
     <!-- Tabel Daftar Mobil -->
     <div class="overflow-x-auto shadow-md sm:rounded-lg">
-        <table class="min-w-full bg-white divide-y divide-gray-200">
+        <table class="min-w-full bg-white divide-y divide-gray-200 text-sm">
             <thead class="bg-gray-50">
                 <tr>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode No</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
-                    <th class="py-3 px-6 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
-                    <th class="py-3 px-6 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kode No</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat/KIR</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
+                    <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 text-gray-700">
                 @forelse ($mobils as $index => $mobil)
                     <tr class="hover:bg-gray-50">
-                        <td class="py-4 px-6">{{ $mobils->firstItem() + $index }}</td>
-                        <td class="py-4 px-6 font-mono text-sm">{{ $mobil->kode_no }}</td>
-                        <td class="py-4 px-6">
+                        <td class="py-2 px-3 text-sm">{{ $mobils->firstItem() + $index }}</td>
+                        <td class="py-2 px-3 font-mono text-xs">{{ $mobil->kode_no }}</td>
+                        <td class="py-2 px-3">
                             <div class="space-y-1">
                                 @if($mobil->nomor_polisi)
-                                    <div class="text-sm">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                            Plat: {{ $mobil->nomor_polisi }}
+                                    <div class="text-xs">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                                            {{ $mobil->nomor_polisi }}
                                         </span>
                                     </div>
                                 @endif
                                 @if($mobil->no_kir)
-                                    <div class="text-sm">
-                                        <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                            KIR: {{ $mobil->no_kir }}
+                                    <div class="text-xs">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            {{ $mobil->no_kir }}
                                         </span>
                                     </div>
                                 @endif
                                 @if(!$mobil->nomor_polisi && !$mobil->no_kir)
-                                    <span class="text-gray-400 text-sm">-</span>
+                                    <span class="text-gray-400 text-xs">-</span>
                                 @endif
                             </div>
                         </td>
-                        <td class="py-4 px-6">{{ $mobil->merek ?? '-' }}</td>
-                        <td class="py-4 px-6">{{ $mobil->jenis ?? '-' }}</td>
-                        <td class="py-4 px-6">{{ $mobil->tahun_pembuatan ?? '-' }}</td>
-                        <td class="py-4 px-6">{{ $mobil->karyawan->nama_lengkap ?? '-' }}</td>
-                        <td class="py-4 px-6 text-center">
-                            <div class="flex item-center justify-center space-x-2">
+                        <td class="py-2 px-3 text-sm">{{ $mobil->merek ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $mobil->jenis ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $mobil->tahun_pembuatan ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">{{ $mobil->karyawan->nama_lengkap ?? '-' }}</td>
+                        <td class="py-2 px-3 text-center">
+                            <div class="flex item-center justify-center space-x-1">
                                 <!-- Tombol Detail -->
-                                <a href="{{ route('master.mobil.show', $mobil->id) }}" class="bg-blue-500 text-white py-1 px-3 rounded-md hover:bg-blue-600 transition-colors duration-200 text-sm">
+                                <a href="{{ route('master.mobil.show', $mobil->id) }}" class="bg-blue-500 text-white py-1 px-2 rounded text-xs hover:bg-blue-600 transition-colors duration-200">
                                     Detail
                                 </a>
-                                <span class="text-gray-300">|</span>
+                                <span class="text-gray-300 text-xs">|</span>
                                 <!-- Tombol Edit -->
-                                <a href="{{ route('master.mobil.edit', $mobil->id) }}" class="bg-yellow-500 text-white py-1 px-3 rounded-md hover:bg-yellow-600 transition-colors duration-200 text-sm">
+                                <a href="{{ route('master.mobil.edit', $mobil->id) }}" class="bg-yellow-500 text-white py-1 px-2 rounded text-xs hover:bg-yellow-600 transition-colors duration-200">
                                     Edit
                                 </a>
-                                <span class="text-gray-300">|</span>
+                                <span class="text-gray-300 text-xs">|</span>
                                 @can('audit-log-view')
-                                    <button type="button" class="audit-log-btn bg-purple-500 text-white py-1 px-3 rounded-md hover:bg-purple-600 transition-colors duration-200 text-sm"
+                                    <button type="button" class="audit-log-btn bg-purple-500 text-white py-1 px-2 rounded text-xs hover:bg-purple-600 transition-colors duration-200"
                                             data-model-type="{{ get_class($mobil) }}"
                                             data-model-id="{{ $mobil->id }}"
                                             data-item-name="{{ $mobil->kode_no }}"
@@ -278,12 +278,12 @@
                                         Riwayat
                                     </button>
                                 @endcan
-                                <span class="text-gray-300">|</span>
+                                <span class="text-gray-300 text-xs">|</span>
                                 <!-- Tombol Hapus -->
                                 <form action="{{ route('master.mobil.destroy', $mobil->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus mobil ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="bg-red-500 text-white py-1 px-3 rounded-md hover:bg-red-600 transition-colors duration-200 text-sm">
+                                    <button type="submit" class="bg-red-500 text-white py-1 px-2 rounded text-xs hover:bg-red-600 transition-colors duration-200">
                                         Hapus
                                     </button>
                                 </form>
@@ -292,20 +292,20 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="py-4 px-6 text-center text-gray-500">
-                            <div class="flex flex-col items-center py-8">
-                                <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <td colspan="8" class="py-6 px-3 text-center text-gray-500">
+                            <div class="flex flex-col items-center py-4">
+                                <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                                 @if(request('search'))
-                                    <p class="text-lg font-medium text-gray-600">Tidak ada mobil ditemukan</p>
-                                    <p class="text-sm text-gray-500 mt-1">Tidak ada hasil untuk pencarian "<strong>{{ request('search') }}</strong>"</p>
-                                    <a href="{{ route('master.mobil.index') }}" class="mt-3 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+                                    <p class="text-base font-medium text-gray-600">Tidak ada mobil ditemukan</p>
+                                    <p class="text-xs text-gray-500 mt-1">Tidak ada hasil untuk pencarian "<strong>{{ request('search') }}</strong>"</p>
+                                    <a href="{{ route('master.mobil.index') }}" class="mt-2 text-indigo-600 hover:text-indigo-800 text-xs font-medium">
                                         Lihat semua mobil
                                     </a>
                                 @else
-                                    <p class="text-lg font-medium text-gray-600">Belum ada data mobil</p>
-                                    <p class="text-sm text-gray-500 mt-1">Silakan tambah mobil baru atau import data CSV</p>
+                                    <p class="text-base font-medium text-gray-600">Belum ada data mobil</p>
+                                    <p class="text-xs text-gray-500 mt-1">Silakan tambah mobil baru atau import data CSV</p>
                                 @endif
                             </div>
                         </td>
