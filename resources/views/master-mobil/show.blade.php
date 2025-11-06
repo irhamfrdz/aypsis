@@ -117,8 +117,38 @@
                         </p>
                     </div>
                     <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Lokasi</label>
+                        <p class="text-sm bg-white p-3 rounded border">{{ $mobil->lokasi ?? '-' }}</p>
+                    </div>
+                    <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">BPKB</label>
-                        <p class="text-sm bg-white p-3 rounded border">{{ $mobil->bpkb ?? '-' }}</p>
+                        <p class="text-sm bg-white p-3 rounded border font-mono">{{ $mobil->bpkb ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Atas Nama</label>
+                        <p class="text-sm bg-white p-3 rounded border">{{ $mobil->atas_nama ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Pemakai</label>
+                        <p class="text-sm bg-white p-3 rounded border">{{ $mobil->pemakai ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Warna Plat</label>
+                        <p class="text-sm bg-white p-3 rounded border">
+                            @if($mobil->warna_plat)
+                                <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium 
+                                    @if($mobil->warna_plat == 'Hitam') bg-gray-100 text-gray-800
+                                    @elseif($mobil->warna_plat == 'Kuning') bg-yellow-100 text-yellow-800
+                                    @elseif($mobil->warna_plat == 'Merah') bg-red-100 text-red-800
+                                    @elseif($mobil->warna_plat == 'Biru') bg-blue-100 text-blue-800
+                                    @elseif($mobil->warna_plat == 'Putih') bg-gray-50 text-gray-800 border
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ $mobil->warna_plat }}
+                                </span>
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>
@@ -154,7 +184,147 @@
                     </div>
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Nomor Mesin</label>
-                        <p class="text-sm bg-white p-3 rounded border font-mono">{{ $mobil->nomor_mesin ?? '-' }}</p>
+                        <p class="text-sm bg-white p-3 rounded border font-mono">{{ $mobil->no_mesin ?? '-' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Pajak & Dokumen -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    Informasi Pajak & Dokumen
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Pajak STNK</label>
+                        <p class="text-sm bg-white p-3 rounded border">
+                            @if($mobil->pajak_stnk)
+                                {{ \Carbon\Carbon::parse($mobil->pajak_stnk)->format('d F Y') }}
+                                @php
+                                    $expiry = \Carbon\Carbon::parse($mobil->pajak_stnk);
+                                    $now = \Carbon\Carbon::now();
+                                    $diff = $expiry->diffInDays($now, false);
+                                @endphp
+                                @if($diff > 0)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Expired {{ $diff }} hari
+                                    </span>
+                                @elseif($diff > -30)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ abs($diff) }} hari lagi
+                                    </span>
+                                @else
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Valid
+                                    </span>
+                                @endif
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Pajak Plat</label>
+                        <p class="text-sm bg-white p-3 rounded border">
+                            @if($mobil->pajak_plat)
+                                {{ \Carbon\Carbon::parse($mobil->pajak_plat)->format('d F Y') }}
+                                @php
+                                    $expiry = \Carbon\Carbon::parse($mobil->pajak_plat);
+                                    $now = \Carbon\Carbon::now();
+                                    $diff = $expiry->diffInDays($now, false);
+                                @endphp
+                                @if($diff > 0)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Expired {{ $diff }} hari
+                                    </span>
+                                @elseif($diff > -30)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ abs($diff) }} hari lagi
+                                    </span>
+                                @else
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Valid
+                                    </span>
+                                @endif
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Pajak KIR</label>
+                        <p class="text-sm bg-white p-3 rounded border">
+                            @if($mobil->pajak_kir)
+                                {{ \Carbon\Carbon::parse($mobil->pajak_kir)->format('d F Y') }}
+                                @php
+                                    $expiry = \Carbon\Carbon::parse($mobil->pajak_kir);
+                                    $now = \Carbon\Carbon::now();
+                                    $diff = $expiry->diffInDays($now, false);
+                                @endphp
+                                @if($diff > 0)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Expired {{ $diff }} hari
+                                    </span>
+                                @elseif($diff > -30)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ abs($diff) }} hari lagi
+                                    </span>
+                                @else
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Valid
+                                    </span>
+                                @endif
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informasi Asuransi -->
+            <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <svg class="w-5 h-5 mr-2 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                    Informasi Asuransi
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Perusahaan Asuransi</label>
+                        <p class="text-sm bg-white p-3 rounded border">{{ $mobil->asuransi ?? '-' }}</p>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Jatuh Tempo Asuransi</label>
+                        <p class="text-sm bg-white p-3 rounded border">
+                            @if($mobil->jatuh_tempo_asuransi)
+                                {{ \Carbon\Carbon::parse($mobil->jatuh_tempo_asuransi)->format('d F Y') }}
+                                @php
+                                    $expiry = \Carbon\Carbon::parse($mobil->jatuh_tempo_asuransi);
+                                    $now = \Carbon\Carbon::now();
+                                    $diff = $expiry->diffInDays($now, false);
+                                @endphp
+                                @if($diff > 0)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Expired {{ $diff }} hari
+                                    </span>
+                                @elseif($diff > -30)
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ abs($diff) }} hari lagi
+                                    </span>
+                                @else
+                                    <span class="ml-2 inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Valid
+                                    </span>
+                                @endif
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
+                        </p>
                     </div>
                 </div>
             </div>
@@ -165,13 +335,13 @@
                     <svg class="w-5 h-5 mr-2 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
                     </svg>
-                    Informasi Tambahan
+                    Catatan & Keterangan
                 </h3>
                 <div class="grid grid-cols-1 gap-4">
                     <div>
-                        <label class="block text-sm font-medium text-gray-600 mb-1">Keterangan</label>
+                        <label class="block text-sm font-medium text-gray-600 mb-1">Catatan</label>
                         <p class="text-sm bg-white p-3 rounded border min-h-[100px]">
-                            {{ $mobil->keterangan ?? 'Tidak ada keterangan tambahan.' }}
+                            {{ $mobil->catatan ?? 'Tidak ada catatan tambahan.' }}
                         </p>
                     </div>
                 </div>
