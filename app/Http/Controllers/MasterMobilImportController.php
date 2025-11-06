@@ -153,7 +153,17 @@ class MasterMobilImportController extends Controller
                     // Find karyawan by NIK if provided
                     $karyawanId = null;
                     if (!empty($nik)) {
-                        $karyawan = \App\Models\Karyawan::where('nik', $nik)->first();
+                        $karyawanQuery = \App\Models\Karyawan::where('nik', $nik);
+                        
+                        // Filter berdasarkan cabang user yang login
+                        $currentUser = auth()->user();
+                        if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang) {
+                            $userCabang = $currentUser->karyawan->cabang;
+                            $karyawanQuery->where('cabang', $userCabang);
+                        }
+                        
+                        $karyawan = $karyawanQuery->first();
+                        
                         if ($karyawan) {
                             $karyawanId = $karyawan->id;
                             // Update plat karyawan only if nomor polisi exists
@@ -161,7 +171,11 @@ class MasterMobilImportController extends Controller
                                 $karyawan->update(['plat' => $nomorPolisi]);
                             }
                         } else {
-                            $stats['warnings'][] = "Baris {$rowNumber}: NIK $nik tidak ditemukan di database karyawan.";
+                            if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang) {
+                                $stats['warnings'][] = "Baris {$rowNumber}: NIK $nik tidak ditemukan di cabang {$currentUser->karyawan->cabang}.";
+                            } else {
+                                $stats['warnings'][] = "Baris {$rowNumber}: NIK $nik tidak ditemukan di database karyawan.";
+                            }
                         }
                     }
 
@@ -306,6 +320,15 @@ class MasterMobilImportController extends Controller
             
             // Build query dengan filter yang sama seperti index
             $query = Mobil::with('karyawan');
+
+            // Filter berdasarkan cabang user yang login - HANYA untuk user cabang BTM
+            $currentUser = auth()->user();
+            if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
+                // Filter mobil berdasarkan cabang karyawan yang terkait dengan mobil tersebut
+                $query->whereHas('karyawan', function($q) {
+                    $q->where('cabang', 'BTM');
+                });
+            }
 
             // Apply search filter if exists
             if ($request->filled('search')) {

@@ -14,6 +14,16 @@ class MobilController extends Controller
     {
         $query = Mobil::with('karyawan');
 
+        // Filter berdasarkan cabang user yang login - HANYA untuk user cabang BTM
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
+            // Filter mobil berdasarkan cabang karyawan yang terkait dengan mobil tersebut
+            // Jika mobil tidak memiliki karyawan, atau karyawan tidak memiliki cabang, maka tidak ditampilkan
+            $query->whereHas('karyawan', function($q) {
+                $q->where('cabang', 'BTM');
+            });
+        }
+
         // Search functionality
         if ($request->filled('search')) {
             $search = $request->search;
@@ -53,10 +63,16 @@ class MobilController extends Controller
      */
     public function create()
     {
-        $karyawans = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi')
-            ->where('divisi', 'Supir')
-            ->orderBy('nama_panggilan')
-            ->get();
+        $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang')
+            ->where('divisi', 'Supir');
+            
+        // Filter karyawan berdasarkan cabang user yang login - HANYA untuk user cabang BTM
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
+            $karyawansQuery->where('cabang', 'BTM');
+        }
+        
+        $karyawans = $karyawansQuery->orderBy('nama_panggilan')->get();
         
         // Generate kode nomor otomatis untuk ditampilkan di form
         $nextKodeNomor = $this->generateKodeNomor();
@@ -146,6 +162,16 @@ class MobilController extends Controller
     public function show($id)
     {
         $mobil = Mobil::with('karyawan')->findOrFail($id);
+        
+        // Verifikasi akses berdasarkan cabang - HANYA untuk user cabang BTM
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
+            // Cek apakah mobil ini memiliki karyawan dengan cabang BTM
+            if (!$mobil->karyawan || $mobil->karyawan->cabang !== 'BTM') {
+                abort(404, 'Data mobil tidak ditemukan.');
+            }
+        }
+        
         return view('master-mobil.show', compact('mobil'));
     }
 
@@ -154,11 +180,26 @@ class MobilController extends Controller
      */
     public function edit($id)
     {
-        $mobil = Mobil::findOrFail($id);
-        $karyawans = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi')
-            ->where('divisi', 'Supir')
-            ->orderBy('nama_panggilan')
-            ->get();
+        $mobil = Mobil::with('karyawan')->findOrFail($id);
+        
+        // Verifikasi akses berdasarkan cabang - HANYA untuk user cabang BTM
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
+            // Cek apakah mobil ini memiliki karyawan dengan cabang BTM
+            if (!$mobil->karyawan || $mobil->karyawan->cabang !== 'BTM') {
+                abort(404, 'Data mobil tidak ditemukan.');
+            }
+        }
+        
+        $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang')
+            ->where('divisi', 'Supir');
+            
+        // Filter karyawan berdasarkan cabang user yang login - HANYA untuk user cabang BTM
+        if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
+            $karyawansQuery->where('cabang', 'BTM');
+        }
+        
+        $karyawans = $karyawansQuery->orderBy('nama_panggilan')->get();
             
         return view('master-mobil.edit', compact('mobil', 'karyawans'));
     }
@@ -221,6 +262,22 @@ class MobilController extends Controller
      */
     public function destroy(Mobil $mobil)
     {
+        // Verifikasi akses berdasarkan cabang
+        $currentUser = auth()->user();
+        if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang) {
+            $userCabang = $currentUser->karyawan->cabang;
+            
+            // Load relationship jika belum ter-load
+            if (!$mobil->relationLoaded('karyawan')) {
+                $mobil->load('karyawan');
+            }
+            
+            // Cek apakah mobil ini memiliki karyawan dengan cabang yang sama
+            if (!$mobil->karyawan || $mobil->karyawan->cabang !== $userCabang) {
+                abort(404, 'Data mobil tidak ditemukan.');
+            }
+        }
+        
         // Hapus nomor plat dari karyawan jika ada
         if ($mobil->karyawan_id) {
             \App\Models\Karyawan::where('id', $mobil->karyawan_id)
