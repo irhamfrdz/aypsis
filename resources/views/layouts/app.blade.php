@@ -311,34 +311,6 @@
                 </a>
                 @endif
 
-                <!-- Naik Kapal Menu -->
-                @php
-                    $isNaikKapalRoute = Request::routeIs('naik-kapal.*');
-                @endphp
-
-                @if($user && $user->can('prospek-edit'))
-                <a href="{{ route('naik-kapal.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isNaikKapalRoute ? 'bg-purple-100 text-purple-700 font-bold' : 'text-gray-700 hover:bg-purple-100 hover:text-purple-700' }}">
-                    <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isNaikKapalRoute ? 'bg-purple-200' : 'bg-purple-50 group-hover:bg-purple-200' }}">
-                        <i class="fas fa-ship text-xs {{ $isNaikKapalRoute ? 'text-purple-700' : 'text-purple-600 group-hover:text-purple-700' }}"></i>
-                    </div>
-                    <span class="text-xs font-medium menu-text">Naik Kapal</span>
-                </a>
-                @endif
-
-                <!-- BL (Bill of Lading) Menu -->
-                @php
-                    $isBLRoute = Request::routeIs('bl.*');
-                @endphp
-
-                @if($user && $user->can('bl-view'))
-                <a href="{{ route('bl.select') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isBLRoute ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
-                    <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isBLRoute ? 'bg-blue-200' : 'bg-blue-50 group-hover:bg-blue-200' }}">
-                        <i class="fas fa-file-contract text-xs {{ $isBLRoute ? 'text-blue-700' : 'text-blue-600 group-hover:text-blue-700' }}"></i>
-                    </div>
-                    <span class="text-xs font-medium menu-text">BL (Bill of Lading)</span>
-                </a>
-                @endif
-
                 <!-- Master Data Section -->
                 @php
                     $isMasterRoute = Request::routeIs('master.permission.*') || Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('pengirim.*') || Request::routeIs('jenis-barang.*') || Request::routeIs('term.*') || Request::routeIs('master.tujuan.*') || Request::routeIs('tujuan-kirim.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master.tujuan-kegiatan-utama.*');
@@ -639,44 +611,6 @@
 </div>
 @endif
 
-{{-- Surat Jalan Management Section --}}
-@php
-    $isSuratJalanRoute = Request::routeIs('surat-jalan.*');
-    $hasSuratJalanPermissions = $user && ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete'));
-@endphp
-
-@if($hasSuratJalanPermissions)
-<div class="mt-4 mb-4">
-    <a href="{{ route('surat-jalan.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isSuratJalanRoute ? 'bg-emerald-100 text-emerald-700 font-bold' : 'text-gray-700 hover:bg-emerald-100 hover:text-emerald-700' }}">
-        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isSuratJalanRoute ? 'bg-emerald-200' : 'bg-emerald-50 group-hover:bg-emerald-200' }}">
-            <svg class="w-4 h-4 {{ $isSuratJalanRoute ? 'text-emerald-700' : 'text-emerald-600 group-hover:text-emerald-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-        </div>
-        <span class="text-xs font-medium menu-text">Surat Jalan</span>
-    </a>
-</div>
-@endif
-
-{{-- Surat Jalan Bongkaran Management Section --}}
-@php
-    $isSuratJalanBongkaranRoute = Request::routeIs('surat-jalan-bongkaran.*');
-    $hasSuratJalanBongkaranPermissions = $user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
-@endphp
-
-@if($hasSuratJalanBongkaranPermissions)
-<div class="mt-4 mb-4">
-    <a href="{{ route('surat-jalan-bongkaran.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isSuratJalanBongkaranRoute ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
-        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isSuratJalanBongkaranRoute ? 'bg-orange-200' : 'bg-orange-50 group-hover:bg-orange-200' }}">
-            <svg class="w-4 h-4 {{ $isSuratJalanBongkaranRoute ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
-            </svg>
-        </div>
-        <span class="text-xs font-medium menu-text">Surat Jalan Bongkaran</span>
-    </a>
-</div>
-@endif
-
 {{-- Tanda Terima Management Section --}}
 @php
     $isTandaTerimaRoute = Request::routeIs('tanda-terima.*');
@@ -886,12 +820,20 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
+    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
     $hasAktivitasPermissions = $user && (
         $user->can('permohonan-memo-view') ||
         $user->can('pranota-supir-view') ||
         $user->can('pranota-surat-jalan-view') ||
         $user->can('pranota-uang-rit-view') ||
+        $user->can('surat-jalan-view') ||
+        $user->can('surat-jalan-create') ||
+        $user->can('surat-jalan-update') ||
+        $user->can('surat-jalan-delete') ||
+        $user->can('surat-jalan-bongkaran-view') ||
+        $user->can('surat-jalan-bongkaran-create') ||
+        $user->can('surat-jalan-bongkaran-update') ||
+        $user->can('surat-jalan-bongkaran-delete') ||
         $user->can('aktivitas-kontainer-view') ||
         $user->can('aktivitas-kapal-view') ||
         $user->can('pergerakan-kapal-view') ||
@@ -900,6 +842,8 @@
         $user->can('status-kapal-view') ||
         $user->can('log-aktivitas-kapal-view') ||
         $user->can('monitoring-kapal-view') ||
+        $user->can('prospek-edit') ||
+        $user->can('bl-view') ||
         $user->can('approval-view') ||
         $user->can('approval-approve') ||
         $user->can('approval-print') ||
@@ -929,8 +873,8 @@
 
         {{-- Aktivitas Supir Sub-Dropdown --}}
         @php
-            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*');
-            $hasAktivitasSupirPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pranota-surat-jalan-view') || $user->can('pranota-uang-rit-view'));
+            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*');
+            $hasAktivitasSupirPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pranota-surat-jalan-view') || $user->can('pranota-uang-rit-view') || $user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete') || $user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
         @endphp
 
         @if($hasAktivitasSupirPermissions)
@@ -996,6 +940,26 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
                         </svg>
                         Pranota Uang Kenek
+                    </a>
+                @endif
+
+                {{-- Surat Jalan --}}
+                @if($user && ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')))
+                    <a href="{{ route('surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Surat Jalan
+                    </a>
+                @endif
+
+                {{-- Surat Jalan Bongkaran --}}
+                @if($user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete')))
+                    <a href="{{ route('surat-jalan-bongkaran.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                        </svg>
+                        Surat Jalan Bongkaran
                     </a>
                 @endif
             </div>
@@ -1090,8 +1054,8 @@
 
         {{-- Aktivitas Kapal Sub-Dropdown --}}
         @php
-            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*');
-            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view'));
+            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*');
+            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view') || $user->can('prospek-edit') || $user->can('bl-view'));
         @endphp
 
         @if($hasAktivitasKapalPermissions)
@@ -1110,6 +1074,26 @@
                 </svg>
             </button>
             <div id="aktivitas-kapal-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasKapalRoute) style="display: block;" @endif>
+                {{-- Naik Kapal --}}
+                @if($user && $user->can('prospek-edit'))
+                    <a href="{{ route('naik-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('naik-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8zm0 0V6a2 2 0 012-2h12a2 2 0 012 2v2M8 12l2 2 4-4"/>
+                        </svg>
+                        Naik Kapal
+                    </a>
+                @endif
+
+                {{-- BL (Bill of Lading) --}}
+                @if($user && $user->can('bl-view'))
+                    <a href="{{ route('bl.select') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('bl.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        BL (Bill of Lading)
+                    </a>
+                @endif
+
                 {{-- Pergerakan Kapal --}}
                 @if($user && $user->can('pergerakan-kapal-view'))
                     <a href="{{ route('pergerakan-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
