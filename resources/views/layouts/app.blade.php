@@ -611,64 +611,6 @@
 </div>
 @endif
 
-{{-- Tanda Terima Management Section --}}
-@php
-    $isTandaTerimaRoute = Request::routeIs('tanda-terima.*');
-    $hasTandaTerimaPermissions = $user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete'));
-@endphp
-
-@if($hasTandaTerimaPermissions)
-<div class="mt-4 mb-4">
-    <a href="{{ route('tanda-terima.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isTandaTerimaRoute ? 'bg-teal-100 text-teal-700 font-bold' : 'text-gray-700 hover:bg-teal-100 hover:text-teal-700' }}">
-        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isTandaTerimaRoute ? 'bg-teal-200' : 'bg-teal-50 group-hover:bg-teal-200' }}">
-            <svg class="w-4 h-4 {{ $isTandaTerimaRoute ? 'text-teal-700' : 'text-teal-600 group-hover:text-teal-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-            </svg>
-        </div>
-        <span class="text-xs font-medium menu-text">Tanda Terima</span>
-    </a>
-</div>
-@endif
-
-{{-- Tanda Terima Tanpa Surat Jalan Management Section --}}
-@php
-    $isTandaTerimaTanpaSuratJalanRoute = Request::routeIs('tanda-terima-tanpa-surat-jalan.*');
-    $hasTandaTerimaTanpaSuratJalanPermissions = $user && ($user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete'));
-@endphp
-
-@if($hasTandaTerimaTanpaSuratJalanPermissions)
-<div class="mt-4 mb-4">
-    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isTandaTerimaTanpaSuratJalanRoute ? 'bg-indigo-100 text-indigo-700 font-bold' : 'text-gray-700 hover:bg-indigo-100 hover:text-indigo-700' }}">
-        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isTandaTerimaTanpaSuratJalanRoute ? 'bg-indigo-200' : 'bg-indigo-50 group-hover:bg-indigo-200' }}">
-            <svg class="w-4 h-4 {{ $isTandaTerimaTanpaSuratJalanRoute ? 'text-indigo-700' : 'text-indigo-600 group-hover:text-indigo-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-            </svg>
-        </div>
-        <span class="text-xs font-medium menu-text">Tanda Terima Tanpa Surat Jalan</span>
-    </a>
-</div>
-@endif
-
-{{-- Gate In Management Section --}}
-@php
-    $isGateInRoute = Request::routeIs('gate-in.*');
-    $hasGateInPermissions = $user && ($user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete'));
-@endphp
-
-@if($hasGateInPermissions)
-<div class="mt-4 mb-4">
-    <a href="{{ route('gate-in.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isGateInRoute ? 'bg-purple-100 text-purple-700 font-bold' : 'text-gray-700 hover:bg-purple-100 hover:text-purple-700' }}">
-        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isGateInRoute ? 'bg-purple-200' : 'bg-purple-50 group-hover:bg-purple-200' }}">
-            <svg class="w-4 h-4 {{ $isGateInRoute ? 'text-purple-700' : 'text-purple-600 group-hover:text-purple-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-            </svg>
-        </div>
-        <span class="text-xs font-medium menu-text">Gate In</span>
-    </a>
-</div>
-@endif
-
 {{-- Aktiva Dropdown --}}
 @php
     $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('master.mobil.*') || Request::routeIs('uang-jalan-batam.*');
@@ -820,7 +762,7 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
+    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-surat-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
     $hasAktivitasPermissions = $user && (
         $user->can('permohonan-memo-view') ||
         $user->can('pranota-supir-view') ||
@@ -835,6 +777,23 @@
         $user->can('surat-jalan-bongkaran-update') ||
         $user->can('surat-jalan-bongkaran-delete') ||
         $user->can('aktivitas-kontainer-view') ||
+        $user->can('tagihan-kontainer-sewa-index') ||
+        $user->can('pranota.view') ||
+        $user->can('perbaikan-kontainer-view') ||
+        $user->can('pranota-perbaikan-kontainer-view') ||
+        $user->can('tagihan-cat-view') ||
+        $user->can('pranota-cat-view') ||
+        $user->can('tanda-terima-view') ||
+        $user->can('tanda-terima-update') ||
+        $user->can('tanda-terima-delete') ||
+        $user->can('tanda-terima-tanpa-surat-jalan-view') ||
+        $user->can('tanda-terima-tanpa-surat-jalan-create') ||
+        $user->can('tanda-terima-tanpa-surat-jalan-update') ||
+        $user->can('tanda-terima-tanpa-surat-jalan-delete') ||
+        $user->can('gate-in-view') ||
+        $user->can('gate-in-create') ||
+        $user->can('gate-in-update') ||
+        $user->can('gate-in-delete') ||
         $user->can('aktivitas-kapal-view') ||
         $user->can('pergerakan-kapal-view') ||
         $user->can('voyage-view') ||
@@ -968,8 +927,8 @@
 
         {{-- Aktivitas Kontainer Sub-Dropdown --}}
         @php
-            $isAktivitasKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*');
-            $hasAktivitasKontainerPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota.view') || $user->can('perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('tagihan-cat-view') || $user->can('pranota-cat-view'));
+            $isAktivitasKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*');
+            $hasAktivitasKontainerPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota.view') || $user->can('perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('tagihan-cat-view') || $user->can('pranota-cat-view') || $user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete'));
         @endphp
 
         @if($hasAktivitasKontainerPermissions)
@@ -1046,6 +1005,37 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         Daftar Pranota Tagihan CAT
+                    </a>
+                @endif
+
+                {{-- Tanda Terima --}}
+                @if($user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete')))
+                    <a href="{{ route('tanda-terima.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('tanda-terima.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Tanda Terima
+                    </a>
+                @endif
+
+                {{-- Tanda Terima Tanpa Surat Jalan --}}
+                @if($user && ($user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete')))
+                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                        Tanda Terima Tanpa Surat Jalan
+                    </a>
+                @endif
+
+                {{-- Gate In --}}
+                @if($user && ($user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete')))
+                    <a href="{{ route('gate-in.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('gate-in.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
+                        </svg>
+                        Gate In
                     </a>
                 @endif
             </div>

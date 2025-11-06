@@ -202,7 +202,7 @@ echo "🔐 10. Setting proper permissions..."
 chmod -R 755 storage bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-# 11. Disable maintenance mode
+# 11. Disable maintenance mode  
 echo "✅ 11. Disabling maintenance mode..."
 php artisan up
 
