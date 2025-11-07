@@ -1,31 +1,15 @@
 @extends('layouts.app')
 
 @section('content')
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
 <style>
-    /* Customize Select2 to match Tailwind styling */
-    .select2-container--default .select2-selection--single {
-        height: 42px;
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__rendered {
-        line-height: 42px;
-        padding-left: 12px;
-        color: #374151;
-    }
-    .select2-container--default .select2-selection--single .select2-selection__arrow {
-        height: 40px;
-    }
-    .select2-dropdown {
-        border: 1px solid #d1d5db;
-        border-radius: 0.5rem;
-    }
-    .select2-container--default .select2-search--dropdown .select2-search__field {
-        border: 1px solid #d1d5db;
-        border-radius: 0.375rem;
-        padding: 0.5rem 0.75rem;
+    /* Custom styling for select elements */
+    .kontainer-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
     }
 </style>
 
@@ -357,25 +341,27 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Kontainer</label>
-                    <select name="nomor_kontainer"
-                            id="nomor-kontainer-select"
-                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
-                        <option value="">Pilih Nomor Kontainer</option>
-                        @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
-                            @foreach($stockKontainers as $stock)
-                                <option value="{{ $stock->nomor_seri_gabungan }}" 
-                                        data-ukuran="{{ $stock->ukuran }}"
-                                        data-tipe="{{ $stock->tipe_kontainer }}"
-                                        {{ old('nomor_kontainer') == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
-                                    {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}
-                                </option>
-                            @endforeach
-                        @endif
-                    </select>
+                    <div class="relative">
+                        <select name="nomor_kontainer"
+                                id="nomor-kontainer-select"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_kontainer') border-red-500 @enderror">
+                            <option value="">Pilih Nomor Kontainer</option>
+                            @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
+                                @foreach($stockKontainers as $stock)
+                                    <option value="{{ $stock->nomor_seri_gabungan }}" 
+                                            data-ukuran="{{ $stock->ukuran }}"
+                                            data-tipe="{{ $stock->tipe_kontainer }}"
+                                            {{ old('nomor_kontainer') == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
+                                        {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
                     @error('nomor_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia)</p>
+                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia). Filter otomatis berdasarkan size kontainer.</p>
                 </div>
 
                 <div>
@@ -564,22 +550,6 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
-                    <input type="number"
-                           name="uang_jalan"
-                           id="uang-jalan-input"
-                           value="{{ old('uang_jalan', '0') }}"
-                           placeholder="0"
-                           readonly
-                           tabindex="-1"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('uang_jalan') border-red-500 @enderror">
-                    @error('uang_jalan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                    <p class="text-xs text-gray-500 mt-1">Uang jalan otomatis berdasarkan tujuan pengambilan dan size kontainer. Untuk 2 kontainer 20ft akan menggunakan pricelist 40ft.</p>
-                </div>
-
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Pemesanan</label>
                     <input type="text"
                            name="no_pemesanan"
@@ -595,6 +565,31 @@
                         <p class="text-xs text-gray-500 mt-1">Nomor pemesanan diambil dari nomor order yang dipilih</p>
                     @endif
                 </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                    <div class="flex">
+                        <input type="number"
+                               name="uang_jalan"
+                               id="uang-jalan-input"
+                               value="{{ old('uang_jalan', '0') }}"
+                               placeholder="0"
+                               min="0"
+                               step="1000"
+                               class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('uang_jalan') border-red-500 @enderror">
+                        <button type="button"
+                                onclick="updateUangJalan()"
+                                class="bg-indigo-600 hover:bg-indigo-700 text-white px-3 py-2 rounded-r-lg text-sm">
+                            Auto
+                        </button>
+                    </div>
+                    @error('uang_jalan')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    <p class="text-xs text-gray-500 mt-1">Bisa diisi manual atau klik "Auto" untuk mengisi otomatis berdasarkan tujuan pengambilan dan size kontainer.</p>
+                </div>
+
+
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Gambar/Dokumen</label>
@@ -624,77 +619,75 @@
     </div>
 </div>
 
-<!-- jQuery (required for Select2) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-
 <script>
-// Initialize Select2 for nomor kontainer - Must run after DOM is ready
-$(document).ready(function() {
+// Initialize kontainer filtering on page load
+document.addEventListener('DOMContentLoaded', function() {
+    initializeKontainerFiltering();
+});
+
+function initializeKontainerFiltering() {
     // Store original options for filtering
     window.allKontainerOptions = [];
-    $('#nomor-kontainer-select option').each(function() {
-        if ($(this).val() !== '') {
-            window.allKontainerOptions.push({
-                value: $(this).val(),
-                text: $(this).text(),
-                ukuran: $(this).data('ukuran'),
-                tipe: $(this).data('tipe')
-            });
-        }
-    });
+    const kontainerSelect = document.getElementById('nomor-kontainer-select');
     
-    // Initialize Select2 with search functionality
-    $('#nomor-kontainer-select').select2({
-        placeholder: 'Cari nomor kontainer...',
-        allowClear: true,
-        width: '100%',
-        language: {
-            noResults: function() {
-                return "Tidak ada kontainer yang ditemukan";
-            },
-            searching: function() {
-                return "Mencari...";
+    if (kontainerSelect) {
+        const options = kontainerSelect.querySelectorAll('option');
+        options.forEach(function(option) {
+            if (option.value !== '') {
+                window.allKontainerOptions.push({
+                    value: option.value,
+                    text: option.textContent,
+                    ukuran: option.getAttribute('data-ukuran'),
+                    tipe: option.getAttribute('data-tipe')
+                });
             }
+        });
+        
+        console.log('Kontainer filtering initialized');
+        console.log('Total kontainer options stored:', window.allKontainerOptions.length);
+        
+        // Filter kontainer on page load if size is already selected
+        const sizeSelect = document.getElementById('size-select');
+        if (sizeSelect && sizeSelect.value) {
+            filterNomorKontainerBySize();
         }
-    });
-    
-    console.log('Select2 initialized for nomor kontainer');
-    console.log('Total kontainer options stored:', window.allKontainerOptions.length);
-    
-    // Filter kontainer on page load if size is already selected
-    if ($('#size-select').val()) {
-        filterNomorKontainerBySize();
     }
-});
+}
 
 function filterNomorKontainerBySize() {
     const sizeSelect = document.getElementById('size-select');
-    const kontainerSelect = $('#nomor-kontainer-select');
+    const kontainerSelect = document.getElementById('nomor-kontainer-select');
     const selectedSize = sizeSelect ? sizeSelect.value : '';
     
+    if (!kontainerSelect) return;
+    
     // Clear current selection
-    kontainerSelect.val(null).trigger('change');
+    kontainerSelect.selectedIndex = 0;
     
     // Remove all options except placeholder
-    kontainerSelect.find('option:not(:first)').remove();
+    const options = kontainerSelect.querySelectorAll('option');
+    options.forEach(function(option, index) {
+        if (index > 0) { // Keep first option (placeholder)
+            option.remove();
+        }
+    });
     
     if (!selectedSize) {
         // Show all options if no size selected
-        window.allKontainerOptions.forEach(function(option) {
-            const newOption = new Option(option.text, option.value, false, false);
-            $(newOption).data('ukuran', option.ukuran);
-            $(newOption).data('tipe', option.tipe);
-            kontainerSelect.append(newOption);
+        window.allKontainerOptions.forEach(function(optionData) {
+            const newOption = document.createElement('option');
+            newOption.value = optionData.value;
+            newOption.textContent = optionData.text;
+            newOption.setAttribute('data-ukuran', optionData.ukuran);
+            newOption.setAttribute('data-tipe', optionData.tipe);
+            kontainerSelect.appendChild(newOption);
         });
         console.log('No size selected - showing all kontainers:', window.allKontainerOptions.length);
     } else {
         // Filter options based on size
         let filteredCount = 0;
-        window.allKontainerOptions.forEach(function(option) {
-            const optionUkuran = option.ukuran;
+        window.allKontainerOptions.forEach(function(optionData) {
+            const optionUkuran = optionData.ukuran;
             
             // Normalize both values for comparison
             const normalizedUkuran = optionUkuran ? String(optionUkuran).toLowerCase().replace(/\s+/g, '') : '';
@@ -707,19 +700,18 @@ function filterNomorKontainerBySize() {
                 normalizedUkuran.startsWith(normalizedSize);
             
             if (sizeMatches) {
-                const newOption = new Option(option.text, option.value, false, false);
-                $(newOption).data('ukuran', option.ukuran);
-                $(newOption).data('tipe', option.tipe);
-                kontainerSelect.append(newOption);
+                const newOption = document.createElement('option');
+                newOption.value = optionData.value;
+                newOption.textContent = optionData.text;
+                newOption.setAttribute('data-ukuran', optionData.ukuran);
+                newOption.setAttribute('data-tipe', optionData.tipe);
+                kontainerSelect.appendChild(newOption);
                 filteredCount++;
             }
         });
         
         console.log(`Filtered kontainers for size ${selectedSize}ft: ${filteredCount} items found`);
     }
-    
-    // Refresh Select2 to show updated options
-    kontainerSelect.trigger('change.select2');
 }
 
 function generateNomorSuratJalan() {
@@ -814,6 +806,8 @@ function updateUangJalan() {
         uangJalanInput.value = '0';
     }
 }
+
+
 
 
 
@@ -962,10 +956,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-// Fix for "not focusable" error on readonly fields
+// Fix for "not focusable" error on readonly fields (excluding uang_jalan)
 function preventReadonlyFocus() {
-    // Get all readonly input fields
-    const readonlyFields = document.querySelectorAll('input[readonly]');
+    // Get all readonly input fields except uang_jalan
+    const readonlyFields = document.querySelectorAll('input[readonly]:not(#uang-jalan-input)');
     
     readonlyFields.forEach(function(field) {
         // Add event listener to prevent focus
@@ -982,10 +976,10 @@ function preventReadonlyFocus() {
         });
     });
     
-    console.log('Applied focus prevention to', readonlyFields.length, 'readonly fields');
+    console.log('Applied focus prevention to', readonlyFields.length, 'readonly fields (excluding uang_jalan)');
 }
 
-// Handle form validation errors for readonly fields
+// Handle form validation errors for readonly fields (excluding uang_jalan)
 function handleReadonlyValidationErrors() {
     // Override browser's default validation focusing
     const form = document.querySelector('form');
@@ -993,8 +987,8 @@ function handleReadonlyValidationErrors() {
         form.addEventListener('invalid', function(event) {
             const target = event.target;
             
-            // If the invalid field is readonly, prevent focus
-            if (target.hasAttribute('readonly')) {
+            // If the invalid field is readonly (but not uang_jalan), prevent focus
+            if (target.hasAttribute('readonly') && target.id !== 'uang-jalan-input') {
                 event.preventDefault();
                 console.log('Prevented validation focus on readonly field:', target.name);
                 

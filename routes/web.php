@@ -50,7 +50,7 @@ use App\Http\Controllers\TermController;
 use App\Http\Controllers\MasterTujuanKirimController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\OutstandingController;
-use App\Http\Controllers\PranotaSuratJalanController;
+// use App\Http\Controllers\PranotaSuratJalanController; // Disabled - replaced with pranota uang jalan
 use App\Http\Controllers\PranotaUangKenekController;
 use App\Http\Controllers\GateInController;
 use App\Http\Controllers\AuditLogController;
@@ -1150,6 +1150,43 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('surat-jalan.print-preprinted')
          ->middleware('can:surat-jalan-view');
 
+    // =============================
+    // UANG JALAN MANAGEMENT ROUTES
+    // =============================
+
+    // Uang Jalan Management with permissions
+    // Custom route untuk select surat jalan
+    Route::get('uang-jalan/select-surat-jalan', [\App\Http\Controllers\UangJalanController::class, 'selectSuratJalan'])
+         ->name('uang-jalan.select-surat-jalan')
+         ->middleware('can:uang-jalan-create');
+    
+    Route::resource('uang-jalan', \App\Http\Controllers\UangJalanController::class)
+         ->middleware([
+             'index' => 'can:uang-jalan-view',
+             'create' => 'can:uang-jalan-create', 
+             'store' => 'can:uang-jalan-create',
+             'show' => 'can:uang-jalan-view',
+             'edit' => 'can:uang-jalan-update',
+             'update' => 'can:uang-jalan-update',
+             'destroy' => 'can:uang-jalan-delete'
+         ]);
+
+    // ====================================
+    // PRANOTA UANG JALAN MANAGEMENT ROUTES
+    // ====================================
+
+    // Pranota Uang Jalan Management with permissions
+    Route::resource('pranota-uang-jalan', \App\Http\Controllers\PranotaSuratJalanController::class)
+         ->middleware([
+             'index' => 'can:pranota-uang-jalan-view',
+             'create' => 'can:pranota-uang-jalan-create', 
+             'store' => 'can:pranota-uang-jalan-create',
+             'show' => 'can:pranota-uang-jalan-view',
+             'edit' => 'can:pranota-uang-jalan-update',
+             'update' => 'can:pranota-uang-jalan-update',
+             'destroy' => 'can:pranota-uang-jalan-delete'
+         ]);
+
     // ============= SURAT JALAN BONGKARAN ROUTES =============
     
     // Select kapal and voyage before creating
@@ -1629,35 +1666,10 @@ Route::get('/test-gate-in-ajax', function () {
                 ->middleware('can:pembayaran-pranota-perbaikan-kontainer-print');
         });
 
-    // 📄 Pranota Surat Jalan (Invoice from Delivery Orders) - Resource with Permissions
-    Route::prefix('pranota-surat-jalan')->name('pranota-surat-jalan.')->middleware(['auth'])->group(function () {
-        Route::get('/', [PranotaSuratJalanController::class, 'index'])
-            ->name('index')
-            ->middleware('can:pranota-surat-jalan-view');
-        Route::get('/create', [PranotaSuratJalanController::class, 'create'])
-            ->name('create')
-            ->middleware('can:pranota-surat-jalan-create');
-        Route::post('/', [PranotaSuratJalanController::class, 'store'])
-            ->name('store')
-            ->middleware('can:pranota-surat-jalan-create');
-        Route::get('/{pranotaSuratJalan}', [PranotaSuratJalanController::class, 'show'])
-            ->name('show')
-            ->middleware('can:pranota-surat-jalan-view');
-        Route::get('/{pranotaSuratJalan}/edit', [PranotaSuratJalanController::class, 'edit'])
-            ->name('edit')
-            ->middleware('can:pranota-surat-jalan-update');
-        Route::put('/{pranotaSuratJalan}', [PranotaSuratJalanController::class, 'update'])
-            ->name('update')
-            ->middleware('can:pranota-surat-jalan-update');
-        Route::delete('/{pranotaSuratJalan}', [PranotaSuratJalanController::class, 'destroy'])
-            ->name('destroy')
-            ->middleware('can:pranota-surat-jalan-delete');
-
-        // Additional granular routes
-        Route::get('/{pranotaSuratJalan}/print', [PranotaSuratJalanController::class, 'print'])
-            ->name('print')
-            ->middleware('can:pranota-surat-jalan-view');
-    });
+    // 📄 Pranota Surat Jalan - DISABLED (Replaced with Pranota Uang Jalan)
+    // Route::prefix('pranota-surat-jalan')->name('pranota-surat-jalan.')->middleware(['auth'])->group(function () {
+    //     // Routes disabled - functionality moved to pranota-uang-jalan
+    // });
 
     // ═══════════════════════════════════════════════════════════════════════
     // 💰 PEMBAYARAN PRANOTA SURAT JALAN (Delivery Note Payment)
@@ -1710,6 +1722,16 @@ Route::get('/test-gate-in-ajax', function () {
         Route::get('/dashboard', [SupirDashboardController::class, 'index'])
             ->name('dashboard');
 
+        // OB Muat (Operasi Bongkar Muat) - Kapal & Voyage selection
+        Route::get('/ob-muat', [SupirDashboardController::class, 'obMuat'])
+            ->name('ob-muat');
+        Route::post('/ob-muat', [SupirDashboardController::class, 'obMuatStore'])
+            ->name('ob-muat.store');
+        
+        // OB Muat Index - Daftar kontainer berdasarkan kapal & voyage
+        Route::get('/ob-muat/index', [SupirDashboardController::class, 'obMuatIndex'])
+            ->name('ob-muat.index');
+
         // Checkpoint management for drivers
         Route::get('/permohonan/{permohonan}/checkpoint', [CheckpointController::class, 'create'])
             ->name('checkpoint.create');
@@ -1723,7 +1745,17 @@ Route::get('/test-gate-in-ajax', function () {
             ->name('checkpoint.store-surat-jalan');
     });
 
-     // === Approval Surat Jalan - REMOVED (No longer needed) ===
+     // === Approval Surat Jalan ===
+     Route::prefix('approval/surat-jalan')->name('approval.surat-jalan.')->middleware('can:approval-surat-jalan-view')->group(function () {
+         Route::get('/', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'index'])->name('index');
+         Route::get('/{suratJalan}', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'show'])->name('show');
+         Route::post('/{suratJalan}/approve', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'approve'])->name('approve')->middleware('can:approval-surat-jalan-approve');
+         Route::post('/{suratJalan}/reject', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'reject'])->name('reject')->middleware('can:approval-surat-jalan-approve');
+         
+         // API untuk stock kontainer dan update
+         Route::get('/api/stock-kontainers', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'getStockKontainers'])->name('api.stock-kontainers');
+         Route::patch('/{suratJalan}/update-kontainer-seal', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'updateKontainerSeal'])->name('update-kontainer-seal')->middleware('can:approval-surat-jalan-approve');
+     });
 
          // --- Rute Penyelesaian Tugas ---
         // Menggunakan PenyelesaianController yang sudah kita kembangkan

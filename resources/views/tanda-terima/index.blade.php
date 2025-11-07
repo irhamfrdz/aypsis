@@ -84,40 +84,40 @@
 
             <!-- Table -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                                 No
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[110px]">
                                 No. Surat Jalan
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                                 Tanggal
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[120px]">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[110px]">
                                 No. Kontainer
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[100px]">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[90px]">
                                 Nama Kapal
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                                 Jenis Barang
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">
                                 Tujuan Ambil
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[150px]">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">
                                 Tujuan Kirim
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                                 Kegiatan
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                                 Status
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                                 Aksi
                             </th>
                         </tr>
@@ -125,122 +125,135 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($tandaTerimas as $tandaTerima)
                         <tr class="hover:bg-gray-50 transition duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                                 {{ ($tandaTerimas->currentPage() - 1) * $tandaTerimas->perPage() + $loop->iteration }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <div class="flex items-center gap-2">
-                                    <span class="text-sm font-semibold text-gray-900">{{ $tandaTerima->no_surat_jalan }}</span>
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <div class="flex items-center gap-1">
+                                    <span class="text-xs font-semibold text-gray-900">{{ $tandaTerima->no_surat_jalan }}</span>
                                     @if(!$tandaTerima->surat_jalan_id)
-                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
                                             Manual
                                         </span>
                                     @endif
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {{ $tandaTerima->tanggal_surat_jalan ? $tandaTerima->tanggal_surat_jalan->format('d/m/Y') : '-' }}
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ $tandaTerima->tanggal_surat_jalan ? $tandaTerima->tanggal_surat_jalan->format('d/m/y') : '-' }}
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $tandaTerima->no_kontainer ?: '-' }}</code>
+                            <td class="px-3 py-2 text-xs text-gray-600">
+                                <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $tandaTerima->no_kontainer ?: '-' }}</code>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                {{ $tandaTerima->estimasi_nama_kapal ?: '-' }}
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                {{ Str::limit($tandaTerima->estimasi_nama_kapal ?: '-', 15) }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                    {{ $tandaTerima->jenis_barang ?: '-' }}
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                    {{ Str::limit($tandaTerima->jenis_barang ?: '-', 12) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                <div class="max-w-[200px] truncate" title="{{ $tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil' }}">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ Str::limit($tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil', 25) }}
+                            <td class="px-3 py-2 text-xs text-gray-600">
+                                <div class="max-w-[150px] truncate" title="{{ $tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil' }}">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        {{ Str::limit($tandaTerima->suratJalan->tujuan_pengambilan ?? $tandaTerima->suratJalan->order->tujuan_ambil ?? 'Tidak ada tujuan ambil', 20) }}
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                <div class="max-w-[200px] truncate" title="{{ $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim' }}">
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                        {{ Str::limit($tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim', 25) }}
+                            <td class="px-3 py-2 text-xs text-gray-600">
+                                <div class="max-w-[150px] truncate" title="{{ $tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim' }}">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                        {{ Str::limit($tandaTerima->tujuan_pengiriman ?: 'Tidak ada tujuan kirim', 20) }}
                                     </span>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 @php
                                     $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $tandaTerima->kegiatan)
                                                     ->value('nama_kegiatan') ?? $tandaTerima->kegiatan;
                                 @endphp
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                    {{ $kegiatanName }}
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                    {{ Str::limit($kegiatanName, 12) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
                                 @if($tandaTerima->status == 'completed')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Completed
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        <i class="fas fa-check w-2 h-2 mr-1"></i>
+                                        Done
                                     </span>
                                 @elseif($tandaTerima->status == 'submitted')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        Submitted
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                        <i class="fas fa-paper-plane w-2 h-2 mr-1"></i>
+                                        Submit
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        <i class="fas fa-edit w-2 h-2 mr-1"></i>
                                         Draft
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div class="flex items-center justify-center gap-2">
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-xs font-medium">
+                                <div class="flex items-center justify-center gap-1">
                                     <a href="{{ route('tanda-terima.show', $tandaTerima->id) }}"
-                                       class="inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition duration-150"
+                                       class="inline-flex items-center px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded transition duration-150"
                                        title="Lihat Detail">
                                         <i class="fas fa-eye text-xs"></i>
                                     </a>
                                     <a href="{{ route('tanda-terima.edit', $tandaTerima->id) }}"
-                                       class="inline-flex items-center px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md transition duration-150"
+                                       class="inline-flex items-center px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded transition duration-150"
                                        title="Edit">
                                         <i class="fas fa-edit text-xs"></i>
                                     </a>
                                     @if(strtoupper($tandaTerima->no_kontainer) === 'CARGO')
                                         <button type="button"
                                                 onclick="addToProspek('{{ $tandaTerima->id }}', '{{ $tandaTerima->no_surat_jalan }}')"
-                                                class="inline-flex items-center px-3 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded-md transition duration-150"
+                                                class="inline-flex items-center px-2 py-1 bg-green-100 hover:bg-green-200 text-green-700 rounded transition duration-150"
                                                 title="Masukan ke Prospek">
                                             <i class="fas fa-plus text-xs"></i>
                                         </button>
                                     @endif
-                                    <span class="text-gray-300">|</span>
-                                    <!-- Audit Log Link -->
-                                    <button type="button"
-                                            onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', '{{ $tandaTerima->nomor_tanda_terima }}')"
-                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
-                                            title="Lihat Riwayat Perubahan">
-                                        Riwayat
-                                    </button>
-                                    <span class="text-gray-300">|</span>
-                                    <form action="{{ route('tanda-terima.destroy', $tandaTerima->id) }}"
-                                          method="POST"
-                                          class="inline-block"
-                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?\n\nNo. Surat Jalan: {{ $tandaTerima->no_surat_jalan }}');">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit"
-                                                class="inline-flex items-center px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition duration-150"
-                                                title="Hapus">
-                                            <i class="fas fa-trash text-xs"></i>
+                                    
+                                    <!-- Dropdown for additional actions -->
+                                    <div class="relative inline-block text-left">
+                                        <button type="button" 
+                                                class="inline-flex items-center px-2 py-1 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded transition duration-150"
+                                                onclick="toggleDropdown('dropdown-{{ $tandaTerima->id }}')"
+                                                title="Aksi Lainnya">
+                                            <i class="fas fa-ellipsis-v text-xs"></i>
                                         </button>
-                                    </form>
+                                        <div id="dropdown-{{ $tandaTerima->id }}" 
+                                             class="hidden absolute right-0 z-10 mt-2 w-40 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                                            <div class="py-1">
+                                                <button type="button"
+                                                        onclick="showAuditLog('{{ get_class($tandaTerima) }}', '{{ $tandaTerima->id }}', '{{ $tandaTerima->nomor_tanda_terima }}')"
+                                                        class="block w-full px-4 py-2 text-left text-xs text-purple-600 hover:bg-purple-50">
+                                                    <i class="fas fa-history mr-2"></i>Riwayat
+                                                </button>
+                                                <form action="{{ route('tanda-terima.destroy', $tandaTerima->id) }}"
+                                                      method="POST"
+                                                      class="block"
+                                                      onsubmit="return confirm('Apakah Anda yakin ingin menghapus tanda terima ini?\n\nNo. Surat Jalan: {{ $tandaTerima->no_surat_jalan }}');">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit"
+                                                            class="block w-full px-4 py-2 text-left text-xs text-red-600 hover:bg-red-50">
+                                                        <i class="fas fa-trash mr-2"></i>Hapus
+                                                    </button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                             </td>
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-12 text-center">
+                            <td colspan="11" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-receipt text-gray-300 text-6xl mb-4"></i>
-                                    <p class="text-gray-500 text-lg font-medium">Tidak ada data tanda terima</p>
-                                    <p class="text-gray-400 text-sm mt-1">Tanda terima akan otomatis dibuat setelah surat jalan di-approve</p>
+                                    <i class="fas fa-receipt text-gray-300 text-4xl mb-3"></i>
+                                    <p class="text-gray-500 text-base font-medium">Tidak ada data tanda terima</p>
+                                    <p class="text-gray-400 text-xs mt-1">Tanda terima akan otomatis dibuat setelah surat jalan di-approve</p>
                                 </div>
                             </td>
                         </tr>
@@ -307,6 +320,30 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
+
+    // Function to toggle dropdown
+    function toggleDropdown(dropdownId) {
+        const dropdown = document.getElementById(dropdownId);
+        const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+        
+        // Close all other dropdowns
+        allDropdowns.forEach(d => {
+            if (d.id !== dropdownId) {
+                d.classList.add('hidden');
+            }
+        });
+        
+        // Toggle current dropdown
+        dropdown.classList.toggle('hidden');
+    }
+
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('[onclick*="toggleDropdown"]') && !event.target.closest('[id^="dropdown-"]')) {
+            const allDropdowns = document.querySelectorAll('[id^="dropdown-"]');
+            allDropdowns.forEach(d => d.classList.add('hidden'));
+        }
+    });
 
     // Function to add cargo container to prospek
     function addToProspek(tandaTerimaId, noSuratJalan) {

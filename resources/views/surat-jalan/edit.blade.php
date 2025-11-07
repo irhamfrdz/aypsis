@@ -386,14 +386,17 @@
                     <input type="number"
                            name="uang_jalan"
                            value="{{ old('uang_jalan', $suratJalan->uang_jalan) }}"
-                           step="0.01"
+                           step="1000"
                            min="0"
-                           placeholder="0.00"
+                           placeholder="0"
                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('uang_jalan') border-red-500 @enderror">
                     @error('uang_jalan')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
+                    <p class="text-xs text-gray-500 mt-1">Uang jalan untuk supir dan kenek</p>
                 </div>
+
+
 
                 <!-- Schedule Information -->
                 <div class="md:col-span-2 mt-4">
@@ -693,5 +696,7 @@ function updateKontainerNote() {
 document.addEventListener('DOMContentLoaded', function() {
     updateKontainerNote();
 });
+
+
 </script>
 @endsection

@@ -455,22 +455,38 @@ class CheckpointController extends Controller
 
             $suratJalan->update($updateData);
 
-            // Buat approval record untuk surat jalan (hanya 1 approval)
-            \App\Models\SuratJalanApproval::create([
-                'surat_jalan_id' => $suratJalan->id,
-                'approval_level' => 'approval',
-                'status' => 'pending',
-            ]);
+            // Buat approval record untuk surat jalan (hanya 1 approval) - cek dulu apakah sudah ada
+            $existingApproval = \App\Models\SuratJalanApproval::where('surat_jalan_id', $suratJalan->id)
+                ->where('approval_level', 'approval')
+                ->first();
+
+            if (!$existingApproval) {
+                \App\Models\SuratJalanApproval::create([
+                    'surat_jalan_id' => $suratJalan->id,
+                    'approval_level' => 'approval',
+                    'status' => 'pending',
+                ]);
+                
+                Log::info('Surat jalan approval record created at checkpoint:', [
+                    'surat_jalan_id' => $suratJalan->id,
+                    'approval_level' => 'approval'
+                ]);
+            } else {
+                Log::info('Surat jalan approval record already exists, skipping creation:', [
+                    'surat_jalan_id' => $suratJalan->id,
+                    'existing_approval_id' => $existingApproval->id
+                ]);
+            }
 
             // Log checkpoint untuk tracking
-            Log::info('Surat jalan checkpoint completed by supir - sent to approval:', [
+            Log::info('Surat jalan checkpoint completed by supir:', [
                 'surat_jalan_id' => $suratJalan->id,
                 'supir' => $user->karyawan->nama ?? $user->name,
                 'nomor_kontainer' => $nomorKontainers,
                 'no_seal' => $request->no_seal,
                 'catatan' => $request->catatan,
                 'surat_jalan_vendor' => $request->surat_jalan_vendor,
-                'approval_level_created' => 'approval'
+                'approval_already_exists' => $existingApproval ? true : false
             ]);
 
             DB::commit();

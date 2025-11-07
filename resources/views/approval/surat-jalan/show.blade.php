@@ -111,7 +111,36 @@
                                         Cargo tidak menggunakan nomor kontainer
                                     </span>
                                 @else
-                                    <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_kontainer ?: 'Belum diisi' }}</code>
+                                    <div class="flex items-center space-x-2">
+                                        <div id="kontainer-display">
+                                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_kontainer ?: 'Belum diisi' }}</code>
+                                        </div>
+                                        @can('approval-surat-jalan-approve')
+                                            <button type="button" onclick="editKontainer()" class="text-blue-600 hover:text-blue-800 text-sm">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                        @endcan
+                                    </div>
+                                    <div id="kontainer-edit" class="hidden mt-2">
+                                        <div class="flex items-center space-x-2">
+                                            <select id="kontainer-select" class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                                <option value="">Pilih dari stock atau ketik manual</option>
+                                            </select>
+                                            <input type="text" id="kontainer-manual" placeholder="Atau ketik manual" 
+                                                   value="{{ $suratJalan->no_kontainer }}"
+                                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                        </div>
+                                        <div class="flex items-center space-x-2 mt-2">
+                                            <button type="button" onclick="saveKontainer()" class="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                                                Simpan
+                                            </button>
+                                            <button type="button" onclick="cancelEditKontainer()" class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
+                                                Batal
+                                            </button>
+                                        </div>
+                                    </div>
                                 @endif
                             </div>
                             <div>
@@ -121,7 +150,31 @@
                                         Cargo tidak menggunakan seal
                                     </span>
                                 @else
-                                    <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_seal ?: 'Belum diisi' }}</code>
+                                    <div class="flex items-center space-x-2">
+                                        <div id="seal-display">
+                                            <code class="text-xs bg-gray-100 px-2 py-1 rounded">{{ $suratJalan->no_seal ?: 'Belum diisi' }}</code>
+                                        </div>
+                                        @can('approval-surat-jalan-approve')
+                                            <button type="button" onclick="editSeal()" class="text-blue-600 hover:text-blue-800 text-sm">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                        @endcan
+                                    </div>
+                                    <div id="seal-edit" class="hidden mt-2">
+                                        <div class="flex items-center space-x-2">
+                                            <input type="text" id="seal-input" placeholder="Masukkan nomor seal" 
+                                                   value="{{ $suratJalan->no_seal }}"
+                                                   class="flex-1 px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                                            <button type="button" onclick="saveSeal()" class="px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700">
+                                                Simpan
+                                            </button>
+                                            <button type="button" onclick="cancelEditSeal()" class="px-3 py-1 bg-gray-600 text-white text-xs rounded hover:bg-gray-700">
+                                                Batal
+                                            </button>
+                                        </div>
+                                    </div>
                                 @endif
                             </div>
                             <div>
@@ -411,8 +464,52 @@
     </div>
 </div>
 
-@section('scripts')
+@endsection
+
+@push('scripts')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+
 <script>
+// Load Select2 dynamically after jQuery is available
+function loadSelect2() {
+    return new Promise((resolve, reject) => {
+        if (typeof window.$ !== 'undefined' && typeof window.$.fn.select2 !== 'undefined') {
+            resolve(); // Select2 already loaded
+            return;
+        }
+        
+        // Wait for jQuery first
+        function waitForjQuery() {
+            if (typeof window.$ !== 'undefined') {
+                // jQuery is available, now load Select2
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js';
+                script.onload = () => resolve();
+                script.onerror = () => reject('Failed to load Select2');
+                document.head.appendChild(script);
+            } else {
+                setTimeout(waitForjQuery, 100);
+            }
+        }
+        waitForjQuery();
+    });
+}
+
+// Global variables
+let isEditingKontainer = false;
+let isEditingSeal = false;
+let stockKontainers = [];
+
+// Function to wait for jQuery and Select2 to be available
+function waitForjQuery(callback) {
+    loadSelect2().then(() => {
+        callback();
+    }).catch(error => {
+        console.error('Error loading Select2:', error);
+    });
+}
+
 function openRejectModal() {
     document.getElementById('rejectModal').classList.remove('hidden');
     document.body.classList.add('overflow-hidden');
@@ -437,6 +534,255 @@ document.addEventListener('keydown', function(e) {
         closeRejectModal();
     }
 });
+
+// ===== KONTAINER EDIT FUNCTIONS =====
+
+function editKontainer() {
+    if (isEditingKontainer) return;
+    
+    isEditingKontainer = true;
+    document.getElementById('kontainer-display').classList.add('hidden');
+    document.getElementById('kontainer-edit').classList.remove('hidden');
+    
+    // Initialize Select2 for stock kontainer dropdown
+    initKontainerSelect();
+}
+
+function cancelEditKontainer() {
+    isEditingKontainer = false;
+    document.getElementById('kontainer-display').classList.remove('hidden');
+    document.getElementById('kontainer-edit').classList.add('hidden');
+    
+    // Reset values
+    waitForjQuery(() => {
+        $('#kontainer-select').val('').trigger('change');
+    });
+    document.getElementById('kontainer-manual').value = '{{ $suratJalan->no_kontainer }}';
+}
+
+function initKontainerSelect() {
+    waitForjQuery(() => {
+        $('#kontainer-select').select2({
+        placeholder: 'Cari nomor kontainer dari stock...',
+        allowClear: true,
+        ajax: {
+            url: '{{ route("approval.surat-jalan.api.stock-kontainers") }}',
+            dataType: 'json',
+            delay: 250,
+            data: function (params) {
+                return {
+                    search: params.term
+                };
+            },
+            processResults: function (data) {
+                return {
+                    results: data.map(function(item) {
+                        return {
+                            id: item.nomor,
+                            text: item.text,
+                            data: item
+                        };
+                    })
+                };
+            },
+            cache: true
+        },
+        minimumInputLength: 2,
+        width: '100%'
+    });
+
+    // When stock kontainer is selected, update the manual input
+    $('#kontainer-select').on('select2:select', function (e) {
+        const data = e.params.data;
+        document.getElementById('kontainer-manual').value = data.id;
+    });
+
+    // When stock kontainer is cleared, clear manual input
+    $('#kontainer-select').on('select2:clear', function (e) {
+        document.getElementById('kontainer-manual').value = '';
+    });
+    });
+}
+
+function saveKontainer() {
+    const kontainerValue = document.getElementById('kontainer-manual').value.trim();
+    const stockKontainerId = $('#kontainer-select').val();
+    
+    // Show loading state
+    const saveBtn = event.target;
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Menyimpan...';
+    saveBtn.disabled = true;
+    
+    // Make AJAX request
+    fetch('{{ route("approval.surat-jalan.update-kontainer-seal", $suratJalan) }}', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            no_kontainer: kontainerValue,
+            stock_kontainer_id: stockKontainerId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update display
+            document.querySelector('#kontainer-display code').textContent = kontainerValue || 'Belum diisi';
+            
+            // Show success message
+            showNotification('Nomor kontainer berhasil diperbarui', 'success');
+            
+            // Cancel edit mode
+            cancelEditKontainer();
+        } else {
+            showNotification(data.message || 'Gagal memperbarui nomor kontainer', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Terjadi kesalahan saat memperbarui nomor kontainer', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+// ===== SEAL EDIT FUNCTIONS =====
+
+function editSeal() {
+    if (isEditingSeal) return;
+    
+    isEditingSeal = true;
+    document.getElementById('seal-display').classList.add('hidden');
+    document.getElementById('seal-edit').classList.remove('hidden');
+    document.getElementById('seal-input').focus();
+}
+
+function cancelEditSeal() {
+    isEditingSeal = false;
+    document.getElementById('seal-display').classList.remove('hidden');
+    document.getElementById('seal-edit').classList.add('hidden');
+    
+    // Reset value
+    document.getElementById('seal-input').value = '{{ $suratJalan->no_seal }}';
+}
+
+function saveSeal() {
+    const sealValue = document.getElementById('seal-input').value.trim();
+    
+    // Show loading state
+    const saveBtn = event.target;
+    const originalText = saveBtn.textContent;
+    saveBtn.textContent = 'Menyimpan...';
+    saveBtn.disabled = true;
+    
+    // Make AJAX request
+    fetch('{{ route("approval.surat-jalan.update-kontainer-seal", $suratJalan) }}', {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            no_seal: sealValue
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Update display
+            document.querySelector('#seal-display code').textContent = sealValue || 'Belum diisi';
+            
+            // Show success message
+            showNotification('Nomor seal berhasil diperbarui', 'success');
+            
+            // Cancel edit mode
+            cancelEditSeal();
+        } else {
+            showNotification(data.message || 'Gagal memperbarui nomor seal', 'error');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showNotification('Terjadi kesalahan saat memperbarui nomor seal', 'error');
+    })
+    .finally(() => {
+        // Restore button state
+        saveBtn.textContent = originalText;
+        saveBtn.disabled = false;
+    });
+}
+
+// ===== UTILITY FUNCTIONS =====
+
+function showNotification(message, type = 'info') {
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.className = `fixed top-4 right-4 p-4 rounded-lg shadow-lg z-50 ${
+        type === 'success' ? 'bg-green-100 border-l-4 border-green-500 text-green-700' :
+        type === 'error' ? 'bg-red-100 border-l-4 border-red-500 text-red-700' :
+        'bg-blue-100 border-l-4 border-blue-500 text-blue-700'
+    }`;
+    
+    notification.innerHTML = `
+        <div class="flex items-center">
+            <div class="flex-shrink-0">
+                ${type === 'success' ? 
+                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>' :
+                    type === 'error' ?
+                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>' :
+                    '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>'
+                }
+            </div>
+            <div class="ml-3">
+                <span class="font-medium text-sm">${message}</span>
+            </div>
+            <button onclick="this.parentElement.parentElement.remove()" class="ml-4 text-current hover:opacity-75">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+    `;
+    
+    document.body.appendChild(notification);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 5000);
+}
+
+// Handle Enter key for inputs
+document.getElementById('seal-input').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        saveSeal();
+    }
+});
+
+document.getElementById('kontainer-manual').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+        saveKontainer();
+    }
+});
+
+// Handle Escape key to cancel editing
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+        if (isEditingKontainer) {
+            cancelEditKontainer();
+        }
+        if (isEditingSeal) {
+            cancelEditSeal();
+        }
+    }
+});
 </script>
-@endsection
-@endsection
+@endpush

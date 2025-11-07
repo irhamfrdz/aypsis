@@ -153,67 +153,67 @@
     <!-- Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 text-sm">
                 <thead class="bg-gray-50">
                     <tr>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal & Voyage</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapten</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rute</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transit</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Sandar</th>
-                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal & Voyage</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapten</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rute</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transit</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Sandar</th>
+                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($pergerakanKapals as $pergerakan)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2">
                                 <div class="flex flex-col">
                                     <div class="text-sm font-medium text-gray-900">{{ $pergerakan->nama_kapal }}</div>
                                     @if($pergerakan->voyage)
-                                        <div class="text-sm text-gray-500">Voyage: {{ $pergerakan->voyage }}</div>
+                                        <div class="text-xs text-gray-500">{{ $pergerakan->voyage }}</div>
                                     @endif
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2">
                                 <div class="text-sm text-gray-900">{{ $pergerakan->kapten ?? '-' }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2">
                                 <div class="text-sm text-gray-900">
                                     {{ $pergerakan->tujuan_asal }} → {{ $pergerakan->tujuan_tujuan }}
                                 </div>
                                 @if($pergerakan->transit && $pergerakan->tujuan_transit)
-                                    <div class="text-sm text-gray-500">via {{ $pergerakan->tujuan_transit }}</div>
+                                    <div class="text-xs text-gray-500">via {{ $pergerakan->tujuan_transit }}</div>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2">
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $pergerakan->transit_badge }}">
                                     {{ $pergerakan->transit_label }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2">
                                 <div class="text-sm text-gray-900">
-                                    {{ $pergerakan->tanggal_sandar ? $pergerakan->tanggal_sandar->format('d M Y H:i') : '-' }}
+                                    {{ $pergerakan->tanggal_sandar ? $pergerakan->tanggal_sandar->format('d/m/Y H:i') : '-' }}
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2">
                                 <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $pergerakan->status_badge }}">
                                     {{ $pergerakan->status_label }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div class="flex justify-center space-x-2">
+                            <td class="px-3 py-2 text-center">
+                                <div class="flex justify-center space-x-1">
                                     <a href="{{ route('pergerakan-kapal.show', $pergerakan) }}"
-                                       class="text-indigo-600 hover:text-indigo-900"
-                                       title="Lihat Detail">
+                                       class="text-indigo-600 hover:text-indigo-900 p-1"
+                                       title="Detail">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
                                     </a>
                                     <a href="{{ route('pergerakan-kapal.edit', $pergerakan) }}"
-                                       class="text-yellow-600 hover:text-yellow-900"
+                                       class="text-yellow-600 hover:text-yellow-900 p-1"
                                        title="Edit">
                                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
@@ -223,7 +223,7 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                                class="text-red-600 hover:text-red-900"
+                                                class="text-red-600 hover:text-red-900 p-1"
                                                 title="Hapus"
                                                 onclick="return confirm('Apakah Anda yakin ingin menghapus data pergerakan kapal ini?')">
                                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -236,7 +236,7 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="7" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <td colspan="7" class="px-3 py-4 text-center text-sm text-gray-500">
                                 Belum ada data pergerakan kapal
                             </td>
                         </tr>
@@ -247,7 +247,7 @@
 
         <!-- Pagination -->
         @if($pergerakanKapals->hasPages())
-            <div class="px-6 py-3 border-t border-gray-200">
+            <div class="px-4 py-2 border-t border-gray-200">
                 @include('components.modern-pagination', ['paginator' => $pergerakanKapals])
                 @include('components.rows-per-page')
             </div>

@@ -7,6 +7,10 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 @endsection
 
+@php
+use Illuminate\Support\Str;
+@endphp
+
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6">
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -65,6 +69,7 @@
                     <label for="status_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">Status Pembayaran</label>
                     <select name="status_pembayaran" id="status_pembayaran" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                         <option value="all" {{ request('status_pembayaran') == 'all' ? 'selected' : '' }}>Semua Status</option>
+                        <option value="belum_masuk_pranota" {{ request('status_pembayaran') == 'belum_masuk_pranota' ? 'selected' : '' }}>Belum Masuk Pranota</option>
                         <option value="belum_dibayar" {{ request('status_pembayaran') == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
                         <option value="sudah_dibayar" {{ request('status_pembayaran') == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
                     </select>
@@ -133,71 +138,71 @@
                 <p class="mt-1 text-sm text-gray-600">Total: {{ $suratJalans->total() }} surat jalan</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-xs">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Quick Actions</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Order</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Surat Jalan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Kirim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis Barang</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status Pembayaran</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                            <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Actions</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Order</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">No. SJ</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Tanggal</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Pengirim</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Tujuan Ambil</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Tujuan Kirim</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Barang</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Kontainer</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Supir</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Status</th>
+                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Pembayaran</th>
+                            <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($suratJalans as $suratJalan)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-2 py-2 whitespace-nowrap text-center">
                                 <div class="relative inline-block text-left">
                                     <button type="button" onclick="toggleDropdown('dropdown-{{ $suratJalan->id }}')" 
-                                            class="inline-flex items-center justify-center w-8 h-8 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            class="inline-flex items-center justify-center w-6 h-6 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 transition-colors duration-200">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                                         </svg>
                                     </button>
                                     
-                                    <div id="dropdown-{{ $suratJalan->id }}" class="hidden absolute left-0 z-50 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
+                                    <div id="dropdown-{{ $suratJalan->id }}" class="hidden absolute left-0 z-50 mt-1 w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                         <div class="py-1">
                                             <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" 
-                                               class="group flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
-                                                <svg class="mr-3 h-4 w-4 text-gray-400 group-hover:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                               class="group flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                                                <svg class="mr-2 h-3 w-3 text-gray-400 group-hover:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                                 </svg>
-                                                Ubah
+                                                Edit
                                             </a>
                                             <button onclick="updateStatus('{{ $suratJalan->id }}', 'cancelled')" 
-                                                    class="group flex items-center w-full px-4 py-2 text-sm text-red-700 hover:bg-red-50 hover:text-red-900">
-                                                <svg class="mr-3 h-4 w-4 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    class="group flex items-center w-full px-3 py-1.5 text-xs text-red-700 hover:bg-red-50 hover:text-red-900">
+                                                <svg class="mr-2 h-3 w-3 text-red-400 group-hover:text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                                                 </svg>
                                                 Cancel
                                             </button>
                                             <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" 
                                                target="_blank"
-                                               class="group flex items-center px-4 py-2 text-sm text-blue-700 hover:bg-blue-50 hover:text-blue-900">
-                                                <svg class="mr-3 h-4 w-4 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                               class="group flex items-center px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
+                                                <svg class="mr-2 h-3 w-3 text-blue-400 group-hover:text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                                 </svg>
-                                                SJ
+                                                Print SJ
                                             </a>
                                             <a href="{{ route('surat-jalan.print-memo', $suratJalan->id) }}" 
                                                target="_blank"
-                                               class="group flex items-center px-4 py-2 text-sm text-green-700 hover:bg-green-50 hover:text-green-900">
-                                                <svg class="mr-3 h-4 w-4 text-green-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                               class="group flex items-center px-3 py-1.5 text-xs text-green-700 hover:bg-green-50 hover:text-green-900">
+                                                <svg class="mr-2 h-3 w-3 text-green-400 group-hover:text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
                                                 </svg>
                                                 Memo
                                             </a>
                                             <button onclick="printPreprinted('{{ $suratJalan->id }}')" 
-                                                    class="group flex items-center w-full px-4 py-2 text-sm text-purple-700 hover:bg-purple-50 hover:text-purple-900">
-                                                <svg class="mr-3 h-4 w-4 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    class="group flex items-center w-full px-3 py-1.5 text-xs text-purple-700 hover:bg-purple-50 hover:text-purple-900">
+                                                <svg class="mr-2 h-3 w-3 text-purple-400 group-hover:text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                                 </svg>
                                                 Pre Printed
@@ -206,90 +211,113 @@
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                {{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}
+                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                                <div class="truncate w-20" title="{{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}">
+                                    {{ $suratJalan->order ? Str::limit($suratJalan->order->nomor_order, 10) : '-' }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
                                 <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" 
-                                   class="text-indigo-600 hover:text-indigo-900 hover:underline font-medium"
-                                   title="Klik untuk print surat jalan"
+                                   class="text-indigo-600 hover:text-indigo-900 hover:underline font-medium truncate block w-24"
+                                   title="{{ $suratJalan->no_surat_jalan }} - Klik untuk print"
                                    target="_blank">
-                                    {{ $suratJalan->no_surat_jalan }}
+                                    {{ Str::limit($suratJalan->no_surat_jalan, 12) }}
                                 </a>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $suratJalan->formatted_tanggal_surat_jalan }}
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                                <div class="truncate w-20" title="{{ $suratJalan->formatted_tanggal_surat_jalan }}">
+                                    {{ date('d/m', strtotime($suratJalan->tanggal_surat_jalan)) }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $suratJalan->pengirim ?? '-' }}
+                            <td class="px-2 py-2 text-xs text-gray-900">
+                                <div class="truncate w-24" title="{{ $suratJalan->pengirim ?? '-' }}">
+                                    {{ $suratJalan->pengirim ? Str::limit($suratJalan->pengirim, 15) : '-' }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}">
-                                {{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}
+                            <td class="px-2 py-2 text-xs text-gray-900">
+                                <div class="truncate w-28" title="{{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}">
+                                    {{ ($suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil) ? Str::limit($suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil, 18) : '-' }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-900 max-w-xs truncate" title="{{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}">
-                                {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}
+                            <td class="px-2 py-2 text-xs text-gray-900">
+                                <div class="truncate w-28" title="{{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}">
+                                    {{ ($suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim) ? Str::limit($suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim, 18) : '-' }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $suratJalan->jenis_barang ?? '-' }}
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                                <div class="truncate w-20" title="{{ $suratJalan->jenis_barang ?? '-' }}">
+                                    {{ $suratJalan->jenis_barang ? Str::limit($suratJalan->jenis_barang, 12) : '-' }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">
-                                {{ $suratJalan->no_kontainer ?? '-' }}
+                            <td class="px-2 py-2 whitespace-nowrap text-xs font-mono text-gray-900">
+                                <div class="truncate w-24" title="{{ $suratJalan->no_kontainer ?? '-' }}">
+                                    {{ $suratJalan->no_kontainer ? Str::limit($suratJalan->no_kontainer, 12) : '-' }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                {{ $suratJalan->supir ?? '-' }}
+                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
+                                <div class="truncate w-20" title="{{ $suratJalan->supir ?? '-' }}">
+                                    {{ $suratJalan->supir ? Str::limit($suratJalan->supir, 12) : '-' }}
+                                </div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {{ $suratJalan->status_badge }}">
-                                    {{ ucfirst($suratJalan->status) }}
+                            <td class="px-2 py-2 whitespace-nowrap">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium {{ $suratJalan->status_badge }}">
+                                    {{ ucfirst(Str::limit($suratJalan->status, 8)) }}
                                 </span>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-2 py-2 whitespace-nowrap">
                                 @if($suratJalan->status_pembayaran)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium
-                                        {{ $suratJalan->status_pembayaran == 'sudah_dibayar' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                        {{ $suratJalan->status_pembayaran == 'sudah_dibayar' ? 'Sudah Dibayar' : 'Belum Dibayar' }}
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium
+                                        @if($suratJalan->status_pembayaran == 'sudah_dibayar')
+                                            bg-green-100 text-green-800
+                                        @elseif($suratJalan->status_pembayaran == 'belum_dibayar')
+                                            bg-yellow-100 text-yellow-800
+                                        @else
+                                            bg-blue-100 text-blue-800
+                                        @endif">
+                                        @if($suratJalan->status_pembayaran == 'sudah_dibayar')
+                                            Dibayar
+                                        @elseif($suratJalan->status_pembayaran == 'belum_dibayar')
+                                            Belum Bayar
+                                        @else
+                                            Belum Pranota
+                                        @endif
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        Belum Diatur
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                        N/A
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                <div class="flex items-center space-x-2">
-                                    <a href="{{ route('surat-jalan.show', $suratJalan->id) }}" class="text-blue-600 hover:text-blue-900" title="Lihat Detail">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <td class="px-2 py-2 whitespace-nowrap text-center">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <a href="{{ route('surat-jalan.show', $suratJalan->id) }}" class="text-blue-600 hover:text-blue-900" title="Detail">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
                                         </svg>
                                     </a>
-                                    <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" class="text-green-600 hover:text-green-900" title="Print Surat Jalan" target="_blank">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" class="text-green-600 hover:text-green-900" title="Print" target="_blank">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                         </svg>
                                     </a>
-                                    <a href="{{ route('surat-jalan.download', $suratJalan->id) }}" class="text-purple-600 hover:text-purple-900" title="Download PDF Surat Jalan">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                    </a>
                                     <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
                                     @can('audit-log-view')
-                                    <button type="button" onclick="showAuditLog('{{ get_class($suratJalan) }}', '{{ $suratJalan->id }}', '{{ $suratJalan->nomor_surat }}')" class="text-purple-600 hover:text-purple-900" title="Lihat Riwayat Perubahan">
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <button type="button" onclick="showAuditLog('{{ get_class($suratJalan) }}', '{{ $suratJalan->id }}', '{{ $suratJalan->nomor_surat }}')" class="text-purple-600 hover:text-purple-900" title="Audit">
+                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                         </svg>
                                     </button>
                                     @endcan
-                                    <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin ingin menghapus surat jalan ini?')">
+                                    <form action="{{ route('surat-jalan.destroy', $suratJalan->id) }}" method="POST" class="inline" onsubmit="return confirm('Yakin hapus?')">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
-                                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
                                             </svg>
                                         </button>
@@ -299,7 +327,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="13" class="px-6 py-4 text-center text-sm text-gray-500">
+                            <td colspan="13" class="px-6 py-8 text-center text-sm text-gray-500">
                                 <div class="flex flex-col items-center justify-center py-8">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>

@@ -35,6 +35,15 @@
             font-weight: bold;
         }
         
+        /* Nomor Surat Jalan */
+        .no-surat-jalan {
+            position: absolute;
+            top: 35mm;  /* 3.5cm dari atas */
+            left: 100mm;  /* 10cm dari kiri */
+            font-size: 14px;
+            font-weight: bold;
+        }
+        
         /* No Plat Section */
         .no-plat {
             position: absolute;
@@ -249,6 +258,11 @@
             {{ \Carbon\Carbon::parse($suratJalan->tanggal_surat_jalan ?? now())->format('d-M-Y') }}
         </div>
         
+        <!-- NOMOR SURAT JALAN -->
+        <div class="no-surat-jalan">
+            {{ $suratJalan->no_surat_jalan ?? 'SJ-' . date('mdY') }}
+        </div>
+        
         <!-- SESI 2: NO PLAT KENDARAAN -->
         <div class="no-plat">
             {{ strtoupper($suratJalan->no_plat ?? ($suratJalan->no_plat != '--Pilih No Plat' ? $suratJalan->no_plat : '')) }}
@@ -266,7 +280,7 @@
         
         <!-- NAMA BARANG dengan posisi absolut -->
         <div class="nama-barang">
-            {{ strtoupper($suratJalan->jenis_barang ?? $suratJalan->order->jenisBarang->nama ?? 'AQUA') }}
+            {{ strtoupper($suratJalan->jenis_barang ?? ($suratJalan->order && $suratJalan->order->jenisBarang ? $suratJalan->order->jenisBarang->nama : 'AQUA')) }}
         </div>
         
         <!-- TUJUAN AMBIL dengan posisi absolut -->

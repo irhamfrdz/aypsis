@@ -255,35 +255,25 @@ class SuratJalanController extends Controller
             // Update status surat jalan to indicate it needs checkpoint
             $suratJalan->update(['status' => 'belum masuk checkpoint']);
 
-            // Process units on related order if order_id exists and jumlah_kontainer is set
-            if ($suratJalan->order_id && $suratJalan->jumlah_kontainer) {
-                try {
-                    $order = $suratJalan->order;
-                    if ($order) {
-                        $processedUnits = (int) $suratJalan->jumlah_kontainer;
-                        $note = "Surat jalan dibuat: {$suratJalan->no_surat_jalan} dengan {$processedUnits} kontainer";
+            // Langsung buat approval record untuk surat jalan
+            \App\Models\SuratJalanApproval::create([
+                'surat_jalan_id' => $suratJalan->id,
+                'approval_level' => 'approval',
+                'status' => 'pending',
+            ]);
 
-                        // Process units on the order
-                        $order->processUnits($processedUnits, $note);
+            Log::info('Surat jalan approval record created automatically:', [
+                'surat_jalan_id' => $suratJalan->id,
+                'approval_level' => 'approval',
+                'status' => 'pending'
+            ]);
 
-                        Log::info('Order units processed', [
-                            'order_id' => $order->id,
-                            'processed_units' => $processedUnits,
-                            'remaining_sisa' => $order->sisa
-                        ]);
-                    }
-                } catch (\Exception $e) {
-                    // Log error but don't fail the surat jalan creation
-                    Log::error('Error processing order units: ' . $e->getMessage(), [
-                        'surat_jalan_id' => $suratJalan->id,
-                        'order_id' => $suratJalan->order_id
-                    ]);
-                }
-            }
+            // NOTE: Units will be processed when surat jalan is approved, not when created
+            // This ensures completion percentage only increases after proper approval workflow
 
             // Redirect to surat jalan index page
             return redirect()->route('surat-jalan.index')
-                           ->with('success', 'Surat jalan berhasil dibuat dengan nomor: ' . $suratJalan->no_surat_jalan);
+                           ->with('success', 'Surat jalan berhasil dibuat dengan nomor: ' . $suratJalan->no_surat_jalan . '. Surat jalan telah otomatis masuk ke sistem approval.');
 
         } catch (\Exception $e) {
             Log::error('Error creating surat jalan: ' . $e->getMessage());
@@ -385,7 +375,7 @@ class SuratJalanController extends Controller
 
             $suratJalan->update($data);
 
-            // Handle order units processing if order_id and jumlah_kontainer changed
+            // Handle order units processing - only if surat jalan is already approved
             $newJumlahKontainer = $suratJalan->jumlah_kontainer;
             $newOrderId = $suratJalan->order_id;
 
@@ -393,41 +383,55 @@ class SuratJalanController extends Controller
                 try {
                     $order = $suratJalan->order;
                     if ($order) {
-                        $difference = $newJumlahKontainer - $oldJumlahKontainer;
+                        // Check if this surat jalan is already approved
+                        $isApproved = $suratJalan->approvals()->where('status', 'approved')->exists();
+                        
+                        if ($isApproved) {
+                            // If approved, we need to adjust the processed units
+                            $difference = $newJumlahKontainer - $oldJumlahKontainer;
 
-                        if ($difference > 0) {
-                            // Increased containers - process more units
-                            $note = "Surat jalan diupdate: {$suratJalan->no_surat_jalan} - Tambah {$difference} kontainer";
-                            $order->processUnits($difference, $note);
-                        } elseif ($difference < 0) {
-                            // Decreased containers - reverse process units
-                            $reverseDifference = abs($difference);
-                            $order->sisa += $reverseDifference;
+                            if ($difference > 0) {
+                                // Increased containers - process more units
+                                $note = "Surat jalan diupdate: {$suratJalan->no_surat_jalan} - Tambah {$difference} kontainer (sudah approved)";
+                                $order->processUnits($difference, $note);
+                            } elseif ($difference < 0) {
+                                // Decreased containers - reverse process units
+                                $reverseDifference = abs($difference);
+                                $order->sisa += $reverseDifference;
 
-                            // Add to processing history
-                            $history = $order->processing_history;
-                            if (!is_array($history)) {
-                                $history = [];
+                                // Add to processing history
+                                $history = $order->processing_history;
+                                if (!is_array($history)) {
+                                    $history = [];
+                                }
+                                $history[] = [
+                                    'processed_count' => -$reverseDifference,
+                                    'remaining' => $order->sisa,
+                                    'note' => "Surat jalan diupdate: {$suratJalan->no_surat_jalan} - Kurangi {$reverseDifference} kontainer (sudah approved)",
+                                    'processed_at' => now()->toISOString(),
+                                    'processed_by' => Auth::id()
+                                ];
+                                $order->processing_history = $history;
+                                $order->updateOutstandingStatus();
+                                $order->save();
                             }
-                            $history[] = [
-                                'processed_count' => -$reverseDifference,
-                                'remaining' => $order->sisa,
-                                'note' => "Surat jalan diupdate: {$suratJalan->no_surat_jalan} - Kurangi {$reverseDifference} kontainer",
-                                'processed_at' => now()->toISOString(),
-                                'processed_by' => Auth::id()
-                            ];
-                            $order->processing_history = $history;
-                            $order->updateOutstandingStatus();
-                            $order->save();
-                        }
 
-                        Log::info('Order units updated', [
-                            'order_id' => $order->id,
-                            'old_containers' => $oldJumlahKontainer,
-                            'new_containers' => $newJumlahKontainer,
-                            'difference' => $difference,
-                            'remaining_sisa' => $order->sisa
-                        ]);
+                            Log::info('Order units updated for approved surat jalan', [
+                                'order_id' => $order->id,
+                                'old_containers' => $oldJumlahKontainer,
+                                'new_containers' => $newJumlahKontainer,
+                                'difference' => $difference,
+                                'remaining_sisa' => $order->sisa
+                            ]);
+                        } else {
+                            // If not approved yet, no need to process units (they will be processed on approval)
+                            Log::info('Surat jalan updated but not approved yet - no unit processing needed', [
+                                'surat_jalan_id' => $suratJalan->id,
+                                'order_id' => $order->id,
+                                'old_containers' => $oldJumlahKontainer,
+                                'new_containers' => $newJumlahKontainer
+                            ]);
+                        }
                     }
                 } catch (\Exception $e) {
                     // Log error but don't fail the surat jalan update
@@ -469,36 +473,50 @@ class SuratJalanController extends Controller
 
             $suratJalan->delete();
 
-            // Restore units to order if applicable
+            // Restore units to order only if the surat jalan was already approved
             if ($orderId && $jumlahKontainer) {
                 try {
                     $order = Order::find($orderId);
                     if ($order) {
-                        // Restore units back to order
-                        $order->sisa += $jumlahKontainer;
+                        // Check if this surat jalan was approved before deletion
+                        $wasApproved = \App\Models\SuratJalanApproval::where('surat_jalan_id', $id)
+                            ->where('status', 'approved')
+                            ->exists();
+                        
+                        if ($wasApproved) {
+                            // If it was approved, restore units back to order
+                            $order->sisa += $jumlahKontainer;
 
-                        // Add to processing history
-                        $history = $order->processing_history;
-                        if (!is_array($history)) {
-                            $history = [];
+                            // Add to processing history
+                            $history = $order->processing_history;
+                            if (!is_array($history)) {
+                                $history = [];
+                            }
+                            $history[] = [
+                                'processed_count' => -$jumlahKontainer,
+                                'remaining' => $order->sisa,
+                                'note' => "Surat jalan dihapus: {$noSuratJalan} - Kembalikan {$jumlahKontainer} kontainer (sudah approved sebelumnya)",
+                                'processed_at' => now()->toISOString(),
+                                'processed_by' => Auth::id()
+                            ];
+                            $order->processing_history = $history;
+                            $order->updateOutstandingStatus();
+                            $order->save();
+
+                            Log::info('Order units restored after approved surat jalan deletion', [
+                                'order_id' => $order->id,
+                                'restored_units' => $jumlahKontainer,
+                                'remaining_sisa' => $order->sisa,
+                                'deleted_surat_jalan' => $noSuratJalan
+                            ]);
+                        } else {
+                            // If it was not approved, no need to restore units
+                            Log::info('Surat jalan deleted but was not approved - no unit restoration needed', [
+                                'order_id' => $order->id,
+                                'surat_jalan' => $noSuratJalan,
+                                'containers' => $jumlahKontainer
+                            ]);
                         }
-                        $history[] = [
-                            'processed_count' => -$jumlahKontainer,
-                            'remaining' => $order->sisa,
-                            'note' => "Surat jalan dihapus: {$noSuratJalan} - Kembalikan {$jumlahKontainer} kontainer",
-                            'processed_at' => now()->toISOString(),
-                            'processed_by' => Auth::id()
-                        ];
-                        $order->processing_history = $history;
-                        $order->updateOutstandingStatus();
-                        $order->save();
-
-                        Log::info('Order units restored after surat jalan deletion', [
-                            'order_id' => $order->id,
-                            'restored_units' => $jumlahKontainer,
-                            'remaining_sisa' => $order->sisa,
-                            'deleted_surat_jalan' => $noSuratJalan
-                        ]);
                     }
                 } catch (\Exception $e) {
                     // Log error but don't fail the surat jalan deletion
@@ -741,7 +759,7 @@ class SuratJalanController extends Controller
                 'nomor_kontainer' => $request->nomor_kontainer,
                 'no_seal' => $request->nomor_seal,
                 'status' => 'draft',
-                'status_pembayaran' => 'belum_dibayar',
+                'status_pembayaran' => 'belum_masuk_pranota',
                 'created_by' => Auth::id(),
             ]);
 

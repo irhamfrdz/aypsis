@@ -798,26 +798,37 @@
 @endpush
 
 @push('scripts')
+<!-- jQuery (required for Select2) -->
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
     let dimensiItemIndex = 1;
 
-    $(document).ready(function() {
+    // Use window.onload to ensure everything is loaded
+    window.addEventListener('load', function() {
         // Initialize Select2 for kapal dropdown
-        $('.select2-kapal').select2({
-            placeholder: '-- Pilih Kapal --',
-            allowClear: true,
-            width: '100%',
-            language: {
-                noResults: function() {
-                    return "Kapal tidak ditemukan";
-                },
-                searching: function() {
-                    return "Mencari...";
+        if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
+            $('.select2-kapal').select2({
+                placeholder: '-- Pilih Kapal --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Kapal tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
                 }
-            }
-        });
+            });
+        }
+    });
+
+    // Initialize other functionality after DOM is ready
+    $(document).ready(function() {
 
         // Calculate initial volumes and totals
         calculateAllVolumesAndTotals();

@@ -16,15 +16,64 @@
 </head>
 <body class="flex flex-col min-h-screen">
     <header class="bg-white shadow-sm">
-        <div class="container mx-auto px-4 sm:px-6 py-4 flex justify-between items-center">
-            <h1 class="text-2xl font-bold text-gray-800">Tugas Saya</h1>
-            <div class="flex items-center space-x-4">
-                <span class="hidden sm:block text-gray-600">Halo, {{ Auth::user()->name }}!</span>
-                <form action="{{ route('logout') }}" method="POST">
-                    @csrf
-                    <button type="submit" class="text-sm text-red-500 hover:text-red-700">Logout</button>
-                </form>
+        <div class="container mx-auto px-4 sm:px-6 py-4">
+            <div class="flex justify-between items-center">
+                <h1 class="text-2xl font-bold text-gray-800">Dashboard Supir</h1>
+                <div class="flex items-center space-x-4">
+                    <span class="hidden sm:block text-gray-600">Halo, {{ Auth::user()->name }}!</span>
+                    <form action="{{ route('logout') }}" method="POST">
+                        @csrf
+                        <button type="submit" class="text-sm text-red-500 hover:text-red-700">Logout</button>
+                    </form>
+                </div>
             </div>
+            
+            <!-- Navigation Menu -->
+            <nav class="mt-4 border-t pt-4">
+                <div class="flex flex-wrap gap-2 sm:gap-4">
+                    <a href="{{ route('supir.dashboard') }}" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 7v10a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2H5a2 2 0 00-2-2z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3a2 2 0 012-2h4a2 2 0 012 2v4m-6 0V9"></path>
+                        </svg>
+                        Tugas Saya
+                    </a>
+                    
+                    <a href="#" onclick="showRiwayatTugas()" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Riwayat Tugas
+                    </a>
+                    
+                    <a href="#" onclick="showProfilSupir()" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                        Profil Supir
+                    </a>
+                    
+                    <a href="{{ route('supir.ob-muat') }}" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l2.414 2.414A1 1 0 0016 10v6a1 1 0 01-1 1z"></path>
+                        </svg>
+                        OB Muat
+                    </a>
+                    
+                    <a href="#" onclick="showBantuanSupir()" 
+                       class="inline-flex items-center px-3 py-2 text-sm font-medium rounded-md text-gray-600 hover:bg-gray-100 hover:text-gray-900 transition-colors">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Bantuan
+                    </a>
+                </div>
+            </nav>
         </div>
     </header>
 
@@ -148,5 +197,159 @@
             </div>
         </div>
     </main>
+
+    <!-- Modal untuk Riwayat Tugas -->
+    <div id="riwayatModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Riwayat Tugas</h3>
+                <button onclick="closeModal('riwayatModal')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <div class="space-y-4">
+                    <div class="bg-gray-50 rounded-lg p-4">
+                        <h4 class="font-medium text-gray-900">Surat Jalan Selesai</h4>
+                        <p class="text-sm text-gray-600 mt-1">Menampilkan tugas yang telah diselesaikan dalam 30 hari terakhir</p>
+                        <div class="mt-3 text-center text-gray-500">
+                            <p class="text-sm">Fitur riwayat tugas akan segera tersedia</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Profil Supir -->
+    <div id="profilModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Profil Supir</h3>
+                <button onclick="closeModal('profilModal')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6">
+                <div class="text-center">
+                    <div class="w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <svg class="w-12 h-12 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                        </svg>
+                    </div>
+                    <h4 class="text-lg font-semibold text-gray-900">{{ Auth::user()->name }}</h4>
+                    <p class="text-sm text-gray-600">{{ Auth::user()->email }}</p>
+                    <div class="mt-4 space-y-2 text-left">
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Role:</span>
+                            <span class="text-sm font-medium">Supir</span>
+                        </div>
+                        <div class="flex justify-between">
+                            <span class="text-sm text-gray-600">Status:</span>
+                            <span class="text-sm font-medium text-green-600">Aktif</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal untuk Bantuan -->
+    <div id="bantuanModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden items-center justify-center z-50">
+        <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-hidden">
+            <div class="flex justify-between items-center p-6 border-b">
+                <h3 class="text-lg font-semibold text-gray-900">Bantuan & Panduan</h3>
+                <button onclick="closeModal('bantuanModal')" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto max-h-[70vh]">
+                <div class="space-y-6">
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">📋 Cara Menggunakan Dashboard</h4>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p>• <strong>Memo Permohonan:</strong> Klik untuk input nomor kontainer yang akan diambil</p>
+                            <p>• <strong>Surat Jalan:</strong> Klik untuk melakukan checkpoint dan input detail kontainer</p>
+                            <p>• <strong>Status Hijau:</strong> Tugas sudah selesai dikerjakan</p>
+                            <p>• <strong>Status Kuning:</strong> Tugas perlu dikerjakan segera</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">🚛 Proses Checkpoint</h4>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p>• Pastikan nomor kontainer sesuai dengan yang tertera di lokasi</p>
+                            <p>• Input nomor seal jika tersedia</p>
+                            <p>• Periksa kondisi kontainer sebelum melakukan checkpoint</p>
+                            <p>• Hubungi supervisor jika ada masalah atau kerusakan</p>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="font-semibold text-gray-900 mb-3">📞 Kontak Bantuan</h4>
+                        <div class="space-y-2 text-sm text-gray-600">
+                            <p>• <strong>IT Support:</strong> ext. 101</p>
+                            <p>• <strong>Supervisor:</strong> ext. 102</p>
+                            <p>• <strong>Admin:</strong> ext. 103</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showRiwayatTugas() {
+            const modal = document.getElementById('riwayatModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        function showProfilSupir() {
+            const modal = document.getElementById('profilModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        function showBantuanSupir() {
+            const modal = document.getElementById('bantuanModal');
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+        
+        function closeModal(modalId) {
+            const modal = document.getElementById(modalId);
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+        
+        // Close modal when clicking outside
+        document.addEventListener('click', function(e) {
+            if (e.target.classList.contains('bg-opacity-50')) {
+                closeModal(e.target.id);
+            }
+        });
+        
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modals = ['riwayatModal', 'profilModal', 'bantuanModal'];
+                modals.forEach(modalId => {
+                    closeModal(modalId);
+                });
+            }
+        });
+        
+        // Auto refresh dashboard every 30 seconds
+        setTimeout(function() {
+            location.reload();
+        }, 30000);
+    </script>
 </body>
 </html>

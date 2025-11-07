@@ -19,6 +19,11 @@ class PranotaSuratJalan extends Model
         'tanggal_pranota',
         'periode_tagihan',
         'jumlah_surat_jalan',
+        'jumlah_mel',
+        'jumlah_kawalan',
+        'jumlah_pelancar',
+        'jumlah_parkir',
+        'uang_jalan',
         'total_amount',
         'status_pembayaran',
         'catatan',
@@ -29,6 +34,11 @@ class PranotaSuratJalan extends Model
     protected $casts = [
         'tanggal_pranota' => 'date',
         'total_amount' => 'decimal:2',
+        'jumlah_mel' => 'decimal:2',
+        'jumlah_kawalan' => 'decimal:2',
+        'jumlah_pelancar' => 'decimal:2',
+        'jumlah_parkir' => 'decimal:2',
+        'uang_jalan' => 'decimal:2',
     ];
 
     /**
