@@ -4,9 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\SuratJalan;
 use App\Models\UangJalan;
-use App\Models\Coa;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class UangJalanController extends Controller
 {
@@ -29,7 +29,7 @@ class UangJalanController extends Controller
         $tanggal_sampai = $request->get('tanggal_sampai');
         
         // Query uang jalan dengan relasi
-        $query = UangJalan::with(['suratJalan.order.pengirim', 'user']);
+        $query = UangJalan::with(['suratJalan.order.pengirim', 'createdBy']);
         
         // Filter berdasarkan pencarian
         if ($search) {
@@ -54,13 +54,13 @@ class UangJalanController extends Controller
             $query->where('status', $status);
         }
 
-        // Filter berdasarkan tanggal
+        // Filter berdasarkan tanggal uang jalan
         if ($tanggal_dari) {
-            $query->whereDate('tanggal', '>=', $tanggal_dari);
+            $query->whereDate('tanggal_uang_jalan', '>=', $tanggal_dari);
         }
         
         if ($tanggal_sampai) {
-            $query->whereDate('tanggal', '<=', $tanggal_sampai);
+            $query->whereDate('tanggal_uang_jalan', '<=', $tanggal_sampai);
         }
 
         // Urutkan berdasarkan tanggal terbaru
@@ -68,9 +68,11 @@ class UangJalanController extends Controller
 
         $statusOptions = [
             'all' => 'Semua Status',
-            'pending' => 'Pending',
-            'dibayar' => 'Dibayar',
-            'ditolak' => 'Ditolak'
+            'belum_dibayar' => 'Belum Dibayar',
+            'belum_masuk_pranota' => 'Belum Masuk Pranota',
+            'sudah_masuk_pranota' => 'Sudah Masuk Pranota',
+            'lunas' => 'Lunas',
+            'dibatalkan' => 'Dibatalkan'
         ];
 
         return view('uang-jalan.index', compact('uangJalans', 'search', 'status', 'statusOptions', 'tanggal_dari', 'tanggal_sampai'));
@@ -154,14 +156,7 @@ class UangJalanController extends Controller
         // Generate nomor uang jalan untuk preview
         $nomorUangJalan = UangJalan::generateNomorUangJalan();
         
-        // Get akun COA for bank selection (same logic as pembayaran pranota surat jalan)
-        $akunCoa = Coa::where('tipe_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%bank%')
-                      ->orWhere('nama_akun', 'LIKE', '%kas%')
-                      ->orderBy('nama_akun')
-                      ->get();
-        
-        return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan', 'akunCoa'));
+        return view('uang-jalan.create', compact('suratJalan', 'nomorUangJalan'));
     }
 
     /**
@@ -172,11 +167,8 @@ class UangJalanController extends Controller
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalans,id',
             'nomor_uang_jalan' => 'nullable|string|max:50|unique:uang_jalans,nomor_uang_jalan',
-            'bank_kas' => 'required|string|max:255',
-            'tanggal_kas_bank' => 'required|date',
-            'tanggal_pemberian' => 'required|date',
+            'tanggal_uang_jalan' => 'required|date',
             'kegiatan_bongkar_muat' => 'required|in:bongkar,muat',
-            'jenis_transaksi' => 'required|in:debit,kredit',
             'kategori_uang_jalan' => 'required|in:uang_jalan,non_uang_jalan',
             'jumlah_uang_jalan' => 'required|numeric|min:0',
             'jumlah_mel' => 'nullable|numeric|min:0',
@@ -207,30 +199,12 @@ class UangJalanController extends Controller
             // Generate nomor uang jalan otomatis jika tidak diisi
             $nomorUangJalan = $request->nomor_uang_jalan ?: UangJalan::generateNomorUangJalan();
             
-            // Generate nomor kas/bank otomatis berdasarkan bank yang dipilih
-            $bankCode = '000'; // Default
-            $nomorKasBank = 'KB' . date('my') . str_pad(1, 6, '0', STR_PAD_LEFT); // Default format
-            
-            if ($request->bank_kas) {
-                // Extract bank code dari akun COA yang dipilih
-                $selectedBank = Coa::where('nama_akun', $request->bank_kas)->first();
-                if ($selectedBank && $selectedBank->kode_nomor) {
-                    $bankCode = $selectedBank->kode_nomor;
-                }
-                
-                // Generate nomor kas/bank dengan format: BankCode + MMYY + Running Number
-                $nomorKasBank = $bankCode . date('my') . str_pad(UangJalan::getNextRunningNumber(), 6, '0', STR_PAD_LEFT);
-            }
-            
             // Buat record uang jalan baru
             $uangJalan = UangJalan::create([
                 'nomor_uang_jalan' => $nomorUangJalan,
-                'nomor_kas_bank' => $nomorKasBank,
-                'bank_kas' => $request->bank_kas,
-                'tanggal_kas_bank' => $request->tanggal_kas_bank,
+                'tanggal_uang_jalan' => $request->tanggal_uang_jalan,
                 'surat_jalan_id' => $request->surat_jalan_id,
                 'kegiatan_bongkar_muat' => $request->kegiatan_bongkar_muat,
-                'jenis_transaksi' => $request->jenis_transaksi,
                 'kategori_uang_jalan' => $request->kategori_uang_jalan,
                 'jumlah_uang_jalan' => $request->jumlah_uang_jalan,
                 'jumlah_mel' => $request->jumlah_mel ?? 0,
@@ -246,8 +220,7 @@ class UangJalanController extends Controller
                 'jumlah_uang_kenek' => $request->jumlah_uang_kenek ?? 0,
                 'total_uang_jalan' => $request->total_uang_jalan ?? $request->jumlah_total,
                 'keterangan' => $request->keterangan ?? $request->memo,
-                'tanggal_pemberian' => $request->tanggal_pemberian,
-                'status' => 'belum_dibayar',
+                'status' => 'belum_masuk_pranota',
                 'created_by' => Auth::id()
             ]);
             
@@ -276,5 +249,56 @@ class UangJalanController extends Controller
                              ->findOrFail($id);
         
         return view('uang-jalan.show', compact('uangJalan'));
+    }
+
+    /**
+     * Remove the specified uang jalan from storage.
+     */
+    public function destroy($id)
+    {
+        try {
+            $uangJalan = UangJalan::findOrFail($id);
+            
+            // Check if uang jalan can be deleted (only if status allows it)
+            if (!in_array($uangJalan->status, ['belum_dibayar', 'belum_masuk_pranota'])) {
+                return redirect()
+                    ->route('uang-jalan.index')
+                    ->with('error', 'Uang jalan dengan status ' . $uangJalan->status . ' tidak dapat dihapus.');
+            }
+            
+            // Check if uang jalan is already in pranota
+            if ($uangJalan->pranotaUangJalan()->exists()) {
+                return redirect()
+                    ->route('uang-jalan.index')
+                    ->with('error', 'Uang jalan sudah masuk dalam pranota dan tidak dapat dihapus.');
+            }
+            
+            // Store info for success message
+            $identifier = $uangJalan->nomor_uang_jalan ?? $uangJalan->suratJalan->no_surat_jalan ?? 'ID: ' . $uangJalan->id;
+            
+            // Delete the uang jalan
+            $uangJalan->delete();
+            
+            Log::info('Uang jalan deleted successfully', [
+                'uang_jalan_id' => $id,
+                'identifier' => $identifier,
+                'deleted_by' => Auth::id()
+            ]);
+            
+            return redirect()
+                ->route('uang-jalan.index')
+                ->with('success', 'Uang jalan "' . $identifier . '" berhasil dihapus.');
+                
+        } catch (\Exception $e) {
+            Log::error('Error deleting uang jalan', [
+                'uang_jalan_id' => $id,
+                'error' => $e->getMessage(),
+                'user_id' => Auth::id()
+            ]);
+            
+            return redirect()
+                ->route('uang-jalan.index')
+                ->with('error', 'Terjadi kesalahan saat menghapus uang jalan: ' . $e->getMessage());
+        }
     }
 }

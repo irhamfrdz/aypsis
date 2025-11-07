@@ -79,6 +79,11 @@ class ApprovalSuratJalanController extends Controller
             'approval_notes' => $request->approval_notes
         ]);
 
+        // Update tanggal_tanda_terima saat approval
+        $suratJalan->update([
+            'tanggal_tanda_terima' => today()
+        ]);
+
         // Process units on related order when surat jalan is approved
         if ($suratJalan->order_id && $suratJalan->jumlah_kontainer) {
             try {

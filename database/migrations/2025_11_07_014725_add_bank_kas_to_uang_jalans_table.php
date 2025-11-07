@@ -12,7 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('uang_jalans', function (Blueprint $table) {
-            $table->string('bank_kas', 255)->nullable()->after('nomor_kas_bank');
+            // Add column only if it doesn't exist
+            if (!Schema::hasColumn('uang_jalans', 'bank_kas')) {
+                $table->string('bank_kas', 255)->nullable()->after('nomor_kas_bank');
+            }
         });
     }
 

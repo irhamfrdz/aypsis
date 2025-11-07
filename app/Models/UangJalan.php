@@ -14,12 +14,9 @@ class UangJalan extends Model
 
     protected $fillable = [
         'nomor_uang_jalan',
-        'nomor_kas_bank',
-        'bank_kas',
-        'tanggal_kas_bank',
+        'tanggal_uang_jalan',
         'surat_jalan_id',
         'kegiatan_bongkar_muat',
-        'jenis_transaksi',
         'kategori_uang_jalan',
         'jumlah_uang_jalan',
         'jumlah_mel',
@@ -31,14 +28,12 @@ class UangJalan extends Model
         'jumlah_penyesuaian',
         'jumlah_total',
         'memo',
-        'tanggal_pemberian',
         'status',
         'created_by'
     ];
 
     protected $casts = [
-        'tanggal_kas_bank' => 'date',
-        'tanggal_pemberian' => 'date',
+        'tanggal_uang_jalan' => 'date',
         'jumlah_uang_jalan' => 'decimal:2',
         'jumlah_mel' => 'decimal:2',
         'jumlah_pelancar' => 'decimal:2',
@@ -64,6 +59,14 @@ class UangJalan extends Model
      * Relationship dengan User (creator)
      */
     public function createdBy()
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
+     * Alias untuk relationship user (backward compatibility)
+     */
+    public function user()
     {
         return $this->belongsTo(User::class, 'created_by');
     }

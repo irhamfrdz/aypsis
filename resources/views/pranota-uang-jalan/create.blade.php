@@ -68,6 +68,23 @@
                 </div>
             </div>
 
+            <!-- Status Information -->
+            <div class="bg-blue-50 border border-blue-200 p-3 mb-4 rounded">
+                <div class="flex items-center">
+                    <svg class="h-4 w-4 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <div class="text-xs text-blue-800">
+                        <strong>Info:</strong> Pranota akan dibuat dengan status 
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Disetujui</span>
+                        dan status uang jalan yang dipilih akan berubah dari 
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-orange-100 text-orange-800">Belum Pranota</span>
+                        menjadi 
+                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">Sudah Pranota</span>
+                    </div>
+                </div>
+            </div>
+
             <!-- Available Uang Jalan -->
             <div class="bg-white rounded border border-gray-200 p-4 mb-4">
                 <div class="flex justify-between items-center mb-3">
@@ -98,6 +115,7 @@
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Surat Jalan</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Supir/Kenek</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
                                     <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Jumlah</th>
                                 </tr>
                             </thead>
@@ -118,7 +136,7 @@
                                             <div class="text-xs text-gray-500">{{ $uangJalan->kegiatan_bongkar_muat }}</div>
                                         </td>
                                         <td class="px-3 py-2 text-sm text-gray-900">
-                                            {{ $uangJalan->tanggal_pemberian ? $uangJalan->tanggal_pemberian->format('d/m/Y') : '-' }}
+                                            {{ $uangJalan->tanggal_uang_jalan ? $uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
                                         </td>
                                         <td class="px-3 py-2">
                                             @if($uangJalan->suratJalan)
@@ -139,6 +157,19 @@
                                             @endif
                                         </td>
                                         <td class="px-3 py-2">
+                                            @php
+                                                $statusConfig = [
+                                                    'belum_dibayar' => ['bg-yellow-100', 'text-yellow-800', 'Belum Dibayar'],
+                                                    'belum_masuk_pranota' => ['bg-orange-100', 'text-orange-800', 'Belum Pranota'],
+                                                    'sudah_masuk_pranota' => ['bg-blue-100', 'text-blue-800', 'Sudah Pranota'],
+                                                ];
+                                                $config = $statusConfig[$uangJalan->status] ?? ['bg-gray-100', 'text-gray-800', ucwords(str_replace('_', ' ', $uangJalan->status))];
+                                            @endphp
+                                            <span class="inline-flex items-center px-2 py-1 rounded text-xs font-medium {{ $config[0] }} {{ $config[1] }}">
+                                                {{ $config[2] }}
+                                            </span>
+                                        </td>
+                                        <td class="px-3 py-2">
                                             <div class="text-sm font-semibold text-gray-900">
                                                 Rp {{ number_format($uangJalan->jumlah_total, 0, ',', '.') }}
                                             </div>
@@ -157,6 +188,75 @@
                             </div>
                             <div class="text-sm font-semibold text-gray-900">
                                 Total: Rp <span id="totalAmount">0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Penyesuaian -->
+                    <div class="mt-4 p-4 bg-white border border-gray-200 rounded">
+                        <h4 class="text-sm font-medium text-gray-900 mb-3">Penyesuaian</h4>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div>
+                                <label for="penyesuaian" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Jumlah Penyesuaian
+                                </label>
+                                <div class="flex">
+                                    <select id="penyesuaianType" 
+                                            onchange="updateTotalWithPenyesuaian()" 
+                                            class="w-16 rounded-l-md border-2 border-gray-300 border-r-0 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:border-indigo-500 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:z-10">
+                                        <option value="subtract">−</option>
+                                        <option value="add">+</option>
+                                    </select>
+                                    <div class="relative flex-1">
+                                        <input type="number" 
+                                               name="penyesuaian_amount" 
+                                               id="penyesuaian_amount" 
+                                               value="{{ old('penyesuaian_amount', 0) }}"
+                                               step="0.01"
+                                               min="0"
+                                               class="block w-full rounded-none rounded-r-md border-2 border-gray-300 pl-3 pr-12 py-2 text-sm focus:border-indigo-500 focus:ring-indigo-500 @error('penyesuaian') border-red-400 focus:border-red-500 @enderror"
+                                               placeholder="0.00"
+                                               onchange="updateTotalWithPenyesuaian()">
+                                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                            <span class="text-gray-500 text-sm font-medium">Rp</span>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" name="penyesuaian" id="penyesuaian">
+                                </div>
+                                <p class="mt-1 text-xs text-gray-500">Pilih (-) untuk mengurangi atau (+) untuk menambah total</p>
+                                @error('penyesuaian')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="keterangan_penyesuaian" class="block text-sm font-medium text-gray-700 mb-1">
+                                    Keterangan Penyesuaian
+                                </label>
+                                <textarea name="keterangan_penyesuaian" 
+                                          id="keterangan_penyesuaian" 
+                                          rows="3"
+                                          class="block w-full rounded-md border-2 border-gray-300 px-3 py-2 text-sm placeholder-gray-400 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 @error('keterangan_penyesuaian') border-red-400 focus:border-red-500 focus:ring-red-500 @enderror"
+                                          placeholder="Jelaskan alasan penyesuaian (opsional)...">{{ old('keterangan_penyesuaian') }}</textarea>
+                                @error('keterangan_penyesuaian')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                        <!-- Total Akhir -->
+                        <div class="mt-4 p-4 bg-gradient-to-r from-indigo-50 to-blue-50 rounded-lg border border-indigo-200">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center">
+                                    <svg class="h-5 w-5 text-indigo-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+                                    </svg>
+                                    <span class="text-sm font-semibold text-indigo-800">Total Akhir</span>
+                                </div>
+                                <div class="text-right">
+                                    <div class="text-lg font-bold text-indigo-900">
+                                        Rp <span id="totalWithPenyesuaian">0</span>
+                                    </div>
+                                    <div class="text-xs text-indigo-600">Subtotal + Penyesuaian</div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -208,6 +308,9 @@ function updateTotal() {
     document.getElementById('selectedCount').textContent = count;
     document.getElementById('totalAmount').textContent = total.toLocaleString('id-ID');
     
+    // Update total with penyesuaian
+    updateTotalWithPenyesuaian();
+    
     // Enable/disable submit button
     const submitBtn = document.getElementById('submitBtn');
     if (submitBtn) {
@@ -220,6 +323,32 @@ function updateTotal() {
     if (selectAllCheckbox && allCheckboxes.length > 0) {
         selectAllCheckbox.checked = checkboxes.length === allCheckboxes.length;
         selectAllCheckbox.indeterminate = checkboxes.length > 0 && checkboxes.length < allCheckboxes.length;
+    }
+}
+
+function updateTotalWithPenyesuaian() {
+    const totalAmountText = document.getElementById('totalAmount').textContent;
+    const totalAmount = parseFloat(totalAmountText.replace(/[^\d]/g, '')) || 0;
+    
+    const penyesuaianType = document.getElementById('penyesuaianType').value;
+    const penyesuaianAmount = parseFloat(document.getElementById('penyesuaian_amount').value) || 0;
+    
+    // Hitung penyesuaian berdasarkan tipe
+    let penyesuaian = 0;
+    if (penyesuaianType === 'subtract') {
+        penyesuaian = -Math.abs(penyesuaianAmount); // Selalu negatif untuk pengurangan
+    } else if (penyesuaianType === 'add') {
+        penyesuaian = Math.abs(penyesuaianAmount); // Selalu positif untuk penambahan
+    }
+    
+    // Update hidden input dengan nilai final
+    document.getElementById('penyesuaian').value = penyesuaian;
+    
+    const totalWithPenyesuaian = totalAmount + penyesuaian;
+    
+    const totalWithPenyesuaianElement = document.getElementById('totalWithPenyesuaian');
+    if (totalWithPenyesuaianElement) {
+        totalWithPenyesuaianElement.textContent = totalWithPenyesuaian.toLocaleString('id-ID');
     }
 }
 
@@ -253,6 +382,7 @@ function deselectAll() {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     updateTotal();
+    updateTotalWithPenyesuaian();
 });
 </script>
 @endsection

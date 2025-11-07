@@ -98,10 +98,9 @@
                 </div>
             @endif
 
-            <!-- Informasi Dasar -->
             <div class="mb-6">
                 <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Informasi Pembayaran</h3>
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Nomor Uang Jalan -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Uang Jalan <span class="text-red-600">*</span></label>
@@ -116,74 +115,21 @@
                         <p class="mt-0.5 text-xs text-gray-500">Format: UJ + BulanTahun + Running Number (tidak reset per bulan)</p>
                     </div>
 
-                    <!-- Bank/Kas -->
+                    <!-- Tanggal Uang Jalan -->
                     <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Pilih Bank/Kas <span class="text-red-600">*</span></label>
-                        <select name="bank_kas" 
-                                id="bank_kas"
-                                required
-                                onchange="updateNomorKasBank()"
-                                class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('bank_kas') border-red-500 @enderror">
-                            <option value="">-- Pilih Bank/Kas --</option>
-                            @if(isset($akunCoa))
-                                @foreach($akunCoa as $akun)
-                                    <option value="{{ $akun->nama_akun }}" 
-                                            data-kode="{{ $akun->kode_nomor ?? '000' }}" 
-                                            {{ old('bank_kas') == $akun->nama_akun ? 'selected' : '' }}>
-                                        {{ $akun->nama_akun }}
-                                    </option>
-                                @endforeach
-                            @endif
-                        </select>
-                        @error('bank_kas')
-                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Nomor Kas/Bank (Auto Generated) -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Nomor Kas/Bank <span class="text-red-600">*</span></label>
-                        <input type="text"
-                               name="nomor_kas_bank"
-                               id="nomor_kas_bank"
-                               value="{{ old('nomor_kas_bank', '000' . date('my') . str_pad(1, 6, '0', STR_PAD_LEFT)) }}"
-                               readonly
-                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded bg-gray-50 text-gray-700 focus:outline-none @error('nomor_kas_bank') border-red-500 @enderror">
-                        @error('nomor_kas_bank')
-                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                        <p class="mt-0.5 text-xs text-gray-500">Otomatis generate berdasarkan bank yang dipilih</p>
-                    </div>
-
-                    <!-- Tanggal Kas/Bank -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Kas/Bank <span class="text-red-600">*</span></label>
+                        <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Uang Jalan <span class="text-red-600">*</span></label>
                         <input type="date"
-                               name="tanggal_kas_bank"
-                               value="{{ old('tanggal_kas_bank', date('Y-m-d')) }}"
+                               name="tanggal_uang_jalan"
+                               value="{{ old('tanggal_uang_jalan', date('Y-m-d')) }}"
                                required
-                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_kas_bank') border-red-500 @enderror">
-                        @error('tanggal_kas_bank')
+                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_uang_jalan') border-red-500 @enderror">
+                        @error('tanggal_uang_jalan')
                             <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    <!-- Tanggal Pemberian -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Tanggal Pemberian <span class="text-red-600">*</span></label>
-                        <input type="date"
-                               name="tanggal_pemberian"
-                               value="{{ old('tanggal_pemberian', date('Y-m-d')) }}"
-                               required
-                               class="w-full px-2.5 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_pemberian') border-red-500 @enderror">
-                        @error('tanggal_pemberian')
-                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                 </div>
                 
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 mt-3">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
                     <!-- Pilihan Bongkar/Muat -->
                     <div>
                         <label class="block text-xs font-medium text-gray-700 mb-1">Kegiatan <span class="text-red-600">*</span></label>
@@ -208,34 +154,6 @@
                             </label>
                         </div>
                         @error('kegiatan_bongkar_muat')
-                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Jenis Transaksi -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Jenis Transaksi <span class="text-red-600">*</span></label>
-                        <div class="flex gap-3">
-                            <label class="flex items-center">
-                                <input type="radio" 
-                                       name="jenis_transaksi" 
-                                       value="debit" 
-                                       {{ old('jenis_transaksi') == 'debit' ? 'checked' : '' }}
-                                       required
-                                       class="h-3.5 w-3.5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                <span class="ml-1.5 text-xs text-gray-700">Debit</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" 
-                                       name="jenis_transaksi" 
-                                       value="kredit" 
-                                       {{ old('jenis_transaksi') == 'kredit' ? 'checked' : '' }}
-                                       required
-                                       class="h-3.5 w-3.5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                <span class="ml-1.5 text-xs text-gray-700">Kredit</span>
-                            </label>
-                        </div>
-                        @error('jenis_transaksi')
                             <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
@@ -526,39 +444,6 @@ function calculateTotal() {
     // Update nilai di form
     document.getElementById('subtotal').value = subtotal;
     document.getElementById('jumlah_total').value = total;
-}
-
-function updateNomorKasBank() {
-    const bankSelect = document.getElementById('bank_kas');
-    const nomorKasBankInput = document.getElementById('nomor_kas_bank');
-    
-    if (bankSelect && nomorKasBankInput) {
-        const selectedOption = bankSelect.options[bankSelect.selectedIndex];
-        
-        if (selectedOption && selectedOption.value) {
-            // Get bank code from selected option
-            const bankCode = selectedOption.getAttribute('data-kode') || '000';
-            
-            // Generate current month/year
-            const now = new Date();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const year = String(now.getFullYear()).slice(-2);
-            
-            // Generate running number (for preview, will be calculated server-side)
-            const runningNumber = '000001';
-            
-            // Format: BankCode + MMYY + RunningNumber
-            const nomorKasBank = bankCode + month + year + runningNumber;
-            
-            nomorKasBankInput.value = nomorKasBank;
-        } else {
-            // Reset to default if no bank selected
-            const now = new Date();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const year = String(now.getFullYear()).slice(-2);
-            nomorKasBankInput.value = '000' + month + year + '000001';
-        }
-    }
 }
 
 // Format currency input

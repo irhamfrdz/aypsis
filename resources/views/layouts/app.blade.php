@@ -1199,13 +1199,14 @@
 
 {{-- Pembayaran Dropdown --}}
 @php
-    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
+    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
     $hasPaymentPermissions = $user && (
         $user->can('pembayaran-pranota-kontainer-view') ||
         $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
         $user->can('pembayaran-pranota-cat-view') ||
         $user->can('pembayaran-pranota-supir-view') ||
         $user->can('pembayaran-pranota-surat-jalan-view') ||
+        $user->can('pembayaran-pranota-uang-jalan-view') ||
         $user->can('pembayaran-aktivitas-lainnya-view') ||
         $user->can('pembayaran-uang-muka-view') ||
         $user->can('pembayaran-ob-view') ||
@@ -1231,8 +1232,8 @@
     <div id="pembayaran-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isPaymentRoute) style="display: block;" @endif>
         {{-- Aktivitas Supir Sub-dropdown --}}
         @php
-            $isAktivitasSupirPaymentRoute = Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*');
-            $hasAktivitasSupirPaymentPermission = $user && ($user->can('pembayaran-pranota-supir-view') || $user->can('pembayaran-pranota-surat-jalan-view'));
+            $isAktivitasSupirPaymentRoute = Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*');
+            $hasAktivitasSupirPaymentPermission = $user && ($user->can('pembayaran-pranota-supir-view') || $user->can('pembayaran-pranota-surat-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view'));
         @endphp
         @if($hasAktivitasSupirPaymentPermission)
         <div class="mt-2 mb-2">
@@ -1267,6 +1268,16 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                         </svg>
                         Bayar Pranota Surat Jalan
+                    </a>
+                @endif
+
+                {{-- Pembayaran Pranota Uang Jalan --}}
+                @if(Route::has('pembayaran-pranota-uang-jalan.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-uang-jalan-view')))
+                    <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
+                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
+                        </svg>
+                        Bayar Pranota Uang Jalan
                     </a>
                 @endif
             </div>

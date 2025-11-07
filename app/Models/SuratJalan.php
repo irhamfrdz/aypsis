@@ -56,6 +56,7 @@ class SuratJalan extends Model
         'status_pembayaran_uang_jalan',
         'status_pembayaran_uang_rit',
         'status_pembayaran_uang_rit_kenek',
+        'tanggal_tanda_terima',
         'total_tarif',
         'jumlah_terbayar'
     ];
@@ -63,6 +64,7 @@ class SuratJalan extends Model
     protected $casts = [
         'tanggal_surat_jalan' => 'date',
         'tanggal_muat' => 'date',
+        'tanggal_tanda_terima' => 'date',
         'input_date' => 'datetime',
         'waktu_berangkat' => 'datetime',
         'uang_jalan' => 'decimal:2',
@@ -78,6 +80,7 @@ class SuratJalan extends Model
     protected $dates = [
         'tanggal_surat_jalan',
         'tanggal_muat',
+        'tanggal_tanda_terima',
         'input_date',
         'waktu_berangkat',
     ];
@@ -116,6 +119,40 @@ class SuratJalan extends Model
     public function inputBy()
     {
         return $this->belongsTo(User::class, 'input_by', 'id');
+    }
+
+    public function supirKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'supir', 'nama_panggilan');
+    }
+
+    public function kenekKaryawan()
+    {
+        return $this->belongsTo(Karyawan::class, 'kenek', 'nama_lengkap');
+    }
+    
+    // Alternative: Get supir NIK with fallback
+    public function getSupirNikAttribute()
+    {
+        // Try nama_panggilan first
+        $karyawan = Karyawan::where('nama_panggilan', $this->supir)->first();
+        if (!$karyawan) {
+            // Fallback to nama_lengkap
+            $karyawan = Karyawan::where('nama_lengkap', $this->supir)->first();
+        }
+        return $karyawan ? $karyawan->nik : null;
+    }
+    
+    // Alternative: Get kenek NIK with fallback
+    public function getKenekNikAttribute()
+    {
+        // Try nama_lengkap first
+        $karyawan = Karyawan::where('nama_lengkap', $this->kenek)->first();
+        if (!$karyawan) {
+            // Fallback to nama_panggilan
+            $karyawan = Karyawan::where('nama_panggilan', $this->kenek)->first();
+        }
+        return $karyawan ? $karyawan->nik : null;
     }
 
 

@@ -4,7 +4,9 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\Permission;
+use Spatie\Permission\Models\Permission;
+use Spatie\Permission\Models\Role;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 
 class PermissionSeeder extends Seeder
@@ -12,11 +14,14 @@ class PermissionSeeder extends Seeder
     /**
      * Run the database seeds.
      *
-     * Seeder komprehensif untuk semua 244 permission yang ada di sistem
+     * Seeder komprehensif untuk semua permissions yang ada di sistem
      * Berdasarkan analisis routes/web.php
      */
     public function run(): void
     {
+        // Reset cached roles and permissions
+        app()[\Spatie\Permission\PermissionRegistrar::class]->forgetCachedPermissions();
+
         // Disable foreign key checks temporarily
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
 

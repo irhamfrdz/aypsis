@@ -37,6 +37,7 @@ use App\Http\Controllers\PembayaranPranotaCatController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanController;
 use App\Http\Controllers\PembayaranPranotaPerbaikanKontainerController;
 use App\Http\Controllers\PembayaranPranotaSuratJalanController;
+use App\Http\Controllers\PembayaranPranotaUangJalanController;
 use App\Http\Controllers\AktivitasLainnyaController;
 use App\Http\Controllers\PembayaranAktivitasLainnyaController;
 use App\Http\Controllers\PembayaranUangMukaController;
@@ -1187,6 +1188,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
              'destroy' => 'can:pranota-uang-jalan-delete'
          ]);
 
+    // Print Pranota Uang Jalan
+    Route::get('pranota-uang-jalan/{pranotaUangJalan}/print', [\App\Http\Controllers\PranotaSuratJalanController::class, 'print'])
+         ->name('pranota-uang-jalan.print')
+         ->middleware('can:pranota-uang-jalan-view');
+
     // ============= SURAT JALAN BONGKARAN ROUTES =============
     
     // Select kapal and voyage before creating
@@ -1705,6 +1711,36 @@ Route::get('/test-gate-in-ajax', function () {
             Route::get('/generate-nomor', [PembayaranPranotaSuratJalanController::class, 'generatePaymentNumber'])
                 ->name('generate-nomor')
                 ->middleware('can:pembayaran-pranota-surat-jalan-create');
+        });
+
+    // 💰 PEMBAYARAN PRANOTA UANG JALAN (Travel Allowance Payment)
+    // ═══════════════════════════════════════════════════════════════════════
+
+    Route::prefix('pembayaran-pranota-uang-jalan')
+        ->name('pembayaran-pranota-uang-jalan.')
+        ->middleware(['auth'])
+        ->group(function() {
+            Route::get('/', [PembayaranPranotaUangJalanController::class, 'index'])
+                ->name('index')
+                ->middleware('can:pembayaran-pranota-uang-jalan-view');
+            Route::get('/create', [PembayaranPranotaUangJalanController::class, 'create'])
+                ->name('create')
+                ->middleware('can:pembayaran-pranota-uang-jalan-create');
+            Route::post('/', [PembayaranPranotaUangJalanController::class, 'store'])
+                ->name('store')
+                ->middleware('can:pembayaran-pranota-uang-jalan-create');
+            Route::get('/{pembayaranPranotaUangJalan}', [PembayaranPranotaUangJalanController::class, 'show'])
+                ->name('show')
+                ->middleware('can:pembayaran-pranota-uang-jalan-view');
+            Route::get('/{pembayaranPranotaUangJalan}/edit', [PembayaranPranotaUangJalanController::class, 'edit'])
+                ->name('edit')
+                ->middleware('can:pembayaran-pranota-uang-jalan-edit');
+            Route::put('/{pembayaranPranotaUangJalan}', [PembayaranPranotaUangJalanController::class, 'update'])
+                ->name('update')
+                ->middleware('can:pembayaran-pranota-uang-jalan-edit');
+            Route::delete('/{pembayaranPranotaUangJalan}', [PembayaranPranotaUangJalanController::class, 'destroy'])
+                ->name('destroy')
+                ->middleware('can:pembayaran-pranota-uang-jalan-delete');
         });
 
 /*

@@ -108,76 +108,72 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             @if($uangJalans->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200">
+                    <table class="min-w-full divide-y divide-gray-200 text-xs table-fixed">
+                        <colgroup>
+                            <col class="w-12">   <!-- No -->
+                            <col class="w-28">   <!-- No Uang Jalan -->
+                            <col class="w-32">   <!-- No Surat Jalan -->
+                            <col class="w-24">   <!-- Tanggal UJ -->
+                            <col class="w-24">   <!-- Supir -->
+                            <col class="w-24">   <!-- Total -->
+                            <col class="w-24">   <!-- Status -->
+                            <col class="w-20">   <!-- Aksi -->
+                        </colgroup>
                         <thead class="bg-gray-50">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Surat Jalan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No Plat</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-8">No</th>
+                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24">No Uang Jalan</th>
+                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-32">No Surat Jalan</th>
+                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-20">Tanggal UJ</th>
+                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24">Supir</th>
+                                <th class="px-2 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-tight w-20">Total</th>
+                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24">Status</th>
+                                <th class="px-1 py-1 text-center text-xs font-medium text-gray-500 uppercase tracking-tight w-20">Aksi</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($uangJalans as $index => $uangJalan)
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                    <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 font-medium w-8">
                                         {{ $uangJalans->firstItem() + $index }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $uangJalan->tanggal ? \Carbon\Carbon::parse($uangJalan->tanggal)->format('d/m/Y') : '-' }}
+                                    <td class="px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900 w-24">
+                                        {{ $uangJalan->nomor_uang_jalan ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm font-medium text-gray-900">{{ $uangJalan->suratJalan->no_surat_jalan ?? '-' }}</div>
-                                        @if($uangJalan->suratJalan && $uangJalan->suratJalan->order)
-                                            <div class="text-xs text-gray-500">Order: {{ $uangJalan->suratJalan->order->nomor_order }}</div>
-                                        @endif
+                                    <td class="px-2 py-1 whitespace-nowrap text-xs font-medium text-gray-900 w-32">
+                                        {{ $uangJalan->suratJalan->no_surat_jalan ?? '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <div class="text-sm text-gray-900">{{ $uangJalan->suratJalan->supir ?? '-' }}</div>
-                                        @if($uangJalan->suratJalan && $uangJalan->suratJalan->kenek)
-                                            <div class="text-xs text-gray-500">Kenek: {{ $uangJalan->suratJalan->kenek }}</div>
-                                        @endif
+                                    <td class="px-1 py-1 whitespace-nowrap text-xs text-gray-900 w-20">
+                                        {{ $uangJalan->tanggal_uang_jalan ? $uangJalan->tanggal_uang_jalan->format('d/m/Y') : '-' }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $uangJalan->suratJalan->no_plat ?? '-' }}
+                                    <td class="px-2 py-1 whitespace-nowrap text-xs text-gray-900 w-24">
+                                        {{ Str::limit($uangJalan->suratJalan->supir ?? '-', 15) }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $uangJalan->suratJalan && $uangJalan->suratJalan->order && $uangJalan->suratJalan->order->pengirim ? $uangJalan->suratJalan->order->pengirim->nama_pengirim : '-' }}
+                                    <td class="px-2 py-1 whitespace-nowrap text-right text-xs font-semibold text-blue-600 w-20">
+                                        {{ number_format($uangJalan->jumlah_total ?? 0, 0, ',', '.') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="text-sm font-semibold text-blue-600">{{ $uangJalan->jumlah_formatted }}</span>
-                                    </td>
-                                    <td class="px-6 py-4 text-sm text-gray-900">
-                                        <span title="{{ $uangJalan->keterangan }}" class="truncate block max-w-32">
-                                            {{ Str::limit($uangJalan->keterangan ?? '-', 30) }}
-                                        </span>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap">
+                                    <td class="px-1 py-1 whitespace-nowrap w-24">
                                         @php
                                             $statusConfig = [
-                                                'pending' => ['bg-yellow-100', 'text-yellow-800', 'Pending'],
-                                                'dibayar' => ['bg-green-100', 'text-green-800', 'Dibayar'],
-                                                'ditolak' => ['bg-red-100', 'text-red-800', 'Ditolak']
+                                                'belum_dibayar' => ['bg-yellow-100', 'text-yellow-800', 'Belum Bayar'],
+                                                'belum_masuk_pranota' => ['bg-orange-100', 'text-orange-800', 'Belum Pranota'],
+                                                'sudah_masuk_pranota' => ['bg-blue-100', 'text-blue-800', 'Sudah Pranota'],
+                                                'lunas' => ['bg-green-100', 'text-green-800', 'Lunas'],
+                                                'dibatalkan' => ['bg-red-100', 'text-red-800', 'Batal']
                                             ];
                                             $config = $statusConfig[$uangJalan->status] ?? ['bg-gray-100', 'text-gray-800', ucfirst($uangJalan->status)];
                                         @endphp
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $config[0] }} {{ $config[1] }}">
+                                        <span class="inline-flex px-1.5 py-0.5 text-xs font-medium rounded {{ $config[0] }} {{ $config[1] }}">
                                             {{ $config[2] }}
                                         </span>
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-center">
-                                        <div class="flex justify-center space-x-1">
+                                    <td class="px-1 py-1 whitespace-nowrap text-center w-20">
+                                        <div class="flex justify-center space-x-0.5">
                                             @can('uang-jalan-view')
                                             <a href="{{ route('uang-jalan.show', $uangJalan->id) }}" 
-                                               class="inline-flex items-center p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-colors duration-150"
-                                               title="Lihat Detail">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                               class="inline-flex items-center p-1.5 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded transition-colors"
+                                               title="Detail">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                                                 </svg>
@@ -185,11 +181,11 @@
                                             @endcan
                                             
                                             @can('uang-jalan-update')
-                                            @if($uangJalan->status === 'pending')
+                                            @if(in_array($uangJalan->status, ['belum_dibayar', 'belum_masuk_pranota']))
                                             <a href="{{ route('uang-jalan.edit', $uangJalan->id) }}" 
-                                               class="inline-flex items-center p-2 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded-lg transition-colors duration-150"
+                                               class="inline-flex items-center p-1.5 text-amber-600 hover:text-amber-800 hover:bg-amber-50 rounded transition-colors"
                                                title="Edit">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                                                 </svg>
                                             </a>
@@ -197,12 +193,12 @@
                                             @endcan
                                             
                                             @can('uang-jalan-delete')
-                                            @if($uangJalan->status === 'pending')
+                                            @if(in_array($uangJalan->status, ['belum_dibayar', 'belum_masuk_pranota']))
                                             <button type="button" 
-                                                    class="inline-flex items-center p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors duration-150"
+                                                    class="inline-flex items-center p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded transition-colors"
                                                     title="Hapus"
-                                                    onclick="confirmDelete('{{ $uangJalan->id }}', '{{ $uangJalan->suratJalan->no_surat_jalan ?? '' }}')">
-                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    onclick="confirmDelete('{{ $uangJalan->id }}', '{{ $uangJalan->nomor_uang_jalan ?? $uangJalan->suratJalan->no_surat_jalan ?? '' }}')">
+                                                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                                                 </svg>
                                             </button>
@@ -218,11 +214,10 @@
 
                 <!-- Pagination -->
                 @if($uangJalans->hasPages())
-                    <div class="border-t border-gray-200 px-6 py-4">
-                        <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-                            <div class="text-sm text-gray-500">
-                                Menampilkan {{ $uangJalans->firstItem() }} sampai {{ $uangJalans->lastItem() }} 
-                                dari {{ $uangJalans->total() }} data
+                    <div class="border-t border-gray-200 px-4 py-2">
+                        <div class="flex flex-col sm:flex-row justify-between items-center gap-2">
+                            <div class="text-xs text-gray-500">
+                                {{ $uangJalans->firstItem() }}-{{ $uangJalans->lastItem() }} dari {{ $uangJalans->total() }}
                             </div>
                             <div class="flex justify-center">
                                 {{ $uangJalans->appends(request()->query())->links() }}
@@ -268,7 +263,7 @@
             </div>
             <h3 class="text-lg font-medium text-gray-900 mb-2">Konfirmasi Hapus</h3>
             <p class="text-sm text-gray-500 mb-1">
-                Apakah Anda yakin ingin menghapus uang jalan untuk surat jalan
+                Apakah Anda yakin ingin menghapus uang jalan
             </p>
             <p class="text-sm font-semibold text-gray-900 mb-4">
                 <span id="deleteItemName"></span>?
@@ -338,9 +333,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
-function confirmDelete(id, noSuratJalan) {
-    document.getElementById('deleteItemName').textContent = noSuratJalan;
-    document.getElementById('deleteForm').action = '/uang-jalan/' + id;
+function confirmDelete(id, identifier) {
+    document.getElementById('deleteItemName').textContent = identifier;
+    document.getElementById('deleteForm').action = '{{ route('uang-jalan.destroy', ':id') }}'.replace(':id', id);
     
     // Show modal
     document.getElementById('deleteModal').classList.remove('hidden');

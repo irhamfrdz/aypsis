@@ -10,7 +10,14 @@
                 <p class="text-xs text-gray-600 mt-0.5">{{ $pranotaUangJalan->nomor_pranota }}</p>
             </div>
             <div class="flex gap-2">
-                @if($pranotaUangJalan->status_pembayaran === 'unpaid')
+                <a href="{{ route('pranota-uang-jalan.print', $pranotaUangJalan) }}" 
+                   class="bg-green-600 hover:bg-green-700 text-white px-3 py-1.5 rounded text-sm flex items-center" target="_blank">
+                    <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
+                    </svg>
+                    Cetak
+                </a>
+                @if(in_array($pranotaUangJalan->status_pembayaran, ['unpaid', 'approved']))
                     <a href="{{ route('pranota-uang-jalan.edit', $pranotaUangJalan) }}" 
                        class="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1.5 rounded text-sm flex items-center">
                         <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -50,8 +57,16 @@
                     <div class="text-sm text-gray-900 mt-1">{{ $pranotaUangJalan->jumlah_uang_jalan }} item</div>
                 </div>
                 <div>
-                    <label class="block text-xs font-medium text-gray-500">Total Amount</label>
-                    <div class="text-lg font-bold text-gray-900 mt-1">{{ $pranotaUangJalan->formatted_total }}</div>
+                    <label class="block text-xs font-medium text-gray-500">Subtotal Uang Jalan</label>
+                    <div class="text-sm text-gray-900 mt-1">{{ $pranotaUangJalan->formatted_total }}</div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500">Penyesuaian</label>
+                    <div class="text-sm text-gray-900 mt-1">{{ $pranotaUangJalan->formatted_penyesuaian }}</div>
+                </div>
+                <div>
+                    <label class="block text-xs font-medium text-gray-500">Total Akhir</label>
+                    <div class="text-lg font-bold text-gray-900 mt-1">{{ $pranotaUangJalan->formatted_total_with_penyesuaian }}</div>
                 </div>
                 <div>
                     <label class="block text-xs font-medium text-gray-500">Status Pembayaran</label>
@@ -65,6 +80,12 @@
                 <div class="md:col-span-3">
                     <label class="block text-xs font-medium text-gray-500">Catatan</label>
                     <div class="text-sm text-gray-900 mt-1">{{ $pranotaUangJalan->catatan }}</div>
+                </div>
+                @endif
+                @if($pranotaUangJalan->keterangan_penyesuaian)
+                <div class="md:col-span-3">
+                    <label class="block text-xs font-medium text-gray-500">Keterangan Penyesuaian</label>
+                    <div class="text-sm text-gray-900 mt-1">{{ $pranotaUangJalan->keterangan_penyesuaian }}</div>
                 </div>
                 @endif
                 <div class="md:col-span-3 text-xs text-gray-500 border-t border-gray-200 pt-2">

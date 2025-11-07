@@ -192,6 +192,75 @@
                 @endif
             </div>
 
+            <!-- Penyesuaian -->
+            <div class="bg-white rounded border border-gray-200 p-4 mb-4">
+                <h3 class="text-sm font-medium text-gray-900 mb-3 border-b border-gray-200 pb-2">Penyesuaian</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label for="penyesuaian" class="block text-sm font-medium text-gray-700 mb-1">
+                            Jumlah Penyesuaian
+                        </label>
+                        <div class="flex">
+                            <select id="penyesuaianType" onchange="updateTotalWithPenyesuaian()" class="rounded-l-md border-gray-300 border-r-0 focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                                @php
+                                    $currentPenyesuaian = old('penyesuaian', $pranotaUangJalan->penyesuaian);
+                                    $isAddition = $currentPenyesuaian >= 0;
+                                    $displayAmount = abs($currentPenyesuaian);
+                                @endphp
+                                <option value="subtract" {{ !$isAddition ? 'selected' : '' }}>-</option>
+                                <option value="add" {{ $isAddition ? 'selected' : '' }}>+</option>
+                            </select>
+                            <input type="number" 
+                                   name="penyesuaian_amount" 
+                                   id="penyesuaian_amount" 
+                                   value="{{ old('penyesuaian_amount', $displayAmount) }}"
+                                   step="0.01"
+                                   min="0"
+                                   class="flex-1 rounded-r-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('penyesuaian') border-red-500 @enderror"
+                                   placeholder="0.00"
+                                   onchange="updateTotalWithPenyesuaian()">
+                            <input type="hidden" name="penyesuaian" id="penyesuaian" value="{{ $currentPenyesuaian }}">
+                        </div>
+                        <p class="mt-1 text-xs text-gray-500">Pilih (-) untuk mengurangi atau (+) untuk menambah total</p>
+                        @error('penyesuaian')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div>
+                        <label for="keterangan_penyesuaian" class="block text-sm font-medium text-gray-700 mb-1">
+                            Keterangan Penyesuaian
+                        </label>
+                        <textarea name="keterangan_penyesuaian" 
+                                  id="keterangan_penyesuaian" 
+                                  rows="3"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm @error('keterangan_penyesuaian') border-red-500 @enderror"
+                                  placeholder="Jelaskan alasan penyesuaian...">{{ old('keterangan_penyesuaian', $pranotaUangJalan->keterangan_penyesuaian) }}</textarea>
+                        @error('keterangan_penyesuaian')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Total Summary -->
+                <div class="mt-4 p-3 bg-gray-50 rounded">
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal Uang Jalan:</span>
+                            <span class="font-medium" id="originalTotal">{{ $pranotaUangJalan->formatted_total }}</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Penyesuaian:</span>
+                            <span class="font-medium" id="penyesuaianDisplay">Rp {{ number_format($pranotaUangJalan->penyesuaian, 0, ',', '.') }}</span>
+                        </div>
+                        <hr class="border-gray-300">
+                        <div class="flex justify-between text-sm font-bold">
+                            <span class="text-gray-900">Total Akhir:</span>
+                            <span class="text-gray-900" id="totalWithPenyesuaian">{{ $pranotaUangJalan->formatted_total_with_penyesuaian }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Submit Button -->
             <div class="flex justify-end gap-2">
                 <a href="{{ route('pranota-uang-jalan.show', $pranotaUangJalan) }}" 
@@ -219,5 +288,44 @@ setTimeout(function() {
     const successAlert = document.getElementById('success-alert');
     if (successAlert) successAlert.remove();
 }, 3000);
+
+// Function to update total with penyesuaian
+function updateTotalWithPenyesuaian() {
+    const originalTotalText = document.getElementById('originalTotal').textContent;
+    const originalAmount = parseFloat(originalTotalText.replace(/[^\d]/g, '')) || 0;
+    
+    const penyesuaianType = document.getElementById('penyesuaianType').value;
+    const penyesuaianAmount = parseFloat(document.getElementById('penyesuaian_amount').value) || 0;
+    
+    // Hitung penyesuaian berdasarkan tipe
+    let penyesuaian = 0;
+    if (penyesuaianType === 'subtract') {
+        penyesuaian = -Math.abs(penyesuaianAmount); // Selalu negatif untuk pengurangan
+    } else if (penyesuaianType === 'add') {
+        penyesuaian = Math.abs(penyesuaianAmount); // Selalu positif untuk penambahan
+    }
+    
+    // Update hidden input dengan nilai final
+    document.getElementById('penyesuaian').value = penyesuaian;
+    
+    const totalWithPenyesuaian = originalAmount + penyesuaian;
+    
+    // Update penyesuaian display
+    const penyesuaianDisplay = document.getElementById('penyesuaianDisplay');
+    if (penyesuaianDisplay) {
+        penyesuaianDisplay.textContent = 'Rp ' + penyesuaian.toLocaleString('id-ID');
+    }
+    
+    // Update total with penyesuaian
+    const totalWithPenyesuaianElement = document.getElementById('totalWithPenyesuaian');
+    if (totalWithPenyesuaianElement) {
+        totalWithPenyesuaianElement.textContent = 'Rp ' + totalWithPenyesuaian.toLocaleString('id-ID');
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    updateTotalWithPenyesuaian();
+});
 </script>
 @endsection

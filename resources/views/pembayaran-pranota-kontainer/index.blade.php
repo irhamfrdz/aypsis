@@ -137,30 +137,13 @@
                                 </div>
                             </td>
 
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                     @empty
                         <tr>
                             <td colspan="6" class="px-6 py-4 text-center text-gray-500">
                                 Belum ada data pembayaran
                             </td>
-
-                                    <td>
-                                        @can('audit-log-view')
-                                            <button type="button" class="btn btn-info btn-sm"
-                                                    onclick="showAuditLog(get_class($pembayaran), {{ $pembayaran->id }})"
-                                                    title="Lihat Riwayat">
-                                                <i class="fas fa-history"></i>
-                                            </button>
-                                        @endcan
-                                    </td></tr>
+                        </tr>
                     @endforelse
                 </tbody>
             </table>

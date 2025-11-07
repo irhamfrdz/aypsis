@@ -29,17 +29,17 @@ return new class extends Migration
         }
 
         // Check and drop unique index if it exists
-        $uniqueIndexResult = DB::select("
-            SHOW INDEX FROM pembayaran_pranota_kontainer_items
-            WHERE Column_name = 'pranota_id' AND Non_unique = 0
-        ");
+        try {
+            $uniqueIndexResult = DB::select("
+                SHOW INDEX FROM pembayaran_pranota_kontainer_items
+                WHERE Column_name = 'pranota_id' AND Non_unique = 0
+            ");
 
-        if (!empty($uniqueIndexResult)) {
-            try {
+            if (!empty($uniqueIndexResult)) {
                 DB::statement("ALTER TABLE pembayaran_pranota_kontainer_items DROP INDEX pranota_id");
-            } catch (\Exception $e) {
-                // Ignore if index doesn't exist
             }
+        } catch (\Exception $e) {
+            // Ignore if index doesn't exist
         }
 
         // Also try to drop other possible index names

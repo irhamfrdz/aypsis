@@ -78,8 +78,8 @@ class PranotaSuratJalanController extends Controller
         // Get uang jalan yang belum ada pranota
         $availableUangJalans = UangJalan::with(['suratJalan'])
             ->whereDoesntHave('pranotaUangJalan')
-            ->where('status', 'belum_dibayar')
-            ->orderBy('tanggal_pemberian', 'desc')
+            ->whereIn('status', ['belum_dibayar', 'belum_masuk_pranota'])
+            ->orderBy('tanggal_uang_jalan', 'desc')
             ->get();
 
         return view('pranota-uang-jalan.create', compact('availableUangJalans'));
@@ -103,7 +103,22 @@ class PranotaSuratJalanController extends Controller
             'uang_jalan_ids.*' => 'exists:uang_jalans,id',
             'tanggal_pranota' => 'required|date',
             'keterangan' => 'nullable|string|max:500',
+            'penyesuaian' => 'nullable|numeric',
+            'penyesuaian_amount' => 'nullable|numeric|min:0',
+            'keterangan_penyesuaian' => 'nullable|string|max:500',
         ]);
+
+        // Additional validation: Ensure all selected uang jalans are available for pranota
+        $selectedUangJalans = UangJalan::whereIn('id', $request->uang_jalan_ids)
+            ->whereDoesntHave('pranotaUangJalan')
+            ->whereIn('status', ['belum_dibayar', 'belum_masuk_pranota'])
+            ->get();
+
+        if ($selectedUangJalans->count() !== count($request->uang_jalan_ids)) {
+            return redirect()->back()
+                ->withErrors(['uang_jalan_ids' => 'Beberapa uang jalan yang dipilih tidak tersedia atau sudah masuk pranota.'])
+                ->withInput();
+        }
 
         DB::beginTransaction();
         try {
@@ -113,9 +128,7 @@ class PranotaSuratJalanController extends Controller
 
             // Calculate total from selected uang jalans
             $totalAmount = 0;
-            $uangJalans = UangJalan::whereIn('id', $request->uang_jalan_ids)->get();
-
-            foreach ($uangJalans as $uangJalan) {
+            foreach ($selectedUangJalans as $uangJalan) {
                 $totalAmount += $uangJalan->jumlah_total ?? 0;
             }
 
@@ -126,12 +139,14 @@ class PranotaSuratJalanController extends Controller
                 'periode_tagihan' => $date->format('Y-m'),
                 'jumlah_uang_jalan' => count($request->uang_jalan_ids),
                 'total_amount' => $totalAmount,
+                'penyesuaian' => $request->penyesuaian ?? 0,
+                'keterangan_penyesuaian' => $request->keterangan_penyesuaian,
                 'status_pembayaran' => 'unpaid',
                 'catatan' => $request->keterangan,
                 'created_by' => $user->id,
             ]);
 
-            // Update status uang jalans to indicate they're in pranota
+            // Update status uang jalans: belum_masuk_pranota -> sudah_masuk_pranota
             UangJalan::whereIn('id', $request->uang_jalan_ids)
                 ->update(['status' => 'sudah_masuk_pranota']);
 
@@ -148,7 +163,7 @@ class PranotaSuratJalanController extends Controller
 
             DB::commit();
             return redirect()->route('pranota-uang-jalan.index')
-                ->with('success', 'Pranota uang jalan berhasil dibuat dengan nomor: ' . $nomorPranota);
+                ->with('success', 'Pranota uang jalan berhasil dibuat dengan nomor: ' . $nomorPranota . ' dan status "Belum Dibayar". Status ' . count($request->uang_jalan_ids) . ' uang jalan telah diubah menjadi "Sudah Masuk Pranota".');
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -174,6 +189,24 @@ class PranotaSuratJalanController extends Controller
         $pranotaUangJalan->load(['uangJalans.suratJalan', 'creator']);
 
         return view('pranota-uang-jalan.show', compact('pranotaUangJalan'));
+    }
+
+    /**
+     * Print pranota uang jalan.
+     */
+    public function print(PranotaUangJalan $pranotaUangJalan)
+    {
+        $user = Auth::user();
+
+        // Check permission
+        if (!$this->hasPranotaUangJalanPermission($user, 'pranota-uang-jalan-view')) {
+            abort(403, 'Anda tidak memiliki akses untuk mencetak pranota uang jalan.');
+        }
+
+        // Load relationships
+        $pranotaUangJalan->load(['uangJalans.suratJalan.supirKaryawan', 'uangJalans.suratJalan.kenekKaryawan', 'creator']);
+
+        return view('pranota-uang-jalan.print', compact('pranotaUangJalan'));
     }
 
     /**
@@ -220,6 +253,9 @@ class PranotaSuratJalanController extends Controller
             'tanggal_pranota' => 'required|date',
             'periode_tagihan' => 'required|string|max:20',
             'catatan' => 'nullable|string|max:500',
+            'penyesuaian' => 'nullable|numeric',
+            'penyesuaian_amount' => 'nullable|numeric|min:0',
+            'keterangan_penyesuaian' => 'nullable|string|max:500',
         ]);
 
         try {
@@ -227,6 +263,8 @@ class PranotaSuratJalanController extends Controller
                 'tanggal_pranota' => $request->tanggal_pranota,
                 'periode_tagihan' => $request->periode_tagihan,
                 'catatan' => $request->catatan,
+                'penyesuaian' => $request->penyesuaian ?? 0,
+                'keterangan_penyesuaian' => $request->keterangan_penyesuaian,
                 'updated_by' => $user->id,
             ]);
 
@@ -264,8 +302,8 @@ class PranotaSuratJalanController extends Controller
 
         DB::beginTransaction();
         try {
-            // Restore uang jalan status
-            $pranotaUangJalan->uangJalans()->update(['status' => 'belum_dibayar']);
+            // Restore uang jalan status back to 'belum_masuk_pranota' so they can be included in new pranota
+            $pranotaUangJalan->uangJalans()->update(['status' => 'belum_masuk_pranota']);
 
             // Detach uang jalans
             $pranotaUangJalan->uangJalans()->detach();
