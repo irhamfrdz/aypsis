@@ -65,7 +65,12 @@
                 <!-- Lokasi -->
                 <div>
                     <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>
-                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi') }}" class="{{ $inputClasses }}" maxlength="100" placeholder="Contoh: Jakarta Utara">
+                    <select name="lokasi" id="lokasi" class="{{ $inputClasses }}">
+                        <option value="">-- Pilih Lokasi --</option>
+                        <option value="BTM" {{ old('lokasi') == 'BTM' ? 'selected' : '' }}>BTM</option>
+                        <option value="JKT" {{ old('lokasi') == 'JKT' ? 'selected' : '' }}>JKT</option>
+                        <option value="PNG" {{ old('lokasi') == 'PNG' ? 'selected' : '' }}>PNG</option>
+                    </select>
                     @error('lokasi')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
