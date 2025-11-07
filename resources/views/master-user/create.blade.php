@@ -692,6 +692,75 @@
                                 <td class="text-center text-gray-400">-</td>
                             </tr>
 
+                            {{-- Operational --}}
+                            <tr class="module-row" data-module="operational">
+                                <td class="module-header">
+                                    <div class="flex items-center">
+                                        <span class="expand-icon text-lg mr-2">▶</span>
+                                        <div>
+                                            <div class="font-semibold">Operational</div>
+                                            <div class="text-xs text-gray-500">Modul operasional untuk surat jalan, uang jalan, dan proses operasional lainnya</div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="operational-header-checkbox permission-checkbox" data-permission="view">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="operational-header-checkbox permission-checkbox" data-permission="create">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="operational-header-checkbox permission-checkbox" data-permission="update">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="operational-header-checkbox permission-checkbox" data-permission="delete">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="operational-header-checkbox permission-checkbox" data-permission="approve">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="operational-header-checkbox permission-checkbox" data-permission="print">
+                                </td>
+                                <td class="text-center text-gray-500 text-sm py-3">
+                                    <input type="checkbox" class="operational-header-checkbox permission-checkbox" data-permission="export">
+                                </td>
+                            </tr>
+
+                            {{-- Operational Sub-modules --}}
+                            {{-- Uang Jalan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Uang Jalan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[uang-jalan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[uang-jalan][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
+                            {{-- Pranota Uang Jalan --}}
+                            <tr class="submodule-row" data-parent="operational">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <span>Pranota Uang Jalan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan][view]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan][create]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan][update]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan][delete]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan][approve]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan][print]" value="1" class="permission-checkbox"></td>
+                                <td><input type="checkbox" name="permissions[pranota-uang-jalan][export]" value="1" class="permission-checkbox"></td>
+                            </tr>
+
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">
                                 <td class="module-header">
@@ -1169,6 +1238,9 @@
             initializeCheckAllUser();
             initializeCheckAllAktivitasLainnya();
 
+            // Initialize check all operational permissions
+            initializeCheckAllOperational();
+
             // Initialize check all aktivitas supir permissions
             initializeCheckAllAktivitasSupir();
 
@@ -1249,6 +1321,57 @@
                     if (headerCheckbox && userCheckboxes.length > 0) {
                         const allChecked = Array.from(userCheckboxes).every(cb => cb.checked);
                         const someChecked = Array.from(userCheckboxes).some(cb => cb.checked);
+
+                        headerCheckbox.checked = allChecked;
+                        headerCheckbox.indeterminate = someChecked && !allChecked;
+                    }
+                });
+            }
+
+            // Initialize checkbox handling for Operational
+            function initializeCheckAllOperational() {
+                // Handle header checkbox changes
+                document.querySelectorAll('.operational-header-checkbox').forEach(function(headerCheckbox) {
+                    headerCheckbox.addEventListener('change', function() {
+                        const permission = this.dataset.permission;
+                        const isChecked = this.checked;
+
+                        // Update all checkboxes for this permission in operational sub-modules
+                        const operationalCheckboxes = document.querySelectorAll(`[data-parent="operational"] input[name*="[${permission}]"]`);
+                        operationalCheckboxes.forEach(function(checkbox) {
+                            checkbox.checked = isChecked;
+                        });
+
+                        // Show toast notification
+                        if (isChecked) {
+                            showToast(`✅ Semua izin ${permission} Operational telah dicentang`, 'success');
+                        } else {
+                            showToast(`❌ Semua izin ${permission} Operational telah dihapus`, 'warning');
+                        }
+                    });
+                });
+
+                // Handle sub-module checkbox changes to update header checkboxes
+                document.querySelectorAll('[data-parent="operational"] .permission-checkbox').forEach(function(subCheckbox) {
+                    subCheckbox.addEventListener('change', function() {
+                        updateOperationalHeaderCheckboxes();
+                    });
+                });
+
+                // Initialize header checkboxes state
+                updateOperationalHeaderCheckboxes();
+            }
+
+            function updateOperationalHeaderCheckboxes() {
+                const permissions = ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'];
+
+                permissions.forEach(function(permission) {
+                    const headerCheckbox = document.querySelector(`.operational-header-checkbox[data-permission="${permission}"]`);
+                    const operationalCheckboxes = document.querySelectorAll(`[data-parent="operational"] input[name*="[${permission}]"]`);
+
+                    if (headerCheckbox && operationalCheckboxes.length > 0) {
+                        const allChecked = Array.from(operationalCheckboxes).every(cb => cb.checked);
+                        const someChecked = Array.from(operationalCheckboxes).some(cb => cb.checked);
 
                         headerCheckbox.checked = allChecked;
                         headerCheckbox.indeterminate = someChecked && !allChecked;

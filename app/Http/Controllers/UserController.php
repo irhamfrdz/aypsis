@@ -527,7 +527,9 @@ class UserController extends Controller
                 'surat-jalan' => 'surat-jalan',
                 'tanda-terima' => 'tanda-terima',
                 'gate-in' => 'gate-in',
-                'pranota-surat-jalan' => 'pranota-surat-jalan'
+                'pranota-surat-jalan' => 'pranota-surat-jalan',
+                'uang-jalan' => 'uang-jalan',
+                'pranota-uang-jalan' => 'pranota-uang-jalan'
             ];
 
             foreach ($operationalModules as $moduleKey => $permissionPrefix) {
@@ -2817,6 +2819,50 @@ class UserController extends Controller
                             'delete' => 'pranota-surat-jalan-delete',
                             'print' => 'pranota-surat-jalan-print',
                             'export' => 'pranota-surat-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle uang-jalan permissions explicitly
+                    if ($module === 'uang-jalan' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'uang-jalan-view',
+                            'create' => 'uang-jalan-create',
+                            'update' => 'uang-jalan-update',
+                            'delete' => 'uang-jalan-delete',
+                            'approve' => 'uang-jalan-approve',
+                            'print' => 'uang-jalan-print',
+                            'export' => 'uang-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle pranota-uang-jalan permissions explicitly
+                    if ($module === 'pranota-uang-jalan' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'pranota-uang-jalan-view',
+                            'create' => 'pranota-uang-jalan-create',
+                            'update' => 'pranota-uang-jalan-update',
+                            'delete' => 'pranota-uang-jalan-delete',
+                            'approve' => 'pranota-uang-jalan-approve',
+                            'print' => 'pranota-uang-jalan-print',
+                            'export' => 'pranota-uang-jalan-export'
                         ];
 
                         if (isset($actionMap[$action])) {
