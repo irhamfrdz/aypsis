@@ -18,9 +18,9 @@ class UserApprovalController extends Controller
         $user = Auth::user();
         $userPermissions = $user->permissions->pluck('name')->toArray();
         $hasAccess = !empty(array_intersect($userPermissions, [
-            'master-user',
-            'user-approval',
-            'user-approval.view'
+            'master-user-view',
+            'user-approval-view',
+            'admin.user-approval'
         ]));
 
         if (!$hasAccess) {
@@ -56,9 +56,9 @@ class UserApprovalController extends Controller
         $currentUser = Auth::user();
         $userPermissions = $currentUser->permissions->pluck('name')->toArray();
         $hasAccess = !empty(array_intersect($userPermissions, [
-            'master-user',
-            'user-approval',
-            'user-approval.approve'
+            'master-user-update',
+            'user-approval-approve',
+            'admin.user-approval'
         ]));
 
         if (!$hasAccess) {
@@ -87,9 +87,9 @@ class UserApprovalController extends Controller
         $currentUser = Auth::user();
         $userPermissions = $currentUser->permissions->pluck('name')->toArray();
         $hasAccess = !empty(array_intersect($userPermissions, [
-            'master-user',
-            'user-approval',
-            'user-approval.approve'
+            'master-user-update',
+            'user-approval-reject',
+            'admin.user-approval'
         ]));
 
         if (!$hasAccess) {
@@ -123,9 +123,9 @@ class UserApprovalController extends Controller
         $currentUser = Auth::user();
         $userPermissions = $currentUser->permissions->pluck('name')->toArray();
         $hasAccess = !empty(array_intersect($userPermissions, [
-            'master-user',
-            'user-approval',
-            'user-approval.view'
+            'master-user-view',
+            'user-approval-view',
+            'admin.user-approval'
         ]));
 
         if (!$hasAccess) {

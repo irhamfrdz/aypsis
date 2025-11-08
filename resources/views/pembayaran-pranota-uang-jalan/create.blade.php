@@ -177,7 +177,7 @@
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Pranota</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rute</th>
+                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Item</th>
                                 <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Uang Jalan</th>
@@ -201,7 +201,24 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if($pranota->uangJalans && $pranota->uangJalans->count() > 0)
                                             @php
-                                                $supirs = $pranota->uangJalans->pluck('supir')->filter()->unique();
+                                                $supirs = collect();
+                                                foreach($pranota->uangJalans as $uangJalan) {
+                                                    if($uangJalan->suratJalan) {
+                                                        // Coba ambil dari relasi supirKaryawan dulu
+                                                        if($uangJalan->suratJalan->supirKaryawan) {
+                                                            $supirs->push($uangJalan->suratJalan->supirKaryawan->nama_panggilan ?? $uangJalan->suratJalan->supirKaryawan->nama_lengkap);
+                                                        }
+                                                        // Fallback ke field supir langsung jika tidak ada relasi
+                                                        else if($uangJalan->suratJalan->supir) {
+                                                            $supirs->push($uangJalan->suratJalan->supir);
+                                                        }
+                                                        // Tambahkan supir2 jika ada
+                                                        if($uangJalan->suratJalan->supir2) {
+                                                            $supirs->push($uangJalan->suratJalan->supir2);
+                                                        }
+                                                    }
+                                                }
+                                                $supirs = $supirs->filter()->unique();
                                             @endphp
                                             @if($supirs->count() > 0)
                                                 {{ $supirs->take(2)->implode(', ') }}
@@ -218,14 +235,26 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if($pranota->uangJalans && $pranota->uangJalans->count() > 0)
                                             @php
-                                                $rutes = $pranota->uangJalans->map(function($item) {
-                                                    return $item->dari . ' - ' . $item->tujuan;
-                                                })->filter()->unique();
+                                                $tujuans = collect();
+                                                foreach($pranota->uangJalans as $uangJalan) {
+                                                    if($uangJalan->suratJalan) {
+                                                        // Hanya ambil tujuan pengambilan saja
+                                                        // Prioritas 1: Dari relasi tujuan pengambilan
+                                                        if($uangJalan->suratJalan->tujuanPengambilanRelation) {
+                                                            $tujuans->push($uangJalan->suratJalan->tujuanPengambilanRelation->ke);
+                                                        }
+                                                        // Prioritas 2: Fallback ke field tujuan_pengambilan langsung
+                                                        else if($uangJalan->suratJalan->tujuan_pengambilan) {
+                                                            $tujuans->push($uangJalan->suratJalan->tujuan_pengambilan);
+                                                        }
+                                                    }
+                                                }
+                                                $tujuans = $tujuans->filter()->unique();
                                             @endphp
-                                            @if($rutes->count() > 0)
-                                                {{ $rutes->take(2)->implode(', ') }}
-                                                @if($rutes->count() > 2)
-                                                    <span class="text-gray-500 text-xs">(+{{ $rutes->count() - 2 }} rute)</span>
+                                            @if($tujuans->count() > 0)
+                                                {{ $tujuans->take(2)->implode(', ') }}
+                                                @if($tujuans->count() > 2)
+                                                    <span class="text-gray-500 text-xs">(+{{ $tujuans->count() - 2 }} tujuan)</span>
                                                 @endif
                                             @else
                                                 -

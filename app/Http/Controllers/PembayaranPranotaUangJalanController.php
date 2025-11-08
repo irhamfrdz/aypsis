@@ -91,7 +91,11 @@ class PembayaranPranotaUangJalanController extends Controller
         }
 
         $pranotaUangJalans = $pranotaUangJalanQuery
-            ->with(['uangJalans'])
+            ->with([
+                'uangJalans.suratJalan.supirKaryawan',
+                'uangJalans.suratJalan.tujuanPengambilanRelation',
+                'uangJalans.suratJalan.tujuanPengirimanRelation'
+            ])
             ->orderBy('tanggal_pranota', 'desc')
             ->get();
 
@@ -147,6 +151,9 @@ class PembayaranPranotaUangJalanController extends Controller
                 
                 // Remove array field
                 unset($paymentData['pranota_uang_jalan_ids']);
+                
+                // Set status pembayaran as paid (setelah pembayaran berhasil disimpan)
+                $paymentData['status_pembayaran'] = PembayaranPranotaUangJalan::STATUS_PAID;
                 
                 // Set created and updated by
                 $paymentData['created_by'] = Auth::id();
@@ -215,15 +222,9 @@ class PembayaranPranotaUangJalanController extends Controller
                 $successMessage .= ' ' . $totalProspeksCreated . ' data prospek FCL/CARGO telah dibuat otomatis.';
             }
 
-            // Redirect to first payment record or index page
-            $firstPembayaranId = $pembayaranIds[0] ?? null;
-            if ($firstPembayaranId) {
-                return redirect()->route('pembayaran-pranota-uang-jalan.show', $firstPembayaranId)
-                               ->with('success', $successMessage);
-            } else {
-                return redirect()->route('pembayaran-pranota-uang-jalan.index')
-                               ->with('success', $successMessage);
-            }
+            // Redirect langsung ke index page setelah berhasil membuat pembayaran
+            return redirect()->route('pembayaran-pranota-uang-jalan.index')
+                           ->with('success', $successMessage);
 
         } catch (\Exception $e) {
             DB::rollback();

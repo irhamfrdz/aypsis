@@ -1150,7 +1150,7 @@ input[required]:focus {
                                                 {{ ucfirst($tagihan->status_pranota) }}
                                             </span>
                                         @endif
-                                        <a href="{{ route('pranota.show', $pranota->id) }}" class="text-xs text-blue-600 hover:text-blue-800 font-mono">
+                                        <a href="{{ route('pranota-kontainer-sewa.show', $pranota->id) }}" class="text-xs text-blue-600 hover:text-blue-800 font-mono">
                                             {{ $pranota->no_invoice }}
                                         </a>
                                     </div>
