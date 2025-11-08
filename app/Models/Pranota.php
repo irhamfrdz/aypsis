@@ -2,18 +2,49 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
-use App\Traits\Auditable;
+// DEPRECATED: This model is no longer used in the system
+// Use specific pranota models instead:
+// - App\Models\PranotaTagihanKontainerSewa (for container lease invoices)
+// - App\Models\PranotaSuratJalan (for delivery note invoices)
+// - App\Models\PranotaUangJalan (for travel money invoices)
+// - App\Models\PranotaUangRit (for trip money invoices)
+// - App\Models\PranotaPerbaikanKontainer (for container repair invoices)
 
-class Pranota extends Model
+// This class now acts as a factory/helper to direct to the correct model
+class Pranota
 {
-    use HasFactory, Auditable;
+    public static function forKontainerSewa()
+    {
+        return new PranotaTagihanKontainerSewa();
+    }
 
-    use Auditable;
-    protected $table = "pranotalist";
-    protected $fillable = ["no_invoice", "total_amount", "keterangan", "supplier", "no_invoice_vendor", "tgl_invoice_vendor", "status", "tagihan_ids", "jumlah_tagihan", "tanggal_pranota", "due_date"];
-    protected $casts = ["tagihan_ids" => "array", "total_amount" => "decimal:2", "tanggal_pranota" => "date", "tgl_invoice_vendor" => "date", "due_date" => "date"];
+    public static function forSuratJalan()
+    {
+        return new PranotaSuratJalan();
+    }
+
+    public static function forUangJalan()
+    {
+        return new PranotaUangJalan();
+    }
+
+    public static function forPerbaikanKontainer()
+    {
+        return new PranotaPerbaikanKontainer();
+    }
+
+    // If someone tries to instantiate this class directly, show helpful error
+    public function __construct()
+    {
+        throw new \Exception(
+            'Model Pranota is deprecated. Use specific pranota models instead:' . PHP_EOL .
+            '- PranotaTagihanKontainerSewa for container lease invoices' . PHP_EOL .
+            '- PranotaSuratJalan for delivery note invoices' . PHP_EOL .
+            '- PranotaUangJalan for travel money invoices' . PHP_EOL .
+            '- PranotaPerbaikanKontainer for container repair invoices'
+        );
+    }
+}
 
     public function getTagihanItems()
     {

@@ -1688,6 +1688,33 @@ class UserController extends Controller
                                     }
                                 }
                             }
+                        }
+
+                        // DIRECT FIX: Handle pergerakan-kapal permissions explicitly
+                        if ($module === 'pergerakan-kapal' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'print', 'export'])) {
+                            // Map action to correct permission name
+                            $actionMap = [
+                                'view' => 'pergerakan-kapal-view',
+                                'create' => 'pergerakan-kapal-create',
+                                'update' => 'pergerakan-kapal-update',
+                                'delete' => 'pergerakan-kapal-delete',
+                                'approve' => 'pergerakan-kapal-approve',
+                                'print' => 'pergerakan-kapal-print',
+                                'export' => 'pergerakan-kapal-export'
+                            ];
+
+                            if (isset($actionMap[$action])) {
+                                $permissionName = $actionMap[$action];
+                                $directPermission = Permission::where('name', $permissionName)->first();
+                                if ($directPermission) {
+                                    $permissionIds[] = $directPermission->id;
+                                    $found = true;
+                                    continue; // Skip to next action
+                                }
+                            }
+                        }
+
+                        if (strpos($module, 'master-') === 0) {
                                 foreach ($possibleActions as $dbAction) {
                                     // 1. Cek master-karyawan-view (format yang benar untuk database)
                                     $permissionDash = Permission::where('name', $module . '-' . $dbAction)->first();

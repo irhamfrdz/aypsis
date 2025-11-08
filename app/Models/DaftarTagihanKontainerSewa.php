@@ -75,11 +75,11 @@ class DaftarTagihanKontainerSewa extends Model
     }
 
     /**
-     * Get the pranota that this tagihan belongs to (legacy Pranota table)
+     * Get the pranota that this tagihan belongs to (uses PranotaTagihanKontainerSewa)
      */
     public function pranota()
     {
-        return $this->belongsTo(Pranota::class, 'pranota_id');
+        return $this->belongsTo(PranotaTagihanKontainerSewa::class, 'pranota_id');
     }
 
     /**
@@ -109,14 +109,8 @@ class DaftarTagihanKontainerSewa extends Model
             return null;
         }
 
-        // First try PranotaTagihanKontainerSewa
-        $pranotaKontainerSewa = PranotaTagihanKontainerSewa::find($this->pranota_id);
-        if ($pranotaKontainerSewa) {
-            return $pranotaKontainerSewa;
-        }
-
-        // Fallback to regular Pranota
-        return Pranota::find($this->pranota_id);
+        // Use PranotaTagihanKontainerSewa
+        return PranotaTagihanKontainerSewa::find($this->pranota_id);
     }
 
     /**

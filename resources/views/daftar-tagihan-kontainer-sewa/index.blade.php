@@ -577,25 +577,25 @@ input[required]:focus {
     <div class="max-w-full mx-auto px-4">
         <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
             <!-- Rows per page control -->
-            <div class="px-6 py-3 border-b border-gray-200">
+            <div class="px-4 py-2 border-b border-gray-200">
                 @include('components.rows-per-page')
             </div>
             
             <!-- Table Section with Sticky Header -->
             <div class="table-container overflow-x-auto max-h-screen">
-                <table class="min-w-full divide-y divide-gray-200" style="min-width: 2650px;">
+                <table class="min-w-full divide-y divide-gray-200 compact-table" style="min-width: 2200px;">
                     <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
-                <tr class="border-b-2 border-gray-200">
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="width: 60px;">
+                <tr class="border-b border-gray-200">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-wider" style="width: 45px;">
                         <div class="flex items-center justify-center">
-                            <input type="checkbox" id="select-all" class="w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
+                            <input type="checkbox" id="select-all" class="checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 140px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 110px;">
                         <div class="flex items-center space-x-1">
                             <span>Grup</span>
                             <div class="relative group">
-                                <svg class="w-3 h-3 text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="icon-compact text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
                                 </svg>
                                 <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded p-2 bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap z-20">
@@ -605,56 +605,56 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 100px;">
                         <div class="flex items-center space-x-1">
                             <span>Vendor</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 160px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 140px;">
                         <div class="flex items-center space-x-1">
                             <span>Nomor Kontainer</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 80px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Size</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 100px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 80px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Periode</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Masa</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tgl Awal</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 120px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tgl Akhir</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 100px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 80px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tarif</span>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
+                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>DPP</span>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 140px;">
+                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>Adjustment</span>
                             <div class="relative group">
-                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -663,11 +663,11 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 200px;">
+                    <th class="px-1 py-1 text-left text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 140px;">
                         <div class="flex items-center justify-start space-x-1">
                             <span>Alasan Adjustment</span>
                             <div class="relative group">
-                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -676,11 +676,11 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 150px;">
+                    <th class="px-1 py-1 text-left text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 120px;">
                         <div class="flex items-center justify-start space-x-1">
                             <span>Invoice Vendor</span>
                             <div class="relative group">
-                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -689,11 +689,11 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 120px;">
+                    <th class="px-1 py-1 text-left text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
                         <div class="flex items-center justify-start space-x-1">
                             <span>Tanggal Vendor</span>
                             <div class="relative group">
-                                <svg class="h-3 w-3 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -702,31 +702,31 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 120px;">
+                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 80px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>PPN</span>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 120px;">
+                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 80px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>PPH</span>
                         </div>
                     </th>
-                    <th class="px-2 py-2 text-right text-xs font-semibold text-gray-700 uppercase tracking-wider " style="min-width: 160px;">
+                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 110px;">
                         <div class="flex items-center justify-end space-x-1">
                             <span>Grand Total</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider " style="min-width: 140px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 100px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Status</span>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider bg-orange-50 " style="min-width: 160px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight bg-orange-50" style="min-width: 120px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Status Pranota</span>
                             <div class="relative group">
-                                <svg class="w-3 h-3 text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="icon-compact text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
                                 </svg>
                                 <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded p-2 bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap z-20">
@@ -736,7 +736,7 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider bg-gray-50" style="min-width: 140px;">
+                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight bg-gray-50" style="min-width: 110px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Aksi</span>
                         </div>
@@ -747,12 +747,12 @@ input[required]:focus {
                 @forelse($tagihans ?? [] as $index => $tagihan)
                     @php /** @var \App\Models\DaftarTagihanKontainerSewa $tagihan */ @endphp
                     <tr class="hover:bg-gray-50">
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
-                            <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox w-4 h-4 text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
+                        <td class="px-2 py-1 whitespace-nowrap text-center text-[9px] text-gray-900">
+                            <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
                         </td>
                         <!-- Kolom Group -->
-                        <td class="px-2 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono" style="min-width: 100px;">
-                            <div class="relative group min-h-[40px] flex items-center justify-center">
+                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900 font-mono" style="min-width: 100px;">
+                            <div class="relative group compact-cell flex items-center justify-center">
                                 @if(optional($tagihan)->group)
                                     <div class="text-sm text-gray-700 w-full text-center">
                                         <div class="truncate max-w-[80px]" title="{{ $tagihan->group }}">
@@ -767,31 +767,31 @@ input[required]:focus {
 
                                 <!-- Edit button for group -->
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
-                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                    <button type="button" class="btn-compact bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
                                             onclick="editGroupInfo({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->group ?? '') }}')"
                                             title="Edit group">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="icon-compact" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </button>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-medium ">
+                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900 font-medium">
                             <div class="flex items-center">
-                                <div class="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
+                                <div class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5"></div>
                                 <span class="font-semibold">{{ optional($tagihan)->vendor ?? '-' }}</span>
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-mono ">
+                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900 font-mono">
                             {{ optional($tagihan)->nomor_kontainer ?? '-' }}
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ optional($tagihan)->size == '20' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
+                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900">
+                            <span class="badge-compact inline-flex items-center rounded-full font-medium {{ optional($tagihan)->size == '20' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
                                 {{ optional($tagihan)->size ?? '-' }}'
                             </span>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
+                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900">
                             @php
                                 // Implementasi logika periode
                                 $currentPeriode = optional($tagihan)->periode ?? 1;
@@ -806,16 +806,16 @@ input[required]:focus {
                             @endphp
 
                             @if($isOngoing)
-                                <div class="flex flex-col items-center space-y-1">
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 animate-pulse">
+                                <div class="flex flex-col items-center space-y-0.5">
+                                    <span class="badge-compact inline-flex items-center rounded-full font-medium bg-green-100 text-green-800 animate-pulse">
                                         {{ $displayPeriode }}
                                     </span>
-                                    <span class="text-xs text-green-600 font-medium">
+                                    <span class="text-[7px] text-green-600 font-medium">
                                         (Berjalan)
                                     </span>
                                 </div>
                             @else
-                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                <span class="badge-compact inline-flex items-center rounded-full font-medium bg-indigo-100 text-indigo-800">
                                     {{ $displayPeriode ?? '-' }}
                                 </span>
                             @endif
@@ -1112,11 +1112,8 @@ input[required]:focus {
                         <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center ">
                             @if($tagihan->pranota_id)
                                 @php
-                                    // Try to find in PranotaTagihanKontainerSewa first, then fallback to Pranota
+                                    // Find in PranotaTagihanKontainerSewa 
                                     $pranota = \App\Models\PranotaTagihanKontainerSewa::find($tagihan->pranota_id);
-                                    if (!$pranota) {
-                                        $pranota = \App\Models\Pranota::find($tagihan->pranota_id);
-                                    }
                                 @endphp
                                 @if($pranota)
                                     <div class="flex flex-col items-center space-y-1">
@@ -1286,7 +1283,7 @@ input[required]:focus {
 
 /* Enhanced table container for better scrolling */
 .table-container {
-    max-height: calc(100vh - 300px); /* Adjust based on your layout */
+    max-height: calc(100vh - 250px); /* More compact spacing */
     overflow-y: auto;
     border: 1px solid rgb(229 231 235); /* border-gray-200 */
     border-radius: 0.5rem;
@@ -1312,10 +1309,83 @@ input[required]:focus {
 .relative.group .absolute {
     z-index: 20;
 }
+
+/* Compact table styling */
+.compact-table th {
+    padding: 6px 8px !important;
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+}
+
+.compact-table td {
+    padding: 4px 6px !important;
+    font-size: 10px !important;
+    line-height: 1.3 !important;
+}
+
+.compact-table .compact-cell {
+    min-height: 24px !important;
+}
+
+.compact-table .badge-compact {
+    padding: 2px 6px !important;
+    font-size: 8px !important;
+    font-weight: 500;
+}
+
+.compact-table .btn-compact {
+    padding: 2px 4px !important;
+    font-size: 8px !important;
+}
+
+.compact-table .icon-compact {
+    width: 12px !important;
+    height: 12px !important;
+}
+
+.compact-table .checkbox-compact {
+    width: 14px !important;
+    height: 14px !important;
+}
+
+/* Override all table cells for compact layout */
+.compact-table tbody td {
+    padding: 4px 6px !important;
+    font-size: 9px !important;
+    line-height: 1.2 !important;
+}
+
+/* Specific adjustments for different cell types */
+.compact-table tbody td.text-right {
+    text-align: right !important;
+}
+
+.compact-table tbody td.text-center {
+    text-align: center !important;
+}
+
+.compact-table tbody td.text-left {
+    text-align: left !important;
+}
+
+/* Compact buttons and inputs inside table */
+.compact-table button {
+    padding: 2px 6px !important;
+    font-size: 8px !important;
+}
+
+.compact-table input {
+    font-size: 9px !important;
+}
+
+.compact-table .badge {
+    padding: 1px 4px !important;
+    font-size: 7px !important;
+}
 </style>
 
 @push('scripts')
-<script>
+<script>    
 
 
 // Checkbox functionality with state persistence
@@ -1451,11 +1521,7 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Clear saved state when explicitly cancelled
-    function clearSavedState() {
-        localStorage.removeItem('daftar_tagihan_checked_ids');
-        console.log('Cleared saved checkbox state');
-    }
+    // clearSavedState function moved to global scope above
 
     // Handle search form submission to preserve checkbox state
     const searchForm = document.querySelector('form[action*="daftar-tagihan-kontainer-sewa.index"]');
@@ -1592,7 +1658,7 @@ document.addEventListener('DOMContentLoaded', function() {
         selectAllCheckbox.checked = false;
         selectAllCheckbox.indeterminate = false;
         updateBulkActions();
-        clearSavedState(); // Clear saved state when cancelled
+        window.clearSavedState(); // Clear saved state when cancelled
     });
 
     // Bulk delete handler
@@ -1637,7 +1703,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 });
 
                 // Clear saved state before submission since we're deleting items
-                clearSavedState();
+                window.clearSavedState();
 
                 document.body.appendChild(form);
                 form.submit();
@@ -1708,6 +1774,12 @@ document.addEventListener('DOMContentLoaded', function() {
 // Test function
 window.testPranota = function() {
     console.log('Test function works!');
+};
+
+// Clear saved checkbox state - moved to global scope
+window.clearSavedState = function() {
+    localStorage.removeItem('daftar_tagihan_checked_ids');
+    console.log('Cleared saved checkbox state');
 };
 
 // Function for "Masukan ke Pranota" - shows modal first
@@ -2107,18 +2179,21 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
     }); // Debug log
 
     // Set form data
-    selectedTagihanIds.value = ids.join(',');
-    pranotaType.value = type;
+    if (selectedTagihanIds) selectedTagihanIds.value = ids.join(',');
+    if (pranotaType) pranotaType.value = type;
 
     // Set action type (buat_pranota or masukan_ke_pranota)
     const actionInput = document.getElementById('pranota_action');
     if (actionInput) {
         actionInput.value = action;
+        console.log('Action set to:', action); // Debug log
+    } else {
+        console.error('pranota_action input not found!');
     }
 
     // Set default dates
     const today = new Date().toISOString().split('T')[0];
-    tanggalPranota.value = today;
+    if (tanggalPranota) tanggalPranota.value = today;
 
     // Calculate container statistics for default keterangan
     const containerStats = {};
@@ -2148,7 +2223,7 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
     // Generate nomor pranota via AJAX
     function updateNomorPranota() {
         // Show loading state
-        nomorPranotaDisplay.value = 'Memuat...';
+        if (nomorPranotaDisplay) nomorPranotaDisplay.value = 'Memuat...';
 
         // Make AJAX call to get next pranota number
         fetch('{{ route("api.next-pranota-number") }}', {
@@ -2175,20 +2250,22 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
         })
         .then(data => {
             if (data.success) {
-                nomorPranotaDisplay.value = data.nomor_pranota;
+                if (nomorPranotaDisplay) nomorPranotaDisplay.value = data.nomor_pranota;
             } else {
                 console.error('Error getting pranota number:', data.message);
-                nomorPranotaDisplay.value = 'Error loading number';
+                if (nomorPranotaDisplay) nomorPranotaDisplay.value = 'Error loading number';
             }
         })
         .catch(error => {
             console.error('AJAX error:', error);
-            nomorPranotaDisplay.value = 'Error loading number';
+            if (nomorPranotaDisplay) nomorPranotaDisplay.value = 'Error loading number';
         });
     }
 
     // Update nomor pranota when tanggal changes
-    tanggalPranota.addEventListener('change', updateNomorPranota);
+    if (tanggalPranota) {
+        tanggalPranota.addEventListener('change', updateNomorPranota);
+    }
 
     // Initial nomor pranota generation
     updateNomorPranota();
@@ -2398,22 +2475,27 @@ window.closeModal = function() {
 document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('pranotaModal');
 
-    // Close modal when clicking backdrop
-    modal.addEventListener('click', function(e) {
-        if (e.target === modal) {
-            closeModal();
-        }
-    });
-
-    // Close modal with Escape key
-    document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') {
-            const modal = document.getElementById('pranotaModal');
-            if (!modal.classList.contains('hidden')) {
+    // Only add event listeners if modal exists
+    if (modal) {
+        // Close modal when clicking backdrop
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
                 closeModal();
             }
-        }
-    });
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                const modal = document.getElementById('pranotaModal');
+                if (modal && !modal.classList.contains('hidden')) {
+                    closeModal();
+                }
+            }
+        });
+    } else {
+        console.warn('pranotaModal element not found');
+    }
 });
 
 // Handle form submission
@@ -2428,6 +2510,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const pranotaType = formData.get('pranota_type');
             const selectedIds = formData.get('selected_tagihan_ids').split(',').filter(id => id);
             const tanggalPranota = formData.get('tanggal_pranota');
+            
+            console.log('Form data:', { pranotaType, selectedIds, tanggalPranota }); // Debug log
 
             // Validate required fields
             if (!tanggalPranota) {
@@ -2443,6 +2527,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set loading text based on action
             const pranotaAction = document.getElementById('pranota_action').value;
             const loadingText = pranotaAction === 'masukan_ke_pranota' ? 'Memproses...' : 'Membuat Pranota...';
+
+            console.log('Pranota action:', pranotaAction, '| Loading text:', loadingText); // Debug log
 
             btnText.innerHTML = `<span class="loading-spinner"></span>${loadingText}`;
             submitBtn.disabled = true;
@@ -2475,6 +2561,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 actionUrl = '{{ route("pranota.store") }}';
             }
 
+            console.log('Action URL selected:', actionUrl); // Debug log
+
             // Submit to server
             fetch(actionUrl, {
                 method: 'POST',
@@ -2483,161 +2571,145 @@ document.addEventListener('DOMContentLoaded', function() {
                     'X-Requested-With': 'XMLHttpRequest'
                 }
             })
-            .then(response => {
+            .then(async response => {
+                console.log('Response received:', response.status, response.ok);
+                console.log('Response headers:', response.headers.get('content-type'));
+                
                 // Check if response is JSON
                 const contentType = response.headers.get('content-type');
                 const isJson = contentType && contentType.includes('application/json');
 
                 if (response.ok) {
+                    // Success case (200-299 status codes)
+                    let data = {};
+                    
                     if (isJson) {
-                        return response.json().then(data => {
-                            // Success handling with JSON response
-                            const pranotaAction = document.getElementById('pranota_action').value;
-                            const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
-
-                            let successTitle, successMessage;
-
-                            if (isMasukanKePranota) {
-                                successTitle = 'Berhasil Masukan ke Pranota';
-                                successMessage = `Berhasil memproses ${selectedIds.length} tagihan kontainer sewa ke dalam sistem pranota. Data telah diperbarui.`;
-                            } else {
-                                successTitle = 'Berhasil Membuat Pranota';
-                                successMessage = `Pranota baru telah berhasil dibuat dengan nomor ${data.nomor_pranota || 'tergenerasi otomatis'}.`;
+                        try {
+                            data = await response.json();
+                            console.log('Success JSON data:', data);
+                            
+                            // Check if the response indicates success
+                            if (data.success === false) {
+                                throw new Error(data.message || 'Server reported operation failed');
                             }
-
-                            // Show success notification
-                            showSuccess(successTitle, successMessage);
-
-                            // Clear saved checkbox state after successful operation
-                            clearSavedState();
-
-                            // Close modal
-                            closeModal();
-
-                            // Reset form
-                            document.getElementById('pranotaForm').reset();
-
-                            // Reset tanggal to today
-                            const today = new Date().toISOString().split('T')[0];
-                            const tanggalField = document.getElementById('tanggal_pranota');
-                            if (tanggalField) {
-                                tanggalField.value = today;
-                            }
-
-                            // Keep invoice vendor fields as they are required
-                            // Fields will be reset by form.reset() but user needs to fill them again
-
-                            // Reload page after a short delay to show updated data
-                            setTimeout(() => {
-                                window.location.reload();
-                            }, 2000);
-
-                            return data;
-                        });
-                    } else {
-                        // Success but not JSON (probably redirect or HTML response)
-                        const pranotaAction = document.getElementById('pranota_action').value;
-                        const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
-
-                        const successTitle = isMasukanKePranota ? 'Berhasil Masukan ke Pranota' : 'Berhasil Membuat Pranota';
-                        const successMessage = isMasukanKePranota
-                            ? `Berhasil memproses ${selectedIds.length} tagihan kontainer sewa ke dalam sistem pranota.`
-                            : 'Pranota baru telah berhasil dibuat.';
-
-                        // Show success notification
-                        showSuccess(successTitle, successMessage);
-
-                        // Clear saved checkbox state after successful operation
-                        clearSavedState();
-
-                        // Close modal
-                        closeModal();
-
-                        // Reset form
-                        document.getElementById('pranotaForm').reset();
-
-                        // Reset tanggal to today
-                        const today = new Date().toISOString().split('T')[0];
-                        const tanggalField = document.getElementById('tanggal_pranota');
-                        if (tanggalField) {
-                            tanggalField.value = today;
+                        } catch (e) {
+                            console.warn('Could not parse JSON response or server reported error:', e);
+                            // If we can't parse JSON or server reports error, treat as error
+                            throw e;
                         }
-
-                        // Reload page after a short delay to show updated data
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 2000);
-
-                        return { success: true };
                     }
-                } else {
-                    // Error response
-                    if (isJson) {
-                        return response.json().then(data => {
-                            // Error handling with JSON response
-                            const pranotaAction = document.getElementById('pranota_action').value;
-                            const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
 
-                            let errorTitle, errorMessage;
+                    // Success handling
+                    const pranotaAction = document.getElementById('pranota_action').value;
+                    const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
 
-                            if (isMasukanKePranota) {
-                                errorTitle = 'Gagal Masukan ke Pranota';
-                                errorMessage = data.message || 'Terjadi kesalahan saat memproses tagihan ke pranota. Silakan coba lagi.';
-                            } else {
-                                errorTitle = 'Gagal Membuat Pranota';
-                                errorMessage = data.message || 'Terjadi kesalahan saat membuat pranota. Silakan periksa data dan coba lagi.';
-                            }
+                    let successTitle, successMessage;
 
-                            // Handle validation errors
-                            if (data.errors) {
-                                const validationErrors = Object.values(data.errors).flat();
-                                if (validationErrors.length > 0) {
-                                    errorMessage = validationErrors.join('\n');
-                                }
-                            }
-
-                            // Show error notification
-                            showError(errorTitle, errorMessage);
-
-                            // Reset button state
-                            btnText.textContent = originalText;
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-
-                            throw new Error(errorMessage);
-                        });
+                    if (isMasukanKePranota) {
+                        successTitle = 'Berhasil Masukan ke Pranota';
+                        successMessage = `Berhasil memproses ${selectedIds.length} tagihan kontainer sewa ke dalam sistem pranota. Data telah diperbarui.`;
                     } else {
-                        // Error response that's not JSON (HTML error page, etc.)
-                        return response.text().then(text => {
-                            const pranotaAction = document.getElementById('pranota_action').value;
-                            const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
-
-                            const errorTitle = isMasukanKePranota ? 'Gagal Masukan ke Pranota' : 'Gagal Membuat Pranota';
-                            const errorMessage = `Terjadi kesalahan server (${response.status}). Silakan coba lagi atau hubungi administrator.`;
-
-                            showError(errorTitle, errorMessage);
-
-                            // Reset button state
-                            btnText.textContent = originalText;
-                            submitBtn.disabled = false;
-                            submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
-
-                            throw new Error(errorMessage);
-                        });
+                        successTitle = 'Berhasil Membuat Pranota';
+                        successMessage = `Pranota baru telah berhasil dibuat${data.nomor_pranota ? ' dengan nomor ' + data.nomor_pranota : ''}.`;
                     }
+
+                    // Show success notification
+                    showSuccess(successTitle, successMessage);
+
+                    // Clear saved checkbox state after successful operation
+                    window.clearSavedState();
+
+                    // Close modal
+                    closeModal();
+
+                    // Reset form
+                    document.getElementById('pranotaForm').reset();
+
+                    // Reset tanggal to today
+                    const today = new Date().toISOString().split('T')[0];
+                    const tanggalField = document.getElementById('tanggal_pranota');
+                    if (tanggalField) {
+                        tanggalField.value = today;
+                    }
+
+                    // Reset button state first
+                    btnText.textContent = originalText;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
+
+                    // Reload page to show updated data
+                    setTimeout(() => {
+                        console.log('Reloading page to show updated data...');
+                        window.location.reload();
+                    }, 1200);
+
+                } else {
+                    // Error response (400, 500, etc.)
+                    let errorData = {};
+                    
+                    if (isJson) {
+                        try {
+                            errorData = await response.json();
+                            console.log('Error JSON data:', errorData);
+                        } catch (e) {
+                            console.warn('Could not parse error JSON response:', e);
+                        }
+                    }
+
+                    // Error handling
+                    const pranotaAction = document.getElementById('pranota_action').value;
+                    const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+
+                    let errorTitle, errorMessage;
+
+                    if (isMasukanKePranota) {
+                        errorTitle = 'Gagal Masukan ke Pranota';
+                        errorMessage = errorData.message || 'Terjadi kesalahan saat memproses tagihan ke pranota. Silakan coba lagi.';
+                    } else {
+                        errorTitle = 'Gagal Membuat Pranota';
+                        errorMessage = errorData.message || 'Terjadi kesalahan saat membuat pranota. Silakan periksa data dan coba lagi.';
+                    }
+
+                    // Handle validation errors
+                    if (errorData.errors) {
+                        const validationErrors = Object.values(errorData.errors).flat();
+                        if (validationErrors.length > 0) {
+                            errorMessage = validationErrors.join('\n');
+                        }
+                    }
+
+                    // Show error notification
+                    showError(errorTitle, errorMessage);
+
+                    // Reset button state
+                    btnText.textContent = originalText;
+                    submitBtn.disabled = false;
+                    submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
                 }
             })
             .catch(error => {
-                console.error('Error:', error);
+                console.error('Network or parsing error:', error);
 
-                // Network or other errors
-                const pranotaAction = document.getElementById('pranota_action').value;
-                const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+                // Check if this is actually a thrown error from successful but failed server response
+                if (error.message && error.message.includes('Server reported operation failed')) {
+                    // This is a server-side error, handle it appropriately
+                    const pranotaAction = document.getElementById('pranota_action').value || 'buat_pranota';
+                    const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
 
-                const errorTitle = isMasukanKePranota ? 'Gagal Masukan ke Pranota' : 'Gagal Membuat Pranota';
-                const errorMessage = 'Koneksi bermasalah. Silakan periksa koneksi internet dan coba lagi.';
+                    const errorTitle = isMasukanKePranota ? 'Gagal Masukan ke Pranota' : 'Gagal Membuat Pranota';
+                    const errorMessage = error.message;
 
-                showError(errorTitle, errorMessage);
+                    showError(errorTitle, errorMessage);
+                } else {
+                    // This is an actual network/parsing error
+                    const pranotaAction = document.getElementById('pranota_action').value || 'buat_pranota';
+                    const isMasukanKePranota = pranotaAction === 'masukan_ke_pranota';
+
+                    const errorTitle = isMasukanKePranota ? 'Gagal Masukan ke Pranota' : 'Gagal Membuat Pranota';
+                    const errorMessage = 'Koneksi bermasalah. Silakan periksa koneksi internet dan coba lagi.';
+
+                    showError(errorTitle, errorMessage);
+                }
 
                 // Reset button state
                 btnText.textContent = originalText;
@@ -2645,6 +2717,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 submitBtn.classList.remove('opacity-75', 'cursor-not-allowed');
             });
         });
+    } else {
+        console.warn('pranotaForm element not found - modal may not be loaded yet');
     }
 });
 

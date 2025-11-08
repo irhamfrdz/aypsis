@@ -27,8 +27,6 @@ use App\Http\Controllers\MobilController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\PricelistSewaKontainerController;
 use App\Http\Controllers\PricelistCatController;
-use App\Http\Controllers\PranotaController;
-use App\Http\Controllers\PranotaSewaController;
 use App\Http\Controllers\PranotaTagihanCatController;
 use App\Http\Controllers\TagihanCatController;
 use App\Http\Controllers\PranotaTagihanKontainerSewaController;
@@ -1041,6 +1039,19 @@ Route::middleware([
     Route::get('api/pergerakan-kapal/generate-voyage', [\App\Http\Controllers\PergerakanKapalController::class, 'generateVoyageNumber'])
          ->name('api.pergerakan-kapal.generate-voyage')
          ->middleware('can:pergerakan-kapal-create');
+
+    // Additional routes for pergerakan kapal
+    Route::patch('pergerakan-kapal/{pergerakanKapal}/approve', [\App\Http\Controllers\PergerakanKapalController::class, 'approve'])
+         ->name('pergerakan-kapal.approve')
+         ->middleware('can:pergerakan-kapal-approve');
+
+    Route::get('pergerakan-kapal/print', [\App\Http\Controllers\PergerakanKapalController::class, 'print'])
+         ->name('pergerakan-kapal.print')
+         ->middleware('can:pergerakan-kapal-print');
+
+    Route::get('pergerakan-kapal/export', [\App\Http\Controllers\PergerakanKapalController::class, 'export'])
+         ->name('pergerakan-kapal.export')
+         ->middleware('can:pergerakan-kapal-export');
 });
 
 // ═══════════════════════════════════════════════════════════════════════

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\DaftarTagihanKontainerSewa;
+use App\Models\PranotaTagihanKontainerSewa;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
@@ -748,7 +749,7 @@ class DaftarTagihanKontainerSewaController extends Controller
 
             // Running number: count pranota in current month + 1
             $runningNumber = str_pad(
-                \App\Models\Pranota::whereYear('created_at', $tanggalPranota->year)
+                PranotaTagihanKontainerSewa::whereYear('created_at', $tanggalPranota->year)
                     ->whereMonth('created_at', $tanggalPranota->month)
                     ->count() + 1,
                 6, '0', STR_PAD_LEFT
@@ -757,12 +758,12 @@ class DaftarTagihanKontainerSewaController extends Controller
             $noInvoice = "PTK{$nomorCetakan}{$tahun}{$bulan}{$runningNumber}";
 
             // Create pranota
-            $pranota = \App\Models\Pranota::create([
+            $pranota = PranotaTagihanKontainerSewa::create([
                 'no_invoice' => $noInvoice,
                 'total_amount' => 0, // Will be calculated and updated below
                 'keterangan' => $request->keterangan ?: 'Pranota untuk ' . count($request->ids) . ' tagihan kontainer sewa',
                 'status' => 'unpaid',
-                'tagihan_ids' => $request->ids,
+                'tagihan_kontainer_sewa_ids' => $request->ids,
                 'jumlah_tagihan' => count($request->ids),
                 'tanggal_pranota' => $request->tanggal_pranota,
                 'due_date' => $tanggalPranota->addDays(30)->format('Y-m-d')

@@ -17,6 +17,9 @@ class PergerakanKapalController extends Controller
         $this->middleware('permission:pergerakan-kapal-create', ['only' => ['create', 'store', 'generateVoyageNumber']]);
         $this->middleware('permission:pergerakan-kapal-update', ['only' => ['edit', 'update']]);
         $this->middleware('permission:pergerakan-kapal-delete', ['only' => ['destroy']]);
+        $this->middleware('permission:pergerakan-kapal-approve', ['only' => ['approve']]);
+        $this->middleware('permission:pergerakan-kapal-print', ['only' => ['print']]);
+        $this->middleware('permission:pergerakan-kapal-export', ['only' => ['export']]);
     }
 
     /**
@@ -250,5 +253,113 @@ class PergerakanKapalController extends Controller
         $voyageNumber = "{$nicknameKapal}{$noUrut}{$kodeAsal}{$kodeTujuan}{$tahun}";
 
         return response()->json(['voyage_number' => $voyageNumber]);
+    }
+
+    /**
+     * Approve pergerakan kapal
+     */
+    public function approve(PergerakanKapal $pergerakanKapal)
+    {
+        $pergerakanKapal->update([
+            'status' => 'approved',
+            'approved_by' => Auth::user()->name,
+            'approved_at' => now()
+        ]);
+
+        return redirect()->route('pergerakan-kapal.index')
+                        ->with('success', 'Data pergerakan kapal berhasil disetujui.');
+    }
+
+    /**
+     * Print pergerakan kapal report
+     */
+    public function print(Request $request)
+    {
+        $query = PergerakanKapal::query();
+
+        // Apply filters if provided
+        if ($request->filled('status')) {
+            $query->byStatus($request->status);
+        }
+
+        if ($request->filled('kapal')) {
+            $query->byKapal($request->kapal);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->byDateRange($request->start_date, $request->end_date);
+        }
+
+        $pergerakanKapals = $query->orderBy('tanggal_sandar', 'desc')->get();
+
+        return view('pergerakan-kapal.print', compact('pergerakanKapals'));
+    }
+
+    /**
+     * Export pergerakan kapal data
+     */
+    public function export(Request $request)
+    {
+        $query = PergerakanKapal::query();
+
+        // Apply filters if provided
+        if ($request->filled('status')) {
+            $query->byStatus($request->status);
+        }
+
+        if ($request->filled('kapal')) {
+            $query->byKapal($request->kapal);
+        }
+
+        if ($request->filled('start_date') && $request->filled('end_date')) {
+            $query->byDateRange($request->start_date, $request->end_date);
+        }
+
+        $pergerakanKapals = $query->orderBy('tanggal_sandar', 'desc')->get();
+
+        // Export to CSV
+        $filename = 'pergerakan_kapal_' . date('Y-m-d_H-i-s') . '.csv';
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+        ];
+
+        $callback = function() use ($pergerakanKapals) {
+            $file = fopen('php://output', 'w');
+
+            // CSV Headers
+            fputcsv($file, [
+                'Nama Kapal',
+                'Kapten',
+                'Voyage',
+                'Pelabuhan Asal',
+                'Pelabuhan Tujuan',
+                'Tanggal Sandar',
+                'Tanggal Labuh',
+                'Tanggal Berangkat',
+                'Status',
+                'Keterangan'
+            ]);
+
+            // Data rows
+            foreach ($pergerakanKapals as $item) {
+                fputcsv($file, [
+                    $item->nama_kapal,
+                    $item->kapten,
+                    $item->voyage,
+                    $item->tujuan_asal,
+                    $item->tujuan_tujuan,
+                    $item->tanggal_sandar ? $item->tanggal_sandar->format('Y-m-d') : '',
+                    $item->tanggal_labuh ? $item->tanggal_labuh->format('Y-m-d') : '',
+                    $item->tanggal_berangkat ? $item->tanggal_berangkat->format('Y-m-d') : '',
+                    $item->status,
+                    $item->keterangan
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }

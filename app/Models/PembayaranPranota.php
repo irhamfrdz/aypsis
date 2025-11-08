@@ -36,16 +36,18 @@ class PembayaranPranota extends Model
 
     /**
      * Relationship to pranota items through pivot table
+     * Note: This relationship is disabled as the Pranota model is deprecated
+     * Use specific pranota relationships instead
      */
-    public function pranotas()
-    {
-        return $this->belongsToMany(
-            Pranota::class,
-            'pembayaran_pranota_items',
-            'pembayaran_pranota_id',
-            'pranota_id'
-        )->withPivot('amount')->withTimestamps();
-    }
+    // public function pranotas()
+    // {
+    //     return $this->belongsToMany(
+    //         Pranota::class,
+    //         'pembayaran_pranota_items',
+    //         'pembayaran_pranota_id',
+    //         'pranota_id'
+    //     )->withPivot('amount')->withTimestamps();
+    // }
 
     /**
      * Get all payment items
