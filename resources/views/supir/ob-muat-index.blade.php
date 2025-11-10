@@ -140,13 +140,20 @@
                                             </div>
                                         </td>
                                         <td class="px-4 py-3 whitespace-nowrap text-center text-sm font-medium">
-                                            <a href="{{ url('supir/ob-muat/form') }}?kapal={{ urlencode($selectedKapal) }}&voyage={{ urlencode($selectedVoyage) }}&bl_id={{ $bl->id }}" 
-                                               class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
-                                                <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                                </svg>
-                                                OB Muat
-                                            </a>
+                                            <form action="{{ route('ob-muat.process') }}" method="POST" class="inline" 
+                                                  onsubmit="return confirm('Yakin ingin memproses OB Muat untuk kontainer {{ $bl->nomor_kontainer }}?')">
+                                                @csrf
+                                                <input type="hidden" name="kapal" value="{{ $selectedKapal }}">
+                                                <input type="hidden" name="voyage" value="{{ $selectedVoyage }}">
+                                                <input type="hidden" name="bl_id" value="{{ $bl->id }}">
+                                                <button type="submit"
+                                                        class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors">
+                                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                    </svg>
+                                                    OB Muat
+                                                </button>
+                                            </form>
                                         </td>
                                     </tr>
                                 @endforeach

@@ -1796,6 +1796,10 @@ Route::get('/test-gate-in-ajax', function () {
         // OB Muat Index - Daftar kontainer berdasarkan kapal & voyage
         Route::get('/ob-muat/index', [SupirDashboardController::class, 'obMuatIndex'])
             ->name('ob-muat.index');
+        
+        // OB Muat Process - Proses data OB Muat langsung
+        Route::post('/ob-muat/process', [SupirDashboardController::class, 'obMuatProcess'])
+            ->name('ob-muat.process');
 
         // Checkpoint management for drivers
         Route::get('/permohonan/{permohonan}/checkpoint', [CheckpointController::class, 'create'])
