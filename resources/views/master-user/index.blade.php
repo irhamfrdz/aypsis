@@ -43,45 +43,51 @@
 
         <!-- Search Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
-            <div class="flex flex-col sm:flex-row gap-4">
-                <div class="flex-1">
-                    <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
-                        <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        Cari Pengguna
-                    </label>
-                    <div class="relative">
-                        <input type="text"
-                               name="search"
-                               id="search"
-                               value="{{ request('search') }}"
-                               placeholder="Cari berdasarkan username atau nama karyawan..."
-                               class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200">
-                        <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                            <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <form method="GET" action="{{ route('master.user.index') }}" id="searchForm">
+                @if(request('per_page'))
+                    <input type="hidden" name="per_page" value="{{ request('per_page') }}">
+                @endif
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <div class="flex-1">
+                        <label for="search" class="block text-sm font-medium text-gray-700 mb-2">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
+                            Cari Pengguna
+                        </label>
+                        <div class="relative">
+                            <input type="text"
+                                   name="search"
+                                   id="search"
+                                   value="{{ request('search') }}"
+                                   placeholder="Cari berdasarkan username atau nama karyawan..."
+                                   class="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition-colors duration-200"
+                                   onkeyup="handleSearchInput()">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
                         </div>
                     </div>
-                </div>
-                <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
-                    <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
-                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        Cari
-                    </button>
-                    @if(request('search'))
-                        <a href="{{ route('master.user.index') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                    <div class="flex flex-col sm:flex-row gap-2 sm:items-end">
+                        <button type="submit" class="inline-flex items-center justify-center px-6 py-3 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                             </svg>
-                            Hapus Filter
-                        </a>
-                    @endif
+                            Cari
+                        </button>
+                        @if(request('search'))
+                            <a href="{{ route('master.user.index') }}" class="inline-flex items-center justify-center px-6 py-3 bg-gray-500 text-white text-sm font-medium rounded-lg hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-colors duration-200">
+                                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Hapus Filter
+                            </a>
+                        @endif
+                    </div>
                 </div>
-            </div>
+            </form>
             @if(request('search'))
                 <div class="mt-4 p-3 bg-indigo-50 rounded-lg border border-indigo-200">
                     <div class="flex items-center">
@@ -243,6 +249,54 @@
 @include('components.audit-log-modal')
 
 @endsection
+
+@push('scripts')
+<script>
+let searchTimeout;
+
+function handleSearchInput() {
+    clearTimeout(searchTimeout);
+    
+    searchTimeout = setTimeout(() => {
+        const searchInput = document.getElementById('search');
+        const searchValue = searchInput.value.trim();
+        
+        // Auto submit form when typing (debounced)
+        if (searchValue.length >= 3 || searchValue.length === 0) {
+            document.getElementById('searchForm').submit();
+        }
+    }, 500); // Wait 500ms after user stops typing
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    // Focus search input on page load if there's no search value
+    const searchInput = document.getElementById('search');
+    if (!searchInput.value) {
+        searchInput.focus();
+    }
+    
+    // Handle Enter key press
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            document.getElementById('searchForm').submit();
+        }
+    });
+    
+    // Clear search when escape key is pressed
+    searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+            searchInput.value = '';
+            if (new URLSearchParams(window.location.search).get('search')) {
+                const currentPerPage = new URLSearchParams(window.location.search).get('per_page');
+                const baseUrl = '{{ route("master.user.index") }}';
+                window.location.href = currentPerPage ? `${baseUrl}?per_page=${currentPerPage}` : baseUrl;
+            }
+        }
+    });
+});
+</script>
+@endpush
 
 <style>
 /* Sticky Table Header Styles */

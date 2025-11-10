@@ -215,6 +215,11 @@
                     <label for="plat" class="{{ $labelClasses }}">Nomor Plat</label>
                     <input type="text" name="plat" id="plat" class="{{ $inputClasses }}" placeholder="Nomor plat kendaraan" value="{{ old('plat', $karyawan->plat) }}">
                 </div>
+
+                <div class="col-span-2">
+                    <label for="catatan_pekerjaan" class="{{ $labelClasses }}">Catatan Pekerjaan</label>
+                    <textarea name="catatan_pekerjaan" id="catatan_pekerjaan" rows="4" class="{{ $inputClasses }}" placeholder="Catatan terkait pekerjaan karyawan...">{{ old('catatan_pekerjaan', $karyawan->catatan_pekerjaan) }}</textarea>
+                </div>
             </div>
         </fieldset>
 

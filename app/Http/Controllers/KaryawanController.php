@@ -767,6 +767,7 @@ class KaryawanController extends Controller
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
             'tanggal_berhenti_sebelumnya' => 'nullable|date',
+            'catatan_pekerjaan' => 'nullable|string|max:1000',
             'catatan' => 'nullable|string|max:1000',
             'status_pajak' => 'nullable|string|max:255',
             'nama_bank' => 'nullable|string|max:255',
@@ -947,6 +948,7 @@ class KaryawanController extends Controller
             'tanggal_berhenti' => 'nullable|date',
             'tanggal_masuk_sebelumnya' => 'nullable|date',
             'tanggal_berhenti_sebelumnya' => 'nullable|date',
+            'catatan_pekerjaan' => 'nullable|string|max:1000',
             'catatan' => 'nullable|string|max:1000',
             'status_pajak' => 'nullable|string|max:255',
             'nama_bank' => 'nullable|string|max:255',
@@ -1968,5 +1970,36 @@ class KaryawanController extends Controller
         }
 
         return $number;
+    }
+
+    /**
+     * Update catatan pekerjaan karyawan via AJAX
+     */
+    public function updateCatatanPekerjaan(Request $request, Karyawan $karyawan)
+    {
+        // Validasi input
+        $validated = $request->validate([
+            'catatan_pekerjaan' => 'nullable|string|max:1000',
+        ]);
+
+        try {
+            // Update catatan pekerjaan
+            $karyawan->update([
+                'catatan_pekerjaan' => $validated['catatan_pekerjaan'] ? strtoupper($validated['catatan_pekerjaan']) : null
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Catatan pekerjaan berhasil diperbarui',
+                'data' => [
+                    'catatan_pekerjaan' => $karyawan->fresh()->catatan_pekerjaan
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal memperbarui catatan pekerjaan: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

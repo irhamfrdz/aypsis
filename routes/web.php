@@ -304,6 +304,9 @@ Route::middleware([
          Route::put('karyawan/{karyawan}', [KaryawanController::class, 'update'])
               ->name('karyawan.update')
               ->middleware('can:master-karyawan-update');
+         Route::patch('karyawan/{karyawan}/update-catatan-pekerjaan', [KaryawanController::class, 'updateCatatanPekerjaan'])
+              ->name('karyawan.update-catatan-pekerjaan')
+              ->middleware('can:master-karyawan-update');
          Route::delete('karyawan/{karyawan}', [KaryawanController::class, 'destroy'])
               ->name('karyawan.destroy')
               ->middleware('can:master-karyawan-delete');

@@ -37,7 +37,11 @@ class UserController extends Controller
             });
         }
 
-        $users = $query->paginate(15); // 15 users per page for better performance
+        // Handle per page parameter
+        $perPage = $request->get('per_page', 15);
+        $perPage = in_array($perPage, [10, 25, 50, 100]) ? $perPage : 15;
+        
+        $users = $query->paginate($perPage)->withQueryString();
 
         return view('master-user.index', compact('users'));
     }
@@ -957,6 +961,12 @@ class UserController extends Controller
                         $module = 'pembayaran-pranota-surat-jalan';
                     }
 
+                    // Special handling for pembayaran-pranota-uang-jalan-* permissions
+                    if ($module === 'pembayaran' && strpos($action, 'pranota-uang-jalan-') === 0) {
+                        $action = str_replace('pranota-uang-jalan-', '', $action);
+                        $module = 'pembayaran-pranota-uang-jalan';
+                    }
+
                     // Special handling for aktivitas-lainnya-* permissions
                     if (strpos($permissionName, 'aktivitas-lainnya-') === 0) {
                         $module = 'aktivitas-lainnya';
@@ -991,6 +1001,12 @@ class UserController extends Controller
                     if (strpos($permissionName, 'pembayaran-pranota-surat-jalan-') === 0) {
                         $module = 'pembayaran-pranota-surat-jalan';
                         $action = str_replace('pembayaran-pranota-surat-jalan-', '', $permissionName);
+                    }
+
+                    // Special handling for pembayaran-pranota-uang-jalan-* permissions
+                    if (strpos($permissionName, 'pembayaran-pranota-uang-jalan-') === 0) {
+                        $module = 'pembayaran-pranota-uang-jalan';
+                        $action = str_replace('pembayaran-pranota-uang-jalan-', '', $permissionName);
                     }
 
                     // Special handling for pranota-perbaikan-kontainer-* permissions
@@ -2197,6 +2213,29 @@ class UserController extends Controller
 
                         if (isset($actionMap[$action])) {
                             $permissionName = 'pembayaran-pranota-surat-jalan-' . $actionMap[$action];
+                            $permission = Permission::where('name', $permissionName)->first();
+                            if ($permission) {
+                                $permissionIds[] = $permission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Special handling for pembayaran-pranota-uang-jalan
+                    if ($module === 'pembayaran-pranota-uang-jalan') {
+                        // Map matrix actions directly to permission names
+                        $actionMap = [
+                            'view' => 'view',
+                            'create' => 'create',
+                            'update' => 'edit',
+                            'delete' => 'delete',
+                            'approve' => 'approve',
+                            'print' => 'print',
+                            'export' => 'export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = 'pembayaran-pranota-uang-jalan-' . $actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
                             if ($permission) {
                                 $permissionIds[] = $permission->id;

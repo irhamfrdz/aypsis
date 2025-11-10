@@ -168,6 +168,102 @@
 
             document.querySelectorAll('details').forEach(function(d) { initDetails(d); });
         });
+
+        // Inline editing functions for Catatan Pekerjaan
+        function toggleEditCatatanPekerjaan() {
+            const displayDiv = document.getElementById('catatanDisplay');
+            const editDiv = document.getElementById('catatanEdit');
+            const editBtn = document.getElementById('editCatatanBtn');
+            
+            displayDiv.style.display = 'none';
+            editDiv.style.display = 'block';
+            editBtn.style.display = 'none';
+            
+            // Focus on textarea
+            document.getElementById('catatanTextarea').focus();
+        }
+
+        function cancelEditCatatanPekerjaan() {
+            const displayDiv = document.getElementById('catatanDisplay');
+            const editDiv = document.getElementById('catatanEdit');
+            const editBtn = document.getElementById('editCatatanBtn');
+            const textarea = document.getElementById('catatanTextarea');
+            
+            // Reset textarea value to original
+            textarea.value = '{{ $karyawan->catatan_pekerjaan }}';
+            
+            displayDiv.style.display = 'block';
+            editDiv.style.display = 'none';
+            editBtn.style.display = 'inline-block';
+        }
+
+        async function saveCatatanPekerjaan(event) {
+            event.preventDefault();
+            
+            const textarea = document.getElementById('catatanTextarea');
+            const editBtn = document.getElementById('editCatatanBtn');
+            const submitBtn = event.target.querySelector('button[type="submit"]');
+            
+            // Show loading state
+            const originalText = submitBtn.textContent;
+            submitBtn.textContent = 'Menyimpan...';
+            submitBtn.disabled = true;
+            
+            try {
+                const response = await fetch('{{ route("master.karyawan.update-catatan-pekerjaan", $karyawan->id) }}', {
+                    method: 'PATCH',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    },
+                    body: JSON.stringify({
+                        catatan_pekerjaan: textarea.value
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Update display with new value
+                    const displayDiv = document.getElementById('catatanDisplay');
+                    displayDiv.textContent = textarea.value || '-';
+                    
+                    // Show success message
+                    showNotification('Catatan pekerjaan berhasil disimpan!', 'success');
+                    
+                    // Switch back to display mode
+                    cancelEditCatatanPekerjaan();
+                } else {
+                    throw new Error(data.message || 'Terjadi kesalahan saat menyimpan');
+                }
+            } catch (error) {
+                showNotification('Error: ' + error.message, 'error');
+            } finally {
+                // Reset button state
+                submitBtn.textContent = originalText;
+                submitBtn.disabled = false;
+            }
+        }
+
+        function showNotification(message, type = 'success') {
+            // Create notification element
+            const notification = document.createElement('div');
+            notification.className = `fixed top-4 right-4 px-6 py-3 rounded-lg text-white z-50 transition-all duration-300 ${
+                type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            }`;
+            notification.textContent = message;
+            
+            // Add to page
+            document.body.appendChild(notification);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.opacity = '0';
+                setTimeout(() => {
+                    document.body.removeChild(notification);
+                }, 300);
+            }, 3000);
+        }
     </script>
 
     <details class="mb-4 border rounded">
@@ -258,6 +354,37 @@
                 <p class="font-semibold text-gray-600">Nomor Plat</p>
                 <p class="text-gray-800">{{ $karyawan->plat ?? '-' }}</p>
             </div>
+
+            <div class="col-span-2">
+                <div class="flex justify-between items-center mb-2">
+                    <p class="font-semibold text-gray-600">Catatan Pekerjaan</p>
+                    <button onclick="toggleEditCatatanPekerjaan()" id="editCatatanBtn" class="text-sm bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded transition-colors">
+                        Edit
+                    </button>
+                </div>
+                
+                <!-- Display Mode -->
+                <div id="catatanDisplay" class="mt-2 p-3 bg-gray-50 border rounded text-gray-800 min-h-[60px] whitespace-pre-wrap">
+                    {{ $karyawan->catatan_pekerjaan ?? '-' }}
+                </div>
+                
+                <!-- Edit Mode -->
+                <div id="catatanEdit" class="mt-2 hidden">
+                    <form onsubmit="saveCatatanPekerjaan(event)" class="space-y-3">
+                        @csrf
+                        @method('PATCH')
+                        <textarea id="catatanTextarea" name="catatan_pekerjaan" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none" placeholder="Masukkan catatan pekerjaan...">{{ $karyawan->catatan_pekerjaan }}</textarea>
+                        <div class="flex space-x-2">
+                            <button type="submit" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                                Simpan
+                            </button>
+                            <button type="button" onclick="cancelEditCatatanPekerjaan()" class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded text-sm transition-colors">
+                                Batal
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
         </div>
     </details>
 
@@ -345,7 +472,7 @@
     </details>
 
     <div class="mt-6">
-        <p class="font-semibold text-gray-600">Catatan</p>
+        <p class="font-semibold text-gray-600">Catatan Umum</p>
         <div class="mt-2 p-3 bg-gray-50 border rounded text-gray-800 min-h-[80px] whitespace-pre-wrap">
             {{ $karyawan->catatan ?? '-' }}
         </div>

@@ -1410,6 +1410,26 @@
                                 <td><input type="checkbox" name="permissions[pembayaran-pranota-surat-jalan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-surat-jalan']['export']) && $userMatrixPermissions['pembayaran-pranota-surat-jalan']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Pembayaran Pranota Uang Jalan --}}
+                            <tr class="submodule-row" data-parent="pembayaran">
+                                <td class="submodule">
+                                    <div class="flex items-center">
+                                        <span class="text-sm mr-2">└─</span>
+                                        <svg class="w-4 h-4 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                        </svg>
+                                        <span>Pembayaran Pranota Uang Jalan</span>
+                                    </div>
+                                </td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['view']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['create']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['update']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['delete']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['approve']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['print']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[pembayaran-pranota-uang-jalan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['pembayaran-pranota-uang-jalan']['export']) && $userMatrixPermissions['pembayaran-pranota-uang-jalan']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Approval System --}}
                             <tr class="module-row" data-module="approval">
                                 <td class="module-header">

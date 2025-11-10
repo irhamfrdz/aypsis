@@ -227,7 +227,6 @@
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer - Seal</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tipe</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir</th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supir OB</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
                                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                                         </tr>
@@ -502,14 +501,6 @@ document.addEventListener('DOMContentLoaded', function() {
         row.setAttribute('data-id', id);
         row.className = 'table-row-prospek';
         
-        // Generate supir OB dropdown options
-        const supirObOptions = `
-            <option value="">--Pilih Supir OB--</option>
-            @foreach($supirOB as $supir)
-                <option value="{{ $supir->id }}">{{ $supir->nama_lengkap }} ({{ $supir->nama_panggilan }})</option>
-            @endforeach
-        `;
-        
         row.innerHTML = `
             <td class="px-4 py-3 text-sm text-gray-900">${rowIndex}</td>
             <td class="px-4 py-3 text-sm text-gray-900 font-medium">${text}</td>
@@ -519,13 +510,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </span>
             </td>
             <td class="px-4 py-3 text-sm text-gray-900">${supir}</td>
-            <td class="px-4 py-3 text-sm">
-                <select name="supir_ob[${id}]" 
-                        required
-                        class="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500">
-                    ${supirObOptions}
-                </select>
-            </td>
             <td class="px-4 py-3 text-sm text-gray-600">${tanggal}</td>
             <td class="px-4 py-3 text-sm">
                 <button type="button" 
@@ -623,24 +607,6 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!pelabuhan) {
             e.preventDefault();
             alert('Silakan pilih tujuan kirim asal');
-            return;
-        }
-        
-        // Validate Supir OB selects
-        const supirObSelects = document.querySelectorAll('select[name^="supir_ob["]');
-        let emptySupirOb = false;
-        supirObSelects.forEach(select => {
-            if (!select.value.trim()) {
-                emptySupirOb = true;
-                select.style.borderColor = '#ef4444';
-            } else {
-                select.style.borderColor = '#d1d5db';
-            }
-        });
-        
-        if (emptySupirOb) {
-            e.preventDefault();
-            alert('Silakan pilih Supir OB untuk semua kontainer yang dipilih');
             return;
         }
         
