@@ -49,59 +49,59 @@ if ($userId) {
     $command .= '
 $user = App\Models\User::find(' . $userId . ');
 if ($user) {
-    echo \"Found user: {$user->name} ({$user->email}) - Current status: {$user->status}\n\";';
+    echo "Found user: " . $user->name . " (" . $user->email . ") - Current status: " . $user->status . "\n";';
     
     if (!$dryRun) {
         $command .= '
-    $user->status = \"approved\";
+    $user->status = "approved";
     $user->save();
-    echo \"Updated user status to approved\n\";';
+    echo "Updated user status to approved\n";';
     } else {
         $command .= '
-    echo \"DRY RUN: Would update user status to approved\n\";';
+    echo "DRY RUN: Would update user status to approved\n";';
     }
     
     $command .= '
 } else {
-    echo \"User not found\n\";
+    echo "User not found\n";
 }';
 
 } elseif ($email) {
     $command .= '
-$user = App\Models\User::where(\"email\", \"' . $email . '\')->first();
+$user = App\Models\User::where("email", "' . $email . '")->first();
 if ($user) {
-    echo \"Found user: {$user->name} ({$user->email}) - Current status: {$user->status}\n\";';
+    echo "Found user: " . $user->name . " (" . $user->email . ") - Current status: " . $user->status . "\n";';
     
     if (!$dryRun) {
         $command .= '
-    $user->status = \"approved\";
+    $user->status = "approved";
     $user->save();
-    echo \"Updated user status to approved\n\";';
+    echo "Updated user status to approved\n";';
     } else {
         $command .= '
-    echo \"DRY RUN: Would update user status to approved\n\";';
+    echo "DRY RUN: Would update user status to approved\n";';
     }
     
     $command .= '
 } else {
-    echo \"User not found\n\";
+    echo "User not found\n";
 }';
 
 } elseif ($updateAll) {
     $command .= '
-$users = App\Models\User::where(\"status\", \"!=\", \"approved\")->get();
-echo \"Found \" . $users->count() . \" users to update:\n\";
+$users = App\Models\User::where("status", "!=", "approved")->get();
+echo "Found " . $users->count() . " users to update:\n";
 foreach ($users as $user) {
-    echo \"ID: {$user->id} | Email: {$user->email} | Name: {$user->name} | Status: {$user->status}\n\";
+    echo "ID: " . $user->id . " | Email: " . $user->email . " | Name: " . $user->name . " | Status: " . $user->status . "\n";
 }';
 
     if (!$dryRun) {
         $command .= '
-$updated = App\Models\User::where(\"status\", \"!=\", \"approved\")->update([\"status\" => \"approved\"]);
-echo \"Updated {$updated} users to approved status\n\";';
+$updated = App\Models\User::where("status", "!=", "approved")->update(["status" => "approved"]);
+echo "Updated " . $updated . " users to approved status\n";';
     } else {
         $command .= '
-echo \"DRY RUN: Would update \" . $users->count() . \" users to approved status\n\";';
+echo "DRY RUN: Would update " . $users->count() . " users to approved status\n";';
     }
 
 } else {
