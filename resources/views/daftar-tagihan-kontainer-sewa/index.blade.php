@@ -820,7 +820,7 @@ input[required]:focus {
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                             <div class="font-semibold">
                                 @if(optional($tagihan)->masa)
                                     @php
@@ -852,7 +852,7 @@ input[required]:focus {
                                 @endif
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
+                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                             <div class="text-xs bg-gray-100 px-3 py-2 rounded-lg font-medium">
                                 {{ optional($tagihan)->tanggal_awal ? \Carbon\Carbon::parse(optional($tagihan)->tanggal_awal)->format('d-M-Y') : '-' }}
                             </div>

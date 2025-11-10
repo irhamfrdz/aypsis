@@ -88,25 +88,25 @@
 
         <div class="p-6">
             <!-- Filter & Search -->
-            <form method="GET" action="{{ route('master-kapal.index') }}" class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-12 gap-3">
+            <form method="GET" action="{{ route('master-kapal.index') }}" class="mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-12 gap-2">
                     <div class="md:col-span-3">
                         <input type="text"
                                name="search"
-                               class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                               placeholder="Cari kode, nama kapal, nickname..."
+                               class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                               placeholder="Cari nama kapal, nickname..."
                                value="{{ request('search') }}">
                     </div>
                     <div class="md:col-span-2">
-                        <select name="status" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Semua Status</option>
+                        <select name="status" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Status</option>
                             <option value="aktif" {{ request('status') == 'aktif' ? 'selected' : '' }}>Aktif</option>
                             <option value="nonaktif" {{ request('status') == 'nonaktif' ? 'selected' : '' }}>Nonaktif</option>
                         </select>
                     </div>
                     <div class="md:col-span-3">
-                        <select name="pemilik" class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                            <option value="">Semua Pemilik</option>
+                        <select name="pemilik" class="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                            <option value="">Pemilik</option>
                             @foreach($pemilikList as $pemilik)
                                 <option value="{{ $pemilik }}" {{ request('pemilik') == $pemilik ? 'selected' : '' }}>
                                     {{ $pemilik }}
@@ -115,13 +115,13 @@
                         </select>
                     </div>
                     <div class="md:col-span-2">
-                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-200">
-                            <i class="fas fa-search mr-2"></i> Cari
+                        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-3 py-2 rounded-md transition duration-200 text-sm">
+                            <i class="fas fa-search mr-1"></i> Cari
                         </button>
                     </div>
                     <div class="md:col-span-2">
-                        <a href="{{ route('master-kapal.index') }}" class="block text-center w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition duration-200">
-                            <i class="fas fa-redo mr-2"></i> Reset
+                        <a href="{{ route('master-kapal.index') }}" class="block text-center w-full bg-gray-500 hover:bg-gray-600 text-white px-3 py-2 rounded-md transition duration-200 text-sm">
+                            <i class="fas fa-redo mr-1"></i> Reset
                         </a>
                     </div>
                 </div>
@@ -160,43 +160,31 @@
                     @endif
                 </div>
                 
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                                 No
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Kode
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Nama Kapal
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Nickname
                             </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Pelayaran (Pemilik)
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Pelayaran
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Kapasitas Palka
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                GT
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Kapasitas Deck
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Kapasitas
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Gross Tonnage
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Total Kapasitas
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                Catatan
-                            </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
                                 Status
                             </th>
-                            <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-32">
+                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                                 Aksi
                             </th>
                         </tr>
@@ -204,54 +192,33 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($kapals as $kapal)
                         <tr class="hover:bg-gray-50 transition duration-150">
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
+                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-center font-medium">
                                 {{ ($kapals->currentPage() - 1) * $kapals->perPage() + $loop->iteration }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <span class="text-sm font-semibold text-gray-900">{{ $kapal->kode }}</span>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
+                            <td class="px-3 py-2 whitespace-nowrap">
                                 <div class="text-sm font-medium text-gray-900">{{ $kapal->nama_kapal }}</div>
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">
                                 {{ $kapal->nickname ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-600">
                                 {{ $kapal->pelayaran ?? '-' }}
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                                @if($kapal->kapasitas_kontainer_palka)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                        {{ number_format($kapal->kapasitas_kontainer_palka) }}
-                                    </span>
-                                @else
-                                    <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
-                                @if($kapal->kapasitas_kontainer_deck)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        {{ number_format($kapal->kapasitas_kontainer_deck) }}
-                                    </span>
-                                @else
-                                    <span class="text-gray-400">-</span>
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-sm text-gray-900">
                                 @if($kapal->gross_tonnage)
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        {{ number_format($kapal->gross_tonnage, 2) }}
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        {{ number_format($kapal->gross_tonnage, 1) }}
                                     </span>
                                 @else
-                                    <span class="text-gray-400">-</span>
+                                    <span class="text-gray-400 text-xs">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm text-gray-900">
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-sm text-gray-900">
                                 @php
                                     $totalKapasitas = ($kapal->kapasitas_kontainer_palka ?? 0) + ($kapal->kapasitas_kontainer_deck ?? 0);
                                 @endphp
                                 @if($totalKapasitas > 0)
-                                    <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                    <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
                                         <i class="fas fa-calculator mr-1"></i>
                                         {{ number_format($totalKapasitas) }}
                                     </span>
@@ -265,49 +232,38 @@
                                     <span class="text-gray-400">-</span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 text-sm text-gray-600">
-                                @if($kapal->catatan)
-                                    <div class="max-w-xs truncate" title="{{ $kapal->catatan }}">
-                                        {{ $kapal->catatan }}
-                                    </div>
-                                @else
-                                    -
-                                @endif
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center">
+                            <td class="px-3 py-2 whitespace-nowrap text-center">
                                 @if($kapal->status == 'aktif')
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                         Aktif
                                     </span>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                         Nonaktif
                                     </span>
                                 @endif
                             </td>
-                            <td class="px-6 py-4 whitespace-nowrap text-center text-sm font-medium">
-                                <div class="flex items-center justify-center gap-2">
+                            <td class="px-3 py-2 whitespace-nowrap text-center text-sm font-medium">
+                                <div class="flex items-center justify-center gap-1">
                                     @can('master-kapal.view')
                                     <a href="{{ route('master-kapal.show', $kapal->id) }}"
-                                       class="inline-flex items-center px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition duration-150"
+                                       class="inline-flex items-center px-2 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded text-xs transition duration-150"
                                        title="Lihat Detail">
-                                        <i class="fas fa-eye text-xs"></i>
+                                        <i class="fas fa-eye"></i>
                                     </a>
                                     @endcan
                                     @can('master-kapal.edit')
                                     <a href="{{ route('master-kapal.edit', $kapal->id) }}"
-                                       class="inline-flex items-center px-3 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded-md transition duration-150"
+                                       class="inline-flex items-center px-2 py-1 bg-yellow-100 hover:bg-yellow-200 text-yellow-700 rounded text-xs transition duration-150"
                                        title="Edit">
-                                        <i class="fas fa-edit text-xs"></i>
-                                    </a><span class="text-gray-300">|</span>
-                                    <!-- Audit Log Link -->
+                                        <i class="fas fa-edit"></i>
+                                    </a>
                                     <button type="button"
                                             onclick="showAuditLog('{{ get_class($kapal) }}', '{{ $kapal->id }}', '{{ $kapal->nama_kapal }}')"
-                                            class="text-purple-600 hover:text-purple-800 hover:underline font-medium cursor-pointer"
-                                            title="Lihat Riwayat Perubahan">
-                                        Riwayat
+                                            class="inline-flex items-center px-2 py-1 bg-purple-100 hover:bg-purple-200 text-purple-700 rounded text-xs transition duration-150"
+                                            title="Lihat Riwayat">
+                                        <i class="fas fa-history"></i>
                                     </button>
-                                    <span class="text-gray-300">|</span>
                                     @endcan
                                     @can('master-kapal.delete')
                                     <form action="{{ route('master-kapal.destroy', $kapal->id) }}"
@@ -317,9 +273,9 @@
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit"
-                                                class="inline-flex items-center px-3 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded-md transition duration-150"
+                                                class="inline-flex items-center px-2 py-1 bg-red-100 hover:bg-red-200 text-red-700 rounded text-xs transition duration-150"
                                                 title="Hapus">
-                                            <i class="fas fa-trash text-xs"></i>
+                                            <i class="fas fa-trash"></i>
                                         </button>
                                     </form>
                                     @endcan
@@ -328,10 +284,10 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="12" class="px-6 py-12 text-center">
+                            <td colspan="8" class="px-3 py-8 text-center">
                                 <div class="flex flex-col items-center justify-center">
-                                    <i class="fas fa-ship text-gray-300 text-6xl mb-4"></i>
-                                    <p class="text-gray-500 text-lg font-medium">Tidak ada data kapal</p>
+                                    <i class="fas fa-ship text-gray-300 text-4xl mb-3"></i>
+                                    <p class="text-gray-500 text-base font-medium">Tidak ada data kapal</p>
                                     <p class="text-gray-400 text-sm mt-1">Mulai dengan menambahkan data kapal baru</p>
                                 </div>
                             </td>

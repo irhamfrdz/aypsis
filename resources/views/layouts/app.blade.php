@@ -280,13 +280,14 @@
                         $user->can('master-kegiatan-view') ||
                         $user->can('master-pelabuhan-view') ||
                         $user->can('master-pricelist-gate-in-view') ||
-                        $user->can('uang-jalan-batam.view') ||
                         $user->can('master-user-view') ||
                         $user->can('master-karyawan-view') ||
                         $user->can('master-divisi-view') ||
                         $user->can('master-pekerjaan-view') ||
                         $user->can('master-pajak-view') ||
-                        $user->can('master-bank-view')
+                        $user->can('master-bank-view') ||
+                        $user->can('master-vendor-bengkel.view') ||
+                        $user->can('vendor-kontainer-sewa-view')
                     );
 
                     // Show master section if user is admin OR has any master permissions
@@ -298,20 +299,9 @@
                     <span class="text-xs font-medium menu-text">Dashboard</span>
                 </a>
 
-                <!-- Prospek Menu -->
-                @php
-                    $isProspekRoute = Request::routeIs('prospek.*');
-                @endphp
-
-                @if($user && $user->can('prospek-view'))
-                <a href="{{ route('prospek.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isProspekRoute ? 'bg-green-100 text-green-700 font-bold' : 'text-gray-700 hover:bg-green-100 hover:text-green-700' }}">
-                    <span class="text-xs font-medium menu-text">Prospek</span>
-                </a>
-                @endif
-
                 <!-- Master Data Section -->
                 @php
-                    $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*');
+                    $isMasterRoute = Request::routeIs('master-coa-*') || Request::routeIs('master.kode-nomor.*') || Request::routeIs('master.nomor-terakhir.*') || Request::routeIs('master.tipe-akun.*') || Request::routeIs('master.cabang.*') || Request::routeIs('master.kegiatan.*') || Request::routeIs('master-pelabuhan.*') || Request::routeIs('master.karyawan.*') || Request::routeIs('master.user.*') || Request::routeIs('master.divisi.*') || Request::routeIs('master.pekerjaan.*') || Request::routeIs('master.pajak.*') || Request::routeIs('admin.user-approval.*') || Request::routeIs('master-bank-*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('master.pricelist-gate-in.*');
                     $isPermohonanRoute = Request::routeIs('permohonan.*');
                     $isPenyelesaianRoute = Request::routeIs('approval.*');
                     $isPranotaRoute = Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
@@ -535,12 +525,10 @@
                         @endif
 
                         {{-- Master Tarif Sub-Dropdown --}}
-                        @php
-                            $isTarifRoute = Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*');
-                            $hasTarifPermissions = $user && ($user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view'));
-                        @endphp
-
-                        @if($hasTarifPermissions)
+        @php
+            $isTarifRoute = Request::routeIs('master.master.pricelist-sewa-kontainer.*') || Request::routeIs('master.pricelist-cat.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('master.pricelist-gate-in.*');
+            $hasTarifPermissions = $user && ($user->can('master-pricelist-sewa-kontainer-view') || $user->can('master-pricelist-cat-view') || $user->can('uang-jalan-batam.view') || $user->can('master-pricelist-gate-in-view'));
+        @endphp                        @if($hasTarifPermissions)
                         <div class="mx-2 mb-3">
                             <button id="master-tarif-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group {{ $isTarifRoute ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                                 <span class="text-xs font-medium">Master Tarif</span>
@@ -559,6 +547,45 @@
                                         <span class="text-xs">Pricelist CAT Kontainer</span>
                                     </a>
                                 @endif
+                                @if($user && $user->can('uang-jalan-batam.view'))
+                                    <a href="{{ route('uang-jalan-batam.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('uang-jalan-batam.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Uang Jalan Batam</span>
+                                    </a>
+                                @endif
+                                @if($user && $user->can('master-pricelist-gate-in-view'))
+                                    <a href="{{ route('master.pricelist-gate-in.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-gate-in.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Pricelist Gate In</span>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                        @endif
+
+                        {{-- Master Pemasok Sub-Dropdown --}}
+                        @php
+                            $isPemasokRoute = Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*');
+                            $hasPemasokPermissions = $user && ($user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view'));
+                        @endphp
+
+                        @if($hasPemasokPermissions)
+                        <div class="mx-2 mb-3">
+                            <button id="master-pemasok-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 group {{ $isPemasokRoute ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                                <span class="text-xs font-medium">Master Pemasok</span>
+                                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isPemasokRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="master-pemasok-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isPemasokRoute) style="display: block;" @endif>
+                                @if($user && $user->can('master-vendor-bengkel.view'))
+                                    <a href="{{ route('master.vendor-bengkel.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('master.vendor-bengkel.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Vendor/Bengkel</span>
+                                    </a>
+                                @endif
+                                @if($user && $user->can('vendor-kontainer-sewa-view'))
+                                    <a href="{{ route('vendor-kontainer-sewa.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('vendor-kontainer-sewa.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                        <span class="text-xs">Vendor Kontainer Sewa</span>
+                                    </a>
+                                @endif
                             </div>
                         </div>
                         @endif
@@ -568,51 +595,30 @@
 
 {{-- User Dropdown has been completely moved to Master Data > Master Karyawan --}}
 
-{{-- Order Management Section --}}
-@php
-    $hasOrderPermissions = $user && ($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete'));
-@endphp
-
-@if($hasOrderPermissions)
-<a href="{{ route('orders.index') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ Request::routeIs('orders.*') ? 'bg-orange-100 text-orange-700 font-bold' : 'text-gray-700 hover:bg-orange-100 hover:text-orange-700' }}">
-    <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ Request::routeIs('orders.*') ? 'bg-orange-200' : 'bg-orange-50 group-hover:bg-orange-200' }}">
-        <svg class="w-4 h-4 {{ Request::routeIs('orders.*') ? 'text-orange-700' : 'text-orange-600 group-hover:text-orange-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-    </div>
-    <span class="text-xs font-medium menu-text">Order Management</span>
-</a>
-@endif
-
 {{-- Aktiva Dropdown --}}
 @php
-    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('uang-jalan-batam.*') || Request::routeIs('master-kapal.*');
-    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-mobil-view') || $user->can('uang-jalan-batam.view') || $user->can('master-kapal.view'));
+    $isAktivaRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.mobil.*') || Request::routeIs('master-kapal.*');
+    $hasAktivaPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-mobil-view') || $user->can('master-kapal.view'));
 @endphp
 
 @if($hasAktivaPermissions)
-<div class="mt-4 mb-4">
-    <button id="aktiva-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-xl text-gray-700 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group shadow-sm text-xs {{ $isAktivaRoute ? 'bg-green-100 text-green-700 font-bold' : '' }}">
-        <div class="flex items-center justify-center w-8 h-8 rounded-xl mr-3 {{ $isAktivaRoute ? 'bg-green-200' : 'bg-green-50 group-hover:bg-green-200' }}">
-            <svg class="w-4 h-4 {{ $isAktivaRoute ? 'text-green-700' : 'text-green-600 group-hover:text-green-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/>
-            </svg>
-        </div>
-        <span class="text-xs font-medium menu-text flex-1 text-left">Aktiva</span>
+<div class="mt-4 mb-6">
+    <button id="aktiva-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isAktivaRoute ? 'bg-blue-50 text-blue-700' : '' }}">
+        <span class="text-sm font-semibold">Aktiva</span>
         <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isAktivaRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
     </button>
-    <div id="aktiva-menu-content" class="dropdown-content ml-8 space-y-2 mt-2" @if($isAktivaRoute) style="display: block;" @endif>
+    <div id="aktiva-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAktivaRoute) style="display: block;" @endif>
         {{-- Kontainer Sub-Dropdown --}}
         @php
-            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*') || Request::routeIs('master.vendor-bengkel.*') || Request::routeIs('vendor-kontainer-sewa.*') || Request::routeIs('uang-jalan-batam.*');
-            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view') || $user->can('master-vendor-bengkel.view') || $user->can('vendor-kontainer-sewa-view') || $user->can('uang-jalan-batam.view'));
+            $isKontainerRoute = Request::routeIs('master.kontainer.*') || Request::routeIs('master.stock-kontainer.*');
+            $hasKontainerPermissions = $user && ($user->can('master-kontainer-view') || $user->can('master-stock-kontainer-view'));
         @endphp
 
         @if($hasKontainerPermissions)
-        <div class="mb-3">
-            <button id="kontainer-menu-toggle" class="w-full flex justify-between items-center py-1.5 px-4 rounded-lg text-gray-600 hover:bg-green-50 hover:text-green-700 transition-all duration-200 group text-xs {{ $isKontainerRoute ? 'bg-green-50 text-green-700 font-medium' : '' }}">
+        <div class="mx-2 mb-3">
+            <button id="kontainer-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 group {{ $isKontainerRoute ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Kontainer</span>
                 <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isKontainerRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
@@ -641,43 +647,26 @@
                         <span class="text-xs">Master Pelabuhan</span>
                     </a>
                 @endif
-
-                @if($user && $user->can('master-pricelist-gate-in-view'))
-                    <a href="{{ route('master.pricelist-gate-in.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-gate-in.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Pricelist Gate In</span>
-                    </a>
-                @endif
-                @if($user && $user->can('uang-jalan-batam.view'))
-                    <a href="{{ route('uang-jalan-batam.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('uang-jalan-batam.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Uang Jalan Batam</span>
-                    </a>
-                @endif
-                @if($user && $user->can('master-vendor-bengkel.view'))
-                    <a href="{{ route('master.vendor-bengkel.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.vendor-bengkel.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Vendor/Bengkel</span>
-                    </a>
-                @endif
-                @if($user && $user->can('vendor-kontainer-sewa-view'))
-                    <a href="{{ route('vendor-kontainer-sewa.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('vendor-kontainer-sewa.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                        <span class="text-xs">Vendor Kontainer Sewa</span>
-                    </a>
-                @endif
             </div>
         </div>
         @endif
 
         {{-- Master Kapal --}}
         @if($user && $user->can('master-kapal.view'))
-            <a href="{{ route('master-kapal.index') }}" class="flex items-center py-1.5 px-4 mx-1 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                <span class="text-xs">Master Kapal</span>
+        <div class="mx-2 mb-3">
+            <a href="{{ route('master-kapal.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Master Kapal</span>
             </a>
+        </div>
         @endif
 
         {{-- Master Mobil --}}
         @if($user && $user->can('master-mobil-view'))
-            <a href="{{ route('master.mobil.index') }}" class="flex items-center py-1.5 px-4 mx-1 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                <span class="text-xs">Master Mobil</span>
+        <div class="mx-2 mb-3">
+            <a href="{{ route('master.mobil.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Master Mobil</span>
             </a>
+        </div>
         @endif
     </div>
 </div>
@@ -685,11 +674,17 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
+    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('approval.surat-jalan.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
     $hasAktivitasPermissions = $user && (
         $user->can('permohonan-memo-view') ||
         $user->can('pranota-supir-view') ||
+        $user->can('pembayaran-pranota-supir-view') ||
+        $user->can('order-view') ||
+        $user->can('order-create') ||
+        $user->can('order-update') ||
+        $user->can('order-delete') ||
         $user->can('pranota-uang-jalan-view') ||
+        $user->can('pranota-rit-view') ||
         $user->can('pranota-uang-rit-view') ||
         $user->can('surat-jalan-view') ||
         $user->can('surat-jalan-create') ||
@@ -701,11 +696,15 @@
         $user->can('surat-jalan-bongkaran-delete') ||
         $user->can('aktivitas-kontainer-view') ||
         $user->can('tagihan-kontainer-sewa-index') ||
+        $user->can('pranota-kontainer-sewa-view') ||
+        $user->can('pembayaran-pranota-kontainer-view') ||
         $user->can('pranota.view') ||
         $user->can('perbaikan-kontainer-view') ||
         $user->can('pranota-perbaikan-kontainer-view') ||
+        $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
         $user->can('tagihan-cat-view') ||
         $user->can('pranota-cat-view') ||
+        $user->can('pembayaran-pranota-cat-view') ||
         $user->can('tanda-terima-view') ||
         $user->can('tanda-terima-update') ||
         $user->can('tanda-terima-delete') ||
@@ -726,6 +725,7 @@
         $user->can('monitoring-kapal-view') ||
         $user->can('prospek-edit') ||
         $user->can('bl-view') ||
+        $user->can('approval-surat-jalan-view') ||
         $user->can('approval-view') ||
         $user->can('approval-approve') ||
         $user->can('approval-print') ||
@@ -737,105 +737,187 @@
 @endphp
 
 @if($showAktivitasSection)
-<div class="mt-4 mb-4">
-    <button id="aktivitas-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-lg mt-4 mb-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasRoute ? 'bg-indigo-50 text-indigo-700 font-medium' : '' }}">
-        <div class="flex items-center">
-            <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasRoute ? 'bg-indigo-100' : '' }}">
-                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasRoute ? 'text-indigo-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/>
-                </svg>
-            </div>
-            <span class="text-xs font-medium truncate w-full">Aktivitas</span>
-        </div>
+<div class="mt-4 mb-6">
+    <button id="aktivitas-menu-toggle" class="w-full flex justify-between items-center py-3 px-4 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-sm font-medium {{ $isAktivitasRoute ? 'bg-indigo-50 text-indigo-700' : '' }}">
+        <span class="text-sm font-semibold">Aktivitas</span>
         <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isAktivitasRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
         </svg>
     </button>
-    <div id="aktivitas-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isAktivitasRoute) style="display: block;" @endif>
+    <div id="aktivitas-menu-content" class="dropdown-content ml-2 mt-3 space-y-2" @if($isAktivitasRoute) style="display: block;" @endif>
 
         {{-- Aktivitas Supir Sub-Dropdown --}}
         @php
-            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*');
-            $hasAktivitasSupirPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pranota-uang-jalan-view') || $user->can('pranota-uang-rit-view') || $user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete') || $user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
+            $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*');
+            $hasAktivitasSupirPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || $user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete') || $user->can('pranota-uang-jalan-view') || $user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view') || $user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete') || $user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
         @endphp
 
         @if($hasAktivitasSupirPermissions)
-        <div class="mt-2 mb-2">
-            <button id="aktivitas-supir-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasSupirRoute ? 'bg-blue-50 text-blue-700 font-medium' : '' }}">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasSupirRoute ? 'bg-blue-100' : '' }}">
-                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasSupirRoute ? 'text-blue-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12a2 2 0 100-4 2 2 0 000 4zm0 0v10m0-10a2 2 0 002-2V2"/>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-medium truncate w-full">Aktivitas Supir</span>
-                </div>
+        <div class="mx-2 mb-3">
+            <button id="aktivitas-supir-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 group {{ $isAktivitasSupirRoute ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Aktivitas Supir</span>
                 <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasSupirRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div id="aktivitas-supir-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasSupirRoute) style="display: block;" @endif>
-                {{-- Permohonan Memo --}}
-                @if($user && $user->can('permohonan-memo-view'))
-                    <a href="{{ route('permohonan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('permohonan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            <div id="aktivitas-supir-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasSupirRoute) style="display: block;" @endif>
+                
+                {{-- Memo Sub-Dropdown --}}
+                @php
+                    $isMemoRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*');
+                    $hasMemoPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view'));
+                @endphp
+
+                @if($hasMemoPermissions)
+                <div class="mx-1 mb-2">
+                    <button id="memo-menu-toggle" class="w-full flex justify-between items-center py-1.5 px-2 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 group {{ $isMemoRoute ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs font-medium">Memo</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isMemoRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Permohonan Memo
-                    </a>
+                    </button>
+                    <div id="memo-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isMemoRoute) style="display: block;" @endif>
+                        {{-- Permohonan Memo --}}
+                        @if($user && $user->can('permohonan-memo-view'))
+                            <a href="{{ route('permohonan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('permohonan.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Permohonan Memo</span>
+                            </a>
+                        @endif
+
+                        {{-- Pranota Supir --}}
+                        @if($user && $user->can('pranota-supir-view'))
+                            <a href="{{ route('pranota-supir.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pranota Supir</span>
+                            </a>
+                        @endif
+
+                        {{-- Bayar Pranota Supir --}}
+                        @if(Route::has('pembayaran-pranota-supir.index') && $user && $user->can('pembayaran-pranota-supir-view'))
+                            <a href="{{ route('pembayaran-pranota-supir.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Bayar Pranota Supir</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
-                {{-- Pranota Supir --}}
-                @if($user && $user->can('pranota-supir-view'))
-                    <a href="{{ route('pranota-supir.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-supir.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                {{-- Uang Jalan Sub-Dropdown --}}
+                @php
+                    $isUangJalanRoute = Request::routeIs('uang-jalan.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*');
+                    $hasUangJalanPermissions = $user && (($user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete')) || $user->can('pranota-uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view'));
+                @endphp
+
+                @if($hasUangJalanPermissions)
+                <div class="mx-1 mb-2">
+                    <button id="uang-jalan-menu-toggle" class="w-full flex justify-between items-center py-1.5 px-2 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 group {{ $isUangJalanRoute ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs font-medium">Uang Jalan</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isUangJalanRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Pranota Supir
-                    </a>
+                    </button>
+                    <div id="uang-jalan-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isUangJalanRoute) style="display: block;" @endif>
+                        {{-- Uang Jalan --}}
+                        @if($user && ($user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete')))
+                            <a href="{{ route('uang-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Uang Jalan</span>
+                            </a>
+                        @endif
+
+                        {{-- Pranota Uang Jalan --}}
+                        @if($user && $user->can('pranota-uang-jalan-view'))
+                            <a href="{{ route('pranota-uang-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pranota Uang Jalan</span>
+                            </a>
+                        @endif
+
+                        {{-- Bayar Pranota Uang Jalan --}}
+                        @if(Route::has('pembayaran-pranota-uang-jalan.index') && $user && $user->can('pembayaran-pranota-uang-jalan-view'))
+                            <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Bayar Pranota Uang Jalan</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
-                {{-- Pranota Uang Jalan --}}
-                @if($user && $user->can('pranota-uang-jalan-view'))
-                    <a href="{{ route('pranota-uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-uang-jalan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                        </svg>
-                        Pranota Uang Jalan
-                    </a>
-                @endif
+                {{-- Rit Sub-Dropdown --}}
+                @php
+                    $isRitRoute = Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*');
+                    $hasRitPermissions = $user && ($user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view'));
+                @endphp
 
-                {{-- Pranota Uang Rit --}}
-                @if($user && $user->can('pranota-uang-rit-view'))
-                    <a href="{{ route('pranota-uang-rit.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-uang-rit.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                @if($hasRitPermissions)
+                <div class="mx-1 mb-2">
+                    <button id="rit-menu-toggle" class="w-full flex justify-between items-center py-1.5 px-2 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group {{ $isRitRoute ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs font-medium">Rit</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isRitRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Pranota Uang Rit
-                    </a>
+                    </button>
+                    <div id="rit-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isRitRoute) style="display: block;" @endif>
+                        {{-- Pranota Rit --}}
+                        @if($user && $user->can('pranota-rit-view'))
+                            <a href="{{ route('pranota-rit.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pranota Rit</span>
+                            </a>
+                        @endif
+
+                        {{-- Pranota Uang Rit --}}
+                        @if($user && $user->can('pranota-uang-rit-view'))
+                            <a href="{{ route('pranota-uang-rit.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pranota Uang Rit</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
                 {{-- Pranota Uang Kenek --}}
                 @if($user && $user->can('pranota-uang-kenek-view'))
-                    <a href="{{ route('pranota-uang-kenek.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-uang-kenek.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        Pranota Uang Kenek
+                    <a href="{{ route('pranota-uang-kenek.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-kenek.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pranota Uang Kenek</span>
                     </a>
                 @endif
 
-                {{-- Surat Jalan --}}
-                @if($user && ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')))
-                    <a href="{{ route('surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                {{-- Surat Jalan Sub-Dropdown --}}
+                @php
+                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('surat-jalan.*');
+                    $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')));
+                @endphp
+
+                @if($hasSuratJalanPermissions)
+                <div class="mx-1 mb-2">
+                    <button id="surat-jalan-menu-toggle" class="w-full flex justify-between items-center py-1.5 px-2 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 group {{ $isSuratJalanRoute ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs font-medium">Surat Jalan</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isSuratJalanRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Surat Jalan
-                    </a>
+                    </button>
+                    <div id="surat-jalan-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isSuratJalanRoute) style="display: block;" @endif>
+                        {{-- Order Management --}}
+                        @if($user && ($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')))
+                            <a href="{{ route('orders.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('orders.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                                <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span class="text-xs">Order Management</span>
+                            </a>
+                        @endif
+
+                        {{-- Surat Jalan --}}
+                        @if($user && ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')))
+                            <a href="{{ route('surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                                <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span class="text-xs">Surat Jalan</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
-                {{-- Surat Jalan Bongkaran --}}
+                {{-- Surat Jalan Bongkaran (tetap di luar) --}}
                 @if($user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete')))
                     <a href="{{ route('surat-jalan-bongkaran.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -845,236 +927,279 @@
                     </a>
                 @endif
 
-                {{-- Uang Jalan --}}
-                @if($user && ($user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete')))
-                    <a href="{{ route('uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('uang-jalan.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        Uang Jalan
-                    </a>
-                @endif
+
             </div>
         </div>
         @endif
 
         {{-- Aktivitas Kontainer Sub-Dropdown --}}
         @php
-            $isAktivitasKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*');
-            $hasAktivitasKontainerPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota.view') || $user->can('perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('tagihan-cat-view') || $user->can('pranota-cat-view') || $user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete'));
+            $isAktivitasKontainerRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*');
+            $hasAktivitasKontainerPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota-kontainer-sewa-view') || $user->can('pembayaran-pranota-kontainer-view') || $user->can('pranota.view') || $user->can('perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('pembayaran-pranota-perbaikan-kontainer-view') || $user->can('tagihan-cat-view') || $user->can('pranota-cat-view') || $user->can('pembayaran-pranota-cat-view'));
         @endphp
 
         @if($hasAktivitasKontainerPermissions)
-        <div class="mt-2 mb-2">
-            <button id="aktivitas-aktivitas-kontainer-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasKontainerRoute ? 'bg-green-50 text-green-700 font-medium' : '' }}">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasKontainerRoute ? 'bg-green-100' : '' }}">
-                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasKontainerRoute ? 'text-green-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-medium truncate w-full">Aktivitas Kontainer</span>
-                </div>
+        <div class="mx-2 mb-3">
+            <button id="aktivitas-aktivitas-kontainer-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 group {{ $isAktivitasKontainerRoute ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Aktivitas Kontainer</span>
                 <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasKontainerRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div id="aktivitas-aktivitas-kontainer-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasKontainerRoute) style="display: block;" @endif>
-                {{-- Tagihan Kontainer Sewa --}}
-                @if($user && $user->can('tagihan-kontainer-sewa-index'))
-                    <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
+            <div id="aktivitas-aktivitas-kontainer-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKontainerRoute) style="display: block;" @endif>
+                {{-- Sewa Sub-Dropdown --}}
+                @php
+                    $isSewaRoute = Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pembayaran-pranota-kontainer.*');
+                    $hasSewaPermissions = $user && ($user->can('tagihan-kontainer-sewa-index') || $user->can('pranota-kontainer-sewa-view') || $user->can('pembayaran-pranota-kontainer-view'));
+                @endphp
+
+                @if($hasSewaPermissions)
+                <div class="mb-2">
+                    <button id="sewa-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isSewaRoute ? 'bg-cyan-50 text-cyan-700 font-medium' : '' }}">
+                        <span class="text-xs font-medium">Sewa</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isSewaRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Tagihan Kontainer Sewa
-                    </a>
+                    </button>
+                    <div id="sewa-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isSewaRoute) style="display: block;" @endif>
+                        {{-- Tagihan Kontainer Sewa --}}
+                        @if($user && $user->can('tagihan-kontainer-sewa-index'))
+                            <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Tagihan Kontainer Sewa</span>
+                            </a>
+                        @endif
+
+                        {{-- Pranota Kontainer Sewa --}}
+                        @if($user && $user->can('pranota-kontainer-sewa-view'))
+                            <a href="{{ route('pranota-kontainer-sewa.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pranota-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pranota Kontainer Sewa</span>
+                            </a>
+                        @endif
+
+                        {{-- Pembayaran Pranota Kontainer Sewa --}}
+                        @if(Route::has('pembayaran-pranota-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-kontainer-view')))
+                            <a href="{{ route('pembayaran-pranota-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-kontainer.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pembayaran Pranota Kontainer Sewa</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
-                {{-- Daftar Pranota Kontainer Sewa --}}
-                @if($user && $user->can('pranota-kontainer-sewa-view'))
-                    <a href="{{ route('pranota-kontainer-sewa.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-kontainer-sewa.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                {{-- Perbaikan Sub-Dropdown --}}
+                @php
+                    $isPerbaikanRoute = Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*');
+                    $hasPerbaikanPermissions = $user && ($user->can('tagihan-perbaikan-kontainer-view') || $user->can('pranota-perbaikan-kontainer-view') || $user->can('pembayaran-pranota-perbaikan-kontainer-view'));
+                @endphp
+
+                @if($hasPerbaikanPermissions)
+                <div class="mb-2">
+                    <button id="perbaikan-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isPerbaikanRoute ? 'bg-amber-50 text-amber-700 font-medium' : '' }}">
+                        <span class="text-xs font-medium">Perbaikan</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isPerbaikanRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Daftar Pranota Kontainer Sewa
-                    </a>
+                    </button>
+                    <div id="perbaikan-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isPerbaikanRoute) style="display: block;" @endif>
+                        {{-- Tagihan Perbaikan Kontainer --}}
+                        @if($user && $user->can('tagihan-perbaikan-kontainer-view'))
+                            <a href="{{ route('perbaikan-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Tagihan Perbaikan Kontainer</span>
+                            </a>
+                        @endif
+
+                        {{-- Pranota Perbaikan Kontainer --}}
+                        @if($user && $user->can('pranota-perbaikan-kontainer-view'))
+                            <a href="{{ route('pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pranota Perbaikan Kontainer</span>
+                            </a>
+                        @endif
+
+                        {{-- Pembayaran Pranota Perbaikan Kontainer --}}
+                        @if(Route::has('pembayaran-pranota-perbaikan-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-perbaikan-kontainer-view')))
+                            <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pembayaran Pranota Perbaikan Kontainer</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
-                {{-- Tagihan Perbaikan Kontainer --}}
-                @if($user && $user->can('tagihan-perbaikan-kontainer-view'))
-                    <a href="{{ route('perbaikan-kontainer.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                {{-- CAT Sub-Dropdown --}}
+                @php
+                    $isCatRoute = Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*');
+                    $hasCatPermissions = $user && ($user->can('tagihan-cat-view') || $user->can('pranota-cat-view') || $user->can('pembayaran-pranota-cat-view'));
+                @endphp
+
+                @if($hasCatPermissions)
+                <div class="mb-2">
+                    <button id="cat-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isCatRoute ? 'bg-rose-50 text-rose-700 font-medium' : '' }}">
+                        <span class="text-xs font-medium">CAT</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isCatRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Tagihan Perbaikan Kontainer
-                    </a>
+                    </button>
+                    <div id="cat-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isCatRoute) style="display: block;" @endif>
+                        {{-- Daftar Tagihan CAT --}}
+                        @if($user && $user->can('tagihan-cat-view'))
+                            <a href="{{ route('tagihan-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('tagihan-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Daftar Tagihan CAT</span>
+                            </a>
+                        @endif
+
+                        {{-- Pranota Tagihan CAT --}}
+                        @if($user && $user->can('pranota-cat-view'))
+                            <a href="{{ route('pranota-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pranota-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Pranota Tagihan CAT</span>
+                            </a>
+                        @endif
+
+                        {{-- Pembayaran Pranota CAT Kontainer --}}
+                        @if(Route::has('pembayaran-pranota-cat.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-cat-view')))
+                            <a href="{{ route('pembayaran-pranota-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Bayar Pranota CAT Kontainer</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
-                {{-- Pranota Perbaikan Kontainer --}}
-                @if($user && $user->can('pranota-perbaikan-kontainer-view'))
-                    <a href="{{ route('pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Pranota Perbaikan Kontainer
-                    </a>
-                @endif
 
-                {{-- Tagihan CAT --}}
-                @if($user && $user->can('tagihan-cat-view'))
-                    <a href="{{ route('tagihan-cat.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('tagihan-cat.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 7h6m0 10v-3m-3 3h.01M9 17h.01M9 14h.01M12 14h.01M15 11h.01M12 11h.01M9 11h.01M7 21h10a2 2 0 002-2V5a2 2 0 00-2-2H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                        </svg>
-                        Tagihan CAT
-                    </a>
-                @endif
-
-                {{-- Daftar Pranota Tagihan CAT --}}
-                @if($user && $user->can('pranota-cat-view'))
-                    <a href="{{ route('pranota-cat.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pranota-cat.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Daftar Pranota Tagihan CAT
-                    </a>
-                @endif
-
-                {{-- Tanda Terima --}}
-                @if($user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete')))
-                    <a href="{{ route('tanda-terima.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('tanda-terima.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Tanda Terima
-                    </a>
-                @endif
-
-                {{-- Tanda Terima Tanpa Surat Jalan --}}
-                @if($user && ($user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete')))
-                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                        </svg>
-                        Tanda Terima Tanpa Surat Jalan
-                    </a>
-                @endif
-
-                {{-- Gate In --}}
-                @if($user && ($user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete')))
-                    <a href="{{ route('gate-in.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('gate-in.*') ? 'bg-green-50 text-green-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"/>
-                        </svg>
-                        Gate In
-                    </a>
-                @endif
             </div>
         </div>
         @endif
 
         {{-- Aktivitas Kapal Sub-Dropdown --}}
         @php
-            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*');
-            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view') || $user->can('prospek-edit') || $user->can('bl-view'));
+            $isAktivitasKapalRoute = Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('prospek.*');
+            $hasAktivitasKapalPermissions = $user && ($user->can('aktivitas-kapal-view') || $user->can('pergerakan-kapal-view') || $user->can('voyage-view') || $user->can('jadwal-kapal-view') || $user->can('status-kapal-view') || $user->can('log-aktivitas-kapal-view') || $user->can('monitoring-kapal-view') || $user->can('prospek-edit') || $user->can('prospek-view') || $user->can('bl-view'));
         @endphp
 
         @if($hasAktivitasKapalPermissions)
-        <div class="mt-2 mb-2">
-            <button id="aktivitas-kapal-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasKapalRoute ? 'bg-purple-50 text-purple-700 font-medium' : '' }}">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasKapalRoute ? 'bg-purple-100' : '' }}">
-                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasKapalRoute ? 'text-purple-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-medium truncate w-full">Aktivitas Kapal</span>
-                </div>
+        <div class="mx-2 mb-3">
+            <button id="aktivitas-kapal-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 group {{ $isAktivitasKapalRoute ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Aktivitas Kapal</span>
                 <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasKapalRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div id="aktivitas-kapal-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasKapalRoute) style="display: block;" @endif>
+            <div id="aktivitas-kapal-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKapalRoute) style="display: block;" @endif>
+                {{-- Prospek --}}
+                @if($user && $user->can('prospek-view'))
+                    <a href="{{ route('prospek.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Prospek</span>
+                    </a>
+                @endif
+
                 {{-- Naik Kapal --}}
                 @if($user && $user->can('prospek-edit'))
-                    <a href="{{ route('naik-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('naik-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 8h16v8a2 2 0 01-2 2H6a2 2 0 01-2-2V8zm0 0V6a2 2 0 012-2h12a2 2 0 012 2v2M8 12l2 2 4-4"/>
-                        </svg>
-                        Naik Kapal
+                    <a href="{{ route('naik-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('naik-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Naik Kapal</span>
                     </a>
                 @endif
 
                 {{-- BL (Bill of Lading) --}}
                 @if($user && $user->can('bl-view'))
-                    <a href="{{ route('bl.select') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('bl.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        BL (Bill of Lading)
+                    <a href="{{ route('bl.select') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">BL (Bill of Lading)</span>
                     </a>
                 @endif
 
                 {{-- Pergerakan Kapal --}}
                 @if($user && $user->can('pergerakan-kapal-view'))
-                    <a href="{{ route('pergerakan-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/>
-                        </svg>
-                        Pergerakan Kapal
+                    <a href="{{ route('pergerakan-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pergerakan Kapal</span>
                     </a>
                 @endif
 
                 {{-- Daftar Voyage --}}
                 @if($user && $user->can('voyage-view'))
-                    <a href="{{ route('voyage.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('voyage.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"/>
-                        </svg>
-                        Daftar Voyage
+                    <a href="{{ route('voyage.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('voyage.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Daftar Voyage</span>
                     </a>
                 @endif
 
                 {{-- Jadwal Kapal --}}
                 @if($user && $user->can('jadwal-kapal-view'))
-                    <a href="{{ route('jadwal-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('jadwal-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                        </svg>
-                        Jadwal Kapal
+                    <a href="{{ route('jadwal-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('jadwal-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Jadwal Kapal</span>
                     </a>
                 @endif
 
                 {{-- Status Kapal --}}
                 @if($user && $user->can('status-kapal-view'))
-                    <a href="{{ route('status-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('status-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Status Kapal
+                    <a href="{{ route('status-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('status-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Status Kapal</span>
                     </a>
                 @endif
 
                 {{-- Log Aktivitas --}}
                 @if($user && $user->can('log-aktivitas-kapal-view'))
-                    <a href="{{ route('log-aktivitas-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('log-aktivitas-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Log Aktivitas
+                    <a href="{{ route('log-aktivitas-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('log-aktivitas-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Log Aktivitas</span>
                     </a>
                 @endif
 
                 {{-- Monitoring Kapal --}}
                 @if($user && $user->can('monitoring-kapal-view'))
-                    <a href="{{ route('monitoring-kapal.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('monitoring-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
-                        </svg>
-                        Monitoring Kapal
+                    <a href="{{ route('monitoring-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('monitoring-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Monitoring Kapal</span>
+                    </a>
+                @endif
+
+                {{-- Prospek --}}
+                @if($user && $user->can('prospek-view'))
+                    <a href="{{ route('prospek.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Prospek</span>
+                    </a>
+                @endif
+            </div>
+        </div>
+        @endif
+
+        {{-- Aktivitas Pelabuhan Sub-Dropdown --}}
+        @php
+            $isAktivitasPelabuhanRoute = Request::routeIs('approval.surat-jalan.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*');
+            $hasAktivitasPelabuhanPermissions = $user && ($user->can('approval-surat-jalan-view') || $user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete') || $user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete') || $user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete'));
+        @endphp
+
+        @if($hasAktivitasPelabuhanPermissions)
+        <div class="mx-2 mb-3">
+            <button id="aktivitas-pelabuhan-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 group {{ $isAktivitasPelabuhanRoute ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Aktivitas Pelabuhan</span>
+                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasPelabuhanRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div id="aktivitas-pelabuhan-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasPelabuhanRoute) style="display: block;" @endif>
+                {{-- Approval Surat Jalan --}}
+                @if($user && $user->can('approval-surat-jalan-view'))
+                    <a href="{{ Route::has('approval.surat-jalan.index') ? route('approval.surat-jalan.index') : '#' }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('approval.surat-jalan.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Approval Surat Jalan</span>
+                        @if(!Route::has('approval.surat-jalan.index'))
+                            <span class="ml-auto text-xs text-gray-400 italic">(in dev)</span>
+                        @endif
+                    </a>
+                @endif
+
+                {{-- Tanda Terima --}}
+                @if($user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete')))
+                    <a href="{{ route('tanda-terima.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Tanda Terima</span>
+                    </a>
+                @endif
+
+                {{-- Tanda Terima Tanpa Surat Jalan --}}
+                @if($user && ($user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete')))
+                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Tanda Terima Tanpa Surat Jalan</span>
+                    </a>
+                @endif
+
+                {{-- Gate In --}}
+                @if($user && ($user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete')))
+                    <a href="{{ route('gate-in.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('gate-in.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Gate In</span>
                     </a>
                 @endif
             </div>
@@ -1083,26 +1208,19 @@
 
         {{-- Approval Tugas Sub-Dropdown --}}
         @php
-            $isApprovalTugasRoute = Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
+            $isApprovalTugasRoute = (Request::routeIs('approval.*') && !Request::routeIs('approval.surat-jalan.*')) || Request::routeIs('approval-ii.*');
             $hasApprovalTugasPermissions = $user && ($user->can('approval-view') || $user->can('approval-approve') || $user->can('approval-print') || $user->can('approval-dashboard') || $user->can('approval') || $user->can('permohonan.approve'));
         @endphp
 
         @if($hasApprovalTugasPermissions)
-        <div class="mt-2 mb-2">
-            <button id="approval-tugas-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isApprovalTugasRoute ? 'bg-orange-50 text-orange-700 font-medium' : '' }}">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isApprovalTugasRoute ? 'bg-orange-100' : '' }}">
-                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isApprovalTugasRoute ? 'text-orange-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-medium truncate w-full">Approval Tugas</span>
-                </div>
+        <div class="mx-2 mb-3">
+            <button id="approval-tugas-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 group {{ $isApprovalTugasRoute ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Approval Tugas</span>
                 <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isApprovalTugasRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                 </svg>
             </button>
-            <div id="approval-tugas-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isApprovalTugasRoute) style="display: block;" @endif>
+            <div id="approval-tugas-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isApprovalTugasRoute) style="display: block;" @endif>
                 {{-- Approval Tugas --}}
                 @if(Route::has('approval.dashboard'))
                     <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
@@ -1123,18 +1241,7 @@
                     </a>
                 @endif
 
-                {{-- Approval Surat Jalan --}}
-                @if($user && $user->can('approval-surat-jalan-view'))
-                    <a href="{{ Route::has('approval.surat-jalan.index') ? route('approval.surat-jalan.index') : '#' }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval.surat-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
-                        </svg>
-                        Approval Surat Jalan
-                        @if(!Route::has('approval.surat-jalan.index'))
-                            <span class="ml-auto text-xs text-gray-400 italic">(in dev)</span>
-                        @endif
-                    </a>
-                @endif
+
             </div>
         </div>
         @endif
@@ -1144,221 +1251,7 @@
 
 
 
-{{-- Separator --}}
-<div class="my-6 mx-4 border-t border-gray-200"></div>
 
-{{-- Pembayaran Dropdown --}}
-@php
-    $isPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
-    $hasPaymentPermissions = $user && (
-        $user->can('pembayaran-pranota-kontainer-view') ||
-        $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
-        $user->can('pembayaran-pranota-cat-view') ||
-        $user->can('pembayaran-pranota-supir-view') ||
-        $user->can('pembayaran-pranota-surat-jalan-view') ||
-        $user->can('pembayaran-pranota-uang-jalan-view') ||
-        $user->can('pembayaran-aktivitas-lainnya-view') ||
-        $user->can('pembayaran-uang-muka-view') ||
-        $user->can('pembayaran-ob-view') ||
-        $user->can('realisasi-uang-muka-view')
-    );
-@endphp
-
-@if($hasPaymentPermissions)
-<div class="mt-4 mb-4">
-    <button id="pembayaran-menu-toggle" class="w-full flex justify-between items-center py-2 px-5 rounded-lg mt-4 mb-4 text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isPaymentRoute ? 'bg-red-50 text-red-700 font-medium' : '' }}">
-        <div class="flex items-center">
-            <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isPaymentRoute ? 'bg-red-100' : '' }}">
-                <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ $isPaymentRoute ? 'text-red-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                </svg>
-            </div>
-            <span class="text-xs font-medium truncate w-full">Pembayaran</span>
-        </div>
-        <svg class="w-4 h-4 transition-transform duration-200 dropdown-arrow {{ $isPaymentRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-        </svg>
-    </button>
-    <div id="pembayaran-menu-content" class="dropdown-content ml-8 space-y-4 mt-4 mb-4" @if($isPaymentRoute) style="display: block;" @endif>
-        {{-- Aktivitas Supir Sub-dropdown --}}
-        @php
-            $isAktivitasSupirPaymentRoute = Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('pembayaran-pranota-surat-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*');
-            $hasAktivitasSupirPaymentPermission = $user && ($user->can('pembayaran-pranota-supir-view') || $user->can('pembayaran-pranota-surat-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view'));
-        @endphp
-        @if($hasAktivitasSupirPaymentPermission)
-        <div class="mt-2 mb-2">
-            <button id="aktivitas-supir-payment-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasSupirPaymentRoute ? 'bg-red-50 text-red-700 font-medium' : '' }}">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasSupirPaymentRoute ? 'bg-red-100' : '' }}">
-                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasSupirPaymentRoute ? 'text-red-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-medium truncate w-full">Aktivitas Supir</span>
-                </div>
-                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasSupirPaymentRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div id="aktivitas-supir-payment-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasSupirPaymentRoute) style="display: block;" @endif>
-                {{-- Pembayaran Pranota Supir --}}
-                @if(Route::has('pembayaran-pranota-supir.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-supir-view')))
-                    <a href="{{ route('pembayaran-pranota-supir.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Bayar Pranota Supir
-                    </a>
-                @endif
-
-                {{-- Pembayaran Pranota Surat Jalan --}}
-                @if(Route::has('pembayaran-pranota-surat-jalan.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-surat-jalan-view')))
-                    <a href="{{ route('pembayaran-pranota-surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-surat-jalan.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-                        </svg>
-                        Bayar Pranota Surat Jalan
-                    </a>
-                @endif
-
-                {{-- Pembayaran Pranota Uang Jalan --}}
-                @if(Route::has('pembayaran-pranota-uang-jalan.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-uang-jalan-view')))
-                    <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                        </svg>
-                        Bayar Pranota Uang Jalan
-                    </a>
-                @endif
-            </div>
-        </div>
-        @endif
-
-        {{-- Aktivitas Kontainer Sub-dropdown --}}
-        @php
-            $isAktivitasKontainerPaymentRoute = Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-cat.*');
-            $hasAktivitasKontainerPaymentPermission = $user && (
-                $user->can('pembayaran-pranota-kontainer-view') ||
-                $user->can('pembayaran-pranota-perbaikan-kontainer-view') ||
-                $user->can('pembayaran-pranota-cat-view')
-            );
-        @endphp
-        @if($hasAktivitasKontainerPaymentPermission)
-        <div class="mt-2 mb-2">
-            <button id="aktivitas-kontainer-payment-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasKontainerPaymentRoute ? 'bg-red-50 text-red-700 font-medium' : '' }}">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasKontainerPaymentRoute ? 'bg-red-100' : '' }}">
-                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasKontainerPaymentRoute ? 'text-red-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-medium truncate w-full">Aktivitas Kontainer</span>
-                </div>
-                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasKontainerPaymentRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div id="aktivitas-kontainer-payment-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasKontainerPaymentRoute) style="display: block;" @endif>
-                {{-- Pembayaran Pranota Kontainer Sewa --}}
-                @if(Route::has('pembayaran-pranota-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-kontainer-view')))
-                    <a href="{{ route('pembayaran-pranota-kontainer.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-kontainer.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        Bayar Pranota Kontainer Sewa
-                    </a>
-                @endif
-
-                {{-- Pembayaran Pranota Perbaikan Kontainer --}}
-                @if(Route::has('pembayaran-pranota-perbaikan-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-perbaikan-kontainer-view')))
-                    <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        Bayar Pranota Perbaikan Kontainer
-                    </a>
-                @endif
-
-                {{-- Pembayaran Pranota CAT Kontainer --}}
-                @if(Route::has('pembayaran-pranota-cat.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-cat-view')))
-                    <a href="{{ route('pembayaran-pranota-cat.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-cat.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
-                        </svg>
-                        Bayar Pranota CAT Kontainer
-                    </a>
-                @endif
-            </div>
-        </div>
-        @endif
-
-        {{-- Aktivitas Lain-lain Sub-dropdown --}}
-        @php
-            $isAktivitasLainnyaPaymentRoute = Request::routeIs('pembayaran-aktivitas-lainnya.*') || Request::routeIs('pembayaran-uang-muka.*') || Request::routeIs('pembayaran-ob.*') || Request::routeIs('realisasi-uang-muka.*');
-            $hasAktivitasLainnyaPaymentPermission = $user && ($user->can('pembayaran-aktivitas-lainnya-view') || $user->can('pembayaran-uang-muka-view') || $user->can('pembayaran-ob-view') || $user->can('realisasi-uang-muka-view'));
-        @endphp
-        @if($hasAktivitasLainnyaPaymentPermission)
-        <div class="mt-2 mb-2">
-            <button id="aktivitas-lainnya-payment-menu-toggle" class="w-full flex justify-between items-center py-1 px-3 rounded-md text-gray-600 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ $isAktivitasLainnyaPaymentRoute ? 'bg-red-50 text-red-700 font-medium' : '' }}">
-                <div class="flex items-center">
-                    <div class="flex items-center justify-center w-4 h-4 rounded bg-gray-100 group-hover:bg-gray-200 mr-2 {{ $isAktivitasLainnyaPaymentRoute ? 'bg-red-100' : '' }}">
-                        <svg class="w-3 h-3 text-gray-600 group-hover:text-gray-700 {{ $isAktivitasLainnyaPaymentRoute ? 'text-red-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"/>
-                        </svg>
-                    </div>
-                    <span class="text-xs font-medium truncate w-full">Aktivitas Lain-lain</span>
-                </div>
-                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasLainnyaPaymentRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-                </svg>
-            </button>
-            <div id="aktivitas-lainnya-payment-menu-content" class="dropdown-content ml-6 space-y-2 mt-2" @if($isAktivitasLainnyaPaymentRoute) style="display: block;" @endif>
-                {{-- Pembayaran Aktivitas Lain-lain --}}
-                @if(Route::has('pembayaran-aktivitas-lainnya.index') && ($isAdmin || auth()->user()->can('pembayaran-aktivitas-lainnya-view')))
-                    <a href="{{ route('pembayaran-aktivitas-lainnya.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lainnya.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        Bayar Aktivitas Lain-lain
-                    </a>
-                @endif
-
-                {{-- Pembayaran Uang Muka --}}
-                @if(Route::has('pembayaran-uang-muka.index') && ($isAdmin || auth()->user()->can('pembayaran-uang-muka-view')))
-                    <a href="{{ route('pembayaran-uang-muka.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-uang-muka.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"/>
-                        </svg>
-                        Pembayaran Uang Muka
-                    </a>
-                @endif
-
-                {{-- Pembayaran OB --}}
-                @if(Route::has('pembayaran-ob.index') && ($isAdmin || auth()->user()->can('pembayaran-ob-view')))
-                    <a href="{{ route('pembayaran-ob.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('pembayaran-ob.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"/>
-                        </svg>
-                        Pembayaran OB
-                    </a>
-                @endif
-
-                {{-- Realisasi Uang Muka --}}
-                @if(Route::has('realisasi-uang-muka.index') && ($isAdmin || auth()->user()->can('realisasi-uang-muka-view')))
-                    <a href="{{ route('realisasi-uang-muka.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('realisasi-uang-muka.*') ? 'bg-red-50 text-red-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                        </svg>
-                        Realisasi Uang Muka
-                    </a>
-                @endif
-            </div>
-        </div>
-        @endif
-    </div>
-</div>
-@endif
 
 {{-- Report Dropdown --}}
 @php
@@ -1567,13 +1460,22 @@
         setupDropdown('master-penjualan-toggle', 'master-penjualan-content');
         setupDropdown('master-karyawan-toggle', 'master-karyawan-content');
         setupDropdown('master-tarif-toggle', 'master-tarif-content');
+        setupDropdown('master-pemasok-toggle', 'master-pemasok-content');
         setupDropdown('order-menu-toggle', 'order-menu-content');
         setupDropdown('input-menu-toggle', 'input-menu-content');
         setupDropdown('aktivitas-menu-toggle', 'aktivitas-menu-content');
         setupDropdown('aktivitas-supir-menu-toggle', 'aktivitas-supir-menu-content');
+        setupDropdown('memo-menu-toggle', 'memo-menu-content');
+        setupDropdown('surat-jalan-menu-toggle', 'surat-jalan-menu-content');
+        setupDropdown('uang-jalan-menu-toggle', 'uang-jalan-menu-content');
+        setupDropdown('rit-menu-toggle', 'rit-menu-content');
         setupDropdown('aktivitas-kontainer-menu-toggle', 'aktivitas-kontainer-menu-content');
         setupDropdown('aktivitas-aktivitas-kontainer-menu-toggle', 'aktivitas-aktivitas-kontainer-menu-content');
+        setupDropdown('sewa-menu-toggle', 'sewa-menu-content');
+        setupDropdown('perbaikan-menu-toggle', 'perbaikan-menu-content');
+        setupDropdown('cat-menu-toggle', 'cat-menu-content');
         setupDropdown('aktivitas-kapal-menu-toggle', 'aktivitas-kapal-menu-content');
+        setupDropdown('aktivitas-pelabuhan-menu-toggle', 'aktivitas-pelabuhan-menu-content');
         setupDropdown('approval-tugas-menu-toggle', 'approval-tugas-menu-content');
         setupDropdown('approval-input-menu-toggle', 'approval-input-menu-content');
         setupDropdown('uang-jalan-supir-menu-toggle', 'uang-jalan-supir-menu-content');
@@ -1582,10 +1484,6 @@
         setupDropdown('aktiva-menu-toggle', 'aktiva-menu-content');
         setupDropdown('kontainer-menu-toggle', 'kontainer-menu-content');
         setupDropdown('tagihan-kontainer-menu-toggle', 'tagihan-kontainer-menu-content');
-        setupDropdown('pembayaran-menu-toggle', 'pembayaran-menu-content');
-        setupDropdown('aktivitas-supir-payment-menu-toggle', 'aktivitas-supir-payment-menu-content');
-        setupDropdown('aktivitas-kontainer-payment-menu-toggle', 'aktivitas-kontainer-payment-menu-content');
-        setupDropdown('aktivitas-lainnya-payment-menu-toggle', 'aktivitas-lainnya-payment-menu-content');
         setupDropdown('report-menu-toggle', 'report-menu-content');
 
         // Sidebar search functionality
