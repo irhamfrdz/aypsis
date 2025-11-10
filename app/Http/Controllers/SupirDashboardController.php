@@ -236,13 +236,20 @@ class SupirDashboardController extends Controller
         // Cari surat jalan terkait untuk mendapatkan data kegiatan/aktifitas
         $suratJalan = \App\Models\SuratJalan::where('no_kontainer', $nomorKontainer)
                                            ->where('supir', $user->name)
-                                           ->whereNotNull('aktifitas')
+                                           ->where(function($query) {
+                                               $query->whereNotNull('aktifitas')
+                                                     ->orWhereNotNull('kegiatan');
+                                           })
                                            ->first();
 
         // Tentukan status kontainer berdasarkan kegiatan pada surat jalan
         $statusKontainer = 'empty'; // default
-        if ($suratJalan && $suratJalan->aktifitas) {
-            $statusKontainer = \App\Models\TagihanOb::getStatusKontainerFromKegiatan($suratJalan->aktifitas);
+        if ($suratJalan) {
+            // Prioritas aktifitas, fallback ke kegiatan
+            $kegiatan = $suratJalan->aktifitas ?: $suratJalan->kegiatan;
+            if ($kegiatan) {
+                $statusKontainer = \App\Models\TagihanOb::getStatusKontainerFromKegiatan($kegiatan);
+            }
         }
 
         try {
@@ -258,7 +265,8 @@ class SupirDashboardController extends Controller
             $tagihanOb->created_by = $user->id;
             
             // Hitung biaya otomatis dari pricelist
-            $biaya = $tagihanOb->calculateBiayaFromPricelist();
+            $sizeKontainer = $bl->tipe_kontainer ?? '20ft'; // Default 20ft jika tidak ada
+            $biaya = \App\Models\TagihanOb::calculateBiayaFromPricelist($sizeKontainer, $statusKontainer);
             $tagihanOb->biaya = $biaya;
             
             $tagihanOb->save();
@@ -271,7 +279,9 @@ class SupirDashboardController extends Controller
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
                 'nomor_kontainer' => $nomorKontainer,
+                'kegiatan_surat_jalan' => $kegiatan ?? null,
                 'status_kontainer' => $statusKontainer,
+                'size_kontainer' => $sizeKontainer,
                 'biaya' => $biaya,
                 'timestamp' => now()
             ]);
