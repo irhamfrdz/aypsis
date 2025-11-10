@@ -76,14 +76,24 @@ class KontainerImportController extends Controller
             $file = $request->file('excel_file');
             $path = $file->getRealPath();
 
-            // Read CSV file with semicolon delimiter
+            // Read CSV file with semicolon delimiter and proper encoding
             $csvData = [];
             if (($handle = fopen($path, 'r')) !== FALSE) {
+                // Set UTF-8 encoding untuk handle karakter khusus
+                stream_filter_append($handle, 'convert.iconv.UTF-8/UTF-8//IGNORE');
+                
                 while (($data = fgetcsv($handle, 1000, ';')) !== FALSE) {
-                    $csvData[] = $data;
+                    // Clean up each field dari whitespace dan karakter tersembunyi
+                    $cleanData = array_map(function($field) {
+                        return trim($field, " \t\n\r\0\x0B\xEF\xBB\xBF");
+                    }, $data);
+                    $csvData[] = $cleanData;
                 }
                 fclose($handle);
             }
+            
+            // Log total baris yang dibaca
+            \Log::info("CSV Import: Total rows read", ['total_rows' => count($csvData)]);
 
             $header = array_shift($csvData); // Remove header row
 
@@ -140,16 +150,37 @@ class KontainerImportController extends Controller
                 }
 
                 try {
-                    $awalanKontainer = trim($row[0]);
-                    $nomorSeri = trim($row[1]);
-                    $akhiranKontainer = trim($row[2]);
-                    $ukuran = trim($row[3]);
-                    $vendor = trim($row[4]);
+                    // Assign dengan null coalescing untuk menghindari undefined index
+                    $awalanKontainer = isset($row[0]) ? trim($row[0]) : '';
+                    $nomorSeri = isset($row[1]) ? trim($row[1]) : '';
+                    $akhiranKontainer = isset($row[2]) ? trim($row[2]) : '';
+                    $ukuran = isset($row[3]) ? trim($row[3]) : '';
+                    $vendor = isset($row[4]) ? trim($row[4]) : '';
+                    
+                    // Debug logging untuk troubleshooting
+                    \Log::info("Processing CSV row {$rowNumber}", [
+                        'raw_row' => $row,
+                        'awalan' => $awalanKontainer,
+                        'nomor_seri' => $nomorSeri,
+                        'akhiran' => $akhiranKontainer,
+                        'ukuran' => $ukuran,
+                        'vendor' => $vendor,
+                    ]);
 
-                    // Validation
-                    if (empty($awalanKontainer) || empty($nomorSeri) || empty($akhiranKontainer) || empty($ukuran) || empty($vendor)) {
+                    // Validation dengan pesan error yang lebih spesifik
+                    $emptyFields = [];
+                    if (empty($awalanKontainer)) $emptyFields[] = 'Awalan Kontainer';
+                    if (empty($nomorSeri)) $emptyFields[] = 'Nomor Seri';
+                    // Akhiran bisa kosong, akan diset default '0'
+                    if ($akhiranKontainer === '') {
+                        $akhiranKontainer = '0';
+                    }
+                    if (empty($ukuran)) $emptyFields[] = 'Ukuran';
+                    if (empty($vendor)) $emptyFields[] = 'Vendor';
+                    
+                    if (!empty($emptyFields)) {
                         $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Ada kolom yang kosong";
+                        $stats['error_details'][] = "Baris {$rowNumber}: Kolom kosong - " . implode(', ', $emptyFields);
                         continue;
                     }
 
@@ -160,11 +191,13 @@ class KontainerImportController extends Controller
                         continue;
                     }
 
-                    if (strlen($nomorSeri) !== 6) {
+                    // Pad nomor seri dengan leading zeros jika kurang dari 6 digit
+                    if (strlen($nomorSeri) > 6) {
                         $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Nomor seri harus 6 karakter";
+                        $stats['error_details'][] = "Baris {$rowNumber}: Nomor seri terlalu panjang (maksimal 6 karakter)";
                         continue;
                     }
+                    $nomorSeri = str_pad($nomorSeri, 6, '0', STR_PAD_LEFT);
 
                     if (strlen($akhiranKontainer) !== 1) {
                         $stats['errors']++;
