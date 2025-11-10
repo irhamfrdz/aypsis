@@ -352,7 +352,7 @@ class KontainerImportController extends Controller
                 ];
 
                 // Write headers
-                fputcsv($file, $csvHeaders, ';');
+                fputcsv($file, $csvHeaders, '\\');
 
                 // Write data
                 foreach ($kontainers as $index => $kontainer) {
@@ -379,34 +379,34 @@ class KontainerImportController extends Controller
                         $kontainer->updated_at ? $kontainer->updated_at->format('d-m-Y H:i:s') : '-'
                     ];
 
-                    fputcsv($file, $rowData, ';');
+                    fputcsv($file, $rowData, '\\');
                 }
 
                 // Add export summary at the end
-                fputcsv($file, [], ';'); // Empty row
-                fputcsv($file, ['=== INFORMASI EXPORT ==='], ';');
-                fputcsv($file, ['Total Data', count($kontainers) . ' kontainer'], ';');
-                fputcsv($file, ['Tanggal Export', date('d-m-Y H:i:s')], ';');
-                fputcsv($file, ['Exported By', auth()->user()->username ?? 'System'], ';');
+                fputcsv($file, [], '\\'); // Empty row
+                fputcsv($file, ['=== INFORMASI EXPORT ==='], '\\');
+                fputcsv($file, ['Total Data', count($kontainers) . ' kontainer'], '\\');
+                fputcsv($file, ['Tanggal Export', date('d-m-Y H:i:s')], '\\');
+                fputcsv($file, ['Exported By', auth()->user()->username ?? 'System'], '\\');
 
                 // Add filter information if any
                 if ($request->filled('search') || $request->filled('vendor') || 
                     $request->filled('ukuran') || $request->filled('status')) {
                     
-                    fputcsv($file, [], ';'); // Empty row
-                    fputcsv($file, ['=== FILTER YANG DITERAPKAN ==='], ';');
+                    fputcsv($file, [], '\\'); // Empty row
+                    fputcsv($file, ['=== FILTER YANG DITERAPKAN ==='], '\\');
                     
                     if ($request->filled('search')) {
-                        fputcsv($file, ['Pencarian', $request->search], ';');
+                        fputcsv($file, ['Pencarian', $request->search], '\\');
                     }
                     if ($request->filled('vendor')) {
-                        fputcsv($file, ['Vendor', $request->vendor], ';');
+                        fputcsv($file, ['Vendor', $request->vendor], '\\');
                     }
                     if ($request->filled('ukuran')) {
-                        fputcsv($file, ['Ukuran', $request->ukuran . ' ft'], ';');
+                        fputcsv($file, ['Ukuran', $request->ukuran . ' ft'], '\\');
                     }
                     if ($request->filled('status')) {
-                        fputcsv($file, ['Status', $request->status], ';');
+                        fputcsv($file, ['Status', $request->status], '\\');
                     }
                 }
 
