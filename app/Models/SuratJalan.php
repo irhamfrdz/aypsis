@@ -402,4 +402,12 @@ class SuratJalan extends Model
     {
         return $this->no_seal;
     }
+
+    /**
+     * Relationship dengan SuratJalanApproval
+     */
+    public function approvals()
+    {
+        return $this->hasMany(SuratJalanApproval::class);
+    }
 }
