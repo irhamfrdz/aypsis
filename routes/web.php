@@ -395,46 +395,46 @@ Route::middleware([
         // Master tujuan kegiatan utama routes
         Route::get('tujuan-kegiatan-utama', [TujuanKegiatanUtamaController::class, 'index'])
              ->name('tujuan-kegiatan-utama.index')
-             ->middleware('can:master-tujuan-view');
+             ->middleware('can:master-tujuan-kirim-view');
         Route::get('tujuan-kegiatan-utama/create', [TujuanKegiatanUtamaController::class, 'create'])
              ->name('tujuan-kegiatan-utama.create')
-             ->middleware('can:master-tujuan-create');
+             ->middleware('can:master-tujuan-kirim-create');
 
         // Export/Print routes for Master Tujuan Kegiatan Utama (HARUS SEBELUM RESOURCE ROUTES)
         Route::get('tujuan-kegiatan-utama/export', [TujuanKegiatanUtamaController::class, 'export'])
              ->name('tujuan-kegiatan-utama.export')
-             ->middleware('can:master-tujuan-export');
+             ->middleware('can:master-tujuan-kirim-view');
         Route::get('tujuan-kegiatan-utama/print', [TujuanKegiatanUtamaController::class, 'print'])
              ->name('tujuan-kegiatan-utama.print')
-             ->middleware('can:master-tujuan-print');
+             ->middleware('can:master-tujuan-kirim-view');
 
         // Template dan Import routes for Master Tujuan Kegiatan Utama (HARUS SEBELUM RESOURCE ROUTES)
         Route::get('tujuan-kegiatan-utama/download-template', [TujuanKegiatanUtamaController::class, 'downloadTemplate'])
              ->name('tujuan-kegiatan-utama.download-template')
-             ->middleware('can:master-tujuan-view');
+             ->middleware('can:master-tujuan-kirim-view');
         Route::get('tujuan-kegiatan-utama/import-form', [TujuanKegiatanUtamaController::class, 'showImportForm'])
              ->name('tujuan-kegiatan-utama.import-form')
-             ->middleware('can:master-tujuan-create');
+             ->middleware('can:master-tujuan-kirim-create');
         Route::post('tujuan-kegiatan-utama/import', [TujuanKegiatanUtamaController::class, 'import'])
              ->name('tujuan-kegiatan-utama.import')
-             ->middleware('can:master-tujuan-create');
+             ->middleware('can:master-tujuan-kirim-create');
 
         // Resource routes (HARUS SETELAH ROUTES SPESIFIK)
         Route::post('tujuan-kegiatan-utama', [TujuanKegiatanUtamaController::class, 'store'])
              ->name('tujuan-kegiatan-utama.store')
-             ->middleware('can:master-tujuan-create');
+             ->middleware('can:master-tujuan-kirim-create');
         Route::get('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}', [TujuanKegiatanUtamaController::class, 'show'])
              ->name('tujuan-kegiatan-utama.show')
-             ->middleware('can:master-tujuan-view');
+             ->middleware('can:master-tujuan-kirim-view');
         Route::get('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}/edit', [TujuanKegiatanUtamaController::class, 'edit'])
              ->name('tujuan-kegiatan-utama.edit')
-             ->middleware('can:master-tujuan-update');
+             ->middleware('can:master-tujuan-kirim-update');
         Route::put('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}', [TujuanKegiatanUtamaController::class, 'update'])
              ->name('tujuan-kegiatan-utama.update')
-             ->middleware('can:master-tujuan-update');
+             ->middleware('can:master-tujuan-kirim-update');
         Route::delete('tujuan-kegiatan-utama/{tujuan_kegiatan_utama}', [TujuanKegiatanUtamaController::class, 'destroy'])
              ->name('tujuan-kegiatan-utama.destroy')
-             ->middleware('can:master-tujuan-delete');
+             ->middleware('can:master-tujuan-kirim-delete');
 
         // Master permission routes (with master prefix) - granular permissions
         Route::get('permission', [PermissionController::class, 'index'])

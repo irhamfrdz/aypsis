@@ -590,23 +590,6 @@
                                 <td class="empty-cell"></td>
                             </tr>
 
-                            {{-- Data Transportasi --}}
-                            <tr class="submodule-row" data-parent="master">
-                                <td class="submodule">
-                                    <div class="flex items-center">
-                                        <span class="text-sm mr-2">└─</span>
-                                        <span>Data Transportasi</span>
-                                    </div>
-                                </td>
-                                <td><input type="checkbox" name="permissions[master-tujuan-kirim][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan-kirim']['view']) && $userMatrixPermissions['master-tujuan-kirim']['view']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[master-tujuan-kirim][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan-kirim']['create']) && $userMatrixPermissions['master-tujuan-kirim']['create']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[master-tujuan-kirim][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan-kirim']['update']) && $userMatrixPermissions['master-tujuan-kirim']['update']) checked @endif></td>
-                                <td><input type="checkbox" name="permissions[master-tujuan-kirim][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['master-tujuan-kirim']['delete']) && $userMatrixPermissions['master-tujuan-kirim']['delete']) checked @endif></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                                <td class="empty-cell"></td>
-                            </tr>
-
                             {{-- Operational Management --}}
                             <tr class="module-row" data-module="operational">
                                 <td class="module-header">
