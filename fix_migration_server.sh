@@ -4,14 +4,22 @@
 echo "🔧 FIXING MIGRATION CONFLICT..."
 echo "==============================="
 
-# 1. Mark the problematic migration as run
-echo "📝 1. Marking migration as completed..."
+# 1. Mark the problematic migrations as run
+echo "📝 1. Marking problematic migrations as completed..."
 php artisan tinker --execute="
-DB::table('migrations')->insert([
+// Mark vendor_kontainer_sewas migration as run
+DB::table('migrations')->insertOrIgnore([
+    'migration' => '2025_11_08_120000_create_vendor_kontainer_sewas_table',
+    'batch' => DB::table('migrations')->max('batch') + 1
+]);
+
+// Mark other problematic migration as run (if exists)
+DB::table('migrations')->insertOrIgnore([
     'migration' => '2025_09_15_110650_create_pembayaran_pranota_perbaikan_kontainers_table',
     'batch' => DB::table('migrations')->max('batch')
 ]);
-echo 'Migration marked as run\n';
+
+echo 'Problematic migrations marked as run\n';
 "
 
 # 2. Run remaining migrations
