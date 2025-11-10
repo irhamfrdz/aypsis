@@ -52,11 +52,11 @@
 
     // Calculate rows per page based on paper size
     $rowsPerPage = match($paperSize) {
-        'Half-A4' => 8,      // Smaller space, fewer rows
-        'Half-Folio' => 9,   // Slightly more space
-        'A4' => 20,          // Full A4 has more space
-        'Folio' => 25,       // Largest paper
-        default => 8
+        'Half-A4' => 15,     // Increased capacity for better space utilization
+        'Half-Folio' => 16,  // Increased capacity
+        'A4' => 25,          // Full A4 has more space
+        'Folio' => 30,       // Largest paper
+        default => 15
     };
     
     // Chunk the tagihan items and calculate total pages
