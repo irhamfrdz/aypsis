@@ -325,7 +325,7 @@
             
             <!-- Search Form -->
             <div class="mb-4 p-4 bg-gray-50 rounded-lg">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
                     <div>
                         <label for="searchVendor" class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
                         <input type="text" id="searchVendor" placeholder="Cari vendor..."
@@ -345,14 +345,40 @@
                         </select>
                     </div>
                 </div>
-                <div class="mt-4 flex justify-between items-center">
-                    <button type="button" onclick="searchTagihan()" 
-                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
-                        <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-                        </svg>
-                        Cari
-                    </button>
+                
+                <!-- Additional Filters Row -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label for="searchMasa" class="block text-sm font-medium text-gray-700 mb-1">Masa</label>
+                        <input type="number" id="searchMasa" placeholder="Masa..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="searchTanggalAwal" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Awal</label>
+                        <input type="date" id="searchTanggalAwal"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="searchTanggalAkhir" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Akhir</label>
+                        <input type="date" id="searchTanggalAkhir"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="flex items-end">
+                        <div class="w-full">
+                            <label class="block text-sm font-medium text-gray-700 mb-1">&nbsp;</label>
+                            <div class="flex space-x-2">
+                                <button type="button" onclick="searchTagihan()" 
+                                        class="flex-1 bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                                    <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                    Cari
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-end">
                     <button type="button" onclick="resetSearch()" 
                             class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
                         Reset
@@ -557,6 +583,9 @@ function closeTambahKontainerModal() {
     document.getElementById('searchVendor').value = '';
     document.getElementById('searchContainer').value = '';
     document.getElementById('searchStatus').value = '';
+    document.getElementById('searchMasa').value = '';
+    document.getElementById('searchTanggalAwal').value = '';
+    document.getElementById('searchTanggalAkhir').value = '';
     document.getElementById('availableTagihanContainer').innerHTML = '';
     resetAvailableSelection();
 }
@@ -565,6 +594,9 @@ function searchTagihan() {
     const vendor = document.getElementById('searchVendor').value;
     const container = document.getElementById('searchContainer').value;
     const status = document.getElementById('searchStatus').value;
+    const masa = document.getElementById('searchMasa').value;
+    const tanggalAwal = document.getElementById('searchTanggalAwal').value;
+    const tanggalAkhir = document.getElementById('searchTanggalAkhir').value;
     
     // Show loading
     document.getElementById('loadingState').classList.remove('hidden');
@@ -581,6 +613,9 @@ function searchTagihan() {
     if (vendor) params.append('vendor', vendor);
     if (container) params.append('nomor_kontainer', container);
     if (status) params.append('status_pranota', status);
+    if (masa) params.append('masa', masa);
+    if (tanggalAwal) params.append('tanggal_awal', tanggalAwal);
+    if (tanggalAkhir) params.append('tanggal_akhir', tanggalAkhir);
     
     fetch(`{{ route('daftar-tagihan-kontainer-sewa.index') }}?${params.toString()}`, {
         method: 'GET',
@@ -626,31 +661,53 @@ function displayAvailableTagihan(tagihanList) {
                        data-vendor="${tagihan.vendor || ''}"
                        data-container="${tagihan.nomor_kontainer || ''}"
                        data-amount="${tagihan.grand_total || 0}"
+                       data-masa="${tagihan.masa || ''}"
+                       data-tanggal-awal="${tagihan.tanggal_awal || ''}"
+                       data-tanggal-akhir="${tagihan.tanggal_akhir || ''}"
                        onchange="updateAvailableSelection()">
-                <div class="flex-1 grid grid-cols-1 md:grid-cols-6 gap-2 text-sm">
-                    <div>
-                        <label class="font-medium text-gray-700">Vendor:</label>
-                        <p class="text-gray-900">${tagihan.vendor || '-'}</p>
+                <div class="flex-1">
+                    <!-- Main Info Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Vendor:</label>
+                            <p class="text-gray-900 text-sm">${tagihan.vendor || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Kontainer:</label>
+                            <p class="font-mono text-gray-900 text-sm">${tagihan.nomor_kontainer || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Size:</label>
+                            <p class="text-gray-900 text-sm">${tagihan.size || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Status:</label>
+                            ${statusBadge}
+                        </div>
                     </div>
-                    <div>
-                        <label class="font-medium text-gray-700">Kontainer:</label>
-                        <p class="font-mono text-gray-900">${tagihan.nomor_kontainer || '-'}</p>
-                    </div>
-                    <div>
-                        <label class="font-medium text-gray-700">Size:</label>
-                        <p class="text-gray-900">${tagihan.size || '-'}</p>
-                    </div>
-                    <div>
-                        <label class="font-medium text-gray-700">Periode:</label>
-                        <p class="text-gray-900">${tagihan.periode || '-'}</p>
-                    </div>
-                    <div>
-                        <label class="font-medium text-gray-700">Grand Total:</label>
-                        <p class="font-semibold text-green-600">Rp ${new Intl.NumberFormat('id-ID').format(tagihan.grand_total || 0)}</p>
-                    </div>
-                    <div>
-                        <label class="font-medium text-gray-700">Status:</label>
-                        ${statusBadge}
+                    
+                    <!-- Detail Info Row -->
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Periode:</label>
+                            <p class="text-gray-900 text-sm">${tagihan.periode || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Masa:</label>
+                            <p class="text-gray-900 text-sm">${tagihan.masa || '-'}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Tgl Awal:</label>
+                            <p class="text-gray-900 text-sm">${tagihan.tanggal_awal ? new Date(tagihan.tanggal_awal).toLocaleDateString('id-ID') : '-'}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Tgl Akhir:</label>
+                            <p class="text-gray-900 text-sm">${tagihan.tanggal_akhir ? new Date(tagihan.tanggal_akhir).toLocaleDateString('id-ID') : '-'}</p>
+                        </div>
+                        <div>
+                            <label class="font-medium text-gray-700 text-xs">Grand Total:</label>
+                            <p class="font-semibold text-green-600 text-sm">Rp ${new Intl.NumberFormat('id-ID').format(tagihan.grand_total || 0)}</p>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -714,6 +771,9 @@ function resetSearch() {
     document.getElementById('searchVendor').value = '';
     document.getElementById('searchContainer').value = '';
     document.getElementById('searchStatus').value = '';
+    document.getElementById('searchMasa').value = '';
+    document.getElementById('searchTanggalAwal').value = '';
+    document.getElementById('searchTanggalAkhir').value = '';
     searchTagihan();
 }
 
@@ -730,13 +790,20 @@ function tambahKontainerTerpilih() {
         id: checkbox.value,
         vendor: checkbox.dataset.vendor,
         container: checkbox.dataset.container,
-        amount: parseFloat(checkbox.dataset.amount || 0)
+        amount: parseFloat(checkbox.dataset.amount || 0),
+        masa: checkbox.dataset.masa || '',
+        tanggal_awal: checkbox.dataset.tanggalAwal || '',
+        tanggal_akhir: checkbox.dataset.tanggalAkhir || ''
     }));
     
     const totalAmount = selectedItems.reduce((sum, item) => sum + item.amount, 0);
     const confirmation = confirm(
         `Anda akan menambahkan ${selectedItems.length} tagihan ke pranota {{ $pranota->no_invoice }}:\n\n` +
-        selectedItems.map(item => `- ${item.vendor} (${item.container}) - Rp ${new Intl.NumberFormat('id-ID').format(item.amount)}`).join('\n') +
+        selectedItems.map(item => {
+            const tanggalAwal = item.tanggal_awal ? new Date(item.tanggal_awal).toLocaleDateString('id-ID') : '-';
+            const tanggalAkhir = item.tanggal_akhir ? new Date(item.tanggal_akhir).toLocaleDateString('id-ID') : '-';
+            return `- ${item.vendor} (${item.container})\n  Masa: ${item.masa || '-'} | ${tanggalAwal} - ${tanggalAkhir}\n  Amount: Rp ${new Intl.NumberFormat('id-ID').format(item.amount)}`;
+        }).join('\n\n') +
         `\n\nTotal Amount: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}\n\n` +
         'Apakah Anda yakin ingin melanjutkan?'
     );

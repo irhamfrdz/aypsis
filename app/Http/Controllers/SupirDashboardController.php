@@ -106,7 +106,7 @@ class SupirDashboardController extends Controller
         return view('supir.ob-muat', compact('masterKapals', 'pergerakanKapals'));
     }
 
-    public function obMuatStore(Request $request)
+    public function obMuatStoreSelection(Request $request)
     {
         // Pastikan user yang login adalah karyawan dengan divisi supir
         $user = Auth::user();
@@ -143,19 +143,11 @@ class SupirDashboardController extends Controller
             'timestamp' => now()
         ]);
 
-        // TODO: Implement actual OB Muat logic here
-        // For now, just store the session data and redirect back with success
-        session([
-            'ob_muat_data' => [
-                'kapal' => $request->kapal,
-                'voyage' => $request->voyage,
-                'pergerakan_kapal_id' => $pergerakanKapal->id,
-                'submitted_at' => now(),
-                'submitted_by' => $user->id
-            ]
-        ]);
-
-        return back()->with('success', 'Data OB Muat berhasil disubmit untuk Kapal: ' . $request->kapal . ', Voyage: ' . $request->voyage);
+        // Redirect ke halaman index dengan parameter kapal dan voyage
+        return redirect()->route('supir.ob-muat.index', [
+            'kapal' => $request->kapal,
+            'voyage' => $request->voyage
+        ])->with('success', 'Data OB Muat berhasil disubmit untuk Kapal: ' . $request->kapal . ', Voyage: ' . $request->voyage);
     }
 
     public function obMuatIndex(Request $request)
@@ -194,5 +186,175 @@ class SupirDashboardController extends Controller
         ]);
 
         return view('supir.ob-muat-index', compact('bls', 'selectedKapal', 'selectedVoyage'));
+    }
+
+    public function obMuatForm(Request $request)
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
+        }
+
+        // Validasi parameter yang required
+        $request->validate([
+            'kapal' => 'required|string',
+            'voyage' => 'required|string',
+            'nomor_kontainer' => 'required|string',
+        ]);
+
+        $selectedKapal = $request->get('kapal');
+        $selectedVoyage = $request->get('voyage');
+        $nomorKontainer = $request->get('nomor_kontainer');
+
+        // Ambil data BL berdasarkan kapal, voyage, dan nomor kontainer
+        $bl = \App\Models\Bl::where('nama_kapal', $selectedKapal)
+                           ->where('no_voyage', $selectedVoyage)
+                           ->where('nomor_kontainer', $nomorKontainer)
+                           ->first();
+
+        if (!$bl) {
+            return back()->withErrors(['container' => 'Data kontainer tidak ditemukan.']);
+        }
+
+        // Cek apakah sudah ada tagihan OB untuk kontainer ini
+        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
+                                                  ->where('voyage', $selectedVoyage)
+                                                  ->where('nomor_kontainer', $nomorKontainer)
+                                                  ->first();
+
+        // Ambil master pricelist OB untuk pilihan biaya
+        $masterPricelistObs = \App\Models\MasterPricelistOb::orderBy('size_kontainer')
+                                                           ->orderBy('status_kontainer')
+                                                           ->get();
+
+        // Cari surat jalan terkait untuk mendapatkan data kegiatan/aktifitas
+        $suratJalan = \App\Models\SuratJalan::where('no_kontainer', $nomorKontainer)
+                                           ->where('supir', $user->name)
+                                           ->whereNotNull('aktifitas')
+                                           ->first();
+
+        // Tentukan status kontainer berdasarkan kegiatan pada surat jalan
+        $defaultStatusKontainer = 'empty'; // default
+        if ($suratJalan && $suratJalan->aktifitas) {
+            $defaultStatusKontainer = \App\Models\TagihanOb::getStatusKontainerFromKegiatan($suratJalan->aktifitas);
+        }
+
+        // Log untuk debugging
+        \Log::info('OB Muat Form Data', [
+            'kapal' => $selectedKapal,
+            'voyage' => $selectedVoyage,
+            'nomor_kontainer' => $nomorKontainer,
+            'bl_found' => $bl ? true : false,
+            'existing_tagihan_ob' => $existingTagihanOb ? $existingTagihanOb->id : null,
+            'surat_jalan_aktifitas' => $suratJalan ? $suratJalan->aktifitas : null,
+            'default_status_kontainer' => $defaultStatusKontainer,
+            'user_id' => $user->id,
+            'user_name' => $user->name
+        ]);
+
+        return view('supir.ob-muat-form', compact(
+            'bl', 
+            'selectedKapal', 
+            'selectedVoyage', 
+            'nomorKontainer',
+            'existingTagihanOb',
+            'masterPricelistObs',
+            'suratJalan',
+            'defaultStatusKontainer'
+        ));
+    }
+
+    public function obMuatStore(Request $request)
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
+        }
+
+        // Validasi input
+        $request->validate([
+            'kapal' => 'required|string|max:255',
+            'voyage' => 'required|string|max:255',
+            'nomor_kontainer' => 'required|string|max:255',
+            'barang' => 'required|string|max:255',
+            'status_kontainer' => 'required|in:full,empty',
+            'size_kontainer' => 'required|string',
+            'biaya' => 'required|numeric|min:0',
+        ], [
+            'kapal.required' => 'Kapal harus diisi.',
+            'voyage.required' => 'Voyage harus diisi.',
+            'nomor_kontainer.required' => 'Nomor kontainer harus diisi.',
+            'barang.required' => 'Jenis barang harus diisi.',
+            'status_kontainer.required' => 'Status kontainer harus dipilih.',
+            'size_kontainer.required' => 'Size kontainer harus diisi.',
+            'biaya.required' => 'Biaya harus diisi.',
+            'biaya.numeric' => 'Biaya harus berupa angka.',
+            'biaya.min' => 'Biaya tidak boleh kurang dari 0.',
+        ]);
+
+        // Cek apakah sudah ada tagihan OB untuk kontainer ini
+        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $request->kapal)
+                                                  ->where('voyage', $request->voyage)
+                                                  ->where('nomor_kontainer', $request->nomor_kontainer)
+                                                  ->first();
+
+        if ($existingTagihanOb) {
+            return back()->withErrors(['nomor_kontainer' => 'Tagihan OB untuk kontainer ini sudah ada.'])
+                        ->withInput();
+        }
+
+        // Ambil data BL untuk referensi
+        $bl = \App\Models\Bl::where('nama_kapal', $request->kapal)
+                           ->where('no_voyage', $request->voyage)
+                           ->where('nomor_kontainer', $request->nomor_kontainer)
+                           ->first();
+
+        try {
+            // Simpan tagihan OB
+            $tagihanOb = \App\Models\TagihanOb::create([
+                'kapal' => $request->kapal,
+                'voyage' => $request->voyage,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'nama_supir' => $user->name,
+                'barang' => $request->barang,
+                'status_kontainer' => $request->status_kontainer,
+                'size_kontainer' => $request->size_kontainer,
+                'biaya' => $request->biaya,
+                'bl_id' => $bl ? $bl->id : null,
+                'created_by' => $user->id,
+                'keterangan' => $request->keterangan,
+            ]);
+
+            // Log activity untuk audit trail
+            \Log::info('TagihanOb Created', [
+                'tagihan_ob_id' => $tagihanOb->id,
+                'user_id' => $user->id,
+                'user_name' => $user->name,
+                'kapal' => $request->kapal,
+                'voyage' => $request->voyage,
+                'nomor_kontainer' => $request->nomor_kontainer,
+                'status_kontainer' => $request->status_kontainer,
+                'biaya' => $request->biaya,
+                'timestamp' => now()
+            ]);
+
+            return redirect()->route('supir.ob-muat.index', [
+                'kapal' => $request->kapal,
+                'voyage' => $request->voyage
+            ])->with('success', 'Data OB Muat berhasil disimpan ke dalam tagihan OB. Kontainer: ' . $request->nomor_kontainer . ', Status: ' . ucfirst($request->status_kontainer) . ', Biaya: Rp ' . number_format($request->biaya, 0, ',', '.'));
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating TagihanOb', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user->id,
+                'request_data' => $request->all()
+            ]);
+
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'])
+                        ->withInput();
+        }
     }
 }

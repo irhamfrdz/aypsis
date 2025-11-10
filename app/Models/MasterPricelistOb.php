@@ -54,18 +54,18 @@ class MasterPricelistOb extends Model
     }
 
     /**
-     * Accessor for status label
+     * Accessor for status kontainer label
      */
-    public function getStatusLabelAttribute()
+    public function getStatusKontainerLabelAttribute()
     {
         $options = self::getStatusKontainerOptions();
         return $options[$this->status_kontainer] ?? $this->status_kontainer;
     }
 
     /**
-     * Accessor for size label
+     * Accessor for size kontainer label
      */
-    public function getSizeLabelAttribute()
+    public function getSizeKontainerLabelAttribute()
     {
         $options = self::getSizeKontainerOptions();
         return $options[$this->size_kontainer] ?? $this->size_kontainer;

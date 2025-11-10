@@ -2135,6 +2135,32 @@ Route::middleware(['auth'])->group(function() {
          ->name('tagihan-cat.destroy')
          ->middleware('can:tagihan-cat-delete');
 
+    // Tagihan OB routes
+    Route::get('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'index'])
+         ->name('tagihan-ob.index')
+         ->middleware('can:tagihan-ob-view');
+    Route::get('tagihan-ob/create', [\App\Http\Controllers\TagihanObController::class, 'create'])
+         ->name('tagihan-ob.create')
+         ->middleware('can:tagihan-ob-create');
+    Route::post('tagihan-ob', [\App\Http\Controllers\TagihanObController::class, 'store'])
+         ->name('tagihan-ob.store')
+         ->middleware('can:tagihan-ob-create');
+    Route::get('tagihan-ob/{tagihanOb}', [\App\Http\Controllers\TagihanObController::class, 'show'])
+         ->name('tagihan-ob.show')
+         ->middleware('can:tagihan-ob-view');
+    Route::get('tagihan-ob/{tagihanOb}/edit', [\App\Http\Controllers\TagihanObController::class, 'edit'])
+         ->name('tagihan-ob.edit')
+         ->middleware('can:tagihan-ob-update');
+    Route::put('tagihan-ob/{tagihanOb}', [\App\Http\Controllers\TagihanObController::class, 'update'])
+         ->name('tagihan-ob.update')
+         ->middleware('can:tagihan-ob-update');
+    Route::delete('tagihan-ob/{tagihanOb}', [\App\Http\Controllers\TagihanObController::class, 'destroy'])
+         ->name('tagihan-ob.destroy')
+         ->middleware('can:tagihan-ob-delete');
+    Route::post('tagihan-ob/create-from-ob-muat', [\App\Http\Controllers\TagihanObController::class, 'createFromObMuat'])
+         ->name('tagihan-ob.create-from-ob-muat')
+         ->middleware('can:tagihan-ob-create');
+
     // Pranota CAT routes
     Route::get('pranota-cat', [\App\Http\Controllers\PranotaTagihanCatController::class, 'index'])
          ->name('pranota-cat.index')
