@@ -253,18 +253,21 @@
             background-color: #e9ecef;
         }
 
-        .total-row td {
+        .total-row td,
+        .table tfoot tr td {
             background-color: #e9ecef !important;
             color: #333 !important;
             font-weight: bold !important;
             border: 2px solid #333 !important;
         }
 
-        .total-row td.text-right {
+        .total-row td.text-right,
+        .table tfoot tr td.text-right {
             text-align: right !important;
         }
 
-        .total-row td.text-center {
+        .total-row td.text-center,
+        .table tfoot tr td.text-center {
             text-align: center !important;
         }
 
@@ -294,13 +297,10 @@
 
         /* Signature section for screen preview */
         .signature-section {
-            margin-top: auto;
+            margin-top: 20px;
             text-align: center;
             page-break-inside: avoid;
-            position: absolute;
-            bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '40px') }};
-            left: 0;
-            right: 0;
+            position: relative;
             width: 100%;
         }
 
@@ -351,12 +351,14 @@
 
             html {
                 width: 210mm;
-                height: 297mm;
+                height: auto;
+                min-height: 297mm;
             }
 
             body {
                 width: 210mm;
-                height: 297mm;
+                height: auto;
+                min-height: 297mm;
                 margin: 0;
                 padding: 0;
                 font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : ($paperSize === 'A4' ? '11px' : '12px')) }};
@@ -367,29 +369,15 @@
 
             .container {
                 width: 210mm;
-                @if($paperSize === 'Half-A4')
-                    /* Half-A4: Scale content to fit in half page */
-                    height: 148.5mm;
-                    max-height: 148.5mm;
-                    border-bottom: 2px dashed #999;
-                    /* Visual guide for cutting line */
-                @elseif($paperSize === 'Half-Folio')
-                    /* Half-Folio: Scale content to fit in half page */
-                    height: 6.5in;
-                    max-height: 6.5in;
-                    border-bottom: 2px dashed #999;
-                    /* Visual guide for cutting line */
-                @else
-                    height: 287mm;
-                    max-height: 287mm;
-                @endif
+                height: auto;
+                min-height: auto;
                 padding: 5mm 1mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
                 margin: 0;
                 box-sizing: border-box;
-                overflow: hidden;
+                overflow: visible;
                 position: relative;
-                page-break-after: avoid;
+                page-break-after: auto;
             }
 
             .header {
@@ -437,10 +425,29 @@
             }
 
             .table {
-                page-break-inside: avoid;
+                page-break-inside: auto;
                 margin-bottom: {{ $paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '10px') }};
                 width: 100%;
                 font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
+            }
+
+            .table thead {
+                display: table-header-group;
+            }
+
+            .table tbody tr {
+                page-break-inside: avoid;
+                page-break-after: auto;
+            }
+
+            .table thead tr {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+            }
+
+            /* Repeat header on every page */
+            .table thead {
+                display: table-header-group;
             }
 
             .table th,
@@ -521,21 +528,16 @@
             }
 
             .signature-section {
-                margin-top: auto;
+                margin-top: 20px;
                 page-break-inside: avoid;
-                @if($paperSize === 'Half-A4')
-                    position: absolute;
-                    bottom: 10mm;
-                @elseif($paperSize === 'Half-Folio')
-                    position: absolute;
-                    bottom: 10mm;
-                @else
-                    position: fixed;
-                    bottom: {{ $paperSize === 'A4' ? '15mm' : '20mm' }};
-                @endif
-                left: 0;
-                right: 0;
+                page-break-before: auto;
+                position: relative;
                 width: 100%;
+            }
+
+            /* Keep signature on last page */
+            .signature-section {
+                break-before: avoid-page;
             }
 
             .signature-table {
@@ -574,7 +576,7 @@
             }
 
             /* Total row styling for print */
-            .table tr:last-child td {
+            .table tfoot tr td {
                 background-color: #e9ecef !important;
                 color: #333 !important;
                 font-weight: bold !important;
@@ -583,18 +585,24 @@
                 print-color-adjust: exact;
             }
 
-            .table tr:last-child td.text-right {
+            .table tfoot tr td.text-right {
                 text-align: right !important;
             }
 
-            .table tr:last-child td.text-center {
+            .table tfoot tr td.text-center {
                 text-align: center !important;
             }
 
             /* Merged cell styling for total */
-            .table tr:last-child td[colspan] {
+            .table tfoot tr td[colspan] {
                 text-align: center !important;
                 font-weight: bold !important;
+            }
+
+            /* Show tfoot on last page only */
+            .table tfoot {
+                display: table-footer-group;
+                page-break-inside: avoid;
             }
 
             /* Keterangan table for print */
@@ -614,6 +622,37 @@
                 vertical-align: top !important;
             }
 
+            /* Pagination controls */
+            .page-break {
+                page-break-before: always;
+            }
+
+            .page-break-avoid {
+                page-break-inside: avoid;
+            }
+
+            /* Header repeat on each page */
+            .table thead {
+                display: table-header-group;
+            }
+
+            .table tbody {
+                display: table-row-group;
+            }
+
+            .table tfoot {
+                display: table-footer-group;
+            }
+
+            /* Ensure proper page flow */
+            .content-section {
+                page-break-inside: auto;
+            }
+
+            /* Keep summary and signature together if possible */
+            .summary-signature-wrapper {
+                page-break-inside: avoid;
+            }
 
         }
     </style>
@@ -714,125 +753,132 @@
         </div>
 
         <!-- Table -->
-        <table class="table">
-            <thead>
-                <tr>
-                    <th style="width: 3%;">No</th>
-                    <th style="width: 10%;">No. Kontainer</th>
-                    <th style="width: 4%;">Size</th>
-                    <th style="width: 13%;">Masa</th>
-                    <th style="width: 9%;">DPP</th>
-                    <th style="width: 9%;">Adjustment</th>
-                    <th style="width: 7%;">PPN</th>
-                    <th style="width: 7%;">PPH</th>
-                    <th style="width: 9%;">Grand Total</th>
-                    <th style="width: 15%;">Invoice Vendor</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($tagihanItems as $index => $item)
-                <tr>
-                    <td class="text-center">{{ $index + 1 }}</td>
-                    <td class="col-nomor">{{ $item->nomor_kontainer }}</td>
-                    <td class="text-center">{{ $item->size }}</td>
-                    <td class="col-masa">
-                        @if($item->masa)
-                            <span class="masa-display">
-                                @php
-                                    // Check if masa contains date range format like "22 Jan 2025 - 20 Feb 2025"
-                                    if(strpos($item->masa, ' - ') !== false) {
-                                        $dates = explode(' - ', $item->masa);
-                                        if(count($dates) == 2) {
-                                            try {
-                                                $startDate = \Carbon\Carbon::parse($dates[0])->format('d-M-y');
-                                                $endDate = \Carbon\Carbon::parse($dates[1])->format('d-M-y');
-                                                echo $startDate . ' - ' . $endDate;
-                                            } catch (Exception $e) {
+        <div class="content-section">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th style="width: 3%;">No</th>
+                        <th style="width: 10%;">No. Kontainer</th>
+                        <th style="width: 4%;">Size</th>
+                        <th style="width: 13%;">Masa</th>
+                        <th style="width: 9%;">DPP</th>
+                        <th style="width: 9%;">Adjustment</th>
+                        <th style="width: 7%;">PPN</th>
+                        <th style="width: 7%;">PPH</th>
+                        <th style="width: 9%;">Grand Total</th>
+                        <th style="width: 15%;">Invoice Vendor</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($tagihanItems as $index => $item)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td class="col-nomor">{{ $item->nomor_kontainer }}</td>
+                        <td class="text-center">{{ $item->size }}</td>
+                        <td class="col-masa">
+                            @if($item->masa)
+                                <span class="masa-display">
+                                    @php
+                                        // Check if masa contains date range format like "22 Jan 2025 - 20 Feb 2025"
+                                        if(strpos($item->masa, ' - ') !== false) {
+                                            $dates = explode(' - ', $item->masa);
+                                            if(count($dates) == 2) {
+                                                try {
+                                                    $startDate = \Carbon\Carbon::parse($dates[0])->format('d-M-y');
+                                                    $endDate = \Carbon\Carbon::parse($dates[1])->format('d-M-y');
+                                                    echo $startDate . ' - ' . $endDate;
+                                                } catch (Exception $e) {
+                                                    echo $item->masa;
+                                                }
+                                            } else {
                                                 echo $item->masa;
                                             }
                                         } else {
                                             echo $item->masa;
+                                            if(strpos($item->masa, 'bulan') === false && strpos($item->masa, 'hari') === false && is_numeric($item->masa)) {
+                                                echo '<small> hari</small>';
+                                            }
                                         }
-                                    } else {
-                                        echo $item->masa;
-                                        if(strpos($item->masa, 'bulan') === false && strpos($item->masa, 'hari') === false && is_numeric($item->masa)) {
-                                            echo '<small> hari</small>';
-                                        }
-                                    }
-                                @endphp
-                            </span>
-                        @else
-                            <span class="masa-display">-</span>
-                        @endif
-                    </td>
-                    <td class="text-right">{{ number_format($item->dpp ?? 0, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->adjustment ?? 0, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->ppn ?? 0, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->pph ?? 0, 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($item->grand_total ?? 0, 0, ',', '.') }}</td>
-                    <td class="text-center">{{ $item->invoice_vendor ?: '-' }}</td>
-                </tr>
-                @empty
-                <tr>
-                    <td colspan="10" class="text-center">Tidak ada tagihan ditemukan</td>
-                </tr>
-                @endforelse
-                <!-- Total Row -->
-                <tr class="total-row">
-                    <td colspan="4" class="text-center" style="font-weight: bold; text-align: center;">TOTAL</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 0, ',', '.') }}</td>
-                    <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</td>
-                    <td class="text-center">-</td>
-                </tr>
-            </tbody>
-        </table>
-
-        <!-- Summary -->
-        <div class="summary">
-            <div class="summary-item total-amount" style="margin-top: 10px;">
-                <span class="summary-label">PEMBAYARAN:</span>
-                <span>Rp {{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</span>
-            </div>
-        </div>
-
-        <!-- Keterangan Table -->
-        <div class="keterangan-table" style="margin-top: 15px; margin-bottom: 15px;">
-            <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
-                <tbody>
-                    <tr>
-                        <td style="padding: 8px; border: 2px solid #333; font-size: 11px; height: 45px; min-height: 45px; vertical-align: top; line-height: 1.4;">
-                            {{ $pranota->keterangan ?: '' }}
-                            @if(!$pranota->keterangan)
-                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
-                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
+                                    @endphp
+                                </span>
+                            @else
+                                <span class="masa-display">-</span>
                             @endif
                         </td>
+                        <td class="text-right">{{ number_format($item->dpp ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($item->adjustment ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($item->ppn ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($item->pph ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($item->grand_total ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-center">{{ $item->invoice_vendor ?: '-' }}</td>
                     </tr>
+                    @empty
+                    <tr>
+                        <td colspan="10" class="text-center">Tidak ada tagihan ditemukan</td>
+                    </tr>
+                    @endforelse
                 </tbody>
+                <tfoot>
+                    <!-- Total Row -->
+                    <tr class="total-row">
+                        <td colspan="4" class="text-center" style="font-weight: bold; text-align: center;">TOTAL</td>
+                        <td class="text-right">{{ number_format($tagihanItems->sum('dpp'), 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($tagihanItems->sum('adjustment'), 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($tagihanItems->sum('ppn'), 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($tagihanItems->sum('pph'), 0, ',', '.') }}</td>
+                        <td class="text-right">{{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</td>
+                        <td class="text-center">-</td>
+                    </tr>
+                </tfoot>
             </table>
         </div>
 
-        <!-- Signature Section -->
-        <div class="signature-section">
-            <table class="signature-table">
-                <tr>
-                    <td class="signature-cell">
-                        <div class="signature-label">Dibuat Oleh</div>
-                        <div class="signature-name">&nbsp;</div>
-                    </td>
-                    <td class="signature-cell">
-                        <div class="signature-label">Disetujui Oleh</div>
-                        <div class="signature-name">&nbsp;</div>
-                    </td>
-                    <td class="signature-cell">
-                        <div class="signature-label">Diterima Oleh</div>
-                        <div class="signature-name">&nbsp;</div>
-                    </td>
-                </tr>
-            </table>
+        <!-- Summary, Keterangan, and Signature Wrapper -->
+        <div class="summary-signature-wrapper">
+            <!-- Summary -->
+            <div class="summary">
+                <div class="summary-item total-amount" style="margin-top: 10px;">
+                    <span class="summary-label">PEMBAYARAN:</span>
+                    <span>Rp {{ number_format($tagihanItems->sum('grand_total'), 0, ',', '.') }}</span>
+                </div>
+            </div>
+
+            <!-- Keterangan Table -->
+            <div class="keterangan-table" style="margin-top: 15px; margin-bottom: 15px;">
+                <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
+                    <tbody>
+                        <tr>
+                            <td style="padding: 8px; border: 2px solid #333; font-size: 11px; height: 45px; min-height: 45px; vertical-align: top; line-height: 1.4;">
+                                {{ $pranota->keterangan ?: '' }}
+                                @if(!$pranota->keterangan)
+                                    <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
+                                    <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
+                                @endif
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Signature Section -->
+            <div class="signature-section">
+                <table class="signature-table">
+                    <tr>
+                        <td class="signature-cell">
+                            <div class="signature-label">Dibuat Oleh</div>
+                            <div class="signature-name">&nbsp;</div>
+                        </td>
+                        <td class="signature-cell">
+                            <div class="signature-label">Disetujui Oleh</div>
+                            <div class="signature-name">&nbsp;</div>
+                        </td>
+                        <td class="signature-cell">
+                            <div class="signature-label">Diterima Oleh</div>
+                            <div class="signature-name">&nbsp;</div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
         </div>
     </div>
 
