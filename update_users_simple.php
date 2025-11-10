@@ -12,7 +12,7 @@ if (!file_exists('artisan')) {
 
 // Parse arguments
 $userId = null;
-$email = null;
+$username = null;
 $updateAll = false;
 $dryRun = false;
 
@@ -20,7 +20,7 @@ foreach ($argv as $arg) {
     if (strpos($arg, '--user-id=') === 0) {
         $userId = substr($arg, 10);
     } elseif (strpos($arg, '--email=') === 0) {
-        $email = substr($arg, 8);
+        $username = substr($arg, 8); // Actually username, keeping --email for backward compatibility
     } elseif ($arg === '--all') {
         $updateAll = true;
     } elseif ($arg === '--dry-run') {
@@ -29,14 +29,15 @@ foreach ($argv as $arg) {
         echo "Usage:\n";
         echo "  php update_users_simple.php [options]\n\n";
         echo "Options:\n";
-        echo "  --user-id=ID    Update specific user by ID\n";
-        echo "  --email=EMAIL   Update specific user by email\n";
-        echo "  --all           Update all pending users\n";
-        echo "  --dry-run       Show what would be updated\n";
-        echo "  --help          Show this help\n\n";
+        echo "  --user-id=ID      Update specific user by ID\n";
+        echo "  --email=USERNAME  Update specific user by username\n";
+        echo "  --all             Update all non-approved users\n";
+        echo "  --dry-run         Show what would be updated\n";
+        echo "  --help            Show this help\n\n";
         echo "Examples:\n";
         echo "  php update_users_simple.php --user-id=123\n";
-        echo "  php update_users_simple.php --email=user@example.com\n";
+        echo "  php update_users_simple.php --email=admin\n";
+        echo "  php update_users_simple.php --all --dry-run\n";
         echo "  php update_users_simple.php --all\n";
         exit(0);
     }
@@ -49,11 +50,12 @@ if ($userId) {
     $command .= '
 $user = App\Models\User::find(' . $userId . ');
 if ($user) {
-    echo "Found user: " . $user->name . " (" . $user->email . ") - Current status: " . $user->status . "\n";';
+    echo "Found user: " . $user->username . " - Current status: " . ($user->status ?? "null") . " | Is_Approved: " . ($user->is_approved ?? "null") . "\n";';
     
     if (!$dryRun) {
         $command .= '
     $user->status = "approved";
+    $user->is_approved = 1;
     $user->save();
     echo "Updated user status to approved\n";';
     } else {
@@ -66,15 +68,16 @@ if ($user) {
     echo "User not found\n";
 }';
 
-} elseif ($email) {
+} elseif ($username) {
     $command .= '
-$user = App\Models\User::where("email", "' . $email . '")->first();
+$user = App\Models\User::where("username", "' . $username . '")->first();
 if ($user) {
-    echo "Found user: " . $user->name . " (" . $user->email . ") - Current status: " . $user->status . "\n";';
+    echo "Found user: " . $user->username . " - Current status: " . ($user->status ?? "null") . " | Is_Approved: " . ($user->is_approved ?? "null") . "\n";';
     
     if (!$dryRun) {
         $command .= '
     $user->status = "approved";
+    $user->is_approved = 1;
     $user->save();
     echo "Updated user status to approved\n";';
     } else {
@@ -89,15 +92,15 @@ if ($user) {
 
 } elseif ($updateAll) {
     $command .= '
-$users = App\Models\User::where("status", "!=", "approved")->get();
+$users = App\Models\User::where("status", "!=", "approved")->orWhere("is_approved", "!=", 1)->get();
 echo "Found " . $users->count() . " users to update:\n";
 foreach ($users as $user) {
-    echo "ID: " . $user->id . " | Email: " . $user->email . " | Name: " . $user->name . " | Status: " . $user->status . "\n";
+    echo "ID: " . $user->id . " | Username: " . $user->username . " | Status: " . ($user->status ?? "null") . " | Is_Approved: " . ($user->is_approved ?? "null") . "\n";
 }';
 
     if (!$dryRun) {
         $command .= '
-$updated = App\Models\User::where("status", "!=", "approved")->update(["status" => "approved"]);
+$updated = App\Models\User::where("status", "!=", "approved")->orWhere("is_approved", "!=", 1)->update(["status" => "approved", "is_approved" => 1]);
 echo "Updated " . $updated . " users to approved status\n";';
     } else {
         $command .= '
@@ -105,7 +108,7 @@ echo "DRY RUN: Would update " . $users->count() . " users to approved status\n";
     }
 
 } else {
-    echo "Error: Please specify --user-id, --email, or --all\n";
+    echo "Error: Please specify --user-id, --email (username), or --all\n";
     echo "Use --help for usage information\n";
     exit(1);
 }
