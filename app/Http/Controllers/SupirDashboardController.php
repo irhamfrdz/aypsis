@@ -175,12 +175,24 @@ class SupirDashboardController extends Controller
                              ->orderBy('nomor_kontainer')
                              ->get();
 
+        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini
+        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
+                                                  ->where('voyage', $selectedVoyage)
+                                                  ->pluck('nomor_kontainer')
+                                                  ->toArray();
+
+        // Tambahkan status OB ke setiap BL
+        $bls->each(function ($bl) use ($existingTagihanOb) {
+            $bl->sudah_ob = in_array($bl->nomor_kontainer, $existingTagihanOb);
+        });
+
         // Log untuk debugging
         \Log::info('OB Muat Index Data', [
             'selected_kapal' => $selectedKapal,
             'selected_voyage' => $selectedVoyage,
             'found_containers' => $bls->count(),
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
+            'existing_tagihan_ob' => $existingTagihanOb,
             'user_id' => $user->id,
             'user_name' => $user->name
         ]);
@@ -264,7 +276,7 @@ class SupirDashboardController extends Controller
                 'timestamp' => now()
             ]);
 
-            return redirect()->route('ob-muat.index', [
+            return redirect()->route('supir.ob-muat.index', [
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage
             ])->with('success', 'OB Muat berhasil diproses! Tagihan OB untuk kontainer ' . $nomorKontainer . ' telah dibuat dengan status: ' . ucfirst($statusKontainer) . ', Biaya: Rp ' . number_format($biaya, 0, ',', '.'));
@@ -358,7 +370,7 @@ class SupirDashboardController extends Controller
                 'timestamp' => now()
             ]);
 
-            return redirect()->route('ob-muat.index', [
+            return redirect()->route('supir.ob-muat.index', [
                 'kapal' => $request->kapal,
                 'voyage' => $request->voyage
             ])->with('success', 'Data OB Muat berhasil disimpan ke dalam tagihan OB. Kontainer: ' . $request->nomor_kontainer . ', Status: ' . ucfirst($request->status_kontainer) . ', Biaya: Rp ' . number_format($request->biaya, 0, ',', '.'));
