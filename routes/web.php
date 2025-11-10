@@ -322,6 +322,9 @@ Route::middleware([
         // Master kontainer import/export routes (MUST BE BEFORE {kontainer} routes)
         Route::get('kontainer/download-template', [KontainerImportController::class, 'downloadTemplate'])
              ->name('kontainer.download-template');
+        Route::get('kontainer/export', [KontainerImportController::class, 'export'])
+             ->name('kontainer.export')
+             ->middleware('can:master-kontainer-view');
         Route::post('kontainer/import', [KontainerImportController::class, 'import'])
              ->name('kontainer.import')
              ->middleware('can:master-kontainer-create');

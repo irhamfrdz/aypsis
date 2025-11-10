@@ -267,4 +267,156 @@ class KontainerImportController extends Controller
             return back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Export data kontainer ke CSV
+     */
+    public function export(Request $request)
+    {
+        try {
+            // Get kontainer data with filters (same as index page)
+            $query = Kontainer::query();
+
+            // Apply filters
+            if ($request->filled('search')) {
+                $query->where('nomor_seri_gabungan', 'like', '%' . $request->search . '%');
+            }
+
+            if ($request->filled('vendor')) {
+                $query->where('vendor', $request->vendor);
+            }
+
+            if ($request->filled('ukuran')) {
+                $query->where('ukuran', $request->ukuran);
+            }
+
+            if ($request->filled('status')) {
+                $query->where('status', $request->status);
+            }
+
+            // Get all matching records (no pagination for export)
+            $kontainers = $query->orderBy('nomor_seri_gabungan')->get();
+
+            // Generate filename with timestamp and filter info
+            $filename = 'export_master_kontainer_' . date('Y-m-d_H-i-s');
+            
+            // Add filter info to filename
+            $filterInfo = [];
+            if ($request->filled('search')) {
+                $filterInfo[] = 'search-' . str_replace(' ', '-', substr($request->search, 0, 10));
+            }
+            if ($request->filled('vendor')) {
+                $filterInfo[] = 'vendor-' . str_replace([' ', '.'], '-', substr($request->vendor, 0, 15));
+            }
+            if ($request->filled('ukuran')) {
+                $filterInfo[] = 'ukuran-' . $request->ukuran . 'ft';
+            }
+            if ($request->filled('status')) {
+                $filterInfo[] = 'status-' . strtolower($request->status);
+            }
+
+            if (!empty($filterInfo)) {
+                $filename .= '_' . implode('_', $filterInfo);
+            }
+
+            $filename .= '.csv';
+
+            // Headers for CSV download
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Pragma' => 'no-cache',
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+                'Expires' => '0'
+            ];
+
+            $callback = function() use ($kontainers, $request) {
+                $file = fopen('php://output', 'w');
+
+                // Add BOM for proper Excel UTF-8 handling
+                fputs($file, "\xEF\xBB\xBF");
+
+                // CSV Headers
+                $csvHeaders = [
+                    'No',
+                    'Nomor Kontainer',
+                    'Awalan',
+                    'Nomor Seri',
+                    'Akhiran',
+                    'Ukuran',
+                    'Tipe',
+                    'Vendor',
+                    'Status',
+                    'Tanggal Dibuat',
+                    'Tanggal Diperbarui'
+                ];
+
+                // Write headers
+                fputcsv($file, $csvHeaders, ';');
+
+                // Write data
+                foreach ($kontainers as $index => $kontainer) {
+                    // Format status untuk display
+                    $displayStatus = 'Tersedia'; // Default
+
+                    if (in_array($kontainer->status, ['Disewa', 'Digunakan', 'rented'])) {
+                        $displayStatus = 'Disewa';
+                    } elseif ($kontainer->status === 'inactive') {
+                        $displayStatus = 'Nonaktif';
+                    }
+
+                    $rowData = [
+                        $index + 1,
+                        $kontainer->nomor_seri_gabungan ?? '-',
+                        $kontainer->awalan_kontainer ?? '-',
+                        $kontainer->nomor_seri ?? '-',
+                        $kontainer->akhiran ?? '-',
+                        $kontainer->ukuran ?? '-',
+                        $kontainer->tipe_kontainer ?? '-',
+                        $kontainer->vendor ?? '-',
+                        $displayStatus,
+                        $kontainer->created_at ? $kontainer->created_at->format('d-m-Y H:i:s') : '-',
+                        $kontainer->updated_at ? $kontainer->updated_at->format('d-m-Y H:i:s') : '-'
+                    ];
+
+                    fputcsv($file, $rowData, ';');
+                }
+
+                // Add export summary at the end
+                fputcsv($file, [], ';'); // Empty row
+                fputcsv($file, ['=== INFORMASI EXPORT ==='], ';');
+                fputcsv($file, ['Total Data', count($kontainers) . ' kontainer'], ';');
+                fputcsv($file, ['Tanggal Export', date('d-m-Y H:i:s')], ';');
+                fputcsv($file, ['Exported By', auth()->user()->username ?? 'System'], ';');
+
+                // Add filter information if any
+                if ($request->filled('search') || $request->filled('vendor') || 
+                    $request->filled('ukuran') || $request->filled('status')) {
+                    
+                    fputcsv($file, [], ';'); // Empty row
+                    fputcsv($file, ['=== FILTER YANG DITERAPKAN ==='], ';');
+                    
+                    if ($request->filled('search')) {
+                        fputcsv($file, ['Pencarian', $request->search], ';');
+                    }
+                    if ($request->filled('vendor')) {
+                        fputcsv($file, ['Vendor', $request->vendor], ';');
+                    }
+                    if ($request->filled('ukuran')) {
+                        fputcsv($file, ['Ukuran', $request->ukuran . ' ft'], ';');
+                    }
+                    if ($request->filled('status')) {
+                        fputcsv($file, ['Status', $request->status], ';');
+                    }
+                }
+
+                fclose($file);
+            };
+
+            return Response::stream($callback, 200, $headers);
+
+        } catch (Exception $e) {
+            return back()->with('error', 'Gagal mengekspor data: ' . $e->getMessage());
+        }
+    }
 }
