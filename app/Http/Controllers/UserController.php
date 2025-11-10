@@ -1547,6 +1547,29 @@ class UserController extends Controller
                                 }
                             }
 
+                            // DIRECT FIX: Handle master-tujuan-kirim permissions explicitly (used by both tujuan-kirim and transportasi menus)
+                            if ($module === 'master-tujuan-kirim' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-tujuan-kirim-view',
+                                    'create' => 'master-tujuan-kirim-create',
+                                    'update' => 'master-tujuan-kirim-update',
+                                    'delete' => 'master-tujuan-kirim-delete',
+                                    'print' => 'master-tujuan-kirim-print',
+                                    'export' => 'master-tujuan-kirim-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
                             // DIRECT FIX: Handle master-mobil permissions explicitly
                             if ($module === 'master-mobil' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
                                 // Map action to correct permission name
