@@ -2218,6 +2218,9 @@ Route::middleware(['auth'])->group(function() {
     Route::post('pranota-kontainer-sewa/preview-vendor-invoice-grouping', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'previewVendorInvoiceGrouping'])
          ->name('pranota-kontainer-sewa.preview-vendor-invoice-grouping')
          ->middleware('can:pranota-kontainer-sewa-view');
+    Route::post('pranota-kontainer-sewa/add-items-to-existing', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'addItemsToExisting'])
+         ->name('pranota-kontainer-sewa.add-items-to-existing')
+         ->middleware('can:pranota-kontainer-sewa-update');
 
                // Pranota Sewa routes
                Route::prefix('pranota')->name('pranota.')->group(function () {

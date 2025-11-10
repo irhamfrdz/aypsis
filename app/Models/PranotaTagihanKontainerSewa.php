@@ -55,6 +55,29 @@ class PranotaTagihanKontainerSewa extends Model
         $this->save();
     }
 
+    public function generateNomorPranota()
+    {
+        if (empty($this->no_invoice)) {
+            $year = date('y');
+            $month = date('m');
+            $latest = self::whereYear('created_at', date('Y'))
+                         ->whereMonth('created_at', date('m'))
+                         ->where('no_invoice', 'like', "PTKS{$year}{$month}%")
+                         ->orderBy('no_invoice', 'desc')
+                         ->first();
+            
+            if ($latest && preg_match("/PTKS{$year}{$month}(\d+)$/", $latest->no_invoice, $matches)) {
+                $nextNumber = intval($matches[1]) + 1;
+            } else {
+                $nextNumber = 1;
+            }
+            
+            $this->no_invoice = sprintf("PTKS%s%s%04d", $year, $month, $nextNumber);
+            $this->save();
+        }
+        return $this->no_invoice;
+    }
+
     public function isPaid()
     {
         return $this->status === 'paid';

@@ -309,7 +309,12 @@ input[required]:focus {
                     </button>
                     @can('pranota-kontainer-sewa-create')
                     <button type="button" id="btnMasukanPranota" onclick="masukanKePranota()" class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
-                        Masukan ke Pranota
+                        Buat Pranota Baru
+                    </button>
+                    @endcan
+                    @can('pranota-kontainer-sewa-update')
+                    <button type="button" id="btnMasukanPranotaExisting" onclick="masukanKePranotaExisting()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        Masukan ke Pranota Existing
                     </button>
                     @endcan
                     @can('tagihan-kontainer-delete')
@@ -1462,15 +1467,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Handle select all checkbox
-    selectAllCheckbox.addEventListener('change', function() {
-        console.log('Select all checkbox changed:', this.checked);
-        const isChecked = this.checked;
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.checked = isChecked;
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            console.log('Select all checkbox changed:', this.checked);
+            const isChecked = this.checked;
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = isChecked;
+            });
+            updateBulkActions();
+            saveCheckboxState(); // Save state after change
         });
-        updateBulkActions();
-        saveCheckboxState(); // Save state after change
-    });
+    }
 
     // Handle individual checkboxes
     rowCheckboxes.forEach(checkbox => {
@@ -1553,15 +1560,17 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
         const totalBoxes = rowCheckboxes.length;
 
-        if (checkedBoxes.length === 0) {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
-        } else if (checkedBoxes.length === totalBoxes) {
-            selectAllCheckbox.checked = true;
-            selectAllCheckbox.indeterminate = false;
-        } else {
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = true;
+        if (selectAllCheckbox) {
+            if (checkedBoxes.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedBoxes.length === totalBoxes) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
         }
     }
 
@@ -1651,15 +1660,17 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Cancel selection
-    btnCancelSelection.addEventListener('click', function() {
-        rowCheckboxes.forEach(checkbox => {
-            checkbox.checked = false;
+    if (btnCancelSelection) {
+        btnCancelSelection.addEventListener('click', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            selectAllCheckbox.checked = false;
+            selectAllCheckbox.indeterminate = false;
+            updateBulkActions();
+            window.clearSavedState(); // Clear saved state when cancelled
         });
-        selectAllCheckbox.checked = false;
-        selectAllCheckbox.indeterminate = false;
-        updateBulkActions();
-        window.clearSavedState(); // Clear saved state when cancelled
-    });
+    }
 
     // Bulk delete handler
     if (btnBulkDelete) {
@@ -1922,6 +1933,175 @@ window.masukanKePranota = function() {
 
     // Open modal with collected data
     openModal('bulk', selectedIds, selectedData, 'masukan_ke_pranota');
+};
+
+// Function for "Masukan ke Pranota Existing" - allows user to select existing pranota
+window.masukanKePranotaExisting = function() {
+    console.log('masukanKePranotaExisting called');
+
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+    console.log('Selected IDs for existing pranota:', selectedIds);
+
+    if (selectedIds.length === 0) {
+        alert('Pilih minimal satu item untuk dimasukkan ke pranota existing');
+        return;
+    }
+
+    // Validasi: Periksa apakah semua item yang dipilih memiliki grup
+    let itemsWithoutGroup = [];
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
+            const groupValue = groupElement ? groupElement.textContent.trim() : '';
+
+            console.log(`Validation Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
+
+            if (!groupValue || groupValue === '-' || groupValue === '') {
+                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
+                itemsWithoutGroup.push(containerName);
+                console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutGroup`);
+            } else {
+                console.log(`Item ${index + 1} has group: ${groupValue}`);
+            }
+        }
+    });
+
+    // Jika ada item yang tidak memiliki grup, tampilkan pesan error
+    if (itemsWithoutGroup.length > 0) {
+        const itemList = itemsWithoutGroup.join(', ');
+        alert(`❌ Tidak dapat memasukkan ke pranota!\n\nItem berikut belum memiliki grup:\n${itemList}\n\nSilakan buat grup terlebih dahulu sebelum memasukkan ke pranota.`);
+        return;
+    }
+
+    // Validasi: Periksa apakah semua item memiliki nomor vendor (invoice vendor)
+    let itemsWithoutVendorNumber = [];
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            const invoiceVendorElement = row.querySelector('td:nth-child(14)'); // Invoice Vendor column (index 14)
+            const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
+
+            console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
+
+            if (!invoiceVendorValue || invoiceVendorValue === '-' || invoiceVendorValue === '') {
+                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
+                itemsWithoutVendorNumber.push(containerName);
+                console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutVendorNumber`);
+            } else {
+                console.log(`Item ${index + 1} has vendor invoice: ${invoiceVendorValue}`);
+            }
+        }
+    });
+
+    // Jika ada item yang tidak memiliki nomor vendor, tampilkan pesan error
+    if (itemsWithoutVendorNumber.length > 0) {
+        const itemList = itemsWithoutVendorNumber.join(', ');
+        alert(`⚠️ Tidak dapat memasukkan ke pranota!\n\nItem berikut belum memiliki nomor vendor:\n${itemList}\n\nTolong input nomor vendor terlebih dahulu sebelum memasukkan ke pranota.`);
+        return;
+    }
+
+    // Validasi: Periksa apakah ada item yang sudah masuk pranota
+    let itemsAlreadyInPranota = [];
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (row) {
+            const statusPranotaElement = row.querySelector('td:nth-child(20)'); // Status Pranota column (index 20)
+            const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
+
+            console.log(`Pranota Status Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
+
+            // Jika status menunjukkan sudah masuk pranota (bukan "Belum masuk pranota" atau kosong)
+            const isNotInPranota = statusPranotaValue.toLowerCase().includes('belum masuk pranota') || 
+                                   statusPranotaValue === '-' || 
+                                   statusPranotaValue === '';
+            
+            if (!isNotInPranota) {
+                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
+                itemsAlreadyInPranota.push(containerName);
+                console.log(`Item ${index + 1} (${containerName}) is already in pranota`);
+            }
+        }
+    });
+
+    // Jika ada item yang sudah masuk pranota, tampilkan pesan error
+    if (itemsAlreadyInPranota.length > 0) {
+        const itemList = itemsAlreadyInPranota.join(', ');
+        alert(`❌ Tidak dapat memasukkan ke pranota!\n\nItem berikut sudah masuk pranota:\n${itemList}\n\nItem yang sudah masuk pranota tidak dapat dimasukkan kembali.`);
+        return;
+    }
+
+    // Show loading notification
+    showNotification('info', 'Memuat Pranota', 'Sedang memuat daftar pranota yang tersedia...');
+
+    // Fetch existing pranota via AJAX (removed status=draft filter)
+    fetch('{{ route("pranota-kontainer-sewa.index") }}?per_page=100', {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => {
+        console.log('AJAX response status:', response.status, response.statusText);
+        if (!response.ok) {
+            throw new Error('Gagal memuat daftar pranota');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('AJAX response data:', data);
+        console.log('Data structure check:', {
+            hasSuccess: 'success' in data,
+            successValue: data.success,
+            hasPranota: 'pranota' in data,
+            pranotaType: typeof data.pranota,
+            pranotaLength: data.pranota ? data.pranota.length : 'undefined',
+            pranotaData: data.pranota
+        });
+        
+        if (data.success && data.pranota && data.pranota.length > 0) {
+            // Collect selected data
+            const selectedData = {
+                containers: [],
+                vendors: [],
+                sizes: [],
+                periodes: [],
+                totals: []
+            };
+
+            checkedBoxes.forEach((checkbox, index) => {
+                const row = checkbox.closest('tr');
+                if (!row) return;
+
+                const containerElement = row.querySelector('td:nth-child(4)');
+                const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
+                const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
+                const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
+                const totalElement = row.querySelector('td:nth-child(18)'); // Grand Total column
+
+                selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
+                selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
+                selectedData.sizes.push(sizeElement ? sizeElement.textContent.trim() : '-');
+                selectedData.periodes.push(periodeElement ? periodeElement.textContent.trim() : '-');
+                selectedData.totals.push(totalElement ? totalElement.textContent.trim() : '-');
+            });
+
+            // Show existing pranota selection modal
+            showExistingPranotaModal(data.pranota, selectedIds, selectedData);
+        } else {
+            showNotification('warning', 'Tidak Ada Pranota', 'Tidak ada pranota yang tersedia. Silakan buat pranota baru terlebih dahulu.');
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching pranota:', error);
+        showNotification('error', 'Error', 'Gagal memuat daftar pranota. Silakan coba lagi.');
+    });
 };
 
 window.buatPranotaTerpilih = function() {
@@ -3155,7 +3335,8 @@ window.editAdjustmentNote = function(tagihanId, currentNote) {
 
     // Handle form submission
     const form = document.getElementById('adjustmentNoteForm');
-    form.addEventListener('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const adjustmentNote = document.getElementById('adjustment_note_value').value.trim();
@@ -3213,6 +3394,7 @@ window.editAdjustmentNote = function(tagihanId, currentNote) {
             submitBtn.disabled = false;
         });
     });
+    }
 };
 
 // Function to close adjustment note modal
@@ -3319,7 +3501,8 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
 
     // Handle form submission
     const form = document.getElementById('adjustmentForm');
-    form.addEventListener('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const adjustmentValue = parseFloat(document.getElementById('adjustment_value').value) || 0;
@@ -3379,6 +3562,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
             submitBtn.disabled = false;
         });
     });
+    }
 };
 
 // Function to close adjustment modal
@@ -3485,7 +3669,8 @@ window.editVendorInfo = function(tagihanId, currentInvoice, currentTanggal) {
 
     // Handle form submission
     const form = document.getElementById('vendorInfoForm');
-    form.addEventListener('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const invoiceVendor = document.getElementById('invoice_vendor_value').value.trim();
@@ -3545,6 +3730,7 @@ window.editVendorInfo = function(tagihanId, currentInvoice, currentTanggal) {
             submitBtn.disabled = false;
         });
     });
+    }
 };
 
 // Function to close vendor info modal
@@ -3642,7 +3828,8 @@ window.editGroupInfo = function(tagihanId, currentGroup) {
 
     // Handle form submission
     const form = document.getElementById('groupInfoForm');
-    form.addEventListener('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const groupValue = document.getElementById('group_value').value.trim();
@@ -3700,6 +3887,7 @@ window.editGroupInfo = function(tagihanId, currentGroup) {
             submitBtn.disabled = false;
         });
     });
+    }
 };
 
 // Function to close group info modal
@@ -3826,7 +4014,8 @@ window.bulkEditVendorInfo = function() {
 
     // Handle form submission
     const form = document.getElementById('bulkVendorInfoForm');
-    form.addEventListener('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const invoiceVendor = document.getElementById('bulk_invoice_vendor').value.trim();
@@ -3924,6 +4113,7 @@ window.bulkEditVendorInfo = function() {
             });
         });
     });
+    }
 };
 
 // Function to close bulk vendor info modal
@@ -4031,7 +4221,8 @@ window.bulkEditGroupInfo = function() {
 
     // Handle form submission
     const form = document.getElementById('bulkGroupInfoForm');
-    form.addEventListener('submit', function(e) {
+    if (form) {
+        form.addEventListener('submit', function(e) {
         e.preventDefault();
 
         const groupValue = document.getElementById('bulk_group').value.trim();
@@ -4095,11 +4286,213 @@ window.bulkEditGroupInfo = function() {
             submitBtn.disabled = false;
         });
     });
+    }
 };
 
 // Function to close bulk group info modal
 window.closeBulkGroupInfoModal = function() {
     const modal = document.getElementById('bulkGroupInfoModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
+// Function to show existing pranota selection modal
+window.showExistingPranotaModal = function(pranotaList, selectedIds, selectedData) {
+    console.log('showExistingPranotaModal called with pranota:', pranotaList);
+
+    // Create modal HTML for existing pranota selection
+    let pranotaOptions = '';
+    pranotaList.forEach(pranota => {
+        pranotaOptions += `
+            <div class="border rounded-lg p-4 cursor-pointer hover:bg-blue-50 existing-pranota-option" data-id="${pranota.id}">
+                <div class="flex justify-between items-start">
+                    <div>
+                        <h4 class="font-semibold text-gray-900">${pranota.no_invoice || 'No. Belum Diset'}</h4>
+                        <p class="text-sm text-gray-600">Tanggal: ${pranota.tanggal_pranota || '-'}</p>
+                        <p class="text-sm text-gray-600">Keterangan: ${pranota.keterangan || '-'}</p>
+                        <p class="text-sm text-gray-500">Status: ${pranota.status || 'Draft'}</p>
+                    </div>
+                    <div class="text-right">
+                        <p class="text-sm font-medium text-gray-900">Total: Rp ${(pranota.total_amount || 0).toLocaleString('id-ID')}</p>
+                        <p class="text-xs text-gray-500">${pranota.jumlah_tagihan || 0} items</p>
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+
+    const modalHTML = `
+        <div id="existingPranotaModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-10 mx-auto p-5 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+                <div class="mt-3">
+                    <!-- Modal Header -->
+                    <div class="flex items-center justify-between mb-4">
+                        <h3 class="text-lg font-semibold text-gray-900">Pilih Pranota yang Sudah Ada</h3>
+                        <button type="button" onclick="closeExistingPranotaModal()" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Selected Items Info -->
+                    <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+                        <h4 class="font-medium text-blue-900 mb-2">Item yang akan dimasukkan (${selectedIds.length} item):</h4>
+                        <div class="max-h-32 overflow-y-auto">
+                            ${selectedData.containers.map((container, index) => `
+                                <div class="text-sm text-blue-800">
+                                    ${index + 1}. ${container} - ${selectedData.vendors[index]} (${selectedData.sizes[index]})
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+
+                    <!-- Existing Pranota List -->
+                    <div class="mb-6">
+                        <h4 class="font-medium text-gray-900 mb-3">Pilih Pranota Tujuan:</h4>
+                        <div class="max-h-96 overflow-y-auto space-y-2">
+                            ${pranotaOptions}
+                        </div>
+                    </div>
+
+                    <!-- Action Buttons -->
+                    <div class="flex items-center justify-end space-x-4 pt-4 border-t">
+                        <button type="button" onclick="closeExistingPranotaModal()"
+                                class="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50">
+                            Batal
+                        </button>
+                        <button type="button" id="confirmAddToExistingPranota" disabled
+                                class="px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            <span class="btn-text">Masukkan ke Pranota</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('existingPranotaModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Add click listeners to pranota options
+    let selectedPranotaId = null;
+    const pranotaElements = document.querySelectorAll('.existing-pranota-option');
+    const confirmBtn = document.getElementById('confirmAddToExistingPranota');
+
+    pranotaElements.forEach(option => {
+        option.addEventListener('click', function() {
+            // Remove previous selection
+            pranotaElements.forEach(opt => opt.classList.remove('bg-blue-100', 'border-blue-500'));
+            
+            // Add selection to clicked option
+            this.classList.add('bg-blue-100', 'border-blue-500');
+            selectedPranotaId = this.dataset.id;
+            
+            // Enable confirm button
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+            }
+        });
+    });
+
+    // Handle confirm button
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+        if (!selectedPranotaId) {
+            alert('Pilih pranota terlebih dahulu');
+            return;
+        }
+
+        // Show loading state
+        const btnText = confirmBtn.querySelector('.btn-text');
+        const originalText = btnText ? btnText.textContent : 'Masukkan ke Pranota';
+        if (btnText) {
+            btnText.innerHTML = '<span class="loading-spinner"></span>Memproses...';
+        }
+        confirmBtn.disabled = true;
+
+        // Prepare form data
+        const formData = new FormData();
+        formData.append('_token', '{{ csrf_token() }}');
+        formData.append('pranota_id', selectedPranotaId);
+        
+        selectedIds.forEach(id => {
+            formData.append('tagihan_ids[]', id);
+        });
+
+        // Send AJAX request to add items to existing pranota
+        fetch('{{ route("pranota-kontainer-sewa.add-items-to-existing") }}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Gagal menambahkan item ke pranota');
+            }
+        })
+        .then(data => {
+            if (data.success) {
+                showNotification('success', 'Berhasil', `${selectedIds.length} item berhasil ditambahkan ke pranota ${data.pranota_nomor}`);
+                closeExistingPranotaModal();
+                
+                // Refresh page after delay
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+            } else {
+                throw new Error(data.message || 'Gagal menambahkan item ke pranota');
+            }
+        })
+        .catch(error => {
+            console.error('Error adding items to existing pranota:', error);
+            showNotification('error', 'Gagal', error.message || 'Terjadi kesalahan saat menambahkan item ke pranota');
+            
+            // Reset button state
+            if (btnText) {
+                btnText.textContent = originalText;
+            }
+            if (confirmBtn) {
+                confirmBtn.disabled = false;
+            }
+        });
+    });
+    }
+};
+
+// Function to close existing pranota modal
+window.closeExistingPranotaModal = function() {
+    const modal = document.getElementById('existingPranotaModal');
     if (!modal) return;
 
     modal.classList.add('modal-hide');

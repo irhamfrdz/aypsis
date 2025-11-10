@@ -23,6 +23,14 @@
                 </a>
                 @if($pranota->status == 'unpaid')
                 <button type="button"
+                        class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center"
+                        onclick="openTambahKontainerModal()">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Tambah Kontainer
+                </button>
+                <button type="button"
                         class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center"
                         onclick="openStatusModal()">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -301,6 +309,114 @@
 </div>
 @endif
 
+<!-- Modal Tambah Kontainer -->
+<div id="tambahKontainerModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-10 mx-auto p-5 border w-11/12 max-w-6xl shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Tambah Kontainer ke Pranota {{ $pranota->no_invoice }}</h3>
+                <button type="button" class="text-gray-400 hover:text-gray-600" onclick="closeTambahKontainerModal()">
+                    <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Search Form -->
+            <div class="mb-4 p-4 bg-gray-50 rounded-lg">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label for="searchVendor" class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                        <input type="text" id="searchVendor" placeholder="Cari vendor..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="searchContainer" class="block text-sm font-medium text-gray-700 mb-1">No. Kontainer</label>
+                        <input type="text" id="searchContainer" placeholder="Cari nomor kontainer..."
+                               class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="searchStatus" class="block text-sm font-medium text-gray-700 mb-1">Status Pranota</label>
+                        <select id="searchStatus" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Semua Status</option>
+                            <option value="belum_pranota">Belum Masuk Pranota</option>
+                            <option value="sudah_pranota">Sudah Masuk Pranota</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="mt-4 flex justify-between items-center">
+                    <button type="button" onclick="searchTagihan()" 
+                            class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-lg">
+                        <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                        </svg>
+                        Cari
+                    </button>
+                    <button type="button" onclick="resetSearch()" 
+                            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                        Reset
+                    </button>
+                </div>
+            </div>
+
+            <!-- Loading State -->
+            <div id="loadingState" class="text-center py-8 hidden">
+                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                <p class="mt-2 text-gray-600">Memuat data tagihan...</p>
+            </div>
+
+            <!-- Tagihan List -->
+            <div id="tagihanList" class="max-h-96 overflow-y-auto">
+                <div class="mb-4">
+                    <div class="flex items-center justify-between">
+                        <label class="flex items-center">
+                            <input type="checkbox" id="selectAllAvailable" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllAvailable()">
+                            <span class="ml-2 text-sm font-medium text-gray-700">Pilih Semua</span>
+                        </label>
+                        <div id="selectedItemsInfo" class="text-sm text-gray-600">
+                            <span id="selectedAvailableCount">0</span> item dipilih 
+                            (<span id="selectedAvailableTotal" class="font-semibold text-green-600">Rp 0</span>)
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="space-y-2" id="availableTagihanContainer">
+                    <!-- Available tagihan will be loaded here -->
+                </div>
+
+                <div id="noDataMessage" class="text-center py-8 text-gray-500 hidden">
+                    <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                    </svg>
+                    <p class="mt-2">Tidak ada tagihan yang tersedia</p>
+                </div>
+            </div>
+
+            <!-- Modal Footer -->
+            <div class="mt-6 flex justify-between items-center pt-4 border-t border-gray-200">
+                <div class="text-sm text-gray-600">
+                    <span class="font-semibold" id="finalSelectedCount">0</span> tagihan dipilih untuk ditambahkan
+                    (<span class="font-bold text-green-600" id="finalSelectedTotal">Rp 0</span>)
+                </div>
+                <div class="flex space-x-3">
+                    <button type="button" onclick="closeTambahKontainerModal()" 
+                            class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg">
+                        Batal
+                    </button>
+                    <button type="button" onclick="tambahKontainerTerpilih()" 
+                            class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-lg">
+                        <svg class="h-4 w-4 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Tambah ke Pranota
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script>
 function toggleAllTagihan() {
     const selectAll = document.getElementById('selectAllTagihan');
@@ -419,8 +535,247 @@ function closeStatusModal() {
 // Close modal when clicking outside
 window.onclick = function(event) {
     const modal = document.getElementById('statusModal');
+    const tambahModal = document.getElementById('tambahKontainerModal');
     if (event.target == modal) {
         closeStatusModal();
+    }
+    if (event.target == tambahModal) {
+        closeTambahKontainerModal();
+    }
+}
+
+// Tambah Kontainer Modal Functions
+function openTambahKontainerModal() {
+    document.getElementById('tambahKontainerModal').classList.remove('hidden');
+    // Load initial data
+    searchTagihan();
+}
+
+function closeTambahKontainerModal() {
+    document.getElementById('tambahKontainerModal').classList.add('hidden');
+    // Reset form
+    document.getElementById('searchVendor').value = '';
+    document.getElementById('searchContainer').value = '';
+    document.getElementById('searchStatus').value = '';
+    document.getElementById('availableTagihanContainer').innerHTML = '';
+    resetAvailableSelection();
+}
+
+function searchTagihan() {
+    const vendor = document.getElementById('searchVendor').value;
+    const container = document.getElementById('searchContainer').value;
+    const status = document.getElementById('searchStatus').value;
+    
+    // Show loading
+    document.getElementById('loadingState').classList.remove('hidden');
+    document.getElementById('availableTagihanContainer').innerHTML = '';
+    document.getElementById('noDataMessage').classList.add('hidden');
+    
+    // Build query parameters
+    const params = new URLSearchParams({
+        ajax: '1',
+        available_for_pranota: '1',
+        exclude_pranota_id: '{{ $pranota->id }}'
+    });
+    
+    if (vendor) params.append('vendor', vendor);
+    if (container) params.append('nomor_kontainer', container);
+    if (status) params.append('status_pranota', status);
+    
+    fetch(`{{ route('daftar-tagihan-kontainer-sewa.index') }}?${params.toString()}`, {
+        method: 'GET',
+        headers: {
+            'Accept': 'application/json',
+            'X-Requested-With': 'XMLHttpRequest'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        document.getElementById('loadingState').classList.add('hidden');
+        
+        if (data.success && data.tagihan && data.tagihan.length > 0) {
+            displayAvailableTagihan(data.tagihan);
+        } else {
+            document.getElementById('noDataMessage').classList.remove('hidden');
+        }
+    })
+    .catch(error => {
+        console.error('Error fetching tagihan:', error);
+        document.getElementById('loadingState').classList.add('hidden');
+        document.getElementById('noDataMessage').classList.remove('hidden');
+        alert('Gagal memuat data tagihan. Silakan coba lagi.');
+    });
+}
+
+function displayAvailableTagihan(tagihanList) {
+    const container = document.getElementById('availableTagihanContainer');
+    container.innerHTML = '';
+    
+    tagihanList.forEach(tagihan => {
+        const statusBadge = tagihan.status_pranota === 'sudah_pranota' 
+            ? '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Sudah Pranota</span>'
+            : '<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">Belum Pranota</span>';
+            
+        const item = document.createElement('div');
+        item.className = 'border border-gray-200 rounded-lg p-4 hover:bg-gray-50';
+        item.innerHTML = `
+            <div class="flex items-start space-x-3">
+                <input type="checkbox" 
+                       class="available-tagihan-checkbox mt-1 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" 
+                       value="${tagihan.id}"
+                       data-vendor="${tagihan.vendor || ''}"
+                       data-container="${tagihan.nomor_kontainer || ''}"
+                       data-amount="${tagihan.grand_total || 0}"
+                       onchange="updateAvailableSelection()">
+                <div class="flex-1 grid grid-cols-1 md:grid-cols-6 gap-2 text-sm">
+                    <div>
+                        <label class="font-medium text-gray-700">Vendor:</label>
+                        <p class="text-gray-900">${tagihan.vendor || '-'}</p>
+                    </div>
+                    <div>
+                        <label class="font-medium text-gray-700">Kontainer:</label>
+                        <p class="font-mono text-gray-900">${tagihan.nomor_kontainer || '-'}</p>
+                    </div>
+                    <div>
+                        <label class="font-medium text-gray-700">Size:</label>
+                        <p class="text-gray-900">${tagihan.size || '-'}</p>
+                    </div>
+                    <div>
+                        <label class="font-medium text-gray-700">Periode:</label>
+                        <p class="text-gray-900">${tagihan.periode || '-'}</p>
+                    </div>
+                    <div>
+                        <label class="font-medium text-gray-700">Grand Total:</label>
+                        <p class="font-semibold text-green-600">Rp ${new Intl.NumberFormat('id-ID').format(tagihan.grand_total || 0)}</p>
+                    </div>
+                    <div>
+                        <label class="font-medium text-gray-700">Status:</label>
+                        ${statusBadge}
+                    </div>
+                </div>
+            </div>
+        `;
+        container.appendChild(item);
+    });
+    
+    resetAvailableSelection();
+}
+
+function toggleAllAvailable() {
+    const selectAll = document.getElementById('selectAllAvailable');
+    const checkboxes = document.querySelectorAll('.available-tagihan-checkbox');
+    
+    checkboxes.forEach(checkbox => {
+        checkbox.checked = selectAll.checked;
+    });
+    
+    updateAvailableSelection();
+}
+
+function updateAvailableSelection() {
+    const checkboxes = document.querySelectorAll('.available-tagihan-checkbox:checked');
+    const selectedCount = checkboxes.length;
+    const totalAmount = Array.from(checkboxes).reduce((sum, checkbox) => {
+        return sum + parseFloat(checkbox.dataset.amount || 0);
+    }, 0);
+    
+    // Update select all checkbox state
+    const selectAll = document.getElementById('selectAllAvailable');
+    const allCheckboxes = document.querySelectorAll('.available-tagihan-checkbox');
+    
+    if (selectedCount === 0) {
+        selectAll.indeterminate = false;
+        selectAll.checked = false;
+    } else if (selectedCount === allCheckboxes.length) {
+        selectAll.indeterminate = false;
+        selectAll.checked = true;
+    } else {
+        selectAll.indeterminate = true;
+        selectAll.checked = false;
+    }
+    
+    // Update counters
+    document.getElementById('selectedAvailableCount').textContent = selectedCount;
+    document.getElementById('selectedAvailableTotal').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAmount);
+    document.getElementById('finalSelectedCount').textContent = selectedCount;
+    document.getElementById('finalSelectedTotal').textContent = 'Rp ' + new Intl.NumberFormat('id-ID').format(totalAmount);
+}
+
+function resetAvailableSelection() {
+    document.getElementById('selectAllAvailable').checked = false;
+    document.getElementById('selectAllAvailable').indeterminate = false;
+    document.getElementById('selectedAvailableCount').textContent = '0';
+    document.getElementById('selectedAvailableTotal').textContent = 'Rp 0';
+    document.getElementById('finalSelectedCount').textContent = '0';
+    document.getElementById('finalSelectedTotal').textContent = 'Rp 0';
+}
+
+function resetSearch() {
+    document.getElementById('searchVendor').value = '';
+    document.getElementById('searchContainer').value = '';
+    document.getElementById('searchStatus').value = '';
+    searchTagihan();
+}
+
+function tambahKontainerTerpilih() {
+    const checkboxes = document.querySelectorAll('.available-tagihan-checkbox:checked');
+    const selectedIds = Array.from(checkboxes).map(cb => cb.value);
+    
+    if (selectedIds.length === 0) {
+        alert('Silakan pilih minimal satu tagihan untuk ditambahkan ke pranota.');
+        return;
+    }
+    
+    const selectedItems = Array.from(checkboxes).map(checkbox => ({
+        id: checkbox.value,
+        vendor: checkbox.dataset.vendor,
+        container: checkbox.dataset.container,
+        amount: parseFloat(checkbox.dataset.amount || 0)
+    }));
+    
+    const totalAmount = selectedItems.reduce((sum, item) => sum + item.amount, 0);
+    const confirmation = confirm(
+        `Anda akan menambahkan ${selectedItems.length} tagihan ke pranota {{ $pranota->no_invoice }}:\n\n` +
+        selectedItems.map(item => `- ${item.vendor} (${item.container}) - Rp ${new Intl.NumberFormat('id-ID').format(item.amount)}`).join('\n') +
+        `\n\nTotal Amount: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}\n\n` +
+        'Apakah Anda yakin ingin melanjutkan?'
+    );
+    
+    if (confirmation) {
+        // Disable button to prevent double submission
+        const button = event.target;
+        const originalText = button.innerHTML;
+        button.disabled = true;
+        button.innerHTML = '<span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span> Memproses...';
+        
+        fetch(`{{ route('pranota-kontainer-sewa.add-items-to-existing') }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                pranota_id: {{ $pranota->id }},
+                tagihan_ids: selectedIds
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Kontainer berhasil ditambahkan ke pranota.');
+                location.reload(); // Reload page to show updated data
+            } else {
+                alert('Gagal menambahkan kontainer: ' + (data.message || 'Unknown error'));
+                button.disabled = false;
+                button.innerHTML = originalText;
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses permintaan.');
+            button.disabled = false;
+            button.innerHTML = originalText;
+        });
     }
 }
 </script>

@@ -32,6 +32,44 @@ class PranotaTagihanKontainerSewaController extends Controller
             });
         }
 
+        // Handle AJAX request for existing pranota selection
+        if ($request->ajax() || $request->wantsJson()) {
+            $perPage = $request->get('per_page', 15);
+            $pranotaList = $query->paginate($perPage);
+            
+            // Enrich pranota data with calculated fields
+            $enrichedPranota = $pranotaList->items();
+            foreach ($enrichedPranota as $pranota) {
+                // Generate nomor pranota if not set
+                if (empty($pranota->no_invoice)) {
+                    $pranota->generateNomorPranota();
+                }
+                
+                // Calculate actual total amount if not set
+                if (!$pranota->total_amount || $pranota->total_amount == 0) {
+                    $pranota->total_amount = $pranota->calculateTotalAmount();
+                }
+                
+                // Calculate number of items/containers
+                if (is_array($pranota->tagihan_kontainer_sewa_ids)) {
+                    $pranota->jumlah_tagihan = count($pranota->tagihan_kontainer_sewa_ids);
+                } else {
+                    $pranota->jumlah_tagihan = 0;
+                }
+            }
+            
+            return response()->json([
+                'success' => true,
+                'pranota' => $enrichedPranota,
+                'pagination' => [
+                    'current_page' => $pranotaList->currentPage(),
+                    'last_page' => $pranotaList->lastPage(),
+                    'per_page' => $pranotaList->perPage(),
+                    'total' => $pranotaList->total()
+                ]
+            ]);
+        }
+
         $pranotaList = $query->paginate(15);
 
         return view('pranota.index', compact('pranotaList'));
@@ -1377,6 +1415,111 @@ class PranotaTagihanKontainerSewaController extends Controller
                 'total_kontainer_dipilih' => $tagihanItems->count(),
                 'kontainer_tanpa_group' => $kontainerTanpaGroup
             ]
+        ]);
+    }
+
+    /**
+     * Add items to existing pranota
+     */
+    public function addItemsToExisting(Request $request)
+    {
+        try {
+            $request->validate([
+                'pranota_id' => 'required|exists:pranota_tagihan_kontainer_sewa,id',
+                'tagihan_ids' => 'required|array|min:1',
+                'tagihan_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id'
+            ]);
+
+            DB::beginTransaction();
+
+            // Get existing pranota
+            $pranota = PranotaTagihanKontainerSewa::findOrFail($request->pranota_id);
+            
+            // Get tagihan items
+            $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $request->tagihan_ids)->get();
+
+            // Validate items
+            foreach ($tagihanItems as $tagihan) {
+                // Check if already in pranota
+                if (!empty($tagihan->pranota_id)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Kontainer {$tagihan->no_kontainer} sudah masuk dalam pranota lain"
+                    ], 400);
+                }
+
+                // Check if has group
+                if (empty($tagihan->group)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Kontainer {$tagihan->no_kontainer} belum memiliki group"
+                    ], 400);
+                }
+
+                // Check if has vendor info
+                if (empty($tagihan->invoice_vendor)) {
+                    return response()->json([
+                        'success' => false,
+                        'message' => "Kontainer {$tagihan->no_kontainer} belum memiliki nomor vendor"
+                    ], 400);
+                }
+            }
+
+            // Update tagihan items to point to this pranota
+            DaftarTagihanKontainerSewa::whereIn('id', $request->tagihan_ids)
+                ->update([
+                    'pranota_id' => $pranota->id,
+                    'status_pranota' => 'Masuk Pranota',
+                    'updated_at' => now()
+                ]);
+
+            // Recalculate pranota totals
+            $this->recalculatePranotaTotals($pranota);
+
+            DB::commit();
+
+            Log::info('Items added to existing pranota', [
+                'pranota_id' => $pranota->id,
+                'tagihan_ids' => $request->tagihan_ids,
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Item berhasil ditambahkan ke pranota',
+                'pranota_nomor' => $pranota->nomor_pranota,
+                'items_added' => count($request->tagihan_ids)
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error adding items to existing pranota: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Recalculate pranota totals after adding/removing items
+     */
+    private function recalculatePranotaTotals(PranotaTagihanKontainerSewa $pranota)
+    {
+        $tagihanItems = DaftarTagihanKontainerSewa::where('pranota_id', $pranota->id)->get();
+        
+        $totalAmount = $tagihanItems->sum('grand_total'); // Use grand_total field
+        $jumlahTagihan = $tagihanItems->count();
+        
+        // Update tagihan_kontainer_sewa_ids array
+        $tagihanIds = $tagihanItems->pluck('id')->toArray();
+        
+        $pranota->update([
+            'total_amount' => $totalAmount,
+            'jumlah_tagihan' => $jumlahTagihan,
+            'tagihan_kontainer_sewa_ids' => $tagihanIds, // Keep array updated
+            'updated_at' => now()
         ]);
     }
 }

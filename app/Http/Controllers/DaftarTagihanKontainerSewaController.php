@@ -102,9 +102,32 @@ class DaftarTagihanKontainerSewaController extends Controller
             if ($statusPranota === 'null') {
                 // Filter untuk tagihan yang belum masuk pranota
                 $query->whereNull('status_pranota');
+            } elseif ($statusPranota === 'belum_pranota') {
+                // Filter untuk tagihan yang belum masuk pranota
+                $query->whereNull('status_pranota');
+            } elseif ($statusPranota === 'sudah_pranota') {
+                // Filter untuk tagihan yang sudah masuk pranota
+                $query->whereNotNull('status_pranota');
             } else {
                 // Filter untuk status pranota spesifik
                 $query->where('status_pranota', $statusPranota);
+            }
+        }
+
+        // Handle nomor kontainer filter (for modal search)
+        if ($request->filled('nomor_kontainer')) {
+            $query->where('nomor_kontainer', 'LIKE', '%' . $request->input('nomor_kontainer') . '%');
+        }
+
+        // Handle available for pranota filter (exclude already in specific pranota)
+        if ($request->filled('available_for_pranota') && $request->filled('exclude_pranota_id')) {
+            $excludePranotaId = $request->input('exclude_pranota_id');
+            
+            // Get tagihan IDs that are already in the specified pranota
+            $existingPranota = \App\Models\PranotaTagihanKontainerSewa::find($excludePranotaId);
+            if ($existingPranota && !empty($existingPranota->tagihan_kontainer_sewa_ids)) {
+                $excludeIds = $existingPranota->tagihan_kontainer_sewa_ids;
+                $query->whereNotIn('id', $excludeIds);
             }
         }
 
@@ -148,6 +171,22 @@ class DaftarTagihanKontainerSewaController extends Controller
             'ongoing' => 'Container Ongoing',
             'selesai' => 'Container Selesai'
         ];
+
+        // Handle AJAX requests for modal selection (like from tambah kontainer modal)
+        if ($request->ajax() || $request->wantsJson()) {
+            $tagihanList = $tagihans->items(); // Get items from paginated result
+            
+            return response()->json([
+                'success' => true,
+                'tagihan' => $tagihanList,
+                'pagination' => [
+                    'current_page' => $tagihans->currentPage(),
+                    'last_page' => $tagihans->lastPage(),
+                    'per_page' => $tagihans->perPage(),
+                    'total' => $tagihans->total()
+                ]
+            ]);
+        }
 
         return view('daftar-tagihan-kontainer-sewa.index', compact('tagihans', 'vendors', 'sizes', 'periodes', 'statusOptions'));
     }
