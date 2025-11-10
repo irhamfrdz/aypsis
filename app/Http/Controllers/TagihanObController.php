@@ -52,7 +52,7 @@ class TagihanObController extends Controller
             'nama_supir' => 'required|string|max:255',
             'barang' => 'required|string|max:255',
             'status_kontainer' => 'required|in:full,empty',
-            'bl_id' => 'nullable|exists:bl,id',
+            'bl_id' => 'nullable|exists:bls,id',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -116,7 +116,7 @@ class TagihanObController extends Controller
             'nama_supir' => 'required|string|max:255',
             'barang' => 'required|string|max:255',
             'status_kontainer' => 'required|in:full,empty',
-            'bl_id' => 'nullable|exists:bl,id',
+            'bl_id' => 'nullable|exists:bls,id',
             'keterangan' => 'nullable|string',
         ]);
 
@@ -166,7 +166,7 @@ class TagihanObController extends Controller
         $this->authorize('tagihan-ob-create');
         
         $validated = $request->validate([
-            'bl_id' => 'required|exists:bl,id',
+            'bl_id' => 'required|exists:bls,id',
             'kegiatan' => 'required|string|in:tarik isi,tarik kosong'
         ]);
 

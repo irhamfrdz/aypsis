@@ -212,7 +212,7 @@ class SupirDashboardController extends Controller
         $request->validate([
             'kapal' => 'required|string',
             'voyage' => 'required|string',
-            'bl_id' => 'required|exists:bl,id',
+            'bl_id' => 'required|exists:bls,id',
         ]);
 
         $selectedKapal = $request->get('kapal');
