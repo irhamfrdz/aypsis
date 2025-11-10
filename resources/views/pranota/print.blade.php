@@ -49,6 +49,20 @@
     ];
 
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
+
+    // Calculate rows per page based on paper size
+    $rowsPerPage = match($paperSize) {
+        'Half-A4' => 8,      // Smaller space, fewer rows
+        'Half-Folio' => 9,   // Slightly more space
+        'A4' => 20,          // Full A4 has more space
+        'Folio' => 25,       // Largest paper
+        default => 8
+    };
+    
+    // Chunk the tagihan items and calculate total pages
+    $chunkedItems = $tagihanItems->chunk($rowsPerPage);
+    $totalPages = $chunkedItems->count();
+    $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -708,21 +722,7 @@
         </div>
     </div>
 
-    @php
-        // Calculate rows per page based on paper size
-        $rowsPerPage = match($paperSize) {
-            'Half-A4' => 8,      // Smaller space, fewer rows
-            'Half-Folio' => 9,   // Slightly more space
-            'A4' => 20,          // Full A4 has more space
-            'Folio' => 25,       // Largest paper
-            default => 8
-        };
-        
-        // Chunk the tagihan items
-        $chunkedItems = $tagihanItems->chunk($rowsPerPage);
-        $totalPages = $chunkedItems->count();
-        $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
-    @endphp
+
 
     @foreach($chunkedItems as $pageIndex => $pageItems)
     <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
