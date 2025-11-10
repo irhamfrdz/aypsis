@@ -50,18 +50,27 @@
 
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
 
-    // Calculate rows per page based on paper size
-    $rowsPerPage = match($paperSize) {
-        'Half-A4' => 15,     // Increased capacity for better space utilization
-        'Half-Folio' => 16,  // Increased capacity
-        'A4' => 25,          // Full A4 has more space
-        'Folio' => 30,       // Largest paper
-        default => 15
+    // Calculate maximum rows that can fit on one page (including headers, footers, etc.)
+    $maxRowsPerPage = match($paperSize) {
+        'Half-A4' => 20,     // Conservative but allows for headers/footers
+        'Half-Folio' => 22,  // Slightly more space
+        'A4' => 35,          // Full A4 has much more space
+        'Folio' => 40,       // Largest paper
+        default => 20
     };
     
-    // Chunk the tagihan items and calculate total pages
-    $chunkedItems = $tagihanItems->chunk($rowsPerPage);
-    $totalPages = $chunkedItems->count();
+    // Only create multiple pages if data actually exceeds the limit
+    $totalItems = $tagihanItems->count();
+    if ($totalItems <= $maxRowsPerPage) {
+        // All data fits in one page
+        $chunkedItems = collect([$tagihanItems]);
+        $totalPages = 1;
+    } else {
+        // Split data across multiple pages
+        $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
+        $totalPages = $chunkedItems->count();
+    }
+    
     $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
 @endphp
 <head>
@@ -82,8 +91,8 @@
 
         /* Page break rules for multi-page */
         .page-container {
-            page-break-after: always;
             position: relative;
+            /* Remove automatic page breaks - let content flow naturally */
         }
 
         .page-container:last-child {
@@ -95,9 +104,14 @@
             page-break-inside: avoid;
         }
 
-        /* Force new page when needed */
+        /* Force new page when needed - only when content actually overflows */
         .force-new-page {
             page-break-before: always;
+        }
+
+        /* Let content flow naturally within page boundaries */
+        .content-flow {
+            page-break-inside: avoid;
         }
 
         html {
@@ -410,31 +424,28 @@
                 page-break-inside: avoid;
             }
 
-            /* Multi-page layout */
+            /* Multi-page layout - let content flow naturally */
             .page-container {
-                @if($paperSize === 'Half-A4')
-                    height: 148.5mm;
-                    max-height: 148.5mm;
-                    border-bottom: 2px dashed #999;
-                @elseif($paperSize === 'Half-Folio')
-                    height: 6.5in;
-                    max-height: 6.5in;
-                    border-bottom: 2px dashed #999;
-                @else
-                    height: 287mm;
-                    max-height: 287mm;
-                @endif
                 padding: 5mm 1mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
                 margin: 0;
                 box-sizing: border-box;
-                overflow: hidden;
                 position: relative;
-                page-break-after: always;
+                /* Remove fixed heights and page breaks - let content determine layout */
             }
 
             .page-container:last-child {
                 page-break-after: avoid;
+            }
+
+            /* Only add page break when explicitly needed */
+            .force-new-page {
+                page-break-before: always;
+                @if($paperSize === 'Half-A4')
+                    border-top: 2px dashed #999;
+                @elseif($paperSize === 'Half-Folio')
+                    border-top: 2px dashed #999;
+                @endif
             }
 
             .header {
@@ -784,7 +795,7 @@
             <tbody>
                 @forelse($pageItems as $index => $item)
                 @php
-                    $globalIndex = ($pageIndex * $rowsPerPage) + $index;
+                    $globalIndex = ($pageIndex * $maxRowsPerPage) + $index;
                 @endphp
                 <tr>
                     <td class="text-center">{{ $globalIndex + 1 }}</td>
