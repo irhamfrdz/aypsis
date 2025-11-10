@@ -234,6 +234,11 @@ class SupirDashboardController extends Controller
         }
 
         // Cari surat jalan terkait untuk mendapatkan data kegiatan/aktifitas
+        \Log::info('Searching SuratJalan', [
+            'no_kontainer' => $nomorKontainer,
+            'supir' => $user->name,
+        ]);
+        
         $suratJalan = \App\Models\SuratJalan::where('no_kontainer', $nomorKontainer)
                                            ->where('supir', $user->name)
                                            ->where(function($query) {
@@ -241,13 +246,37 @@ class SupirDashboardController extends Controller
                                                      ->orWhereNotNull('kegiatan');
                                            })
                                            ->first();
+                                           
+        \Log::info('SuratJalan found', [
+            'found' => $suratJalan ? true : false,
+            'kegiatan' => $suratJalan->kegiatan ?? null,
+            'size' => $suratJalan->size ?? null,
+        ]);
 
         // Tentukan status kontainer berdasarkan kegiatan pada surat jalan
         $statusKontainer = 'empty'; // default
+        $kegiatan = null;
+        
         if ($suratJalan) {
             // Prioritas aktifitas, fallback ke kegiatan
             $kegiatan = $suratJalan->aktifitas ?: $suratJalan->kegiatan;
             if ($kegiatan) {
+                $statusKontainer = \App\Models\TagihanOb::getStatusKontainerFromKegiatan($kegiatan);
+            }
+        } else {
+            // Jika tidak ditemukan dengan supir yang sama, coba cari tanpa filter supir
+            $suratJalanAlt = \App\Models\SuratJalan::where('no_kontainer', $nomorKontainer)
+                                                   ->whereNotNull('kegiatan')
+                                                   ->first();
+            \Log::info('Alternative SuratJalan search', [
+                'found' => $suratJalanAlt ? true : false,
+                'kegiatan' => $suratJalanAlt->kegiatan ?? null,
+                'supir' => $suratJalanAlt->supir ?? null,
+            ]);
+            
+            if ($suratJalanAlt) {
+                $suratJalan = $suratJalanAlt; // Use alternative surat jalan
+                $kegiatan = $suratJalanAlt->kegiatan;
                 $statusKontainer = \App\Models\TagihanOb::getStatusKontainerFromKegiatan($kegiatan);
             }
         }
@@ -264,8 +293,16 @@ class SupirDashboardController extends Controller
             $tagihanOb->bl_id = $bl->id;
             $tagihanOb->created_by = $user->id;
             
+            // Ambil size kontainer dari surat jalan, fallback ke BL
+            $sizeKontainer = '20ft'; // default
+            if ($suratJalan && $suratJalan->size) {
+                // Convert size dari surat jalan (20, 40) ke format pricelist (20ft, 40ft)
+                $sizeKontainer = $suratJalan->size . 'ft';
+            } elseif ($bl->tipe_kontainer && in_array($bl->tipe_kontainer, ['20ft', '40ft'])) {
+                $sizeKontainer = $bl->tipe_kontainer;
+            }
+            
             // Hitung biaya otomatis dari pricelist
-            $sizeKontainer = $bl->tipe_kontainer ?? '20ft'; // Default 20ft jika tidak ada
             $biaya = \App\Models\TagihanOb::calculateBiayaFromPricelist($sizeKontainer, $statusKontainer);
             $tagihanOb->biaya = $biaya;
             
