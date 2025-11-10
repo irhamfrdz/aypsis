@@ -1,3 +1,9 @@
 Submit attempt at: 2025-11-05 14:52:16
 Request data: {"_token":"P1PaEd8uagZo92pAuMq39ryaFjAX2LlR3oEzBAAb","tujuan_id":"batam","tanggal":"2025-11-05","kapal_id":"37","no_voyage":"A103JB25","prospek_ids":["8"],"pelabuhan_asal":"JAKARTA","tujuan":"Batam"}
 Validation passed
+Submit attempt at: 2025-11-10 13:56:08
+Request data: {"_token":"cVUzj6yUlYHaiP2LeQYogBRbHunrZIJOlKSzXiQM","tujuan_id":"batam","tanggal":"2025-11-10","kapal_id":"90","no_voyage":"A10225","prospek_ids":["1","2"],"pelabuhan_asal":"JAKARTA","tujuan":"Batam"}
+Validation passed
+Submit attempt at: 2025-11-10 14:05:19
+Request data: {"_token":"r0tVHFxoV6Sugui7GjYvPp9Yo18m2rASaGtlIsKc","tujuan_id":"batam","tanggal":"2025-11-10","kapal_id":"90","no_voyage":"A10225","prospek_ids":["3"],"pelabuhan_asal":"JAKARTA","tujuan":"Batam"}
+Validation passed

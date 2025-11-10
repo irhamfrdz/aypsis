@@ -70,6 +70,7 @@
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($pendingApprovals as $approval)
+                                @if($approval->suratJalan)
                                 <tr class="hover:bg-gray-50 transition-colors duration-150">
                                     <td class="px-3 py-2 whitespace-nowrap">
                                         <div class="text-xs font-semibold text-gray-900">{{ $approval->suratJalan->no_surat_jalan }}</div>
@@ -247,6 +248,21 @@
                                             </button>
                                         @endcan
                                     </td></tr>
+                                @else
+                                <tr class="hover:bg-red-50 transition-colors duration-150">
+                                    <td colspan="11" class="px-3 py-2 text-center">
+                                        <div class="text-xs text-red-600 font-medium">
+                                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Approval ID: {{ $approval->id }} - Surat Jalan tidak ditemukan (mungkin telah dihapus)
+                                        </div>
+                                        <div class="mt-1">
+                                            <small class="text-red-500">Submitted: {{ $approval->created_at->diffForHumans() }}</small>
+                                        </div>
+                                    </td>
+                                </tr>
+                                @endif
                             @endforeach
                         </tbody>
                     </table>

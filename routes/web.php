@@ -59,6 +59,7 @@ use App\Http\Controllers\OrderDataManagementController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\SuratJalanController;
 use App\Http\Controllers\SuratJalanBongkaranController;
+use App\Http\Controllers\MasterPricelistObController;
 
 /*
 |--------------------------------------------------------------------------
@@ -572,6 +573,17 @@ Route::middleware([
             'edit' => 'can:master-pricelist-gate-in-update',
             'update' => 'can:master-pricelist-gate-in-update',
             'destroy' => 'can:master-pricelist-gate-in-delete'
+        ]);
+
+        // Master pricelist OB routes - resource with permissions
+        Route::resource('pricelist-ob', MasterPricelistObController::class)->middleware([
+            'index' => 'can:master-pricelist-ob-view',
+            'show' => 'can:master-pricelist-ob-view',
+            'create' => 'can:master-pricelist-ob-create',
+            'store' => 'can:master-pricelist-ob-create',
+            'edit' => 'can:master-pricelist-ob-update',
+            'update' => 'can:master-pricelist-ob-update',
+            'destroy' => 'can:master-pricelist-ob-delete'
         ]);
 
         // Download template for divisi import
