@@ -55,7 +55,7 @@
         'Half-A4' => 20,     // Conservative but allows for headers/footers
         'Half-Folio' => 22,  // Slightly more space
         'A4' => 35,          // Full A4 has much more space
-        'Folio' => 40,       // Largest paper
+        'Folio' => 45,       // Largest paper with more content
         default => 20
     };
     
@@ -75,7 +75,7 @@
 @endphp
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width={{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }}, initial-scale=1.0">
+    <meta name="viewport" content="width={{ $currentPaper['width'] }}, initial-scale=1.0">
     <title>Pranota {{ $pranota->no_invoice }}</title>
     <style>
         * {
@@ -388,7 +388,7 @@
 
         @media print {
             @page {
-                size: A4 portrait;
+                size: {{ $currentPaper['size'] }} portrait;
                 margin: 0;
             }
 
@@ -398,23 +398,23 @@
             }
 
             html {
-                width: 210mm;
-                height: 297mm;
+                width: {{ $currentPaper['width'] }};
+                height: {{ $currentPaper['height'] }};
             }
 
             body {
-                width: 210mm;
-                height: 297mm;
+                width: {{ $currentPaper['width'] }};
+                height: {{ $currentPaper['height'] }};
                 margin: 0;
                 padding: 0;
-                font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : ($paperSize === 'A4' ? '11px' : '12px')) }};
+                font-size: {{ $currentPaper['fontSize'] }};
                 color: #000;
                 position: relative;
                 overflow: visible;
             }
 
             .container {
-                width: 210mm;
+                width: {{ $currentPaper['containerWidth'] }};
                 min-height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '287mm' : '13in')) }};
                 padding: 5mm 1mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
@@ -426,6 +426,7 @@
 
             /* Multi-page layout - let content flow naturally */
             .page-container {
+                width: {{ $currentPaper['containerWidth'] }};
                 padding: 5mm 1mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
                 margin: 0;
@@ -454,7 +455,7 @@
             }
 
             .header h1 {
-                font-size: {{ $paperSize === 'A4' ? '16px' : ($paperSize === 'Folio' ? '20px' : '14px') }};
+                font-size: {{ $currentPaper['headerH1'] }};
                 margin-bottom: {{ $paperSize === 'Half-A4' ? '2px' : ($paperSize === 'Half-Folio' ? '2px' : '3px') }};
             }
 
@@ -502,13 +503,13 @@
             .table th,
             .table td {
                 padding: {{ $paperSize === 'Half-A4' ? '1px' : ($paperSize === 'Half-Folio' ? '1px' : '2px 1px') }};
-                font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
+                font-size: {{ $currentPaper['tableFont'] }};
                 border: 1px solid #000;
                 word-wrap: break-word;
             }
 
             .table th {
-                font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
+                font-size: {{ $currentPaper['tableFont'] }};
                 background-color: #f8f9fa !important;
                 color: #333 !important;
                 border: 2px solid #000 !important;
