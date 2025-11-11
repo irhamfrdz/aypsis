@@ -814,14 +814,14 @@
 
                         {{-- Approval Tugas 1 Memo --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Memo --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
@@ -1013,14 +1013,14 @@
 
                         {{-- Approval Tugas 1 Sewa --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Sewa --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
@@ -1066,14 +1066,14 @@
 
                         {{-- Approval Tugas 1 Perbaikan --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Perbaikan --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
@@ -1119,14 +1119,14 @@
 
                         {{-- Approval Tugas 1 Cat --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Cat --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
