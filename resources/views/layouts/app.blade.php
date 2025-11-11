@@ -679,7 +679,7 @@
 
 {{-- Aktivitas Dropdown --}}
 @php
-    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('approval.surat-jalan.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*');
+    $isAktivitasRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*') || Request::routeIs('aktivitas-kontainer.*') || Request::routeIs('daftar-tagihan-kontainer-sewa.*') || Request::routeIs('pranota-kontainer-sewa.*') || Request::routeIs('pembayaran-pranota-kontainer.*') || Request::routeIs('pranota.*') || Request::routeIs('perbaikan-kontainer.*') || Request::routeIs('pranota-perbaikan-kontainer.*') || Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') || Request::routeIs('tagihan-cat.*') || Request::routeIs('pranota-cat.*') || Request::routeIs('pembayaran-pranota-cat.*') || Request::routeIs('tagihan-ob.*') || Request::routeIs('tanda-terima.*') || Request::routeIs('tanda-terima-tanpa-surat-jalan.*') || Request::routeIs('gate-in.*') || Request::routeIs('aktivitas-kapal.*') || Request::routeIs('pergerakan-kapal.*') || Request::routeIs('voyage.*') || Request::routeIs('jadwal-kapal.*') || Request::routeIs('status-kapal.*') || Request::routeIs('log-aktivitas-kapal.*') || Request::routeIs('monitoring-kapal.*') || Request::routeIs('naik-kapal.*') || Request::routeIs('bl.*') || Request::routeIs('approval.surat-jalan.*') || Request::routeIs('approval.*') || Request::routeIs('approval-ii.*') || Request::routeIs('pembayaran-aktivitas-lain.*');
     $hasAktivitasPermissions = $user && (
         $user->can('permohonan-memo-view') ||
         $user->can('pranota-supir-view') ||
@@ -737,7 +737,11 @@
         $user->can('approval-print') ||
         $user->can('approval-dashboard') ||
         $user->can('approval') ||
-        $user->can('permohonan.approve')
+        $user->can('permohonan.approve') ||
+        $user->can('pembayaran-aktivitas-lain-view') ||
+        $user->can('pembayaran-aktivitas-lain-create') ||
+        $user->can('pembayaran-aktivitas-lain-update') ||
+        $user->can('pembayaran-aktivitas-lain-delete')
     );
     $showAktivitasSection = $isAdmin || $hasAktivitasPermissions;
 @endphp
@@ -1258,6 +1262,31 @@
             </div>
         </div>
         @endif
+
+        {{-- Aktivitas Lain-Lain Sub-Dropdown --}}
+        @php
+            $isAktivitasLainRoute = Request::routeIs('pembayaran-aktivitas-lain.*');
+            $hasAktivitasLainPermissions = $user && ($user->can('pembayaran-aktivitas-lain-view') || $user->can('pembayaran-aktivitas-lain-create') || $user->can('pembayaran-aktivitas-lain-update') || $user->can('pembayaran-aktivitas-lain-delete'));
+        @endphp
+
+        @if($hasAktivitasLainPermissions)
+        <div class="mx-2 mb-3">
+            <button id="aktivitas-lain-menu-toggle" class="w-full flex justify-between items-center py-2 px-3 rounded-lg text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 group {{ $isAktivitasLainRoute ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+                <span class="text-xs font-medium">Aktivitas Lain-Lain</span>
+                <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isAktivitasLainRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            <div id="aktivitas-lain-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasLainRoute) style="display: block;" @endif>
+                {{-- Pembayaran Aktivitas Lain-Lain --}}
+                @if($user && $user->can('pembayaran-aktivitas-lain-view'))
+                    <a href="{{ route('pembayaran-aktivitas-lain.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lain.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs">Pembayaran Aktivitas Lain-Lain</span>
+                    </a>
+                @endif
+            </div>
+        </div>
+        @endif
     </div>
 </div>
 @endif
@@ -1490,6 +1519,7 @@
         setupDropdown('aktivitas-kapal-menu-toggle', 'aktivitas-kapal-menu-content');
         setupDropdown('aktivitas-pelabuhan-menu-toggle', 'aktivitas-pelabuhan-menu-content');
         setupDropdown('approval-tugas-menu-toggle', 'approval-tugas-menu-content');
+        setupDropdown('aktivitas-lain-menu-toggle', 'aktivitas-lain-menu-content');
         setupDropdown('approval-input-menu-toggle', 'approval-input-menu-content');
         setupDropdown('uang-jalan-supir-menu-toggle', 'uang-jalan-supir-menu-content');
         setupDropdown('permohonan-memo-menu-toggle', 'permohonan-memo-menu-content');
