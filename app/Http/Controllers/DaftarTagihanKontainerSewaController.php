@@ -462,29 +462,16 @@ class DaftarTagihanKontainerSewaController extends Controller
 
             // Store old values for logging
             $oldAdjustment = $tagihan->adjustment ?? 0;
+            $oldGrandTotal = $tagihan->grand_total ?? 0;
             $newAdjustment = $request->input('adjustment');
 
             // Update the adjustment
             $tagihan->adjustment = $newAdjustment;
 
-            // Recalculate related values based on adjusted DPP
-            $originalDpp = (float)($tagihan->dpp ?? 0);
-            $adjustedDpp = $originalDpp + $newAdjustment;
+            // Recalculate taxes and totals using model method
+            $tagihan->recalculateTaxes();
 
-            // Recalculate PPN (11%)
-            $ppnRate = 0.11;
-            $tagihan->ppn = $adjustedDpp * $ppnRate;
-
-            // Recalculate PPH (2% - adjust rate as needed)
-            $pphRate = 0.02;
-            $tagihan->pph = $adjustedDpp * $pphRate;
-
-            // Recalculate DPP Nilai Lain based on adjusted DPP
-            $tagihan->dpp_nilai_lain = round($adjustedDpp * 11/12, 2);
-
-            // Recalculate Grand Total: DPP + PPN - PPH (tanpa DPP Nilai Lain)
-            $tagihan->grand_total = $adjustedDpp + $tagihan->ppn - $tagihan->pph;
-
+            // Save will trigger the boot method to calculate grand_total
             $tagihan->save();
 
             // Log the change for audit purposes
@@ -492,8 +479,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                 'container' => $tagihan->nomor_kontainer,
                 'old_adjustment' => $oldAdjustment,
                 'new_adjustment' => $newAdjustment,
-                'adjusted_dpp' => $adjustedDpp,
-                'new_dpp_nilai_lain' => $tagihan->dpp_nilai_lain,
+                'old_grand_total' => $oldGrandTotal,
                 'new_ppn' => $tagihan->ppn,
                 'new_pph' => $tagihan->pph,
                 'new_grand_total' => $tagihan->grand_total,
@@ -508,7 +494,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                     'data' => [
                         'id' => $tagihan->id,
                         'adjustment' => $tagihan->adjustment,
-                        'adjusted_dpp' => $adjustedDpp,
+                        'adjusted_dpp' => floatval($tagihan->dpp ?? 0) + floatval($tagihan->adjustment ?? 0),
                         'dpp_nilai_lain' => $tagihan->dpp_nilai_lain,
                         'ppn' => $tagihan->ppn,
                         'pph' => $tagihan->pph,

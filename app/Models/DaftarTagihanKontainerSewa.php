@@ -52,6 +52,59 @@ class DaftarTagihanKontainerSewa extends Model
         'grand_total' => 'decimal:2',
     ];
 
+    /**
+     * Boot the model and add event listeners
+     */
+    protected static function boot()
+    {
+        parent::boot();
+
+        // Auto-calculate grand_total before saving
+        static::saving(function ($tagihan) {
+            $tagihan->calculateGrandTotal();
+        });
+    }
+
+    /**
+     * Calculate and set the grand total
+     * Formula: (DPP + Adjustment) + PPN - PPH
+     */
+    public function calculateGrandTotal()
+    {
+        $dpp = floatval($this->dpp ?? 0);
+        $adjustment = floatval($this->adjustment ?? 0);
+        $ppn = floatval($this->ppn ?? 0);
+        $pph = floatval($this->pph ?? 0);
+
+        // Calculate adjusted DPP
+        $adjustedDpp = $dpp + $adjustment;
+
+        // Calculate grand total: Adjusted DPP + PPN - PPH
+        $this->grand_total = $adjustedDpp + $ppn - $pph;
+
+        return $this->grand_total;
+    }
+
+    /**
+     * Recalculate PPN and PPH based on adjusted DPP
+     * This ensures consistency when DPP or adjustment changes
+     */
+    public function recalculateTaxes()
+    {
+        $dpp = floatval($this->dpp ?? 0);
+        $adjustment = floatval($this->adjustment ?? 0);
+        $adjustedDpp = $dpp + $adjustment;
+
+        // PPN = 11% of adjusted DPP
+        $this->ppn = $adjustedDpp * 0.11;
+
+        // PPH = 2% of adjusted DPP
+        $this->pph = $adjustedDpp * 0.02;
+
+        // Grand total will be auto-calculated by calculateGrandTotal
+        return $this;
+    }
+
     // Numeric days derived from masa string when needed
     public function getMasaDaysAttribute()
     {

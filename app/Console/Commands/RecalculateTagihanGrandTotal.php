@@ -1,0 +1,144 @@
+<?php
+
+namespace App\Console\Commands;
+
+use Illuminate\Console\Command;
+use App\Models\DaftarTagihanKontainerSewa;
+use Illuminate\Support\Facades\DB;
+
+class RecalculateTagihanGrandTotal extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'tagihan:recalculate-grand-total {--force : Force recalculation without confirmation}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Recalculate grand_total for all existing tagihan kontainer sewa based on DPP, adjustment, PPN, and PPH';
+
+    /**
+     * Execute the console command.
+     */
+    public function handle()
+    {
+        $this->info('🔄 Starting Grand Total Recalculation for Tagihan Kontainer Sewa...');
+        $this->newLine();
+
+        // Get total count
+        $totalCount = DaftarTagihanKontainerSewa::count();
+        
+        if ($totalCount === 0) {
+            $this->warn('No tagihan found in database.');
+            return 0;
+        }
+
+        $this->info("Found {$totalCount} tagihan records.");
+        $this->newLine();
+
+        // Confirm before proceeding
+        if (!$this->option('force')) {
+            if (!$this->confirm('Do you want to proceed with recalculation?', true)) {
+                $this->warn('Operation cancelled.');
+                return 1;
+            }
+        }
+
+        // Create progress bar
+        $progressBar = $this->output->createProgressBar($totalCount);
+        $progressBar->start();
+
+        $updatedCount = 0;
+        $unchangedCount = 0;
+        $errorCount = 0;
+        $errors = [];
+
+        DB::beginTransaction();
+
+        try {
+            // Process in chunks to avoid memory issues
+            DaftarTagihanKontainerSewa::chunk(100, function ($tagihans) use (&$progressBar, &$updatedCount, &$unchangedCount, &$errorCount, &$errors) {
+                foreach ($tagihans as $tagihan) {
+                    try {
+                        // Store old grand total
+                        $oldGrandTotal = $tagihan->grand_total;
+
+                        // Recalculate taxes
+                        $tagihan->recalculateTaxes();
+                        
+                        // Calculate new grand total (this will be done automatically in save)
+                        $tagihan->calculateGrandTotal();
+                        
+                        // Check if changed
+                        if (abs($oldGrandTotal - $tagihan->grand_total) > 0.01) {
+                            // Save without triggering boot again
+                            $tagihan->saveQuietly();
+                            $updatedCount++;
+                        } else {
+                            $unchangedCount++;
+                        }
+
+                    } catch (\Exception $e) {
+                        $errorCount++;
+                        $errors[] = [
+                            'id' => $tagihan->id,
+                            'container' => $tagihan->nomor_kontainer,
+                            'error' => $e->getMessage()
+                        ];
+                    }
+
+                    $progressBar->advance();
+                }
+            });
+
+            DB::commit();
+
+            $progressBar->finish();
+            $this->newLine(2);
+
+            // Display results
+            $this->info('✅ Recalculation completed!');
+            $this->newLine();
+            
+            $this->table(
+                ['Status', 'Count'],
+                [
+                    ['Updated', $updatedCount],
+                    ['Unchanged', $unchangedCount],
+                    ['Errors', $errorCount],
+                    ['Total Processed', $totalCount],
+                ]
+            );
+
+            if ($errorCount > 0) {
+                $this->newLine();
+                $this->error("⚠️  {$errorCount} errors occurred during recalculation:");
+                $this->table(
+                    ['ID', 'Container', 'Error'],
+                    array_map(function($error) {
+                        return [$error['id'], $error['container'], $error['error']];
+                    }, array_slice($errors, 0, 10)) // Show first 10 errors
+                );
+                
+                if (count($errors) > 10) {
+                    $this->warn('... and ' . (count($errors) - 10) . ' more errors.');
+                }
+            }
+
+            $this->newLine();
+            $this->info('🎉 Done!');
+
+            return 0;
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            $this->error('❌ Error during recalculation: ' . $e->getMessage());
+            return 1;
+        }
+    }
+}
