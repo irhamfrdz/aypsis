@@ -46,20 +46,24 @@ foreach ($items as $item) {
         if (abs($oldGrand - $newGrand) > 0.009) {
             DB::beginTransaction();
 
-            $item->grand_total = $newGrand;
-            $item->updated_at = now();
-            $item->save();
+            // Use raw SQL UPDATE to ensure proper value storage
+            DB::statement(
+                "UPDATE daftar_tagihan_kontainer_sewa SET grand_total = ?, updated_at = NOW() WHERE id = ?",
+                [$newGrand, $item->id]
+            );
 
             // If the item belongs to a pranota, recalc pranota totals
             if (!empty($item->pranota_id)) {
-                $pranota = PranotaTagihanKontainerSewa::find($item->pranota_id);
-                if ($pranota) {
-                    $tagihanItems = DaftarTagihanKontainerSewa::where('pranota_id', $pranota->id)->get();
-                    $pranota->total_amount = $tagihanItems->sum('grand_total');
-                    $pranota->jumlah_tagihan = $tagihanItems->count();
-                    $pranota->updated_at = now();
-                    $pranota->save();
-                }
+                $tagihanItems = DB::table('daftar_tagihan_kontainer_sewa')
+                    ->where('pranota_id', $item->pranota_id)
+                    ->get();
+                $totalAmount = $tagihanItems->sum('grand_total');
+                $jumlahTagihan = $tagihanItems->count();
+                
+                DB::statement(
+                    "UPDATE pranota_tagihan_kontainer_sewa SET total_amount = ?, jumlah_tagihan = ?, updated_at = NOW() WHERE id = ?",
+                    [$totalAmount, $jumlahTagihan, $item->pranota_id]
+                );
             }
 
             DB::commit();
