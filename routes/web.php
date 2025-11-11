@@ -2291,6 +2291,9 @@ Route::middleware(['auth'])->group(function() {
     Route::post('pranota-kontainer-sewa/add-items-to-existing', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'addItemsToExisting'])
          ->name('pranota-kontainer-sewa.add-items-to-existing')
          ->middleware('can:pranota-kontainer-sewa-update');
+    Route::post('pranota-kontainer-sewa/update-grand-total', [\App\Http\Controllers\PranotaTagihanKontainerSewaController::class, 'updateGrandTotal'])
+         ->name('pranota-kontainer-sewa.update-grand-total')
+         ->middleware('can:pranota-kontainer-sewa-update');
 
                // Pranota Sewa routes
                Route::prefix('pranota')->name('pranota.')->group(function () {

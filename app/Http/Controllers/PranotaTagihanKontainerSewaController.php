@@ -1507,6 +1507,75 @@ class PranotaTagihanKontainerSewaController extends Controller
         }
     }
 
+    public function updateGrandTotal(Request $request)
+    {
+        try {
+            $request->validate([
+                'tagihan_id' => 'required|exists:daftar_tagihan_kontainer_sewa,id',
+                'grand_total' => 'required|numeric|min:0',
+                'last_3_digits' => 'required|integer|min:0|max:999'
+            ]);
+
+            DB::beginTransaction();
+
+            // Get tagihan
+            $tagihan = DaftarTagihanKontainerSewa::findOrFail($request->tagihan_id);
+            
+            // Check if tagihan is in a pranota and pranota is unpaid
+            if ($tagihan->pranota_id) {
+                $pranota = PranotaTagihanKontainerSewa::find($tagihan->pranota_id);
+                if ($pranota && $pranota->status !== 'unpaid') {
+                    return response()->json([
+                        'success' => false,
+                        'message' => 'Grand Total tidak dapat diubah karena pranota sudah tidak berstatus unpaid'
+                    ], 400);
+                }
+            }
+
+            // Store old value for logging
+            $oldGrandTotal = $tagihan->grand_total;
+
+            // Update grand total
+            $tagihan->grand_total = $request->grand_total;
+            $tagihan->save();
+
+            // If tagihan is in a pranota, recalculate pranota totals
+            if ($tagihan->pranota_id) {
+                $pranota = PranotaTagihanKontainerSewa::find($tagihan->pranota_id);
+                if ($pranota) {
+                    $this->recalculatePranotaTotals($pranota);
+                }
+            }
+
+            DB::commit();
+
+            Log::info('Grand Total updated for tagihan', [
+                'tagihan_id' => $tagihan->id,
+                'nomor_kontainer' => $tagihan->nomor_kontainer,
+                'old_grand_total' => $oldGrandTotal,
+                'new_grand_total' => $request->grand_total,
+                'last_3_digits' => $request->last_3_digits,
+                'user_id' => auth()->id()
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Grand Total berhasil diperbarui',
+                'old_value' => $oldGrandTotal,
+                'new_value' => $request->grand_total
+            ]);
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error updating grand total: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
     /**
      * Recalculate pranota totals after adding/removing items
      */

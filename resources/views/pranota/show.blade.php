@@ -212,7 +212,54 @@
                                         Rp {{ number_format($item->dpp ?? 0, 2, ',', '.') }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        @if($pranota->status == 'unpaid')
+                                        <div class="flex items-center space-x-2">
+                                            <span class="grand-total-display-{{ $item->id }}">
+                                                Rp {{ number_format($item->grand_total, 2, ',', '.') }}
+                                            </span>
+                                            <button type="button" 
+                                                    onclick="editGrandTotal({{ $item->id }}, {{ $item->grand_total }})"
+                                                    class="text-blue-600 hover:text-blue-900"
+                                                    title="Edit pecahan grand total">
+                                                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                        <div id="edit-form-{{ $item->id }}" class="hidden">
+                                            <div class="flex items-center space-x-2">
+                                                <span id="nilai-bulat-{{ $item->id }}" class="text-sm font-medium text-gray-700"></span>
+                                                <input type="text" 
+                                                       id="grand-total-input-{{ $item->id }}"
+                                                       class="w-20 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 text-center font-mono"
+                                                       placeholder="000"
+                                                       maxlength="3"
+                                                       pattern="[0-9]{0,3}">
+                                                <button type="button"
+                                                        onclick="saveGrandTotal({{ $item->id }})"
+                                                        class="text-green-600 hover:text-green-900"
+                                                        title="Simpan">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                                                    </svg>
+                                                </button>
+                                                <button type="button"
+                                                        onclick="cancelEditGrandTotal({{ $item->id }})"
+                                                        class="text-red-600 hover:text-red-900"
+                                                        title="Batal">
+                                                    <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                                    </svg>
+                                                </button>
+                                            </div>
+                                            <p class="text-xs text-gray-500 mt-1">
+                                                Edit hanya 3 digit terakhir (000-999)<br>
+                                                Contoh: 294.<span class="font-bold text-blue-600">577</span>,00
+                                            </p>
+                                        </div>
+                                        @else
                                         Rp {{ number_format($item->grand_total, 2, ',', '.') }}
+                                        @endif
                                     </td>
                                     @if($pranota->status == 'unpaid')
                                     <td class="px-6 py-4 whitespace-nowrap text-sm">
@@ -836,6 +883,138 @@ function resetSearch() {
     document.getElementById('searchTanggalAwal').value = '';
     document.getElementById('searchTanggalAkhir').value = '';
     searchTagihan();
+}
+
+// Grand Total Editing Functions
+function editGrandTotal(tagihanId, currentGrandTotal) {
+    // Hide display, show edit form
+    document.querySelector(`.grand-total-display-${tagihanId}`).parentElement.classList.add('hidden');
+    document.getElementById(`edit-form-${tagihanId}`).classList.remove('hidden');
+    
+    // Calculate nilai bulat (integer part) and pecahan (decimal part)
+    const nilaiBulat = Math.floor(currentGrandTotal);
+    const pecahan = Math.round((currentGrandTotal - nilaiBulat) * 100);
+    
+    // Get last 3 digits (ratusan)
+    const last3Digits = nilaiBulat % 1000;
+    const nilaiRibu = Math.floor(nilaiBulat / 1000);
+    
+    // Display nilai ribuan
+    document.getElementById(`nilai-bulat-${tagihanId}`).textContent = 
+        'Rp ' + new Intl.NumberFormat('id-ID').format(nilaiRibu) + '.';
+    
+    // Set input value to last 3 digits
+    const input = document.getElementById(`grand-total-input-${tagihanId}`);
+    input.value = String(last3Digits).padStart(3, '0');
+    input.focus();
+    input.select();
+    
+    // Store original value
+    input.dataset.originalValue = String(last3Digits).padStart(3, '0');
+    input.dataset.nilaiRibu = nilaiRibu;
+    input.dataset.pecahan = pecahan;
+}
+
+function cancelEditGrandTotal(tagihanId) {
+    // Show display, hide edit form
+    document.querySelector(`.grand-total-display-${tagihanId}`).parentElement.classList.remove('hidden');
+    document.getElementById(`edit-form-${tagihanId}`).classList.add('hidden');
+}
+
+function saveGrandTotal(tagihanId) {
+    const input = document.getElementById(`grand-total-input-${tagihanId}`);
+    const ratusan3DigitValue = input.value.trim();
+    
+    console.log('saveGrandTotal called for tagihan:', tagihanId);
+    console.log('Input value:', ratusan3DigitValue);
+    
+    // Validate input (must be 3 digits, 000-999)
+    if (!/^\d{1,3}$/.test(ratusan3DigitValue)) {
+        alert('Nilai harus berupa 3 digit angka (000-999).');
+        return;
+    }
+    
+    const ratusan3Digit = parseInt(ratusan3DigitValue);
+    if (ratusan3Digit < 0 || ratusan3Digit > 999) {
+        alert('Nilai harus antara 000 sampai 999.');
+        return;
+    }
+    
+    const nilaiRibu = parseInt(input.dataset.nilaiRibu);
+    const pecahan = parseInt(input.dataset.pecahan);
+    const newNilaiBulat = (nilaiRibu * 1000) + ratusan3Digit;
+    const newGrandTotal = newNilaiBulat + (pecahan / 100);
+    
+    // Calculate old grand total
+    const oldRatusan = parseInt(input.dataset.originalValue);
+    const oldNilaiBulat = (nilaiRibu * 1000) + oldRatusan;
+    const oldGrandTotal = oldNilaiBulat + (pecahan / 100);
+    
+    console.log('Nilai Ribu:', nilaiRibu);
+    console.log('Pecahan:', pecahan);
+    console.log('Old Grand Total:', oldGrandTotal);
+    console.log('New Grand Total:', newGrandTotal);
+    
+    // Show confirmation
+    const confirmation = confirm(
+        `Apakah Anda yakin ingin mengubah Grand Total?\n\n` +
+        `Nilai Lama: Rp ${new Intl.NumberFormat('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(oldGrandTotal)}\n` +
+        `Nilai Baru: Rp ${new Intl.NumberFormat('id-ID', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(newGrandTotal)}\n\n` +
+        `Perubahan: ${ratusan3Digit - oldRatusan > 0 ? '+' : ''}Rp ${new Intl.NumberFormat('id-ID').format(ratusan3Digit - oldRatusan)} (pada 3 digit terakhir)`
+    );
+    
+    if (!confirmation) {
+        console.log('User cancelled the update');
+        return;
+    }
+    
+    // Disable button to prevent double submission
+    const saveBtn = event.target;
+    const originalHtml = saveBtn.innerHTML;
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<span class="inline-block animate-spin rounded-full h-3 w-3 border-b-2 border-green-600"></span>';
+    
+    const payload = {
+        tagihan_id: tagihanId,
+        grand_total: newGrandTotal,
+        last_3_digits: ratusan3Digit
+    };
+    
+    console.log('Sending payload:', payload);
+    
+    // Send AJAX request to update
+    fetch(`{{ route('pranota-kontainer-sewa.update-grand-total') }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        if (data.success) {
+            alert('Grand Total berhasil diperbarui!\n\nNilai lama: Rp ' + new Intl.NumberFormat('id-ID', {minimumFractionDigits: 2}).format(data.old_value) + '\nNilai baru: Rp ' + new Intl.NumberFormat('id-ID', {minimumFractionDigits: 2}).format(data.new_value));
+            location.reload(); // Reload to show updated data
+        } else {
+            alert('Gagal memperbarui Grand Total: ' + (data.message || 'Unknown error'));
+            console.error('Update failed:', data);
+            saveBtn.disabled = false;
+            saveBtn.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Fetch error:', error);
+        alert('Terjadi kesalahan saat memproses permintaan: ' + error.message);
+        saveBtn.disabled = false;
+        saveBtn.innerHTML = originalHtml;
+    });
 }
 
 function tambahKontainerTerpilih() {
