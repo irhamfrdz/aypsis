@@ -811,6 +811,20 @@
                                 <span class="text-xs">Bayar Pranota Supir</span>
                             </a>
                         @endif
+
+                        {{-- Approval Tugas 1 Memo --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 1</span>
+                            </a>
+                        @endif
+
+                        {{-- Approval Tugas 2 Memo --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 2</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 @endif
@@ -996,6 +1010,20 @@
                                 <span class="text-xs">Pembayaran Pranota Kontainer Sewa</span>
                             </a>
                         @endif
+
+                        {{-- Approval Tugas 1 Sewa --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 1</span>
+                            </a>
+                        @endif
+
+                        {{-- Approval Tugas 2 Sewa --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 2</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 @endif
@@ -1035,6 +1063,20 @@
                                 <span class="text-xs">Pembayaran Pranota Perbaikan Kontainer</span>
                             </a>
                         @endif
+
+                        {{-- Approval Tugas 1 Perbaikan --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 1</span>
+                            </a>
+                        @endif
+
+                        {{-- Approval Tugas 2 Perbaikan --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 2</span>
+                            </a>
+                        @endif
                     </div>
                 </div>
                 @endif
@@ -1072,6 +1114,20 @@
                         @if(Route::has('pembayaran-pranota-cat.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-cat-view')))
                             <a href="{{ route('pembayaran-pranota-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Bayar Pranota CAT Kontainer</span>
+                            </a>
+                        @endif
+
+                        {{-- Approval Tugas 1 Cat --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval.index') || Request::routeIs('approval.show') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 1</span>
+                            </a>
+                        @endif
+
+                        {{-- Approval Tugas 2 Cat --}}
+                        @if($user && $user->can('approval-view'))
+                            <a href="{{ route('approval-ii.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval-ii.index') || Request::routeIs('approval-ii.show') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
                     </div>
