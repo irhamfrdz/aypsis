@@ -8,8 +8,22 @@
 @if($paginator->hasPages())
     <div class="px-4 py-2 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-white">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-2">
-            {{-- Left Section: Page Statistics --}}
+            {{-- Left Section: Page Statistics & Rows Per Page --}}
             <div class="flex flex-col sm:flex-row sm:items-center gap-2">
+                {{-- Rows Per Page Selector --}}
+                <div class="flex items-center space-x-2">
+                    <label for="perPageSelect" class="text-xs text-gray-600">Baris per halaman:</label>
+                    <select id="perPageSelect" 
+                            class="rounded border-gray-300 text-xs focus:ring-blue-500 focus:border-blue-500 px-2 py-1"
+                            onchange="changePerPage(this.value)">
+                        <option value="10" {{ request('per_page', 15) == 10 ? 'selected' : '' }}>10</option>
+                        <option value="15" {{ request('per_page', 15) == 15 ? 'selected' : '' }}>15</option>
+                        <option value="25" {{ request('per_page', 15) == 25 ? 'selected' : '' }}>25</option>
+                        <option value="50" {{ request('per_page', 15) == 50 ? 'selected' : '' }}>50</option>
+                        <option value="100" {{ request('per_page', 15) == 100 ? 'selected' : '' }}>100</option>
+                    </select>
+                </div>
+
                 <div class="flex items-center space-x-2 text-xs">
                     <span class="font-semibold text-gray-900">{{ $paginator->total() }}</span>
                     <span class="text-gray-600">total data</span>
@@ -276,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Preserve other parameters
                 const currentUrl = new URL(window.location);
-                ['search', 'sort', 'direction', 'per_page'].forEach(param => {
+                ['search', 'sort', 'direction', 'per_page', 'status'].forEach(param => {
                     if (currentUrl.searchParams.has(param)) {
                         url.searchParams.set(param, currentUrl.searchParams.get(param));
                     }
@@ -301,4 +315,12 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 });
+
+// Change Per Page Functionality
+function changePerPage(perPage) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('per_page', perPage);
+    url.searchParams.set('page', 1); // Reset to first page when changing per_page
+    window.location.href = url.toString();
+}
 </script>

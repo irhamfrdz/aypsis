@@ -32,9 +32,14 @@ class PranotaTagihanKontainerSewaController extends Controller
             });
         }
 
+        // Get per_page from request or use default
+        $perPage = $request->get('per_page', 15);
+        
+        // Validate per_page value
+        $perPage = in_array($perPage, [10, 15, 25, 50, 100]) ? $perPage : 15;
+
         // Handle AJAX request for existing pranota selection
         if ($request->ajax() || $request->wantsJson()) {
-            $perPage = $request->get('per_page', 15);
             $pranotaList = $query->paginate($perPage);
             
             // Enrich pranota data with calculated fields
@@ -70,7 +75,7 @@ class PranotaTagihanKontainerSewaController extends Controller
             ]);
         }
 
-        $pranotaList = $query->paginate(15);
+        $pranotaList = $query->paginate($perPage);
 
         return view('pranota.index', compact('pranotaList'));
     }

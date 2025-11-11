@@ -73,9 +73,9 @@
                                     class="rounded border-gray-300 text-sm focus:ring-indigo-500 focus:border-indigo-500"
                                     onchange="document.getElementById('searchForm').submit()">
                                 <option value="">Semua Status</option>
-                                <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pending</option>
-                                <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Dibayar</option>
-                                <option value="overdue" {{ request('status') == 'overdue' ? 'selected' : '' }}>Terlambat</option>
+                                <option value="unpaid" {{ request('status') == 'unpaid' ? 'selected' : '' }}>Belum Dibayar</option>
+                                <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Sudah Dibayar</option>
+                                <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Dibatalkan</option>
                             </select>
                         </div>
 
@@ -110,7 +110,11 @@
                                     untuk pencarian "<strong>{{ request('search') }}</strong>"
                                 @endif
                                 @if(request('status'))
-                                    dengan status "<strong>{{ ucfirst(request('status')) }}</strong>"
+                                    dengan status "<strong>{{ 
+                                        request('status') == 'unpaid' ? 'Belum Dibayar' : 
+                                        (request('status') == 'paid' ? 'Sudah Dibayar' : 
+                                        (request('status') == 'cancelled' ? 'Dibatalkan' : ucfirst(request('status')))) 
+                                    }}</strong>"
                                 @endif
                             </span>
                             <a href="{{ route('pranota-kontainer-sewa.index') }}"
