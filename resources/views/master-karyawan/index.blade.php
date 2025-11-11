@@ -46,6 +46,21 @@
 
                     <!-- Action Buttons -->
                     <div class="flex flex-nowrap gap-2 items-center">
+                        <!-- Toggle Karyawan Berhenti -->
+                        <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['show_berhenti' => request('show_berhenti') ? null : '1'])) }}"
+                           class="inline-flex items-center px-3 py-2 {{ request('show_berhenti') ? 'bg-red-600 hover:bg-red-700' : 'bg-gray-600 hover:bg-gray-700' }} text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105"
+                           title="{{ request('show_berhenti') ? 'Tampilkan Semua Karyawan' : 'Lihat Karyawan Berhenti' }}">
+                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                @if(request('show_berhenti'))
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                @else
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7a4 4 0 11-8 0 4 4 0 018 0zM9 14a6 6 0 00-6 6v1h12v-1a6 6 0 00-6-6zM21 12h-6"/>
+                                @endif
+                            </svg>
+                            {{ request('show_berhenti') ? 'Semua Karyawan' : 'Karyawan Berhenti' }}
+                        </a>
+                        
                         <a href="{{ route('master.karyawan.create') }}"
                            class="inline-flex items-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-200 transform hover:scale-105">
                             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -180,6 +195,22 @@
                     <a href="{{ route('master.karyawan.index') }}" class="ml-2 text-blue-600 hover:text-blue-800 underline">
                         Hapus filter
                     </a>
+                </div>
+            @endif
+
+            @if(request('show_berhenti'))
+                <div class="mt-3 flex items-center text-sm">
+                    <div class="flex items-center bg-red-50 border border-red-200 rounded-lg px-4 py-2 text-red-800">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span class="font-medium">Filter Aktif:</span>
+                        <span class="ml-1">Menampilkan karyawan yang sudah berhenti</span>
+                        <a href="{{ route('master.karyawan.index', request()->except('show_berhenti')) }}" 
+                           class="ml-3 text-red-600 hover:text-red-800 underline font-medium">
+                            Tampilkan Semua
+                        </a>
+                    </div>
                 </div>
             @endif
 
@@ -393,16 +424,42 @@
                                 </div>
                             </div>
                         </th>
+                        @if(request('show_berhenti'))
+                            <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <span>TANGGAL BERHENTI</span>
+                                    <div class="flex flex-col">
+                                        <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'tanggal_berhenti', 'direction' => 'asc'])) }}"
+                                           class="text-gray-400 hover:text-gray-600 transition-colors {{ request('sort') == 'tanggal_berhenti' && request('direction') == 'asc' ? 'text-blue-600' : '' }}"
+                                           title="Urutkan Terlama">
+                                            <i class="fas fa-sort-up text-xs"></i>
+                                        </a>
+                                        <a href="{{ route('master.karyawan.index', array_merge(request()->query(), ['sort' => 'tanggal_berhenti', 'direction' => 'desc'])) }}"
+                                           class="text-gray-400 hover:text-gray-600 transition-colors -mt-1 {{ request('sort') == 'tanggal_berhenti' && request('direction') == 'desc' ? 'text-blue-600' : '' }}"
+                                           title="Urutkan Terbaru">
+                                            <i class="fas fa-sort-down text-xs"></i>
+                                        </a>
+                                    </div>
+                                </div>
+                            </th>
+                        @endif
                         <th class="px-4 py-2 text-center text-[10px] font-medium text-gray-500 uppercase tracking-wider">AKSI</th>
                     </tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse ($karyawans as $karyawan)
-                        <tr class="hover:bg-gray-50">
+                        <tr class="hover:bg-gray-50 {{ $karyawan->tanggal_berhenti ? 'bg-red-50' : '' }}">
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 font-medium">
                                 {{ ($karyawans->currentPage() - 1) * $karyawans->perPage() + $loop->iteration }}
                             </td>
-                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nik) }}</td>
+                            <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
+                                {{ strtoupper($karyawan->nik) }}
+                                @if($karyawan->tanggal_berhenti)
+                                    <span class="ml-1 inline-flex items-center px-1.5 py-0.5 rounded text-[8px] font-medium bg-red-100 text-red-800" title="Karyawan Berhenti">
+                                        BERHENTI
+                                    </span>
+                                @endif
+                            </td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_lengkap) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">{{ strtoupper($karyawan->nama_panggilan) }}</td>
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
@@ -419,6 +476,22 @@
                             <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
                                 {{ $karyawan->tanggal_masuk ? \Carbon\Carbon::parse($karyawan->tanggal_masuk)->format('d/M/Y') : '-' }}
                             </td>
+                            @if(request('show_berhenti'))
+                                <td class="px-4 py-2 whitespace-nowrap text-center text-[10px]">
+                                    @if($karyawan->tanggal_berhenti)
+                                        <div class="flex flex-col items-center">
+                                            <span class="text-red-600 font-medium">
+                                                {{ \Carbon\Carbon::parse($karyawan->tanggal_berhenti)->format('d/M/Y') }}
+                                            </span>
+                                            <span class="text-[9px] text-gray-500">
+                                                ({{ \Carbon\Carbon::parse($karyawan->tanggal_berhenti)->diffForHumans() }})
+                                            </span>
+                                        </div>
+                                    @else
+                                        <span class="text-gray-400">-</span>
+                                    @endif
+                                </td>
+                            @endif
                             <td class="px-4 py-2 whitespace-nowrap text-center">
                                 <div class="flex items-center justify-center space-x-3 text-[10px]">
                                     {{-- Show crew checklist links only for ABK division --}}
@@ -483,13 +556,18 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="9" class="px-6 py-2 text-center text-gray-500">
+                            <td colspan="{{ request('show_berhenti') ? '10' : '9' }}" class="px-6 py-2 text-center text-gray-500">
                                 <div class="flex flex-col items-center">
                                     <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.5 2.5 0 11-5 0 2.5 2.5 0 015 0z"/>
                                     </svg>
-                                    <p class="text-xs font-medium">Belum ada data karyawan</p>
-                                    <p class="text-xs mt-1">Tambah karyawan baru untuk memulai</p>
+                                    @if(request('show_berhenti'))
+                                        <p class="text-xs font-medium">Tidak ada karyawan yang berhenti</p>
+                                        <p class="text-xs mt-1">Belum ada data karyawan yang memiliki tanggal berhenti</p>
+                                    @else
+                                        <p class="text-xs font-medium">Belum ada data karyawan</p>
+                                        <p class="text-xs mt-1">Tambah karyawan baru untuk memulai</p>
+                                    @endif
                                 </div>
                             </td>
                         </tr>

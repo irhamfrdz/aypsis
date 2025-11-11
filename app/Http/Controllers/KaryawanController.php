@@ -80,6 +80,14 @@ class KaryawanController extends Controller
         // Query builder untuk karyawan
         $query = Karyawan::query();
 
+        // Filter untuk karyawan yang sudah berhenti
+        if ($request->filled('show_berhenti')) {
+            $query->whereNotNull('tanggal_berhenti');
+        } else {
+            // Default: hanya tampilkan karyawan aktif (belum berhenti)
+            $query->whereNull('tanggal_berhenti');
+        }
+
         // Jika ada parameter search, lakukan pencarian
         if ($request->filled('search')) {
             $search = $request->search;
@@ -102,7 +110,7 @@ class KaryawanController extends Controller
         $sortDirection = $request->get('direction', 'asc'); // Default ascending
 
         // Validate sort field untuk keamanan
-        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk'];
+        $allowedSortFields = ['nama_lengkap', 'nik', 'nama_panggilan', 'divisi', 'pekerjaan', 'jkn', 'no_ketenagakerjaan', 'no_hp', 'email', 'status_pajak', 'tanggal_masuk', 'tanggal_berhenti'];
         if (!in_array($sortField, $allowedSortFields)) {
             $sortField = 'nama_lengkap';
         }
