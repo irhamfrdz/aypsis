@@ -61,7 +61,7 @@
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"/>
             </svg>
-            Import CSV
+            Import Excel
         </button>
 
         <!-- Export Button -->
@@ -305,7 +305,7 @@
                                     </a>
                                 @else
                                     <p class="text-base font-medium text-gray-600">Belum ada data mobil</p>
-                                    <p class="text-xs text-gray-500 mt-1">Silakan tambah mobil baru atau import data CSV</p>
+                                    <p class="text-xs text-gray-500 mt-1">Silakan tambah mobil baru atau import data Excel</p>
                                 @endif
                             </div>
                         </td>
@@ -341,21 +341,21 @@
             <form action="{{ route('master.mobil.import') }}" method="POST" enctype="multipart/form-data">
                 @csrf
                 <div class="mb-4">
-                    <label for="csv_file" class="block text-sm font-medium text-gray-700 mb-2">
-                        File CSV <span class="text-red-500">*</span>
+                    <label for="excel_file" class="block text-sm font-medium text-gray-700 mb-2">
+                        File Excel <span class="text-red-500">*</span>
                     </label>
                     <input type="file"
-                           id="csv_file"
-                           name="csv_file"
-                           accept=".csv"
+                           id="excel_file"
+                           name="excel_file"
+                           accept=".xlsx,.xls"
                            required
                            class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
                     <p class="mt-1 text-xs text-gray-500">
-                        Pilih file CSV dengan format yang sesuai template. Maksimal 5MB.
+                        Pilih file Excel (.xlsx atau .xls) dengan format yang sesuai template. Maksimal 10MB.
                     </p>
                 </div>
 
-                            <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
+                <div class="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
                     <div class="flex">
                         <svg class="h-5 w-5 text-yellow-400 mr-2" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/>
@@ -363,7 +363,7 @@
                         <div class="text-sm text-yellow-700">
                             <p class="font-medium">Panduan Import:</p>
                             <ul class="mt-1 list-disc list-inside text-xs">
-                                <li>Download template CSV terlebih dahulu</li>
+                                <li>Download template Excel terlebih dahulu</li>
                                 <li>Isi data sesuai format yang disediakan</li>
                                 <li>Kode Aktiva atau Nomor Polisi minimal salah satu harus diisi</li>
                                 <li>NIK karyawan opsional, jika ada akan otomatis terhubung ke data karyawan</li>

@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Mobil;
 use Illuminate\Http\Request;
+use PhpOffice\PhpSpreadsheet\IOFactory;
 
 class MobilController extends Controller
 {
@@ -288,26 +289,30 @@ class MobilController extends Controller
     }
 
     /**
-     * Import data mobil dari CSV.
+     * Import data mobil dari Excel.
      */
     public function import(Request $request)
     {
         $request->validate([
-            'csv_file' => 'required|file|mimes:csv,txt|max:10240', // Max 10MB
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240', // Max 10MB
         ]);
 
-        $file = $request->file('csv_file');
-        $path = $file->getRealPath();
+        $file = $request->file('excel_file');
         
-        $csvData = array_map('str_getcsv', file($path));
-        $header = array_shift($csvData); // Remove header row
-        
-        $imported = 0;
-        $skipped = 0;
-        $errors = [];
-        $warnings = [];
+        try {
+            $spreadsheet = IOFactory::load($file->getRealPath());
+            $worksheet = $spreadsheet->getActiveSheet();
+            $data = $worksheet->toArray();
+            
+            // Remove header row
+            $header = array_shift($data);
+            
+            $imported = 0;
+            $skipped = 0;
+            $errors = [];
+            $warnings = [];
 
-        foreach ($csvData as $index => $row) {
+            foreach ($data as $index => $row) {
             $rowNumber = $index + 2; // +2 because index starts at 0 and we removed header
             
             // Skip empty rows
@@ -395,12 +400,17 @@ class MobilController extends Controller
             }
         }
 
-        $message = "Import selesai. $imported data berhasil diimport, $skipped data dilewati.";
+            $message = "Import selesai. $imported data berhasil diimport, $skipped data dilewati.";
 
-        return redirect()->route('master.mobil.index')
-                         ->with('success', $message)
-                         ->with('import_errors', count($errors) > 0 ? $errors : null)
-                         ->with('import_warnings', count($warnings) > 0 ? $warnings : null);
+            return redirect()->route('master.mobil.index')
+                             ->with('success', $message)
+                             ->with('import_errors', count($errors) > 0 ? $errors : null)
+                             ->with('import_warnings', count($warnings) > 0 ? $warnings : null);
+                             
+        } catch (\Exception $e) {
+            return redirect()->route('master.mobil.index')
+                             ->with('error', 'Error saat membaca file Excel: ' . $e->getMessage());
+        }
     }
 
     /**

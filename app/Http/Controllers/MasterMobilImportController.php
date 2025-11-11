@@ -7,78 +7,47 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Response;
+use Maatwebsite\Excel\Facades\Excel;
+use App\Imports\MobilImport;
+use App\Exports\MobilTemplateExport;
 use Exception;
 
 class MasterMobilImportController extends Controller
 {
     /**
-     * Download template CSV untuk import master mobil
+     * Download template Excel untuk import master mobil
      */
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_master_mobil_' . date('Y-m-d_H-i-s') . '.csv';
-
-            // Headers for CSV
-            $headers = [
-                'Content-Type' => 'text/csv; charset=UTF-8',
-                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
-            ];
-
-            // CSV content dengan header sesuai format asli
-            $csvData = [
-                [
-                    'Kode Aktiva', 'NO.POLISI', 'nik', 'nama_lengkap', 'LOKASI', 'MEREK', 'JENIS', 
-                    'TAHUN PEMBUATAN', 'BPKB', 'NO. MESIN', 'NO. RANGKA', 'PAJAK STNK', 'PAJAK PLAT', 
-                    'NO. KIR', 'PAJAK KIR', 'ATAS NAMA', 'PEMAKAI', 'ASURANSI', 'JTE ASURANSI', 
-                    'WARNA PLAT', 'Catatan'
-                ],
-                [
-                    'AT1122500001', 'B5598BBA', '1234', 'NAMA KARYAWAN', 'JKT', 'HONDA', 'SEPEDA MOTOR',
-                    '2020', 'R12345678', 'JBK1E1714025', 'MH1JBK116LK717264', '24 Sep 26', '24 Sep 30',
-                    '', '', 'FERRY KURNIAWAN', 'OWEN', 'ZURICH ASURANSI INDONESIA, PT', '26 Jun 26',
-                    'HITAM', 'MTR-JKT.031'
-                ]
-            ];
-
-            $callback = function() use ($csvData) {
-                $file = fopen('php://output', 'w');
-
-                // Add BOM for UTF-8
-                fputs($file, "\xEF\xBB\xBF");
-
-                // Set CSV dengan pipe delimiter
-                foreach ($csvData as $row) {
-                    fputcsv($file, $row, '|');
-                }
-
-                fclose($file);
-            };
-
-            return Response::stream($callback, 200, $headers);
+            $fileName = 'template_master_mobil_' . date('Y-m-d_H-i-s') . '.xlsx';
+            
+            return Excel::download(new MobilTemplateExport, $fileName);
 
         } catch (Exception $e) {
             return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
         }
     }
 
+
+
     /**
-     * Import data master mobil dari CSV
+     * Import data master mobil dari Excel
      */
     public function import(Request $request)
     {
         // Validasi file upload
         $validator = Validator::make($request->all(), [
-            'csv_file' => [
+            'excel_file' => [
                 'required',
                 'file',
-                'mimes:csv,txt',
+                'mimes:xlsx,xls',
                 'max:10240' // 10MB
             ]
         ], [
-            'csv_file.required' => 'File CSV harus dipilih.',
-            'csv_file.mimes' => 'File harus berformat .csv',
-            'csv_file.max' => 'Ukuran file maksimal 10MB.'
+            'excel_file.required' => 'File Excel harus dipilih.',
+            'excel_file.mimes' => 'File harus berformat .xlsx atau .xls',
+            'excel_file.max' => 'Ukuran file maksimal 10MB.'
         ]);
 
         if ($validator->fails()) {
@@ -86,19 +55,13 @@ class MasterMobilImportController extends Controller
         }
 
         try {
-            $file = $request->file('csv_file');
-            $path = $file->getRealPath();
-
-            // Read CSV file with pipe delimiter
-            $csvData = [];
-            if (($handle = fopen($path, 'r')) !== FALSE) {
-                while (($data = fgetcsv($handle, 10000, '|')) !== FALSE) {
-                    $csvData[] = $data;
-                }
-                fclose($handle);
-            }
-
-            $header = array_shift($csvData); // Remove header row
+            $file = $request->file('excel_file');
+            
+            // Read Excel file using Maatwebsite Excel
+            $importData = Excel::toArray(new MobilImport, $file);
+            $excelData = $importData[0]; // Get first sheet data
+            
+            $header = array_shift($excelData); // Remove header row
 
             $stats = [
                 'success' => 0,
@@ -111,7 +74,7 @@ class MasterMobilImportController extends Controller
 
             DB::beginTransaction();
 
-            foreach ($csvData as $rowIndex => $row) {
+            foreach ($excelData as $rowIndex => $row) {
                 $rowNumber = $rowIndex + 2; // +2 because we removed header and start from 1
 
                 // Skip empty rows
@@ -120,7 +83,7 @@ class MasterMobilImportController extends Controller
                 }
 
                 try {
-                    // Map CSV columns to variables
+                    // Map Excel columns to variables
                     $kodeAktiva = trim($row[0] ?? '');
                     $nomorPolisi = trim($row[1] ?? '');
                     $nik = trim($row[2] ?? '');
