@@ -388,7 +388,7 @@
 
         @media print {
             @page {
-                size: A4 portrait;
+                size: {{ $paperSize === 'Half-A4' ? '210mm 148.5mm' : ($paperSize === 'Half-Folio' ? '8.5in 6.5in' : ($paperSize === 'A4' ? 'A4' : '8.5in 13in')) }} portrait;
                 margin: 0;
             }
 
@@ -398,13 +398,13 @@
             }
 
             html {
-                width: 210mm;
-                height: 297mm;
+                width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
+                height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
             }
 
             body {
-                width: 210mm;
-                height: 297mm;
+                width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
+                height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
                 margin: 0;
                 padding: 0;
                 font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : ($paperSize === 'A4' ? '11px' : '12px')) }};
@@ -414,7 +414,7 @@
             }
 
             .container {
-                width: 210mm;
+                width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
                 min-height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '287mm' : '13in')) }};
                 padding: 5mm 1mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
