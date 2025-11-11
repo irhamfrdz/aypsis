@@ -47,6 +47,30 @@ class TagihanOb extends Model
     }
 
     /**
+     * Get pranota item untuk tagihan OB ini
+     */
+    public function pranotaObItem()
+    {
+        return $this->hasOne(PranotaObItem::class);
+    }
+
+    /**
+     * Check apakah tagihan OB sudah ada di pranota
+     */
+    public function isInPranota(): bool
+    {
+        return $this->pranotaObItem()->exists();
+    }
+
+    /**
+     * Get pranota yang berisi tagihan OB ini
+     */
+    public function pranota()
+    {
+        return $this->pranotaObItem?->pranotaOb;
+    }
+
+    /**
      * Accessor for formatted biaya
      */
     public function getFormattedBiayaAttribute()
