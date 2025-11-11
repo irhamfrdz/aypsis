@@ -27,7 +27,9 @@ class RecalculateTagihanGrandTotal extends Command
      */
     public function handle()
     {
+        $startTime = now();
         $this->info('🔄 Starting Grand Total Recalculation for Tagihan Kontainer Sewa...');
+        $this->info('Started at: ' . $startTime->format('Y-m-d H:i:s'));
         $this->newLine();
 
         // Get total count
@@ -35,23 +37,29 @@ class RecalculateTagihanGrandTotal extends Command
         
         if ($totalCount === 0) {
             $this->warn('No tagihan found in database.');
+            $this->info('Completed at: ' . now()->format('Y-m-d H:i:s'));
             return 0;
         }
 
         $this->info("Found {$totalCount} tagihan records.");
-        $this->newLine();
-
-        // Confirm before proceeding
-        if (!$this->option('force')) {
+        
+        // Show confirmation only if not forced and running interactively
+        if (!$this->option('force') && $this->output->isInteractive()) {
+            $this->newLine();
             if (!$this->confirm('Do you want to proceed with recalculation?', true)) {
                 $this->warn('Operation cancelled.');
                 return 1;
             }
         }
 
-        // Create progress bar
-        $progressBar = $this->output->createProgressBar($totalCount);
-        $progressBar->start();
+        $this->newLine();
+
+        // Create progress bar only for interactive mode
+        $progressBar = null;
+        if ($this->output->isInteractive()) {
+            $progressBar = $this->output->createProgressBar($totalCount);
+            $progressBar->start();
+        }
 
         $updatedCount = 0;
         $unchangedCount = 0;
@@ -92,17 +100,26 @@ class RecalculateTagihanGrandTotal extends Command
                         ];
                     }
 
-                    $progressBar->advance();
+                    if ($progressBar) {
+                        $progressBar->advance();
+                    }
                 }
             });
 
             DB::commit();
 
-            $progressBar->finish();
-            $this->newLine(2);
+            if ($progressBar) {
+                $progressBar->finish();
+                $this->newLine(2);
+            }
+
+            $endTime = now();
+            $duration = $startTime->diffInSeconds($endTime);
 
             // Display results
             $this->info('✅ Recalculation completed!');
+            $this->info('Completed at: ' . $endTime->format('Y-m-d H:i:s'));
+            $this->info('Duration: ' . $duration . ' seconds');
             $this->newLine();
             
             $this->table(
@@ -138,6 +155,7 @@ class RecalculateTagihanGrandTotal extends Command
         } catch (\Exception $e) {
             DB::rollback();
             $this->error('❌ Error during recalculation: ' . $e->getMessage());
+            $this->info('Completed at: ' . now()->format('Y-m-d H:i:s'));
             return 1;
         }
     }

@@ -56,6 +56,12 @@ class Kernel extends ConsoleKernel
     $schedule->command('kontainer:validate-duplicates --fix')
              ->dailyAt('04:00')
              ->appendOutputTo(storage_path('logs/duplicate-validation.log'));
+
+    // Recalculate grand_total for all tagihan every hour
+    $schedule->command('tagihan:recalculate-grand-total --force')
+             ->hourly()
+             ->withoutOverlapping()
+             ->appendOutputTo(storage_path('logs/grand-total-recalculation.log'));
     }
 
     /**
