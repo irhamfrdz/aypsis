@@ -169,6 +169,14 @@ class PembayaranPranotaUangJalanController extends Controller
                     'updated_by' => Auth::id()
                 ]);
 
+                // Update all uang jalan in this pranota to 'lunas' status
+                foreach ($pranota->uangJalans as $uangJalan) {
+                    $uangJalan->update([
+                        'status' => 'lunas',
+                        'updated_by' => Auth::id()
+                    ]);
+                }
+
                 // Create prospek from FCL/CARGO uang jalan after successful payment
                 $prospeksCount = $this->createProspekFromFclUangJalan($pranotaId);
                 $totalProspeksCreated += $prospeksCount;
