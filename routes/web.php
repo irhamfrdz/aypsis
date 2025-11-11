@@ -2161,6 +2161,9 @@ Route::middleware(['auth'])->group(function() {
     Route::delete('tagihan-ob/{tagihanOb}', [\App\Http\Controllers\TagihanObController::class, 'destroy'])
          ->name('tagihan-ob.destroy')
          ->middleware('can:tagihan-ob-delete');
+    Route::post('tagihan-ob/{tagihanOb}/update-field', [\App\Http\Controllers\TagihanObController::class, 'updateField'])
+         ->name('tagihan-ob.update-field')
+         ->middleware('can:tagihan-ob-update');
     Route::post('tagihan-ob/create-from-ob-muat', [\App\Http\Controllers\TagihanObController::class, 'createFromObMuat'])
          ->name('tagihan-ob.create-from-ob-muat')
          ->middleware('can:tagihan-ob-create');
