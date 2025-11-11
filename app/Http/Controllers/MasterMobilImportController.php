@@ -15,12 +15,12 @@ use Exception;
 class MasterMobilImportController extends Controller
 {
     /**
-     * Download template Excel untuk import master mobil
+     * Download template Excel untuk import master asset
      */
     public function downloadTemplate()
     {
         try {
-            $fileName = 'template_master_mobil_' . date('Y-m-d_H-i-s') . '.xlsx';
+            $fileName = 'template_master_asset_' . date('Y-m-d_H-i-s') . '.xlsx';
             
             return Excel::download(new MobilTemplateExport, $fileName);
 
@@ -32,7 +32,7 @@ class MasterMobilImportController extends Controller
 
 
     /**
-     * Import data master mobil dari Excel
+     * Import data master asset dari Excel
      */
     public function import(Request $request)
     {

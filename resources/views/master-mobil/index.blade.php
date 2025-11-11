@@ -1,11 +1,11 @@
 @extends('layouts.app')
 
-@section('title', 'Master Mobil')
-@section('page_title', 'Master Mobil')
+@section('title', 'Master Asset')
+@section('page_title', 'Master Asset')
 
 @section('content')
 <div class="bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Mobil</h2>
+    <h2 class="text-2xl font-bold mb-4 text-gray-800">Daftar Asset</h2>
 
     <!-- Search Form -->
     <div class="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
@@ -43,7 +43,7 @@
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
             </svg>
-            Tambah Mobil
+            Tambah Asset
         </a>
 
         <!-- Download Template Button -->
@@ -280,7 +280,7 @@
                                 @endcan
                                 <span class="text-gray-300 text-xs">|</span>
                                 <!-- Tombol Hapus -->
-                                <form action="{{ route('master.mobil.destroy', $mobil->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus mobil ini?');" class="inline">
+                                <form action="{{ route('master.mobil.destroy', $mobil->id) }}" method="POST" onsubmit="return confirm('Apakah Anda yakin ingin menghapus asset ini?');" class="inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="bg-red-500 text-white py-1 px-2 rounded text-xs hover:bg-red-600 transition-colors duration-200">
@@ -298,14 +298,14 @@
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
                                 </svg>
                                 @if(request('search'))
-                                    <p class="text-base font-medium text-gray-600">Tidak ada mobil ditemukan</p>
+                                    <p class="text-base font-medium text-gray-600">Tidak ada asset ditemukan</p>
                                     <p class="text-xs text-gray-500 mt-1">Tidak ada hasil untuk pencarian "<strong>{{ request('search') }}</strong>"</p>
                                     <a href="{{ route('master.mobil.index') }}" class="mt-2 text-indigo-600 hover:text-indigo-800 text-xs font-medium">
-                                        Lihat semua mobil
+                                        Lihat semua asset
                                     </a>
                                 @else
-                                    <p class="text-base font-medium text-gray-600">Belum ada data mobil</p>
-                                    <p class="text-xs text-gray-500 mt-1">Silakan tambah mobil baru atau import data Excel</p>
+                                    <p class="text-base font-medium text-gray-600">Belum ada data asset</p>
+                                    <p class="text-xs text-gray-500 mt-1">Silakan tambah asset baru atau import data Excel</p>
                                 @endif
                             </div>
                         </td>
@@ -329,7 +329,7 @@
     <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
         <div class="mt-3">
             <div class="flex items-center justify-between mb-4">
-                <h3 class="text-lg font-medium text-gray-900">Import Master Mobil</h3>
+                <h3 class="text-lg font-medium text-gray-900">Import Master Asset</h3>
                 <button type="button" onclick="document.getElementById('import-modal').style.display = 'none'"
                         class="text-gray-400 hover:text-gray-600">
                     <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
