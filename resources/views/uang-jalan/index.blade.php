@@ -297,14 +297,6 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto submit form saat filter berubah
-    const statusSelect = document.getElementById('status');
-    if (statusSelect) {
-        statusSelect.addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
-        });
-    }
-
     // Enter key untuk search
     const searchInput = document.getElementById('search');
     if (searchInput) {
@@ -313,22 +305,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 document.getElementById('filterForm').submit();
             }
-        });
-    }
-
-    // Date filters auto submit
-    const tanggalDari = document.getElementById('tanggal_dari');
-    const tanggalSampai = document.getElementById('tanggal_sampai');
-    
-    if (tanggalDari) {
-        tanggalDari.addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
-        });
-    }
-    
-    if (tanggalSampai) {
-        tanggalSampai.addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
         });
     }
 });

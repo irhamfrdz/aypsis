@@ -23,10 +23,10 @@ class UangJalanController extends Controller
      */
     public function index(Request $request)
     {
-        $search = $request->get('search');
-        $status = $request->get('status');
-        $tanggal_dari = $request->get('tanggal_dari');
-        $tanggal_sampai = $request->get('tanggal_sampai');
+        $search = $request->get('search', '');
+        $status = $request->get('status', 'all');
+        $tanggal_dari = $request->get('tanggal_dari', '');
+        $tanggal_sampai = $request->get('tanggal_sampai', '');
         
         // Query uang jalan dengan relasi
         $query = UangJalan::with(['suratJalan.order.pengirim', 'createdBy']);
