@@ -167,6 +167,9 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tarif</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DPP</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Grand Total</th>
+                                    @if($pranota->status == 'unpaid')
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
@@ -211,10 +214,23 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                         Rp {{ number_format($item->grand_total, 2, ',', '.') }}
                                     </td>
+                                    @if($pranota->status == 'unpaid')
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                        <button type="button"
+                                                onclick="keluarkanKontainer({{ $item->id }}, '{{ $item->nomor_kontainer }}', '{{ $item->vendor }}')"
+                                                class="text-red-600 hover:text-red-900 font-medium flex items-center"
+                                                title="Keluarkan dari pranota">
+                                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                            </svg>
+                                            Keluarkan
+                                        </button>
+                                    </td>
+                                    @endif
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="10" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="{{ $pranota->status == 'unpaid' ? '11' : '10' }}" class="px-6 py-12 text-center text-gray-500">
                                         Tidak ada tagihan ditemukan
                                     </td>
                                 </tr>
@@ -227,6 +243,9 @@
                                     <th class="px-6 py-3 text-left text-sm font-bold text-green-600">
                                         Rp {{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}
                                     </th>
+                                    @if($pranota->status == 'unpaid')
+                                    <th class="px-6 py-3"></th>
+                                    @endif
                                 </tr>
                             </tfoot>
                             @endif
@@ -493,6 +512,47 @@ function updateTagihanSelection() {
     }
 }
 
+function keluarkanKontainer(tagihanId, nomorKontainer, vendor) {
+    const confirmation = confirm(
+        `Anda akan mengeluarkan kontainer dari pranota:\n\n` +
+        `Vendor: ${vendor}\n` +
+        `No. Kontainer: ${nomorKontainer}\n\n` +
+        'Kontainer akan dikembalikan ke status "Belum Masuk Pranota".\n\n' +
+        'Apakah Anda yakin ingin melanjutkan?'
+    );
+
+    if (confirmation) {
+        // Create JSON payload
+        const payload = {
+            _token: '{{ csrf_token() }}',
+            tagihan_ids: [tagihanId]
+        };
+
+        // Send POST request
+        fetch(`{{ route('pranota-kontainer-sewa.lepas-kontainer', $pranota->id) }}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Kontainer berhasil dikeluarkan dari pranota.');
+                location.reload();
+            } else {
+                alert('Gagal mengeluarkan kontainer: ' + (data.message || 'Unknown error'));
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan saat memproses permintaan.');
+        });
+    }
+}
+
 function lepasKontainer() {
     const checkboxes = document.querySelectorAll('.tagihan-checkbox:checked');
     const selectedItems = Array.from(checkboxes).map(checkbox => ({
@@ -511,6 +571,7 @@ function lepasKontainer() {
         `Anda akan melepas kontainer untuk ${selectedItems.length} tagihan:\n\n` +
         selectedItems.map(item => `- ${item.vendor} (Rp ${new Intl.NumberFormat('id-ID').format(item.amount)})`).join('\n') +
         `\n\nTotal Amount: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)}\n\n` +
+        'Kontainer akan dikembalikan ke status "Belum Masuk Pranota".\n\n' +
         'Apakah Anda yakin ingin melanjutkan?'
     );
 

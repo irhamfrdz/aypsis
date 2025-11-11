@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use App\Models\DaftarTagihanKontainerSewa;
+use App\Models\PranotaTagihanKontainerSewa;
 use Illuminate\Support\Facades\DB;
 
 class RecalculateTagihanGrandTotal extends Command
@@ -43,8 +44,8 @@ class RecalculateTagihanGrandTotal extends Command
 
         $this->info("Found {$totalCount} tagihan records.");
         
-        // Show confirmation only if not forced and running interactively
-        if (!$this->option('force') && $this->output->isInteractive()) {
+        // Show confirmation only if not forced
+        if (!$this->option('force')) {
             $this->newLine();
             if (!$this->confirm('Do you want to proceed with recalculation?', true)) {
                 $this->warn('Operation cancelled.');
@@ -54,9 +55,11 @@ class RecalculateTagihanGrandTotal extends Command
 
         $this->newLine();
 
-        // Create progress bar only for interactive mode
+        // Create progress bar (skip for non-interactive/scheduled mode)
         $progressBar = null;
-        if ($this->output->isInteractive()) {
+        $isForced = $this->option('force');
+        
+        if (!$isForced) {
             $progressBar = $this->output->createProgressBar($totalCount);
             $progressBar->start();
         }
@@ -145,6 +148,37 @@ class RecalculateTagihanGrandTotal extends Command
                 if (count($errors) > 10) {
                     $this->warn('... and ' . (count($errors) - 10) . ' more errors.');
                 }
+            }
+
+            // Update pranota total_amount for affected pranota
+            if ($updatedCount > 0) {
+                $this->newLine();
+                $this->info('🔄 Updating pranota total amounts...');
+                
+                $affectedPranotaIds = DaftarTagihanKontainerSewa::whereNotNull('pranota_id')
+                    ->distinct()
+                    ->pluck('pranota_id');
+                
+                $pranotaUpdatedCount = 0;
+                
+                foreach ($affectedPranotaIds as $pranotaId) {
+                    $pranota = PranotaTagihanKontainerSewa::find($pranotaId);
+                    
+                    if ($pranota) {
+                        $oldTotal = $pranota->total_amount;
+                        $newTotal = DaftarTagihanKontainerSewa::where('pranota_id', $pranotaId)
+                            ->sum('grand_total');
+                        
+                        if (abs($oldTotal - $newTotal) > 0.01) {
+                            $pranota->total_amount = $newTotal;
+                            $pranota->jumlah_tagihan = DaftarTagihanKontainerSewa::where('pranota_id', $pranotaId)->count();
+                            $pranota->save();
+                            $pranotaUpdatedCount++;
+                        }
+                    }
+                }
+                
+                $this->info("✅ Updated {$pranotaUpdatedCount} pranota records.");
             }
 
             $this->newLine();
