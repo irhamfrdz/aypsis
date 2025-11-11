@@ -27,7 +27,7 @@ class TagihanOb extends Model
     ];
 
     protected $casts = [
-        'biaya' => 'decimal:2',
+        'biaya' => 'float',
     ];
 
     /**

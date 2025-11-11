@@ -253,6 +253,14 @@ class TagihanObController extends Controller
             $field = $request->input('field');
             $value = $request->input('value');
             
+            // Debug logging
+            Log::info('UpdateField Debug', [
+                'field' => $field,
+                'raw_value' => $value,
+                'value_type' => gettype($value),
+                'request_all' => $request->all()
+            ]);
+            
             // Validate allowed fields
             $allowedFields = ['nama_supir', 'nomor_kontainer', 'biaya'];
             if (!in_array($field, $allowedFields)) {
@@ -262,43 +270,62 @@ class TagihanObController extends Controller
                 ], 400);
             }
             
-            // Field-specific validation
+            // Field-specific validation and casting
             if ($field === 'nama_supir') {
                 $request->validate([
                     'value' => 'required|string|max:255'
                 ]);
+                $finalValue = trim($value);
             } elseif ($field === 'nomor_kontainer') {
                 $request->validate([
                     'value' => 'required|string|max:255'
                 ]);
+                $finalValue = trim($value);
             } elseif ($field === 'biaya') {
                 $request->validate([
                     'value' => 'required|numeric|min:0'
                 ]);
+                // Ensure we store as integer/float correctly
+                $finalValue = floatval($value);
+                
+                Log::info('Biaya validation passed', [
+                    'original_value' => $value,
+                    'final_value' => $finalValue,
+                    'final_value_type' => gettype($finalValue)
+                ]);
+            } else {
+                $finalValue = $value;
             }
             
             // Update the field
-            $tagihanOb->{$field} = $value;
+            $tagihanOb->{$field} = $finalValue;
             $tagihanOb->save();
             
+            Log::info('Field updated in database', [
+                'field' => $field,
+                'old_value' => $tagihanOb->getOriginal($field),
+                'new_value' => $tagihanOb->{$field}
+            ]);
+            
             // Format response value for display
-            $formattedValue = $value;
+            $formattedValue = $finalValue;
             if ($field === 'biaya') {
-                $formattedValue = number_format($value, 0, ',', '.');
+                $formattedValue = number_format($finalValue, 0, ',', '.');
             }
             
             Log::info('Tagihan OB field updated via inline edit', [
                 'tagihan_ob_id' => $tagihanOb->id,
                 'field' => $field,
                 'old_value' => $tagihanOb->getOriginal($field),
-                'new_value' => $value,
+                'new_value' => $finalValue,
                 'user_id' => Auth::id()
             ]);
             
             return response()->json([
                 'success' => true,
                 'message' => 'Data berhasil diperbarui.',
-                'formatted_value' => $formattedValue
+                'formatted_value' => $formattedValue,
+                'raw_value' => $finalValue
             ]);
             
         } catch (\Illuminate\Validation\ValidationException $e) {

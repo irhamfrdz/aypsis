@@ -463,13 +463,34 @@ function cancelEdit(field, display, input) {
 function saveField(field, display, input) {
     const fieldName = field.dataset.field;
     const recordId = field.dataset.id;
-    const newValue = input.value.trim();
+    let newValue = input.value.trim();
     
     if (!newValue) {
         alert('Nilai tidak boleh kosong');
         input.focus();
         return;
     }
+    
+    // For biaya field, ensure we send the full numeric value
+    if (fieldName === 'biaya') {
+        // Convert to number to remove any formatting issues
+        const numericValue = parseFloat(newValue);
+        if (isNaN(numericValue) || numericValue < 0) {
+            alert('Nilai biaya harus berupa angka yang valid');
+            input.focus();
+            return;
+        }
+        newValue = numericValue.toString();
+    }
+    
+    // Debug logging
+    console.log('Saving field:', {
+        field: fieldName,
+        rawInputValue: input.value,
+        trimmedValue: input.value.trim(),
+        processedValue: newValue,
+        recordId: recordId
+    });
     
     // Show loading state
     const originalDisplayContent = display.innerHTML;
@@ -491,9 +512,16 @@ function saveField(field, display, input) {
     })
     .then(response => response.json())
     .then(data => {
+        console.log('Server response:', data);
         if (data.success) {
-            // Update display with new value
-            updateDisplayValue(display, fieldName, data.formatted_value || newValue);
+            // Update display with new value - for biaya use the raw value, not formatted
+            if (fieldName === 'biaya') {
+                // Get the actual saved value from server response or use the sent value
+                const actualValue = data.raw_value || newValue;
+                updateDisplayValue(display, fieldName, actualValue);
+            } else {
+                updateDisplayValue(display, fieldName, data.formatted_value || newValue);
+            }
             
             // Show success message briefly
             showNotification('Data berhasil diperbarui', 'success');
@@ -514,16 +542,41 @@ function saveField(field, display, input) {
 }
 
 function updateDisplayValue(display, fieldName, value) {
+    console.log('Updating display value:', {
+        fieldName: fieldName,
+        value: value,
+        valueType: typeof value
+    });
+    
     if (fieldName === 'biaya') {
-        display.innerHTML = `Rp ${formatNumber(value)}`;
+        // Ensure value is a number before formatting
+        const numericValue = parseFloat(value);
+        const formattedValue = formatNumber(numericValue);
+        console.log('Biaya formatting:', {
+            originalValue: value,
+            numericValue: numericValue,
+            formattedValue: formattedValue
+        });
+        display.innerHTML = `Rp ${formattedValue}`;
     } else if (fieldName === 'nomor_kontainer') {
         display.innerHTML = `<code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-mono">${value}</code>`;
     } else {
         display.textContent = value;
     }
+    
+    // Add success highlight animation
+    display.classList.add('field-success');
+    setTimeout(() => {
+        display.classList.remove('field-success');
+    }, 2000);
 }
 
 function formatNumber(num) {
+    // Ensure we have a valid number
+    if (isNaN(num)) {
+        console.warn('Invalid number for formatting:', num);
+        return '0';
+    }
     return new Intl.NumberFormat('id-ID').format(num);
 }
 
