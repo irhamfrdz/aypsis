@@ -1395,6 +1395,7 @@ input[required]:focus {
 
 // Checkbox functionality with state persistence
 document.addEventListener('DOMContentLoaded', function() {
+    // Declare variables in function scope so they're accessible to all functions
     const selectAllCheckbox = document.getElementById('select-all');
     const rowCheckboxes = document.querySelectorAll('.row-checkbox');
     const bulkActions = document.getElementById('bulkActions');
@@ -1414,6 +1415,11 @@ document.addEventListener('DOMContentLoaded', function() {
         btnBulkPranota: !!btnBulkPranota
     });
 
+    if (!rowCheckboxes || rowCheckboxes.length === 0) {
+        console.warn('No row checkboxes found');
+        return;
+    }
+
     // Restore checkbox state from localStorage on page load
     restoreCheckboxState();
     
@@ -1422,7 +1428,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Handle Export button
     const btnExport = document.getElementById('btnExport');
-    if (btnExport) {
+    if (btnExport && btnExport !== null) {
         btnExport.addEventListener('click', function() {
             // Get current filter parameters from URL
             const urlParams = new URLSearchParams(window.location.search);
@@ -1467,7 +1473,7 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Handle select all checkbox
-    if (selectAllCheckbox) {
+    if (selectAllCheckbox && selectAllCheckbox !== null) {
         selectAllCheckbox.addEventListener('change', function() {
             console.log('Select all checkbox changed:', this.checked);
             const isChecked = this.checked;
@@ -1477,6 +1483,8 @@ document.addEventListener('DOMContentLoaded', function() {
             updateBulkActions();
             saveCheckboxState(); // Save state after change
         });
+    } else {
+        console.warn('selectAllCheckbox element not found');
     }
 
     // Handle individual checkboxes
@@ -1531,12 +1539,22 @@ document.addEventListener('DOMContentLoaded', function() {
     // clearSavedState function moved to global scope above
 
     // Handle search form submission to preserve checkbox state
-    const searchForm = document.querySelector('form[action*="daftar-tagihan-kontainer-sewa.index"]');
-    if (searchForm) {
+    const searchForm = document.querySelector('form[method="GET"].space-y-4');
+    if (searchForm && searchForm !== null) {
         searchForm.addEventListener('submit', function() {
             saveCheckboxState(); // Save current state before form submission
             console.log('Search form submitted, checkbox state saved');
         });
+    } else {
+        console.warn('searchForm element not found - using alternative selector');
+        // Try alternative selector
+        const altSearchForm = document.querySelector('form[method="GET"]');
+        if (altSearchForm) {
+            altSearchForm.addEventListener('submit', function() {
+                saveCheckboxState();
+                console.log('Search form submitted (alt selector), checkbox state saved');
+            });
+        }
     }
 
     // Handle pagination links to preserve checkbox state  
@@ -1579,19 +1597,23 @@ document.addEventListener('DOMContentLoaded', function() {
         const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
         const count = checkedBoxes.length;
 
-        console.log('updateBulkActions called, checked boxes:', count);
-        console.log('bulkActions element:', bulkActions);
-        console.log('selectedCount element:', selectedCount);
+        // Get elements fresh each time to avoid stale references
+        const bulkActionsElement = document.getElementById('bulkActions');
+        const selectedCountElement = document.getElementById('selected-count');
 
-        if (selectedCount) {
-            selectedCount.textContent = count;
+        console.log('updateBulkActions called, checked boxes:', count);
+        console.log('bulkActions element:', bulkActionsElement);
+        console.log('selectedCount element:', selectedCountElement);
+
+        if (selectedCountElement) {
+            selectedCountElement.textContent = count;
         }
 
-        if (bulkActions) {
+        if (bulkActionsElement) {
             if (count > 0) {
                 console.log('Showing bulk actions - removing hidden class');
-                bulkActions.classList.remove('hidden');
-                bulkActions.style.display = 'block'; // Force show
+                bulkActionsElement.classList.remove('hidden');
+                bulkActionsElement.style.display = 'block'; // Force show
 
                 // Cek apakah ada item yang memiliki grup untuk tombol "Masukan ke Pranota"
                 let hasItemsWithGroup = false;
@@ -1651,8 +1673,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             } else {
                 console.log('Hiding bulk actions - adding hidden class');
-                bulkActions.classList.add('hidden');
-                bulkActions.style.display = 'none'; // Force hide
+                bulkActionsElement.classList.add('hidden');
+                bulkActionsElement.style.display = 'none'; // Force hide
             }
         } else {
             console.error('bulkActions element not found!');
@@ -1660,20 +1682,24 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Cancel selection
-    if (btnCancelSelection) {
+    if (btnCancelSelection && btnCancelSelection !== null) {
         btnCancelSelection.addEventListener('click', function() {
             rowCheckboxes.forEach(checkbox => {
                 checkbox.checked = false;
             });
-            selectAllCheckbox.checked = false;
-            selectAllCheckbox.indeterminate = false;
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
             updateBulkActions();
             window.clearSavedState(); // Clear saved state when cancelled
         });
+    } else {
+        console.warn('btnCancelSelection element not found');
     }
 
     // Bulk delete handler
-    if (btnBulkDelete) {
+    if (btnBulkDelete && btnBulkDelete !== null) {
         btnBulkDelete.addEventListener('click', function() {
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             if (checkedBoxes.length === 0) {
@@ -1720,10 +1746,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 form.submit();
             }
         });
+    } else {
+        console.warn('btnBulkDelete element not found');
     }
 
     // Bulk status update handler
-    if (btnBulkStatus) {
+    if (btnBulkStatus && btnBulkStatus !== null) {
         btnBulkStatus.addEventListener('click', function() {
             const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
             if (checkedBoxes.length === 0) {
@@ -1779,6 +1807,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Status tidak valid. Pilih:\n1. belum_dibayar\n2. sudah_dibayar');
             }
         });
+    } else {
+        console.warn('btnBulkStatus element not found');
     }
 });
 
@@ -2443,12 +2473,14 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
     }
 
     // Update nomor pranota when tanggal changes
-    if (tanggalPranota) {
+    if (tanggalPranota && tanggalPranota !== null) {
         tanggalPranota.addEventListener('change', updateNomorPranota);
     }
 
     // Initial nomor pranota generation
-    updateNomorPranota();
+    if (typeof updateNomorPranota === 'function') {
+        updateNomorPranota();
+    }
 
     // Update modal content based on type and action
     if (action === 'masukan_ke_pranota') {
@@ -2656,7 +2688,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const modal = document.getElementById('pranotaModal');
 
     // Only add event listeners if modal exists
-    if (modal) {
+    if (modal && modal !== null) {
         // Close modal when clicking backdrop
         modal.addEventListener('click', function(e) {
             if (e.target === modal) {
@@ -2682,7 +2714,7 @@ document.addEventListener('DOMContentLoaded', function() {
 document.addEventListener('DOMContentLoaded', function() {
     const pranotaForm = document.getElementById('pranotaForm');
 
-    if (pranotaForm) {
+    if (pranotaForm && pranotaForm !== null) {
         pranotaForm.addEventListener('submit', function(e) {
             e.preventDefault();
 
