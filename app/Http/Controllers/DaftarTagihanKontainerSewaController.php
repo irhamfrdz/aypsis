@@ -41,34 +41,17 @@ class DaftarTagihanKontainerSewaController extends Controller
         $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
               ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
 
-        // Handle search functionality with group-based search
+        // Handle search functionality - show only matching containers
         if ($request->filled('q')) {
             $searchTerm = $request->input('q');
 
-            // Find all containers that match the search term for grouping
-            $matchingContainers = DaftarTagihanKontainerSewa::where(function ($q) use ($searchTerm) {
-                    $q->where('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
-                })
-                ->whereNotNull('group')
-                ->where('group', '!=', '')
-                ->get();
-
-            if ($matchingContainers->isNotEmpty()) {
-                // Collect all unique groups from matching containers
-                $groups = $matchingContainers->pluck('group')->unique()->toArray();
-
-                // Search by all these groups to show all containers in the related groups
-                $query->whereIn('group', $groups);
-            } else {
-                // Otherwise, do regular search
-                $query->where(function ($q) use ($searchTerm) {
-                    $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
-                      ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
-                });
-            }
+            // Direct search - show only containers that match the search term
+            $query->where(function ($q) use ($searchTerm) {
+                $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
+                  ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+            });
         }
 
         // Handle vendor filter
