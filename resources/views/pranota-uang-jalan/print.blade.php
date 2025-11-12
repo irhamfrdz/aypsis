@@ -1,8 +1,8 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    // Get paper size from request or default to Half-A4
-    $paperSize = request('paper_size', 'Half-A4');
+    // Get paper size from request or default to Half-Folio
+    $paperSize = request('paper_size', 'Half-Folio');
 
     // Define paper dimensions and styles
     $paperMap = [
@@ -11,9 +11,9 @@
             'width' => '210mm',
             'height' => '297mm',
             'containerWidth' => '210mm',
-            'fontSize' => '11px',
+            'fontSize' => '12px',
             'headerH1' => '18px',
-            'tableFont' => '9px',
+            'tableFont' => '12px',
             'signatureBottom' => '15mm'
         ],
         'Folio' => [
@@ -21,9 +21,9 @@
             'width' => '8.5in',
             'height' => '13in',
             'containerWidth' => '8.5in',
-            'fontSize' => '12px',
+            'fontSize' => '13px',
             'headerH1' => '20px',
-            'tableFont' => '10px',
+            'tableFont' => '13px',
             'signatureBottom' => '20mm'
         ],
         'Half-A4' => [
@@ -31,9 +31,9 @@
             'width' => '210mm',
             'height' => '148.5mm',
             'containerWidth' => '210mm',
-            'fontSize' => '9px',
+            'fontSize' => '10px',
             'headerH1' => '14px',
-            'tableFont' => '7px',
+            'tableFont' => '10px',
             'signatureBottom' => '5mm'
         ],
         'Half-Folio' => [
@@ -41,14 +41,14 @@
             'width' => '8.5in',
             'height' => '6.5in',
             'containerWidth' => '8.5in',
-            'fontSize' => '9px',
-            'headerH1' => '14px',
-            'tableFont' => '7px',
+            'fontSize' => '11px',
+            'headerH1' => '16px',
+            'tableFont' => '11px',
             'signatureBottom' => '5mm'
         ]
     ];
 
-    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
+    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-Folio'];
 @endphp
 <head>
     <meta charset="UTF-8">
