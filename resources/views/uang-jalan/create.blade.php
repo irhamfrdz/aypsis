@@ -203,7 +203,7 @@
                                    id="jumlah_uang_jalan"
                                    value="{{ old('jumlah_uang_jalan', intval($suratJalan->uang_jalan ?? 0)) }}"
                                    min="0"
-                                   step="1000"
+                                   step="1"
                                    required
                                    oninput="calculateTotal()"
                                    class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_uang_jalan') border-red-500 @enderror">
@@ -223,7 +223,7 @@
                                    id="jumlah_mel"
                                    value="{{ old('jumlah_mel', 0) }}"
                                    min="0"
-                                   step="1000"
+                                   step="1"
                                    oninput="calculateTotal()"
                                    class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_mel') border-red-500 @enderror">
                         </div>
@@ -242,7 +242,7 @@
                                    id="jumlah_pelancar"
                                    value="{{ old('jumlah_pelancar', 0) }}"
                                    min="0"
-                                   step="1000"
+                                   step="1"
                                    oninput="calculateTotal()"
                                    class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_pelancar') border-red-500 @enderror">
                         </div>
@@ -261,7 +261,7 @@
                                    id="jumlah_kawalan"
                                    value="{{ old('jumlah_kawalan', 0) }}"
                                    min="0"
-                                   step="1000"
+                                   step="1"
                                    oninput="calculateTotal()"
                                    class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_kawalan') border-red-500 @enderror">
                         </div>
@@ -280,7 +280,7 @@
                                    id="jumlah_parkir"
                                    value="{{ old('jumlah_parkir', 0) }}"
                                    min="0"
-                                   step="1000"
+                                   step="1"
                                    oninput="calculateTotal()"
                                    class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_parkir') border-red-500 @enderror">
                         </div>
@@ -334,7 +334,7 @@
                                    name="jumlah_penyesuaian"
                                    id="jumlah_penyesuaian"
                                    value="{{ old('jumlah_penyesuaian', 0) }}"
-                                   step="1000"
+                                   step="1"
                                    oninput="calculateTotal()"
                                    class="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('jumlah_penyesuaian') border-red-500 @enderror">
                             @error('jumlah_penyesuaian')
