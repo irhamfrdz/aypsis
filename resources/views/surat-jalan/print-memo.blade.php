@@ -222,7 +222,7 @@
         </div>
         
         <div class="memo-field">
-            <span class="memo-label">{{ $suratJalan->pengirim ?? 'PT. ...............................' }}</span>
+            <span class="memo-label">{{ $suratJalan->pengirim ?? '-' }}</span>
             <span class="memo-value"></span>
         </div>
         
@@ -233,7 +233,7 @@
         
         <div class="memo-field">
             <span style="width: 30px; flex-shrink: 0;">Di</span>
-            <span class="memo-value">{{ $suratJalan->tujuan_pengambilan ?? 'JAKARTA' }}</span>
+            <span class="memo-value">{{ $suratJalan->tujuan_pengambilan ?? '-' }}</span>
         </div>
         
         <br>
@@ -246,17 +246,17 @@
         <div class="memo-details">
             <div class="memo-detail-item">
                 <span class="memo-detail-label">Mobil</span>
-                <span>: {{ $suratJalan->no_plat ?? 'B 9366 UIX' }}</span>
+                <span>: {{ $suratJalan->no_plat ?? '-' }}</span>
             </div>
             
             <div class="memo-detail-item">
                 <span class="memo-detail-label">Muatan</span>
-                <span>: {{ $suratJalan->nama_barang ?? 'PRODUK MINUMAN' }}</span>
+                <span>: {{ $suratJalan->jenis_barang ?? '-' }}</span>
             </div>
             
             <div class="memo-detail-item">
                 <span class="memo-detail-label">Tujuan</span>
-                <span>: {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? 'Batam' }}</span>
+                <span>: {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}</span>
             </div>
         </div>
         
