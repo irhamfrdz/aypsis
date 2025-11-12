@@ -3101,7 +3101,7 @@ window.setupGroupCheckboxes = function() {
     const selectAllGroups = document.getElementById('select-all-groups');
     const groupCheckboxes = document.querySelectorAll('.group-checkbox');
 
-    if (selectAllGroups) {
+    if (selectAllGroups && selectAllGroups !== null) {
         selectAllGroups.addEventListener('change', function() {
             groupCheckboxes.forEach(cb => {
                 cb.checked = this.checked;
@@ -3109,13 +3109,19 @@ window.setupGroupCheckboxes = function() {
         });
     }
 
-    groupCheckboxes.forEach(checkbox => {
-        checkbox.addEventListener('change', function() {
-            const checkedBoxes = document.querySelectorAll('.group-checkbox:checked');
-            selectAllGroups.checked = checkedBoxes.length === groupCheckboxes.length;
-            selectAllGroups.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < groupCheckboxes.length;
+    if (groupCheckboxes && groupCheckboxes.length > 0) {
+        groupCheckboxes.forEach(checkbox => {
+            if (checkbox && checkbox !== null) {
+                checkbox.addEventListener('change', function() {
+                    const checkedBoxes = document.querySelectorAll('.group-checkbox:checked');
+                    if (selectAllGroups && selectAllGroups !== null) {
+                        selectAllGroups.checked = checkedBoxes.length === groupCheckboxes.length;
+                        selectAllGroups.indeterminate = checkedBoxes.length > 0 && checkedBoxes.length < groupCheckboxes.length;
+                    }
+                });
+            }
         });
-    });
+    }
 };
 
 // Function to delete single group
@@ -3367,7 +3373,7 @@ window.editAdjustmentNote = function(tagihanId, currentNote) {
 
     // Handle form submission
     const form = document.getElementById('adjustmentNoteForm');
-    if (form) {
+    if (form && form !== null) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -3533,7 +3539,7 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
 
     // Handle form submission
     const form = document.getElementById('adjustmentForm');
-    if (form) {
+    if (form && form !== null) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -3701,7 +3707,7 @@ window.editVendorInfo = function(tagihanId, currentInvoice, currentTanggal) {
 
     // Handle form submission
     const form = document.getElementById('vendorInfoForm');
-    if (form) {
+    if (form && form !== null) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -3860,7 +3866,7 @@ window.editGroupInfo = function(tagihanId, currentGroup) {
 
     // Handle form submission
     const form = document.getElementById('groupInfoForm');
-    if (form) {
+    if (form && form !== null) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -4046,7 +4052,7 @@ window.bulkEditVendorInfo = function() {
 
     // Handle form submission
     const form = document.getElementById('bulkVendorInfoForm');
-    if (form) {
+    if (form && form !== null) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -4253,7 +4259,7 @@ window.bulkEditGroupInfo = function() {
 
     // Handle form submission
     const form = document.getElementById('bulkGroupInfoForm');
-    if (form) {
+    if (form && form !== null) {
         form.addEventListener('submit', function(e) {
         e.preventDefault();
 
@@ -4437,24 +4443,28 @@ window.showExistingPranotaModal = function(pranotaList, selectedIds, selectedDat
     const pranotaElements = document.querySelectorAll('.existing-pranota-option');
     const confirmBtn = document.getElementById('confirmAddToExistingPranota');
 
-    pranotaElements.forEach(option => {
-        option.addEventListener('click', function() {
-            // Remove previous selection
-            pranotaElements.forEach(opt => opt.classList.remove('bg-blue-100', 'border-blue-500'));
-            
-            // Add selection to clicked option
-            this.classList.add('bg-blue-100', 'border-blue-500');
-            selectedPranotaId = this.dataset.id;
-            
-            // Enable confirm button
-            if (confirmBtn) {
-                confirmBtn.disabled = false;
+    if (pranotaElements && pranotaElements.length > 0) {
+        pranotaElements.forEach(option => {
+            if (option && option !== null) {
+                option.addEventListener('click', function() {
+                    // Remove previous selection
+                    pranotaElements.forEach(opt => opt.classList.remove('bg-blue-100', 'border-blue-500'));
+                    
+                    // Add selection to clicked option
+                    this.classList.add('bg-blue-100', 'border-blue-500');
+                    selectedPranotaId = this.dataset.id;
+                    
+                    // Enable confirm button
+                    if (confirmBtn && confirmBtn !== null) {
+                        confirmBtn.disabled = false;
+                    }
+                });
             }
         });
-    });
+    }
 
     // Handle confirm button
-    if (confirmBtn) {
+    if (confirmBtn && confirmBtn !== null) {
         confirmBtn.addEventListener('click', function() {
         if (!selectedPranotaId) {
             alert('Pilih pranota terlebih dahulu');
