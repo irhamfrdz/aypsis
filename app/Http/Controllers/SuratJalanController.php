@@ -350,7 +350,7 @@ class SuratJalanController extends Controller
             'uang_jalan' => 'nullable|numeric|min:0',
             'no_pemesanan' => 'nullable|string|max:255',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
-            'status' => 'required|in:draft,active,completed,cancelled',
+            'status' => 'required|in:draft,active,belum masuk checkpoint,sudah_checkpoint,approved,fully_approved,rejected,completed,cancelled',
         ]);
 
         try {

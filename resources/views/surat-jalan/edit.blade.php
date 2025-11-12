@@ -594,6 +594,11 @@
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status') border-red-500 @enderror">
                         <option value="draft" {{ old('status', $suratJalan->status) == 'draft' ? 'selected' : '' }}>Draft</option>
                         <option value="active" {{ old('status', $suratJalan->status) == 'active' ? 'selected' : '' }}>Active</option>
+                        <option value="belum masuk checkpoint" {{ old('status', $suratJalan->status) == 'belum masuk checkpoint' ? 'selected' : '' }}>Belum Masuk Checkpoint</option>
+                        <option value="sudah_checkpoint" {{ old('status', $suratJalan->status) == 'sudah_checkpoint' ? 'selected' : '' }}>Sudah Checkpoint</option>
+                        <option value="approved" {{ old('status', $suratJalan->status) == 'approved' ? 'selected' : '' }}>Approved</option>
+                        <option value="fully_approved" {{ old('status', $suratJalan->status) == 'fully_approved' ? 'selected' : '' }}>Fully Approved</option>
+                        <option value="rejected" {{ old('status', $suratJalan->status) == 'rejected' ? 'selected' : '' }}>Rejected</option>
                         <option value="completed" {{ old('status', $suratJalan->status) == 'completed' ? 'selected' : '' }}>Completed</option>
                         <option value="cancelled" {{ old('status', $suratJalan->status) == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
                     </select>
