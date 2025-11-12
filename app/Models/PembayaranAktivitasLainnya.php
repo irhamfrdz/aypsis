@@ -17,21 +17,25 @@ class PembayaranAktivitasLainnya extends Model
     protected $fillable = [
         'nomor_pembayaran',
         'tanggal_pembayaran',
-        'total_pembayaran',
-        'pilih_bank',
+        'nomor_accurate',
+        'akun_biaya_id',
+        'total_nominal',
+        'metode_pembayaran',
+        'referensi_pembayaran',
+        'keterangan',
+        'status',
         'jenis_transaksi',
-        'aktivitas_pembayaran',
         'kegiatan',
         'plat_nomor',
-        'nomor_accurate',
-        'is_dp',
-        'created_by'
+        'created_by',
+        'approved_by',
+        'approved_at'
     ];
 
     protected $casts = [
         'tanggal_pembayaran' => 'date',
-        'total_pembayaran' => 'decimal:2',
-        'is_dp' => 'boolean'
+        'total_nominal' => 'decimal:2',
+        'approved_at' => 'datetime'
     ];
 
     /**
@@ -66,6 +70,14 @@ class PembayaranAktivitasLainnya extends Model
     public function bank()
     {
         return $this->belongsTo(Coa::class, 'pilih_bank');
+    }
+
+    /**
+     * Relationship dengan COA Biaya
+     */
+    public function akunBiaya()
+    {
+        return $this->belongsTo(Coa::class, 'akun_biaya_id');
     }
 
     /**

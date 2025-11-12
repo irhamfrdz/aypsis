@@ -51,6 +51,11 @@ class PembayaranAktivitasLainnyaController extends Controller
             ->orderBy('nomor_akun')
             ->get();
 
+        // Fetch COA biaya (Beban)
+        $coaBiaya = Coa::where('tipe_akun', 'Beban')
+            ->orderBy('nomor_akun')
+            ->get();
+
         // Fetch master kegiatan dengan type "uang muka"
         $masterKegiatan = \App\Models\MasterKegiatan::where('type', 'uang muka')
             ->orderBy('nama_kegiatan')
@@ -60,7 +65,7 @@ class PembayaranAktivitasLainnyaController extends Controller
         $masterMobil = \App\Models\Mobil::orderBy('nomor_polisi')
             ->get();
 
-        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'masterKegiatan', 'masterMobil'));
+        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'coaBiaya', 'masterKegiatan', 'masterMobil'));
     }
 
     /**
@@ -73,6 +78,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'nomor_accurate' => 'nullable|string|max:50',
             'pilih_bank' => 'required|exists:akun_coa,id',
+            'akun_biaya_id' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
             'total_pembayaran' => 'required|numeric|min:0',
@@ -83,6 +89,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'aktivitas_pembayaran.max' => 'Aktivitas pembayaran maksimal 1000 karakter.',
             'tanggal_pembayaran.required' => 'Tanggal pembayaran wajib diisi.',
             'pilih_bank.required' => 'Pilihan bank wajib dipilih.',
+            'akun_biaya_id.required' => 'Akun biaya wajib dipilih.',
             'total_pembayaran.required' => 'Total pembayaran wajib diisi.',
             'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.'
         ]);
@@ -112,6 +119,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'nomor_accurate' => $request->nomor_accurate,
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
+                'akun_biaya_id' => $request->akun_biaya_id,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
                 'kegiatan' => $request->kegiatan,
@@ -164,6 +172,11 @@ class PembayaranAktivitasLainnyaController extends Controller
         // Get bank accounts for dropdown
         $bankAccounts = Coa::where('tipe_akun', 'Bank/Kas')->get();
 
+        // Fetch COA biaya (Beban)
+        $coaBiaya = Coa::where('tipe_akun', 'Beban')
+            ->orderBy('nomor_akun')
+            ->get();
+
         // Fetch master kegiatan dengan type "uang muka"
         $masterKegiatan = \App\Models\MasterKegiatan::where('type', 'uang muka')
             ->orderBy('nama_kegiatan')
@@ -176,6 +189,7 @@ class PembayaranAktivitasLainnyaController extends Controller
         return view('pembayaran-aktivitas-lainnya.edit', compact(
             'pembayaranAktivitasLainnya',
             'bankAccounts',
+            'coaBiaya',
             'masterKegiatan',
             'masterMobil'
         ));
@@ -191,6 +205,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'tanggal_pembayaran' => 'required|date',
             'nomor_accurate' => 'nullable|string|max:50',
             'pilih_bank' => 'required|exists:akun_coa,id',
+            'akun_biaya_id' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
             'total_pembayaran' => 'required|numeric|min:0',
@@ -201,6 +216,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             'aktivitas_pembayaran.max' => 'Aktivitas pembayaran maksimal 1000 karakter.',
             'tanggal_pembayaran.required' => 'Tanggal pembayaran wajib diisi.',
             'pilih_bank.required' => 'Pilihan bank wajib dipilih.',
+            'akun_biaya_id.required' => 'Akun biaya wajib dipilih.',
             'total_pembayaran.required' => 'Total pembayaran wajib diisi.',
             'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.'
         ]);
@@ -235,6 +251,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'nomor_accurate' => $request->nomor_accurate,
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
+                'akun_biaya_id' => $request->akun_biaya_id,
                 'jenis_transaksi' => $request->jenis_transaksi,
                 'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
                 'kegiatan' => $request->kegiatan,

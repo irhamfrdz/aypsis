@@ -124,6 +124,32 @@
                         </div>
 
                         <div>
+                            <label for="akun_biaya_id" class="block text-xs font-medium text-gray-700 mb-1">
+                                Akun Biaya <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="akun_biaya_id"
+                                    name="akun_biaya_id"
+                                    required>
+                                <option value="">Pilih Akun Biaya</option>
+                                @if(isset($coaBiaya) && $coaBiaya->count() > 0)
+                                    @foreach($coaBiaya as $coa)
+                                        <option value="{{ $coa->id }}" {{ old('akun_biaya_id') == $coa->id ? 'selected' : '' }}>
+                                            {{ $coa->nomor_akun }} - {{ $coa->nama_akun }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>Tidak ada akun biaya tersedia</option>
+                                @endif
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-receipt mr-1"></i>Pilih akun biaya dari COA tipe Beban
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
                             <label class="block text-xs font-medium text-gray-700 mb-2">
                                 Jenis Pembayaran
                             </label>
