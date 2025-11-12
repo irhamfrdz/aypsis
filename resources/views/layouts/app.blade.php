@@ -547,11 +547,6 @@
                                         <span class="text-xs">Pricelist CAT Kontainer</span>
                                     </a>
                                 @endif
-                                @if($user && $user->can('uang-jalan-batam.view'))
-                                    <a href="{{ route('uang-jalan-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('uang-jalan-batam.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                        <span class="text-xs">Uang Jalan Batam</span>
-                                    </a>
-                                @endif
                                 @if($user && $user->can('master-pricelist-gate-in-view'))
                                     <a href="{{ route('master.pricelist-gate-in.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-gate-in.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist Gate In</span>
