@@ -75,6 +75,10 @@
                                     <span class="text-gray-900">{{ $pembayaran->tanggal_pembayaran ? $pembayaran->tanggal_pembayaran->format('d/m/Y') : '-' }}</span>
                                 </div>
                                 <div class="flex justify-between">
+                                    <span class="font-semibold text-gray-700">Nomor Accurate:</span>
+                                    <span class="text-gray-900">{{ $pembayaran->nomor_accurate ?? '-' }}</span>
+                                </div>
+                                <div class="flex justify-between">
                                     <span class="font-semibold text-gray-700">Metode Pembayaran:</span>
                                     <div>
                                         @switch($pembayaran->metode_pembayaran)

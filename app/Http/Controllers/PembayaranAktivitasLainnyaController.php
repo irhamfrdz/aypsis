@@ -71,6 +71,7 @@ class PembayaranAktivitasLainnyaController extends Controller
         $request->validate([
             'nomor_pembayaran' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
+            'nomor_accurate' => 'nullable|string|max:50',
             'pilih_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
@@ -108,6 +109,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             $pembayaran = PembayaranAktivitasLainnya::create([
                 'nomor_pembayaran' => $nomorPembayaran,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                'nomor_accurate' => $request->nomor_accurate,
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
                 'jenis_transaksi' => $request->jenis_transaksi,
@@ -187,6 +189,7 @@ class PembayaranAktivitasLainnyaController extends Controller
         $request->validate([
             'nomor_pembayaran' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
+            'nomor_accurate' => 'nullable|string|max:50',
             'pilih_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
@@ -229,6 +232,7 @@ class PembayaranAktivitasLainnyaController extends Controller
             $pembayaranAktivitasLainnya->update([
                 'nomor_pembayaran' => $request->nomor_pembayaran,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                'nomor_accurate' => $request->nomor_accurate,
                 'total_pembayaran' => $totalPembayaran,
                 'pilih_bank' => $request->pilih_bank,
                 'jenis_transaksi' => $request->jenis_transaksi,

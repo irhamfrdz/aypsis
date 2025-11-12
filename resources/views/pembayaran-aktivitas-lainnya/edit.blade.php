@@ -44,7 +44,7 @@
                         @endif
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="tanggal_pembayaran">Tanggal Pembayaran <span class="text-danger">*</span></label>
                                     <input type="date"
@@ -57,7 +57,21 @@
                                 </div>
                             </div>
 
-                            <div class="col-md-6">
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label for="nomor_accurate">Nomor Accurate</label>
+                                    <input type="text" 
+                                           class="form-control"
+                                           id="nomor_accurate"
+                                           name="nomor_accurate"
+                                           maxlength="50"
+                                           value="{{ old('nomor_accurate', $pembayaran->nomor_accurate) }}"
+                                           placeholder="Masukkan nomor accurate">
+                                    <small class="form-text text-muted">Masukkan nomor referensi dari Accurate</small>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
                                 <div class="form-group">
                                     <label for="metode_pembayaran">Metode Pembayaran <span class="text-danger">*</span></label>
                                     <select class="form-control"

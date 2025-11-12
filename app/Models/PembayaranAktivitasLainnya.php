@@ -23,6 +23,7 @@ class PembayaranAktivitasLainnya extends Model
         'aktivitas_pembayaran',
         'kegiatan',
         'plat_nomor',
+        'nomor_accurate',
         'is_dp',
         'created_by'
     ];

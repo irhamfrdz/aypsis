@@ -38,7 +38,7 @@
                         </div>
                     @endif
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="nomor_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
                                 Nomor Pembayaran <span class="text-red-500">*</span>
@@ -52,6 +52,23 @@
                                    readonly>
                         </div>
 
+                        <div>
+                            <label for="nomor_accurate" class="block text-xs font-medium text-gray-700 mb-1">
+                                Nomor Accurate
+                            </label>
+                            <input type="text"
+                                   class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                   id="nomor_accurate"
+                                   name="nomor_accurate"
+                                   value="{{ old('nomor_accurate') }}"
+                                   placeholder="Masukkan nomor dari sistem Accurate">
+                            <p class="text-xs text-gray-500 mt-1">
+                                <i class="fas fa-info-circle mr-1"></i>Opsional - Nomor referensi dari sistem Accurate
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
                             <label for="tanggal_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
                                 Tanggal Pembayaran <span class="text-red-500">*</span>
