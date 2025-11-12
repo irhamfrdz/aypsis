@@ -1,0 +1,5779 @@
+{
+    "stats": {
+        "total": 765,
+        "updated": 721,
+        "skipped": 44,
+        "errors": 0,
+        "total_difference": -88.70999998916523
+    },
+    "details": [
+        {
+            "id": 4598,
+            "nomor_kontainer": "AMFU8640522",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4599,
+            "nomor_kontainer": "AMFU8640522",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4600,
+            "nomor_kontainer": "AMFU8640522",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4601,
+            "nomor_kontainer": "AMFU8640522",
+            "periode": 4,
+            "old_grand_total": 458257.8,
+            "new_grand_total": 458258,
+            "difference": 0.20000000001164153
+        },
+        {
+            "id": 4602,
+            "nomor_kontainer": "APZU3960241",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4603,
+            "nomor_kontainer": "APZU3960241",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4604,
+            "nomor_kontainer": "APZU3960241",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4605,
+            "nomor_kontainer": "APZU3960241",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4606,
+            "nomor_kontainer": "APZU3960241",
+            "periode": 5,
+            "old_grand_total": 122747.79,
+            "new_grand_total": 122748,
+            "difference": 0.21000000000640284
+        },
+        {
+            "id": 4607,
+            "nomor_kontainer": "BMOU2383868",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4608,
+            "nomor_kontainer": "BMOU2383868",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4609,
+            "nomor_kontainer": "BMOU2383868",
+            "periode": 3,
+            "old_grand_total": 368243.36,
+            "new_grand_total": 368243,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 4610,
+            "nomor_kontainer": "BMOU2470200",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4611,
+            "nomor_kontainer": "BMOU2470200",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4612,
+            "nomor_kontainer": "BMOU2470200",
+            "periode": 3,
+            "old_grand_total": 54954.92,
+            "new_grand_total": 54955,
+            "difference": 0.08000000000174623
+        },
+        {
+            "id": 4613,
+            "nomor_kontainer": "BMOU2474612",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4614,
+            "nomor_kontainer": "BMOU2474612",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4615,
+            "nomor_kontainer": "BMOU2474612",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4616,
+            "nomor_kontainer": "BMOU2474612",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4617,
+            "nomor_kontainer": "BMOU2474612",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4618,
+            "nomor_kontainer": "BMOU2474612",
+            "periode": 6,
+            "old_grand_total": 245495.57,
+            "new_grand_total": 245496,
+            "difference": 0.4299999999930151
+        },
+        {
+            "id": 4619,
+            "nomor_kontainer": "BMOU2495277",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4620,
+            "nomor_kontainer": "BMOU2495277",
+            "periode": 4,
+            "old_grand_total": 738513.29,
+            "new_grand_total": 738513,
+            "difference": -0.2900000000372529
+        },
+        {
+            "id": 4621,
+            "nomor_kontainer": "BMOU4013060",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4622,
+            "nomor_kontainer": "BMOU4013060",
+            "periode": 2,
+            "old_grand_total": 638288.5,
+            "new_grand_total": 638289,
+            "difference": 0.5
+        },
+        {
+            "id": 4623,
+            "nomor_kontainer": "BMOU4013585",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4624,
+            "nomor_kontainer": "BMOU4013585",
+            "periode": 2,
+            "old_grand_total": 343693.81,
+            "new_grand_total": 343694,
+            "difference": 0.1900000000023283
+        },
+        {
+            "id": 4625,
+            "nomor_kontainer": "BMOU4153139",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4626,
+            "nomor_kontainer": "BMOU4153139",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4627,
+            "nomor_kontainer": "BMOU4153139",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4628,
+            "nomor_kontainer": "BMOU4153139",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4629,
+            "nomor_kontainer": "BMOU4153139",
+            "periode": 5,
+            "old_grand_total": 49099.12,
+            "new_grand_total": 49099,
+            "difference": -0.12000000000261934
+        },
+        {
+            "id": 4630,
+            "nomor_kontainer": "BMOU4175420",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4631,
+            "nomor_kontainer": "BMOU4175420",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4632,
+            "nomor_kontainer": "BMOU4175420",
+            "periode": 3,
+            "old_grand_total": 417342.48,
+            "new_grand_total": 417342,
+            "difference": -0.47999999998137355
+        },
+        {
+            "id": 4633,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4634,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4635,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4636,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4637,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4638,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4639,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4640,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4641,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 10,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4642,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 11,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4643,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 12,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4644,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 13,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4645,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 14,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4646,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 15,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4647,
+            "nomor_kontainer": "BMOU4192536",
+            "periode": 16,
+            "old_grand_total": 687386.7,
+            "new_grand_total": 687387,
+            "difference": 0.30000000004656613
+        },
+        {
+            "id": 4648,
+            "nomor_kontainer": "BMOU4393401",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4649,
+            "nomor_kontainer": "BMOU4393401",
+            "periode": 3,
+            "old_grand_total": 870689.82,
+            "new_grand_total": 870690,
+            "difference": 0.18000000005122274
+        },
+        {
+            "id": 4650,
+            "nomor_kontainer": "BMOU4402838",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4651,
+            "nomor_kontainer": "BMOU4402838",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4652,
+            "nomor_kontainer": "BMOU4402838",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4653,
+            "nomor_kontainer": "BMOU4402838",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4654,
+            "nomor_kontainer": "BMOU4402838",
+            "periode": 5,
+            "old_grand_total": 549909.36,
+            "new_grand_total": 549909,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 4655,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4656,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 2,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4657,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4658,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4659,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4660,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4661,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4662,
+            "nomor_kontainer": "BPLU1210002",
+            "periode": 8,
+            "old_grand_total": 229128.9,
+            "new_grand_total": 229129,
+            "difference": 0.10000000000582077
+        },
+        {
+            "id": 4663,
+            "nomor_kontainer": "BSIU2946381",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4664,
+            "nomor_kontainer": "BSIU2946381",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4665,
+            "nomor_kontainer": "BSIU2946381",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4666,
+            "nomor_kontainer": "BSIU2946381",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4667,
+            "nomor_kontainer": "BSIU2946381",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4668,
+            "nomor_kontainer": "BSIU2946381",
+            "periode": 6,
+            "old_grand_total": 613738.94,
+            "new_grand_total": 613739,
+            "difference": 0.060000000055879354
+        },
+        {
+            "id": 4669,
+            "nomor_kontainer": "CAIU3184330",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4670,
+            "nomor_kontainer": "CAIU3184330",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4671,
+            "nomor_kontainer": "CAIU3184330",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4672,
+            "nomor_kontainer": "CAIU3184330",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4673,
+            "nomor_kontainer": "CAIU3184330",
+            "periode": 5,
+            "old_grand_total": 49099.12,
+            "new_grand_total": 49099,
+            "difference": -0.12000000000261934
+        },
+        {
+            "id": 4674,
+            "nomor_kontainer": "CAIU8171172",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4675,
+            "nomor_kontainer": "CAIU8171172",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4676,
+            "nomor_kontainer": "CAIU8171172",
+            "periode": 3,
+            "old_grand_total": 368243.36,
+            "new_grand_total": 368243,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 4677,
+            "nomor_kontainer": "CAXU8184119",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4678,
+            "nomor_kontainer": "CAXU8184119",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4679,
+            "nomor_kontainer": "CAXU8184119",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4680,
+            "nomor_kontainer": "CAXU8184119",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4681,
+            "nomor_kontainer": "CAXU8184119",
+            "periode": 5,
+            "old_grand_total": 458257.8,
+            "new_grand_total": 458258,
+            "difference": 0.20000000001164153
+        },
+        {
+            "id": 4682,
+            "nomor_kontainer": "CAXU9096769",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4683,
+            "nomor_kontainer": "CAXU9096769",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4684,
+            "nomor_kontainer": "CAXU9096769",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4685,
+            "nomor_kontainer": "CAXU9096769",
+            "periode": 4,
+            "old_grand_total": 733212.48,
+            "new_grand_total": 733212,
+            "difference": -0.47999999998137355
+        },
+        {
+            "id": 4688,
+            "nomor_kontainer": "CBHU3952697",
+            "periode": 3,
+            "old_grand_total": 311092.48,
+            "new_grand_total": 311092,
+            "difference": -0.47999999998137355
+        },
+        {
+            "id": 4689,
+            "nomor_kontainer": "CBHU4034438",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4690,
+            "nomor_kontainer": "CBHU4034438",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4691,
+            "nomor_kontainer": "CBHU4034438",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4692,
+            "nomor_kontainer": "CBHU4034438",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4693,
+            "nomor_kontainer": "CBHU4034438",
+            "periode": 5,
+            "old_grand_total": 294594.69,
+            "new_grand_total": 294595,
+            "difference": 0.3099999999976717
+        },
+        {
+            "id": 4696,
+            "nomor_kontainer": "CBHU4077764",
+            "periode": 3,
+            "old_grand_total": 2323062.5,
+            "new_grand_total": 2323063,
+            "difference": 0.5
+        },
+        {
+            "id": 4698,
+            "nomor_kontainer": "CBHU4077764",
+            "periode": 5,
+            "old_grand_total": 392792.92,
+            "new_grand_total": 392793,
+            "difference": 0.08000000001629815
+        },
+        {
+            "id": 4699,
+            "nomor_kontainer": "CBHU5841917",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4700,
+            "nomor_kontainer": "CBHU5841917",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4701,
+            "nomor_kontainer": "CBHU5841917",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4702,
+            "nomor_kontainer": "CBHU5841917",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4703,
+            "nomor_kontainer": "CBHU5841917",
+            "periode": 5,
+            "old_grand_total": 49099.12,
+            "new_grand_total": 49099,
+            "difference": -0.12000000000261934
+        },
+        {
+            "id": 4706,
+            "nomor_kontainer": "CBHU5876322",
+            "periode": 3,
+            "old_grand_total": 2323062.5,
+            "new_grand_total": 2323063,
+            "difference": 0.5
+        },
+        {
+            "id": 4708,
+            "nomor_kontainer": "CBHU5876322",
+            "periode": 5,
+            "old_grand_total": 368243.36,
+            "new_grand_total": 368243,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 4711,
+            "nomor_kontainer": "CBHU5911444",
+            "periode": 3,
+            "old_grand_total": 2745437.5,
+            "new_grand_total": 2745438,
+            "difference": 0.5
+        },
+        {
+            "id": 4716,
+            "nomor_kontainer": "CBHU5911444",
+            "periode": 8,
+            "old_grand_total": 147297.35,
+            "new_grand_total": 147297,
+            "difference": -0.35000000000582077
+        },
+        {
+            "id": 4719,
+            "nomor_kontainer": "CBHU5914130",
+            "periode": 3,
+            "old_grand_total": 2323062.5,
+            "new_grand_total": 2323063,
+            "difference": 0.5
+        },
+        {
+            "id": 4721,
+            "nomor_kontainer": "CBHU5914130",
+            "periode": 5,
+            "old_grand_total": 98198.23,
+            "new_grand_total": 98198,
+            "difference": -0.22999999999592546
+        },
+        {
+            "id": 4722,
+            "nomor_kontainer": "CCLU2644067",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4723,
+            "nomor_kontainer": "CCLU2644067",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4726,
+            "nomor_kontainer": "CCLU3806500",
+            "periode": 3,
+            "old_grand_total": 347691.6,
+            "new_grand_total": 347692,
+            "difference": 0.40000000002328306
+        },
+        {
+            "id": 4729,
+            "nomor_kontainer": "CCLU3836629",
+            "periode": 3,
+            "old_grand_total": 2323062.5,
+            "new_grand_total": 2323063,
+            "difference": 0.5
+        },
+        {
+            "id": 4732,
+            "nomor_kontainer": "CCLU3836629",
+            "periode": 6,
+            "old_grand_total": 73648.67,
+            "new_grand_total": 73649,
+            "difference": 0.33000000000174623
+        },
+        {
+            "id": 4733,
+            "nomor_kontainer": "CCLU3996437",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 4734,
+            "nomor_kontainer": "CCLU3996437",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4735,
+            "nomor_kontainer": "CCLU3996437",
+            "periode": 3,
+            "old_grand_total": 417342.48,
+            "new_grand_total": 417342,
+            "difference": -0.47999999998137355
+        },
+        {
+            "id": 4736,
+            "nomor_kontainer": "CCLU7032547",
+            "periode": 1,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4737,
+            "nomor_kontainer": "CCLU7032547",
+            "periode": 2,
+            "old_grand_total": 779038.26,
+            "new_grand_total": 779038,
+            "difference": -0.2600000000093132
+        },
+        {
+            "id": 4738,
+            "nomor_kontainer": "CCLU7119138",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4739,
+            "nomor_kontainer": "CCLU7119138",
+            "periode": 2,
+            "old_grand_total": 343693.81,
+            "new_grand_total": 343694,
+            "difference": 0.1900000000023283
+        },
+        {
+            "id": 4740,
+            "nomor_kontainer": "CLHU3586854",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4741,
+            "nomor_kontainer": "CLHU3586854",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4742,
+            "nomor_kontainer": "CLHU3586854",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 4743,
+            "nomor_kontainer": "CLHU3602235",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4744,
+            "nomor_kontainer": "CLHU3602235",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4745,
+            "nomor_kontainer": "CLHU3602235",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 4746,
+            "nomor_kontainer": "CMAU1034669",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4747,
+            "nomor_kontainer": "CMAU1034669",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4748,
+            "nomor_kontainer": "CMAU1034669",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4749,
+            "nomor_kontainer": "CMAU1034669",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4750,
+            "nomor_kontainer": "CMAU1034669",
+            "periode": 5,
+            "old_grand_total": 540090.27,
+            "new_grand_total": 540090,
+            "difference": -0.27000000001862645
+        },
+        {
+            "id": 4751,
+            "nomor_kontainer": "CPSU1828517",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4752,
+            "nomor_kontainer": "CPSU1828517",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4753,
+            "nomor_kontainer": "CPSU1828517",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4754,
+            "nomor_kontainer": "CPSU1828517",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4755,
+            "nomor_kontainer": "CPSU1828517",
+            "periode": 5,
+            "old_grand_total": 515540.71,
+            "new_grand_total": 515541,
+            "difference": 0.28999999997904524
+        },
+        {
+            "id": 4756,
+            "nomor_kontainer": "CRSU1468543",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4757,
+            "nomor_kontainer": "CRSU1468543",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4758,
+            "nomor_kontainer": "CRSU1468543",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4759,
+            "nomor_kontainer": "CRSU1468543",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4760,
+            "nomor_kontainer": "CRSU1468543",
+            "periode": 5,
+            "old_grand_total": 515540.71,
+            "new_grand_total": 515541,
+            "difference": 0.28999999997904524
+        },
+        {
+            "id": 4761,
+            "nomor_kontainer": "CRXU3112086",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4762,
+            "nomor_kontainer": "CRXU3112086",
+            "periode": 2,
+            "old_grand_total": 319144.25,
+            "new_grand_total": 319144,
+            "difference": -0.25
+        },
+        {
+            "id": 4765,
+            "nomor_kontainer": "CSLU1004045",
+            "periode": 3,
+            "old_grand_total": 329392.04,
+            "new_grand_total": 329392,
+            "difference": -0.03999999997904524
+        },
+        {
+            "id": 4768,
+            "nomor_kontainer": "CSLU1247770",
+            "periode": 3,
+            "old_grand_total": 2745437.5,
+            "new_grand_total": 2745438,
+            "difference": 0.5
+        },
+        {
+            "id": 4770,
+            "nomor_kontainer": "CSLU1247770",
+            "periode": 5,
+            "old_grand_total": 761036.29,
+            "new_grand_total": 761036,
+            "difference": -0.2900000000372529
+        },
+        {
+            "id": 4773,
+            "nomor_kontainer": "CXDU1108080",
+            "periode": 3,
+            "old_grand_total": 335642.04,
+            "new_grand_total": 335642,
+            "difference": -0.03999999997904524
+        },
+        {
+            "id": 4774,
+            "nomor_kontainer": "CXDU1108921",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4775,
+            "nomor_kontainer": "CXDU1108921",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4776,
+            "nomor_kontainer": "CXDU1108921",
+            "periode": 3,
+            "old_grand_total": 106080.6,
+            "new_grand_total": 106081,
+            "difference": 0.39999999999417923
+        },
+        {
+            "id": 4777,
+            "nomor_kontainer": "CXDU1212730",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4778,
+            "nomor_kontainer": "CXDU1212730",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4779,
+            "nomor_kontainer": "CXDU1212730",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4780,
+            "nomor_kontainer": "CXDU1212730",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4781,
+            "nomor_kontainer": "CXDU1212730",
+            "periode": 5,
+            "old_grand_total": 689414.17,
+            "new_grand_total": 689414,
+            "difference": -0.17000000004190952
+        },
+        {
+            "id": 4782,
+            "nomor_kontainer": "DFSU2061565",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4783,
+            "nomor_kontainer": "DFSU2061565",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4784,
+            "nomor_kontainer": "DFSU2061565",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4785,
+            "nomor_kontainer": "DFSU2061565",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4786,
+            "nomor_kontainer": "DFSU2061565",
+            "periode": 5,
+            "old_grand_total": 270045.13,
+            "new_grand_total": 270045,
+            "difference": -0.1300000000046566
+        },
+        {
+            "id": 4787,
+            "nomor_kontainer": "DFSU2296934",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4788,
+            "nomor_kontainer": "DFSU2296934",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4789,
+            "nomor_kontainer": "DFSU2296934",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 4790,
+            "nomor_kontainer": "DFSU6225950",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4791,
+            "nomor_kontainer": "DFSU6225950",
+            "periode": 2,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4792,
+            "nomor_kontainer": "DFSU6225950",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4793,
+            "nomor_kontainer": "DFSU6225950",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4794,
+            "nomor_kontainer": "DFSU6225950",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4795,
+            "nomor_kontainer": "DFSU6225950",
+            "periode": 6,
+            "old_grand_total": 274954.68,
+            "new_grand_total": 274955,
+            "difference": 0.3200000000069849
+        },
+        {
+            "id": 4796,
+            "nomor_kontainer": "DNAU2622206",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4797,
+            "nomor_kontainer": "DNAU2622206",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4798,
+            "nomor_kontainer": "DNAU2622206",
+            "periode": 4,
+            "old_grand_total": 327026.61,
+            "new_grand_total": 327027,
+            "difference": 0.39000000001396984
+        },
+        {
+            "id": 4801,
+            "nomor_kontainer": "DPEU4869769",
+            "periode": 3,
+            "old_grand_total": 329392.04,
+            "new_grand_total": 329392,
+            "difference": -0.03999999997904524
+        },
+        {
+            "id": 4802,
+            "nomor_kontainer": "ECMU1819649",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4803,
+            "nomor_kontainer": "ECMU1819649",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4804,
+            "nomor_kontainer": "ECMU1819649",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4805,
+            "nomor_kontainer": "ECMU1819649",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4806,
+            "nomor_kontainer": "ECMU1819649",
+            "periode": 5,
+            "old_grand_total": 662838.05,
+            "new_grand_total": 662838,
+            "difference": -0.05000000004656613
+        },
+        {
+            "id": 4807,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4808,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4809,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4810,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4811,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4812,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4813,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4814,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4815,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4816,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4817,
+            "nomor_kontainer": "EGHU9005182",
+            "periode": 24,
+            "old_grand_total": 1145644.5,
+            "new_grand_total": 1145645,
+            "difference": 0.5
+        },
+        {
+            "id": 4818,
+            "nomor_kontainer": "EGSU3109943",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4819,
+            "nomor_kontainer": "EGSU3109943",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4820,
+            "nomor_kontainer": "EGSU3109943",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4821,
+            "nomor_kontainer": "EGSU3109943",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4822,
+            "nomor_kontainer": "EGSU3109943",
+            "periode": 5,
+            "old_grand_total": 638288.5,
+            "new_grand_total": 638289,
+            "difference": 0.5
+        },
+        {
+            "id": 4823,
+            "nomor_kontainer": "EISU2194517",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4824,
+            "nomor_kontainer": "EISU2194517",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4825,
+            "nomor_kontainer": "EISU2194517",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4826,
+            "nomor_kontainer": "EISU2194517",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4827,
+            "nomor_kontainer": "EISU2194517",
+            "periode": 5,
+            "old_grand_total": 540090.27,
+            "new_grand_total": 540090,
+            "difference": -0.27000000001862645
+        },
+        {
+            "id": 4828,
+            "nomor_kontainer": "EISU2254616",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4829,
+            "nomor_kontainer": "EISU2254616",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4830,
+            "nomor_kontainer": "EISU2254616",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4831,
+            "nomor_kontainer": "EISU2254616",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4832,
+            "nomor_kontainer": "EISU2254616",
+            "periode": 5,
+            "old_grand_total": 245495.57,
+            "new_grand_total": 245496,
+            "difference": 0.4299999999930151
+        },
+        {
+            "id": 4833,
+            "nomor_kontainer": "EISU3944703",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4834,
+            "nomor_kontainer": "EISU3944703",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4835,
+            "nomor_kontainer": "EISU3944703",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4836,
+            "nomor_kontainer": "EISU3944703",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4837,
+            "nomor_kontainer": "EISU3944703",
+            "periode": 5,
+            "old_grand_total": 564639.83,
+            "new_grand_total": 564640,
+            "difference": 0.17000000004190952
+        },
+        {
+            "id": 4838,
+            "nomor_kontainer": "EISU9153844",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4839,
+            "nomor_kontainer": "EISU9153844",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4840,
+            "nomor_kontainer": "EISU9153844",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4841,
+            "nomor_kontainer": "EISU9153844",
+            "periode": 4,
+            "old_grand_total": 274954.68,
+            "new_grand_total": 274955,
+            "difference": 0.3200000000069849
+        },
+        {
+            "id": 4842,
+            "nomor_kontainer": "EMCU6006826",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4843,
+            "nomor_kontainer": "EMCU6006826",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4844,
+            "nomor_kontainer": "EMCU6006826",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 4845,
+            "nomor_kontainer": "EMCU6009872",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4846,
+            "nomor_kontainer": "EMCU6009872",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4847,
+            "nomor_kontainer": "EMCU6009872",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 4848,
+            "nomor_kontainer": "EMCU6038844",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4849,
+            "nomor_kontainer": "EMCU6038844",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4850,
+            "nomor_kontainer": "EMCU6038844",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4851,
+            "nomor_kontainer": "EMCU6038844",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4852,
+            "nomor_kontainer": "EMCU6038844",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4853,
+            "nomor_kontainer": "EMCU6038844",
+            "periode": 6,
+            "old_grand_total": 687387.61,
+            "new_grand_total": 687388,
+            "difference": 0.39000000001396984
+        },
+        {
+            "id": 4854,
+            "nomor_kontainer": "EMCU6045503",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4855,
+            "nomor_kontainer": "EMCU6045503",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4856,
+            "nomor_kontainer": "EMCU6045503",
+            "periode": 3,
+            "old_grand_total": 392792.92,
+            "new_grand_total": 392793,
+            "difference": 0.08000000001629815
+        },
+        {
+            "id": 4857,
+            "nomor_kontainer": "EMCU6063235",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4858,
+            "nomor_kontainer": "EMCU6063235",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4859,
+            "nomor_kontainer": "EMCU6063235",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4860,
+            "nomor_kontainer": "EMCU6063235",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4861,
+            "nomor_kontainer": "EMCU6063235",
+            "periode": 5,
+            "old_grand_total": 564639.83,
+            "new_grand_total": 564640,
+            "difference": 0.17000000004190952
+        },
+        {
+            "id": 4862,
+            "nomor_kontainer": "EMSU9871692",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4863,
+            "nomor_kontainer": "EMSU9871692",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4864,
+            "nomor_kontainer": "EMSU9871692",
+            "periode": 3,
+            "old_grand_total": 1099819.81,
+            "new_grand_total": 1099820,
+            "difference": 0.18999999994412065
+        },
+        {
+            "id": 4865,
+            "nomor_kontainer": "EMSU9871692",
+            "periode": 4,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4866,
+            "nomor_kontainer": "EMSU9871692",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4867,
+            "nomor_kontainer": "EMSU9871692",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4868,
+            "nomor_kontainer": "EMSU9871692",
+            "periode": 17,
+            "old_grand_total": 779038.26,
+            "new_grand_total": 779038,
+            "difference": -0.2600000000093132
+        },
+        {
+            "id": 4869,
+            "nomor_kontainer": "FCIU2541302",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4870,
+            "nomor_kontainer": "FCIU2541302",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4871,
+            "nomor_kontainer": "FCIU2541302",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4872,
+            "nomor_kontainer": "FCIU2541302",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4873,
+            "nomor_kontainer": "FCIU2541302",
+            "periode": 5,
+            "old_grand_total": 515540.71,
+            "new_grand_total": 515541,
+            "difference": 0.28999999997904524
+        },
+        {
+            "id": 4874,
+            "nomor_kontainer": "FCIU2922510",
+            "periode": 3,
+            "old_grand_total": 245495.57,
+            "new_grand_total": 245496,
+            "difference": 0.4299999999930151
+        },
+        {
+            "id": 4875,
+            "nomor_kontainer": "FORU8416289",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 4876,
+            "nomor_kontainer": "FORU8416289",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4877,
+            "nomor_kontainer": "FORU8416289",
+            "periode": 3,
+            "old_grand_total": 589189.39,
+            "new_grand_total": 589189,
+            "difference": -0.39000000001396984
+        },
+        {
+            "id": 4878,
+            "nomor_kontainer": "FORU8480890",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 4879,
+            "nomor_kontainer": "FORU8480890",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4880,
+            "nomor_kontainer": "FORU8480890",
+            "periode": 3,
+            "old_grand_total": 540090.27,
+            "new_grand_total": 540090,
+            "difference": -0.27000000001862645
+        },
+        {
+            "id": 4881,
+            "nomor_kontainer": "GATU1019864",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4882,
+            "nomor_kontainer": "GATU1019864",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4883,
+            "nomor_kontainer": "GATU1019864",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4884,
+            "nomor_kontainer": "GATU1019864",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4885,
+            "nomor_kontainer": "GATU1019864",
+            "periode": 5,
+            "old_grand_total": 687387.61,
+            "new_grand_total": 687388,
+            "difference": 0.39000000001396984
+        },
+        {
+            "id": 4886,
+            "nomor_kontainer": "GESU1345130",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4887,
+            "nomor_kontainer": "GESU1345130",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4888,
+            "nomor_kontainer": "GESU1345130",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4889,
+            "nomor_kontainer": "GESU1345130",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4890,
+            "nomor_kontainer": "GESU1345130",
+            "periode": 5,
+            "old_grand_total": 24549.56,
+            "new_grand_total": 24550,
+            "difference": 0.4399999999986903
+        },
+        {
+            "id": 4891,
+            "nomor_kontainer": "GESU1386736",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4892,
+            "nomor_kontainer": "GESU1386736",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4893,
+            "nomor_kontainer": "GESU1386736",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4894,
+            "nomor_kontainer": "GESU1386736",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4895,
+            "nomor_kontainer": "GESU1386736",
+            "periode": 5,
+            "old_grand_total": 390766.36,
+            "new_grand_total": 390766,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 4896,
+            "nomor_kontainer": "GESU1426103",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4897,
+            "nomor_kontainer": "GESU1426103",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4898,
+            "nomor_kontainer": "GESU1426103",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4899,
+            "nomor_kontainer": "GESU1426103",
+            "periode": 4,
+            "old_grand_total": 613738.94,
+            "new_grand_total": 613739,
+            "difference": 0.060000000055879354
+        },
+        {
+            "id": 4900,
+            "nomor_kontainer": "GESU1449670",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4901,
+            "nomor_kontainer": "GESU1449670",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4902,
+            "nomor_kontainer": "GESU1449670",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 4903,
+            "nomor_kontainer": "GESU2832175",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4904,
+            "nomor_kontainer": "GESU2832175",
+            "periode": 4,
+            "old_grand_total": 738513.29,
+            "new_grand_total": 738513,
+            "difference": -0.2900000000372529
+        },
+        {
+            "id": 4905,
+            "nomor_kontainer": "GESU3600488",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4906,
+            "nomor_kontainer": "GESU3600488",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4907,
+            "nomor_kontainer": "GESU3600488",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4908,
+            "nomor_kontainer": "GESU3600488",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4909,
+            "nomor_kontainer": "GESU3600488",
+            "periode": 5,
+            "old_grand_total": 270045.13,
+            "new_grand_total": 270045,
+            "difference": -0.1300000000046566
+        },
+        {
+            "id": 4910,
+            "nomor_kontainer": "GESU4689335",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4911,
+            "nomor_kontainer": "GESU4689335",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4912,
+            "nomor_kontainer": "GESU4689335",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4913,
+            "nomor_kontainer": "GESU4689335",
+            "periode": 4,
+            "old_grand_total": 412432.02,
+            "new_grand_total": 412432,
+            "difference": -0.02000000001862645
+        },
+        {
+            "id": 4914,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4915,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4916,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4917,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4918,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4919,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4920,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4921,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4922,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4923,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4924,
+            "nomor_kontainer": "GESU4735831",
+            "periode": 11,
+            "old_grand_total": 824864.04,
+            "new_grand_total": 824864,
+            "difference": -0.0400000000372529
+        },
+        {
+            "id": 4925,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4926,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4927,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4928,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 4,
+            "old_grand_total": 1099818.72,
+            "new_grand_total": 1099819,
+            "difference": 0.2800000000279397
+        },
+        {
+            "id": 4929,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4930,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4931,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4932,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4933,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4934,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4935,
+            "nomor_kontainer": "GESU4838932",
+            "periode": 11,
+            "old_grand_total": 916515.6,
+            "new_grand_total": 916516,
+            "difference": 0.40000000002328306
+        },
+        {
+            "id": 4936,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4937,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4938,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4939,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4940,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4941,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4942,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4943,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4944,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4945,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4946,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 11,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4947,
+            "nomor_kontainer": "GESU4896815",
+            "periode": 12,
+            "old_grand_total": 229128.9,
+            "new_grand_total": 229129,
+            "difference": 0.10000000000582077
+        },
+        {
+            "id": 4948,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 1,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 4949,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4950,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4951,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4952,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4953,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4954,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4955,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4956,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4957,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4958,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 11,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4959,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 12,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4960,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 13,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4961,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 14,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4962,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 15,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4963,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 16,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4964,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 17,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4965,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 18,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4966,
+            "nomor_kontainer": "GESU5114504",
+            "periode": 19,
+            "old_grand_total": 779038.26,
+            "new_grand_total": 779038,
+            "difference": -0.2600000000093132
+        },
+        {
+            "id": 4967,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4968,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 2,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4969,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4970,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4971,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4972,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4973,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4974,
+            "nomor_kontainer": "GESU5508370",
+            "periode": 8,
+            "old_grand_total": 45825.78,
+            "new_grand_total": 45826,
+            "difference": 0.22000000000116415
+        },
+        {
+            "id": 4975,
+            "nomor_kontainer": "GLDU7252828",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4976,
+            "nomor_kontainer": "GLDU7252828",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4977,
+            "nomor_kontainer": "GLDU7252828",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 4978,
+            "nomor_kontainer": "GLDU7503878",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 4979,
+            "nomor_kontainer": "GLDU7503878",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4980,
+            "nomor_kontainer": "GLDU7503878",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4981,
+            "nomor_kontainer": "GLDU7503878",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4982,
+            "nomor_kontainer": "GLDU7503878",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4983,
+            "nomor_kontainer": "GLDU7503878",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 4984,
+            "nomor_kontainer": "GLDU7503878",
+            "periode": 7,
+            "old_grand_total": 549909.36,
+            "new_grand_total": 549909,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 4985,
+            "nomor_kontainer": "GVCU2190099",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4986,
+            "nomor_kontainer": "GVCU2190099",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4987,
+            "nomor_kontainer": "GVCU2190099",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4988,
+            "nomor_kontainer": "GVCU2190099",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4989,
+            "nomor_kontainer": "GVCU2190099",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4990,
+            "nomor_kontainer": "GVCU2190099",
+            "periode": 6,
+            "old_grand_total": 392792.92,
+            "new_grand_total": 392793,
+            "difference": 0.08000000001629815
+        },
+        {
+            "id": 4991,
+            "nomor_kontainer": "HALU3509311",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4992,
+            "nomor_kontainer": "HALU3509311",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4993,
+            "nomor_kontainer": "HALU3509311",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 4994,
+            "nomor_kontainer": "HALU3509311",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4995,
+            "nomor_kontainer": "HALU3509311",
+            "periode": 5,
+            "old_grand_total": 147297.35,
+            "new_grand_total": 147297,
+            "difference": -0.35000000000582077
+        },
+        {
+            "id": 4996,
+            "nomor_kontainer": "HMCU3062032",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4997,
+            "nomor_kontainer": "HMCU3062032",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 4998,
+            "nomor_kontainer": "HMCU3062032",
+            "periode": 3,
+            "old_grand_total": 54954.92,
+            "new_grand_total": 54955,
+            "difference": 0.08000000000174623
+        },
+        {
+            "id": 4999,
+            "nomor_kontainer": "IFLU2990380",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 5000,
+            "nomor_kontainer": "IFLU2990380",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5001,
+            "nomor_kontainer": "IFLU2990380",
+            "periode": 3,
+            "old_grand_total": 343693.81,
+            "new_grand_total": 343694,
+            "difference": 0.1900000000023283
+        },
+        {
+            "id": 5002,
+            "nomor_kontainer": "ILSU2019602",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5003,
+            "nomor_kontainer": "ILSU2019602",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5004,
+            "nomor_kontainer": "ILSU2019602",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 5005,
+            "nomor_kontainer": "INKU2537304",
+            "periode": 4,
+            "old_grand_total": 458257.8,
+            "new_grand_total": 458258,
+            "difference": 0.20000000001164153
+        },
+        {
+            "id": 5006,
+            "nomor_kontainer": "INKU6744298",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5007,
+            "nomor_kontainer": "INKU6744298",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5008,
+            "nomor_kontainer": "INKU6744298",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5009,
+            "nomor_kontainer": "INKU6744298",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5010,
+            "nomor_kontainer": "INKU6744298",
+            "periode": 6,
+            "old_grand_total": 916515.6,
+            "new_grand_total": 916516,
+            "difference": 0.40000000002328306
+        },
+        {
+            "id": 5011,
+            "nomor_kontainer": "IRNU3633428",
+            "periode": 3,
+            "old_grand_total": 245495.57,
+            "new_grand_total": 245496,
+            "difference": 0.4299999999930151
+        },
+        {
+            "id": 5012,
+            "nomor_kontainer": "KKFU7120388",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5013,
+            "nomor_kontainer": "KKFU7120388",
+            "periode": 2,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5014,
+            "nomor_kontainer": "KKFU7120388",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5015,
+            "nomor_kontainer": "KKFU7120388",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5016,
+            "nomor_kontainer": "KKFU7120388",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5017,
+            "nomor_kontainer": "KKFU7120388",
+            "periode": 6,
+            "old_grand_total": 229128.9,
+            "new_grand_total": 229129,
+            "difference": 0.10000000000582077
+        },
+        {
+            "id": 5018,
+            "nomor_kontainer": "MAEU6958040",
+            "periode": 3,
+            "old_grand_total": 245495.57,
+            "new_grand_total": 245496,
+            "difference": 0.4299999999930151
+        },
+        {
+            "id": 5019,
+            "nomor_kontainer": "MEDU8246035",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5020,
+            "nomor_kontainer": "MEDU8246035",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5021,
+            "nomor_kontainer": "MEDU8246035",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5022,
+            "nomor_kontainer": "MEDU8246035",
+            "periode": 4,
+            "old_grand_total": 320780.46,
+            "new_grand_total": 320780,
+            "difference": -0.46000000002095476
+        },
+        {
+            "id": 5023,
+            "nomor_kontainer": "MEDU8269787",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5024,
+            "nomor_kontainer": "MEDU8269787",
+            "periode": 2,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5025,
+            "nomor_kontainer": "MEDU8269787",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5026,
+            "nomor_kontainer": "MEDU8269787",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5027,
+            "nomor_kontainer": "MEDU8269787",
+            "periode": 5,
+            "old_grand_total": 549909.36,
+            "new_grand_total": 549909,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 5028,
+            "nomor_kontainer": "MEDU8384327",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5029,
+            "nomor_kontainer": "MEDU8384327",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5030,
+            "nomor_kontainer": "MEDU8384327",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5031,
+            "nomor_kontainer": "MEDU8384327",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5032,
+            "nomor_kontainer": "MEDU8384327",
+            "periode": 5,
+            "old_grand_total": 366606.24,
+            "new_grand_total": 366606,
+            "difference": -0.23999999999068677
+        },
+        {
+            "id": 5033,
+            "nomor_kontainer": "MOTU0745549",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5034,
+            "nomor_kontainer": "MOTU0745549",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5035,
+            "nomor_kontainer": "MOTU0745549",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5036,
+            "nomor_kontainer": "MOTU0745549",
+            "periode": 4,
+            "old_grand_total": 368243.36,
+            "new_grand_total": 368243,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 5037,
+            "nomor_kontainer": "MOTU0745826",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5038,
+            "nomor_kontainer": "MOTU0745826",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5039,
+            "nomor_kontainer": "MOTU0745826",
+            "periode": 3,
+            "old_grand_total": 417342.48,
+            "new_grand_total": 417342,
+            "difference": -0.47999999998137355
+        },
+        {
+            "id": 5040,
+            "nomor_kontainer": "MSCU3213686",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5041,
+            "nomor_kontainer": "MSCU3213686",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5042,
+            "nomor_kontainer": "MSCU3213686",
+            "periode": 3,
+            "old_grand_total": 106080.6,
+            "new_grand_total": 106081,
+            "difference": 0.39999999999417923
+        },
+        {
+            "id": 5043,
+            "nomor_kontainer": "MSCU7085120",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5044,
+            "nomor_kontainer": "MSCU7085120",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5045,
+            "nomor_kontainer": "MSCU7085120",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5046,
+            "nomor_kontainer": "MSCU7085120",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5047,
+            "nomor_kontainer": "MSCU7085120",
+            "periode": 6,
+            "old_grand_total": 229128.9,
+            "new_grand_total": 229129,
+            "difference": 0.10000000000582077
+        },
+        {
+            "id": 5048,
+            "nomor_kontainer": "MSCU9903797",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5049,
+            "nomor_kontainer": "MSCU9903797",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5050,
+            "nomor_kontainer": "MSCU9903797",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 5051,
+            "nomor_kontainer": "MSCU9903797",
+            "periode": 4,
+            "old_grand_total": 549909.36,
+            "new_grand_total": 549909,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 5052,
+            "nomor_kontainer": "MSCU9903797",
+            "periode": 5,
+            "old_grand_total": 366606.24,
+            "new_grand_total": 366606,
+            "difference": -0.23999999999068677
+        },
+        {
+            "id": 5053,
+            "nomor_kontainer": "MSKU2158238",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5054,
+            "nomor_kontainer": "MSKU2158238",
+            "periode": 4,
+            "old_grand_total": 738513.29,
+            "new_grand_total": 738513,
+            "difference": -0.2900000000372529
+        },
+        {
+            "id": 5055,
+            "nomor_kontainer": "MSKU2218091",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 5056,
+            "nomor_kontainer": "MSKU2218091",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5057,
+            "nomor_kontainer": "MSKU2218091",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5058,
+            "nomor_kontainer": "MSKU2218091",
+            "periode": 4,
+            "old_grand_total": 515540.71,
+            "new_grand_total": 515541,
+            "difference": 0.28999999997904524
+        },
+        {
+            "id": 5059,
+            "nomor_kontainer": "MSKU3041950",
+            "periode": 3,
+            "old_grand_total": 270045.13,
+            "new_grand_total": 270045,
+            "difference": -0.1300000000046566
+        },
+        {
+            "id": 5060,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5061,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5062,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5063,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5064,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5065,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5066,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5067,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5068,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 10,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5069,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 11,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5070,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 12,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5071,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 13,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5072,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 14,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5073,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 15,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5074,
+            "nomor_kontainer": "MSKU4555445",
+            "periode": 16,
+            "old_grand_total": 504083.58,
+            "new_grand_total": 504084,
+            "difference": 0.41999999998370185
+        },
+        {
+            "id": 5075,
+            "nomor_kontainer": "NYKU5515880",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5076,
+            "nomor_kontainer": "NYKU5515880",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5077,
+            "nomor_kontainer": "NYKU5515880",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5078,
+            "nomor_kontainer": "NYKU5515880",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5079,
+            "nomor_kontainer": "NYKU5515880",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5080,
+            "nomor_kontainer": "NYKU5620235",
+            "periode": 4,
+            "old_grand_total": 1145644.5,
+            "new_grand_total": 1145645,
+            "difference": 0.5
+        },
+        {
+            "id": 5081,
+            "nomor_kontainer": "NYKU5622053",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5082,
+            "nomor_kontainer": "NYKU5622053",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5083,
+            "nomor_kontainer": "NYKU5622053",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 5084,
+            "nomor_kontainer": "NYKU5622053",
+            "periode": 4,
+            "old_grand_total": 595735.14,
+            "new_grand_total": 595735,
+            "difference": -0.14000000001396984
+        },
+        {
+            "id": 5085,
+            "nomor_kontainer": "OOLU1192163",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5086,
+            "nomor_kontainer": "OOLU1192163",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5087,
+            "nomor_kontainer": "OOLU1192163",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5088,
+            "nomor_kontainer": "OOLU1192163",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5089,
+            "nomor_kontainer": "OOLU1192163",
+            "periode": 5,
+            "old_grand_total": 196396.47,
+            "new_grand_total": 196396,
+            "difference": -0.47000000000116415
+        },
+        {
+            "id": 5090,
+            "nomor_kontainer": "OOLU1585181",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5091,
+            "nomor_kontainer": "OOLU1585181",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5092,
+            "nomor_kontainer": "OOLU1585181",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5093,
+            "nomor_kontainer": "OOLU1585181",
+            "periode": 4,
+            "old_grand_total": 564639.83,
+            "new_grand_total": 564640,
+            "difference": 0.17000000004190952
+        },
+        {
+            "id": 5094,
+            "nomor_kontainer": "PCIU9358763",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5095,
+            "nomor_kontainer": "PCIU9358763",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5096,
+            "nomor_kontainer": "PCIU9358763",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 5097,
+            "nomor_kontainer": "PCIU9765813",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5098,
+            "nomor_kontainer": "PCIU9765813",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5099,
+            "nomor_kontainer": "PCIU9765813",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 5100,
+            "nomor_kontainer": "PCIU9765813",
+            "periode": 4,
+            "old_grand_total": 458257.8,
+            "new_grand_total": 458258,
+            "difference": 0.20000000001164153
+        },
+        {
+            "id": 5101,
+            "nomor_kontainer": "PCIU9765813",
+            "periode": 5,
+            "old_grand_total": 1283121.84,
+            "new_grand_total": 1283122,
+            "difference": 0.15999999991618097
+        },
+        {
+            "id": 5102,
+            "nomor_kontainer": "PKEU5033970",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5103,
+            "nomor_kontainer": "PKEU5033970",
+            "periode": 2,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5104,
+            "nomor_kontainer": "PKEU5033970",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5105,
+            "nomor_kontainer": "PKEU5033970",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5106,
+            "nomor_kontainer": "PONU7225703",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5107,
+            "nomor_kontainer": "PONU7225703",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5108,
+            "nomor_kontainer": "PONU7225703",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5109,
+            "nomor_kontainer": "PONU7225703",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5110,
+            "nomor_kontainer": "PONU7225703",
+            "periode": 5,
+            "old_grand_total": 1145644.5,
+            "new_grand_total": 1145645,
+            "difference": 0.5
+        },
+        {
+            "id": 5111,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5112,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5113,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 5114,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5115,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5116,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5117,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5118,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5119,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5120,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5121,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 11,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5122,
+            "nomor_kontainer": "REGU5043662",
+            "periode": 12,
+            "old_grand_total": 320780.46,
+            "new_grand_total": 320780,
+            "difference": -0.46000000002095476
+        },
+        {
+            "id": 5130,
+            "nomor_kontainer": "SCMU2082204",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5131,
+            "nomor_kontainer": "SCMU2082204",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5132,
+            "nomor_kontainer": "SCMU2082204",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5133,
+            "nomor_kontainer": "SCMU2082204",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5134,
+            "nomor_kontainer": "SCMU2082204",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5135,
+            "nomor_kontainer": "SCMU2082204",
+            "periode": 6,
+            "old_grand_total": 343693.81,
+            "new_grand_total": 343694,
+            "difference": 0.1900000000023283
+        },
+        {
+            "id": 5136,
+            "nomor_kontainer": "SEGU1003148",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5137,
+            "nomor_kontainer": "SEGU1003148",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5138,
+            "nomor_kontainer": "SEGU1003148",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5139,
+            "nomor_kontainer": "SEGU1003148",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5140,
+            "nomor_kontainer": "SEGU1003148",
+            "periode": 5,
+            "old_grand_total": 245495.57,
+            "new_grand_total": 245496,
+            "difference": 0.4299999999930151
+        },
+        {
+            "id": 5143,
+            "nomor_kontainer": "STXU2015218",
+            "periode": 3,
+            "old_grand_total": 2323062.5,
+            "new_grand_total": 2323063,
+            "difference": 0.5
+        },
+        {
+            "id": 5145,
+            "nomor_kontainer": "STXU2015218",
+            "periode": 5,
+            "old_grand_total": 122747.79,
+            "new_grand_total": 122748,
+            "difference": 0.21000000000640284
+        },
+        {
+            "id": 5146,
+            "nomor_kontainer": "TDRU5419898",
+            "periode": 4,
+            "old_grand_total": 595735.14,
+            "new_grand_total": 595735,
+            "difference": -0.14000000001396984
+        },
+        {
+            "id": 5147,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5148,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5149,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 5,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 5150,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5151,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5152,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5153,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5154,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5155,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 11,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5156,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 12,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5157,
+            "nomor_kontainer": "TDRU6124340",
+            "periode": 13,
+            "old_grand_total": 824864.04,
+            "new_grand_total": 824864,
+            "difference": -0.0400000000372529
+        },
+        {
+            "id": 5158,
+            "nomor_kontainer": "TEMU2353770",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5159,
+            "nomor_kontainer": "TEMU2353770",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5160,
+            "nomor_kontainer": "TEMU2353770",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 5161,
+            "nomor_kontainer": "TEMU2666500",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5162,
+            "nomor_kontainer": "TEMU2666500",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5163,
+            "nomor_kontainer": "TEMU2666500",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5164,
+            "nomor_kontainer": "TEMU2666500",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5165,
+            "nomor_kontainer": "TEMU2666500",
+            "periode": 5,
+            "old_grand_total": 122747.79,
+            "new_grand_total": 122748,
+            "difference": 0.21000000000640284
+        },
+        {
+            "id": 5166,
+            "nomor_kontainer": "TEMU2815815",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 5167,
+            "nomor_kontainer": "TEMU2815815",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5168,
+            "nomor_kontainer": "TEMU2815815",
+            "periode": 3,
+            "old_grand_total": 368243.36,
+            "new_grand_total": 368243,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 5169,
+            "nomor_kontainer": "TEMU6334206",
+            "periode": 4,
+            "old_grand_total": 595735.14,
+            "new_grand_total": 595735,
+            "difference": -0.14000000001396984
+        },
+        {
+            "id": 5170,
+            "nomor_kontainer": "TEXU5531307",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5171,
+            "nomor_kontainer": "TEXU5531307",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5172,
+            "nomor_kontainer": "TEXU5531307",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5173,
+            "nomor_kontainer": "TEXU5531307",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5174,
+            "nomor_kontainer": "TEXU5531307",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5175,
+            "nomor_kontainer": "TEXU5531307",
+            "periode": 7,
+            "old_grand_total": 366606.24,
+            "new_grand_total": 366606,
+            "difference": -0.23999999999068677
+        },
+        {
+            "id": 5176,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5177,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5178,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5179,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5180,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5181,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5182,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5183,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 9,
+            "old_grand_total": 1145645.59,
+            "new_grand_total": 1145646,
+            "difference": 0.40999999991618097
+        },
+        {
+            "id": 5184,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 10,
+            "old_grand_total": 1283122.93,
+            "new_grand_total": 1283123,
+            "difference": 0.07000000006519258
+        },
+        {
+            "id": 5185,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 11,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5186,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 12,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5187,
+            "nomor_kontainer": "TEXU7210230",
+            "periode": 13,
+            "old_grand_total": 962341.38,
+            "new_grand_total": 962341,
+            "difference": -0.3800000000046566
+        },
+        {
+            "id": 5188,
+            "nomor_kontainer": "TGHU1246275",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5189,
+            "nomor_kontainer": "TGHU1246275",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5190,
+            "nomor_kontainer": "TGHU1246275",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5191,
+            "nomor_kontainer": "TGHU1246275",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5192,
+            "nomor_kontainer": "TGHU1246275",
+            "periode": 5,
+            "old_grand_total": 589189.39,
+            "new_grand_total": 589189,
+            "difference": -0.39000000001396984
+        },
+        {
+            "id": 5193,
+            "nomor_kontainer": "TGHU1518584",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5194,
+            "nomor_kontainer": "TGHU1518584",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5195,
+            "nomor_kontainer": "TGHU1518584",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5196,
+            "nomor_kontainer": "TGHU1518584",
+            "periode": 4,
+            "old_grand_total": 736486.73,
+            "new_grand_total": 736487,
+            "difference": 0.27000000001862645
+        },
+        {
+            "id": 5197,
+            "nomor_kontainer": "TGHU1518584",
+            "periode": 5,
+            "old_grand_total": 49099.12,
+            "new_grand_total": 49099,
+            "difference": -0.12000000000261934
+        },
+        {
+            "id": 5198,
+            "nomor_kontainer": "TGHU1845843",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 5199,
+            "nomor_kontainer": "TGHU1845843",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5200,
+            "nomor_kontainer": "TGHU1845843",
+            "periode": 3,
+            "old_grand_total": 490991.16,
+            "new_grand_total": 490991,
+            "difference": -0.15999999997438863
+        },
+        {
+            "id": 5201,
+            "nomor_kontainer": "TGHU2383781",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5202,
+            "nomor_kontainer": "TGHU2383781",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5203,
+            "nomor_kontainer": "TGHU2383781",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5204,
+            "nomor_kontainer": "TGHU2383781",
+            "periode": 4,
+            "old_grand_total": 613738.94,
+            "new_grand_total": 613739,
+            "difference": 0.060000000055879354
+        },
+        {
+            "id": 5205,
+            "nomor_kontainer": "TGHU3222626",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5206,
+            "nomor_kontainer": "TGHU3222626",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5207,
+            "nomor_kontainer": "TGHU3222626",
+            "periode": 3,
+            "old_grand_total": 106080.6,
+            "new_grand_total": 106081,
+            "difference": 0.39999999999417923
+        },
+        {
+            "id": 5208,
+            "nomor_kontainer": "TGHU3814501",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5209,
+            "nomor_kontainer": "TGHU3814501",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5210,
+            "nomor_kontainer": "TGHU3814501",
+            "periode": 3,
+            "old_grand_total": 54954.92,
+            "new_grand_total": 54955,
+            "difference": 0.08000000000174623
+        },
+        {
+            "id": 5211,
+            "nomor_kontainer": "TGHU6130478",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5212,
+            "nomor_kontainer": "TGHU6130478",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5213,
+            "nomor_kontainer": "TGHU6130478",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5214,
+            "nomor_kontainer": "TGHU6130478",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5215,
+            "nomor_kontainer": "TGHU6130478",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5216,
+            "nomor_kontainer": "TGHU6130478",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5217,
+            "nomor_kontainer": "TGHU6130478",
+            "periode": 7,
+            "old_grand_total": 412432.02,
+            "new_grand_total": 412432,
+            "difference": -0.02000000001862645
+        },
+        {
+            "id": 5218,
+            "nomor_kontainer": "TGHU9508962",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5219,
+            "nomor_kontainer": "TGHU9508962",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5220,
+            "nomor_kontainer": "TGHU9508962",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5221,
+            "nomor_kontainer": "TGHU9508962",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5222,
+            "nomor_kontainer": "TGHU9508962",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5223,
+            "nomor_kontainer": "TTNU3216943",
+            "periode": 1,
+            "old_grand_total": 564639.62,
+            "new_grand_total": 564640,
+            "difference": 0.3800000000046566
+        },
+        {
+            "id": 5224,
+            "nomor_kontainer": "TTNU3216943",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5225,
+            "nomor_kontainer": "TTNU3216943",
+            "periode": 3,
+            "old_grand_total": 589189.39,
+            "new_grand_total": 589189,
+            "difference": -0.39000000001396984
+        },
+        {
+            "id": 5226,
+            "nomor_kontainer": "UESU4688707",
+            "periode": 1,
+            "old_grand_total": 1053994.03,
+            "new_grand_total": 1053994,
+            "difference": -0.030000000027939677
+        },
+        {
+            "id": 5227,
+            "nomor_kontainer": "UESU4688707",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5228,
+            "nomor_kontainer": "UESU4688707",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5229,
+            "nomor_kontainer": "UESU4688707",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5230,
+            "nomor_kontainer": "UESU4688707",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5231,
+            "nomor_kontainer": "UESU4688707",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5232,
+            "nomor_kontainer": "UESU4688707",
+            "periode": 7,
+            "old_grand_total": 504083.58,
+            "new_grand_total": 504084,
+            "difference": 0.41999999998370185
+        },
+        {
+            "id": 5233,
+            "nomor_kontainer": "UGMU8580456",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5234,
+            "nomor_kontainer": "UGMU8580456",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5235,
+            "nomor_kontainer": "UGMU8580456",
+            "periode": 3,
+            "old_grand_total": 79504.48,
+            "new_grand_total": 79504,
+            "difference": -0.47999999999592546
+        },
+        {
+            "id": 5236,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5237,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5238,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 5239,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5240,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5241,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5242,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5243,
+            "nomor_kontainer": "VGCU2886097",
+            "periode": 8,
+            "old_grand_total": 779038.26,
+            "new_grand_total": 779038,
+            "difference": -0.2600000000093132
+        },
+        {
+            "id": 5244,
+            "nomor_kontainer": "WFHU1240962",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5245,
+            "nomor_kontainer": "WFHU1240962",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5246,
+            "nomor_kontainer": "WFHU1240962",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5247,
+            "nomor_kontainer": "WFHU1240962",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5248,
+            "nomor_kontainer": "WFHU1240962",
+            "periode": 5,
+            "old_grand_total": 73648.67,
+            "new_grand_total": 73649,
+            "difference": 0.33000000000174623
+        },
+        {
+            "id": 5249,
+            "nomor_kontainer": "WHLU0215910",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5250,
+            "nomor_kontainer": "WHLU0215910",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5251,
+            "nomor_kontainer": "WHLU0215910",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5252,
+            "nomor_kontainer": "WHLU0215910",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5253,
+            "nomor_kontainer": "WHLU0215910",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5254,
+            "nomor_kontainer": "WHLU0215910",
+            "periode": 6,
+            "old_grand_total": 368243.36,
+            "new_grand_total": 368243,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 5255,
+            "nomor_kontainer": "WHLU0268015",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5256,
+            "nomor_kontainer": "WHLU0268015",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5257,
+            "nomor_kontainer": "WHLU0268015",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5258,
+            "nomor_kontainer": "WHLU0268015",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5259,
+            "nomor_kontainer": "WHLU0268015",
+            "periode": 5,
+            "old_grand_total": 294594.69,
+            "new_grand_total": 294595,
+            "difference": 0.3099999999976717
+        },
+        {
+            "id": 5260,
+            "nomor_kontainer": "WHLU0273177",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5261,
+            "nomor_kontainer": "WHLU0273177",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5262,
+            "nomor_kontainer": "WHLU0273177",
+            "periode": 3,
+            "old_grand_total": 392792.92,
+            "new_grand_total": 392793,
+            "difference": 0.08000000001629815
+        },
+        {
+            "id": 5263,
+            "nomor_kontainer": "WHLU0300903",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5264,
+            "nomor_kontainer": "WHLU0300903",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5265,
+            "nomor_kontainer": "WHLU0300903",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5266,
+            "nomor_kontainer": "WHLU0300903",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5267,
+            "nomor_kontainer": "WHLU0300903",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5268,
+            "nomor_kontainer": "WHLU0319684",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5269,
+            "nomor_kontainer": "WHLU0319684",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5270,
+            "nomor_kontainer": "WHLU0319684",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5271,
+            "nomor_kontainer": "WHLU0319684",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5272,
+            "nomor_kontainer": "WHLU0319684",
+            "periode": 5,
+            "old_grand_total": 73648.67,
+            "new_grand_total": 73649,
+            "difference": 0.33000000000174623
+        },
+        {
+            "id": 5273,
+            "nomor_kontainer": "WHLU0321315",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5274,
+            "nomor_kontainer": "WHLU0321315",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5275,
+            "nomor_kontainer": "WHLU0321315",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5276,
+            "nomor_kontainer": "WHLU0321315",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5277,
+            "nomor_kontainer": "WHLU0321315",
+            "periode": 5,
+            "old_grand_total": 245495.57,
+            "new_grand_total": 245496,
+            "difference": 0.4299999999930151
+        },
+        {
+            "id": 5278,
+            "nomor_kontainer": "WHLU0322899",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5279,
+            "nomor_kontainer": "WHLU0322899",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5280,
+            "nomor_kontainer": "WHLU0322899",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 5281,
+            "nomor_kontainer": "WHLU0323766",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5282,
+            "nomor_kontainer": "WHLU0323766",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5283,
+            "nomor_kontainer": "WHLU0323766",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5284,
+            "nomor_kontainer": "WHLU0323766",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5285,
+            "nomor_kontainer": "WHLU0323766",
+            "periode": 5,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5286,
+            "nomor_kontainer": "WHLU0323766",
+            "periode": 6,
+            "old_grand_total": 392792.92,
+            "new_grand_total": 392793,
+            "difference": 0.08000000001629815
+        },
+        {
+            "id": 5287,
+            "nomor_kontainer": "WHLU0330050",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5288,
+            "nomor_kontainer": "WHLU0330050",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5289,
+            "nomor_kontainer": "WHLU0330050",
+            "periode": 3,
+            "old_grand_total": 392792.92,
+            "new_grand_total": 392793,
+            "difference": 0.08000000001629815
+        },
+        {
+            "id": 5290,
+            "nomor_kontainer": "WHLU0343593",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5291,
+            "nomor_kontainer": "WHLU0343593",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5292,
+            "nomor_kontainer": "WHLU0343593",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 5293,
+            "nomor_kontainer": "WHLU0352189",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5294,
+            "nomor_kontainer": "WHLU0352189",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5295,
+            "nomor_kontainer": "WHLU0352189",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5296,
+            "nomor_kontainer": "WHLU0352189",
+            "periode": 4,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5297,
+            "nomor_kontainer": "WHLU0352189",
+            "periode": 5,
+            "old_grand_total": 220946.01,
+            "new_grand_total": 220946,
+            "difference": -0.010000000009313226
+        },
+        {
+            "id": 5298,
+            "nomor_kontainer": "WHLU0359120",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5299,
+            "nomor_kontainer": "WHLU0359120",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5300,
+            "nomor_kontainer": "WHLU0359120",
+            "periode": 3,
+            "old_grand_total": 392792.92,
+            "new_grand_total": 392793,
+            "difference": 0.08000000001629815
+        },
+        {
+            "id": 5301,
+            "nomor_kontainer": "XXXU9902224",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5302,
+            "nomor_kontainer": "XXXU9902224",
+            "periode": 3,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5303,
+            "nomor_kontainer": "XXXU9902224",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5304,
+            "nomor_kontainer": "XXXU9902224",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5305,
+            "nomor_kontainer": "XXXU9902224",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5306,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 1,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5307,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 2,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5308,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 3,
+            "old_grand_total": 962342.47,
+            "new_grand_total": 962342,
+            "difference": -0.4699999999720603
+        },
+        {
+            "id": 5309,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 4,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5310,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 5,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5311,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 6,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5312,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 7,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5313,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 8,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5314,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 9,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5315,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 10,
+            "old_grand_total": 1374774.49,
+            "new_grand_total": 1374774,
+            "difference": -0.4899999999906868
+        },
+        {
+            "id": 5316,
+            "nomor_kontainer": "YELU5789666",
+            "periode": 11,
+            "old_grand_total": 733212.48,
+            "new_grand_total": 733212,
+            "difference": -0.47999999998137355
+        },
+        {
+            "id": 5317,
+            "nomor_kontainer": "ZONA1910749",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5318,
+            "nomor_kontainer": "ZONA1910749",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5319,
+            "nomor_kontainer": "ZONA1910749",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 5320,
+            "nomor_kontainer": "ZONA2004243",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5321,
+            "nomor_kontainer": "ZONA2004243",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5322,
+            "nomor_kontainer": "ZONA2004243",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 5323,
+            "nomor_kontainer": "ZONA2207201",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5324,
+            "nomor_kontainer": "ZONA2207201",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5325,
+            "nomor_kontainer": "ZONA2207201",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5326,
+            "nomor_kontainer": "ZONA2207201",
+            "periode": 4,
+            "old_grand_total": 662838.05,
+            "new_grand_total": 662838,
+            "difference": -0.05000000004656613
+        },
+        {
+            "id": 5327,
+            "nomor_kontainer": "ZONA2211855",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5328,
+            "nomor_kontainer": "ZONA2211855",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5329,
+            "nomor_kontainer": "ZONA2211855",
+            "periode": 3,
+            "old_grand_total": 368243.36,
+            "new_grand_total": 368243,
+            "difference": -0.35999999998603016
+        },
+        {
+            "id": 5330,
+            "nomor_kontainer": "ZONA2218192",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5331,
+            "nomor_kontainer": "ZONA2218192",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5332,
+            "nomor_kontainer": "ZONA2218192",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5333,
+            "nomor_kontainer": "ZONA2218192",
+            "periode": 4,
+            "old_grand_total": 711937.17,
+            "new_grand_total": 711937,
+            "difference": -0.17000000004190952
+        },
+        {
+            "id": 5334,
+            "nomor_kontainer": "ZONA2218192",
+            "periode": 5,
+            "old_grand_total": 24549.56,
+            "new_grand_total": 24550,
+            "difference": 0.4399999999986903
+        },
+        {
+            "id": 5335,
+            "nomor_kontainer": "ZONA2807583",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5336,
+            "nomor_kontainer": "ZONA2807583",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5337,
+            "nomor_kontainer": "ZONA2807583",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 5338,
+            "nomor_kontainer": "ZONA2862339",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5339,
+            "nomor_kontainer": "ZONA2862339",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5340,
+            "nomor_kontainer": "ZONA2862339",
+            "periode": 3,
+            "old_grand_total": 56981.48,
+            "new_grand_total": 56981,
+            "difference": -0.4800000000032014
+        },
+        {
+            "id": 5341,
+            "nomor_kontainer": "ZONA2875892",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5342,
+            "nomor_kontainer": "ZONA2875892",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5343,
+            "nomor_kontainer": "ZONA2875892",
+            "periode": 3,
+            "old_grand_total": 81531.04,
+            "new_grand_total": 81531,
+            "difference": -0.03999999999359716
+        },
+        {
+            "id": 5344,
+            "nomor_kontainer": "ZONA2938308",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5345,
+            "nomor_kontainer": "ZONA2938308",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5346,
+            "nomor_kontainer": "ZONA2938308",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5347,
+            "nomor_kontainer": "ZONA2938308",
+            "periode": 4,
+            "old_grand_total": 711937.17,
+            "new_grand_total": 711937,
+            "difference": -0.17000000004190952
+        },
+        {
+            "id": 5348,
+            "nomor_kontainer": "ZONA5229290",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5349,
+            "nomor_kontainer": "ZONA5229290",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5350,
+            "nomor_kontainer": "ZONA5229290",
+            "periode": 3,
+            "old_grand_total": 441892.04,
+            "new_grand_total": 441892,
+            "difference": -0.03999999997904524
+        },
+        {
+            "id": 5351,
+            "nomor_kontainer": "ZONA6950241",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5352,
+            "nomor_kontainer": "ZONA6950241",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5353,
+            "nomor_kontainer": "ZONA8075928",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5354,
+            "nomor_kontainer": "ZONA8075928",
+            "periode": 2,
+            "old_grand_total": 638288.5,
+            "new_grand_total": 638289,
+            "difference": 0.5
+        },
+        {
+            "id": 5355,
+            "nomor_kontainer": "ZONA9017621",
+            "periode": 1,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5356,
+            "nomor_kontainer": "ZONA9017621",
+            "periode": 2,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5357,
+            "nomor_kontainer": "ZONA9017621",
+            "periode": 3,
+            "old_grand_total": 368243.42,
+            "new_grand_total": 368243,
+            "difference": -0.41999999998370185
+        },
+        {
+            "id": 5358,
+            "nomor_kontainer": "ZONA9017621",
+            "periode": 4,
+            "old_grand_total": 343693.81,
+            "new_grand_total": 343694,
+            "difference": 0.1900000000023283
+        },
+        {
+            "id": 5359,
+            "nomor_kontainer": "ZONA9900023",
+            "periode": 3,
+            "old_grand_total": 736486.84,
+            "new_grand_total": 736487,
+            "difference": 0.1600000000325963
+        },
+        {
+            "id": 5360,
+            "nomor_kontainer": "ZONA9900023",
+            "periode": 4,
+            "old_grand_total": 100224.79,
+            "new_grand_total": 100225,
+            "difference": 0.21000000000640284
+        }
+    ]
+}

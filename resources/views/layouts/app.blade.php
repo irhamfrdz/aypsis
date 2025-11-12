@@ -146,7 +146,7 @@
             <div class="flex items-center space-x-4">
                 <!-- Notification Bell -->
                 <div class="relative">
-                    <a href="{{ route('notifications.index') }}" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
+                    <a href="{{ route('notifications.index') }}" target="_blank" class="relative p-2 text-gray-600 hover:text-gray-900 focus:outline-none">
                         <i class="fas fa-bell text-xl"></i>
                         @if(auth()->user()->unreadNotifications->count() > 0)
                         <span class="absolute top-0 right-0 inline-flex items-center justify-center px-2 py-1 text-xs font-bold leading-none text-white transform translate-x-1/2 -translate-y-1/2 bg-red-600 rounded-full">
@@ -168,7 +168,7 @@
 
                     <div id="profileDropdown" class="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 hidden z-50">
                         <div class="py-2">
-                            <a href="{{ route('profile.show') }}" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                            <a href="{{ route('profile.show') }}" target="_blank" class="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
                                 <i class="fas fa-user mr-3"></i>Profil Saya
                             </a>
                             <div class="border-t border-gray-200 my-2"></div>
@@ -295,7 +295,7 @@
                 @endphp
 
                 <!-- Dashboard -->
-                <a href="{{ route('dashboard') }}" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
+                <a href="{{ route('dashboard') }}" target="_blank" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
                     <span class="text-xs font-medium menu-text">Dashboard</span>
                 </a>
 
@@ -334,27 +334,27 @@
                             </button>
                             <div id="master-umum-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isUmumRoute) style="display: block;" @endif>
                                 @if($user && $user->can('master-cabang-view'))
-                                    <a href="{{ route('master.cabang.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.cabang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.cabang.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.cabang.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Cabang</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-kode-nomor-view'))
-                                    <a href="{{ route('master.kode-nomor.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.kode-nomor.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.kode-nomor.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.kode-nomor.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Kode Penomoran</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-nomor-terakhir-view'))
-                                    <a href="{{ route('master.nomor-terakhir.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.nomor-terakhir.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.nomor-terakhir.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.nomor-terakhir.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Nomor Terakhir</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-kegiatan-view'))
-                                    <a href="{{ route('master.kegiatan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.kegiatan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.kegiatan.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.kegiatan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Jenis Kegiatan</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pelabuhan-view'))
-                                    <a href="{{ route('master-pelabuhan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master-pelabuhan.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pelabuhan</span>
                                     </a>
                                 @endif
@@ -378,12 +378,12 @@
                             </button>
                             <div id="master-akun-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAkunRoute) style="display: block;" @endif>
                                 @if($user && $user->can('master-coa-view'))
-                                    <a href="{{ route('master-coa-index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-coa-*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master-coa-index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master-coa-*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">COA</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-tipe-akun-view'))
-                                    <a href="{{ route('master.tipe-akun.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.tipe-akun.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.tipe-akun.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.tipe-akun.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Tipe Akun</span>
                                     </a>
                                 @endif
@@ -407,37 +407,37 @@
                             </button>
                             <div id="master-penjualan-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isPenjualanRoute) style="display: block;" @endif>
                                 @if($user && $user->can('master-pengirim-view'))
-                                    <a href="{{ route('pengirim.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('pengirim.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('pengirim.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('pengirim.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Pengirim</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-penerima-view'))
-                                    <a href="{{ route('penerima.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('penerima.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('penerima.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('penerima.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Penerima</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-jenis-barang-view'))
-                                    <a href="{{ route('jenis-barang.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('jenis-barang.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('jenis-barang.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('jenis-barang.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Jenis Barang</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-term-view'))
-                                    <a href="{{ route('term.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('term.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('term.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('term.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Terms</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-tujuan-kirim-view'))
-                                    <a href="{{ route('master.tujuan-kegiatan-utama.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('master.tujuan-kegiatan-utama.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.tujuan-kegiatan-utama.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('master.tujuan-kegiatan-utama.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Transportasi</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-tujuan-kirim-view'))
-                                    <a href="{{ route('tujuan-kirim.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('tujuan-kirim.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('tujuan-kirim.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('tujuan-kirim.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Tujuan Kirim</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-tujuan-view'))
-                                    <a href="{{ route('master.tujuan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('master.tujuan.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.tujuan.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('master.tujuan.*') ? 'bg-orange-50 text-orange-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Tujuan</span>
                                     </a>
                                 @endif
@@ -472,37 +472,37 @@
                             </button>
                             <div id="master-karyawan-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isUserRoute) style="display: block;" @endif>
                                 @if($user && $user->can('master-user-view'))
-                                    <a href="{{ route('master.user.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.user.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.user.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.user.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master User</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-karyawan-view'))
-                                    <a href="{{ route('master.karyawan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.karyawan.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.karyawan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Data Karyawan</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-divisi-view'))
-                                    <a href="{{ route('master.divisi.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.divisi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.divisi.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.divisi.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Divisi</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pekerjaan-view'))
-                                    <a href="{{ route('master.pekerjaan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.pekerjaan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.pekerjaan.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.pekerjaan.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Pekerjaan</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pajak-view'))
-                                    <a href="{{ route('master.pajak.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.pajak.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.pajak.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.pajak.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Pajak</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-bank-view'))
-                                    <a href="{{ route('master-bank-index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master-bank-*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master-bank-index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master-bank-*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Master Bank</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-permission-view'))
-                                    <a href="{{ route('master.permission.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.permission.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.permission.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('master.permission.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Izin (buat Programmer)</span>
                                     </a>
                                 @endif
@@ -511,7 +511,7 @@
                                     @php
                                         $pendingUsersCount = \App\Models\User::where('status', 'pending')->count();
                                     @endphp
-                                    <a href="{{ route('admin.user-approval.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('admin.user-approval.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('admin.user-approval.index') }}" target="_blank" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('admin.user-approval.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Persetujuan User</span>
                                         @if($pendingUsersCount > 0)
                                             <span class="ml-auto bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">{{ $pendingUsersCount }}</span>
@@ -538,27 +538,27 @@
                             </button>
                             <div id="master-tarif-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isTarifRoute) style="display: block;" @endif>
                                 @if($user && $user->can('master-pricelist-sewa-kontainer-view'))
-                                    <a href="{{ route('master.master.pricelist-sewa-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.master.pricelist-sewa-kontainer.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.master.pricelist-sewa-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.master.pricelist-sewa-kontainer.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist Kontainer Sewa</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-cat-view'))
-                                    <a href="{{ route('master.pricelist-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-cat.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.pricelist-cat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-cat.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist CAT Kontainer</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('uang-jalan-batam.view'))
-                                    <a href="{{ route('uang-jalan-batam.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('uang-jalan-batam.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('uang-jalan-batam.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('uang-jalan-batam.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Uang Jalan Batam</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-gate-in-view'))
-                                    <a href="{{ route('master.pricelist-gate-in.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-gate-in.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.pricelist-gate-in.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-gate-in.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist Gate In</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('master-pricelist-ob-view'))
-                                    <a href="{{ route('master.pricelist-ob.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.pricelist-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('master.pricelist-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Pricelist OB</span>
                                     </a>
                                 @endif
@@ -582,12 +582,12 @@
                             </button>
                             <div id="master-pemasok-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isPemasokRoute) style="display: block;" @endif>
                                 @if($user && $user->can('master-vendor-bengkel.view'))
-                                    <a href="{{ route('master.vendor-bengkel.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('master.vendor-bengkel.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('master.vendor-bengkel.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('master.vendor-bengkel.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Vendor/Bengkel</span>
                                     </a>
                                 @endif
                                 @if($user && $user->can('vendor-kontainer-sewa-view'))
-                                    <a href="{{ route('vendor-kontainer-sewa.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('vendor-kontainer-sewa.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                    <a href="{{ route('vendor-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('vendor-kontainer-sewa.*') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                         <span class="text-xs">Vendor Kontainer Sewa</span>
                                     </a>
                                 @endif
@@ -631,24 +631,24 @@
             </button>
             <div id="kontainer-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isKontainerRoute) style="display: block;" @endif>
                 @if($user && $user->can('master-kontainer-view'))
-                    <a href="{{ route('master.kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('master.kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Master Kontainer Sewa</span>
                     </a>
                 @endif
 
                 @if($user && $user->can('master-stock-kontainer-view'))
-                    <a href="{{ route('master.stock-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.stock-kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('master.stock-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.stock-kontainer.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Stock Kontainer</span>
                     </a>
                 @endif
 
                 @if($user && $user->can('pergerakan-kapal-view'))
-                    <a href="{{ route('pergerakan-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('pergerakan-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pergerakan Kapal</span>
                     </a>
                 @endif
                 @if($user && $user->can('master-pelabuhan-view'))
-                    <a href="{{ route('master-pelabuhan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('master-pelabuhan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-pelabuhan.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Master Pelabuhan</span>
                     </a>
                 @endif
@@ -659,7 +659,7 @@
         {{-- Master Kapal --}}
         @if($user && $user->can('master-kapal.view'))
         <div class="mx-2 mb-3">
-            <a href="{{ route('master-kapal.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+            <a href="{{ route('master-kapal.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master-kapal.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Master Kapal</span>
             </a>
         </div>
@@ -668,7 +668,7 @@
         {{-- Master Asset --}}
         @if($user && $user->can('master-mobil-view'))
         <div class="mx-2 mb-3">
-            <a href="{{ route('master.mobil.index') }}" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
+            <a href="{{ route('master.mobil.index') }}" target="_blank" class="flex items-center py-2 px-3 rounded-lg text-xs hover:bg-green-50 hover:text-green-700 transition-all duration-200 {{ Request::routeIs('master.mobil.*') ? 'bg-green-50 text-green-700 font-medium shadow-sm' : 'text-gray-600 hover:shadow-sm' }}">
                 <span class="text-xs font-medium">Master Asset</span>
             </a>
         </div>
@@ -793,35 +793,35 @@
                     <div id="memo-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isMemoRoute) style="display: block;" @endif>
                         {{-- Permohonan Memo --}}
                         @if($user && $user->can('permohonan-memo-view'))
-                            <a href="{{ route('permohonan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('permohonan.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('permohonan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('permohonan.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Permohonan Memo</span>
                             </a>
                         @endif
 
                         {{-- Pranota Supir --}}
                         @if($user && $user->can('pranota-supir-view'))
-                            <a href="{{ route('pranota-supir.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pranota-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Supir</span>
                             </a>
                         @endif
 
                         {{-- Bayar Pranota Supir --}}
                         @if(Route::has('pembayaran-pranota-supir.index') && $user && $user->can('pembayaran-pranota-supir-view'))
-                            <a href="{{ route('pembayaran-pranota-supir.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pembayaran-pranota-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Bayar Pranota Supir</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 1 Memo --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Memo --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
@@ -846,21 +846,21 @@
                     <div id="uang-jalan-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isUangJalanRoute) style="display: block;" @endif>
                         {{-- Uang Jalan --}}
                         @if($user && ($user->can('uang-jalan-view') || $user->can('uang-jalan-create') || $user->can('uang-jalan-update') || $user->can('uang-jalan-delete')))
-                            <a href="{{ route('uang-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('uang-jalan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Uang Jalan</span>
                             </a>
                         @endif
 
                         {{-- Pranota Uang Jalan --}}
                         @if($user && $user->can('pranota-uang-jalan-view'))
-                            <a href="{{ route('pranota-uang-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pranota-uang-jalan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Uang Jalan</span>
                             </a>
                         @endif
 
                         {{-- Bayar Pranota Uang Jalan --}}
                         @if(Route::has('pembayaran-pranota-uang-jalan.index') && $user && $user->can('pembayaran-pranota-uang-jalan-view'))
-                            <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-yellow-50 hover:text-yellow-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-uang-jalan.*') ? 'bg-yellow-50 text-yellow-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Bayar Pranota Uang Jalan</span>
                             </a>
                         @endif
@@ -885,14 +885,14 @@
                     <div id="rit-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isRitRoute) style="display: block;" @endif>
                         {{-- Pranota Rit --}}
                         @if($user && $user->can('pranota-rit-view'))
-                            <a href="{{ route('pranota-rit.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pranota-rit.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Rit</span>
                             </a>
                         @endif
 
                         {{-- Pranota Uang Rit --}}
                         @if($user && $user->can('pranota-uang-rit-view'))
-                            <a href="{{ route('pranota-uang-rit.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pranota-uang-rit.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-rit.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Uang Rit</span>
                             </a>
                         @endif
@@ -902,7 +902,7 @@
 
                 {{-- Pranota Uang Kenek --}}
                 @if($user && $user->can('pranota-uang-kenek-view'))
-                    <a href="{{ route('pranota-uang-kenek.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-kenek.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('pranota-uang-kenek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-blue-50 hover:text-blue-700 transition-all duration-200 {{ Request::routeIs('pranota-uang-kenek.*') ? 'bg-blue-50 text-blue-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pranota Uang Kenek</span>
                     </a>
                 @endif
@@ -924,7 +924,7 @@
                     <div id="surat-jalan-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isSuratJalanRoute) style="display: block;" @endif>
                         {{-- Order Management --}}
                         @if($user && ($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')))
-                            <a href="{{ route('orders.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('orders.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                            <a href="{{ route('orders.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('orders.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                                 <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
@@ -934,7 +934,7 @@
 
                         {{-- Surat Jalan --}}
                         @if($user && ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')))
-                            <a href="{{ route('surat-jalan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                            <a href="{{ route('surat-jalan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('surat-jalan.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                                 <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
@@ -947,7 +947,7 @@
 
                 {{-- Surat Jalan Bongkaran (tetap di luar) --}}
                 @if($user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete')))
-                    <a href="{{ route('surat-jalan-bongkaran.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
+                    <a href="{{ route('surat-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
                         </svg>
@@ -992,35 +992,35 @@
                     <div id="sewa-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isSewaRoute) style="display: block;" @endif>
                         {{-- Tagihan Kontainer Sewa --}}
                         @if($user && $user->can('tagihan-kontainer-sewa-index'))
-                            <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('daftar-tagihan-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('daftar-tagihan-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Tagihan Kontainer Sewa</span>
                             </a>
                         @endif
 
                         {{-- Pranota Kontainer Sewa --}}
                         @if($user && $user->can('pranota-kontainer-sewa-view'))
-                            <a href="{{ route('pranota-kontainer-sewa.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pranota-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pranota-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pranota-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Kontainer Sewa</span>
                             </a>
                         @endif
 
                         {{-- Pembayaran Pranota Kontainer Sewa --}}
                         @if(Route::has('pembayaran-pranota-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-kontainer-view')))
-                            <a href="{{ route('pembayaran-pranota-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-kontainer.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pembayaran-pranota-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-kontainer.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pembayaran Pranota Kontainer Sewa</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 1 Sewa --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Sewa --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
@@ -1045,35 +1045,35 @@
                     <div id="perbaikan-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isPerbaikanRoute) style="display: block;" @endif>
                         {{-- Tagihan Perbaikan Kontainer --}}
                         @if($user && $user->can('tagihan-perbaikan-kontainer-view'))
-                            <a href="{{ route('perbaikan-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('perbaikan-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Tagihan Perbaikan Kontainer</span>
                             </a>
                         @endif
 
                         {{-- Pranota Perbaikan Kontainer --}}
                         @if($user && $user->can('pranota-perbaikan-kontainer-view'))
-                            <a href="{{ route('pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pranota-perbaikan-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('pranota-perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Perbaikan Kontainer</span>
                             </a>
                         @endif
 
                         {{-- Pembayaran Pranota Perbaikan Kontainer --}}
                         @if(Route::has('pembayaran-pranota-perbaikan-kontainer.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-perbaikan-kontainer-view')))
-                            <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pembayaran-pranota-perbaikan-kontainer.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-perbaikan-kontainer.*') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pembayaran Pranota Perbaikan Kontainer</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 1 Perbaikan --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Perbaikan --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-amber-50 hover:text-amber-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-amber-50 text-amber-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
@@ -1098,35 +1098,35 @@
                     <div id="cat-menu-content" class="dropdown-content ml-4 mt-1 space-y-1" @if($isCatRoute) style="display: block;" @endif>
                         {{-- Daftar Tagihan CAT --}}
                         @if($user && $user->can('tagihan-cat-view'))
-                            <a href="{{ route('tagihan-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('tagihan-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('tagihan-cat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('tagihan-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Daftar Tagihan CAT</span>
                             </a>
                         @endif
 
                         {{-- Pranota Tagihan CAT --}}
                         @if($user && $user->can('pranota-cat-view'))
-                            <a href="{{ route('pranota-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pranota-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pranota-cat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pranota-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Pranota Tagihan CAT</span>
                             </a>
                         @endif
 
                         {{-- Pembayaran Pranota CAT Kontainer --}}
                         @if(Route::has('pembayaran-pranota-cat.index') && ($isAdmin || auth()->user()->can('pembayaran-pranota-cat-view')))
-                            <a href="{{ route('pembayaran-pranota-cat.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('pembayaran-pranota-cat.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-cat.*') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Bayar Pranota CAT Kontainer</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 1 Cat --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval.dashboard') || Request::routeIs('approval.create') || Request::routeIs('approval.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 1</span>
                             </a>
                         @endif
 
                         {{-- Approval Tugas 2 Cat --}}
                         @if($user && $user->can('approval-view'))
-                            <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                            <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') || Request::routeIs('approval-ii.create') || Request::routeIs('approval-ii.riwayat') ? 'bg-rose-50 text-rose-700 font-medium shadow-sm' : 'text-gray-600' }}">
                                 <span class="text-xs">Approval Tugas 2</span>
                             </a>
                         @endif
@@ -1156,77 +1156,77 @@
             <div id="aktivitas-kapal-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasKapalRoute) style="display: block;" @endif>
                 {{-- Prospek --}}
                 @if($user && $user->can('prospek-view'))
-                    <a href="{{ route('prospek.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('prospek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Prospek</span>
                     </a>
                 @endif
 
                 {{-- Naik Kapal --}}
                 @if($user && $user->can('prospek-edit'))
-                    <a href="{{ route('naik-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('naik-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('naik-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('naik-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Naik Kapal</span>
                     </a>
                 @endif
 
                 {{-- BL (Bill of Lading) --}}
                 @if($user && $user->can('bl-view'))
-                    <a href="{{ route('bl.select') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('bl.select') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('bl.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">BL (Bill of Lading)</span>
                     </a>
                 @endif
 
                 {{-- Tagihan OB --}}
                 @if($user && $user->can('tagihan-ob-view'))
-                    <a href="{{ route('tagihan-ob.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('tagihan-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('tagihan-ob.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('tagihan-ob.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Tagihan OB</span>
                     </a>
                 @endif
 
                 {{-- Pergerakan Kapal --}}
                 @if($user && $user->can('pergerakan-kapal-view'))
-                    <a href="{{ route('pergerakan-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('pergerakan-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('pergerakan-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pergerakan Kapal</span>
                     </a>
                 @endif
 
                 {{-- Daftar Voyage --}}
                 @if($user && $user->can('voyage-view'))
-                    <a href="{{ route('voyage.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('voyage.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('voyage.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('voyage.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Daftar Voyage</span>
                     </a>
                 @endif
 
                 {{-- Jadwal Kapal --}}
                 @if($user && $user->can('jadwal-kapal-view'))
-                    <a href="{{ route('jadwal-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('jadwal-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('jadwal-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('jadwal-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Jadwal Kapal</span>
                     </a>
                 @endif
 
                 {{-- Status Kapal --}}
                 @if($user && $user->can('status-kapal-view'))
-                    <a href="{{ route('status-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('status-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('status-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('status-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Status Kapal</span>
                     </a>
                 @endif
 
                 {{-- Log Aktivitas --}}
                 @if($user && $user->can('log-aktivitas-kapal-view'))
-                    <a href="{{ route('log-aktivitas-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('log-aktivitas-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('log-aktivitas-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('log-aktivitas-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Log Aktivitas</span>
                     </a>
                 @endif
 
                 {{-- Monitoring Kapal --}}
                 @if($user && $user->can('monitoring-kapal-view'))
-                    <a href="{{ route('monitoring-kapal.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('monitoring-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('monitoring-kapal.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('monitoring-kapal.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Monitoring Kapal</span>
                     </a>
                 @endif
 
                 {{-- Prospek --}}
                 @if($user && $user->can('prospek-view'))
-                    <a href="{{ route('prospek.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('prospek.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-purple-50 hover:text-purple-700 transition-all duration-200 {{ Request::routeIs('prospek.*') ? 'bg-purple-50 text-purple-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Prospek</span>
                     </a>
                 @endif
@@ -1261,21 +1261,21 @@
 
                 {{-- Tanda Terima --}}
                 @if($user && ($user->can('tanda-terima-view') || $user->can('tanda-terima-update') || $user->can('tanda-terima-delete')))
-                    <a href="{{ route('tanda-terima.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('tanda-terima.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Tanda Terima</span>
                     </a>
                 @endif
 
                 {{-- Tanda Terima Tanpa Surat Jalan --}}
                 @if($user && ($user->can('tanda-terima-tanpa-surat-jalan-view') || $user->can('tanda-terima-tanpa-surat-jalan-create') || $user->can('tanda-terima-tanpa-surat-jalan-update') || $user->can('tanda-terima-tanpa-surat-jalan-delete')))
-                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('tanda-terima-tanpa-surat-jalan.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('tanda-terima-tanpa-surat-jalan.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Tanda Terima Tanpa Surat Jalan</span>
                     </a>
                 @endif
 
                 {{-- Gate In --}}
                 @if($user && ($user->can('gate-in-view') || $user->can('gate-in-create') || $user->can('gate-in-update') || $user->can('gate-in-delete')))
-                    <a href="{{ route('gate-in.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('gate-in.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('gate-in.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-emerald-50 hover:text-emerald-700 transition-all duration-200 {{ Request::routeIs('gate-in.*') ? 'bg-emerald-50 text-emerald-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Gate In</span>
                     </a>
                 @endif
@@ -1300,7 +1300,7 @@
             <div id="approval-tugas-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isApprovalTugasRoute) style="display: block;" @endif>
                 {{-- Approval Tugas --}}
                 @if(Route::has('approval.dashboard'))
-                    <a href="{{ route('approval.dashboard') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                    <a href="{{ route('approval.dashboard') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -1310,7 +1310,7 @@
 
                 {{-- Approval Tugas II --}}
                 @if(Route::has('approval-ii.dashboard'))
-                    <a href="{{ route('approval-ii.dashboard') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                    <a href="{{ route('approval-ii.dashboard') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('approval-ii.dashboard') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                         <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
                         </svg>
@@ -1340,14 +1340,14 @@
             <div id="aktivitas-lain-menu-content" class="dropdown-content ml-4 mt-2 space-y-1" @if($isAktivitasLainRoute) style="display: block;" @endif>
                 {{-- Pembayaran Aktivitas Lain-Lain --}}
                 @if($isAdmin || ($user && $user->can('pembayaran-aktivitas-lainnya-view')))
-                    <a href="{{ route('pembayaran-aktivitas-lainnya.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lainnya.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('pembayaran-aktivitas-lainnya.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('pembayaran-aktivitas-lainnya.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Pembayaran Aktivitas Lain-Lain</span>
                     </a>
                 @endif
                 
                 {{-- Realisasi Uang Muka --}}
                 @if($isAdmin || ($user && $user->can('realisasi-uang-muka-view')))
-                    <a href="{{ route('realisasi-uang-muka.index') }}" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('realisasi-uang-muka.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                    <a href="{{ route('realisasi-uang-muka.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-pink-50 hover:text-pink-700 transition-all duration-200 {{ Request::routeIs('realisasi-uang-muka.*') ? 'bg-pink-50 text-pink-700 font-medium shadow-sm' : 'text-gray-600' }}">
                         <span class="text-xs">Realisasi Uang Muka</span>
                     </a>
                 @endif
@@ -1392,7 +1392,7 @@
     </button>
     <div id="report-menu-content" class="dropdown-content ml-8 space-y-2 mt-2" @if($isReportRoute) style="display: block;" @endif>
         {{-- Report Tagihan --}}
-        <a href="{{ route('report.tagihan.index') }}" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.tagihan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
+        <a href="{{ route('report.tagihan.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('report.tagihan.*') ? 'bg-purple-50 text-purple-700 font-medium' : 'text-gray-600' }}">
             <svg class="w-3 h-3 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
@@ -1427,7 +1427,7 @@
 {{-- Audit Log Menu - Standalone --}}
 @if($user && $user->can('audit-log-view'))
 <div class="mt-4">
-    <a href="{{ route('audit-logs.index') }}" class="w-full flex items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('audit-logs.*') ? 'bg-orange-50 text-orange-700 font-medium' : '' }}">
+    <a href="{{ route('audit-logs.index') }}" target="_blank" class="w-full flex items-center py-2 px-5 rounded-lg text-gray-700 hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 group text-xs {{ Request::routeIs('audit-logs.*') ? 'bg-orange-50 text-orange-700 font-medium' : '' }}">
         <div class="flex items-center justify-center w-6 h-6 rounded-lg bg-gray-100 group-hover:bg-gray-200 mr-2 {{ Request::routeIs('audit-logs.*') ? 'bg-orange-100' : '' }}">
             <svg class="w-4 h-4 text-gray-600 group-hover:text-gray-700 {{ Request::routeIs('audit-logs.*') ? 'text-orange-600' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>

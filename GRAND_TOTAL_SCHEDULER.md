@@ -39,13 +39,13 @@ php artisan schedule:run
 
 ## 🕐 Jadwal Otomatis
 
-| Task | Jadwal | Deskripsi |
-|------|--------|-----------|
-| **Grand Total Recalculation** | Setiap 1 jam | Recalculate grand_total untuk semua tagihan |
-| Periode Sync | Setiap hari 02:10 | Sync periode tagihan |
-| Create Next Periode | Setiap hari 03:00 | Buat periode baru |
-| Update Container Periods | Setiap hari 01:00 | Update periode kontainer |
-| Validate Duplicates | Setiap hari 04:00 | Validasi duplikat kontainer |
+| Task                          | Jadwal            | Deskripsi                                   |
+| ----------------------------- | ----------------- | ------------------------------------------- |
+| **Grand Total Recalculation** | Setiap 1 jam      | Recalculate grand_total untuk semua tagihan |
+| Periode Sync                  | Setiap hari 02:10 | Sync periode tagihan                        |
+| Create Next Periode           | Setiap hari 03:00 | Buat periode baru                           |
+| Update Container Periods      | Setiap hari 01:00 | Update periode kontainer                    |
+| Validate Duplicates           | Setiap hari 04:00 | Validasi duplikat kontainer                 |
 
 ## 📊 Monitoring
 
@@ -77,53 +77,57 @@ php artisan tagihan:recalculate-grand-total
 ### Scheduler Tidak Berjalan
 
 1. **Cek cron service**:
-   ```bash
-   systemctl status cron  # Ubuntu/Debian
-   systemctl status crond # CentOS/RHEL
-   ```
+
+    ```bash
+    systemctl status cron  # Ubuntu/Debian
+    systemctl status crond # CentOS/RHEL
+    ```
 
 2. **Cek log cron**:
-   ```bash
-   sudo tail -f /var/log/syslog | grep CRON  # Ubuntu
-   sudo tail -f /var/log/cron                # CentOS
-   ```
+
+    ```bash
+    sudo tail -f /var/log/syslog | grep CRON  # Ubuntu
+    sudo tail -f /var/log/cron                # CentOS
+    ```
 
 3. **Cek permission**:
-   ```bash
-   chmod -R 775 storage
-   chmod -R 775 bootstrap/cache
-   ```
+    ```bash
+    chmod -R 775 storage
+    chmod -R 775 bootstrap/cache
+    ```
 
 ### Command Gagal
 
 1. **Cek manual**:
-   ```bash
-   php artisan tagihan:recalculate-grand-total --force
-   ```
+
+    ```bash
+    php artisan tagihan:recalculate-grand-total --force
+    ```
 
 2. **Cek database connection**:
-   ```bash
-   php artisan tinker
-   >>> \DB::connection()->getPdo();
-   ```
+
+    ```bash
+    php artisan tinker
+    >>> \DB::connection()->getPdo();
+    ```
 
 3. **Cek log error**:
-   ```bash
-   tail -f storage/logs/grand-total-recalculation.log
-   ```
+    ```bash
+    tail -f storage/logs/grand-total-recalculation.log
+    ```
 
 ## 📈 Performance
 
-- **Proses per chunk**: 100 records
-- **Average time**: ~10 seconds untuk 765 records
-- **Memory usage**: < 50MB
-- **Database transactions**: Yes (rollback on error)
+-   **Proses per chunk**: 100 records
+-   **Average time**: ~10 seconds untuk 765 records
+-   **Memory usage**: < 50MB
+-   **Database transactions**: Yes (rollback on error)
 
 ## 🔐 Security
 
-- Command menggunakan `withoutOverlapping()` untuk mencegah concurrent execution
-- Database transactions untuk data integrity
-- Logging semua aktivitas
+-   Command menggunakan `withoutOverlapping()` untuk mencegah concurrent execution
+-   Database transactions untuk data integrity
+-   Logging semua aktivitas
 
 ## 💡 Tips
 
@@ -134,10 +138,10 @@ php artisan tagihan:recalculate-grand-total
 
 ## 📝 Notes
 
-- Scheduler membutuhkan cron job yang running every minute
-- Command akan skip jika tidak ada perubahan data
-- Log disimpan di `storage/logs/grand-total-recalculation.log`
-- Dapat disesuaikan jadwalnya di `app/Console/Kernel.php`
+-   Scheduler membutuhkan cron job yang running every minute
+-   Command akan skip jika tidak ada perubahan data
+-   Log disimpan di `storage/logs/grand-total-recalculation.log`
+-   Dapat disesuaikan jadwalnya di `app/Console/Kernel.php`
 
 ## 🔄 Update Schedule
 
@@ -160,6 +164,7 @@ $schedule->command('tagihan:recalculate-grand-total --force')->everySixHours();
 ## 🆘 Support
 
 Jika ada masalah, hubungi tim development atau cek:
-- Laravel Logs: `storage/logs/laravel.log`
-- Scheduler Logs: `storage/logs/grand-total-recalculation.log`
-- Audit Logs: Check `audit_logs` table
+
+-   Laravel Logs: `storage/logs/laravel.log`
+-   Scheduler Logs: `storage/logs/grand-total-recalculation.log`
+-   Audit Logs: Check `audit_logs` table
