@@ -17,11 +17,13 @@ class PricelistUangJalanBatam extends Model
         'size',
         'f_e',
         'tarif',
+        'tarif_base',
         'status',
     ];
 
     protected $casts = [
         'tarif' => 'decimal:2',
+        'tarif_base' => 'decimal:2',
     ];
 
     /**

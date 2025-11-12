@@ -160,6 +160,30 @@
             </div>
         </div>
 
+        <!-- Warning Box - Dampak ke Pricelist -->
+        <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mt-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+                </div>
+                <div class="ml-3 flex-1">
+                    <h3 class="text-sm font-medium text-yellow-800">Dampak Terhadap Pricelist Uang Jalan Batam:</h3>
+                    <div class="mt-2 text-sm text-yellow-700">
+                        <ul class="list-disc list-inside space-y-1">
+                            <li><strong>Persentase &lt; 5%:</strong> Tarif pricelist akan <span class="font-semibold text-green-600">DIKEMBALIKAN KE NILAI AWAL</span></li>
+                            <li><strong>Persentase = 5%:</strong> Tarif pricelist <span class="font-semibold">TIDAK BERUBAH</span></li>
+                            <li><strong>Persentase &gt; 5%:</strong> Tarif pricelist akan <span class="font-semibold text-red-600">OTOMATIS DIUPDATE</span></li>
+                            <li><strong>Rumus Kenaikan Tarif:</strong> (Persentase BBM - 5%)</li>
+                            <li><strong>Contoh 1:</strong> BBM naik 3% → Tarif kembali ke nilai awal</li>
+                            <li><strong>Contoh 2:</strong> BBM naik 7% → Tarif pricelist naik 2% (7% - 5%)</li>
+                            <li><strong>Contoh 3:</strong> BBM naik 10% → Tarif pricelist naik 5% (10% - 5%)</li>
+                            <li>Semua perubahan tarif akan dicatat dalam history</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Action Buttons -->
         <div class="flex items-center justify-end space-x-3 mt-6 pt-6 border-t border-gray-200">
             <a href="{{ route('kelola-bbm.index') }}" 
