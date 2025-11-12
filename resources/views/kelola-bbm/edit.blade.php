@@ -88,16 +88,18 @@
                            step="0.01"
                            min="0"
                            required
-                           placeholder="10000"
+                           placeholder="14000"
+                           onchange="calculatePercentage()"
+                           oninput="calculatePercentage()"
                            class="block w-full pl-12 pr-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('bbm_per_liter') border-red-300 @enderror">
                 </div>
                 @error('bbm_per_liter')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
-                <p class="mt-1 text-xs text-gray-500">Masukkan harga BBM per liter dalam Rupiah</p>
+                <p class="mt-1 text-xs text-gray-500">Harga BBM dasar: Rp 13.800</p>
             </div>
 
-            <!-- Persentase -->
+            <!-- Persentase (Auto-calculated) -->
             <div>
                 <label for="persentase" class="block text-sm font-medium text-gray-700 mb-2">
                     Persentase (%) <span class="text-red-500">*</span>
@@ -108,11 +110,9 @@
                            id="persentase" 
                            value="{{ old('persentase', $kelolaBbm->persentase) }}"
                            step="0.01"
-                           min="0"
-                           max="100"
-                           required
-                           placeholder="5.50"
-                           class="block w-full pr-12 pl-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 @error('persentase') border-red-300 @enderror">
+                           readonly
+                           placeholder="0.00"
+                           class="block w-full pr-12 pl-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-50 cursor-not-allowed @error('persentase') border-red-300 @enderror">
                     <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                         <span class="text-gray-500 sm:text-sm">%</span>
                     </div>
@@ -120,7 +120,7 @@
                 @error('persentase')
                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                 @enderror
-                <p class="mt-1 text-xs text-gray-500">Masukkan persentase (0-100)</p>
+                <p id="persentase-info" class="mt-1 text-xs text-gray-500">Dihitung otomatis berdasarkan harga BBM</p>
             </div>
 
             <!-- Keterangan -->
@@ -143,17 +143,18 @@
         <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mt-6">
             <div class="flex">
                 <div class="flex-shrink-0">
-                    <i class="fas fa-info-circle text-blue-400"></i>
+                    <i class="fas fa-calculator text-blue-400"></i>
                 </div>
                 <div class="ml-3 flex-1">
-                    <h3 class="text-sm font-medium text-blue-800">Informasi:</h3>
+                    <h3 class="text-sm font-medium text-blue-800">Cara Perhitungan Persentase:</h3>
                     <div class="mt-2 text-sm text-blue-700">
                         <ul class="list-disc list-inside space-y-1">
-                            <li>Bulan, tahun, BBM per liter, dan persentase wajib diisi</li>
-                            <li>Bulan dan tahun digunakan untuk periode data BBM</li>
-                            <li>BBM per liter harus berupa angka positif dalam Rupiah</li>
-                            <li>Persentase harus antara 0 hingga 100</li>
-                            <li>Keterangan bersifat opsional</li>
+                            <li><strong>Harga BBM Dasar Perusahaan:</strong> Rp 13.800</li>
+                            <li><strong>Persentase</strong> akan dihitung otomatis berdasarkan selisih dari harga dasar</li>
+                            <li><strong>Contoh:</strong> Jika input Rp 14.000 → Naik 1.45% (naik Rp 200)</li>
+                            <li><strong>Contoh:</strong> Jika input Rp 13.500 → Turun 2.17% (turun Rp 300)</li>
+                            <li>Persentase <span class="text-red-600">positif (+)</span> = harga naik, <span class="text-green-600">negatif (-)</span> = harga turun</li>
+                            <li>Keterangan bersifat opsional untuk catatan tambahan</li>
                         </ul>
                     </div>
                 </div>
@@ -175,4 +176,51 @@
         </div>
     </form>
 </div>
+
+<script>
+// Harga BBM dasar perusahaan
+const HARGA_BBM_DASAR = 13800;
+
+function calculatePercentage() {
+    const bbmPerLiter = parseFloat(document.getElementById('bbm_per_liter').value) || 0;
+    const persentaseInput = document.getElementById('persentase');
+    const persentaseInfo = document.getElementById('persentase-info');
+    
+    if (bbmPerLiter > 0) {
+        // Hitung persentase perubahan: ((Harga Baru - Harga Dasar) / Harga Dasar) * 100
+        const persentase = ((bbmPerLiter - HARGA_BBM_DASAR) / HARGA_BBM_DASAR) * 100;
+        
+        // Set nilai persentase (bisa positif atau negatif)
+        persentaseInput.value = persentase.toFixed(2);
+        
+        // Update info text dengan warna sesuai kondisi
+        if (persentase > 0) {
+            persentaseInfo.innerHTML = `<span class="text-red-600 font-medium"><i class="fas fa-arrow-up"></i> Naik ${persentase.toFixed(2)}% dari harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
+        } else if (persentase < 0) {
+            persentaseInfo.innerHTML = `<span class="text-green-600 font-medium"><i class="fas fa-arrow-down"></i> Turun ${Math.abs(persentase).toFixed(2)}% dari harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
+        } else {
+            persentaseInfo.innerHTML = `<span class="text-blue-600 font-medium"><i class="fas fa-equals"></i> Sama dengan harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
+        }
+        
+        // Tampilkan selisih harga
+        const selisih = bbmPerLiter - HARGA_BBM_DASAR;
+        const selisihFormatted = Math.abs(selisih).toLocaleString('id-ID');
+        
+        if (selisih !== 0) {
+            const selisihText = selisih > 0 
+                ? `<span class="text-red-600">+Rp ${selisihFormatted}</span>` 
+                : `<span class="text-green-600">-Rp ${selisihFormatted}</span>`;
+            persentaseInfo.innerHTML += `<br>${selisihText}`;
+        }
+    } else {
+        persentaseInput.value = '';
+        persentaseInfo.innerHTML = 'Dihitung otomatis berdasarkan harga BBM';
+    }
+}
+
+// Hitung persentase saat halaman dimuat jika ada nilai lama
+document.addEventListener('DOMContentLoaded', function() {
+    calculatePercentage();
+});
+</script>
 @endsection

@@ -48,7 +48,7 @@ class KelolaBbmController extends Controller
             'bulan' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer|min:2000|max:2100',
             'bbm_per_liter' => 'required|numeric|min:0',
-            'persentase' => 'required|numeric|min:0|max:100',
+            'persentase' => 'required|numeric', // Bisa negatif atau positif
             'keterangan' => 'nullable|string',
         ]);
 
@@ -83,7 +83,7 @@ class KelolaBbmController extends Controller
             'bulan' => 'required|integer|min:1|max:12',
             'tahun' => 'required|integer|min:2000|max:2100',
             'bbm_per_liter' => 'required|numeric|min:0',
-            'persentase' => 'required|numeric|min:0|max:100',
+            'persentase' => 'required|numeric', // Bisa negatif atau positif
             'keterangan' => 'nullable|string',
         ]);
 
