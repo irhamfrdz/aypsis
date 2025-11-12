@@ -51,8 +51,8 @@ class PembayaranAktivitasLainnyaController extends Controller
             ->orderBy('nomor_akun')
             ->get();
 
-        // Fetch COA biaya (Beban)
-        $coaBiaya = Coa::where('tipe_akun', 'Beban')
+        // Fetch COA biaya
+        $coaBiaya = Coa::where('tipe_akun', 'BIAYA')
             ->orderBy('nomor_akun')
             ->get();
 
@@ -172,8 +172,8 @@ class PembayaranAktivitasLainnyaController extends Controller
         // Get bank accounts for dropdown
         $bankAccounts = Coa::where('tipe_akun', 'Bank/Kas')->get();
 
-        // Fetch COA biaya (Beban)
-        $coaBiaya = Coa::where('tipe_akun', 'Beban')
+        // Fetch COA biaya
+        $coaBiaya = Coa::where('tipe_akun', 'BIAYA')
             ->orderBy('nomor_akun')
             ->get();
 

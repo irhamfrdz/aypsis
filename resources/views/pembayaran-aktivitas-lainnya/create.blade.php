@@ -143,7 +143,7 @@
                                 @endif
                             </select>
                             <p class="text-xs text-gray-500 mt-1">
-                                <i class="fas fa-receipt mr-1"></i>Pilih akun biaya dari COA tipe Beban
+                                <i class="fas fa-receipt mr-1"></i>Pilih akun biaya dari COA tipe BIAYA
                             </p>
                         </div>
                     </div>
