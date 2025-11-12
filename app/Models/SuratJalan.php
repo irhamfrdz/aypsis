@@ -26,7 +26,6 @@ class SuratJalan extends Model
         'tujuan_pengambilan',
         'retur_barang',
         'jumlah_retur',
-        'karyawan',
         'supir',
         'supir2',
         'no_plat',
@@ -44,8 +43,10 @@ class SuratJalan extends Model
         'tanggal_muat',
         'jam_berangkat',
         'term',
-                'rit',
+        'aktifitas',
+        'rit',
         'uang_jalan',
+        'tarif',
         'no_pemesanan',
         'gambar',
         'gambar_checkpoint',
@@ -58,7 +59,14 @@ class SuratJalan extends Model
         'status_pembayaran_uang_rit_kenek',
         'tanggal_tanda_terima',
         'total_tarif',
-        'jumlah_terbayar'
+        'jumlah_terbayar',
+        'uang_rit_kenek',
+        'gate_in_id',
+        'status_gate_in',
+        'tanggal_gate_in',
+        'catatan_gate_in',
+        'catatan_checkpoint',
+        'tanggal_checkpoint'
     ];
 
     protected $casts = [

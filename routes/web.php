@@ -829,6 +829,41 @@ Route::middleware([
              'destroy' => 'can:master-kapal.delete'
          ]);
 
+    // 💰 Pricelist Uang Jalan Batam Management with permissions
+    // Download Template & Import (must be before resource routes)
+    Route::get('pricelist-uang-jalan-batam/download-template', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'downloadTemplate'])
+         ->name('pricelist-uang-jalan-batam.download-template')
+         ->middleware('can:master-pricelist-uang-jalan-batam-view');
+    
+    Route::post('pricelist-uang-jalan-batam/import', [\App\Http\Controllers\PricelistUangJalanBatamController::class, 'import'])
+         ->name('pricelist-uang-jalan-batam.import')
+         ->middleware('can:master-pricelist-uang-jalan-batam-create');
+
+    Route::resource('pricelist-uang-jalan-batam', \App\Http\Controllers\PricelistUangJalanBatamController::class)
+         ->names('pricelist-uang-jalan-batam')
+         ->middleware([
+             'index' => 'can:master-pricelist-uang-jalan-batam-view',
+             'show' => 'can:master-pricelist-uang-jalan-batam-view',
+             'create' => 'can:master-pricelist-uang-jalan-batam-create',
+             'store' => 'can:master-pricelist-uang-jalan-batam-create',
+             'edit' => 'can:master-pricelist-uang-jalan-batam-edit',
+             'update' => 'can:master-pricelist-uang-jalan-batam-edit',
+             'destroy' => 'can:master-pricelist-uang-jalan-batam-delete'
+         ]);
+
+    // ⛽ Kelola BBM Management with permissions
+    Route::resource('kelola-bbm', \App\Http\Controllers\KelolaBbmController::class)
+         ->names('kelola-bbm')
+         ->middleware([
+             'index' => 'can:master-kelola-bbm-view',
+             'show' => 'can:master-kelola-bbm-view',
+             'create' => 'can:master-kelola-bbm-create',
+             'store' => 'can:master-kelola-bbm-create',
+             'edit' => 'can:master-kelola-bbm-edit',
+             'update' => 'can:master-kelola-bbm-edit',
+             'destroy' => 'can:master-kelola-bbm-delete'
+         ]);
+
     // ⚓ Master Pelabuhan (Port Master) Management with permissions
     Route::resource('master-pelabuhan', \App\Http\Controllers\MasterPelabuhanController::class)
          ->names([

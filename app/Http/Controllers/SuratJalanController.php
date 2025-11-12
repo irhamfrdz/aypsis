@@ -356,6 +356,20 @@ class SuratJalanController extends Controller
         try {
             $data = $request->except(['gambar']);
 
+            // Set default values for required fields if empty
+            if (empty($data['status_pembayaran_uang_rit'])) {
+                $data['status_pembayaran_uang_rit'] = 'belum_dibayar';
+            }
+            if (empty($data['status_pembayaran_uang_rit_kenek'])) {
+                $data['status_pembayaran_uang_rit_kenek'] = 'belum_dibayar';
+            }
+            if (empty($data['status_pembayaran'])) {
+                $data['status_pembayaran'] = 'belum_dibayar';
+            }
+            if (empty($data['status_pembayaran_uang_jalan'])) {
+                $data['status_pembayaran_uang_jalan'] = 'belum_ada';
+            }
+
             // Store old values for comparison
             $oldJumlahKontainer = $suratJalan->jumlah_kontainer;
             $oldOrderId = $suratJalan->order_id;

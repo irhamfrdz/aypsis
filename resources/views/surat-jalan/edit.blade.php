@@ -358,18 +358,6 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Karyawan</label>
-                    <input type="text"
-                           name="karyawan"
-                           value="{{ old('karyawan', $suratJalan->karyawan) }}"
-                           placeholder="Nama karyawan"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('karyawan') border-red-500 @enderror">
-                    @error('karyawan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">No. Plat</label>
                     <input type="text"
                            name="no_plat"
@@ -471,10 +459,8 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status Pembayaran</label>
                     <select name="status_pembayaran"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status_pembayaran') border-red-500 @enderror">
-                        <option value="">Pilih Status Pembayaran</option>
-                        <option value="belum_bayar" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="lunas" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'lunas' ? 'selected' : '' }}>Lunas</option>
-                        <option value="sebagian" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'sebagian' ? 'selected' : '' }}>Sebagian</option>
+                        <option value="belum_dibayar" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
+                        <option value="sudah_dibayar" {{ old('status_pembayaran', $suratJalan->status_pembayaran) == 'sudah_dibayar' ? 'selected' : '' }}>Sudah Dibayar</option>
                     </select>
                     @error('status_pembayaran')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -510,26 +496,15 @@
                 </div>
 
                 <div>
-                    <label class="block text-sm font-medium text-gray-700 mb-1">Sisa Tagihan</label>
-                    <input type="number"
-                           name="sisa_tagihan"
-                           value="{{ old('sisa_tagihan', $suratJalan->sisa_tagihan) }}"
-                           step="0.01"
-                           min="0"
-                           placeholder="0.00"
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('sisa_tagihan') border-red-500 @enderror">
-                    @error('sisa_tagihan')
-                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-
-                <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status Pembayaran Uang Rit</label>
                     <select name="status_pembayaran_uang_rit"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status_pembayaran_uang_rit') border-red-500 @enderror">
-                        <option value="">Pilih Status</option>
-                        <option value="belum_bayar" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="lunas" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                        <option value="belum_dibayar" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
+                        <option value="proses_pranota" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'proses_pranota' ? 'selected' : '' }}>Proses Pranota</option>
+                        <option value="sudah_masuk_pranota" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'sudah_masuk_pranota' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
+                        <option value="pranota_submitted" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'pranota_submitted' ? 'selected' : '' }}>Pranota Submitted</option>
+                        <option value="pranota_approved" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'pranota_approved' ? 'selected' : '' }}>Pranota Approved</option>
+                        <option value="dibayar" {{ old('status_pembayaran_uang_rit', $suratJalan->status_pembayaran_uang_rit) == 'dibayar' ? 'selected' : '' }}>Dibayar</option>
                     </select>
                     @error('status_pembayaran_uang_rit')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
@@ -540,9 +515,12 @@
                     <label class="block text-sm font-medium text-gray-700 mb-1">Status Pembayaran Uang Rit Kenek</label>
                     <select name="status_pembayaran_uang_rit_kenek"
                             class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('status_pembayaran_uang_rit_kenek') border-red-500 @enderror">
-                        <option value="">Pilih Status</option>
-                        <option value="belum_bayar" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'belum_bayar' ? 'selected' : '' }}>Belum Bayar</option>
-                        <option value="lunas" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'lunas' ? 'selected' : '' }}>Lunas</option>
+                        <option value="belum_dibayar" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'belum_dibayar' ? 'selected' : '' }}>Belum Dibayar</option>
+                        <option value="proses_pranota" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'proses_pranota' ? 'selected' : '' }}>Proses Pranota</option>
+                        <option value="sudah_masuk_pranota" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'sudah_masuk_pranota' ? 'selected' : '' }}>Sudah Masuk Pranota</option>
+                        <option value="pranota_submitted" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'pranota_submitted' ? 'selected' : '' }}>Pranota Submitted</option>
+                        <option value="pranota_approved" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'pranota_approved' ? 'selected' : '' }}>Pranota Approved</option>
+                        <option value="dibayar" {{ old('status_pembayaran_uang_rit_kenek', $suratJalan->status_pembayaran_uang_rit_kenek) == 'dibayar' ? 'selected' : '' }}>Dibayar</option>
                     </select>
                     @error('status_pembayaran_uang_rit_kenek')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
