@@ -24,17 +24,11 @@ class Kontainer extends Model
         'ukuran',
         'tipe_kontainer',
         'vendor',
-        'tanggal_beli',
-        'tanggal_jual',
         'keterangan',
-        'kondisi_kontainer',
-        'tanggal_kondisi_terakhir',
         'tanggal_masuk_sewa',
         'tanggal_mulai_sewa',
         'tanggal_selesai_sewa',
-        'pemilik_kontainer',
         'tahun_pembuatan',
-        'kontainer_asal',
         'keterangan1',
         'keterangan2',
         'status',
@@ -52,9 +46,6 @@ class Kontainer extends Model
      * @var array
      */
     protected $casts = [
-        'tanggal_beli' => 'date',
-        'tanggal_jual' => 'date',
-        'tanggal_kondisi_terakhir' => 'date',
         'tanggal_masuk_sewa' => 'date',
         'tanggal_mulai_sewa' => 'date',
         'tanggal_selesai_sewa' => 'date',
