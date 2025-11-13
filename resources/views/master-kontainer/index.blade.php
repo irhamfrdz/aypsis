@@ -33,13 +33,8 @@
                         name="vendor"
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     <option value="">Semua Vendor</option>
-                    @if(isset($vendors))
-                        @foreach($vendors as $vendor)
-                            <option value="{{ $vendor }}" {{ request('vendor') == $vendor ? 'selected' : '' }}>
-                                {{ $vendor }}
-                            </option>
-                        @endforeach
-                    @endif
+                    <option value="DPE" {{ request('vendor') == 'DPE' ? 'selected' : '' }}>DPE</option>
+                    <option value="ZONA" {{ request('vendor') == 'ZONA' ? 'selected' : '' }}>ZONA</option>
                 </select>
             </div>
 

@@ -84,6 +84,18 @@
             box-sizing: border-box;
         }
 
+        /* Remove any blue colors or default browser styling */
+        input, select, button, a {
+            color: inherit !important;
+            outline: none !important;
+            border-color: #ccc !important;
+        }
+        
+        input:focus, select:focus {
+            border-color: #999 !important;
+            box-shadow: none !important;
+        }
+
         @page {
             size: {{ $paperSize === 'Half-A4' ? '210mm 148.5mm' : ($paperSize === 'Half-Folio' ? '8.5in 6.5in' : ($paperSize === 'A4' ? 'A4' : '8.5in 13in')) }} portrait;
             margin: 0;

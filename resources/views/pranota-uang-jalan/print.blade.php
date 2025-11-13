@@ -288,6 +288,11 @@
             background: #0056b3;
         }
 
+        .no-print {
+            display: block;
+            visibility: visible;
+        }
+
         .status-badge {
             display: inline-block;
             padding: 3px 8px;
@@ -319,6 +324,21 @@
             @page {
                 size: {{ $currentPaper['size'] }} portrait;
                 margin: 0;
+            }
+
+            .no-print {
+                display: none !important;
+                visibility: hidden !important;
+                opacity: 0 !important;
+                height: 0 !important;
+                overflow: hidden !important;
+                position: absolute !important;
+                left: -9999px !important;
+            }
+
+            /* Force hide any fixed/absolute positioned elements except container */
+            body > div:not(.container) {
+                display: none !important;
             }
 
             * {
@@ -613,67 +633,56 @@
 
     <!-- Enhanced Print Script -->
     <script>
-        // Hide any warning dialogs or overlays
-        function hideWarningDialogs() {
+        // Hide elements only during actual printing
+        function hideElementsForPrint() {
             const selectors = [
+                '.no-print',
                 '.print-dialog',
                 '.print-warning', 
-                '.chrome-print-dialog',
-                '.firefox-print-dialog',
-                '.edge-print-dialog',
                 'div[role="dialog"]',
                 '.modal',
-                '.overlay',
-                '[data-testid*="dialog"]',
-                '[class*="dialog"]',
-                '[class*="modal"]',
-                '[class*="overlay"]',
-                '[class*="warning"]'
+                '.overlay'
             ];
             
             selectors.forEach(selector => {
                 const elements = document.querySelectorAll(selector);
                 elements.forEach(el => {
-                    el.style.display = 'none';
-                    el.style.visibility = 'hidden';
-                    el.style.opacity = '0';
-                    el.style.zIndex = '-1';
+                    if (!el.closest('.container')) {
+                        el.style.display = 'none';
+                        el.style.visibility = 'hidden';
+                    }
+                });
+            });
+        }
+
+        // Restore elements after printing
+        function showElementsAfterPrint() {
+            const selectors = ['.no-print'];
+            
+            selectors.forEach(selector => {
+                const elements = document.querySelectorAll(selector);
+                elements.forEach(el => {
+                    if (!el.closest('.container')) {
+                        el.style.display = 'block';
+                        el.style.visibility = 'visible';
+                    }
                 });
             });
         }
 
         // Enhanced print function
         function initiatePrint() {
-            hideWarningDialogs();
-            
-            // Set print-specific styles
-            document.body.style.overflow = 'visible';
-            document.body.style.position = 'static';
-            
-            // Remove any potential overlay elements
-            const overlays = document.querySelectorAll('div, span, section').forEach(el => {
-                if (window.getComputedStyle(el).position === 'fixed' || 
-                    window.getComputedStyle(el).position === 'absolute') {
-                    if (el.style.zIndex > 1000 && !el.closest('.container')) {
-                        el.style.display = 'none';
-                    }
-                }
-            });
-            
+            hideElementsForPrint();
             setTimeout(() => {
                 window.print();
             }, 100);
         }
 
-        // Auto print when page loads
-        window.addEventListener('load', function() {
-            hideWarningDialogs();
-            setTimeout(initiatePrint, 300);
-        });
-
-        // Hide dialogs when print dialog opens/closes
-        window.addEventListener('beforeprint', hideWarningDialogs);
-        window.addEventListener('afterprint', hideWarningDialogs);
+        // Hide elements only when print dialog opens
+        window.addEventListener('beforeprint', hideElementsForPrint);
+        
+        // Show elements back when print dialog closes
+        window.addEventListener('afterprint', showElementsAfterPrint);
 
         // Keyboard shortcut for manual print
         document.addEventListener('keydown', function(e) {
@@ -683,8 +692,13 @@
             }
         });
 
-        // Continuous monitoring for dialogs (optional)
-        setInterval(hideWarningDialogs, 1000);
+        // Auto print when page loads (delayed to show UI first)
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                // Uncomment line below if you want auto-print on load
+                // initiatePrint();
+            }, 300);
+        });
     </script>
 </body>
 </html>
