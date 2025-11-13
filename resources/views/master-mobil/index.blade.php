@@ -286,10 +286,18 @@
                                     $tanggal = \Carbon\Carbon::parse($mobil->tanggal_jatuh_tempo_asuransi);
                                     $today = \Carbon\Carbon::today();
                                     $diffDays = $today->diffInDays($tanggal, false);
+                                    
+                                    // Translate month to Indonesian
+                                    $bulanIndonesia = [
+                                        1 => 'Jan', 2 => 'Feb', 3 => 'Mar', 4 => 'Apr',
+                                        5 => 'Mei', 6 => 'Jun', 7 => 'Jul', 8 => 'Agu',
+                                        9 => 'Sep', 10 => 'Okt', 11 => 'Nov', 12 => 'Des'
+                                    ];
+                                    $formattedDate = $tanggal->format('d') . ' ' . $bulanIndonesia[$tanggal->month] . ' ' . $tanggal->format('Y');
                                 @endphp
                                 <div class="space-y-1">
                                     <div class="text-xs">
-                                        {{ $tanggal->format('d/m/Y') }}
+                                        {{ $formattedDate }}
                                     </div>
                                     @if($diffDays < 0)
                                         <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
