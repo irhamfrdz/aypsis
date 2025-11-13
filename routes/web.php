@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\AssetDashboardController;
 use App\Http\Controllers\KaryawanController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\KontainerController;
@@ -163,6 +164,11 @@ Route::middleware([
     // Dashboard utama untuk admin/staff - controller handles permission logic
     Route::get('/dashboard', [DashboardController::class, 'index'])
          ->name('dashboard');
+
+    // Dashboard asuransi asset
+    Route::get('/dashboard/asset-insurance', [AssetDashboardController::class, 'index'])
+         ->middleware(['auth'])
+         ->name('dashboard.asset-insurance');
 
 /*
     |===========================================================================

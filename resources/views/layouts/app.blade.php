@@ -262,6 +262,7 @@
                     $user = Auth::user();
                     $isAdmin = $user && method_exists($user, 'hasRole') && $user->hasRole('admin');
                     $isDashboard = Request::routeIs('dashboard');
+                    $isAssetDashboard = Request::routeIs('dashboard.asset-insurance');
 
                     // Check if user has any master data permissions
                     $hasMasterPermissions = $user && (
@@ -297,6 +298,14 @@
                 <!-- Dashboard -->
                 <a href="{{ route('dashboard') }}" target="_blank" target="_blank" class="flex items-center py-2 px-5 rounded-xl mt-4 mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isDashboard ? 'bg-blue-100 text-blue-700 font-bold' : 'text-gray-700 hover:bg-blue-100 hover:text-blue-700' }}">
                     <span class="text-xs font-medium menu-text">Dashboard</span>
+                </a>
+
+                <!-- Dashboard Asuransi Asset -->
+                <a href="{{ route('dashboard.asset-insurance') }}" target="_blank" class="flex items-center py-2 px-5 rounded-xl mb-4 transition-all duration-200 group shadow-sm text-xs {{ $isAssetDashboard ? 'bg-yellow-100 text-yellow-700 font-bold' : 'text-gray-700 hover:bg-yellow-100 hover:text-yellow-700' }}">
+                    <svg class="w-4 h-4 mr-2 {{ $isAssetDashboard ? 'text-yellow-700' : 'text-gray-500 group-hover:text-yellow-700' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                    </svg>
+                    <span class="text-xs font-medium menu-text">Dashboard Asuransi Asset</span>
                 </a>
 
                 <!-- Master Data Section -->

@@ -7,9 +7,11 @@ use App\Models\Permohonan;
 use App\Models\Karyawan;
 use App\Models\Kontainer;
 use App\Models\Prospek;
+use App\Models\Mobil;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
+use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
@@ -60,8 +62,25 @@ class DashboardController extends Controller
             ],
         ];
 
+        // Data Asset Asuransi
+        $today = Carbon::today();
+        $oneMonthLater = Carbon::today()->addMonth();
+        
+        // Asset yang asuransinya sudah lewat (expired)
+        $assetsExpired = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
+            ->whereDate('tanggal_jatuh_tempo_asuransi', '<', $today)
+            ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
+            ->get();
+        
+        // Asset yang asuransinya akan jatuh tempo dalam 1 bulan
+        $assetsExpiringSoon = Mobil::whereNotNull('tanggal_jatuh_tempo_asuransi')
+            ->whereDate('tanggal_jatuh_tempo_asuransi', '>=', $today)
+            ->whereDate('tanggal_jatuh_tempo_asuransi', '<=', $oneMonthLater)
+            ->orderBy('tanggal_jatuh_tempo_asuransi', 'asc')
+            ->get();
+
         // Mengirim semua data ke view 'dashboard'
-        return view('dashboard', compact('prospekData'));
+        return view('dashboard', compact('prospekData', 'assetsExpired', 'assetsExpiringSoon'));
     }
 
     /**
