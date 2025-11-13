@@ -440,4 +440,217 @@ class SupirDashboardController extends Controller
                         ->withInput();
         }
     }
+
+    /**
+     * Display OB Bongkar form (Kapal & Voyage selection)
+     */
+    public function obBongkar()
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
+        }
+
+        // Ambil data master kapal untuk dropdown
+        $masterKapals = \App\Models\MasterKapal::orderBy('nama_kapal')->get();
+        
+        // Ambil data turun kapal (bongkar) dengan voyage dan tanggal bongkar
+        $turunKapals = \App\Models\TurunKapal::select('nama_kapal', 'no_voyage', 'tanggal_bongkar')
+                                             ->whereNotNull('nama_kapal')
+                                             ->whereNotNull('no_voyage')
+                                             ->orderBy('tanggal_bongkar', 'desc')
+                                             ->get();
+
+        \Log::info('OB Bongkar Page Accessed', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'master_kapals_count' => $masterKapals->count(),
+            'turun_kapals_count' => $turunKapals->count()
+        ]);
+
+        return view('supir.ob-bongkar', compact('masterKapals', 'turunKapals'));
+    }
+
+    /**
+     * Store OB Bongkar selection and redirect to index
+     */
+    public function obBongkarStore(Request $request)
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
+        }
+
+        // Validasi input
+        $request->validate([
+            'kapal' => 'required|string|max:255',
+            'voyage' => 'required|string|max:255',
+        ], [
+            'kapal.required' => 'Kapal harus dipilih.',
+            'voyage.required' => 'Voyage harus dipilih.',
+        ]);
+
+        // Verifikasi bahwa voyage exist untuk kapal yang dipilih
+        $turunKapal = \App\Models\TurunKapal::where('nama_kapal', $request->kapal)
+                                           ->where('no_voyage', $request->voyage)
+                                           ->first();
+
+        if (!$turunKapal) {
+            return back()->withErrors(['voyage' => 'Data voyage tidak ditemukan untuk kapal yang dipilih.'])
+                        ->withInput();
+        }
+
+        // Log activity untuk audit trail
+        \Log::info('OB Bongkar Data Submitted', [
+            'user_id' => $user->id,
+            'user_name' => $user->name,
+            'kapal' => $request->kapal,
+            'voyage' => $request->voyage,
+            'turun_kapal_id' => $turunKapal->id,
+            'timestamp' => now()
+        ]);
+
+        // Redirect ke halaman index dengan parameter kapal dan voyage
+        return redirect()->route('supir.ob-bongkar.index', [
+            'kapal' => $request->kapal,
+            'voyage' => $request->voyage
+        ])->with('success', 'Data OB Bongkar berhasil disubmit untuk Kapal: ' . $request->kapal . ', Voyage: ' . $request->voyage);
+    }
+
+    /**
+     * Display OB Bongkar index with BL list
+     */
+    public function obBongkarIndex(Request $request)
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
+        }
+
+        // Validasi parameter yang required
+        $request->validate([
+            'kapal' => 'required|string',
+            'voyage' => 'required|string',
+        ]);
+
+        $selectedKapal = $request->get('kapal');
+        $selectedVoyage = $request->get('voyage');
+
+        // Ambil data BL berdasarkan kapal dan voyage untuk bongkar
+        $bls = \App\Models\Bl::where('nama_kapal', $selectedKapal)
+                             ->where('no_voyage', $selectedVoyage)
+                             ->whereNotNull('nomor_kontainer')
+                             ->where('nomor_kontainer', '!=', '')
+                             ->orderBy('nomor_kontainer')
+                             ->get();
+
+        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini (kegiatan bongkar)
+        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
+                                                  ->where('voyage', $selectedVoyage)
+                                                  ->where('kegiatan', 'bongkar')
+                                                  ->pluck('nomor_kontainer')
+                                                  ->toArray();
+
+        // Tambahkan status OB ke setiap BL
+        $bls->each(function ($bl) use ($existingTagihanOb) {
+            $bl->sudah_ob = in_array($bl->nomor_kontainer, $existingTagihanOb);
+        });
+
+        // Log untuk debugging
+        \Log::info('OB Bongkar Index Data', [
+            'selected_kapal' => $selectedKapal,
+            'selected_voyage' => $selectedVoyage,
+            'found_containers' => $bls->count(),
+            'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
+            'existing_tagihan_ob' => $existingTagihanOb,
+            'user_id' => $user->id,
+            'user_name' => $user->name
+        ]);
+
+        return view('supir.ob-bongkar-index', compact('bls', 'selectedKapal', 'selectedVoyage'));
+    }
+
+    /**
+     * Process OB Bongkar data and create TagihanOb
+     */
+    public function obBongkarProcess(Request $request)
+    {
+        // Pastikan user yang login adalah karyawan dengan divisi supir
+        $user = Auth::user();
+        if (!$user->isSupir()) {
+            abort(403, 'Akses ditolak. Halaman ini hanya untuk supir.');
+        }
+
+        // Validasi parameter yang required
+        $request->validate([
+            'kapal' => 'required|string',
+            'voyage' => 'required|string',
+            'bl_id' => 'required|exists:bls,id',
+        ]);
+
+        $selectedKapal = $request->get('kapal');
+        $selectedVoyage = $request->get('voyage');
+        $blId = $request->get('bl_id');
+
+        // Ambil data BL
+        $bl = \App\Models\Bl::findOrFail($blId);
+        $nomorKontainer = $bl->nomor_kontainer;
+
+        // Cek apakah sudah ada tagihan OB untuk kontainer ini dengan kegiatan bongkar
+        $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
+                                                  ->where('voyage', $selectedVoyage)
+                                                  ->where('nomor_kontainer', $nomorKontainer)
+                                                  ->where('kegiatan', 'bongkar')
+                                                  ->first();
+
+        if ($existingTagihanOb) {
+            return back()->with('error', 'Tagihan OB Bongkar untuk kontainer ' . $nomorKontainer . ' sudah ada.');
+        }
+
+        try {
+            // Buat tagihan OB baru untuk bongkar
+            $tagihanOb = new \App\Models\TagihanOb();
+            $tagihanOb->kapal = $selectedKapal;
+            $tagihanOb->voyage = $selectedVoyage;
+            $tagihanOb->nomor_kontainer = $nomorKontainer;
+            $tagihanOb->kegiatan = 'bongkar';
+            $tagihanOb->supir = $user->name;
+            $tagihanOb->tanggal_ob = now();
+            $tagihanOb->status = 'pending';
+            
+            // Set nilai default untuk field lain jika diperlukan
+            $tagihanOb->ukuran_kontainer = $bl->ukuran_kontainer ?? '20';
+            $tagihanOb->tipe_kontainer = $bl->tipe_kontainer ?? 'DC';
+            
+            $tagihanOb->save();
+
+            \Log::info('TagihanOb Bongkar Created', [
+                'tagihan_ob_id' => $tagihanOb->id,
+                'nomor_kontainer' => $nomorKontainer,
+                'kapal' => $selectedKapal,
+                'voyage' => $selectedVoyage,
+                'supir' => $user->name,
+                'kegiatan' => 'bongkar'
+            ]);
+
+            return redirect()->route('supir.ob-bongkar.index', [
+                'kapal' => $selectedKapal,
+                'voyage' => $selectedVoyage
+            ])->with('success', 'Tagihan OB Bongkar untuk kontainer ' . $nomorKontainer . ' berhasil dibuat.');
+
+        } catch (\Exception $e) {
+            \Log::error('Error creating TagihanOb Bongkar', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => $user->id,
+                'request_data' => $request->all()
+            ]);
+
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan data. Silakan coba lagi.'])
+                        ->withInput();
+        }
+    }
 }

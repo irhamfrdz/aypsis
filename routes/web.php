@@ -1815,6 +1815,20 @@ Route::get('/test-gate-in-ajax', function () {
         Route::post('/ob-muat/process', [SupirDashboardController::class, 'obMuatProcess'])
             ->name('ob-muat.process');
 
+        // OB Bongkar (Operasi Bongkar) - Kapal & Voyage selection
+        Route::get('/ob-bongkar', [SupirDashboardController::class, 'obBongkar'])
+            ->name('ob-bongkar');
+        Route::post('/ob-bongkar', [SupirDashboardController::class, 'obBongkarStore'])
+            ->name('ob-bongkar.store');
+        
+        // OB Bongkar Index - Daftar kontainer berdasarkan kapal & voyage
+        Route::get('/ob-bongkar/index', [SupirDashboardController::class, 'obBongkarIndex'])
+            ->name('ob-bongkar.index');
+        
+        // OB Bongkar Process - Proses data OB Bongkar langsung
+        Route::post('/ob-bongkar/process', [SupirDashboardController::class, 'obBongkarProcess'])
+            ->name('ob-bongkar.process');
+
         // Checkpoint management for drivers
         Route::get('/permohonan/{permohonan}/checkpoint', [CheckpointController::class, 'create'])
             ->name('checkpoint.create');
