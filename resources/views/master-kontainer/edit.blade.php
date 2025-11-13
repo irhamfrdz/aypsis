@@ -107,14 +107,14 @@
                 </div>
                 <div>
                     <label for="tanggal_beli" class="block text-sm font-medium text-gray-700">Tanggal Beli</label>
-                    <input type="date" name="tanggal_beli" id="tanggal_beli" value="{{ old('tanggal_beli', $kontainer->tanggal_beli?->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="text" name="tanggal_beli" id="tanggal_beli" value="{{ old('tanggal_beli', $kontainer->tanggal_beli?->format('d/M/Y')) }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
                     @error('tanggal_beli')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
                     <label for="tanggal_jual" class="block text-sm font-medium text-gray-700">Tanggal Jual</label>
-                    <input type="date" name="tanggal_jual" id="tanggal_jual" value="{{ old('tanggal_jual', $kontainer->tanggal_jual?->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="text" name="tanggal_jual" id="tanggal_jual" value="{{ old('tanggal_jual', $kontainer->tanggal_jual?->format('d/M/Y')) }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
                     @error('tanggal_jual')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -128,14 +128,14 @@
                 </div>
                 <div>
                     <label for="tanggal_masuk_sewa" class="block text-sm font-medium text-gray-700">Tanggal Masuk Sewa</label>
-                    <input type="date" name="tanggal_masuk_sewa" id="tanggal_masuk_sewa" value="{{ old('tanggal_masuk_sewa', $kontainer->tanggal_masuk_sewa?->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="text" name="tanggal_masuk_sewa" id="tanggal_masuk_sewa" value="{{ old('tanggal_masuk_sewa', $kontainer->tanggal_masuk_sewa?->format('d/M/Y')) }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
                     @error('tanggal_masuk_sewa')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
                     <label for="tanggal_selesai_sewa" class="block text-sm font-medium text-gray-700">Tanggal Selesai Sewa</label>
-                    <input type="date" name="tanggal_selesai_sewa" id="tanggal_selesai_sewa" value="{{ old('tanggal_selesai_sewa', $kontainer->tanggal_selesai_sewa?->format('Y-m-d')) }}" class="{{ $inputClasses }}">
+                    <input type="text" name="tanggal_selesai_sewa" id="tanggal_selesai_sewa" value="{{ old('tanggal_selesai_sewa', $kontainer->tanggal_selesai_sewa?->format('d/M/Y')) }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
                     @error('tanggal_selesai_sewa')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -173,4 +173,29 @@
             </div>
         </form>
     </div>
+
+    {{-- Flatpickr CSS & JS --}}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize Flatpickr for all date inputs
+            flatpickr('.datepicker', {
+                dateFormat: 'd/M/Y',
+                allowInput: true,
+                locale: {
+                    firstDayOfWeek: 1,
+                    weekdays: {
+                        shorthand: ['Min', 'Sen', 'Sel', 'Rab', 'Kam', 'Jum', 'Sab'],
+                        longhand: ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']
+                    },
+                    months: {
+                        shorthand: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'],
+                        longhand: ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember']
+                    }
+                }
+            });
+        });
+    </script>
 @endsection
