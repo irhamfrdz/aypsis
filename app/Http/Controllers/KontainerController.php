@@ -94,7 +94,8 @@ class KontainerController extends Controller
 
         $request->merge(['nomor_seri_gabungan' => $nomor_seri_gabungan]);
 
-        $request->validate([
+        // Custom validation rules
+        $rules = [
             'awalan_kontainer' => 'required|string|size:4',
             'nomor_seri_kontainer' => 'required|string|size:6',
             'akhiran_kontainer' => 'required|string|size:1',
@@ -103,13 +104,20 @@ class KontainerController extends Controller
             'tipe_kontainer' => 'required|string',
             'vendor' => 'nullable|string|in:ZONA,DPE',
             'keterangan' => 'nullable|string',
-            'tanggal_masuk_sewa' => 'nullable|date',
-            'tanggal_selesai_sewa' => 'nullable|date|after_or_equal:tanggal_masuk_sewa',
+            'tanggal_mulai_sewa' => 'nullable|date',
+            'tanggal_selesai_sewa' => 'nullable|date',
             'tahun_pembuatan' => 'nullable|string|size:4',
             'keterangan1' => 'nullable|string',
             'keterangan2' => 'nullable|string',
             'status' => 'nullable|string|in:Tersedia,Disewa',
-        ]);
+        ];
+
+        // Add after_or_equal rule only if both dates are present
+        if ($request->filled('tanggal_mulai_sewa') && $request->filled('tanggal_selesai_sewa')) {
+            $rules['tanggal_selesai_sewa'] .= '|after_or_equal:tanggal_mulai_sewa';
+        }
+
+        $request->validate($rules);
 
         // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
         $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
@@ -181,7 +189,8 @@ class KontainerController extends Controller
 
         $request->merge(['nomor_seri_gabungan' => $nomor_seri_gabungan]);
 
-        $request->validate([
+        // Custom validation rules
+        $rules = [
             'awalan_kontainer' => 'required|string|size:4',
             'nomor_seri_kontainer' => 'required|string|size:6',
             'akhiran_kontainer' => 'required|string|size:1',
@@ -191,12 +200,19 @@ class KontainerController extends Controller
             'vendor' => 'nullable|string|in:ZONA,DPE',
             'keterangan' => 'nullable|string',
             'tanggal_mulai_sewa' => 'nullable|date',
-            'tanggal_selesai_sewa' => 'nullable|date|after_or_equal:tanggal_mulai_sewa',
+            'tanggal_selesai_sewa' => 'nullable|date',
             'tahun_pembuatan' => 'nullable|string|size:4',
             'keterangan1' => 'nullable|string',
             'keterangan2' => 'nullable|string',
             'status' => 'nullable|string|in:Tersedia,Disewa',
-        ]);
+        ];
+
+        // Add after_or_equal rule only if both dates are present
+        if ($request->filled('tanggal_mulai_sewa') && $request->filled('tanggal_selesai_sewa')) {
+            $rules['tanggal_selesai_sewa'] .= '|after_or_equal:tanggal_mulai_sewa';
+        }
+
+        $request->validate($rules);
 
         // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer (selain diri sendiri)
         $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
