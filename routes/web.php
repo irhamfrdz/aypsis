@@ -496,6 +496,12 @@ Route::middleware([
         Route::get('mobil/export', [App\Http\Controllers\MasterMobilImportController::class, 'export'])
              ->name('mobil.export')
              ->middleware('can:master-mobil-view');
+        Route::get('mobil/template-asuransi', [MobilController::class, 'downloadTemplateAsuransi'])
+             ->name('mobil.template-asuransi')
+             ->middleware('can:master-mobil-view');
+        Route::post('mobil/import-asuransi', [MobilController::class, 'importAsuransi'])
+             ->name('mobil.import-asuransi')
+             ->middleware('can:master-mobil-update');
 
         Route::resource('mobil', MobilController::class)->middleware([
             'index' => 'can:master-mobil-view',

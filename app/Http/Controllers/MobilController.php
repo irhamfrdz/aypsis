@@ -449,4 +449,142 @@ class MobilController extends Controller
 
         return null;
     }
+
+    /**
+     * Download template untuk import tanggal jatuh tempo asuransi.
+     */
+    public function downloadTemplateAsuransi()
+    {
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+
+        // Set header
+        $sheet->setCellValue('A1', 'Kode No');
+        $sheet->setCellValue('B1', 'Tanggal Jatuh Tempo Asuransi');
+
+        // Style header
+        $headerStyle = [
+            'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+            'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '4472C4']],
+            'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+        ];
+        $sheet->getStyle('A1:B1')->applyFromArray($headerStyle);
+
+        // Auto width
+        foreach (range('A', 'B') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Add example data
+        $sheet->setCellValue('A2', 'AT10125001');
+        $sheet->setCellValue('B2', '15/12/2025');
+
+        $sheet->setCellValue('A3', 'AT10125002');
+        $sheet->setCellValue('B3', '20/01/2026');
+
+        // Add instruction comment
+        $sheet->getComment('B1')->getText()->createTextRun(
+            "Format tanggal: dd/mm/yyyy (contoh: 15/12/2025)\n" .
+            "Atau: dd/mmm/yyyy (contoh: 15/Des/2025)"
+        );
+
+        // Download
+        $writer = \PhpOffice\PhpSpreadsheet\IOFactory::createWriter($spreadsheet, 'Xlsx');
+        $filename = 'Template_Import_Asuransi_' . date('YmdHis') . '.xlsx';
+
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * Import tanggal jatuh tempo asuransi dari Excel berdasarkan kode_no.
+     */
+    public function importAsuransi(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240',
+        ]);
+
+        try {
+            $file = $request->file('excel_file');
+            $spreadsheet = IOFactory::load($file->getPathname());
+            $sheet = $spreadsheet->getActiveSheet();
+            $rows = $sheet->toArray();
+
+            $updated = 0;
+            $skipped = 0;
+            $errors = [];
+            $notFound = [];
+
+            // Skip header row
+            array_shift($rows);
+
+            foreach ($rows as $rowNumber => $row) {
+                $rowNumber += 2; // Adjust for header and 0-based index
+
+                // Skip empty rows
+                if (empty($row[0]) && empty($row[1])) {
+                    continue;
+                }
+
+                try {
+                    $kodeNo = trim($row[0]);
+                    $tanggalAsuransi = trim($row[1]);
+
+                    // Validasi kode_no
+                    if (empty($kodeNo)) {
+                        $errors[] = "Baris $rowNumber: Kode No tidak boleh kosong";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Cari mobil berdasarkan kode_no
+                    $mobil = Mobil::where('kode_no', $kodeNo)->first();
+
+                    if (!$mobil) {
+                        $notFound[] = "Baris $rowNumber: Kode No '$kodeNo' tidak ditemukan di database";
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Parse tanggal jika ada
+                    $parsedDate = null;
+                    if (!empty($tanggalAsuransi)) {
+                        $parsedDate = $this->parseDate($tanggalAsuransi);
+                        if (!$parsedDate) {
+                            $errors[] = "Baris $rowNumber: Format tanggal '$tanggalAsuransi' tidak valid. Gunakan format dd/mm/yyyy atau dd/mmm/yyyy";
+                            $skipped++;
+                            continue;
+                        }
+                    }
+
+                    // Update tanggal jatuh tempo asuransi
+                    $mobil->update([
+                        'tanggal_jatuh_tempo_asuransi' => $parsedDate
+                    ]);
+
+                    $updated++;
+
+                } catch (\Exception $e) {
+                    $errors[] = "Baris $rowNumber: " . $e->getMessage();
+                    $skipped++;
+                }
+            }
+
+            $message = "Import selesai. $updated data berhasil diupdate, $skipped data dilewati.";
+
+            return redirect()->route('master.mobil.index')
+                             ->with('success', $message)
+                             ->with('import_errors', count($errors) > 0 ? $errors : null)
+                             ->with('import_warnings', count($notFound) > 0 ? $notFound : null);
+
+        } catch (\Exception $e) {
+            return redirect()->route('master.mobil.index')
+                             ->with('error', 'Error saat membaca file Excel: ' . $e->getMessage());
+        }
+    }
 }

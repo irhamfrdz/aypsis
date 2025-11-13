@@ -64,6 +64,15 @@
             Import Excel
         </button>
 
+        <!-- Import Asuransi Button -->
+        <button type="button" onclick="document.getElementById('import-asuransi-modal').style.display = 'block'"
+                class="inline-flex items-center bg-teal-600 text-white py-2 px-4 rounded-md hover:bg-teal-700 transition-colors duration-200">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            Import Asuransi
+        </button>
+
         <!-- Export Button -->
         <div class="relative">
             <button type="button" id="export-dropdown-button"
@@ -412,6 +421,83 @@
                     </button>
                     <button type="submit"
                             class="px-4 py-2 text-sm font-medium text-white bg-purple-600 border border-transparent rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+                        Import Data
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+{{-- Import Asuransi Modal --}}
+<div id="import-asuransi-modal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50" style="display: none;">
+    <div class="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">Import Tanggal Jatuh Tempo Asuransi</h3>
+                <button type="button" onclick="document.getElementById('import-asuransi-modal').style.display = 'none'"
+                        class="text-gray-400 hover:text-gray-600">
+                    <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <form action="{{ route('master.mobil.import-asuransi') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="mb-4">
+                    <label for="excel_file_asuransi" class="block text-sm font-medium text-gray-700 mb-2">
+                        File Excel <span class="text-red-500">*</span>
+                    </label>
+                    <input type="file"
+                           id="excel_file_asuransi"
+                           name="excel_file"
+                           accept=".xlsx,.xls"
+                           required
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-teal-500 focus:border-teal-500">
+                    <p class="mt-1 text-xs text-gray-500">
+                        Pilih file Excel (.xlsx atau .xls) dengan format yang sesuai template. Maksimal 10MB.
+                    </p>
+                </div>
+
+                <div class="mb-3">
+                    <a href="{{ route('master.mobil.template-asuransi') }}" 
+                       class="inline-flex items-center text-sm text-teal-600 hover:text-teal-800 font-medium">
+                        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        Download Template
+                    </a>
+                </div>
+
+                <div class="bg-teal-50 border border-teal-200 rounded-md p-3 mb-4">
+                    <div class="flex">
+                        <svg class="h-5 w-5 text-teal-400 mr-2 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                        </svg>
+                        <div class="text-sm text-teal-700">
+                            <p class="font-medium">Panduan Import Asuransi:</p>
+                            <ul class="mt-1 list-disc list-inside text-xs space-y-1">
+                                <li>Download template Excel terlebih dahulu</li>
+                                <li>Kolom 1: <strong>Kode No</strong> asset (contoh: AT10125001)</li>
+                                <li>Kolom 2: <strong>Tanggal Jatuh Tempo Asuransi</strong></li>
+                                <li>Format tanggal: <strong>dd/mm/yyyy</strong> (contoh: 15/12/2025)</li>
+                                <li>Atau format: <strong>dd/mmm/yyyy</strong> (contoh: 15/Des/2025)</li>
+                                <li>Sistem akan update berdasarkan Kode No yang cocok</li>
+                                <li>Hapus baris contoh data sebelum import</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3">
+                    <button type="button"
+                            onclick="document.getElementById('import-asuransi-modal').style.display = 'none'"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-200 border border-gray-300 rounded-md hover:bg-gray-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+                        Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-md hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
                         Import Data
                     </button>
                 </div>
