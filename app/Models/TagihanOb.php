@@ -15,6 +15,7 @@ class TagihanOb extends Model
     protected $fillable = [
         'kapal',
         'voyage',
+        'kegiatan', // muat atau bongkar
         'nomor_kontainer',
         'nama_supir',
         'barang',

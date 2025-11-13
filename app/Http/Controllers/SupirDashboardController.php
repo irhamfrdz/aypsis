@@ -551,10 +551,10 @@ class SupirDashboardController extends Controller
                              ->orderBy('nomor_kontainer')
                              ->get();
 
-        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini (kegiatan bongkar)
+        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini
+        // Note: Tabel tagihan_ob tidak memiliki kolom 'kegiatan', jadi kita cek berdasarkan kapal dan voyage saja
         $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
                                                   ->where('voyage', $selectedVoyage)
-                                                  ->where('kegiatan', 'bongkar')
                                                   ->pluck('nomor_kontainer')
                                                   ->toArray();
 
@@ -603,15 +603,15 @@ class SupirDashboardController extends Controller
         $bl = \App\Models\Bl::findOrFail($blId);
         $nomorKontainer = $bl->nomor_kontainer;
 
-        // Cek apakah sudah ada tagihan OB untuk kontainer ini dengan kegiatan bongkar
+        // Cek apakah sudah ada tagihan OB untuk kontainer ini
+        // Note: Tabel tagihan_ob tidak memiliki kolom 'kegiatan'
         $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
                                                   ->where('voyage', $selectedVoyage)
                                                   ->where('nomor_kontainer', $nomorKontainer)
-                                                  ->where('kegiatan', 'bongkar')
                                                   ->first();
 
         if ($existingTagihanOb) {
-            return back()->with('error', 'Tagihan OB Bongkar untuk kontainer ' . $nomorKontainer . ' sudah ada.');
+            return back()->with('error', 'Tagihan OB untuk kontainer ' . $nomorKontainer . ' sudah ada.');
         }
 
         try {
@@ -620,14 +620,15 @@ class SupirDashboardController extends Controller
             $tagihanOb->kapal = $selectedKapal;
             $tagihanOb->voyage = $selectedVoyage;
             $tagihanOb->nomor_kontainer = $nomorKontainer;
-            $tagihanOb->kegiatan = 'bongkar';
-            $tagihanOb->supir = $user->name;
-            $tagihanOb->tanggal_ob = now();
-            $tagihanOb->status = 'pending';
+            $tagihanOb->nama_supir = $user->name;
+            $tagihanOb->bl_id = $blId;
+            $tagihanOb->created_by = $user->id;
             
-            // Set nilai default untuk field lain jika diperlukan
-            $tagihanOb->ukuran_kontainer = $bl->ukuran_kontainer ?? '20';
-            $tagihanOb->tipe_kontainer = $bl->tipe_kontainer ?? 'DC';
+            // Set nilai dari BL jika tersedia
+            $tagihanOb->size_kontainer = $bl->tipe_kontainer ?? null;
+            $tagihanOb->barang = $bl->nama_barang ?? null;
+            $tagihanOb->status_kontainer = 'full'; // Default untuk bongkar
+            $tagihanOb->keterangan = 'OB Bongkar - dibuat oleh supir';
             
             $tagihanOb->save();
 
@@ -636,8 +637,7 @@ class SupirDashboardController extends Controller
                 'nomor_kontainer' => $nomorKontainer,
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
-                'supir' => $user->name,
-                'kegiatan' => 'bongkar'
+                'supir' => $user->name
             ]);
 
             return redirect()->route('supir.ob-bongkar.index', [
