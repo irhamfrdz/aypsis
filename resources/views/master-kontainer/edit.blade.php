@@ -27,27 +27,27 @@
             @method('PUT')
 
             @php
-                $inputClasses = 'block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm';
+                $inputClasses = "mt-1 block w-full rounded-md border-gray-300 bg-gray-100 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-base p-2.5";
             @endphp
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                    <label for="awalan_kontainer" class="block text-sm font-medium text-gray-700">Awalan Kontainer (4 karakter)</label>
-                    <input type="text" name="awalan_kontainer" id="awalan_kontainer" value="{{ old('awalan_kontainer', $kontainer->awalan_kontainer) }}" maxlength="4" class="{{ $inputClasses }}" required>
+                    <label for="awalan_kontainer" class="block text-sm font-medium text-gray-700">Awalan Kontainer (4 digit)</label>
+                    <input type="text" name="awalan_kontainer" id="awalan_kontainer" value="{{ old('awalan_kontainer', $kontainer->awalan_kontainer) }}" class="{{ $inputClasses }}" required maxlength="4">
                     @error('awalan_kontainer')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
-                    <label for="nomor_seri_kontainer" class="block text-sm font-medium text-gray-700">Nomor Seri (6 digit)</label>
-                    <input type="text" name="nomor_seri_kontainer" id="nomor_seri_kontainer" value="{{ old('nomor_seri_kontainer', $kontainer->nomor_seri_kontainer) }}" maxlength="6" class="{{ $inputClasses }}" required>
+                    <label for="nomor_seri_kontainer" class="block text-sm font-medium text-gray-700">Nomor Seri Kontainer (6 digit)</label>
+                    <input type="text" name="nomor_seri_kontainer" id="nomor_seri_kontainer" value="{{ old('nomor_seri_kontainer', $kontainer->nomor_seri_kontainer) }}" class="{{ $inputClasses }}" required maxlength="6">
                     @error('nomor_seri_kontainer')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
                 <div>
-                    <label for="akhiran_kontainer" class="block text-sm font-medium text-gray-700">Akhiran (1 karakter)</label>
-                    <input type="text" name="akhiran_kontainer" id="akhiran_kontainer" value="{{ old('akhiran_kontainer', $kontainer->akhiran_kontainer) }}" maxlength="1" class="{{ $inputClasses }}" required>
+                    <label for="akhiran_kontainer" class="block text-sm font-medium text-gray-700">Akhiran Kontainer (1 digit)</label>
+                    <input type="text" name="akhiran_kontainer" id="akhiran_kontainer" value="{{ old('akhiran_kontainer', $kontainer->akhiran_kontainer) }}" class="{{ $inputClasses }}" required maxlength="1">
                     @error('akhiran_kontainer')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
@@ -55,8 +55,9 @@
                 <div>
                     <label for="ukuran" class="block text-sm font-medium text-gray-700">Ukuran</label>
                     <select name="ukuran" id="ukuran" class="{{ $inputClasses }}" required>
-                        <option value="20 Feet" {{ old('ukuran', $kontainer->ukuran) == '20 Feet' ? 'selected' : '' }}>20 Feet</option>
-                        <option value="40 Feet" {{ old('ukuran', $kontainer->ukuran) == '40 Feet' ? 'selected' : '' }}>40 Feet</option>
+                        <option value="10" {{ old('ukuran', $kontainer->ukuran) == '10' ? 'selected' : '' }}>10 ft</option>
+                        <option value="20" {{ old('ukuran', $kontainer->ukuran) == '20' ? 'selected' : '' }}>20 ft</option>
+                        <option value="40" {{ old('ukuran', $kontainer->ukuran) == '40' ? 'selected' : '' }}>40 ft</option>
                     </select>
                     @error('ukuran')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
