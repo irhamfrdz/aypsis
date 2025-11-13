@@ -117,7 +117,12 @@ class KontainerController extends Controller
             $rules['tanggal_selesai_sewa'] .= '|after_or_equal:tanggal_mulai_sewa';
         }
 
-        $request->validate($rules);
+        // Custom error messages
+        $messages = [
+            'tanggal_selesai_sewa.after_or_equal' => 'Tanggal selesai sewa harus sama dengan atau setelah tanggal mulai sewa.',
+        ];
+
+        $request->validate($rules, $messages);
 
         // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer
         $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
@@ -212,7 +217,12 @@ class KontainerController extends Controller
             $rules['tanggal_selesai_sewa'] .= '|after_or_equal:tanggal_mulai_sewa';
         }
 
-        $request->validate($rules);
+        // Custom error messages
+        $messages = [
+            'tanggal_selesai_sewa.after_or_equal' => 'Tanggal selesai sewa harus sama dengan atau setelah tanggal mulai sewa.',
+        ];
+
+        $request->validate($rules, $messages);
 
         // Validasi khusus: Cek duplikasi nomor_seri_kontainer + akhiran_kontainer (selain diri sendiri)
         $existingWithSameSerialAndSuffix = Kontainer::where('nomor_seri_kontainer', $request->nomor_seri_kontainer)
