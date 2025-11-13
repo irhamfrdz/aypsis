@@ -223,6 +223,7 @@
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Merek</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jenis</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tahun</th>
+                    <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jatuh Tempo Asuransi</th>
                     <th class="py-2 px-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Karyawan</th>
                     <th class="py-2 px-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                 </tr>
@@ -256,6 +257,35 @@
                         <td class="py-2 px-3 text-sm">{{ $mobil->merek ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->jenis ?? '-' }}</td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->tahun_pembuatan ?? '-' }}</td>
+                        <td class="py-2 px-3 text-sm">
+                            @if($mobil->tanggal_jatuh_tempo_asuransi)
+                                @php
+                                    $tanggal = \Carbon\Carbon::parse($mobil->tanggal_jatuh_tempo_asuransi);
+                                    $today = \Carbon\Carbon::today();
+                                    $diffDays = $today->diffInDays($tanggal, false);
+                                @endphp
+                                <div class="space-y-1">
+                                    <div class="text-xs">
+                                        {{ $tanggal->format('d/m/Y') }}
+                                    </div>
+                                    @if($diffDays < 0)
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800">
+                                            Lewat {{ abs($diffDays) }} hari
+                                        </span>
+                                    @elseif($diffDays <= 30)
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            {{ $diffDays }} hari lagi
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                            Aktif
+                                        </span>
+                                    @endif
+                                </div>
+                            @else
+                                <span class="text-gray-400 text-xs">-</span>
+                            @endif
+                        </td>
                         <td class="py-2 px-3 text-sm">{{ $mobil->karyawan->nama_lengkap ?? '-' }}</td>
                         <td class="py-2 px-3 text-center">
                             <div class="flex item-center justify-center space-x-1">
@@ -292,7 +322,7 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="8" class="py-6 px-3 text-center text-gray-500">
+                        <td colspan="9" class="py-6 px-3 text-center text-gray-500">
                             <div class="flex flex-col items-center py-4">
                                 <svg class="w-10 h-10 text-gray-400 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
