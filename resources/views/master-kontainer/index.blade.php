@@ -292,6 +292,14 @@
                 </th>
 
                 <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tanggal Mulai Sewa
+                </th>
+
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tanggal Selesai Sewa
+                </th>
+
+                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Status
                 </th>
 
@@ -318,6 +326,18 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     <div class="text-sm text-gray-500">{{$kontainer->vendor ?? '-'}}</div>
+                </td>
+
+                <td class="px-4 py-2 whitespace-nowrap text-center">
+                    <div class="text-sm text-gray-500">
+                        {{ $kontainer->tanggal_mulai_sewa ? $kontainer->tanggal_mulai_sewa->format('d/M/Y') : '-' }}
+                    </div>
+                </td>
+
+                <td class="px-4 py-2 whitespace-nowrap text-center">
+                    <div class="text-sm text-gray-500">
+                        {{ $kontainer->tanggal_selesai_sewa ? $kontainer->tanggal_selesai_sewa->format('d/M/Y') : '-' }}
+                    </div>
                 </td>
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
@@ -367,7 +387,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data kontainer.</td>
+                <td colspan="8" class="px-4 py-2 text-center text-sm text-gray-500">Tidak ada data kontainer.</td>
             </tr>
             @endforelse
         </tbody>
