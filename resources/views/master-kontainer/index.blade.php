@@ -162,6 +162,15 @@
             Download Template
         </a>
 
+        <!-- Download Template Tanggal Sewa Button -->
+        <a href="{{ route('master.kontainer.download-template-tanggal-sewa') }}"
+           class="inline-flex items-center px-4 py-2 border border-purple-600 text-sm font-medium rounded-md shadow-sm text-purple-600 bg-white hover:bg-purple-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Template Tanggal Sewa
+        </a>
+
         <!-- Export CSV Button -->
         <a href="{{ route('master.kontainer.export', request()->query()) }}"
            class="inline-flex items-center px-4 py-2 border border-blue-600 text-sm font-medium rounded-md shadow-sm text-blue-600 bg-white hover:bg-blue-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
@@ -178,6 +187,15 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
             </svg>
             Import CSV
+        </button>
+
+        <!-- Import Tanggal Sewa Button -->
+        <button onclick="openImportTanggalSewaModal()"
+                class="inline-flex items-center px-4 py-2 border border-orange-600 text-sm font-medium rounded-md shadow-sm text-orange-600 bg-white hover:bg-orange-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+            </svg>
+            Import Tanggal Sewa
         </button>
     </div>
 
@@ -449,6 +467,94 @@
     </div>
 </div>
 
+{{-- Import Tanggal Sewa Modal --}}
+<div id="importTanggalSewaModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeImportTanggalSewaModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="importTanggalSewaForm" action="{{ route('master.kontainer.import-tanggal-sewa') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-orange-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Import Tanggal Sewa Kontainer
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Upload file CSV untuk mengupdate tanggal mulai sewa dan tanggal selesai sewa berdasarkan nomor kontainer.
+                                </p>
+
+                                <div class="mb-4">
+                                    <label for="excel_file_tanggal_sewa" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Pilih File CSV
+                                    </label>
+                                    <input type="file"
+                                           id="excel_file_tanggal_sewa"
+                                           name="excel_file"
+                                           accept=".csv"
+                                           required
+                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100">
+                                </div>
+
+                                <div class="bg-orange-50 border border-orange-200 rounded-md p-3">
+                                    <div class="flex">
+                                        <svg class="h-5 w-5 text-orange-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="ml-3">
+                                            <h4 class="text-sm font-medium text-orange-800">Format File CSV:</h4>
+                                            <div class="mt-1 text-sm text-orange-700">
+                                                <ul class="list-disc pl-5 space-y-1">
+                                                    <li>Kolom 1: Nomor Kontainer (contoh: ALLU2202097)</li>
+                                                    <li>Kolom 2: Tanggal Mulai Sewa (format: dd/mmm/yyyy, contoh: 12/Nov/2025)</li>
+                                                    <li>Kolom 3: Tanggal Selesai Sewa (format: dd/mmm/yyyy, contoh: 31/Des/2025)</li>
+                                                </ul>
+                                                <p class="mt-2 text-xs text-orange-600 font-medium">
+                                                    Sistem akan mencari kontainer berdasarkan nomor kontainer lengkap
+                                                </p>
+                                                <p class="mt-1 text-xs text-green-600 font-medium">
+                                                    Kolom tanggal boleh kosong jika tidak ingin diupdate
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-orange-600 text-base font-medium text-white hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <span class="upload-text-tanggal-sewa">Upload & Import</span>
+                        <span class="upload-loading-tanggal-sewa hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+                    <button type="button"
+                            onclick="closeImportTanggalSewaModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 <script>
@@ -491,6 +597,44 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openImportModal = openImportModal;
     window.closeImportModal = closeImportModal;
 
+    // Import Tanggal Sewa Modal Functions
+    function openImportTanggalSewaModal() {
+        const modal = document.getElementById('importTanggalSewaModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeImportTanggalSewaModal() {
+        const modal = document.getElementById('importTanggalSewaModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+
+            // Reset form
+            const form = document.getElementById('importTanggalSewaForm');
+            if (form) {
+                form.reset();
+            }
+
+            // Reset button state
+            const submitBtn = document.querySelector('#importTanggalSewaForm button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text-tanggal-sewa');
+                const uploadLoading = submitBtn.querySelector('.upload-loading-tanggal-sewa');
+
+                if (uploadText) uploadText.classList.remove('hidden');
+                if (uploadLoading) uploadLoading.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    // Make tanggal sewa functions global
+    window.openImportTanggalSewaModal = openImportTanggalSewaModal;
+    window.closeImportTanggalSewaModal = closeImportTanggalSewaModal;
+
     // Handle form submission
     const importForm = document.getElementById('importForm');
     if (importForm) {
@@ -499,6 +643,23 @@ document.addEventListener('DOMContentLoaded', function() {
             if (submitBtn) {
                 const uploadText = submitBtn.querySelector('.upload-text');
                 const uploadLoading = submitBtn.querySelector('.upload-loading');
+
+                // Show loading state
+                if (uploadText) uploadText.classList.add('hidden');
+                if (uploadLoading) uploadLoading.classList.remove('hidden');
+                submitBtn.disabled = true;
+            }
+        });
+    }
+
+    // Handle form submission for tanggal sewa
+    const importTanggalSewaForm = document.getElementById('importTanggalSewaForm');
+    if (importTanggalSewaForm) {
+        importTanggalSewaForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text-tanggal-sewa');
+                const uploadLoading = submitBtn.querySelector('.upload-loading-tanggal-sewa');
 
                 // Show loading state
                 if (uploadText) uploadText.classList.add('hidden');
@@ -518,11 +679,29 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Close tanggal sewa modal when clicking outside
+    const importTanggalSewaModal = document.getElementById('importTanggalSewaModal');
+    if (importTanggalSewaModal) {
+        importTanggalSewaModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImportTanggalSewaModal();
+            }
+        });
+    }
+
     // Close modal with Escape key
     document.addEventListener('keydown', function(e) {
-        const modal = document.getElementById('importModal');
-        if (e.key === 'Escape' && modal && !modal.classList.contains('hidden')) {
-            closeImportModal();
+        if (e.key === 'Escape') {
+            const modal = document.getElementById('importModal');
+            const tanggalSewaModal = document.getElementById('importTanggalSewaModal');
+            
+            if (modal && !modal.classList.contains('hidden')) {
+                closeImportModal();
+            }
+            
+            if (tanggalSewaModal && !tanggalSewaModal.classList.contains('hidden')) {
+                closeImportTanggalSewaModal();
+            }
         }
     });
 
@@ -530,6 +709,29 @@ document.addEventListener('DOMContentLoaded', function() {
     const fileInput = document.getElementById('excel_file');
     if (fileInput) {
         fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const fileSize = file.size / 1024 / 1024; // Size in MB
+
+                if (fileSize > 5) {
+                    alert('File terlalu besar! Maksimal 5MB.');
+                    e.target.value = '';
+                    return;
+                }
+
+                if (file.type !== 'text/csv' && !file.name.endsWith('.csv')) {
+                    alert('Format file tidak didukung! Gunakan file .csv');
+                    e.target.value = '';
+                    return;
+                }
+            }
+        });
+    }
+
+    // File input validation for tanggal sewa
+    const fileInputTanggalSewa = document.getElementById('excel_file_tanggal_sewa');
+    if (fileInputTanggalSewa) {
+        fileInputTanggalSewa.addEventListener('change', function(e) {
             const file = e.target.files[0];
             if (file) {
                 const fileSize = file.size / 1024 / 1024; // Size in MB
