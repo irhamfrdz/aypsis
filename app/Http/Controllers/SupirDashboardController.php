@@ -455,21 +455,26 @@ class SupirDashboardController extends Controller
         // Ambil data master kapal untuk dropdown
         $masterKapals = \App\Models\MasterKapal::orderBy('nama_kapal')->get();
         
-        // Ambil data turun kapal (bongkar) dengan voyage dan tanggal bongkar
-        $turunKapals = \App\Models\TurunKapal::select('nama_kapal', 'no_voyage', 'tanggal_bongkar')
-                                             ->whereNotNull('nama_kapal')
-                                             ->whereNotNull('no_voyage')
-                                             ->orderBy('tanggal_bongkar', 'desc')
-                                             ->get();
+        // Ambil data dari BL untuk bongkar kontainer (dikelompokkan berdasarkan kapal dan voyage)
+        // Hanya ambil kolom yang ada di tabel bls
+        $blsData = \App\Models\Bl::select('nama_kapal', 'no_voyage')
+                                  ->whereNotNull('nama_kapal')
+                                  ->whereNotNull('no_voyage')
+                                  ->where('nama_kapal', '!=', '')
+                                  ->where('no_voyage', '!=', '')
+                                  ->groupBy('nama_kapal', 'no_voyage')
+                                  ->orderBy('nama_kapal')
+                                  ->orderBy('no_voyage')
+                                  ->get();
 
         \Log::info('OB Bongkar Page Accessed', [
             'user_id' => $user->id,
             'user_name' => $user->name,
             'master_kapals_count' => $masterKapals->count(),
-            'turun_kapals_count' => $turunKapals->count()
+            'bls_data_count' => $blsData->count()
         ]);
 
-        return view('supir.ob-bongkar', compact('masterKapals', 'turunKapals'));
+        return view('supir.ob-bongkar', compact('masterKapals'));
     }
 
     /**
@@ -492,12 +497,12 @@ class SupirDashboardController extends Controller
             'voyage.required' => 'Voyage harus dipilih.',
         ]);
 
-        // Verifikasi bahwa voyage exist untuk kapal yang dipilih
-        $turunKapal = \App\Models\TurunKapal::where('nama_kapal', $request->kapal)
-                                           ->where('no_voyage', $request->voyage)
-                                           ->first();
+        // Verifikasi bahwa voyage exist untuk kapal yang dipilih di BL
+        $blExists = \App\Models\Bl::where('nama_kapal', $request->kapal)
+                                  ->where('no_voyage', $request->voyage)
+                                  ->exists();
 
-        if (!$turunKapal) {
+        if (!$blExists) {
             return back()->withErrors(['voyage' => 'Data voyage tidak ditemukan untuk kapal yang dipilih.'])
                         ->withInput();
         }
@@ -508,7 +513,6 @@ class SupirDashboardController extends Controller
             'user_name' => $user->name,
             'kapal' => $request->kapal,
             'voyage' => $request->voyage,
-            'turun_kapal_id' => $turunKapal->id,
             'timestamp' => now()
         ]);
 

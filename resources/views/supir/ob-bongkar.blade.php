@@ -168,11 +168,12 @@
         const voyageData = {
             @php
                 // Ambil data BL yang dikelompokkan berdasarkan kapal dan voyage
-                $blsByKapal = \App\Models\Bl::select('nama_kapal', 'no_voyage', 'pelabuhan_muat', 'pelabuhan_bongkar')
+                $blsByKapal = \App\Models\Bl::select('nama_kapal', 'no_voyage')
                     ->whereNotNull('nama_kapal')
                     ->whereNotNull('no_voyage')
                     ->where('nama_kapal', '!=', '')
                     ->where('no_voyage', '!=', '')
+                    ->groupBy('nama_kapal', 'no_voyage')
                     ->orderBy('nama_kapal')
                     ->orderBy('no_voyage')
                     ->get()
@@ -180,11 +181,9 @@
             @endphp
             @foreach($blsByKapal as $namaKapal => $bls)
             '{{ $namaKapal }}': [
-                @foreach($bls->unique('no_voyage') as $bl)
+                @foreach($bls as $bl)
                 {
-                    voyage: '{{ $bl->no_voyage }}',
-                    pelabuhan_muat: '{{ $bl->pelabuhan_muat ?? "-" }}',
-                    pelabuhan_bongkar: '{{ $bl->pelabuhan_bongkar ?? "-" }}'
+                    voyage: '{{ $bl->no_voyage }}'
                 },
                 @endforeach
             ],
@@ -224,23 +223,7 @@
                 Object.values(uniqueVoyages).forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.voyage;
-                    
-                    // Format text dengan info yang ada
-                    let displayText = item.voyage;
-                    const additionalInfo = [];
-                    
-                    if (item.pelabuhan_muat && item.pelabuhan_muat !== '-') {
-                        additionalInfo.push('Dari: ' + item.pelabuhan_muat);
-                    }
-                    if (item.pelabuhan_bongkar && item.pelabuhan_bongkar !== '-') {
-                        additionalInfo.push('Ke: ' + item.pelabuhan_bongkar);
-                    }
-                    
-                    if (additionalInfo.length > 0) {
-                        displayText += ` (${additionalInfo.join(' - ')})`;
-                    }
-                    
-                    option.textContent = displayText;
+                    option.textContent = item.voyage;
                     voyageSelect.appendChild(option);
                 });
                 
