@@ -98,34 +98,6 @@
                     @enderror
                 </div>
                 <div>
-                    <label for="kontainer_asal" class="block text-sm font-medium text-gray-700">Asal Kontainer</label>
-                    <input type="text" name="kontainer_asal" id="kontainer_asal" value="{{ old('kontainer_asal') }}" class="{{ $inputClasses }}">
-                    @error('kontainer_asal')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label for="tanggal_beli" class="block text-sm font-medium text-gray-700">Tanggal Beli</label>
-                    <input type="text" name="tanggal_beli" id="tanggal_beli" value="{{ old('tanggal_beli') }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
-                    @error('tanggal_beli')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label for="tanggal_jual" class="block text-sm font-medium text-gray-700">Tanggal Jual</label>
-                    <input type="text" name="tanggal_jual" id="tanggal_jual" value="{{ old('tanggal_jual') }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
-                    @error('tanggal_jual')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
-                    <label for="kondisi_kontainer" class="block text-sm font-medium text-gray-700">Kondisi Kontainer</label>
-                    <input type="text" name="kondisi_kontainer" id="kondisi_kontainer" value="{{ old('kondisi_kontainer') }}" class="{{ $inputClasses }}">
-                    @error('kondisi_kontainer')
-                        <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
-                    @enderror
-                </div>
-                <div>
                     <label for="tanggal_masuk_sewa" class="block text-sm font-medium text-gray-700">Tanggal Masuk Sewa</label>
                     <input type="text" name="tanggal_masuk_sewa" id="tanggal_masuk_sewa" value="{{ old('tanggal_masuk_sewa') }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
                     @error('tanggal_masuk_sewa')

@@ -73,7 +73,7 @@ class KontainerController extends Controller
     public function store(Request $request)
     {
         // Convert date format from dd/mmm/yyyy to yyyy-mm-dd for date fields
-        $dateFields = ['tanggal_beli', 'tanggal_jual', 'tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
+        $dateFields = ['tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
         foreach ($dateFields as $field) {
             if ($request->filled($field)) {
                 try {
@@ -102,14 +102,10 @@ class KontainerController extends Controller
             'ukuran' => 'required|string|in:10,20,40',
             'tipe_kontainer' => 'required|string',
             'vendor' => 'nullable|string|in:ZONA,DPE',
-            'tanggal_beli' => 'nullable|date',
-            'tanggal_jual' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'kondisi_kontainer' => 'nullable|string',
             'tanggal_masuk_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date|after_or_equal:tanggal_masuk_sewa',
             'tahun_pembuatan' => 'nullable|string|size:4',
-            'kontainer_asal' => 'nullable|string|max:255',
             'keterangan1' => 'nullable|string',
             'keterangan2' => 'nullable|string',
             'status' => 'nullable|string|in:Tersedia,Disewa',
@@ -129,11 +125,8 @@ class KontainerController extends Controller
             session()->flash('warning', $warningMessage);
         }
 
-        // Tambahkan tanggal kondisi terakhir
+        // Get request data
         $data = $request->all();
-        if ($request->filled('kondisi_kontainer')) {
-            $data['tanggal_kondisi_terakhir'] = now();
-        }
 
         // Set status default jika tidak ada
         if (!$request->filled('status')) {
@@ -167,7 +160,7 @@ class KontainerController extends Controller
     public function update(Request $request, Kontainer $kontainer)
     {
         // Convert date format from dd/mmm/yyyy to yyyy-mm-dd for date fields
-        $dateFields = ['tanggal_beli', 'tanggal_jual', 'tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
+        $dateFields = ['tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
         foreach ($dateFields as $field) {
             if ($request->filled($field)) {
                 try {
@@ -196,14 +189,10 @@ class KontainerController extends Controller
             'ukuran' => 'required|string|in:10,20,40',
             'tipe_kontainer' => 'required|string',
             'vendor' => 'nullable|string|in:ZONA,DPE',
-            'tanggal_beli' => 'nullable|date',
-            'tanggal_jual' => 'nullable|date',
             'keterangan' => 'nullable|string',
-            'kondisi_kontainer' => 'nullable|string',
             'tanggal_masuk_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date|after_or_equal:tanggal_masuk_sewa',
             'tahun_pembuatan' => 'nullable|string|size:4',
-            'kontainer_asal' => 'nullable|string|max:255',
             'keterangan1' => 'nullable|string',
             'keterangan2' => 'nullable|string',
             'status' => 'nullable|string|in:Tersedia,Disewa',
@@ -225,11 +214,6 @@ class KontainerController extends Controller
         }
 
         $data = $request->all();
-
-        // Perbarui tanggal kondisi terakhir jika kondisi diubah
-        if ($kontainer->kondisi_kontainer !== $request->input('kondisi_kontainer')) {
-            $data['tanggal_kondisi_terakhir'] = now();
-        }
 
         $kontainer->update($data);
 
