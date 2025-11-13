@@ -25,6 +25,7 @@ class Bl extends Model
         'term',
         'kuantitas',
         'supir_ob',
+        'status_bongkar',
     ];
 
     /**

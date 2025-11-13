@@ -210,6 +210,49 @@ class BlController extends Controller
     }
 
     /**
+     * Update status bongkar for a BL
+     */
+    public function updateStatusBongkar(Request $request, Bl $bl)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-edit")
+                ->exists();
+            
+            if (!$hasPermission) {
+                return response()->json(['error' => 'Tidak memiliki akses untuk mengupdate BL'], 403);
+            }
+        }
+
+        // Validate input
+        $request->validate([
+            'status_bongkar' => 'required|in:Sudah Bongkar,Belum Bongkar',
+        ]);
+
+        try {
+            $bl->update([
+                'status_bongkar' => $request->status_bongkar
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Status bongkar berhasil diupdate',
+                'status_bongkar' => $bl->status_bongkar
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengupdate status bongkar: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
      * Validate containers for bulk operations
      */
     public function validateContainers(Request $request)
@@ -412,98 +455,310 @@ class BlController extends Controller
     }
 
     /**
-     * Download template CSV untuk import BL
+     * Download template Excel untuk import BL
      */
     public function downloadTemplate()
     {
-        $filename = 'template_bl_' . date('Y-m-d') . '.csv';
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
         
+        // Set document properties
+        $spreadsheet->getProperties()
+            ->setCreator('Aypsis System')
+            ->setTitle('Template Import BL')
+            ->setDescription('Template untuk import data Bill of Lading');
+
+        // Header columns
         $headers = [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+            'A1' => 'Nomor BL',
+            'B1' => 'Nomor Kontainer*',
+            'C1' => 'No Seal',
+            'D1' => 'Nama Kapal*',
+            'E1' => 'No Voyage*',
+            'F1' => 'Pelabuhan Tujuan',
+            'G1' => 'Nama Barang',
+            'H1' => 'Tipe Kontainer',
+            'I1' => 'Ukuran Kontainer',
+            'J1' => 'Tonnage',
+            'K1' => 'Volume',
+            'L1' => 'Kuantitas',
+            'M1' => 'Term',
+            'N1' => 'Supir OB',
+            'O1' => 'Tanggal Muat',
+            'P1' => 'Jam Muat',
+            'Q1' => 'Prospek ID',
+            'R1' => 'Keterangan'
         ];
 
-        $callback = function() {
-            $file = fopen('php://output', 'w');
-            
-            // Write BOM for UTF-8
-            fwrite($file, "\xEF\xBB\xBF");
-            
-            // Header columns
-            $header = [
-                'nomor_bl',
-                'nomor_kontainer',
-                'no_seal',
-                'nama_kapal',
-                'no_voyage',
-                'pelabuhan_tujuan',
-                'nama_barang',
-                'tipe_kontainer',
-                'ukuran_kontainer',
-                'tonnage',
-                'volume',
-                'kuantitas',
-                'term',
-                'supir_ob',
-                'tanggal_muat',
-                'jam_muat',
-                'prospek_id',
-                'keterangan'
-            ];
-            
-            fputcsv($file, $header);
-            
-            // Example data rows
-            $exampleData = [
-                [
-                    'BL-' . date('Ymd') . '-001',
-                    'CONT' . date('Ymd') . '001',
-                    'SEAL001',
-                    'KM SINAR HARAPAN',
-                    'SH001',
-                    'Batam',
-                    'Elektronik',
-                    '20 FT',
-                    '20x8x8.6',
-                    '15.500',
-                    '25.750',
-                    '100',
-                    'COD',
-                    'Budi Santoso',
-                    date('Y-m-d'),
-                    '08:00',
-                    '1',
-                    'Contoh data BL untuk import'
-                ],
-                [
-                    'BL-' . date('Ymd') . '-002',
-                    'CONT' . date('Ymd') . '002', 
-                    'SEAL002',
-                    'KM CAHAYA LAUT',
-                    'CL002',
-                    'Jakarta',
-                    'Makanan & Minuman',
-                    '40 FT',
-                    '40x8x8.6',
-                    '25.000',
-                    '45.300',
-                    '200',
-                    'Credit 30',
-                    'Ahmad Wijaya',
-                    date('Y-m-d'),
-                    '14:30',
-                    '2',
-                    'Contoh data BL kedua'
-                ]
-            ];
-            
-            foreach ($exampleData as $row) {
-                fputcsv($file, $row);
-            }
-            
-            fclose($file);
-        };
+        // Set headers with styling
+        foreach ($headers as $cell => $value) {
+            $sheet->setCellValue($cell, $value);
+            $sheet->getStyle($cell)->getFont()->setBold(true);
+            $sheet->getStyle($cell)->getFill()
+                ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                ->getStartColor()->setRGB('4472C4');
+            $sheet->getStyle($cell)->getFont()->getColor()->setRGB('FFFFFF');
+            $sheet->getStyle($cell)->getAlignment()->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER);
+        }
 
-        return response()->stream($callback, 200, $headers);
+        // Add example data
+        $exampleData = [
+            [
+                'BL-' . date('Ymd') . '-001',
+                'CONT' . date('Ymd') . '001',
+                'SEAL001',
+                'KM SINAR HARAPAN',
+                'SH001',
+                'Batam',
+                'Elektronik',
+                '20 FT',
+                '20x8x8.6',
+                15.500,
+                25.750,
+                100,
+                'COD',
+                'Budi Santoso',
+                date('Y-m-d'),
+                '08:00',
+                1,
+                'Contoh data BL untuk import'
+            ],
+            [
+                'BL-' . date('Ymd') . '-002',
+                'CONT' . date('Ymd') . '002',
+                'SEAL002',
+                'KM CAHAYA LAUT',
+                'CL002',
+                'Jakarta',
+                'Makanan & Minuman',
+                '40 FT',
+                '40x8x8.6',
+                25.000,
+                45.300,
+                200,
+                'Credit 30',
+                'Ahmad Wijaya',
+                date('Y-m-d'),
+                '14:30',
+                2,
+                'Contoh data BL kedua'
+            ]
+        ];
+
+        $row = 2;
+        foreach ($exampleData as $data) {
+            $col = 'A';
+            foreach ($data as $value) {
+                $sheet->setCellValue($col . $row, $value);
+                $col++;
+            }
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', 'R') as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Add instructions sheet
+        $instructionSheet = $spreadsheet->createSheet();
+        $instructionSheet->setTitle('Petunjuk');
+        
+        $instructions = [
+            ['PETUNJUK PENGGUNAAN TEMPLATE IMPORT BL'],
+            [''],
+            ['Kolom yang wajib diisi (bertanda *):'],
+            ['- Nomor Kontainer: Nomor kontainer yang digunakan'],
+            ['- Nama Kapal: Nama kapal yang mengangkut'],
+            ['- No Voyage: Nomor voyage/pelayaran'],
+            [''],
+            ['Format Data:'],
+            ['- Tanggal Muat: YYYY-MM-DD (contoh: 2025-11-12)'],
+            ['- Jam Muat: HH:MM (contoh: 08:00)'],
+            ['- Tonnage: Angka desimal dengan titik (contoh: 15.500)'],
+            ['- Volume: Angka desimal dengan titik (contoh: 25.750)'],
+            ['- Kuantitas: Angka bulat (contoh: 100)'],
+            ['- Prospek ID: Kosongkan jika tidak ada prospek terkait'],
+            [''],
+            ['Catatan:'],
+            ['- Hapus baris contoh sebelum import'],
+            ['- Pastikan format sesuai dengan petunjuk'],
+            ['- Status bongkar otomatis akan diset "Belum Bongkar"'],
+            ['- Periksa data sebelum melakukan import']
+        ];
+
+        $row = 1;
+        foreach ($instructions as $instruction) {
+            $instructionSheet->setCellValue('A' . $row, $instruction[0]);
+            if ($row === 1) {
+                $instructionSheet->getStyle('A' . $row)->getFont()->setBold(true)->setSize(14);
+            }
+            $row++;
+        }
+        $instructionSheet->getColumnDimension('A')->setWidth(80);
+
+        // Set active sheet back to data sheet
+        $spreadsheet->setActiveSheetIndex(0);
+
+        // Create Excel file
+        $filename = 'template_bl_' . date('Y-m-d') . '.xlsx';
+        
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+        
+        header('Content-Type: application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        header('Content-Disposition: attachment;filename="' . $filename . '"');
+        header('Cache-Control: max-age=0');
+        
+        $writer->save('php://output');
+        exit;
+    }
+
+    /**
+     * Import BL from Excel file
+     */
+    public function import(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-create")
+                ->exists();
+            
+            if (!$hasPermission) {
+                return redirect()->back()->with('error', 'Tidak memiliki akses untuk import BL');
+            }
+        }
+
+        $request->validate([
+            'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+        ]);
+
+        try {
+            $file = $request->file('file');
+            $extension = $file->getClientOriginalExtension();
+            
+            $importedCount = 0;
+            $errors = [];
+            $rowNumber = 1;
+
+            if ($extension === 'csv') {
+                // Handle CSV import
+                $handle = fopen($file->getRealPath(), 'r');
+                
+                // Skip header row
+                fgetcsv($handle);
+                $rowNumber++;
+
+                while (($row = fgetcsv($handle)) !== false) {
+                    try {
+                        // Validate required fields
+                        if (empty($row[1]) || empty($row[3]) || empty($row[4])) {
+                            $errors[] = "Baris {$rowNumber}: Nomor Kontainer, Nama Kapal, dan No Voyage wajib diisi";
+                            $rowNumber++;
+                            continue;
+                        }
+
+                        // Create BL record
+                        Bl::create([
+                            'nomor_bl' => $row[0] ?: null,
+                            'nomor_kontainer' => $row[1],
+                            'no_seal' => $row[2] ?: null,
+                            'nama_kapal' => $row[3],
+                            'no_voyage' => $row[4],
+                            'tujuan' => $row[5] ?: null,
+                            'nama_barang' => $row[6] ?: null,
+                            'tipe_kontainer' => $row[7] ?: null,
+                            'ukuran_kontainer' => $row[8] ?: null,
+                            'tonnage' => !empty($row[9]) ? (float)str_replace(',', '.', $row[9]) : null,
+                            'volume' => !empty($row[10]) ? (float)str_replace(',', '.', $row[10]) : null,
+                            'kuantitas' => !empty($row[11]) ? (int)$row[11] : null,
+                            'term' => $row[12] ?: null,
+                            'supir_ob' => $row[13] ?: null,
+                            'tanggal_muat' => !empty($row[14]) ? $row[14] : null,
+                            'jam_muat' => $row[15] ?: null,
+                            'prospek_id' => !empty($row[16]) ? (int)$row[16] : null,
+                            'keterangan' => $row[17] ?: null,
+                            'status_bongkar' => 'Belum Bongkar',
+                        ]);
+
+                        $importedCount++;
+                    } catch (\Exception $e) {
+                        $errors[] = "Baris {$rowNumber}: " . $e->getMessage();
+                    }
+                    
+                    $rowNumber++;
+                }
+                
+                fclose($handle);
+            } else {
+                // Handle Excel import using PhpSpreadsheet
+                $spreadsheet = \PhpOffice\PhpSpreadsheet\IOFactory::load($file->getRealPath());
+                $worksheet = $spreadsheet->getActiveSheet();
+                $highestRow = $worksheet->getHighestRow();
+
+                for ($row = 2; $row <= $highestRow; $row++) {
+                    try {
+                        $nomorKontainer = $worksheet->getCell("B{$row}")->getValue();
+                        $namaKapal = $worksheet->getCell("D{$row}")->getValue();
+                        $noVoyage = $worksheet->getCell("E{$row}")->getValue();
+
+                        // Skip empty rows
+                        if (empty($nomorKontainer) && empty($namaKapal) && empty($noVoyage)) {
+                            continue;
+                        }
+
+                        // Validate required fields
+                        if (empty($nomorKontainer) || empty($namaKapal) || empty($noVoyage)) {
+                            $errors[] = "Baris {$row}: Nomor Kontainer, Nama Kapal, dan No Voyage wajib diisi";
+                            continue;
+                        }
+
+                        // Create BL record
+                        Bl::create([
+                            'nomor_bl' => $worksheet->getCell("A{$row}")->getValue() ?: null,
+                            'nomor_kontainer' => $nomorKontainer,
+                            'no_seal' => $worksheet->getCell("C{$row}")->getValue() ?: null,
+                            'nama_kapal' => $namaKapal,
+                            'no_voyage' => $noVoyage,
+                            'tujuan' => $worksheet->getCell("F{$row}")->getValue() ?: null,
+                            'nama_barang' => $worksheet->getCell("G{$row}")->getValue() ?: null,
+                            'tipe_kontainer' => $worksheet->getCell("H{$row}")->getValue() ?: null,
+                            'ukuran_kontainer' => $worksheet->getCell("I{$row}")->getValue() ?: null,
+                            'tonnage' => $worksheet->getCell("J{$row}")->getValue() ?: null,
+                            'volume' => $worksheet->getCell("K{$row}")->getValue() ?: null,
+                            'kuantitas' => $worksheet->getCell("L{$row}")->getValue() ?: null,
+                            'term' => $worksheet->getCell("M{$row}")->getValue() ?: null,
+                            'supir_ob' => $worksheet->getCell("N{$row}")->getValue() ?: null,
+                            'tanggal_muat' => $worksheet->getCell("O{$row}")->getValue() ?: null,
+                            'jam_muat' => $worksheet->getCell("P{$row}")->getValue() ?: null,
+                            'prospek_id' => $worksheet->getCell("Q{$row}")->getValue() ?: null,
+                            'keterangan' => $worksheet->getCell("R{$row}")->getValue() ?: null,
+                            'status_bongkar' => 'Belum Bongkar',
+                        ]);
+
+                        $importedCount++;
+                    } catch (\Exception $e) {
+                        $errors[] = "Baris {$row}: " . $e->getMessage();
+                    }
+                }
+            }
+
+            $message = "Berhasil import {$importedCount} data BL.";
+            if (!empty($errors)) {
+                $message .= " Terdapat " . count($errors) . " error: " . implode("; ", array_slice($errors, 0, 5));
+                if (count($errors) > 5) {
+                    $message .= " dan " . (count($errors) - 5) . " error lainnya.";
+                }
+            }
+
+            return redirect()->route('bl.index')->with('success', $message);
+
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
+        }
     }
 }

@@ -30,7 +30,10 @@
                 </div>
             </div>
             <div>
-                <a href="{{ route('bl.download.template') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 mr-3">
+                <button type="button" onclick="openImportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200 mr-3">
+                    <i class="fas fa-upload mr-2"></i>Import Excel
+                </button>
+                <a href="{{ route('bl.download.template') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
                     <i class="fas fa-download mr-2"></i>Download Template
                 </a>
             </div>
@@ -180,6 +183,9 @@
                                 Supir OB
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Status Bongkar
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 <a href="{{ request()->fullUrlWithQuery(['sort' => 'created_at', 'direction' => request('direction') === 'asc' ? 'desc' : 'asc']) }}" 
                                    class="hover:text-gray-700">
                                     Tanggal Dibuat
@@ -275,6 +281,31 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="status-bongkar-container" data-bl-id="{{ $bl->id }}">
+                                        <div class="status-bongkar-display cursor-pointer" title="Klik untuk edit">
+                                            <span class="px-2 py-1 text-xs font-semibold rounded-full 
+                                                {{ $bl->status_bongkar === 'Sudah Bongkar' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                                {{ $bl->status_bongkar }}
+                                            </span>
+                                            <i class="fas fa-edit ml-1 text-gray-400 text-xs"></i>
+                                        </div>
+                                        <div class="status-bongkar-edit hidden">
+                                            <div class="flex items-center space-x-2">
+                                                <select class="status-bongkar-select w-40 px-2 py-1 text-sm border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500">
+                                                    <option value="Belum Bongkar" {{ $bl->status_bongkar === 'Belum Bongkar' ? 'selected' : '' }}>Belum Bongkar</option>
+                                                    <option value="Sudah Bongkar" {{ $bl->status_bongkar === 'Sudah Bongkar' ? 'selected' : '' }}>Sudah Bongkar</option>
+                                                </select>
+                                                <button class="save-status-bongkar bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs">
+                                                    <i class="fas fa-check"></i>
+                                                </button>
+                                                <button class="cancel-status-bongkar bg-gray-500 hover:bg-gray-600 text-white px-2 py-1 rounded text-xs">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->created_at->format('d/m/Y H:i') }}
                                     </div>
@@ -317,6 +348,87 @@
                 <p class="text-gray-600 mb-6">Belum ada Bill of Lading yang dibuat.</p>
             </div>
         @endif
+    </div>
+</div>
+
+<!-- Modal untuk Import Excel -->
+<div id="importModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-upload mr-2 text-blue-600"></i>
+                    Import Data BL dari Excel
+                </h3>
+                <button type="button" onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-4 p-4 bg-blue-50 border border-blue-200 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-blue-800">Petunjuk Import</h3>
+                        <div class="mt-2 text-sm text-blue-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Download template terlebih dahulu</li>
+                                <li>Isi data sesuai dengan format yang ada</li>
+                                <li>Kolom yang wajib diisi: Nomor Kontainer, Nama Kapal, No Voyage</li>
+                                <li>Format file yang didukung: .xlsx, .xls, .csv</li>
+                                <li>Maksimal ukuran file: 10 MB</li>
+                                <li>Status bongkar otomatis diset "Belum Bongkar"</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form action="{{ route('bl.import') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                
+                <div class="mb-6">
+                    <label for="import_file" class="block text-sm font-medium text-gray-700 mb-2">
+                        Pilih File Excel <span class="text-red-500">*</span>
+                    </label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-blue-400 transition-colors">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="import_file" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500">
+                                    <span>Upload file</span>
+                                    <input id="import_file" name="file" type="file" class="sr-only" accept=".xlsx,.xls,.csv" required onchange="showFileName(this)">
+                                </label>
+                                <p class="pl-1">atau drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">
+                                XLSX, XLS, CSV maksimal 10MB
+                            </p>
+                            <p id="file-name" class="text-sm text-gray-700 font-medium mt-2"></p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeImportModal()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        <i class="fas fa-times mr-1"></i> Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        <i class="fas fa-upload mr-1"></i> Import Data
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -453,6 +565,21 @@
 @push('scripts')
 <script>
 // Global functions for onclick handlers
+function openImportModal() {
+    document.getElementById('importModal').classList.remove('hidden');
+}
+
+function closeImportModal() {
+    document.getElementById('importModal').classList.add('hidden');
+    document.getElementById('import_file').value = '';
+    document.getElementById('file-name').textContent = '';
+}
+
+function showFileName(input) {
+    const fileName = input.files[0]?.name || '';
+    document.getElementById('file-name').textContent = fileName ? `File: ${fileName}` : '';
+}
+
 function bulkAction(action) {
     const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
     const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
@@ -645,6 +772,92 @@ document.addEventListener('DOMContentLoaded', function() {
                 e.preventDefault();
                 this.closest('.nomor-bl-container').querySelector('.cancel-nomor-bl').click();
             }
+        });
+    });
+    
+    // ===== Status Bongkar Inline Editing =====
+    
+    // Handle display click to show edit mode
+    document.querySelectorAll('.status-bongkar-display').forEach(function(element) {
+        element.addEventListener('click', function() {
+            const container = this.closest('.status-bongkar-container');
+            this.classList.add('hidden');
+            container.querySelector('.status-bongkar-edit').classList.remove('hidden');
+            container.querySelector('.status-bongkar-select').focus();
+        });
+    });
+
+    // Handle save button click
+    document.querySelectorAll('.save-status-bongkar').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const container = this.closest('.status-bongkar-container');
+            const blId = container.dataset.blId;
+            const select = container.querySelector('.status-bongkar-select');
+            const statusBongkar = select.value;
+            
+            // Disable button during request
+            button.disabled = true;
+            button.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+            
+            // Send AJAX request
+            fetch(`/bl/${blId}/status-bongkar`, {
+                method: 'PATCH',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                },
+                body: JSON.stringify({
+                    status_bongkar: statusBongkar
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update display
+                    const display = container.querySelector('.status-bongkar-display span');
+                    display.textContent = data.status_bongkar;
+                    
+                    // Update badge color
+                    display.className = 'px-2 py-1 text-xs font-semibold rounded-full ' + 
+                        (data.status_bongkar === 'Sudah Bongkar' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800');
+                    
+                    // Hide edit, show display
+                    container.querySelector('.status-bongkar-edit').classList.add('hidden');
+                    container.querySelector('.status-bongkar-display').classList.remove('hidden');
+                    
+                    // Show success message
+                    showNotification('Status bongkar berhasil diupdate', 'success');
+                } else {
+                    showNotification(data.message || 'Gagal mengupdate status bongkar', 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                showNotification('Terjadi kesalahan saat mengupdate status bongkar', 'error');
+            })
+            .finally(() => {
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = '<i class="fas fa-check"></i>';
+            });
+        });
+    });
+
+    // Handle cancel button click
+    document.querySelectorAll('.cancel-status-bongkar').forEach(function(button) {
+        button.addEventListener('click', function() {
+            const container = this.closest('.status-bongkar-container');
+            const display = container.querySelector('.status-bongkar-display');
+            const edit = container.querySelector('.status-bongkar-edit');
+            const select = container.querySelector('.status-bongkar-select');
+            const originalValue = display.querySelector('span').textContent;
+            
+            // Reset select value
+            select.value = originalValue;
+            
+            // Hide edit, show display
+            edit.classList.add('hidden');
+            display.classList.remove('hidden');
         });
     });
     

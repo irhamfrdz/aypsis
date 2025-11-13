@@ -2750,6 +2750,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('bl.download.template')
                ->middleware('can:bl-view');
                
+          Route::post('bl/import', [\App\Http\Controllers\BlController::class, 'import'])
+               ->name('bl.import')
+               ->middleware('can:bl-create');
+               
           Route::get('bl', [\App\Http\Controllers\BlController::class, 'select'])->name('bl.select')
                ->middleware('can:bl-view');
                
@@ -2763,6 +2767,9 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->middleware('can:bl-view');
                
           Route::patch('bl/{bl}/nomor-bl', [\App\Http\Controllers\BlController::class, 'updateNomorBl'])->name('bl.update-nomor-bl')
+               ->middleware('can:bl-edit');
+               
+          Route::patch('bl/{bl}/status-bongkar', [\App\Http\Controllers\BlController::class, 'updateStatusBongkar'])->name('bl.update-status-bongkar')
                ->middleware('can:bl-edit');
                
           // BL Bulk Operations
