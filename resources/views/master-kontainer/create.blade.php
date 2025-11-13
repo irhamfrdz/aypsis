@@ -80,9 +80,13 @@
                     @enderror
                 </div>
                 <div>
-                    <label for="pemilik_kontainer" class="block text-sm font-medium text-gray-700">Pemilik Kontainer</label>
-                    <input type="text" name="pemilik_kontainer" id="pemilik_kontainer" value="{{ old('pemilik_kontainer') }}" class="{{ $inputClasses }}">
-                    @error('pemilik_kontainer')
+                    <label for="vendor" class="block text-sm font-medium text-gray-700">Vendor</label>
+                    <select name="vendor" id="vendor" class="{{ $inputClasses }}">
+                        <option value="">-- Pilih Vendor --</option>
+                        <option value="ZONA" {{ old('vendor') == 'ZONA' ? 'selected' : '' }}>ZONA</option>
+                        <option value="DPE" {{ old('vendor') == 'DPE' ? 'selected' : '' }}>DPE</option>
+                    </select>
+                    @error('vendor')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
