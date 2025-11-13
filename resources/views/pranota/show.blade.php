@@ -151,6 +151,21 @@
                     <h3 class="text-lg font-medium text-gray-900">Daftar Tagihan dalam Pranota</h3>
                 </div>
                 <div class="p-6">
+                    <!-- Search Box -->
+                    <div class="mb-4">
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                </svg>
+                            </div>
+                            <input type="text" 
+                                   id="searchKontainerInput" 
+                                   placeholder="Cari nomor kontainer..."
+                                   onkeyup="filterTableByKontainer()"
+                                   class="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                        </div>
+                    </div>
                     <div class="overflow-x-auto">
                         <table class="min-w-full divide-y divide-gray-200">
                             <thead class="bg-gray-50">
@@ -161,6 +176,7 @@
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Vendor</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
                                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Masa</th>
@@ -174,7 +190,7 @@
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
                                 @forelse($tagihanItems as $index => $item)
-                                <tr class="hover:bg-gray-50">
+                                <tr class="hover:bg-gray-50 tagihan-row" data-kontainer="{{ strtolower($item->nomor_kontainer) }}">
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <input type="checkbox"
                                                class="tagihan-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
@@ -186,6 +202,9 @@
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->vendor }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-900">{{ $item->nomor_kontainer }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <span class="font-mono text-xs">{{ $item->invoice_vendor ?? '-' }}</span>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->size }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->periode }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->masa }}</td>
@@ -277,16 +296,24 @@
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="{{ $pranota->status == 'unpaid' ? '11' : '10' }}" class="px-6 py-12 text-center text-gray-500">
+                                    <td colspan="{{ $pranota->status == 'unpaid' ? '12' : '11' }}" class="px-6 py-12 text-center text-gray-500">
                                         Tidak ada tagihan ditemukan
                                     </td>
                                 </tr>
                                 @endforelse
+                                <tr id="noResultsRow" class="hidden">
+                                    <td colspan="{{ $pranota->status == 'unpaid' ? '12' : '11' }}" class="px-6 py-12 text-center text-gray-500">
+                                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                        </svg>
+                                        <p class="mt-2">Tidak ada kontainer yang ditemukan dengan kata kunci tersebut</p>
+                                    </td>
+                                </tr>
                             </tbody>
                             @if($tagihanItems->count() > 0)
                             <tfoot class="bg-blue-50">
                                 <tr>
-                                    <th colspan="9" class="px-6 py-3 text-right text-sm font-medium text-blue-900">Total:</th>
+                                    <th colspan="10" class="px-6 py-3 text-right text-sm font-medium text-blue-900">Total:</th>
                                     <th class="px-6 py-3 text-left text-sm font-bold text-green-600">
                                         Rp {{ number_format($tagihanItems->sum('grand_total'), 2, ',', '.') }}
                                     </th>
@@ -510,6 +537,35 @@
 </div>
 
 <script>
+// Filter table by kontainer number
+function filterTableByKontainer() {
+    const input = document.getElementById('searchKontainerInput');
+    const filter = input.value.toLowerCase().trim();
+    const rows = document.querySelectorAll('.tagihan-row');
+    const noResultsRow = document.getElementById('noResultsRow');
+    let visibleCount = 0;
+
+    rows.forEach(row => {
+        const kontainerNumber = row.getAttribute('data-kontainer');
+        if (kontainerNumber.includes(filter)) {
+            row.style.display = '';
+            visibleCount++;
+        } else {
+            row.style.display = 'none';
+        }
+    });
+
+    // Show/hide no results message
+    if (visibleCount === 0 && filter !== '') {
+        noResultsRow.style.display = '';
+    } else {
+        noResultsRow.style.display = 'none';
+    }
+
+    // Update selection after filtering
+    updateTagihanSelection();
+}
+
 function toggleAllTagihan() {
     const selectAll = document.getElementById('selectAllTagihan');
     const checkboxes = document.querySelectorAll('.tagihan-checkbox');
