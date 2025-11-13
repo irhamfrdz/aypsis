@@ -135,7 +135,7 @@
                                     <form action="{{ route('kelola-bbm.destroy', $bbm) }}" 
                                           method="POST" 
                                           class="inline"
-                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus data BBM tanggal {{ $bbm->tanggal->format('d/m/Y') }}?');">
+                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus data BBM periode {{ $bbm->formatted_bulan_tahun }}?');">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" 

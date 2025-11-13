@@ -70,40 +70,46 @@ class SupirDashboardController extends Controller
                                               ->orderBy('nama_kapal')
                                               ->get();
 
-        // Ambil data voyage dari pergerakan kapal - lebih fleksibel untuk testing
-        // Gunakan lebih banyak status untuk memastikan ada data
-        $pergerakanKapals = \App\Models\PergerakanKapal::whereNotNull('voyage')
-                                                       ->where('voyage', '!=', '')
-                                                       ->orderBy('nama_kapal')
-                                                       ->orderBy('voyage')
-                                                       ->get();
+        // Ambil data voyage dari naik_kapal - lebih akurat karena data real
+        // Gunakan distinct untuk menghindari duplikasi dan group by untuk unique voyage
+        $naikKapals = \App\Models\NaikKapal::whereNotNull('no_voyage')
+                                           ->whereNotNull('nama_kapal')
+                                           ->where('no_voyage', '!=', '')
+                                           ->where('nama_kapal', '!=', '')
+                                           ->select('nama_kapal', 'no_voyage', 
+                                                   \DB::raw('MAX(tanggal_muat) as tanggal_muat'),
+                                                   \DB::raw('MAX(pelabuhan_tujuan) as pelabuhan_tujuan'))
+                                           ->groupBy('nama_kapal', 'no_voyage')
+                                           ->orderBy('nama_kapal')
+                                           ->orderBy('no_voyage')
+                                           ->get();
 
         // Debug log untuk melihat data yang tersedia
-        \Log::info('OB Muat Data Debug', [
+        \Log::info('OB Muat Data Debug (Naik Kapal)', [
             'master_kapals_count' => $masterKapals->count(),
-            'pergerakan_kapals_count' => $pergerakanKapals->count(),
+            'naik_kapals_count' => $naikKapals->count(),
             'master_kapal_names' => $masterKapals->pluck('nama_kapal')->toArray(),
-            'pergerakan_kapal_names' => $pergerakanKapals->pluck('nama_kapal')->unique()->toArray(),
-            'sample_voyages' => $pergerakanKapals->take(5)->map(function($item) {
-                return $item->nama_kapal . ' - ' . $item->voyage . ' (' . $item->status . ')';
+            'naik_kapal_names' => $naikKapals->pluck('nama_kapal')->unique()->toArray(),
+            'sample_voyages' => $naikKapals->take(5)->map(function($item) {
+                return $item->nama_kapal . ' - ' . $item->no_voyage . ' (' . $item->tanggal_muat . ')';
             })->toArray(),
-            'voyage_by_kapal' => $pergerakanKapals->groupBy('nama_kapal')->map(function($group) {
-                return $group->pluck('voyage')->toArray();
+            'voyage_by_kapal' => $naikKapals->groupBy('nama_kapal')->map(function($group) {
+                return $group->pluck('no_voyage')->unique()->toArray();
             })->toArray()
         ]);
         
-        // Check name matching between master and pergerakan
+        // Check name matching between master and naik_kapal
         $masterNames = $masterKapals->pluck('nama_kapal')->toArray();
-        $pergerakanNames = $pergerakanKapals->pluck('nama_kapal')->unique()->toArray();
-        $commonNames = array_intersect($masterNames, $pergerakanNames);
+        $naikKapalNames = $naikKapals->pluck('nama_kapal')->unique()->toArray();
+        $commonNames = array_intersect($masterNames, $naikKapalNames);
         
-        \Log::info('Kapal Name Matching', [
+        \Log::info('Kapal Name Matching (Naik Kapal)', [
             'common_names' => $commonNames,
-            'master_only' => array_diff($masterNames, $pergerakanNames),
-            'pergerakan_only' => array_diff($pergerakanNames, $masterNames)
+            'master_only' => array_diff($masterNames, $naikKapalNames),
+            'naik_kapal_only' => array_diff($naikKapalNames, $masterNames)
         ]);
 
-        return view('supir.ob-muat', compact('masterKapals', 'pergerakanKapals'));
+        return view('supir.ob-muat', compact('masterKapals', 'naikKapals'));
     }
 
     public function obMuatStoreSelection(Request $request)

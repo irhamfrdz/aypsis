@@ -22,14 +22,17 @@ class KelolaBbmController extends Controller
         
         if ($search) {
             $query->where(function($q) use ($search) {
-                $q->where('tanggal', 'like', "%{$search}%")
+                $q->where('bulan', 'like', "%{$search}%")
+                  ->orWhere('tahun', 'like', "%{$search}%")
                   ->orWhere('bbm_per_liter', 'like', "%{$search}%")
                   ->orWhere('persentase', 'like', "%{$search}%")
                   ->orWhere('keterangan', 'like', "%{$search}%");
             });
         }
         
-        $kelolaBbm = $query->orderBy('tanggal', 'desc')->paginate(10);
+        $kelolaBbm = $query->orderBy('tahun', 'desc')
+                          ->orderBy('bulan', 'desc')
+                          ->paginate(10);
         
         return view('kelola-bbm.index', compact('kelolaBbm', 'search'));
     }

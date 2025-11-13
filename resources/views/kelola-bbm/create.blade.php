@@ -212,15 +212,16 @@ function calculatePercentage() {
     if (bbmPerLiter > 0) {
         // Hitung persentase perubahan: ((Harga Baru - Harga Dasar) / Harga Dasar) * 100
         const persentase = ((bbmPerLiter - HARGA_BBM_DASAR) / HARGA_BBM_DASAR) * 100;
+        const persentaseRounded = Math.round(persentase);
         
-        // Set nilai persentase (bisa positif atau negatif)
-        persentaseInput.value = persentase.toFixed(2);
+        // Set nilai persentase (dibulatkan tanpa desimal)
+        persentaseInput.value = persentaseRounded;
         
         // Update info text dengan warna sesuai kondisi
         if (persentase > 0) {
-            persentaseInfo.innerHTML = `<span class="text-red-600 font-medium"><i class="fas fa-arrow-up"></i> Naik ${persentase.toFixed(2)}% dari harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
+            persentaseInfo.innerHTML = `<span class="text-red-600 font-medium"><i class="fas fa-arrow-up"></i> Naik ${persentaseRounded}% dari harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
         } else if (persentase < 0) {
-            persentaseInfo.innerHTML = `<span class="text-green-600 font-medium"><i class="fas fa-arrow-down"></i> Turun ${Math.abs(persentase).toFixed(2)}% dari harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
+            persentaseInfo.innerHTML = `<span class="text-green-600 font-medium"><i class="fas fa-arrow-down"></i> Turun ${Math.abs(persentaseRounded)}% dari harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
         } else {
             persentaseInfo.innerHTML = `<span class="text-blue-600 font-medium"><i class="fas fa-equals"></i> Sama dengan harga dasar (Rp ${HARGA_BBM_DASAR.toLocaleString('id-ID')})</span>`;
         }

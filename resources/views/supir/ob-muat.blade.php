@@ -149,18 +149,17 @@
     </main>
 
     <script>
-        // Data voyage berdasarkan kapal dari server
+        // Data voyage berdasarkan kapal dari naik_kapal
         const voyageData = {
-            @if($pergerakanKapals->count() > 0)
-                @foreach($pergerakanKapals->groupBy('nama_kapal') as $namaKapal => $voyages)
+            @if($naikKapals->count() > 0)
+                @foreach($naikKapals->groupBy('nama_kapal') as $namaKapal => $voyages)
                 '{{ $namaKapal }}': [
                     @foreach($voyages as $voyage)
                     {
-                        voyage: '{{ $voyage->voyage }}',
-                        status: '{{ ucfirst($voyage->status) }}',
-                        eta: '{{ $voyage->tanggal_sandar ? date("d/m/Y H:i", strtotime($voyage->tanggal_sandar)) : "-" }}',
-                        etd: '{{ $voyage->tanggal_berangkat ? date("d/m/Y H:i", strtotime($voyage->tanggal_berangkat)) : "-" }}',
-                        dermaga: '{{ $voyage->tujuan_tujuan ?? "-" }}'
+                        voyage: '{{ $voyage->no_voyage }}',
+                        tanggal_muat: '{{ $voyage->tanggal_muat ? date("d/m/Y", strtotime($voyage->tanggal_muat)) : "-" }}',
+                        pelabuhan_tujuan: '{{ $voyage->pelabuhan_tujuan ?? "-" }}',
+                        jenis_barang: '{{ $voyage->jenis_barang ?? "-" }}'
                     },
                     @endforeach
                 ],
@@ -170,17 +169,16 @@
                 'KM SAMPLE KAPAL': [
                     {
                         voyage: 'SAMPLE001',
-                        status: 'Loading',
-                        eta: '{{ date("d/m/Y H:i") }}',
-                        etd: '{{ date("d/m/Y H:i", strtotime("+1 day")) }}',
-                        dermaga: 'Dermaga 1'
+                        tanggal_muat: '{{ date("d/m/Y") }}',
+                        pelabuhan_tujuan: 'Pelabuhan Tujuan',
+                        jenis_barang: 'General Cargo'
                     }
                 ]
             @endif
         };
 
         // Debug: Log voyage data to console
-        console.log('Voyage Data:', voyageData);
+        console.log('Voyage Data (from Naik Kapal):', voyageData);
         console.log('Total Kapal in voyageData:', Object.keys(voyageData).length);
 
         function updateVoyageOptions() {
@@ -201,17 +199,40 @@
             if (selectedKapal && voyageData[selectedKapal]) {
                 console.log('Voyages for', selectedKapal, ':', voyageData[selectedKapal]);
                 
-                // Populate voyage options
+                // Populate voyage options - hapus duplikat dan format dengan baik
+                const uniqueVoyages = {};
                 voyageData[selectedKapal].forEach(item => {
+                    if (!uniqueVoyages[item.voyage]) {
+                        uniqueVoyages[item.voyage] = item;
+                    }
+                });
+                
+                Object.values(uniqueVoyages).forEach(item => {
                     const option = document.createElement('option');
                     option.value = item.voyage;
-                    option.textContent = `${item.voyage} (${item.status})`;
+                    
+                    // Format text dengan info yang ada
+                    let displayText = item.voyage;
+                    const additionalInfo = [];
+                    
+                    if (item.tanggal_muat && item.tanggal_muat !== '-') {
+                        additionalInfo.push(item.tanggal_muat);
+                    }
+                    if (item.pelabuhan_tujuan && item.pelabuhan_tujuan !== '-') {
+                        additionalInfo.push(item.pelabuhan_tujuan);
+                    }
+                    
+                    if (additionalInfo.length > 0) {
+                        displayText += ` (${additionalInfo.join(' - ')})`;
+                    }
+                    
+                    option.textContent = displayText;
                     voyageSelect.appendChild(option);
                 });
                 
                 // Enable voyage dropdown
                 voyageSelect.disabled = false;
-                console.log('Voyage dropdown enabled with', voyageData[selectedKapal].length, 'options');
+                console.log('Voyage dropdown enabled with', Object.keys(uniqueVoyages).length, 'unique options');
             } else if (selectedKapal) {
                 console.log('No voyages found for kapal:', selectedKapal);
                 console.log('Available kapals in voyageData:', Object.keys(voyageData));
@@ -269,8 +290,8 @@
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Page loaded. Available kapal in voyageData:', Object.keys(voyageData));
             
-            @if($pergerakanKapals->count() == 0)
-            console.warn('No pergerakan kapal data found. Using sample data.');
+            @if($naikKapals->count() == 0)
+            console.warn('No naik kapal data found. Using sample data.');
             @endif
         });
     </script>
