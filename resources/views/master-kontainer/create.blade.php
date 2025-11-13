@@ -98,9 +98,9 @@
                     @enderror
                 </div>
                 <div>
-                    <label for="tanggal_masuk_sewa" class="block text-sm font-medium text-gray-700">Tanggal Masuk Sewa</label>
-                    <input type="text" name="tanggal_masuk_sewa" id="tanggal_masuk_sewa" value="{{ old('tanggal_masuk_sewa') }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
-                    @error('tanggal_masuk_sewa')
+                    <label for="tanggal_mulai_sewa" class="block text-sm font-medium text-gray-700">Tanggal Mulai Sewa</label>
+                    <input type="text" name="tanggal_mulai_sewa" id="tanggal_mulai_sewa" value="{{ old('tanggal_mulai_sewa') }}" class="{{ $inputClasses }} datepicker" placeholder="dd/mmm/yyyy" autocomplete="off">
+                    @error('tanggal_mulai_sewa')
                         <p class="mt-2 text-xs text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

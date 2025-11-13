@@ -25,7 +25,6 @@ class Kontainer extends Model
         'tipe_kontainer',
         'vendor',
         'keterangan',
-        'tanggal_masuk_sewa',
         'tanggal_mulai_sewa',
         'tanggal_selesai_sewa',
         'tahun_pembuatan',
@@ -46,7 +45,6 @@ class Kontainer extends Model
      * @var array
      */
     protected $casts = [
-        'tanggal_masuk_sewa' => 'date',
         'tanggal_mulai_sewa' => 'date',
         'tanggal_selesai_sewa' => 'date',
         'tanggal_checkpoint_supir' => 'datetime',

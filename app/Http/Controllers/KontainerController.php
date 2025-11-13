@@ -160,7 +160,7 @@ class KontainerController extends Controller
     public function update(Request $request, Kontainer $kontainer)
     {
         // Convert date format from dd/mmm/yyyy to yyyy-mm-dd for date fields
-        $dateFields = ['tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
+        $dateFields = ['tanggal_mulai_sewa', 'tanggal_selesai_sewa'];
         foreach ($dateFields as $field) {
             if ($request->filled($field)) {
                 try {
@@ -190,8 +190,8 @@ class KontainerController extends Controller
             'tipe_kontainer' => 'required|string',
             'vendor' => 'nullable|string|in:ZONA,DPE',
             'keterangan' => 'nullable|string',
-            'tanggal_masuk_sewa' => 'nullable|date',
-            'tanggal_selesai_sewa' => 'nullable|date|after_or_equal:tanggal_masuk_sewa',
+            'tanggal_mulai_sewa' => 'nullable|date',
+            'tanggal_selesai_sewa' => 'nullable|date|after_or_equal:tanggal_mulai_sewa',
             'tahun_pembuatan' => 'nullable|string|size:4',
             'keterangan1' => 'nullable|string',
             'keterangan2' => 'nullable|string',
