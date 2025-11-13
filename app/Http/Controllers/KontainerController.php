@@ -72,6 +72,21 @@ class KontainerController extends Controller
      */
     public function store(Request $request)
     {
+        // Convert date format from dd/mmm/yyyy to yyyy-mm-dd for date fields
+        $dateFields = ['tanggal_beli', 'tanggal_jual', 'tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
+        foreach ($dateFields as $field) {
+            if ($request->filled($field)) {
+                try {
+                    $date = \DateTime::createFromFormat('d/M/Y', $request->input($field));
+                    if ($date) {
+                        $request->merge([$field => $date->format('Y-m-d')]);
+                    }
+                } catch (\Exception $e) {
+                    // If conversion fails, keep original value for validation to catch
+                }
+            }
+        }
+
         // Gabungkan awalan, nomor seri, dan akhiran untuk membuat nomor seri gabungan
         $nomor_seri_gabungan = $request->input('awalan_kontainer') .
                                $request->input('nomor_seri_kontainer') .
@@ -84,7 +99,7 @@ class KontainerController extends Controller
             'nomor_seri_kontainer' => 'required|string|size:6',
             'akhiran_kontainer' => 'required|string|size:1',
             'nomor_seri_gabungan' => 'required|string|size:11',
-            'ukuran' => 'required|in:10,20,40',
+            'ukuran' => 'required|string|in:10,20,40',
             'tipe_kontainer' => 'required|string',
             'tanggal_beli' => 'nullable|date',
             'tanggal_jual' => 'nullable|date',
@@ -151,6 +166,21 @@ class KontainerController extends Controller
      */
     public function update(Request $request, Kontainer $kontainer)
     {
+        // Convert date format from dd/mmm/yyyy to yyyy-mm-dd for date fields
+        $dateFields = ['tanggal_beli', 'tanggal_jual', 'tanggal_masuk_sewa', 'tanggal_selesai_sewa'];
+        foreach ($dateFields as $field) {
+            if ($request->filled($field)) {
+                try {
+                    $date = \DateTime::createFromFormat('d/M/Y', $request->input($field));
+                    if ($date) {
+                        $request->merge([$field => $date->format('Y-m-d')]);
+                    }
+                } catch (\Exception $e) {
+                    // If conversion fails, keep original value for validation to catch
+                }
+            }
+        }
+
         // Gabungkan awalan, nomor seri, dan akhiran untuk membuat nomor seri gabungan
         $nomor_seri_gabungan = $request->input('awalan_kontainer') .
                                $request->input('nomor_seri_kontainer') .
@@ -163,7 +193,7 @@ class KontainerController extends Controller
             'nomor_seri_kontainer' => 'required|string|size:6',
             'akhiran_kontainer' => 'required|string|size:1',
             'nomor_seri_gabungan' => 'required|string|size:11',
-            'ukuran' => 'required|in:10,20,40',
+            'ukuran' => 'required|string|in:10,20,40',
             'tipe_kontainer' => 'required|string',
             'tanggal_beli' => 'nullable|date',
             'tanggal_jual' => 'nullable|date',
