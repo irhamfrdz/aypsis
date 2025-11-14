@@ -74,7 +74,7 @@ class PranotaObController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nomor_pranota' => 'required|string|max:50|unique:pranota_obs,nomor_pranota',
+            'nomor_pranota' => 'required|string|max:50|unique:pranota_ob,nomor_pranota',
             'tanggal_pranota' => 'required|date',
             'total_biaya' => 'required|numeric|min:0',
             'penyesuaian' => 'nullable|numeric',

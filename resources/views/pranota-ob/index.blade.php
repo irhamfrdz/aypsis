@@ -200,23 +200,21 @@
                                             </a>
                                         @endcan
                                         
+                                        @can('pranota-ob-view')
+                                            <a href="{{ route('pranota-ob.print', $pranota) }}" 
+                                               target="_blank"
+                                               class="text-purple-600 hover:text-purple-900 bg-purple-100 hover:bg-purple-200 px-2 py-1 rounded" 
+                                               title="Print/Cetak">
+                                                <i class="fas fa-print"></i>
+                                            </a>
+                                        @endcan
+                                        
                                         @if($pranota->status === 'draft')
                                             @can('pranota-ob-update')
                                                 <a href="{{ route('pranota-ob.edit', $pranota) }}" 
                                                    class="text-yellow-600 hover:text-yellow-900 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded" 
                                                    title="Edit">
                                                     <i class="fas fa-edit"></i>
-                                                </a>
-                                            @endcan
-                                        @endif
-                                        
-                                        @if(in_array($pranota->status, ['pending', 'approved']))
-                                            @can('pranota-ob-print')
-                                                <a href="{{ route('pranota-ob.print', $pranota) }}" 
-                                                   target="_blank"
-                                                   class="text-green-600 hover:text-green-900 bg-green-100 hover:bg-green-200 px-2 py-1 rounded" 
-                                                   title="Cetak">
-                                                    <i class="fas fa-print"></i>
                                                 </a>
                                             @endcan
                                         @endif

@@ -2224,12 +2224,15 @@ Route::middleware(['auth'])->group(function() {
     Route::post('pranota-ob', [\App\Http\Controllers\PranotaObController::class, 'store'])
          ->name('pranota-ob.store')
          ->middleware('can:pranota-ob-create');
-    Route::get('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'show'])
-         ->name('pranota-ob.show')
+    Route::get('pranota-ob/{pranotaOb}/print', [\App\Http\Controllers\PranotaObController::class, 'print'])
+         ->name('pranota-ob.print')
          ->middleware('can:pranota-ob-view');
     Route::get('pranota-ob/{pranotaOb}/edit', [\App\Http\Controllers\PranotaObController::class, 'edit'])
          ->name('pranota-ob.edit')
          ->middleware('can:pranota-ob-update');
+    Route::get('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'show'])
+         ->name('pranota-ob.show')
+         ->middleware('can:pranota-ob-view');
     Route::put('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'update'])
          ->name('pranota-ob.update')
          ->middleware('can:pranota-ob-update');
@@ -2245,9 +2248,6 @@ Route::middleware(['auth'])->group(function() {
     Route::post('pranota-ob/{pranotaOb}/cancel', [\App\Http\Controllers\PranotaObController::class, 'cancel'])
          ->name('pranota-ob.cancel')
          ->middleware('can:pranota-ob-update');
-    Route::get('pranota-ob/{pranotaOb}/print', [\App\Http\Controllers\PranotaObController::class, 'print'])
-         ->name('pranota-ob.print')
-         ->middleware('can:pranota-ob-print');
     Route::get('api/available-tagihan-ob', [\App\Http\Controllers\PranotaObController::class, 'getAvailableTagihanOb'])
          ->name('api.available-tagihan-ob');
 
