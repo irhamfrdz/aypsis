@@ -779,4 +779,61 @@ class KontainerImportController extends Controller
             return back()->with('error', 'Gagal mengimpor data tanggal sewa: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Export kontainer yang belum memiliki tanggal sewa
+     */
+    public function exportKontainerTanpaTanggalSewa()
+    {
+        try {
+            $fileName = 'kontainer_tanpa_tanggal_sewa_' . date('Y-m-d_H-i-s') . '.csv';
+
+            // Headers for CSV
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            ];
+
+            // Query kontainer yang BELUM memiliki kedua tanggal sewa (both null)
+            $kontainers = Kontainer::whereNull('tanggal_mulai_sewa')
+                ->whereNull('tanggal_selesai_sewa')
+                ->orderBy('nomor_seri_gabungan', 'asc')
+                ->get();
+
+            $callback = function() use ($kontainers) {
+                $file = fopen('php://output', 'w');
+
+                // Write header
+                fputcsv($file, [
+                    'Nomor Kontainer',
+                    'Ukuran',
+                    'Tipe',
+                    'Vendor',
+                    'Status',
+                    'Tanggal Mulai Sewa',
+                    'Tanggal Selesai Sewa'
+                ], ';');
+
+                // Write data
+                foreach ($kontainers as $kontainer) {
+                    fputcsv($file, [
+                        $kontainer->nomor_seri_gabungan,
+                        $kontainer->ukuran,
+                        $kontainer->tipe_kontainer,
+                        $kontainer->vendor ?? '',
+                        $kontainer->status,
+                        $kontainer->tanggal_mulai_sewa ? $kontainer->tanggal_mulai_sewa->format('d-M-y') : '',
+                        $kontainer->tanggal_selesai_sewa ? $kontainer->tanggal_selesai_sewa->format('d-M-y') : ''
+                    ], ';');
+                }
+
+                fclose($file);
+            };
+
+            return Response::stream($callback, 200, $headers);
+
+        } catch (Exception $e) {
+            return back()->with('error', 'Gagal export data: ' . $e->getMessage());
+        }
+    }
 }

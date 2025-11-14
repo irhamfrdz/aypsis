@@ -334,6 +334,9 @@ Route::middleware([
         Route::get('kontainer/export', [KontainerImportController::class, 'export'])
              ->name('kontainer.export')
              ->middleware('can:master-kontainer-view');
+        Route::get('kontainer/export-tanpa-tanggal-sewa', [KontainerImportController::class, 'exportKontainerTanpaTanggalSewa'])
+             ->name('kontainer.export-tanpa-tanggal-sewa')
+             ->middleware('can:master-kontainer-view');
         Route::post('kontainer/import', [KontainerImportController::class, 'import'])
              ->name('kontainer.import')
              ->middleware('can:master-kontainer-create');
