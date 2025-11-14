@@ -173,23 +173,26 @@ class SupirDashboardController extends Controller
         $selectedKapal = $request->get('kapal');
         $selectedVoyage = $request->get('voyage');
 
-        // Ambil data BL berdasarkan kapal dan voyage
-        $bls = \App\Models\Bl::where('nama_kapal', $selectedKapal)
+        // Ambil data dari tabel naik_kapal berdasarkan kapal dan voyage
+        $bls = \App\Models\NaikKapal::where('nama_kapal', $selectedKapal)
                              ->where('no_voyage', $selectedVoyage)
                              ->whereNotNull('nomor_kontainer')
                              ->where('nomor_kontainer', '!=', '')
                              ->orderBy('nomor_kontainer')
                              ->get();
 
-        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini
+        // Ambil data tagihan OB yang sudah ada untuk kapal dan voyage ini (untuk OB Muat)
         $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
                                                   ->where('voyage', $selectedVoyage)
+                                                  ->where('kegiatan', 'muat')
                                                   ->pluck('nomor_kontainer')
                                                   ->toArray();
 
-        // Tambahkan status OB ke setiap BL
-        $bls->each(function ($bl) use ($existingTagihanOb) {
-            $bl->sudah_ob = in_array($bl->nomor_kontainer, $existingTagihanOb);
+        // Tambahkan status OB ke setiap naik_kapal
+        $bls->each(function ($naikKapal) use ($existingTagihanOb) {
+            // Field sudah sesuai dengan view (nomor_kontainer sudah ada)
+            $naikKapal->nama_barang = $naikKapal->jenis_barang ?? '-';
+            $naikKapal->sudah_ob = in_array($naikKapal->nomor_kontainer, $existingTagihanOb);
         });
 
         // Log untuk debugging
@@ -200,7 +203,8 @@ class SupirDashboardController extends Controller
             'container_numbers' => $bls->pluck('nomor_kontainer')->toArray(),
             'existing_tagihan_ob' => $existingTagihanOb,
             'user_id' => $user->id,
-            'user_name' => $user->name
+            'user_name' => $user->name,
+            'source_table' => 'naik_kapal'
         ]);
 
         return view('supir.ob-muat-index', compact('bls', 'selectedKapal', 'selectedVoyage'));
@@ -229,14 +233,15 @@ class SupirDashboardController extends Controller
         $bl = \App\Models\Bl::findOrFail($blId);
         $nomorKontainer = $bl->nomor_kontainer;
 
-        // Cek apakah sudah ada tagihan OB untuk kontainer ini
+        // Cek apakah sudah ada tagihan OB untuk kontainer ini (OB Muat)
         $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
                                                   ->where('voyage', $selectedVoyage)
                                                   ->where('nomor_kontainer', $nomorKontainer)
+                                                  ->where('kegiatan', 'muat')
                                                   ->first();
 
         if ($existingTagihanOb) {
-            return back()->with('error', 'Tagihan OB untuk kontainer ' . $nomorKontainer . ' sudah ada.');
+            return back()->with('error', 'Tagihan OB Muat untuk kontainer ' . $nomorKontainer . ' sudah ada.');
         }
 
         // Cari surat jalan terkait untuk mendapatkan data kegiatan/aktifitas
@@ -292,20 +297,21 @@ class SupirDashboardController extends Controller
             $tagihanOb = new \App\Models\TagihanOb();
             $tagihanOb->kapal = $selectedKapal;
             $tagihanOb->voyage = $selectedVoyage;
+            $tagihanOb->kegiatan = 'muat';
             $tagihanOb->nomor_kontainer = $nomorKontainer;
             $tagihanOb->nama_supir = $user->name;
-            $tagihanOb->barang = $bl->nama_barang ?? 'General Cargo';
+            $tagihanOb->barang = $naikKapal->jenis_barang ?? 'General Cargo';
             $tagihanOb->status_kontainer = $statusKontainer;
-            $tagihanOb->bl_id = $bl->id;
+            $tagihanOb->naik_kapal_id = $naikKapal->id;
             $tagihanOb->created_by = $user->id;
             
-            // Ambil size kontainer dari surat jalan, fallback ke BL
+            // Ambil size kontainer dari naik_kapal, fallback ke surat jalan
             $sizeKontainer = '20ft'; // default
-            if ($suratJalan && $suratJalan->size) {
+            if ($naikKapal->size_kontainer && in_array($naikKapal->size_kontainer, ['20ft', '40ft'])) {
+                $sizeKontainer = $naikKapal->size_kontainer;
+            } elseif ($suratJalan && $suratJalan->size) {
                 // Convert size dari surat jalan (20, 40) ke format pricelist (20ft, 40ft)
                 $sizeKontainer = $suratJalan->size . 'ft';
-            } elseif ($bl->tipe_kontainer && in_array($bl->tipe_kontainer, ['20ft', '40ft'])) {
-                $sizeKontainer = $bl->tipe_kontainer;
             }
             
             // Hitung biaya otomatis dari pricelist
@@ -314,14 +320,20 @@ class SupirDashboardController extends Controller
             
             $tagihanOb->save();
 
+            // Update status OB pada tabel naik_kapal
+            $naikKapal->sudah_ob = true;
+            $naikKapal->save();
+
             // Log activity untuk audit trail
             \Log::info('TagihanOb Created via OB Muat Process', [
                 'tagihan_ob_id' => $tagihanOb->id,
+                'naik_kapal_id' => $naikKapal->id,
                 'user_id' => $user->id,
                 'user_name' => $user->name,
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
                 'nomor_kontainer' => $nomorKontainer,
+                'kegiatan' => 'muat',
                 'kegiatan_surat_jalan' => $kegiatan ?? null,
                 'status_kontainer' => $statusKontainer,
                 'size_kontainer' => $sizeKontainer,
@@ -339,7 +351,7 @@ class SupirDashboardController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'user_id' => $user->id,
-                'bl_id' => $blId,
+                'naik_kapal_id' => $naikKapalId,
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage
             ]);
@@ -603,15 +615,15 @@ class SupirDashboardController extends Controller
         $bl = \App\Models\Bl::findOrFail($blId);
         $nomorKontainer = $bl->nomor_kontainer;
 
-        // Cek apakah sudah ada tagihan OB untuk kontainer ini
-        // Note: Tabel tagihan_ob tidak memiliki kolom 'kegiatan'
+        // Cek apakah sudah ada tagihan OB untuk kontainer ini (OB Bongkar)
         $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
                                                   ->where('voyage', $selectedVoyage)
                                                   ->where('nomor_kontainer', $nomorKontainer)
+                                                  ->where('kegiatan', 'bongkar')
                                                   ->first();
 
         if ($existingTagihanOb) {
-            return back()->with('error', 'Tagihan OB untuk kontainer ' . $nomorKontainer . ' sudah ada.');
+            return back()->with('error', 'Tagihan OB Bongkar untuk kontainer ' . $nomorKontainer . ' sudah ada.');
         }
 
         try {
@@ -619,6 +631,7 @@ class SupirDashboardController extends Controller
             $tagihanOb = new \App\Models\TagihanOb();
             $tagihanOb->kapal = $selectedKapal;
             $tagihanOb->voyage = $selectedVoyage;
+            $tagihanOb->kegiatan = 'bongkar';
             $tagihanOb->nomor_kontainer = $nomorKontainer;
             $tagihanOb->nama_supir = $user->name;
             $tagihanOb->bl_id = $blId;
@@ -632,11 +645,17 @@ class SupirDashboardController extends Controller
             
             $tagihanOb->save();
 
+            // Update status OB pada tabel bls
+            $bl->sudah_ob = true;
+            $bl->save();
+
             \Log::info('TagihanOb Bongkar Created', [
                 'tagihan_ob_id' => $tagihanOb->id,
+                'bl_id' => $bl->id,
                 'nomor_kontainer' => $nomorKontainer,
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
+                'kegiatan' => 'bongkar',
                 'supir' => $user->name
             ]);
 

@@ -381,7 +381,7 @@
                                                         </div>
                                                     </div>
                                                     <div class="ml-4">
-                                                        <div class="text-sm font-medium text-gray-900">{{ $mobil->plat }}</div>
+                                                        <div class="text-sm font-medium text-gray-900">{{ $mobil->nomor_polisi }}</div>
                                                         <div class="text-sm text-gray-500">
                                                             {{ $mobil->aktiva }}
                                                             @if($mobil->ukuran)
@@ -591,7 +591,7 @@ const uangMukaData = {
             penerima_nama: '{{ $uangMuka->penerima ? $uangMuka->penerima->nama_lengkap : '' }}',
             // Data untuk kegiatan berbasis mobil (KIR & STNK)
             mobil_id: {{ $uangMuka->mobil_id ?? 'null' }},
-            mobil_plat: '{{ $uangMuka->mobil ? $uangMuka->mobil->plat : '' }}'
+            mobil_plat: '{{ $uangMuka->mobil ? $uangMuka->mobil->nomor_polisi : '' }}'
         },
     @endforeach
 };
@@ -610,7 +610,7 @@ const masterKegiatanData = {
 const masterMobilData = {
     @foreach($mobilList as $mobil)
         '{{ $mobil->id }}': {
-            plat: '{{ $mobil->plat }}',
+            plat: '{{ $mobil->nomor_polisi }}',
             aktiva: '{{ $mobil->aktiva ?? '' }}',
             ukuran: '{{ $mobil->ukuran ?? '' }}'
         },

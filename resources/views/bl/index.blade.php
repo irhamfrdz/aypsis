@@ -42,16 +42,68 @@
 
     {{-- Alert Messages --}}
     @if(session('success'))
-        <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-4">
-            <i class="fas fa-check-circle mr-2"></i>
-            {{ session('success') }}
+        <div class="bg-green-100 border-l-4 border-green-500 text-green-700 px-6 py-4 rounded-r mb-4 shadow-md">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-check-circle text-2xl mr-3"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-1">Import Berhasil!</h3>
+                    <p class="text-sm">{{ session('success') }}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-green-500 hover:text-green-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
     @endif
 
     @if(session('error'))
-        <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
-            <i class="fas fa-exclamation-circle mr-2"></i>
-            {{ session('error') }}
+        <div class="bg-red-100 border-l-4 border-red-500 text-red-700 px-6 py-4 rounded-r mb-4 shadow-md">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-triangle text-2xl mr-3"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-1">Import Gagal!</h3>
+                    <p class="text-sm">{{ session('error') }}</p>
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-red-500 hover:text-red-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    @endif
+
+    @if(session('warning'))
+        <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-800 px-6 py-4 rounded-r mb-4 shadow-md">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-exclamation-circle text-2xl mr-3"></i>
+                </div>
+                <div class="flex-1">
+                    <h3 class="font-bold text-lg mb-1">Peringatan Import</h3>
+                    <p class="text-sm">{{ session('warning') }}</p>
+                    @if(session('import_errors'))
+                        <details class="mt-3">
+                            <summary class="cursor-pointer text-sm font-semibold hover:text-yellow-900">
+                                <i class="fas fa-list mr-1"></i>Lihat detail error ({{ count(session('import_errors')) }} error)
+                            </summary>
+                            <div class="mt-2 ml-4 text-xs space-y-1 max-h-60 overflow-y-auto">
+                                @foreach(session('import_errors') as $error)
+                                    <div class="flex items-start py-1">
+                                        <i class="fas fa-circle text-xs mr-2 mt-1"></i>
+                                        <span>{{ $error }}</span>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </details>
+                    @endif
+                </div>
+                <button onclick="this.parentElement.parentElement.remove()" class="flex-shrink-0 ml-4 text-yellow-600 hover:text-yellow-800">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
         </div>
     @endif
 

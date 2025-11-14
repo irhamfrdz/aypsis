@@ -22,7 +22,8 @@ class TagihanOb extends Model
         'status_kontainer', // full atau empty
         'biaya',
         'size_kontainer',
-        'bl_id', // untuk referensi ke BL
+        'bl_id', // untuk referensi ke BL (untuk OB Bongkar)
+        'naik_kapal_id', // untuk referensi ke Naik Kapal (untuk OB Muat)
         'created_by',
         'keterangan'
     ];
@@ -32,11 +33,19 @@ class TagihanOb extends Model
     ];
 
     /**
-     * Get the BL that owns this tagihan OB
+     * Get the BL that owns this tagihan OB (untuk OB Bongkar)
      */
     public function bl()
     {
         return $this->belongsTo(\App\Models\Bl::class, 'bl_id');
+    }
+
+    /**
+     * Get the Naik Kapal that owns this tagihan OB (untuk OB Muat)
+     */
+    public function naikKapal()
+    {
+        return $this->belongsTo(\App\Models\NaikKapal::class, 'naik_kapal_id');
     }
 
     /**

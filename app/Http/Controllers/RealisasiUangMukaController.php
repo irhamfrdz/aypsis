@@ -111,7 +111,7 @@ class RealisasiUangMukaController extends Controller
                                ->get();
 
         // Ambil data mobil untuk kegiatan KIR & STNK
-        $mobilList = Mobil::orderBy('plat')->get();
+        $mobilList = Mobil::orderBy('nomor_polisi')->get();
 
         // Ambil data akun kas/bank dari COA
         $kasBankList = Coa::where('tipe_akun', 'Kas/Bank')

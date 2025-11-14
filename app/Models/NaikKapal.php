@@ -29,6 +29,7 @@ class NaikKapal extends Model
         'total_volume',
         'total_tonase',
         'kuantitas',
+        'sudah_ob',
         // 'status', // Kolom tidak ada di table
         'keterangan',
         'created_by',
@@ -46,6 +47,7 @@ class NaikKapal extends Model
         'jam_muat' => 'datetime:H:i',
         'total_volume' => 'decimal:3',
         'total_tonase' => 'decimal:3',
+        'sudah_ob' => 'boolean',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];

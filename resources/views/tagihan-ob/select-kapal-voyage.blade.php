@@ -53,12 +53,28 @@
                         <p class="text-sm text-gray-500 mt-1">Pilih kapal terlebih dahulu untuk melihat voyage yang tersedia</p>
                     </div>
 
+                    <!-- Kegiatan OB Selection -->
+                    <div>
+                        <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">
+                            Kegiatan OB <span class="text-red-500">*</span>
+                        </label>
+                        <select name="kegiatan" id="kegiatan" 
+                                class="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                required onchange="updateKegiatanInfo()">
+                            <option value="">-- Pilih Kegiatan --</option>
+                            <option value="muat">Muat</option>
+                            <option value="bongkar">Bongkar</option>
+                        </select>
+                        <p class="text-sm text-gray-500 mt-1">Pilih jenis kegiatan OB yang akan dilakukan</p>
+                    </div>
+
                     <!-- Summary Info -->
                     <div id="summaryInfo" class="hidden bg-gray-50 border border-gray-200 rounded-md p-4">
                         <h4 class="text-sm font-medium text-gray-700 mb-2">Informasi Dipilih:</h4>
                         <div class="text-sm text-gray-600">
                             <p><strong>Kapal:</strong> <span id="selectedKapalText">-</span></p>
                             <p><strong>Voyage:</strong> <span id="selectedVoyageText">-</span></p>
+                            <p><strong>Kegiatan:</strong> <span id="selectedKegiatanText">-</span></p>
                         </div>
                     </div>
 
@@ -108,6 +124,7 @@ function updateVoyageOptions() {
     const summaryInfo = document.getElementById('summaryInfo');
     const selectedKapalText = document.getElementById('selectedKapalText');
     const selectedVoyageText = document.getElementById('selectedVoyageText');
+    const selectedKegiatanText = document.getElementById('selectedKegiatanText');
     const submitBtn = document.getElementById('submitBtn');
     
     const selectedKapal = kapalSelect.value;
@@ -134,6 +151,7 @@ function updateVoyageOptions() {
     } else {
         summaryInfo.classList.add('hidden');
         selectedKapalText.textContent = '-';
+        selectedKegiatanText.textContent = '-';
     }
     
     checkFormValidity();
@@ -147,12 +165,22 @@ function updateVoyageInfo() {
     checkFormValidity();
 }
 
+function updateKegiatanInfo() {
+    const kegiatanSelect = document.getElementById('kegiatan');
+    const selectedKegiatanText = document.getElementById('selectedKegiatanText');
+    
+    const kegiatan = kegiatanSelect.value;
+    selectedKegiatanText.textContent = kegiatan ? kegiatan.charAt(0).toUpperCase() + kegiatan.slice(1) : '-';
+    checkFormValidity();
+}
+
 function checkFormValidity() {
     const kapalSelect = document.getElementById('kapal');
     const voyageSelect = document.getElementById('voyage');
+    const kegiatanSelect = document.getElementById('kegiatan');
     const submitBtn = document.getElementById('submitBtn');
     
-    const isValid = kapalSelect.value && voyageSelect.value;
+    const isValid = kapalSelect.value && voyageSelect.value && kegiatanSelect.value;
     submitBtn.disabled = !isValid;
 }
 
@@ -163,10 +191,11 @@ document.getElementById('voyage').addEventListener('change', updateVoyageInfo);
 document.getElementById('selectionForm').addEventListener('submit', function(e) {
     const kapal = document.getElementById('kapal').value;
     const voyage = document.getElementById('voyage').value;
+    const kegiatan = document.getElementById('kegiatan').value;
     
-    if (!kapal || !voyage) {
+    if (!kapal || !voyage || !kegiatan) {
         e.preventDefault();
-        alert('Silahkan pilih kapal dan voyage terlebih dahulu.');
+        alert('Silahkan pilih kapal, voyage, dan kegiatan terlebih dahulu.');
         return false;
     }
 });

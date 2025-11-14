@@ -26,6 +26,11 @@ class Bl extends Model
         'kuantitas',
         'supir_ob',
         'status_bongkar',
+        'sudah_ob',
+    ];
+
+    protected $casts = [
+        'sudah_ob' => 'boolean',
     ];
 
     /**

@@ -635,6 +635,10 @@ class BlController extends Controller
 
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls,csv|max:10240'
+        ], [
+            'file.required' => 'File wajib dipilih',
+            'file.mimes' => 'Format file harus .xlsx, .xls, atau .csv',
+            'file.max' => 'Ukuran file maksimal 10MB'
         ]);
 
         try {
@@ -645,43 +649,104 @@ class BlController extends Controller
             $errors = [];
             $rowNumber = 1;
 
+            \Log::info('Starting BL import', ['extension' => $extension, 'file' => $file->getClientOriginalName()]);
+
             if ($extension === 'csv') {
-                // Handle CSV import
+                // Handle CSV import with semicolon delimiter
                 $handle = fopen($file->getRealPath(), 'r');
                 
+                if (!$handle) {
+                    throw new \Exception('Tidak dapat membuka file CSV');
+                }
+                
                 // Skip header row
-                fgetcsv($handle);
+                $header = fgetcsv($handle, 0, ';');
                 $rowNumber++;
+                
+                \Log::info('CSV Header', ['header' => $header]);
 
-                while (($row = fgetcsv($handle)) !== false) {
+                while (($row = fgetcsv($handle, 0, ';')) !== false) {
                     try {
+                        // Skip completely empty rows
+                        $filteredRow = array_filter($row, function($value) {
+                            return !empty(trim($value));
+                        });
+                        
+                        if (empty($filteredRow)) {
+                            $rowNumber++;
+                            continue;
+                        }
+                        
+                        \Log::info("Row $rowNumber data", ['row' => $row, 'count' => count($row)]);
+                        
+                        // Pastikan array memiliki minimal 15 kolom
+                        if (count($row) < 15) {
+                            $errors[] = "Baris {$rowNumber}: Format CSV tidak lengkap (hanya " . count($row) . " kolom, minimal 15 kolom)";
+                            $rowNumber++;
+                            continue;
+                        }
+                        
+                        // Mapping kolom sesuai format CSV:
+                        // 0: nomor_bl
+                        // 1: nomor_kontainer
+                        // 2: seal
+                        // 3: nama_barang
+                        // 4: kuantitas
+                        // 5: satuan (tidak dipakai)
+                        // 6: pelabuhan_tujuan
+                        // 7: nama_kapal
+                        // 8: no_voyage
+                        // 9: term
+                        // 10: penerima (tidak dipakai)
+                        // 11: alamat pengiriman (tidak dipakai)
+                        // 12: contac person (tidak dipakai)
+                        // 13: berat (tonnage)
+                        // 14: volume
+                        
+                        $nomorKontainer = isset($row[1]) ? trim($row[1]) : null;
+                        $namaKapal = isset($row[7]) ? trim($row[7]) : null;
+                        $noVoyage = isset($row[8]) ? trim($row[8]) : null;
+                        
                         // Validate required fields
-                        if (empty($row[1]) || empty($row[3]) || empty($row[4])) {
+                        if (empty($nomorKontainer) || empty($namaKapal) || empty($noVoyage)) {
                             $errors[] = "Baris {$rowNumber}: Nomor Kontainer, Nama Kapal, dan No Voyage wajib diisi";
                             $rowNumber++;
                             continue;
                         }
 
+                        // Parse tonnage dan volume (format: 6.000,00 atau 25.000,00)
+                        $tonnage = null;
+                        if (isset($row[13]) && !empty(trim($row[13]))) {
+                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[13]));
+                            $tonnage = (float)$tonnageStr;
+                        }
+                        
+                        $volume = null;
+                        if (isset($row[14]) && !empty(trim($row[14]))) {
+                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[14]));
+                            $volume = (float)$volumeStr;
+                        }
+
                         // Create BL record
                         Bl::create([
-                            'nomor_bl' => $row[0] ?: null,
-                            'nomor_kontainer' => $row[1],
-                            'no_seal' => $row[2] ?: null,
-                            'nama_kapal' => $row[3],
-                            'no_voyage' => $row[4],
-                            'tujuan' => $row[5] ?: null,
-                            'nama_barang' => $row[6] ?: null,
-                            'tipe_kontainer' => $row[7] ?: null,
-                            'ukuran_kontainer' => $row[8] ?: null,
-                            'tonnage' => !empty($row[9]) ? (float)str_replace(',', '.', $row[9]) : null,
-                            'volume' => !empty($row[10]) ? (float)str_replace(',', '.', $row[10]) : null,
-                            'kuantitas' => !empty($row[11]) ? (int)$row[11] : null,
-                            'term' => $row[12] ?: null,
-                            'supir_ob' => $row[13] ?: null,
-                            'tanggal_muat' => !empty($row[14]) ? $row[14] : null,
-                            'jam_muat' => $row[15] ?: null,
-                            'prospek_id' => !empty($row[16]) ? (int)$row[16] : null,
-                            'keterangan' => $row[17] ?: null,
+                            'nomor_bl' => isset($row[0]) ? trim($row[0]) : null,
+                            'nomor_kontainer' => $nomorKontainer,
+                            'no_seal' => isset($row[2]) ? trim($row[2]) : null,
+                            'nama_barang' => isset($row[3]) ? trim($row[3]) : null,
+                            'kuantitas' => isset($row[4]) && !empty(trim($row[4])) ? (int)trim($row[4]) : null,
+                            'tujuan' => isset($row[6]) ? trim($row[6]) : null,
+                            'nama_kapal' => $namaKapal,
+                            'no_voyage' => $noVoyage,
+                            'term' => isset($row[9]) ? trim($row[9]) : null,
+                            'tonnage' => $tonnage,
+                            'volume' => $volume,
+                            'tipe_kontainer' => null, // Tidak ada di CSV, dikosongkan
+                            'ukuran_kontainer' => null, // Tidak ada di CSV, dikosongkan
+                            'supir_ob' => null,
+                            'tanggal_muat' => null,
+                            'jam_muat' => null,
+                            'prospek_id' => null,
+                            'keterangan' => null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
@@ -748,17 +813,42 @@ class BlController extends Controller
             }
 
             $message = "Berhasil import {$importedCount} data BL.";
+            
+            \Log::info('Import completed', [
+                'imported' => $importedCount,
+                'errors' => count($errors),
+                'error_details' => $errors
+            ]);
+            
             if (!empty($errors)) {
-                $message .= " Terdapat " . count($errors) . " error: " . implode("; ", array_slice($errors, 0, 5));
-                if (count($errors) > 5) {
-                    $message .= " dan " . (count($errors) - 5) . " error lainnya.";
+                $errorCount = count($errors);
+                
+                if ($importedCount > 0) {
+                    // Partial success - some imported, some failed
+                    \Log::warning("Partial import success: {$importedCount} imported, {$errorCount} failed");
+                    return redirect()->route('bl.index')
+                        ->with('warning', "Import selesai dengan peringatan: {$importedCount} data berhasil diimport, {$errorCount} data gagal.")
+                        ->with('import_errors', $errors);
+                } else {
+                    // Complete failure - nothing imported
+                    \Log::error("Import completely failed: {$errorCount} errors");
+                    return redirect()->route('bl.index')
+                        ->with('error', "Import gagal! Tidak ada data yang berhasil diimport. Total {$errorCount} error.")
+                        ->with('import_errors', $errors);
                 }
             }
 
+            \Log::info("Import fully successful: {$importedCount} records");
             return redirect()->route('bl.index')->with('success', $message);
 
         } catch (\Exception $e) {
-            return redirect()->back()->with('error', 'Gagal import data: ' . $e->getMessage());
+            \Log::error('Import exception caught', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return redirect()->back()
+                ->with('error', 'Gagal import data: ' . $e->getMessage())
+                ->withInput();
         }
     }
 }
