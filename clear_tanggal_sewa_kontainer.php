@@ -18,7 +18,7 @@ echo "==============================================\n\n";
 
 try {
     // Hitung jumlah kontainer yang memiliki tanggal sewa
-    $kontainerWithDates = DB::table('master_kontainer')
+    $kontainerWithDates = DB::table('kontainers')
         ->where(function($query) {
             $query->whereNotNull('tanggal_mulai_sewa')
                   ->orWhereNotNull('tanggal_selesai_sewa');
@@ -46,7 +46,7 @@ try {
     echo "\n🔄 Memulai proses penghapusan tanggal sewa...\n\n";
 
     // Hapus tanggal sewa dari semua kontainer
-    $updated = DB::table('master_kontainer')
+    $updated = DB::table('kontainers')
         ->where(function($query) {
             $query->whereNotNull('tanggal_mulai_sewa')
                   ->orWhereNotNull('tanggal_selesai_sewa');
@@ -60,9 +60,9 @@ try {
     echo "✓ Berhasil menghapus tanggal sewa dari {$updated} kontainer.\n\n";
 
     // Tampilkan ringkasan
-    $totalKontainer = DB::table('master_kontainer')->count();
-    $tersedia = DB::table('master_kontainer')->where('status', 'Tersedia')->count();
-    $disewa = DB::table('master_kontainer')->where('status', 'Disewa')->count();
+    $totalKontainer = DB::table('kontainers')->count();
+    $tersedia = DB::table('kontainers')->where('status', 'Tersedia')->count();
+    $disewa = DB::table('kontainers')->where('status', 'Disewa')->count();
 
     echo "==============================================\n";
     echo "RINGKASAN\n";
