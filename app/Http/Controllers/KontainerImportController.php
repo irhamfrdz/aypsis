@@ -625,6 +625,9 @@ class KontainerImportController extends Controller
                             // Try to parse date in format dd-mmm-yyyy, dd-mmm-yy, or dd/mmm/yyyy
                             $parsedDate = null;
                             
+                            // Set locale to Indonesian
+                            \Carbon\Carbon::setLocale('id');
+                            
                             // Try dd-mmm-yy format first (e.g., 07-Apr-23)
                             try {
                                 $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalMulaiSewa);
@@ -669,6 +672,9 @@ class KontainerImportController extends Controller
                         try {
                             // Try to parse date in format dd-mmm-yyyy, dd-mmm-yy, or dd/mmm/yyyy
                             $parsedDate = null;
+                            
+                            // Set locale to Indonesian
+                            \Carbon\Carbon::setLocale('id');
                             
                             // Try dd-mmm-yy format first (e.g., 06-Agu-23)
                             try {
