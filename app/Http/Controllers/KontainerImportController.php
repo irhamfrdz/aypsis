@@ -622,43 +622,54 @@ class KontainerImportController extends Controller
                     // Parse dates - support format dd/mmm/yyyy (e.g., 12/Nov/2025)
                     $updateData = [];
 
+                    // Indonesian month mapping
+                    $monthMap = [
+                        'Jan' => 'Jan', 'Feb' => 'Feb', 'Mar' => 'Mar', 'Apr' => 'Apr',
+                        'Mei' => 'May', 'Jun' => 'Jun', 'Jul' => 'Jul', 'Agu' => 'Aug',
+                        'Sep' => 'Sep', 'Okt' => 'Oct', 'Nov' => 'Nov', 'Des' => 'Dec',
+                        // Also support English months
+                        'May' => 'May', 'Aug' => 'Aug', 'Oct' => 'Oct', 'Dec' => 'Dec'
+                    ];
+
                     if (!empty($tanggalMulaiSewa)) {
                         try {
-                            // Try to parse date in format dd-mmm-yyyy, dd-mmm-yy, or dd/mmm/yyyy
-                            $parsedDate = null;
+                            // Replace Indonesian month names with English equivalents
+                            $tanggalMulaiSewaEng = $tanggalMulaiSewa;
+                            foreach ($monthMap as $indo => $eng) {
+                                $tanggalMulaiSewaEng = str_replace($indo, $eng, $tanggalMulaiSewaEng);
+                            }
                             
-                            // Set locale to Indonesian
-                            \Carbon\Carbon::setLocale('id');
+                            $parsedDate = null;
                             
                             // Try dd-mmm-yy format first (e.g., 07-Apr-23)
                             try {
-                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalMulaiSewa);
+                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalMulaiSewaEng);
                             } catch (Exception $e) {}
                             
                             // Try dd-mmm-yyyy format (e.g., 07-Apr-2023)
                             if (!$parsedDate) {
                                 try {
-                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-Y', $tanggalMulaiSewa);
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-Y', $tanggalMulaiSewaEng);
                                 } catch (Exception $e) {}
                             }
                             
                             // Try dd/mmm/yyyy format (e.g., 07/Apr/2023)
                             if (!$parsedDate) {
                                 try {
-                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalMulaiSewa);
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalMulaiSewaEng);
                                 } catch (Exception $e) {}
                             }
                             
                             // Try dd/mmm/yy format (e.g., 07/Apr/23)
                             if (!$parsedDate) {
                                 try {
-                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/y', $tanggalMulaiSewa);
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/y', $tanggalMulaiSewaEng);
                                 } catch (Exception $e) {}
                             }
                             
                             if (!$parsedDate) {
                                 $stats['errors']++;
-                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid '{$tanggalMulaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 07-Apr-23 atau 07-Apr-2023)";
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid '{$tanggalMulaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 07-Apr-23 atau 07-Agu-23)";
                                 continue;
                             }
                             
@@ -672,41 +683,43 @@ class KontainerImportController extends Controller
 
                     if (!empty($tanggalSelesaiSewa)) {
                         try {
-                            // Try to parse date in format dd-mmm-yyyy, dd-mmm-yy, or dd/mmm/yyyy
-                            $parsedDate = null;
+                            // Replace Indonesian month names with English equivalents
+                            $tanggalSelesaiSewaEng = $tanggalSelesaiSewa;
+                            foreach ($monthMap as $indo => $eng) {
+                                $tanggalSelesaiSewaEng = str_replace($indo, $eng, $tanggalSelesaiSewaEng);
+                            }
                             
-                            // Set locale to Indonesian
-                            \Carbon\Carbon::setLocale('id');
+                            $parsedDate = null;
                             
                             // Try dd-mmm-yy format first (e.g., 06-Agu-23)
                             try {
-                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalSelesaiSewa);
+                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalSelesaiSewaEng);
                             } catch (Exception $e) {}
                             
                             // Try dd-mmm-yyyy format (e.g., 06-Agu-2023)
                             if (!$parsedDate) {
                                 try {
-                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-Y', $tanggalSelesaiSewa);
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-Y', $tanggalSelesaiSewaEng);
                                 } catch (Exception $e) {}
                             }
                             
                             // Try dd/mmm/yyyy format (e.g., 06/Agu/2023)
                             if (!$parsedDate) {
                                 try {
-                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalSelesaiSewa);
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalSelesaiSewaEng);
                                 } catch (Exception $e) {}
                             }
                             
                             // Try dd/mmm/yy format (e.g., 06/Agu/23)
                             if (!$parsedDate) {
                                 try {
-                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/y', $tanggalSelesaiSewa);
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/y', $tanggalSelesaiSewaEng);
                                 } catch (Exception $e) {}
                             }
                             
                             if (!$parsedDate) {
                                 $stats['errors']++;
-                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid '{$tanggalSelesaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 06-Agu-23 atau 06-Agu-2023)";
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid '{$tanggalSelesaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 06-Agu-23 atau 06-Des-23)";
                                 continue;
                             }
                             
