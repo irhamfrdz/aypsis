@@ -570,6 +570,7 @@ class KontainerImportController extends Controller
                 'success' => 0,
                 'errors' => 0,
                 'not_found' => 0,
+                'not_found_list' => [],
                 'error_details' => []
             ];
 
@@ -613,6 +614,7 @@ class KontainerImportController extends Controller
 
                     if (!$kontainer) {
                         $stats['not_found']++;
+                        $stats['not_found_list'][] = $nomorKontainer;
                         $stats['error_details'][] = "Baris {$rowNumber}: Kontainer '{$nomorKontainer}' tidak ditemukan";
                         continue;
                     }
@@ -740,6 +742,12 @@ class KontainerImportController extends Controller
 
             if ($stats['errors'] > 0) {
                 $message .= ", Error: {$stats['errors']} baris";
+            }
+
+            // Show list of not found containers
+            if (!empty($stats['not_found_list'])) {
+                $notFoundList = implode(', ', $stats['not_found_list']);
+                $message .= ". Kontainer tidak ditemukan: " . $notFoundList;
             }
 
             // Show detailed errors if any
