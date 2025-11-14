@@ -16,7 +16,9 @@ class PranotaOb extends Model
         'nomor_pranota',
         'tanggal_pranota',
         'keterangan',
-        'total_amount',
+        'total_biaya',
+        'penyesuaian',
+        'grand_total',
         'status',
         'periode',
         'created_by',
@@ -26,7 +28,9 @@ class PranotaOb extends Model
     
     protected $casts = [
         'tanggal_pranota' => 'date',
-        'total_amount' => 'decimal:2',
+        'total_biaya' => 'decimal:2',
+        'penyesuaian' => 'decimal:2',
+        'grand_total' => 'decimal:2',
         'approved_at' => 'datetime'
     ];
     

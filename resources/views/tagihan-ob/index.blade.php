@@ -207,7 +207,7 @@
             @endisset
 
             <!-- Filter & Search -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
                 <div class="md:col-span-2">
                     <div class="relative">
                         <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -232,6 +232,13 @@
                         <option value="cancelled">Cancelled</option>
                     </select>
                 </div>
+                <div>
+                    <select class="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500" id="pranotaFilter">
+                        <option value="">Status Pranota</option>
+                        <option value="sudah">Sudah Masuk Pranota</option>
+                        <option value="belum">Belum Masuk Pranota</option>
+                    </select>
+                </div>
             </div>
 
             <!-- Table -->
@@ -252,6 +259,7 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Biaya</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status Bayar</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status Pranota</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                         </tr>
                     </thead>
@@ -308,6 +316,19 @@
                                         {{ ucfirst($item->status_pembayaran) }}
                                     </span>
                                 </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    @if($item->pranotaObItem)
+                                        <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                                            <i class="fas fa-check-circle mr-1"></i>
+                                            Sudah Masuk Pranota
+                                        </span>
+                                    @else
+                                        <span class="inline-flex items-center px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                                            <i class="fas fa-clock mr-1"></i>
+                                            Belum Masuk Pranota
+                                        </span>
+                                    @endif
+                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
                                         @can('tagihan-ob-view')
@@ -337,7 +358,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="12" class="px-6 py-12 text-center">
+                                <td colspan="13" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
                                         <p class="text-gray-500 text-lg">Belum ada data tagihan OB</p>
@@ -591,17 +612,8 @@ function openPranotaModal() {
         tanggalPranotaField.value = today;
     }
     
-    // Generate nomor pranota otomatis (format: PR-OB-YYYY-MM-XXX)
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const random = String(Math.floor(Math.random() * 1000)).padStart(3, '0');
-    const nomorPranota = `PR-OB-${year}-${month}-${random}`;
-    
-    const nomorPranotaField = document.getElementById('nomor_pranota');
-    if (nomorPranotaField) {
-        nomorPranotaField.value = nomorPranota;
-    }
+    // Generate nomor pranota otomatis menggunakan API master nomor terakhir
+    generateNomorPranota();
     
     // Generate default keterangan
     const containerCount = selectedItems.length;
@@ -807,6 +819,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Filters
     document.getElementById('statusFilter').onchange = filterTable;
     document.getElementById('pembayaranFilter').onchange = filterTable;
+    document.getElementById('pranotaFilter').onchange = filterTable;
     
     // Initialize
     updateSelectedItems();
@@ -818,18 +831,64 @@ document.addEventListener('DOMContentLoaded', function() {
 function filterTable() {
     const statusFilter = document.getElementById('statusFilter').value.toLowerCase();
     const pembayaranFilter = document.getElementById('pembayaranFilter').value.toLowerCase();
+    const pranotaFilter = document.getElementById('pranotaFilter').value.toLowerCase();
     
     document.querySelectorAll('tbody tr').forEach(row => {
         const statusText = row.querySelector('td:nth-child(9) span')?.textContent.toLowerCase() || '';
         const pembayaranText = row.querySelector('td:nth-child(11) span')?.textContent.toLowerCase() || '';
+        const pranotaText = row.querySelector('td:nth-child(12) span')?.textContent.toLowerCase() || '';
         
         const statusMatch = !statusFilter || statusText.includes(statusFilter);
         const pembayaranMatch = !pembayaranFilter || pembayaranText.includes(pembayaranFilter);
         
-        row.style.display = (statusMatch && pembayaranMatch) ? '' : 'none';
+        let pranotaMatch = true;
+        if (pranotaFilter === 'sudah') {
+            pranotaMatch = pranotaText.includes('sudah');
+        } else if (pranotaFilter === 'belum') {
+            pranotaMatch = pranotaText.includes('belum');
+        }
+        
+        row.style.display = (statusMatch && pembayaranMatch && pranotaMatch) ? '' : 'none';
     });
     
     updateSelectedItems();
+}
+
+// Function to generate nomor pranota from server using master nomor terakhir
+async function generateNomorPranota() {
+    const nomorPranotaField = document.getElementById('nomor_pranota');
+    if (!nomorPranotaField) return;
+    
+    try {
+        // Show loading state
+        nomorPranotaField.value = 'Generating...';
+        nomorPranotaField.disabled = true;
+        
+        // Call API to generate nomor from master nomor terakhir
+        const response = await fetch('{{ route("pranota-ob.generate-nomor-preview") }}', {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        });
+        
+        const data = await response.json();
+        
+        if (data.success && data.nomor_pranota) {
+            nomorPranotaField.value = data.nomor_pranota;
+            console.log('Generated nomor pranota:', data.nomor_pranota);
+        } else {
+            throw new Error(data.message || 'Gagal generate nomor pranota');
+        }
+    } catch (error) {
+        console.error('Error generating nomor pranota:', error);
+        // Fallback to manual input
+        nomorPranotaField.value = '';
+        showNotification('Gagal generate nomor pranota. Silakan input manual.', 'error');
+    } finally {
+        nomorPranotaField.disabled = false;
+    }
 }
 
 // Inline editing functions

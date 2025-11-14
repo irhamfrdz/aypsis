@@ -2212,6 +2212,9 @@ Route::middleware(['auth'])->group(function() {
          ->middleware('can:tagihan-ob-create');
 
     // Pranota OB routes
+    Route::get('pranota-ob/generate-nomor-preview', [\App\Http\Controllers\PranotaObController::class, 'generateNomorPreview'])
+         ->name('pranota-ob.generate-nomor-preview')
+         ->middleware('can:pranota-ob-create');
     Route::get('pranota-ob', [\App\Http\Controllers\PranotaObController::class, 'index'])
          ->name('pranota-ob.index')
          ->middleware('can:pranota-ob-view');

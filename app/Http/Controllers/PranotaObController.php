@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Models\PranotaOb;
 use App\Models\PranotaObItem;
 use App\Models\TagihanOb;
+use App\Models\NomorTerakhir;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
@@ -73,52 +74,67 @@ class PranotaObController extends Controller
     public function store(Request $request)
     {
         $request->validate([
+            'nomor_pranota' => 'required|string|max:50|unique:pranota_obs,nomor_pranota',
             'tanggal_pranota' => 'required|date',
+            'total_biaya' => 'required|numeric|min:0',
+            'penyesuaian' => 'nullable|numeric',
             'keterangan' => 'nullable|string|max:1000',
-            'periode' => 'nullable|string|max:20',
-            'tagihan_ob_ids' => 'required|array|min:1',
-            'tagihan_ob_ids.*' => 'exists:tagihan_ob,id'
+            'tagihan_ids' => 'required|string'
         ]);
 
         try {
             DB::beginTransaction();
 
+            // Parse tagihan IDs
+            $tagihanIds = array_filter(explode(',', $request->tagihan_ids));
+            
+            if (empty($tagihanIds)) {
+                throw new \Exception("Tidak ada tagihan OB yang dipilih.");
+            }
+
             // Cek apakah ada tagihan OB yang sudah ada di pranota lain
-            $existingPranota = TagihanOb::whereIn('id', $request->tagihan_ob_ids)
+            $existingPranota = TagihanOb::whereIn('id', $tagihanIds)
                 ->whereHas('pranotaObItem')
                 ->first();
 
             if ($existingPranota) {
                 throw new \Exception("Tagihan OB {$existingPranota->nomor_kontainer} sudah ada di pranota lain.");
             }
+            
+            // Calculate grand total
+            $totalBiaya = floatval($request->total_biaya);
+            $penyesuaian = floatval($request->penyesuaian ?? 0);
+            $grandTotal = $totalBiaya + $penyesuaian;
 
             // Buat pranota
             $pranota = PranotaOb::create([
+                'nomor_pranota' => $request->nomor_pranota,
                 'tanggal_pranota' => $request->tanggal_pranota,
+                'total_biaya' => $totalBiaya,
+                'penyesuaian' => $penyesuaian,
+                'grand_total' => $grandTotal,
                 'keterangan' => $request->keterangan,
-                'periode' => $request->periode,
                 'created_by' => Auth::id(),
                 'status' => 'draft'
             ]);
 
             // Tambahkan items
-            foreach ($request->tagihan_ob_ids as $tagihanObId) {
+            foreach ($tagihanIds as $tagihanObId) {
                 $tagihanOb = TagihanOb::find($tagihanObId);
                 
-                PranotaObItem::create([
-                    'pranota_ob_id' => $pranota->id,
-                    'tagihan_ob_id' => $tagihanObId,
-                    'amount' => $tagihanOb->biaya
-                ]);
+                if ($tagihanOb) {
+                    PranotaObItem::create([
+                        'pranota_ob_id' => $pranota->id,
+                        'tagihan_ob_id' => $tagihanObId,
+                        'amount' => $tagihanOb->biaya
+                    ]);
+                }
             }
-
-            // Calculate total
-            $pranota->calculateTotal();
 
             DB::commit();
 
             return redirect()->route('pranota-ob.show', $pranota)
-                ->with('success', 'Pranota OB berhasil dibuat');
+                ->with('success', 'Pranota OB berhasil dibuat dengan nomor: ' . $request->nomor_pranota);
 
         } catch (\Exception $e) {
             DB::rollback();
@@ -352,5 +368,63 @@ class PranotaObController extends Controller
                 ];
             })
         ]);
+    }
+
+    /**
+     * Generate preview nomor pranota (without incrementing)
+     */
+    public function generateNomorPreview()
+    {
+        try {
+            $nomorPranota = $this->generateNomorPranota(false);
+            
+            return response()->json([
+                'success' => true,
+                'nomor_pranota' => $nomorPranota
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Generate nomor pranota from master nomor terakhir
+     * Format: KodeModul(3)-Bulan(2)-Tahun(2)-RunningNumber(6)
+     * Contoh: PMS-11-25-000001
+     */
+    private function generateNomorPranota($increment = true)
+    {
+        $modul = 'PMS'; // Pranota Modul Shipping/OB
+        
+        // Get or create master nomor terakhir untuk modul PMS
+        $masterNomor = NomorTerakhir::firstOrCreate(
+            ['modul' => $modul],
+            [
+                'nomor_terakhir' => 0,
+                'keterangan' => 'Nomor terakhir untuk Pranota OB (On Board)'
+            ]
+        );
+
+        // Get current date components
+        $now = now();
+        $bulan = $now->format('m'); // 2 digit bulan (01-12)
+        $tahun = $now->format('y'); // 2 digit tahun (25 untuk 2025)
+        
+        // Running number (6 digit)
+        $runningNumber = $increment ? $masterNomor->nomor_terakhir + 1 : $masterNomor->nomor_terakhir + 1;
+        $formattedNumber = str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
+        
+        // Format final: KodeModul-Bulan-Tahun-RunningNumber
+        $nomorPranota = "{$modul}-{$bulan}-{$tahun}-{$formattedNumber}";
+        
+        // Increment nomor terakhir if requested
+        if ($increment) {
+            $masterNomor->increment('nomor_terakhir');
+        }
+        
+        return $nomorPranota;
     }
 }
