@@ -622,30 +622,90 @@ class KontainerImportController extends Controller
 
                     if (!empty($tanggalMulaiSewa)) {
                         try {
-                            // Try to parse date in format dd/mmm/yyyy or dd/mm/yyyy
-                            $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalMulaiSewa);
+                            // Try to parse date in format dd-mmm-yyyy, dd-mmm-yy, or dd/mmm/yyyy
+                            $parsedDate = null;
+                            
+                            // Try dd-mmm-yy format first (e.g., 07-Apr-23)
+                            try {
+                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalMulaiSewa);
+                            } catch (Exception $e) {}
+                            
+                            // Try dd-mmm-yyyy format (e.g., 07-Apr-2023)
                             if (!$parsedDate) {
-                                $parsedDate = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalMulaiSewa);
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-Y', $tanggalMulaiSewa);
+                                } catch (Exception $e) {}
                             }
+                            
+                            // Try dd/mmm/yyyy format (e.g., 07/Apr/2023)
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalMulaiSewa);
+                                } catch (Exception $e) {}
+                            }
+                            
+                            // Try dd/mmm/yy format (e.g., 07/Apr/23)
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/y', $tanggalMulaiSewa);
+                                } catch (Exception $e) {}
+                            }
+                            
+                            if (!$parsedDate) {
+                                $stats['errors']++;
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid '{$tanggalMulaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 07-Apr-23 atau 07-Apr-2023)";
+                                continue;
+                            }
+                            
                             $updateData['tanggal_mulai_sewa'] = $parsedDate;
                         } catch (Exception $e) {
                             $stats['errors']++;
-                            $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid (gunakan dd/mmm/yyyy, contoh: 12/Nov/2025)";
+                            $stats['error_details'][] = "Baris {$rowNumber}: Error parsing tanggal mulai sewa: " . $e->getMessage();
                             continue;
                         }
                     }
 
                     if (!empty($tanggalSelesaiSewa)) {
                         try {
-                            // Try to parse date in format dd/mmm/yyyy or dd/mm/yyyy
-                            $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalSelesaiSewa);
+                            // Try to parse date in format dd-mmm-yyyy, dd-mmm-yy, or dd/mmm/yyyy
+                            $parsedDate = null;
+                            
+                            // Try dd-mmm-yy format first (e.g., 06-Agu-23)
+                            try {
+                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalSelesaiSewa);
+                            } catch (Exception $e) {}
+                            
+                            // Try dd-mmm-yyyy format (e.g., 06-Agu-2023)
                             if (!$parsedDate) {
-                                $parsedDate = \Carbon\Carbon::createFromFormat('d/m/Y', $tanggalSelesaiSewa);
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-Y', $tanggalSelesaiSewa);
+                                } catch (Exception $e) {}
                             }
+                            
+                            // Try dd/mmm/yyyy format (e.g., 06/Agu/2023)
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalSelesaiSewa);
+                                } catch (Exception $e) {}
+                            }
+                            
+                            // Try dd/mmm/yy format (e.g., 06/Agu/23)
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d/M/y', $tanggalSelesaiSewa);
+                                } catch (Exception $e) {}
+                            }
+                            
+                            if (!$parsedDate) {
+                                $stats['errors']++;
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid '{$tanggalSelesaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 06-Agu-23 atau 06-Agu-2023)";
+                                continue;
+                            }
+                            
                             $updateData['tanggal_selesai_sewa'] = $parsedDate;
                         } catch (Exception $e) {
                             $stats['errors']++;
-                            $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid (gunakan dd/mmm/yyyy, contoh: 31/Des/2025)";
+                            $stats['error_details'][] = "Baris {$rowNumber}: Error parsing tanggal selesai sewa: " . $e->getMessage();
                             continue;
                         }
                     }
