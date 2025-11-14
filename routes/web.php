@@ -2780,6 +2780,10 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                      ->middleware('can:prospek-edit');
 
           // BL (Bill of Lading) Management
+          Route::get('bl/get-voyage-by-kapal', [\App\Http\Controllers\BlController::class, 'getVoyageByKapal'])
+               ->name('bl.get-voyage-by-kapal')
+               ->middleware('can:bl-view');
+               
           Route::get('bl/download-template', [\App\Http\Controllers\BlController::class, 'downloadTemplate'])
                ->name('bl.download.template')
                ->middleware('can:bl-view');

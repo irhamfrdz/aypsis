@@ -39,9 +39,9 @@ class CheckpointController extends Controller
 
         // Filter kontainer berdasarkan kegiatan dan ukuran
         if ($isAntarKontainerSewa) {
-            // Untuk antar kontainer sewa, filter berdasarkan ukuran dan status tersedia
+            // Untuk antar kontainer sewa, filter berdasarkan ukuran dan status tidak tersedia
             $kontainerList = Kontainer::where('ukuran', $permohonan->ukuran)
-                                    ->where('status', 'Tersedia')
+                                    ->where('status', 'Tidak Tersedia')
                                     ->orderBy('nomor_seri_gabungan')
                                     ->get();
         } else {
@@ -159,6 +159,7 @@ class CheckpointController extends Controller
                 $isPerbaikanKontainer = (stripos($kegiatanLower, 'perbaikan') !== false && stripos($kegiatanLower, 'kontainer') !== false)
                     || (stripos($kegiatanLower, 'repair') !== false && stripos($kegiatanLower, 'container') !== false);
                 $isAntarSewa = stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'sewa') !== false;
+                $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'kontainer') !== false && stripos($kegiatanLower, 'sewa') !== false);
                 $isAntarKontainerPerbaikan = (stripos($kegiatanLower, 'antar') !== false && stripos($kegiatanLower, 'kontainer') !== false && stripos($kegiatanLower, 'perbaikan') !== false);
 
                 // Untuk semua kegiatan, sekarang kita selalu menerima nomor_seri_gabungan (string)
@@ -198,12 +199,15 @@ class CheckpointController extends Controller
                             // mark returned: set finish date and make available
                             $kontainer->tanggal_selesai_sewa = $request->input('tanggal_checkpoint') ?? now()->format('Y-m-d');
                             $kontainer->status = 'Tersedia';
+                        } elseif ($isAntarKontainerSewa) {
+                            // mark as delivered to customer: make available
+                            $kontainer->status = 'Tersedia';
                         } else {
-                            if ($kontainer->status !== 'Tersedia') {
+                            if ($kontainer->status !== 'Tersedia' && $kontainer->status !== 'Tidak Tersedia') {
                                 throw new \Exception("Kontainer {$nomorRaw} tidak tersedia atau sedang digunakan.");
                             }
                             // tandai akan digunakan
-                            $kontainer->status = 'Digunakan';
+                            $kontainer->status = 'Tidak Tersedia';
                         }
                         $kontainer->save();
                     }

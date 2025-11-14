@@ -108,6 +108,38 @@ class BlController extends Controller
         return view('bl.select', compact('masterKapals'));
     }
 
+    public function getVoyageByKapal(Request $request)
+    {
+        $namaKapal = $request->input('nama_kapal');
+        
+        if (!$namaKapal) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Nama kapal tidak ditemukan'
+            ]);
+        }
+        
+        // Hapus "KM." atau "KM" dari awal nama kapal untuk pencarian yang lebih fleksibel
+        $kapalClean = preg_replace('/^KM\.?\s*/i', '', $namaKapal);
+        
+        // Ambil voyage unik dari tabel bls berdasarkan nama kapal
+        // Gunakan LIKE untuk menangani perbedaan format (KM. vs KM)
+        $voyages = Bl::where(function($query) use ($namaKapal, $kapalClean) {
+                $query->where('nama_kapal', $namaKapal)
+                      ->orWhere('nama_kapal', 'like', '%' . $kapalClean . '%');
+            })
+            ->whereNotNull('no_voyage')
+            ->distinct()
+            ->orderBy('no_voyage', 'desc')
+            ->pluck('no_voyage')
+            ->toArray();
+        
+        return response()->json([
+            'success' => true,
+            'voyages' => $voyages
+        ]);
+    }
+
     /**
      * Store a newly created BL.
      */
@@ -477,17 +509,21 @@ class BlController extends Controller
             'E1' => 'No Voyage*',
             'F1' => 'Pelabuhan Tujuan',
             'G1' => 'Nama Barang',
-            'H1' => 'Tipe Kontainer',
-            'I1' => 'Ukuran Kontainer',
-            'J1' => 'Tonnage',
-            'K1' => 'Volume',
-            'L1' => 'Kuantitas',
-            'M1' => 'Term',
-            'N1' => 'Supir OB',
-            'O1' => 'Tanggal Muat',
-            'P1' => 'Jam Muat',
-            'Q1' => 'Prospek ID',
-            'R1' => 'Keterangan'
+            'H1' => 'Penerima',
+            'I1' => 'Alamat Pengiriman',
+            'J1' => 'Contact Person',
+            'K1' => 'Tipe Kontainer',
+            'L1' => 'Ukuran Kontainer',
+            'M1' => 'Tonnage',
+            'N1' => 'Volume',
+            'O1' => 'Satuan',
+            'P1' => 'Kuantitas',
+            'Q1' => 'Term',
+            'R1' => 'Supir OB',
+            'S1' => 'Tanggal Muat',
+            'T1' => 'Jam Muat',
+            'U1' => 'Prospek ID',
+            'V1' => 'Keterangan'
         ];
 
         // Set headers with styling
@@ -511,10 +547,14 @@ class BlController extends Controller
                 'SH001',
                 'Batam',
                 'Elektronik',
+                'PT. ABC Indonesia',
+                'Jl. Raya Industri No. 123, Batam',
+                'Budi Santoso (08123456789)',
                 '20 FT',
                 '20x8x8.6',
                 15.500,
                 25.750,
+                'Ton/m³',
                 100,
                 'COD',
                 'Budi Santoso',
@@ -531,10 +571,14 @@ class BlController extends Controller
                 'CL002',
                 'Jakarta',
                 'Makanan & Minuman',
+                'CV. XYZ Trading',
+                'Jl. Mangga Dua Raya No. 456, Jakarta',
+                'Ahmad Wijaya (08234567890)',
                 '40 FT',
                 '40x8x8.6',
                 25.000,
                 45.300,
+                'Ton/m³',
                 200,
                 'Credit 30',
                 'Ahmad Wijaya',
@@ -556,7 +600,7 @@ class BlController extends Controller
         }
 
         // Auto-size columns
-        foreach (range('A', 'R') as $col) {
+        foreach (range('A', 'V') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -686,26 +730,33 @@ class BlController extends Controller
                             continue;
                         }
                         
-                        // Mapping kolom sesuai format CSV:
+                        // Mapping kolom sesuai format template:
                         // 0: nomor_bl
                         // 1: nomor_kontainer
-                        // 2: seal
-                        // 3: nama_barang
-                        // 4: kuantitas
-                        // 5: satuan (tidak dipakai)
-                        // 6: pelabuhan_tujuan
-                        // 7: nama_kapal
-                        // 8: no_voyage
-                        // 9: term
-                        // 10: penerima (tidak dipakai)
-                        // 11: alamat pengiriman (tidak dipakai)
-                        // 12: contac person (tidak dipakai)
-                        // 13: berat (tonnage)
-                        // 14: volume
+                        // 2: no_seal
+                        // 3: nama_kapal
+                        // 4: no_voyage
+                        // 5: pelabuhan_tujuan
+                        // 6: nama_barang
+                        // 7: penerima
+                        // 8: alamat_pengiriman
+                        // 9: contact_person
+                        // 10: tipe_kontainer
+                        // 11: ukuran_kontainer
+                        // 12: tonnage
+                        // 13: volume
+                        // 14: satuan
+                        // 15: kuantitas
+                        // 16: term
+                        // 17: supir_ob
+                        // 18: tanggal_muat
+                        // 19: jam_muat
+                        // 20: prospek_id
+                        // 21: keterangan
                         
                         $nomorKontainer = isset($row[1]) ? trim($row[1]) : null;
-                        $namaKapal = isset($row[7]) ? trim($row[7]) : null;
-                        $noVoyage = isset($row[8]) ? trim($row[8]) : null;
+                        $namaKapal = isset($row[3]) ? trim($row[3]) : null;
+                        $noVoyage = isset($row[4]) ? trim($row[4]) : null;
                         
                         // Validate required fields
                         if (empty($nomorKontainer) || empty($namaKapal) || empty($noVoyage)) {
@@ -714,16 +765,16 @@ class BlController extends Controller
                             continue;
                         }
 
-                        // Parse tonnage dan volume (format: 6.000,00 atau 25.000,00)
+                        // Parse tonnage dan volume
                         $tonnage = null;
-                        if (isset($row[13]) && !empty(trim($row[13]))) {
-                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[13]));
+                        if (isset($row[12]) && !empty(trim($row[12]))) {
+                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[12]));
                             $tonnage = (float)$tonnageStr;
                         }
                         
                         $volume = null;
-                        if (isset($row[14]) && !empty(trim($row[14]))) {
-                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[14]));
+                        if (isset($row[13]) && !empty(trim($row[13]))) {
+                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[13]));
                             $volume = (float)$volumeStr;
                         }
 
@@ -732,21 +783,25 @@ class BlController extends Controller
                             'nomor_bl' => isset($row[0]) ? trim($row[0]) : null,
                             'nomor_kontainer' => $nomorKontainer,
                             'no_seal' => isset($row[2]) ? trim($row[2]) : null,
-                            'nama_barang' => isset($row[3]) ? trim($row[3]) : null,
-                            'kuantitas' => isset($row[4]) && !empty(trim($row[4])) ? (int)trim($row[4]) : null,
-                            'tujuan' => isset($row[6]) ? trim($row[6]) : null,
                             'nama_kapal' => $namaKapal,
                             'no_voyage' => $noVoyage,
-                            'term' => isset($row[9]) ? trim($row[9]) : null,
+                            'tujuan' => isset($row[5]) ? trim($row[5]) : null,
+                            'nama_barang' => isset($row[6]) ? trim($row[6]) : null,
+                            'penerima' => isset($row[7]) ? trim($row[7]) : null,
+                            'alamat_pengiriman' => isset($row[8]) ? trim($row[8]) : null,
+                            'contact_person' => isset($row[9]) ? trim($row[9]) : null,
+                            'tipe_kontainer' => isset($row[10]) ? trim($row[10]) : null,
+                            'ukuran_kontainer' => isset($row[11]) ? trim($row[11]) : null,
                             'tonnage' => $tonnage,
                             'volume' => $volume,
-                            'tipe_kontainer' => null, // Tidak ada di CSV, dikosongkan
-                            'ukuran_kontainer' => null, // Tidak ada di CSV, dikosongkan
-                            'supir_ob' => null,
-                            'tanggal_muat' => null,
-                            'jam_muat' => null,
-                            'prospek_id' => null,
-                            'keterangan' => null,
+                            'satuan' => isset($row[14]) ? trim($row[14]) : null,
+                            'kuantitas' => isset($row[15]) && !empty(trim($row[15])) ? (int)trim($row[15]) : null,
+                            'term' => isset($row[16]) ? trim($row[16]) : null,
+                            'supir_ob' => isset($row[17]) ? trim($row[17]) : null,
+                            'tanggal_muat' => isset($row[18]) && !empty(trim($row[18])) ? trim($row[18]) : null,
+                            'jam_muat' => isset($row[19]) && !empty(trim($row[19])) ? trim($row[19]) : null,
+                            'prospek_id' => isset($row[20]) && !empty(trim($row[20])) ? (int)trim($row[20]) : null,
+                            'keterangan' => isset($row[21]) ? trim($row[21]) : null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
@@ -791,17 +846,21 @@ class BlController extends Controller
                             'no_voyage' => $noVoyage,
                             'tujuan' => $worksheet->getCell("F{$row}")->getValue() ?: null,
                             'nama_barang' => $worksheet->getCell("G{$row}")->getValue() ?: null,
-                            'tipe_kontainer' => $worksheet->getCell("H{$row}")->getValue() ?: null,
-                            'ukuran_kontainer' => $worksheet->getCell("I{$row}")->getValue() ?: null,
-                            'tonnage' => $worksheet->getCell("J{$row}")->getValue() ?: null,
-                            'volume' => $worksheet->getCell("K{$row}")->getValue() ?: null,
-                            'kuantitas' => $worksheet->getCell("L{$row}")->getValue() ?: null,
-                            'term' => $worksheet->getCell("M{$row}")->getValue() ?: null,
-                            'supir_ob' => $worksheet->getCell("N{$row}")->getValue() ?: null,
-                            'tanggal_muat' => $worksheet->getCell("O{$row}")->getValue() ?: null,
-                            'jam_muat' => $worksheet->getCell("P{$row}")->getValue() ?: null,
-                            'prospek_id' => $worksheet->getCell("Q{$row}")->getValue() ?: null,
-                            'keterangan' => $worksheet->getCell("R{$row}")->getValue() ?: null,
+                            'penerima' => $worksheet->getCell("H{$row}")->getValue() ?: null,
+                            'alamat_pengiriman' => $worksheet->getCell("I{$row}")->getValue() ?: null,
+                            'contact_person' => $worksheet->getCell("J{$row}")->getValue() ?: null,
+                            'tipe_kontainer' => $worksheet->getCell("K{$row}")->getValue() ?: null,
+                            'ukuran_kontainer' => $worksheet->getCell("L{$row}")->getValue() ?: null,
+                            'tonnage' => $worksheet->getCell("M{$row}")->getValue() ?: null,
+                            'volume' => $worksheet->getCell("N{$row}")->getValue() ?: null,
+                            'satuan' => $worksheet->getCell("O{$row}")->getValue() ?: null,
+                            'kuantitas' => $worksheet->getCell("P{$row}")->getValue() ?: null,
+                            'term' => $worksheet->getCell("Q{$row}")->getValue() ?: null,
+                            'supir_ob' => $worksheet->getCell("R{$row}")->getValue() ?: null,
+                            'tanggal_muat' => $worksheet->getCell("S{$row}")->getValue() ?: null,
+                            'jam_muat' => $worksheet->getCell("T{$row}")->getValue() ?: null,
+                            'prospek_id' => $worksheet->getCell("U{$row}")->getValue() ?: null,
+                            'keterangan' => $worksheet->getCell("V{$row}")->getValue() ?: null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 

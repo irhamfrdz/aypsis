@@ -66,28 +66,42 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        fetch(`{{ route('prospek.get-voyage-by-kapal') }}?kapal_id=${kapalId}`, {
+        // Ambil nama kapal dari option yang dipilih
+        const kapalName = kapalSelect.options[kapalSelect.selectedIndex].text.split(' (')[0];
+        
+        console.log('Nama kapal dipilih:', kapalName);
+
+        fetch(`{{ route('bl.get-voyage-by-kapal') }}?nama_kapal=${encodeURIComponent(kapalName)}`, {
             method: 'GET',
-            headers: { 'Accept': 'application/json' },
+            headers: { 
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            },
             credentials: 'same-origin'
         })
-        .then(r => r.json())
+        .then(r => {
+            console.log('Response status:', r.status);
+            return r.json();
+        })
         .then(data => {
+            console.log('Response data:', data);
             voyageSelect.innerHTML = '';
             if (data.success && data.voyages && data.voyages.length) {
                 voyageSelect.innerHTML = '<option value="">--Pilih Voyage--</option>';
                 data.voyages.forEach(v => {
                     voyageSelect.innerHTML += `<option value="${v}">${v}</option>`;
                 });
+                console.log('Voyage loaded:', data.voyages.length);
             } else {
                 voyageSelect.innerHTML = '<option value="">Belum ada voyage untuk kapal ini</option>';
+                console.log('No voyages found');
             }
             voyageSelect.disabled = false;
         })
         .catch(err => {
+            console.error('Fetch error:', err);
             voyageSelect.innerHTML = '<option value="">Error loading voyage</option>';
             voyageSelect.disabled = false;
-            console.error(err);
         });
     });
 

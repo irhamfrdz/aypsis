@@ -72,8 +72,7 @@
                         class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
                     <option value="">Semua Status</option>
                     <option value="Tersedia" {{ request('status') == 'Tersedia' ? 'selected' : '' }}>Tersedia</option>
-                    <option value="Disewa" {{ request('status') == 'Disewa' ? 'selected' : '' }}>Disewa</option>
-                    <option value="Digunakan" {{ request('status') == 'Digunakan' ? 'selected' : '' }}>Digunakan</option>
+                    <option value="Tidak Tersedia" {{ request('status') == 'Tidak Tersedia' ? 'selected' : '' }}>Tidak Tersedia</option>
                 </select>
             </div>
 
@@ -351,22 +350,15 @@
 
                 <td class="px-4 py-2 whitespace-nowrap text-center">
                     @php
-                        // Normalize status dengan dukungan untuk 'active'/'inactive'
+                        // Hanya 2 status: Tersedia atau Tidak Tersedia
                         $displayStatus = 'Tersedia'; // Default
-                        $statusClass = 'bg-green-100 text-green-800'; // Default: Hijau untuk Tersedia
+                        $statusClass = 'bg-green-100 text-green-800'; // Hijau untuk Tersedia
 
-                        // Jika status menunjukkan sedang digunakan, maka "Disewa"
-                        if (in_array($kontainer->status, ['Disewa', 'Digunakan', 'rented'])) {
-                            $displayStatus = 'Disewa';
-                            $statusClass = 'bg-yellow-100 text-yellow-800'; // Kuning untuk Disewa
+                        // Jika status bukan "Tersedia", maka "Tidak Tersedia"
+                        if ($kontainer->status !== 'Tersedia') {
+                            $displayStatus = 'Tidak Tersedia';
+                            $statusClass = 'bg-red-100 text-red-800'; // Merah untuk Tidak Tersedia
                         }
-                        // Jika status inactive, maka "Nonaktif"
-                        elseif ($kontainer->status === 'inactive') {
-                            $displayStatus = 'Nonaktif';
-                            $statusClass = 'bg-red-100 text-red-800'; // Merah untuk Nonaktif
-                        }
-                        // Semua status lainnya dianggap "Tersedia"
-                        // (Tersedia, available, active, dikembalikan, dll)
                     @endphp
                     <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusClass }}">
                         {{ $displayStatus }}
