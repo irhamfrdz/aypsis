@@ -135,18 +135,27 @@ class MobilController extends Controller
         // Format pattern untuk bulan dan tahun saat ini
         $pattern = $prefix . $month . $year;
         
-        // Cari nomor terakhir dari SELURUH database (tidak hanya bulan ini)
-        // untuk mendapatkan running number yang terus berjalan
-        $lastRecord = Mobil::orderBy('kode_no', 'desc')->first();
+        // Cari nomor terakhir yang paling besar dari SELURUH database
+        // Ambil semua kode yang sesuai format AT1
+        $maxRunningNumber = 0;
         
-        $runningNumber = 1;
+        $allRecords = Mobil::where('kode_no', 'like', 'AT1%')
+            ->whereNotNull('kode_no')
+            ->get();
         
-        if ($lastRecord) {
-            // Extract running number dari kode terakhir di database
-            $lastKode = $lastRecord->kode_no;
-            $lastRunning = substr($lastKode, -5); // Ambil 5 digit terakhir
-            $runningNumber = intval($lastRunning) + 1;
+        foreach ($allRecords as $record) {
+            $kode = $record->kode_no;
+            // Extract running number (5 digit terakhir)
+            if (strlen($kode) >= 5) {
+                $running = intval(substr($kode, -5));
+                if ($running > $maxRunningNumber) {
+                    $maxRunningNumber = $running;
+                }
+            }
         }
+        
+        // Running number berikutnya
+        $runningNumber = $maxRunningNumber + 1;
         
         // Format running number menjadi 5 digit dengan leading zeros
         $formattedRunning = str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
