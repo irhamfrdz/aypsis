@@ -618,23 +618,70 @@ class KontainerImportController extends Controller
                     // If kontainer not found, create new record
                     if (!$kontainer) {
                         // Parse nomor kontainer to extract components
-                        // Format: ABCD123456X (4 chars prefix + 6 digits + 1 char suffix)
-                        if (strlen($nomorKontainer) < 11) {
+                        // Standard format: ABCD123456X (4 chars prefix + 6 digits + 1 char suffix = 11 chars)
+                        // Handle non-standard formats as well
+                        
+                        $nomorKontainerLength = strlen($nomorKontainer);
+                        
+                        if ($nomorKontainerLength < 5) {
                             $stats['errors']++;
-                            $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer '{$nomorKontainer}' tidak valid (harus 11 karakter)";
+                            $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer '{$nomorKontainer}' terlalu pendek (minimal 5 karakter)";
                             continue;
                         }
                         
+                        // Extract awalan (first 4 characters)
                         $awalanKontainer = substr($nomorKontainer, 0, 4);
-                        $nomorSeri = substr($nomorKontainer, 4, 6);
-                        $akhiranKontainer = substr($nomorKontainer, 10, 1);
+                        
+                        // For non-standard length containers, handle differently
+                        if ($nomorKontainerLength == 11) {
+                            // Standard: 4 chars + 6 digits + 1 char
+                            $nomorSeri = substr($nomorKontainer, 4, 6);
+                            $akhiranKontainer = substr($nomorKontainer, 10, 1);
+                        } else if ($nomorKontainerLength > 11) {
+                            // Non-standard longer format (e.g., CAIU22348208 = 12 chars)
+                            // Take remaining chars after awalan as nomor_seri, last char as akhiran
+                            // But limit nomor_seri to max 6 chars to fit DB
+                            $remainingChars = substr($nomorKontainer, 4);
+                            $akhiranKontainer = substr($remainingChars, -1); // Last char
+                            $nomorSeri = substr($remainingChars, 0, -1); // Everything except last char
+                            
+                            // If nomor_seri is longer than 6, take last 6 digits
+                            if (strlen($nomorSeri) > 6) {
+                                $nomorSeri = substr($nomorSeri, -6);
+                            }
+                            
+                            // Log warning for non-standard format
+                            \Log::warning("Non-standard kontainer format", [
+                                'nomor_kontainer' => $nomorKontainer,
+                                'length' => $nomorKontainerLength,
+                                'awalan' => $awalanKontainer,
+                                'nomor_seri' => $nomorSeri,
+                                'akhiran' => $akhiranKontainer
+                            ]);
+                        } else {
+                            // Shorter than 11 chars
+                            $remainingChars = substr($nomorKontainer, 4);
+                            $akhiranKontainer = substr($remainingChars, -1); // Last char
+                            $nomorSeri = substr($remainingChars, 0, -1); // Everything except last char
+                            
+                            // Pad nomor_seri with leading zeros if needed
+                            $nomorSeri = str_pad($nomorSeri, 6, '0', STR_PAD_LEFT);
+                        }
+                        
+                        // Ensure nomor_seri_gabungan fits in database (max 11 chars)
+                        $nomorSeriGabungan = $awalanKontainer . $nomorSeri . $akhiranKontainer;
+                        if (strlen($nomorSeriGabungan) > 11) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer '{$nomorKontainer}' terlalu panjang setelah diproses (hasil: '{$nomorSeriGabungan}', max 11 karakter). Silakan edit manual.";
+                            continue;
+                        }
                         
                         // Create new kontainer with default values
                         $kontainer = new Kontainer();
                         $kontainer->awalan_kontainer = $awalanKontainer;
                         $kontainer->nomor_seri_kontainer = $nomorSeri;
                         $kontainer->akhiran_kontainer = $akhiranKontainer;
-                        $kontainer->nomor_seri_gabungan = $nomorKontainer;
+                        $kontainer->nomor_seri_gabungan = $nomorSeriGabungan;
                         $kontainer->ukuran = '20'; // Default 20ft
                         $kontainer->tipe_kontainer = 'HC'; // Default High Cube
                         $kontainer->status = 'Tersedia'; // Default available
@@ -642,10 +689,11 @@ class KontainerImportController extends Controller
                         $isNewKontainer = true;
                         
                         \Log::info("Creating new kontainer from import", [
-                            'nomor_kontainer' => $nomorKontainer,
+                            'original_nomor' => $nomorKontainer,
                             'awalan' => $awalanKontainer,
                             'nomor_seri' => $nomorSeri,
-                            'akhiran' => $akhiranKontainer
+                            'akhiran' => $akhiranKontainer,
+                            'nomor_seri_gabungan' => $nomorSeriGabungan
                         ]);
                     }
 
