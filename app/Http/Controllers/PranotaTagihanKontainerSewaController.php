@@ -27,8 +27,7 @@ class PranotaTagihanKontainerSewaController extends Controller
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('no_invoice', 'like', '%' . $request->search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $request->search . '%')
-                  ->orWhere('no_invoice_vendor', 'like', '%' . $request->search . '%');
+                  ->orWhere('keterangan', 'like', '%' . $request->search . '%');
             });
         }
 
