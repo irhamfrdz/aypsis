@@ -845,6 +845,13 @@ $(document).ready(function() {
         });
         
         $('#total_uang_muka_supir').text(formatRupiah(total));
+        
+        // Auto-update Total Pembayaran field dengan total uang muka supir
+        if (total > 0) {
+            let formattedTotal = new Intl.NumberFormat('id-ID').format(total);
+            $('#total_pembayaran').val(formattedTotal);
+            updateDisplay();
+        }
     }
 
     // Fungsi untuk format currency input

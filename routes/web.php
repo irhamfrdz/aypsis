@@ -496,6 +496,9 @@ Route::middleware([
 
         // Master mobil routes - CONVERTED TO RESOURCE (7 routes → 1 line) with permissions
         // Specific routes MUST come before resource routes to avoid conflicts
+        Route::get('mobil/get-next-kode', [MobilController::class, 'getNextKode'])
+             ->name('mobil.get-next-kode')
+             ->middleware('can:master-mobil-create');
         Route::get('mobil/template', [App\Http\Controllers\MasterMobilImportController::class, 'downloadTemplate'])
              ->name('mobil.template')
              ->middleware('can:master-mobil-view');

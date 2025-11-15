@@ -20,7 +20,7 @@
 
             <div class="p-6">
                 <!-- Filters -->
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
                     <div>
                         <label for="filter_date_from" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Dari:</label>
                         <input type="date" id="filter_date_from" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
@@ -28,6 +28,22 @@
                     <div>
                         <label for="filter_date_to" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Sampai:</label>
                         <input type="date" id="filter_date_to" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div>
+                        <label for="filter_kegiatan" class="block text-sm font-medium text-gray-700 mb-1">Kegiatan:</label>
+                        <select id="filter_kegiatan" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Semua Kegiatan</option>
+                            @php
+                                $kegiatanList = \App\Models\PembayaranAktivitasLainnya::whereNotNull('kegiatan')
+                                    ->distinct()
+                                    ->pluck('kegiatan')
+                                    ->filter()
+                                    ->sort();
+                            @endphp
+                            @foreach($kegiatanList as $kegiatan)
+                                <option value="{{ $kegiatan }}">{{ $kegiatan }}</option>
+                            @endforeach
+                        </select>
                     </div>
                 </div>
 
@@ -86,25 +102,25 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="font-semibold text-green-600">
-                                            Rp {{ number_format($item->total_pembayaran, 0, ',', '.') }}
+                                            Rp {{ number_format($item->total_nominal, 0, ',', '.') }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        @if($item->is_dp)
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        @if($item->status)
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
                                                 <i class="fas fa-check-circle mr-1"></i>
-                                                Bayar DP
+                                                {{ ucfirst($item->status) }}
                                             </span>
                                         @else
                                             <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                                 <i class="fas fa-circle mr-1"></i>
-                                                Normal
+                                                Pending
                                             </span>
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600">
-                                        <div class="max-w-xs truncate" title="{{ $item->aktivitas_pembayaran }}">
-                                            {{ Str::limit($item->aktivitas_pembayaran, 50) }}
+                                        <div class="max-w-xs truncate" title="{{ $item->keterangan }}">
+                                            {{ Str::limit($item->keterangan, 50) }}
                                         </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -298,11 +314,13 @@ $(document).ready(function() {
         const search = $('#search').val();
         const dateFrom = $('#filter_date_from').val();
         const dateTo = $('#filter_date_to').val();
+        const kegiatan = $('#filter_kegiatan').val();
 
         let url = new URL(window.location.href);
         url.searchParams.set('search', search);
         url.searchParams.set('date_from', dateFrom);
         url.searchParams.set('date_to', dateTo);
+        url.searchParams.set('kegiatan', kegiatan);
 
         window.location.href = url.toString();
     }
@@ -319,11 +337,13 @@ $(document).ready(function() {
         const search = $('#search').val();
         const dateFrom = $('#filter_date_from').val();
         const dateTo = $('#filter_date_to').val();
+        const kegiatan = $('#filter_kegiatan').val();
 
         let url = '/pembayaran-aktivitas-lainnya/export?';
         url += `search=${encodeURIComponent(search)}&`;
         url += `date_from=${encodeURIComponent(dateFrom)}&`;
-        url += `date_to=${encodeURIComponent(dateTo)}`;
+        url += `date_to=${encodeURIComponent(dateTo)}&`;
+        url += `kegiatan=${encodeURIComponent(kegiatan)}`;
 
         window.open(url, '_blank');
     });
@@ -333,6 +353,12 @@ $(document).ready(function() {
     $('#search').val(urlParams.get('search') || '');
     $('#filter_date_from').val(urlParams.get('date_from') || '');
     $('#filter_date_to').val(urlParams.get('date_to') || '');
+    $('#filter_kegiatan').val(urlParams.get('kegiatan') || '');
+    
+    // Trigger search when kegiatan filter changes
+    $('#filter_kegiatan').on('change', function() {
+        performSearch();
+    });
 });
 </script>
 @endpush

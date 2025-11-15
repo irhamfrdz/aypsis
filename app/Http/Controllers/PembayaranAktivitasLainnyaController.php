@@ -28,11 +28,16 @@ class PembayaranAktivitasLainnyaController extends Controller
             $query->whereDate('tanggal_pembayaran', '<=', $request->date_to);
         }
 
+        // Filter berdasarkan kegiatan
+        if ($request->filled('kegiatan')) {
+            $query->where('kegiatan', $request->kegiatan);
+        }
+
         // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('nomor_pembayaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('aktivitas_pembayaran', 'like', '%' . $request->search . '%');
+                  ->orWhere('keterangan', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -136,16 +141,14 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'nomor_pembayaran' => $nomorPembayaran,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'nomor_accurate' => $request->nomor_accurate,
-                'total_pembayaran' => $totalPembayaran,
-                'pilih_bank' => $request->pilih_bank,
+                'total_nominal' => $totalPembayaran,
                 'akun_biaya_id' => $request->akun_biaya_id,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
+                'keterangan' => $request->aktivitas_pembayaran,
                 'kegiatan' => $request->kegiatan,
                 'plat_nomor' => $request->plat_nomor,
                 'nama_kapal' => $request->nama_kapal,
                 'nomor_voyage' => $request->nomor_voyage,
-                'is_dp' => $request->has('is_dp') ? true : false,
                 'created_by' => Auth::id(),
             ]);
 

@@ -587,4 +587,25 @@ class MobilController extends Controller
                              ->with('error', 'Error saat membaca file Excel: ' . $e->getMessage());
         }
     }
+
+    /**
+     * Get next kode nomor via AJAX
+     */
+    public function getNextKode()
+    {
+        try {
+            $nextKode = $this->generateKodeNomor();
+            
+            return response()->json([
+                'success' => true,
+                'kode_no' => $nextKode,
+                'message' => 'Kode nomor berhasil diperbarui'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal mengambil kode nomor: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
