@@ -371,8 +371,9 @@
                         <span class="text-gray-300">|</span>
                         @can('audit-log-view')
                             <button type="button" class="audit-log-btn text-purple-600 hover:text-purple-800 hover:underline font-medium"
-                                    data-model="{{ get_class($kontainer) }}"
-                                    data-id="{{ $kontainer->id }}"
+                                    data-model-type="{{ get_class($kontainer) }}"
+                                    data-model-id="{{ $kontainer->id }}"
+                                    data-item-name="{{ $kontainer->nomor_seri_gabungan }}"
                                     title="Lihat Riwayat">
                                 Riwayat
                             </button>
