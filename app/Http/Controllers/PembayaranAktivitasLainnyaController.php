@@ -469,4 +469,65 @@ class PembayaranAktivitasLainnyaController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * API: Get list of kapal from OB Bongkar
+     */
+    public function getKapalList(Request $request)
+    {
+        try {
+            $kapalList = DB::table('ob_bongkar')
+                ->select('kapal')
+                ->distinct()
+                ->whereNotNull('kapal')
+                ->orderBy('kapal')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $kapalList
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading kapal data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * API: Get list of voyage based on kapal from OB Bongkar
+     */
+    public function getVoyageList(Request $request)
+    {
+        try {
+            $kapal = $request->input('kapal');
+
+            if (!$kapal) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Kapal parameter is required'
+                ], 400);
+            }
+
+            $voyageList = DB::table('ob_bongkar')
+                ->select('voyage')
+                ->where('kapal', $kapal)
+                ->distinct()
+                ->whereNotNull('voyage')
+                ->orderBy('voyage')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $voyageList
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading voyage data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+

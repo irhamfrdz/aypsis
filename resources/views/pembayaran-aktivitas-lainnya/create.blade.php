@@ -270,6 +270,32 @@
                         </div>
                     </div>
 
+                    <!-- Row for Kapal and Voyage (untuk Uang Muka OB) -->
+                    <div id="ob_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
+                        <div>
+                            <label for="nama_kapal" class="block text-xs font-medium text-gray-700 mb-1">
+                                Nama Kapal <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="nama_kapal"
+                                    name="nama_kapal">
+                                <option value="">Pilih Kapal</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk kegiatan OB</p>
+                        </div>
+                        <div>
+                            <label for="nomor_voyage" class="block text-xs font-medium text-gray-700 mb-1">
+                                Nomor Voyage <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="nomor_voyage"
+                                    name="nomor_voyage">
+                                <option value="">Pilih Voyage</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Pilih nomor voyage kapal</p>
+                        </div>
+                    </div>
+
                     <!-- Summary Display -->
                     <div class="bg-blue-50 border border-blue-200 rounded p-3">
                         <div class="flex justify-between items-center">
@@ -556,22 +582,88 @@ $(document).ready(function() {
     }
 
     // Handler untuk dropdown kegiatan - tampilkan plat nomor jika kegiatan mengandung "kir" atau "stnk"
+    // atau tampilkan kapal & voyage jika kegiatan adalah "Uang Muka OB Bongkar" atau "Uang Muka OB Muat"
     $('#kegiatan').on('change', function() {
-        let selectedKegiatan = $(this).val().toLowerCase();
+        let selectedKegiatan = $(this).val();
+        let lowerKegiatan = selectedKegiatan.toLowerCase();
+
+        // Reset semua container
+        $('#plat_nomor_container').addClass('hidden');
+        $('#plat_nomor').removeAttr('required').val('');
+        $('#ob_container').addClass('hidden');
+        $('#nama_kapal, #nomor_voyage').removeAttr('required').val('');
 
         // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
-        if (selectedKegiatan.includes('kir') || selectedKegiatan.includes('stnk')) {
-            $('#plat_nomor_container').removeClass('hidden').addClass('block');
+        if (lowerKegiatan.includes('kir') || lowerKegiatan.includes('stnk')) {
+            $('#plat_nomor_container').removeClass('hidden');
             $('#plat_nomor').attr('required', true);
+        }
+        // Cek apakah kegiatan adalah "Uang Muka OB Bongkar" atau "Uang Muka OB Muat"
+        else if (lowerKegiatan.includes('uang muka ob bongkar') || lowerKegiatan.includes('uang muka ob muat')) {
+            $('#ob_container').removeClass('hidden');
+            $('#nama_kapal, #nomor_voyage').attr('required', true);
+            
+            // Load data kapal
+            loadKapalData();
+        }
+    });
 
-            // Tambahkan visual indicator bahwa field ini wajib
-            $('#plat_nomor_container label span.text-red-500').removeClass('hidden');
+    // Function to load kapal data from OB Bongkar
+    function loadKapalData() {
+        $('#nama_kapal').html('<option value="">Loading...</option>');
+        
+        $.ajax({
+            url: '/api/get-kapal-list',
+            method: 'GET',
+            success: function(response) {
+                let options = '<option value="">Pilih Kapal</option>';
+                
+                if (response.success && response.data.length > 0) {
+                    response.data.forEach(function(kapal) {
+                        options += `<option value="${kapal.kapal}">${kapal.kapal}</option>`;
+                    });
+                } else {
+                    options = '<option value="">Tidak ada data kapal</option>';
+                }
+                
+                $('#nama_kapal').html(options);
+            },
+            error: function() {
+                $('#nama_kapal').html('<option value="">Error loading data</option>');
+            }
+        });
+    }
+
+    // Handler untuk dropdown kapal - load voyage berdasarkan kapal yang dipilih
+    $('#nama_kapal').on('change', function() {
+        let kapalName = $(this).val();
+        
+        if (kapalName) {
+            $('#nomor_voyage').html('<option value="">Loading...</option>');
+            
+            $.ajax({
+                url: '/api/get-voyage-list',
+                method: 'GET',
+                data: { kapal: kapalName },
+                success: function(response) {
+                    let options = '<option value="">Pilih Voyage</option>';
+                    
+                    if (response.success && response.data.length > 0) {
+                        response.data.forEach(function(voyage) {
+                            options += `<option value="${voyage.voyage}">${voyage.voyage}</option>`;
+                        });
+                    } else {
+                        options = '<option value="">Tidak ada data voyage</option>';
+                    }
+                    
+                    $('#nomor_voyage').html(options);
+                },
+                error: function() {
+                    $('#nomor_voyage').html('<option value="">Error loading data</option>');
+                }
+            });
         } else {
-            $('#plat_nomor_container').removeClass('block').addClass('hidden');
-            $('#plat_nomor').removeAttr('required').val('');
-
-            // Sembunyikan visual indicator required
-            $('#plat_nomor_container label span.text-red-500').addClass('hidden');
+            $('#nomor_voyage').html('<option value="">Pilih Voyage</option>');
         }
     });
 

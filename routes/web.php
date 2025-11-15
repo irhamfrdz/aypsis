@@ -2490,6 +2490,12 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
          ->middleware('can:pembayaran-aktivitas-lainnya-approve');
 });
 
+// API Routes for Pembayaran Aktivitas Lainnya
+Route::middleware(['auth'])->group(function () {
+    Route::get('/api/get-kapal-list', [PembayaranAktivitasLainnyaController::class, 'getKapalList']);
+    Route::get('/api/get-voyage-list', [PembayaranAktivitasLainnyaController::class, 'getVoyageList']);
+});
+
 // Pembayaran Uang Muka routes
 Route::prefix('pembayaran-uang-muka')->name('pembayaran-uang-muka.')->middleware(['auth'])->group(function () {
     Route::get('/', [PembayaranUangMukaController::class, 'index'])->name('index')

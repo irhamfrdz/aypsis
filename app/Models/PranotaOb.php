@@ -92,7 +92,7 @@ class PranotaOb extends Model
     public function calculateTotal(): float
     {
         $total = $this->items()->sum('amount');
-        $this->update(['total_amount' => $total]);
+        $this->update(['total_biaya' => $total]);
         
         return $total;
     }
@@ -102,7 +102,7 @@ class PranotaOb extends Model
      */
     public function getFormattedTotalAttribute(): string
     {
-        return 'Rp ' . number_format($this->total_amount, 0, ',', '.');
+        return 'Rp ' . number_format($this->grand_total, 0, ',', '.');
     }
     
     /**

@@ -149,7 +149,6 @@
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">No</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nomor Pranota</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Periode</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Jumlah Item</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total</th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
@@ -168,13 +167,6 @@
                                     @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $pranota->tanggal_pranota->format('d/m/Y') }}</td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    @if($pranota->periode)
-                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">{{ $pranota->periode }}</span>
-                                    @else
-                                        <span class="text-gray-400">-</span>
-                                    @endif
-                                </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 text-center">
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
                                         {{ $pranota->items_count ?? $pranota->items->count() }} item
@@ -234,7 +226,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="9" class="px-6 py-12 text-center">
+                                <td colspan="8" class="px-6 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <i class="fas fa-file-invoice text-gray-400 text-4xl mb-4"></i>
                                         <p class="text-gray-500 text-lg">Belum ada pranota OB</p>
