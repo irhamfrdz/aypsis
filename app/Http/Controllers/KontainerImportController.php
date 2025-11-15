@@ -570,6 +570,7 @@ class KontainerImportController extends Controller
                 'success' => 0,
                 'errors' => 0,
                 'not_found' => 0,
+                'created' => 0,
                 'not_found_list' => [],
                 'error_details' => []
             ];
@@ -612,11 +613,40 @@ class KontainerImportController extends Controller
                     // Find kontainer by nomor_seri_gabungan
                     $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
 
+                    $isNewKontainer = false;
+                    
+                    // If kontainer not found, create new record
                     if (!$kontainer) {
-                        $stats['not_found']++;
-                        $stats['not_found_list'][] = $nomorKontainer;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Kontainer '{$nomorKontainer}' tidak ditemukan";
-                        continue;
+                        // Parse nomor kontainer to extract components
+                        // Format: ABCD123456X (4 chars prefix + 6 digits + 1 char suffix)
+                        if (strlen($nomorKontainer) < 11) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Nomor kontainer '{$nomorKontainer}' tidak valid (harus 11 karakter)";
+                            continue;
+                        }
+                        
+                        $awalanKontainer = substr($nomorKontainer, 0, 4);
+                        $nomorSeri = substr($nomorKontainer, 4, 6);
+                        $akhiranKontainer = substr($nomorKontainer, 10, 1);
+                        
+                        // Create new kontainer with default values
+                        $kontainer = new Kontainer();
+                        $kontainer->awalan_kontainer = $awalanKontainer;
+                        $kontainer->nomor_seri_kontainer = $nomorSeri;
+                        $kontainer->akhiran_kontainer = $akhiranKontainer;
+                        $kontainer->nomor_seri_gabungan = $nomorKontainer;
+                        $kontainer->ukuran = '20'; // Default 20ft
+                        $kontainer->tipe_kontainer = 'HC'; // Default High Cube
+                        $kontainer->status = 'Tersedia'; // Default available
+                        
+                        $isNewKontainer = true;
+                        
+                        \Log::info("Creating new kontainer from import", [
+                            'nomor_kontainer' => $nomorKontainer,
+                            'awalan' => $awalanKontainer,
+                            'nomor_seri' => $nomorSeri,
+                            'akhiran' => $akhiranKontainer
+                        ]);
                     }
 
                     // Parse dates - support format dd/mmm/yyyy (e.g., 12/Nov/2025)
@@ -641,10 +671,24 @@ class KontainerImportController extends Controller
                             
                             $parsedDate = null;
                             
-                            // Try dd-mmm-yy format first (e.g., 07-Apr-23)
+                            // Try dd mmm yy format with spaces (e.g., "15 Agu 25")
                             try {
-                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalMulaiSewaEng);
+                                $parsedDate = \Carbon\Carbon::createFromFormat('d M y', $tanggalMulaiSewaEng);
                             } catch (Exception $e) {}
+                            
+                            // Try dd mmm yyyy format with spaces (e.g., "15 Agu 2025")
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d M Y', $tanggalMulaiSewaEng);
+                                } catch (Exception $e) {}
+                            }
+                            
+                            // Try dd-mmm-yy format (e.g., 07-Apr-23)
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalMulaiSewaEng);
+                                } catch (Exception $e) {}
+                            }
                             
                             // Try dd-mmm-yyyy format (e.g., 07-Apr-2023)
                             if (!$parsedDate) {
@@ -669,7 +713,7 @@ class KontainerImportController extends Controller
                             
                             if (!$parsedDate) {
                                 $stats['errors']++;
-                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid '{$tanggalMulaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 07-Apr-23 atau 07-Agu-23)";
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid '{$tanggalMulaiSewa}' (gunakan dd-mmm-yy, dd mmm yy, atau dd-mmm-yyyy, contoh: 07-Apr-23, 15 Agu 25, atau 07-Agu-23)";
                                 continue;
                             }
                             
@@ -691,10 +735,24 @@ class KontainerImportController extends Controller
                             
                             $parsedDate = null;
                             
-                            // Try dd-mmm-yy format first (e.g., 06-Agu-23)
+                            // Try dd mmm yy format with spaces (e.g., "15 Agu 25")
                             try {
-                                $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalSelesaiSewaEng);
+                                $parsedDate = \Carbon\Carbon::createFromFormat('d M y', $tanggalSelesaiSewaEng);
                             } catch (Exception $e) {}
+                            
+                            // Try dd mmm yyyy format with spaces (e.g., "15 Agu 2025")
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d M Y', $tanggalSelesaiSewaEng);
+                                } catch (Exception $e) {}
+                            }
+                            
+                            // Try dd-mmm-yy format (e.g., 06-Agu-23)
+                            if (!$parsedDate) {
+                                try {
+                                    $parsedDate = \Carbon\Carbon::createFromFormat('d-M-y', $tanggalSelesaiSewaEng);
+                                } catch (Exception $e) {}
+                            }
                             
                             // Try dd-mmm-yyyy format (e.g., 06-Agu-2023)
                             if (!$parsedDate) {
@@ -719,7 +777,7 @@ class KontainerImportController extends Controller
                             
                             if (!$parsedDate) {
                                 $stats['errors']++;
-                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid '{$tanggalSelesaiSewa}' (gunakan dd-mmm-yy atau dd-mmm-yyyy, contoh: 06-Agu-23 atau 06-Des-23)";
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid '{$tanggalSelesaiSewa}' (gunakan dd-mmm-yy, dd mmm yy, atau dd-mmm-yyyy, contoh: 06-Agu-23, 15 Des 25, atau 06-Des-23)";
                                 continue;
                             }
                             
@@ -731,10 +789,20 @@ class KontainerImportController extends Controller
                         }
                     }
 
-                    // Update kontainer if there's data to update
+                    // Update or save kontainer
                     if (!empty($updateData)) {
-                        $kontainer->update($updateData);
-                        $stats['success']++;
+                        foreach ($updateData as $key => $value) {
+                            $kontainer->$key = $value;
+                        }
+                    }
+                    
+                    // Save kontainer (create or update)
+                    $kontainer->save();
+                    $stats['success']++;
+                    
+                    if ($isNewKontainer) {
+                        $stats['created']++;
+                        \Log::info("New kontainer created", ['nomor_kontainer' => $nomorKontainer]);
                     }
 
                 } catch (Exception $e) {
@@ -749,21 +817,15 @@ class KontainerImportController extends Controller
             $message = "Import tanggal sewa berhasil! ";
             $message .= "Diperbarui: {$stats['success']} kontainer";
 
-            if ($stats['not_found'] > 0) {
-                $message .= ", Tidak ditemukan: {$stats['not_found']} kontainer";
+            if ($stats['created'] > 0) {
+                $message .= ", Dibuat baru: {$stats['created']} kontainer";
             }
 
             if ($stats['errors'] > 0) {
                 $message .= ", Error: {$stats['errors']} baris";
             }
 
-            // Show list of not found containers
-            if (!empty($stats['not_found_list'])) {
-                $notFoundList = implode(', ', $stats['not_found_list']);
-                $message .= ". Kontainer tidak ditemukan: " . $notFoundList;
-            }
-
-            // Show detailed errors if any
+            // Show detailed errors if any (removed not found list since we auto-create now)
             if (!empty($stats['error_details'])) {
                 $errorDetails = implode(', ', array_slice($stats['error_details'], 0, 5));
                 if (count($stats['error_details']) > 5) {
