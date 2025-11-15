@@ -471,15 +471,16 @@ class PembayaranAktivitasLainnyaController extends Controller
     }
 
     /**
-     * API: Get list of kapal from OB Bongkar
+     * API: Get list of kapal from Tagihan OB
      */
     public function getKapalList(Request $request)
     {
         try {
-            $kapalList = DB::table('ob_bongkar')
+            $kapalList = DB::table('tagihan_ob')
                 ->select('kapal')
                 ->distinct()
                 ->whereNotNull('kapal')
+                ->where('kapal', '!=', '')
                 ->orderBy('kapal')
                 ->get();
 
@@ -496,7 +497,7 @@ class PembayaranAktivitasLainnyaController extends Controller
     }
 
     /**
-     * API: Get list of voyage based on kapal from OB Bongkar
+     * API: Get list of voyage based on kapal from Tagihan OB
      */
     public function getVoyageList(Request $request)
     {
@@ -510,11 +511,12 @@ class PembayaranAktivitasLainnyaController extends Controller
                 ], 400);
             }
 
-            $voyageList = DB::table('ob_bongkar')
+            $voyageList = DB::table('tagihan_ob')
                 ->select('voyage')
                 ->where('kapal', $kapal)
                 ->distinct()
                 ->whereNotNull('voyage')
+                ->where('voyage', '!=', '')
                 ->orderBy('voyage')
                 ->get();
 
