@@ -205,9 +205,9 @@
 
                 <!-- Jatuh Tempo Asuransi -->
                 <div>
-                    <label for="jatuh_tempo_asuransi" class="block text-sm font-medium text-gray-700">Jatuh Tempo Asuransi</label>
-                    <input type="date" name="jatuh_tempo_asuransi" id="jatuh_tempo_asuransi" value="{{ old('jatuh_tempo_asuransi', $mobil->jatuh_tempo_asuransi ? $mobil->jatuh_tempo_asuransi->format('Y-m-d') : '') }}" class="{{ $inputClasses }}">
-                    @error('jatuh_tempo_asuransi')
+                    <label for="tanggal_jatuh_tempo_asuransi" class="block text-sm font-medium text-gray-700">Jatuh Tempo Asuransi</label>
+                    <input type="date" name="tanggal_jatuh_tempo_asuransi" id="tanggal_jatuh_tempo_asuransi" value="{{ old('tanggal_jatuh_tempo_asuransi', $mobil->tanggal_jatuh_tempo_asuransi ? $mobil->tanggal_jatuh_tempo_asuransi->format('Y-m-d') : '') }}" class="{{ $inputClasses }}">
+                    @error('tanggal_jatuh_tempo_asuransi')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>

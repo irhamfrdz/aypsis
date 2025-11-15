@@ -18,6 +18,7 @@ class PembayaranAktivitasLainnya extends Model
         'nomor_pembayaran',
         'tanggal_pembayaran',
         'nomor_accurate',
+        'pilih_bank',
         'akun_biaya_id',
         'total_nominal',
         'metode_pembayaran',

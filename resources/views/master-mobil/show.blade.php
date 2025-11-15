@@ -301,10 +301,10 @@
                     <div>
                         <label class="block text-sm font-medium text-gray-600 mb-1">Jatuh Tempo Asuransi</label>
                         <p class="text-sm bg-white p-3 rounded border">
-                            @if($mobil->jatuh_tempo_asuransi)
-                                {{ \Carbon\Carbon::parse($mobil->jatuh_tempo_asuransi)->format('d F Y') }}
+                            @if($mobil->tanggal_jatuh_tempo_asuransi)
+                                {{ \Carbon\Carbon::parse($mobil->tanggal_jatuh_tempo_asuransi)->format('d F Y') }}
                                 @php
-                                    $expiry = \Carbon\Carbon::parse($mobil->jatuh_tempo_asuransi);
+                                    $expiry = \Carbon\Carbon::parse($mobil->tanggal_jatuh_tempo_asuransi);
                                     $now = \Carbon\Carbon::now();
                                     $diff = $expiry->diffInDays($now, false);
                                 @endphp

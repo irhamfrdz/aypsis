@@ -141,6 +141,7 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'nomor_pembayaran' => $nomorPembayaran,
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'nomor_accurate' => $request->nomor_accurate,
+                'pilih_bank' => $request->pilih_bank,
                 'total_nominal' => $totalPembayaran,
                 'akun_biaya_id' => $request->akun_biaya_id,
                 'jenis_transaksi' => $request->jenis_transaksi,
