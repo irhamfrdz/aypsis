@@ -82,6 +82,85 @@
                         </div>
 
                         <div>
+                            <label for="kegiatan" class="block text-xs font-medium text-gray-700 mb-1">
+                                Kegiatan
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="kegiatan"
+                                    name="kegiatan">
+                                <option value="">Pilih Kegiatan</option>
+                                @if(isset($masterKegiatan) && $masterKegiatan->count() > 0)
+                                    @foreach($masterKegiatan as $kegiatan)
+                                        <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                            {{ $kegiatan->nama_kegiatan }}
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>Tidak ada kegiatan uang muka tersedia</option>
+                                @endif
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Data dari master kegiatan bertipe "uang muka"</p>
+                        </div>
+                    </div>
+
+                    <!-- Row for Kapal and Voyage (untuk Uang Muka OB) -->
+                    <div id="ob_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
+                        <div>
+                            <label for="nama_kapal" class="block text-xs font-medium text-gray-700 mb-1">
+                                Nama Kapal <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="nama_kapal"
+                                    name="nama_kapal">
+                                <option value="">Pilih Kapal</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk kegiatan OB</p>
+                        </div>
+                        <div>
+                            <label for="nomor_voyage" class="block text-xs font-medium text-gray-700 mb-1">
+                                Nomor Voyage <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="nomor_voyage"
+                                    name="nomor_voyage">
+                                <option value="">Pilih Voyage</option>
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Pilih nomor voyage kapal</p>
+                        </div>
+                    </div>
+
+                    <!-- Plat Nomor Container (untuk kegiatan KIR & STNK) -->
+                    <div id="plat_nomor_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
+                        <div>
+                            <label for="plat_nomor" class="block text-xs font-medium text-gray-700 mb-1">
+                                Plat Nomor <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                    id="plat_nomor"
+                                    name="plat_nomor">
+                                <option value="">Pilih Plat Nomor</option>
+                                @if(isset($masterMobil) && $masterMobil->count() > 0)
+                                    @foreach($masterMobil as $mobil)
+                                        <option value="{{ $mobil->nomor_polisi }}" {{ old('plat_nomor') == $mobil->nomor_polisi ? 'selected' : '' }}>
+                                            {{ $mobil->nomor_polisi }}
+                                            @if($mobil->kode_no)
+                                                - {{ $mobil->kode_no }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>Tidak ada mobil tersedia</option>
+                                @endif
+                            </select>
+                            <p class="text-xs text-gray-500 mt-1">Wajib dipilih untuk kegiatan KIR & STNK</p>
+                        </div>
+                        <div>
+                            <!-- Placeholder untuk menjaga grid layout -->
+                        </div>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
                             <label for="total_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
                                 Total Pembayaran <span class="text-red-500">*</span>
                             </label>
@@ -97,6 +176,9 @@
                                        placeholder="0"
                                        required>
                             </div>
+                        </div>
+                        <div>
+                            <!-- Space for future fields if needed -->
                         </div>
                     </div>
 
@@ -221,79 +303,6 @@
                             <i class="fas fa-exclamation-triangle mr-1"></i>
                             Field ini wajib diisi - minimal 5 karakter
                         </small>
-                    </div>
-
-                    <!-- Row for Kegiatan and Plat Nomor -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="kegiatan" class="block text-xs font-medium text-gray-700 mb-1">
-                                Kegiatan
-                            </label>
-                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    id="kegiatan"
-                                    name="kegiatan">
-                                <option value="">Pilih Kegiatan</option>
-                                @if(isset($masterKegiatan) && $masterKegiatan->count() > 0)
-                                    @foreach($masterKegiatan as $kegiatan)
-                                        <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
-                                            {{ $kegiatan->nama_kegiatan }}
-                                        </option>
-                                    @endforeach
-                                @else
-                                    <option value="" disabled>Tidak ada kegiatan uang muka tersedia</option>
-                                @endif
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Data dari master kegiatan bertipe "uang muka"</p>
-                        </div>
-                        <div id="plat_nomor_container" class="hidden">
-                            <label for="plat_nomor" class="block text-xs font-medium text-gray-700 mb-1">
-                                Plat Nomor <span class="text-red-500">*</span>
-                            </label>
-                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    id="plat_nomor"
-                                    name="plat_nomor">
-                                <option value="">Pilih Plat Nomor</option>
-                                @if(isset($masterMobil) && $masterMobil->count() > 0)
-                                    @foreach($masterMobil as $mobil)
-                                        <option value="{{ $mobil->nomor_polisi }}" {{ old('plat_nomor') == $mobil->nomor_polisi ? 'selected' : '' }}>
-                                            {{ $mobil->nomor_polisi }}
-                                            @if($mobil->kode_no)
-                                                - {{ $mobil->kode_no }}
-                                            @endif
-                                        </option>
-                                    @endforeach
-                                @else
-                                    <option value="" disabled>Tidak ada mobil tersedia</option>
-                                @endif
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Wajib dipilih untuk kegiatan KIR & STNK</p>
-                        </div>
-                    </div>
-
-                    <!-- Row for Kapal and Voyage (untuk Uang Muka OB) -->
-                    <div id="ob_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
-                        <div>
-                            <label for="nama_kapal" class="block text-xs font-medium text-gray-700 mb-1">
-                                Nama Kapal <span class="text-red-500">*</span>
-                            </label>
-                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    id="nama_kapal"
-                                    name="nama_kapal">
-                                <option value="">Pilih Kapal</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk kegiatan OB</p>
-                        </div>
-                        <div>
-                            <label for="nomor_voyage" class="block text-xs font-medium text-gray-700 mb-1">
-                                Nomor Voyage <span class="text-red-500">*</span>
-                            </label>
-                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    id="nomor_voyage"
-                                    name="nomor_voyage">
-                                <option value="">Pilih Voyage</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Pilih nomor voyage kapal</p>
-                        </div>
                     </div>
 
                     <!-- Summary Display -->
