@@ -16,6 +16,16 @@
             'tableFont' => '9px',
             'signatureBottom' => '15mm'
         ],
+        'Custom-215' => [
+            'size' => '215mm 297mm', // Custom 21.5cm width
+            'width' => '215mm',
+            'height' => '297mm',
+            'containerWidth' => '215mm',
+            'fontSize' => '11px',
+            'headerH1' => '18px',
+            'tableFont' => '9px',
+            'signatureBottom' => '15mm'
+        ],
         'Folio' => [
             'size' => '8.5in 13in',
             'width' => '8.5in',
@@ -31,6 +41,16 @@
             'width' => '210mm',
             'height' => '148.5mm',
             'containerWidth' => '210mm',
+            'fontSize' => '9px',
+            'headerH1' => '14px',
+            'tableFont' => '7px',
+            'signatureBottom' => '5mm'
+        ],
+        'Half-Custom-215' => [
+            'size' => '215mm 148.5mm', // Custom 21.5cm width x half height
+            'width' => '215mm',
+            'height' => '148.5mm',
+            'containerWidth' => '215mm',
             'fontSize' => '9px',
             'headerH1' => '14px',
             'tableFont' => '7px',
@@ -53,8 +73,10 @@
     // Calculate maximum rows that can fit on one page (including headers, footers, etc.)
     $maxRowsPerPage = match($paperSize) {
         'Half-A4' => 20,     // Conservative but allows for headers/footers
+        'Half-Custom-215' => 20,  // Same as Half-A4
         'Half-Folio' => 22,  // Slightly more space
         'A4' => 35,          // Full A4 has much more space
+        'Custom-215' => 35,  // Same as A4
         'Folio' => 40,       // Largest paper
         default => 20
     };
@@ -75,7 +97,7 @@
 @endphp
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width={{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }}, initial-scale=1.0">
+    <meta name="viewport" content="width={{ in_array($paperSize, ['Half-A4', 'A4']) ? '210mm' : (in_array($paperSize, ['Half-Custom-215', 'Custom-215']) ? '215mm' : (in_array($paperSize, ['Half-Folio', 'Folio']) ? '8.5in' : '210mm')) }}, initial-scale=1.0">
     <title>Pranota {{ $pranota->no_invoice }}</title>
     <style>
         * {
@@ -97,7 +119,7 @@
         }
 
         @page {
-            size: {{ $paperSize === 'Half-A4' ? '210mm 148.5mm' : ($paperSize === 'Half-Folio' ? '8.5in 6.5in' : ($paperSize === 'A4' ? 'A4' : '8.5in 13in')) }} portrait;
+            size: {{ in_array($paperSize, ['Half-A4']) ? '210mm 148.5mm' : (in_array($paperSize, ['Half-Custom-215']) ? '215mm 148.5mm' : (in_array($paperSize, ['Half-Folio']) ? '8.5in 6.5in' : (in_array($paperSize, ['A4']) ? 'A4' : (in_array($paperSize, ['Custom-215']) ? '215mm 297mm' : '8.5in 13in')))) }} portrait;
             margin: 0;
         }
 
@@ -127,28 +149,28 @@
         }
 
         html {
-            width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
-            height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+            width: {{ $currentPaper['width'] }};
+            height: {{ $currentPaper['height'] }};
         }
 
         body {
             font-family: Arial, sans-serif;
-            font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : ($paperSize === 'A4' ? '11px' : '12px')) }};
+            font-size: {{ $currentPaper['fontSize'] }};
             line-height: 1.4;
             color: #333;
             background: white;
             position: relative;
-            width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
-            height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+            width: {{ $currentPaper['width'] }};
+            height: {{ $currentPaper['height'] }};
             margin: 0;
             padding: 0;
         }
 
         .container {
-            width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
-            max-width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
-            height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
-            max-height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+            width: {{ $currentPaper['containerWidth'] }};
+            max-width: {{ $currentPaper['containerWidth'] }};
+            height: {{ $currentPaper['height'] }};
+            max-height: {{ $currentPaper['height'] }};
             margin: 0 auto;
             padding: 5mm 1mm 5mm 5mm;
             position: relative;
@@ -165,7 +187,7 @@
         }
 
         .header h1 {
-            font-size: {{ $paperSize === 'Half-A4' ? '14px' : ($paperSize === 'Half-Folio' ? '14px' : ($paperSize === 'A4' ? '18px' : '20px')) }};
+            font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
             color: #333;
             margin-bottom: 3px;
@@ -229,14 +251,14 @@
             background-color: #f8f9fa;
             color: #333;
             font-weight: bold;
-            font-size: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : ($paperSize === 'A4' ? '10px' : '11px')) }};
+            font-size: {{ $currentPaper['tableFont'] }};
             text-align: center;
             white-space: nowrap;
             border: 2px solid #333;
         }
 
         .table td {
-            font-size: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : ($paperSize === 'A4' ? '10px' : '11px')) }};
+            font-size: {{ $currentPaper['tableFont'] }};
         }
 
         .table .text-right {
@@ -358,7 +380,7 @@
             text-align: center;
             page-break-inside: avoid;
             position: absolute;
-            bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '40px') }};
+            bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '40px' }};
             left: 0;
             right: 0;
             width: 100%;
@@ -367,24 +389,24 @@
         .signature-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '15px') }};
+            margin-top: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '15px' }};
         }
 
         .signature-cell {
             width: 33.33%;
-            padding: {{ $paperSize === 'Half-A4' ? '8px 4px' : ($paperSize === 'Half-Folio' ? '8px 4px' : '12px 8px') }};
+            padding: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '8px 4px' : '12px 8px' }};
             text-align: center;
             vertical-align: top;
         }
 
         .signature-label {
             font-weight: bold;
-            margin-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '30px') }};
-            font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '11px') }};
+            margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '30px' }};
+            font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }};
         }
 
         .signature-name {
-            font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '11px') }};
+            font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }};
             margin-bottom: 5px;
             font-weight: bold;
         }
@@ -400,7 +422,7 @@
 
         @media print {
             @page {
-                size: {{ $paperSize === 'Half-A4' ? '210mm 148.5mm' : ($paperSize === 'Half-Folio' ? '8.5in 6.5in' : ($paperSize === 'A4' ? 'A4' : '8.5in 13in')) }} portrait;
+                size: {{ $currentPaper['size'] }} portrait;
                 margin: 0;
             }
 
@@ -410,24 +432,24 @@
             }
 
             html {
-                width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
-                height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+                width: {{ $currentPaper['width'] }};
+                height: {{ $currentPaper['height'] }};
             }
 
             body {
-                width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
-                height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '297mm' : '13in')) }};
+                width: {{ $currentPaper['width'] }};
+                height: {{ $currentPaper['height'] }};
                 margin: 0;
                 padding: 0;
-                font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : ($paperSize === 'A4' ? '11px' : '12px')) }};
+                font-size: {{ $currentPaper['fontSize'] }};
                 color: #000;
                 position: relative;
                 overflow: visible;
             }
 
             .container {
-                width: {{ $paperSize === 'Half-A4' ? '210mm' : ($paperSize === 'Half-Folio' ? '8.5in' : ($paperSize === 'A4' ? '210mm' : '8.5in')) }};
-                min-height: {{ $paperSize === 'Half-A4' ? '148.5mm' : ($paperSize === 'Half-Folio' ? '6.5in' : ($paperSize === 'A4' ? '287mm' : '13in')) }};
+                width: {{ $currentPaper['containerWidth'] }};
+                min-height: {{ $currentPaper['height'] }};
                 padding: 5mm 1mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
                 margin: 0;
@@ -694,7 +716,24 @@
             <div style="flex: 1;">
                 <strong style="color: #92400e; display: block; margin-bottom: 6px; font-size: 14px;">⚠️ PENTING - Setting Print untuk {{ $paperSize }}:</strong>
                 <div style="color: #78350f; font-size: 13px; line-height: 1.6;">
-                    @if($paperSize === 'Half-A4')
+                    @if($paperSize === 'Custom-215')
+                        <strong>Ukuran: Custom 21.5cm x 29.7cm</strong><br>
+                        @if($totalPages > 1)<span style="color: #dc2626;">📄 {{ $totalPages }} halaman - Data dibagi karena terlalu banyak</span><br>@endif
+                        📌 Saat Print Dialog:<br>
+                        &nbsp;&nbsp;&nbsp;1️⃣ Scale: <strong>None / 100% / Actual Size</strong><br>
+                        &nbsp;&nbsp;&nbsp;2️⃣ Orientation: <strong>Portrait (Tegak)</strong><br>
+                        &nbsp;&nbsp;&nbsp;3️⃣ Paper: <strong>Custom (21.5cm x 29.7cm)</strong><br>
+                        &nbsp;&nbsp;&nbsp;4️⃣ Margins: <strong>None / Minimal</strong>
+                    @elseif($paperSize === 'Half-Custom-215')
+                        <strong>Ukuran: Setengah Custom (21.5 x 14.85 cm)</strong><br>
+                        @if($totalPages > 1)<span style="color: #dc2626;">📄 {{ $totalPages }} halaman - Data dibagi karena terlalu banyak</span><br>@endif
+                        📌 Saat Print Dialog:<br>
+                        &nbsp;&nbsp;&nbsp;1️⃣ Scale: <strong>None / 100% / Actual Size</strong><br>
+                        &nbsp;&nbsp;&nbsp;2️⃣ Orientation: <strong>Portrait (Tegak)</strong><br>
+                        &nbsp;&nbsp;&nbsp;3️⃣ Paper: <strong>Custom (21.5cm x 29.7cm)</strong><br>
+                        &nbsp;&nbsp;&nbsp;4️⃣ Margins: <strong>None / Minimal</strong><br>
+                        ✂️ Setelah print, potong kertas menjadi 2 bagian (setengah horizontal)
+                    @elseif($paperSize === 'Half-A4')
                         <strong>Ukuran: Setengah A4 (210 x 148.5 mm)</strong><br>
                         @if($totalPages > 1)<span style="color: #dc2626;">� {{ $totalPages }} halaman - Data dibagi karena terlalu banyak</span><br>@endif
                         �📌 Saat Print Dialog:<br>
@@ -732,7 +771,11 @@
         <div class="mt-2">
             <small class="text-gray-600">
                 Current: {{ $paperSize }}
-                @if($paperSize === 'Half-A4')
+                @if($paperSize === 'Custom-215')
+                    (215mm × 297mm)
+                @elseif($paperSize === 'Half-Custom-215')
+                    (215mm × 148.5mm)
+                @elseif($paperSize === 'Half-A4')
                     (210mm × 148.5mm)
                 @elseif($paperSize === 'Half-Folio')
                     (8.5in × 6.5in)

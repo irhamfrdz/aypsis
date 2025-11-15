@@ -129,6 +129,65 @@
                         </div>
                     </div>
 
+                    <!-- Tabel Uang Muka Supir (untuk Uang Muka OB Bongkar) -->
+                    <div id="uang_muka_supir_container" class="mb-4 hidden">
+                        <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
+                            <div class="flex justify-between items-center mb-3">
+                                <h4 class="text-sm font-semibold text-gray-800 flex items-center">
+                                    <i class="fas fa-users text-purple-600 mr-2"></i>
+                                    Daftar Uang Muka Supir
+                                </h4>
+                                <button type="button"
+                                        id="btn_add_supir"
+                                        class="inline-flex items-center px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white font-medium text-xs rounded transition duration-150 ease-in-out">
+                                    <i class="fas fa-plus mr-1"></i> Tambah Supir
+                                </button>
+                            </div>
+
+                            <div class="overflow-x-auto">
+                                <table class="min-w-full divide-y divide-gray-200 bg-white rounded-lg shadow-sm">
+                                    <thead class="bg-gray-50">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir <span class="text-red-500">*</span></th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Uang Muka <span class="text-red-500">*</span></th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
+                                            <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="supir_table_body" class="bg-white divide-y divide-gray-200">
+                                        <!-- Rows will be added dynamically -->
+                                        <tr id="no_supir_row">
+                                            <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-500">
+                                                <i class="fas fa-info-circle mr-1"></i>
+                                                Belum ada data supir. Klik "Tambah Supir" untuk menambahkan.
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                    <tfoot class="bg-gray-50">
+                                        <tr>
+                                            <td colspan="2" class="px-3 py-2 text-right text-sm font-semibold text-gray-700">
+                                                Total Uang Muka:
+                                            </td>
+                                            <td colspan="3" class="px-3 py-2 text-left">
+                                                <span class="text-lg font-bold text-purple-600" id="total_uang_muka_supir">Rp 0</span>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+
+                            <div class="mt-3 bg-blue-50 border border-blue-200 rounded p-2">
+                                <div class="flex items-start">
+                                    <i class="fas fa-info-circle text-blue-600 mt-0.5 mr-2"></i>
+                                    <div class="text-xs text-blue-800">
+                                        <strong>Info:</strong> Tambahkan data supir yang menerima uang muka untuk kegiatan OB Bongkar ini. Total uang muka supir akan dijumlahkan otomatis.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Plat Nomor Container (untuk kegiatan KIR & STNK) -->
                     <div id="plat_nomor_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
                         <div>
@@ -600,6 +659,7 @@ $(document).ready(function() {
         $('#plat_nomor_container').addClass('hidden');
         $('#plat_nomor').removeAttr('required').val('');
         $('#ob_container').addClass('hidden');
+        $('#uang_muka_supir_container').addClass('hidden');
         $('#nama_kapal, #nomor_voyage').removeAttr('required').val('');
 
         // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
@@ -611,6 +671,11 @@ $(document).ready(function() {
         else if (lowerKegiatan.includes('uang muka ob bongkar') || lowerKegiatan.includes('uang muka ob muat')) {
             $('#ob_container').removeClass('hidden');
             $('#nama_kapal, #nomor_voyage').attr('required', true);
+            
+            // Tampilkan tabel uang muka supir untuk Uang Muka OB Bongkar
+            if (lowerKegiatan.includes('uang muka ob bongkar')) {
+                $('#uang_muka_supir_container').removeClass('hidden');
+            }
             
             // Load data kapal
             loadKapalData();
@@ -681,6 +746,151 @@ $(document).ready(function() {
     if (initialKegiatan) {
         $('#kegiatan').trigger('change');
     }
+
+    // === Fungsi untuk Tabel Uang Muka Supir ===
+    let supirRowCounter = 0;
+
+    // Tombol tambah supir
+    $('#btn_add_supir').on('click', function() {
+        supirRowCounter++;
+        const newRow = `
+            <tr class="supir-row hover:bg-gray-50">
+                <td class="px-6 py-4 text-center text-sm">${supirRowCounter}</td>
+                <td class="px-6 py-4">
+                    <select name="nama_supir[]" 
+                            class="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm w-full text-sm"
+                            required>
+                        <option value="">Pilih Supir</option>
+                        @if(isset($masterSupir) && $masterSupir->count() > 0)
+                            @foreach($masterSupir as $supir)
+                                <option value="{{ $supir->nama_lengkap }}">
+                                    {{ $supir->nama_lengkap }}
+                                    @if($supir->nama_panggilan)
+                                        ({{ $supir->nama_panggilan }})
+                                    @endif
+                                </option>
+                            @endforeach
+                        @else
+                            <option value="" disabled>Tidak ada supir tersedia</option>
+                        @endif
+                    </select>
+                </td>
+                <td class="px-6 py-4">
+                    <input type="text" 
+                           name="jumlah_uang_muka[]" 
+                           class="jumlah-uang-muka border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm w-full text-sm text-right"
+                           placeholder="0"
+                           required>
+                </td>
+                <td class="px-6 py-4">
+                    <input type="text" 
+                           name="keterangan_supir[]" 
+                           class="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm w-full text-sm"
+                           placeholder="Keterangan (opsional)">
+                </td>
+                <td class="px-6 py-4 text-center">
+                    <button type="button" 
+                            class="btn-delete-supir inline-flex items-center px-3 py-2 bg-red-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-red-500 active:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 transition ease-in-out duration-150">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                    </button>
+                </td>
+            </tr>
+        `;
+        
+        $('#no_supir_row').hide();
+        $('#supir_table_body').append(newRow);
+        
+        // Format currency untuk input yang baru ditambahkan
+        formatCurrencyInputs();
+        
+        // Update nomor urut
+        updateSupirRowNumbers();
+    });
+
+    // Handler untuk delete row
+    $(document).on('click', '.btn-delete-supir', function() {
+        $(this).closest('tr').remove();
+        updateSupirRowNumbers();
+        calculateTotalUangMuka();
+        
+        // Tampilkan pesan jika tidak ada data
+        const supirRows = $('#supir_table_body tr').not('#no_supir_row');
+        if (supirRows.length === 0) {
+            $('#no_supir_row').show();
+        }
+    });
+
+    // Handler untuk perhitungan total saat input berubah
+    $(document).on('input', '.jumlah-uang-muka', function() {
+        calculateTotalUangMuka();
+    });
+
+    // Fungsi untuk update nomor urut
+    function updateSupirRowNumbers() {
+        $('#supir_table_body tr').not('#no_supir_row').each(function(index) {
+            $(this).find('td:first').text(index + 1);
+        });
+        supirRowCounter = $('#supir_table_body tr').not('#no_supir_row').length;
+    }
+
+    // Fungsi untuk menghitung total uang muka
+    function calculateTotalUangMuka() {
+        let total = 0;
+        $('.jumlah-uang-muka').each(function() {
+            const value = $(this).val().replace(/\./g, '').replace(/,/g, '');
+            const numValue = parseFloat(value) || 0;
+            total += numValue;
+        });
+        
+        $('#total_uang_muka_supir').text(formatRupiah(total));
+    }
+
+    // Fungsi untuk format currency input
+    function formatCurrencyInputs() {
+        $('.jumlah-uang-muka').off('keyup').on('keyup', function() {
+            let value = $(this).val().replace(/\./g, '');
+            if (value) {
+                $(this).val(formatNumber(value));
+            }
+        });
+    }
+
+    // Fungsi format number dengan thousand separator
+    function formatNumber(value) {
+        return value.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    }
+
+    // Fungsi format rupiah
+    function formatRupiah(angka) {
+        const numberString = angka.toString().replace(/[^,\d]/g, '');
+        const split = numberString.split(',');
+        const sisa = split[0].length % 3;
+        let rupiah = split[0].substr(0, sisa);
+        const ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+        
+        if (ribuan) {
+            const separator = sisa ? '.' : '';
+            rupiah += separator + ribuan.join('.');
+        }
+        
+        rupiah = split[1] !== undefined ? rupiah + ',' + split[1] : rupiah;
+        return 'Rp ' + rupiah;
+    }
+
+    // Handler untuk form submission - validasi tabel supir
+    $('#form-pembayaran-aktivitas').on('submit', function(e) {
+        // Validasi tabel supir jika visible
+        if (!$('#uang_muka_supir_container').hasClass('hidden')) {
+            const supirRows = $('#supir_table_body tr').not('#no_supir_row');
+            if (supirRows.length === 0) {
+                e.preventDefault();
+                alert('Harap tambahkan minimal satu data uang muka supir!');
+                return false;
+            }
+        }
+    });
 });
 </script>
 @endpush

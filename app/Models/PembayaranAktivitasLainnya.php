@@ -27,6 +27,8 @@ class PembayaranAktivitasLainnya extends Model
         'jenis_transaksi',
         'kegiatan',
         'plat_nomor',
+        'nama_kapal',
+        'nomor_voyage',
         'created_by',
         'approved_by',
         'approved_at'
@@ -86,6 +88,14 @@ class PembayaranAktivitasLainnya extends Model
     public function items()
     {
         return $this->hasMany(PembayaranAktivitasLainnyaItem::class, 'pembayaran_id');
+    }
+
+    /**
+     * Relationship dengan detail uang muka supir
+     */
+    public function detailSupir()
+    {
+        return $this->hasMany(PembayaranUangMukaSupirDetail::class, 'pembayaran_id');
     }
 
     /**

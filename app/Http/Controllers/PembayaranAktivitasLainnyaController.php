@@ -65,7 +65,21 @@ class PembayaranAktivitasLainnyaController extends Controller
         $masterMobil = \App\Models\Mobil::orderBy('nomor_polisi')
             ->get();
 
-        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'coaBiaya', 'masterKegiatan', 'masterMobil'));
+        // Fetch master supir (karyawan) untuk dropdown nama supir - hanya yang divisi supir
+        $masterSupir = \App\Models\Karyawan::whereNotNull('nama_lengkap')
+            ->where('nama_lengkap', '!=', '')
+            ->where(function($query) {
+                $query->where('divisi', 'LIKE', '%supir%')
+                      ->orWhere('divisi', 'LIKE', '%Supir%')
+                      ->orWhere('divisi', 'LIKE', '%SUPIR%')
+                      ->orWhere('pekerjaan', 'LIKE', '%supir%')
+                      ->orWhere('pekerjaan', 'LIKE', '%Supir%')
+                      ->orWhere('pekerjaan', 'LIKE', '%SUPIR%');
+            })
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'coaBiaya', 'masterKegiatan', 'masterMobil', 'masterSupir'));
     }
 
     /**
@@ -82,7 +96,12 @@ class PembayaranAktivitasLainnyaController extends Controller
             'jenis_transaksi' => 'required|string|in:debit,kredit',
             'aktivitas_pembayaran' => 'required|string|min:5|max:1000',
             'total_pembayaran' => 'required|numeric|min:0',
-            'is_dp' => 'nullable|boolean'
+            'is_dp' => 'nullable|boolean',
+            'nama_supir' => 'nullable|array',
+            'nama_supir.*' => 'required_with:nama_supir|string',
+            'jumlah_uang_muka' => 'nullable|array',
+            'jumlah_uang_muka.*' => 'required_with:jumlah_uang_muka|numeric|min:0',
+            'keterangan_supir' => 'nullable|array',
         ], [
             'aktivitas_pembayaran.required' => 'Aktivitas pembayaran wajib diisi.',
             'aktivitas_pembayaran.min' => 'Aktivitas pembayaran minimal 5 karakter.',
@@ -124,9 +143,32 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
                 'kegiatan' => $request->kegiatan,
                 'plat_nomor' => $request->plat_nomor,
+                'nama_kapal' => $request->nama_kapal,
+                'nomor_voyage' => $request->nomor_voyage,
                 'is_dp' => $request->has('is_dp') ? true : false,
                 'created_by' => Auth::id(),
             ]);
+
+            // Simpan detail uang muka supir jika ada
+            if ($request->has('nama_supir') && is_array($request->nama_supir)) {
+                foreach ($request->nama_supir as $index => $namaSupir) {
+                    if (!empty($namaSupir)) {
+                        // Clean jumlah uang muka (remove formatting)
+                        $jumlahUangMuka = $request->jumlah_uang_muka[$index] ?? 0;
+                        if (is_string($jumlahUangMuka)) {
+                            $jumlahUangMuka = (float) str_replace(['.', ','], ['', '.'], $jumlahUangMuka);
+                        }
+
+                        \App\Models\PembayaranUangMukaSupirDetail::create([
+                            'pembayaran_id' => $pembayaran->id,
+                            'nama_supir' => $namaSupir,
+                            'jumlah_uang_muka' => $jumlahUangMuka,
+                            'keterangan' => $request->keterangan_supir[$index] ?? null,
+                            'status' => 'dibayar',
+                        ]);
+                    }
+                }
+            }
 
             // Single-Entry: Update saldo bank (kurangi saldo karena pengeluaran)
             $bankCoa->decrement('saldo', $totalPembayaran);
