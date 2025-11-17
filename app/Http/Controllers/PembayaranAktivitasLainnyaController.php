@@ -184,6 +184,17 @@ class PembayaranAktivitasLainnyaController extends Controller
                 if ($totalUangMukaSupir > 0) {
                     $kegiatan = \App\Models\MasterKegiatan::where('nama_kegiatan', $request->kegiatan)->first();
                     
+                    // Build supir_ids array and jumlah_per_supir associative array
+                    $supirIds = [];
+                    $jumlahPerSupir = [];
+                    
+                    foreach ($supirDetails as $index => $detail) {
+                        // For pembayaran aktivitas lainnya, we only have names, not IDs
+                        // Store index as ID and map to jumlah
+                        $supirIds[] = $detail['nama'];
+                        $jumlahPerSupir[$detail['nama']] = $detail['jumlah'];
+                    }
+                    
                     \App\Models\PembayaranUangMuka::create([
                         'nomor_pembayaran' => $nomorPembayaran,
                         'tanggal_pembayaran' => $request->tanggal_pembayaran,
@@ -193,15 +204,17 @@ class PembayaranAktivitasLainnyaController extends Controller
                         'kas_bank_id' => $request->pilih_bank,
                         'dibuat_oleh' => Auth::id(),
                         'status' => 'uang_muka_belum_terpakai',
-                        // Store supir details as JSON for integration
-                        'supir_ids' => json_encode(array_column($supirDetails, 'nama')),
-                        'jumlah_per_supir' => json_encode(array_column($supirDetails, 'jumlah'))
+                        // Store as arrays - model cast will handle JSON conversion
+                        'supir_ids' => $supirIds,
+                        'jumlah_per_supir' => $jumlahPerSupir
                     ]);
 
                     Log::info('Created PembayaranUangMuka for realisasi integration', [
                         'nomor_pembayaran' => $nomorPembayaran,
                         'total_uang_muka' => $totalUangMukaSupir,
-                        'supir_count' => count($supirDetails)
+                        'supir_count' => count($supirDetails),
+                        'supir_ids' => $supirIds,
+                        'jumlah_per_supir' => $jumlahPerSupir
                     ]);
                 }
             }

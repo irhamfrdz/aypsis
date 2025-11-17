@@ -133,6 +133,22 @@ class RealisasiUangMukaController extends Controller
         // Enrich Uang Muka data dengan nama supir
         foreach ($uangMukaBelumRealisasiList as $uangMuka) {
             $uangMuka->supir_names = $uangMuka->supirList()->pluck('nama_lengkap')->toArray();
+            
+            // Ensure supir_ids is an array (cast might not work for old JSON-encoded data)
+            if (is_string($uangMuka->supir_ids)) {
+                $uangMuka->supir_ids = json_decode($uangMuka->supir_ids, true) ?? [];
+            }
+            if (!is_array($uangMuka->supir_ids)) {
+                $uangMuka->supir_ids = [];
+            }
+            
+            // Ensure jumlah_per_supir is an array
+            if (is_string($uangMuka->jumlah_per_supir)) {
+                $uangMuka->jumlah_per_supir = json_decode($uangMuka->jumlah_per_supir, true) ?? [];
+            }
+            if (!is_array($uangMuka->jumlah_per_supir)) {
+                $uangMuka->jumlah_per_supir = [];
+            }
         }
 
         return view('realisasi-uang-muka.create', [
