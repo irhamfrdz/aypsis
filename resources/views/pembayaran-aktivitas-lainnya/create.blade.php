@@ -550,6 +550,70 @@ $(document).ready(function() {
     // Initialize
     updateDisplay();
 
+    // ========== PRE-FILL FROM URL PARAMETERS (from Pranota OB) ==========
+    // Get URL parameters
+    function getUrlParameter(name) {
+        name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+        var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+        var results = regex.exec(location.search);
+        return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+    }
+
+    // Pre-fill fields if URL parameters exist
+    $(document).ready(function() {
+        const kapalParam = getUrlParameter('kapal');
+        const voyageParam = getUrlParameter('voyage');
+        const supirParam = getUrlParameter('supir');
+
+        console.log('URL Params:', { kapal: kapalParam, voyage: voyageParam, supir: supirParam });
+
+        // If kapal parameter exists, set kegiatan to "Uang Muka OB Bongkar" and pre-fill fields
+        if (kapalParam || voyageParam || supirParam) {
+            // Find and select "Uang Muka OB Bongkar" kegiatan
+            $('#kegiatan option').each(function() {
+                const kegiatanText = $(this).text().toLowerCase();
+                if (kegiatanText.includes('uang muka ob')) {
+                    $(this).prop('selected', true);
+                    $('#kegiatan').trigger('change');
+
+                    // Wait for AJAX to load kapal list, then select the kapal
+                    setTimeout(function() {
+                        if (kapalParam) {
+                            $('#nama_kapal').val(kapalParam).trigger('change');
+                            
+                            // Wait for voyage to load, then select it
+                            setTimeout(function() {
+                                if (voyageParam) {
+                                    $('#nomor_voyage').val(voyageParam);
+                                }
+                            }, 500);
+                        }
+
+                        // Pre-fill supir list if exists
+                        if (supirParam) {
+                            const supirList = supirParam.split(',').map(s => s.trim()).filter(s => s);
+                            console.log('Supir list:', supirList);
+
+                            // Add each supir to table
+                            supirList.forEach(function(namaSupir) {
+                                // Trigger add supir button
+                                $('#btn_add_supir').trigger('click');
+                                
+                                // Fill the last added row with supir name
+                                setTimeout(function() {
+                                    const lastRow = $('#supir_table_body tr').not('#no_supir_row').last();
+                                    lastRow.find('.nama-supir').val(namaSupir);
+                                }, 100);
+                            });
+                        }
+                    }, 1000); // Wait for kapal data to load
+
+                    return false; // Break the loop
+                }
+            });
+        }
+    });
+
     // Format number on load if there's old input
     let totalValue = $('#total_pembayaran').val();
     if (totalValue) {

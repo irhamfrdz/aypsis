@@ -65,7 +65,12 @@
                 <!-- Lokasi -->
                 <div>
                     <label for="lokasi" class="block text-sm font-medium text-gray-700">Lokasi</label>
-                    <input type="text" name="lokasi" id="lokasi" value="{{ old('lokasi', $mobil->lokasi) }}" class="{{ $inputClasses }}" maxlength="100" placeholder="Contoh: Jakarta Utara">
+                    <select name="lokasi" id="lokasi" class="{{ $inputClasses }}">
+                        <option value="">-- Pilih Lokasi --</option>
+                        <option value="BTM" {{ old('lokasi', $mobil->lokasi) == 'BTM' ? 'selected' : '' }}>BTM</option>
+                        <option value="JKT" {{ old('lokasi', $mobil->lokasi) == 'JKT' ? 'selected' : '' }}>JKT</option>
+                        <option value="PNG" {{ old('lokasi', $mobil->lokasi) == 'PNG' ? 'selected' : '' }}>PNG</option>
+                    </select>
                     @error('lokasi')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
@@ -196,7 +201,7 @@
 
                 <!-- Asuransi -->
                 <div>
-                    <label for="asuransi" class="block text-sm font-medium text-gray-700">Perusahaan Asuransi</label>
+                    <label for="asuransi" class="block text-sm font-medium text-gray-700">Asuransi</label>
                     <input type="text" name="asuransi" id="asuransi" value="{{ old('asuransi', $mobil->asuransi) }}" class="{{ $inputClasses }}" maxlength="100" placeholder="Nama perusahaan asuransi">
                     @error('asuransi')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -220,22 +225,21 @@
                         <option value="Hitam" {{ old('warna_plat', $mobil->warna_plat) == 'Hitam' ? 'selected' : '' }}>Hitam</option>
                         <option value="Kuning" {{ old('warna_plat', $mobil->warna_plat) == 'Kuning' ? 'selected' : '' }}>Kuning</option>
                         <option value="Merah" {{ old('warna_plat', $mobil->warna_plat) == 'Merah' ? 'selected' : '' }}>Merah</option>
-                        <option value="Biru" {{ old('warna_plat', $mobil->warna_plat) == 'Biru' ? 'selected' : '' }}>Biru</option>
                         <option value="Putih" {{ old('warna_plat', $mobil->warna_plat) == 'Putih' ? 'selected' : '' }}>Putih</option>
                     </select>
                     @error('warna_plat')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                     @enderror
                 </div>
-            </div>
 
-            <!-- Catatan -->
-            <div class="mt-4">
-                <label for="catatan" class="block text-sm font-medium text-gray-700">Catatan</label>
-                <textarea name="catatan" id="catatan" rows="3" class="{{ $inputClasses }}" placeholder="Catatan tambahan mengenai kendaraan">{{ old('catatan', $mobil->catatan) }}</textarea>
-                @error('catatan')
-                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                @enderror
+                <!-- Catatan -->
+                <div class="md:col-span-2">
+                    <label for="catatan" class="block text-sm font-medium text-gray-700">Catatan</label>
+                    <textarea name="catatan" id="catatan" rows="4" class="{{ str_replace('text-base p-2.5', 'text-base p-3', $inputClasses) }}" placeholder="Catatan tambahan mengenai kendaraan...">{{ old('catatan', $mobil->catatan) }}</textarea>
+                    @error('catatan')
+                        <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
             </div>
         </fieldset>
 
@@ -257,7 +261,7 @@
                         <svg class="inline h-3 w-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                         </svg>
-                        Hanya menampilkan karyawan dari divisi Supir. Nomor polisi akan otomatis diupdate ke data supir yang dipilih.
+                        Menampilkan semua karyawan. Nomor polisi akan otomatis diupdate ke data karyawan yang dipilih.
                     </p>
                     @error('karyawan_id')
                         <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

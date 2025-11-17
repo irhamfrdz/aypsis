@@ -16,6 +16,16 @@
                         <i class="fas fa-arrow-left mr-1"></i>
                         Kembali
                     </a>
+                    @can('pembayaran-aktivitas-lainnya-create')
+                        <a href="{{ route('pembayaran-aktivitas-lainnya.create', [
+                            'kapal' => $pranotaOb->items->first()?->tagihanOb?->kapal ?? '',
+                            'voyage' => $pranotaOb->items->first()?->tagihanOb?->voyage ?? '',
+                            'supir' => $pranotaOb->items->pluck('tagihanOb.nama_supir')->filter()->unique()->implode(', ')
+                        ]) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
+                            <i class="fas fa-money-bill-wave mr-1"></i>
+                            Tambahkan DP
+                        </a>
+                    @endcan
                     @if($pranotaOb->status === 'draft')
                         @can('pranota-ob-update')
                             <a href="{{ route('pranota-ob.edit', $pranotaOb) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">

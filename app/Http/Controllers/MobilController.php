@@ -61,8 +61,7 @@ class MobilController extends Controller
      */
     public function create()
     {
-        $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang')
-            ->where('divisi', 'Supir');
+        $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang');
             
         // Filter karyawan berdasarkan cabang user yang login - HANYA untuk user cabang BTM
         $currentUser = auth()->user();
@@ -198,8 +197,7 @@ class MobilController extends Controller
             }
         }
         
-        $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang')
-            ->where('divisi', 'Supir');
+        $karyawansQuery = \App\Models\Karyawan::select('id', 'nama_lengkap', 'nama_panggilan', 'nik', 'divisi', 'cabang');
             
         // Filter karyawan berdasarkan cabang user yang login - HANYA untuk user cabang BTM
         if ($currentUser && $currentUser->karyawan && $currentUser->karyawan->cabang === 'BTM') {
