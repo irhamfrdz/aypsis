@@ -153,6 +153,9 @@ class PembayaranAktivitasLainnyaController extends Controller
 
             // Simpan detail uang muka supir jika ada
             if ($request->has('nama_supir') && is_array($request->nama_supir)) {
+                $totalUangMukaSupir = 0;
+                $supirDetails = [];
+
                 foreach ($request->nama_supir as $index => $namaSupir) {
                     if (!empty($namaSupir)) {
                         // Clean jumlah uang muka (remove formatting)
@@ -168,7 +171,38 @@ class PembayaranAktivitasLainnyaController extends Controller
                             'keterangan' => $request->keterangan_supir[$index] ?? null,
                             'status' => 'dibayar',
                         ]);
+
+                        $totalUangMukaSupir += $jumlahUangMuka;
+                        $supirDetails[] = [
+                            'nama' => $namaSupir,
+                            'jumlah' => $jumlahUangMuka
+                        ];
                     }
+                }
+
+                // Create PembayaranUangMuka record for realisasi integration
+                if ($totalUangMukaSupir > 0) {
+                    $kegiatan = \App\Models\MasterKegiatan::where('nama_kegiatan', $request->kegiatan)->first();
+                    
+                    \App\Models\PembayaranUangMuka::create([
+                        'nomor_pembayaran' => $nomorPembayaran,
+                        'tanggal_pembayaran' => $request->tanggal_pembayaran,
+                        'total_pembayaran' => $totalUangMukaSupir,
+                        'kegiatan' => $kegiatan ? $kegiatan->id : null,
+                        'keterangan' => 'Uang Muka dari ' . $request->kegiatan . ' - ' . $request->aktivitas_pembayaran,
+                        'kas_bank_id' => $request->pilih_bank,
+                        'dibuat_oleh' => Auth::id(),
+                        'status' => 'uang_muka_belum_terpakai',
+                        // Store supir details as JSON for integration
+                        'supir_ids' => json_encode(array_column($supirDetails, 'nama')),
+                        'jumlah_per_supir' => json_encode(array_column($supirDetails, 'jumlah'))
+                    ]);
+
+                    Log::info('Created PembayaranUangMuka for realisasi integration', [
+                        'nomor_pembayaran' => $nomorPembayaran,
+                        'total_uang_muka' => $totalUangMukaSupir,
+                        'supir_count' => count($supirDetails)
+                    ]);
                 }
             }
 
