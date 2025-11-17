@@ -569,15 +569,20 @@ $(document).ready(function() {
 
         // If kapal parameter exists, set kegiatan to "Uang Muka OB Bongkar" and pre-fill fields
         if (kapalParam || voyageParam || supirParam) {
+            console.log('Detected URL params, starting auto-fill process...');
+            
             // Find and select "Uang Muka OB Bongkar" kegiatan
             $('#kegiatan option').each(function() {
                 const kegiatanText = $(this).text().toLowerCase();
                 if (kegiatanText.includes('uang muka ob')) {
+                    console.log('Found matching kegiatan:', $(this).text());
                     $(this).prop('selected', true);
                     $('#kegiatan').trigger('change');
 
                     // Wait for AJAX to load kapal list, then select the kapal
                     setTimeout(function() {
+                        console.log('Step 1: Processing kapal and voyage...');
+                        
                         if (kapalParam) {
                             $('#nama_kapal').val(kapalParam).trigger('change');
                             
@@ -585,28 +590,58 @@ $(document).ready(function() {
                             setTimeout(function() {
                                 if (voyageParam) {
                                     $('#nomor_voyage').val(voyageParam);
+                                    console.log('Voyage selected:', voyageParam);
                                 }
-                            }, 500);
+                            }, 800);
                         }
 
                         // Pre-fill supir list if exists
                         if (supirParam) {
                             const supirList = supirParam.split(',').map(s => s.trim()).filter(s => s);
-                            console.log('Supir list:', supirList);
+                            console.log('Step 2: Processing supir list...', supirList);
 
-                            // Add each supir to table
-                            supirList.forEach(function(namaSupir) {
-                                // Trigger add supir button
-                                $('#btn_add_supir').trigger('click');
+                            // Wait a bit more for the table to be ready
+                            setTimeout(function() {
+                                console.log('Step 3: Starting to add supir rows...');
                                 
-                                // Fill the last added row with supir name
-                                setTimeout(function() {
-                                    const lastRow = $('#supir_table_body tr').not('#no_supir_row').last();
-                                    lastRow.find('.nama-supir').val(namaSupir);
-                                }, 100);
-                            });
+                                // Add each supir to table
+                                supirList.forEach(function(namaSupir, index) {
+                                    setTimeout(function() {
+                                        console.log('Adding row for supir:', namaSupir);
+                                        
+                                        // Trigger add supir button
+                                        $('#btn_add_supir').trigger('click');
+                                        
+                                        // Fill the last added row with supir name by matching from dropdown options
+                                        setTimeout(function() {
+                                            const lastRow = $('#supir_table_body tr').not('#no_supir_row').last();
+                                            const selectSupir = lastRow.find('select[name="supir_id[]"]');
+                                            
+                                            console.log('Looking for supir:', namaSupir, 'in dropdown with', selectSupir.find('option').length, 'options');
+                                            
+                                            // Try to find matching supir in dropdown by name
+                                            let found = false;
+                                            selectSupir.find('option').each(function() {
+                                                const optionText = $(this).text().toLowerCase();
+                                                const searchName = namaSupir.toLowerCase();
+                                                
+                                                if (optionText.includes(searchName) || searchName.includes(optionText.trim().split('(')[0].trim().toLowerCase())) {
+                                                    $(this).prop('selected', true);
+                                                    found = true;
+                                                    console.log('✓ Matched and selected:', $(this).text());
+                                                    return false; // break
+                                                }
+                                            });
+                                            
+                                            if (!found) {
+                                                console.log('✗ No match found for:', namaSupir);
+                                            }
+                                        }, 100);
+                                    }, 200 * index); // Stagger each row addition
+                                });
+                            }, 1500); // Wait for table container to appear
                         }
-                    }, 1000); // Wait for kapal data to load
+                    }, 1200); // Wait for kapal data to load
 
                     return false; // Break the loop
                 }
