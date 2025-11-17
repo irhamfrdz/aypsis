@@ -402,23 +402,24 @@ class PembayaranAktivitasLainnyaController extends Controller
             $tahun = $today->format('y'); // 2 digit year
             $bulan = $today->format('m'); // 2 digit month
 
-            // Ambil kode_nomor dari COA sebagai kode bank (sama seperti pembayaran kontainer)
-            $kodeBank = $coa->kode_nomor ?? '000';
+            // Ambil kode_nomor dari COA sebagai kode bank (3 digit)
+            $kodeBank = $coa->kode_nomor ?? 'PMS';
 
-            // Get next running number from master nomor terakhir (preview only, don't increment)
-            $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')->first();
+            // Get next running number from master nomor terakhir untuk modul PMS (preview only, don't increment)
+            $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'pembayaran_aktivitas_lainnya_pms')->first();
 
             if (!$nomorTerakhir) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Module nomor_pembayaran tidak ditemukan di master nomor terakhir'
+                    'message' => 'Module pembayaran_aktivitas_lainnya_pms tidak ditemukan di master nomor terakhir'
                 ], 404);
             }
 
             $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
             $sequence = str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
-            $nomorPembayaran = "{$kodeBank}-{$bulan}-{$tahun}-{$sequence}";
+            // Format: PMS1116000001 (kode+bulan+tahun+running number)
+            $nomorPembayaran = "{$kodeBank}{$bulan}{$tahun}{$sequence}";
 
             return response()->json([
                 'success' => true,
