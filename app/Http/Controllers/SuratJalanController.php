@@ -585,11 +585,22 @@ class SuratJalanController extends Controller
             $size = $request->size;
 
             // Find tujuan kegiatan utama by 'dari' or 'ke' field
+            // Try exact match first, then partial match
             $tujuanKegiatan = TujuanKegiatanUtama::where(function($query) use ($tujuan) {
-                                                    $query->where('dari', 'like', '%' . $tujuan . '%')
-                                                          ->orWhere('ke', 'like', '%' . $tujuan . '%');
+                                                    $query->where('dari', $tujuan)
+                                                          ->orWhere('ke', $tujuan);
                                                 })
                                                 ->first();
+            
+            // If no exact match found, try partial match with shortest result prioritized
+            if (!$tujuanKegiatan) {
+                $tujuanKegiatan = TujuanKegiatanUtama::where(function($query) use ($tujuan) {
+                                                        $query->where('dari', 'like', '%' . $tujuan . '%')
+                                                              ->orWhere('ke', 'like', '%' . $tujuan . '%');
+                                                    })
+                                                    ->orderByRaw('LENGTH(COALESCE(ke, dari))')
+                                                    ->first();
+            }
 
             if ($tujuanKegiatan) {
                 $uangJalan = 0;

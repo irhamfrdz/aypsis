@@ -184,24 +184,33 @@ class OrderController extends Controller
         $currentDate = now();
         $month = $currentDate->format('m'); // 2 digit month
         $year = $currentDate->format('y');  // 2 digit year
+        
+        // Format prefix for current month/year
+        $prefix = 'ODS' . $month . $year;
 
-        // Get or create nomor terakhir for ODS module
-        $nomorTerakhir = NomorTerakhir::where('modul', 'ODS')->first();
+        // Find the last order number with current month/year prefix
+        $lastOrder = Order::where('nomor_order', 'like', $prefix . '%')
+            ->orderBy('nomor_order', 'desc')
+            ->first();
 
-        if (!$nomorTerakhir) {
-            // Create ODS entry if not exists
-            $nomorTerakhir = NomorTerakhir::create([
-                'modul' => 'ODS',
-                'nomor_terakhir' => 0,
-                'keterangan' => 'Nomor order delivery system'
-            ]);
+        $runningNumber = 1; // Default starting number
+
+        if ($lastOrder) {
+            // Extract the running number from the last order
+            // Format: ODS + MM + YY + 6digit running number
+            $lastNumber = substr($lastOrder->nomor_order, -6);
+            $runningNumber = (int) $lastNumber + 1;
+        } else {
+            // If no orders found for current month, check nomor_terakhir table
+            $nomorTerakhir = NomorTerakhir::where('modul', 'ODS')->first();
+            
+            if ($nomorTerakhir && $nomorTerakhir->nomor_terakhir > 0) {
+                $runningNumber = $nomorTerakhir->nomor_terakhir + 1;
+            }
         }
 
-        // Increment running number
-        $runningNumber = $nomorTerakhir->nomor_terakhir + 1;
-
         // Format: ODS + MM + YY + 6digit running number
-        $orderNumber = 'ODS' . $month . $year . str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
+        $orderNumber = $prefix . str_pad($runningNumber, 6, '0', STR_PAD_LEFT);
 
         return $orderNumber;
     }
