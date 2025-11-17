@@ -130,9 +130,9 @@ class PembayaranAktivitasLainnya extends Model
     }
 
     /**
-     * Generate nomor pembayaran dengan format COA code-MM-YY-NNNNNN
-     * Format: [kode bank dari COA]-[2 digit bulan]-[2 digit tahun]-[6 digit running number]
-     * Example: TST-10-25-000001
+     * Generate nomor pembayaran dengan format PMS[kode]-MMYY-NNNNNN
+     * Format: 3 digit kode nomor (dari master nomor terakhir modul PMS), 2 digit bulan, 2 digit tahun, 6 digit running number
+     * Example: PMS1116000001
      */
     public static function generateNomorPembayaranCoa($coaId)
     {
@@ -146,16 +146,16 @@ class PembayaranAktivitasLainnya extends Model
             throw new \Exception('COA tidak ditemukan.');
         }
 
-        // Ambil kode_nomor dari COA sebagai kode bank (sama seperti pembayaran kontainer)
-        $kodeBank = $coa->kode_nomor ?? '000';
+        // Ambil kode_nomor dari COA sebagai kode bank (3 digit)
+        $kodeBank = $coa->kode_nomor ?? 'PMS';
 
-        // Get next nomor pembayaran from master nomor terakhir
-        $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'nomor_pembayaran')
+        // Get next nomor pembayaran from master nomor terakhir untuk modul PMS
+        $nomorTerakhir = \App\Models\NomorTerakhir::where('modul', 'pembayaran_aktivitas_lainnya_pms')
             ->lockForUpdate()
             ->first();
 
         if (!$nomorTerakhir) {
-            throw new \Exception('Modul nomor_pembayaran tidak ditemukan di master nomor terakhir.');
+            throw new \Exception('Modul pembayaran_aktivitas_lainnya_pms tidak ditemukan di master nomor terakhir.');
         }
 
         $nextNumber = $nomorTerakhir->nomor_terakhir + 1;
@@ -164,7 +164,8 @@ class PembayaranAktivitasLainnya extends Model
 
         $sequence = str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
-        return "{$kodeBank}-{$bulan}-{$tahun}-{$sequence}";
+        // Format: PMS1116000001 (kode+bulan+tahun+running number)
+        return "{$kodeBank}{$bulan}{$tahun}{$sequence}";
     }
 
     /**
