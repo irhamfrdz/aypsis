@@ -237,21 +237,7 @@
         }
 
         .print-button {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
-        }
-
-        .print-button:hover {
-            background: #0056b3;
+            display: none !important;
         }
 
         .no-print {
