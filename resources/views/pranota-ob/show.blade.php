@@ -173,6 +173,8 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DP</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
                         </thead>
@@ -199,6 +201,12 @@
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                                             Rp {{ number_format($tagihanOb->biaya, 0, ',', '.') }}
                                         </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                            Rp {{ number_format($tagihanOb->dp ?? 0, 0, ',', '.') }}
+                                        </td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                                            Rp {{ number_format(($tagihanOb->biaya ?? 0) - ($tagihanOb->dp ?? 0), 0, ',', '.') }}
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                             @can('tagihan-ob-view')
                                                 <a href="{{ route('tagihan-ob.show', $tagihanOb) }}" 
@@ -212,7 +220,7 @@
                                 @endif
                             @empty
                                 <tr>
-                                    <td colspan="9" class="px-6 py-12 text-center">
+                                    <td colspan="11" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
                                             <p class="text-gray-500 text-lg">Belum ada item dalam pranota ini</p>
@@ -225,11 +233,21 @@
                             <tfoot class="bg-gray-50">
                                 <tr>
                                     <td colspan="7" class="px-6 py-4 text-right text-sm font-semibold text-gray-700">
-                                        Total:
+                                        Total Biaya:
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
                                         Rp {{ number_format($pranotaOb->items->sum(function($item) {
                                             return $item->tagihanOb->biaya ?? 0;
+                                        }), 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                        Rp {{ number_format($pranotaOb->items->sum(function($item) {
+                                            return $item->tagihanOb->dp ?? 0;
+                                        }), 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                                        Rp {{ number_format($pranotaOb->items->sum(function($item) {
+                                            return ($item->tagihanOb->biaya ?? 0) - ($item->tagihanOb->dp ?? 0);
                                         }), 0, ',', '.') }}
                                     </td>
                                     <td></td>

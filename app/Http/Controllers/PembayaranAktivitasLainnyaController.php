@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\PembayaranAktivitasLainnya;
 use App\Models\Coa;
+use App\Models\TagihanOb;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -225,6 +226,36 @@ class PembayaranAktivitasLainnyaController extends Controller
                         'supir_ids' => $supirIds,
                         'jumlah_per_supir' => $jumlahPerSupir
                     ]);
+                }
+
+                // Update field dp di tagihan_ob untuk setiap supir
+                if ($request->kegiatan === 'Uang Muka OB' && !empty($request->nama_kapal) && !empty($request->nomor_voyage)) {
+                    foreach ($supirDetails as $detail) {
+                        // Find tagihan OB berdasarkan kapal, voyage, dan nama supir
+                        $tagihanOb = \App\Models\TagihanOb::where('kapal', $request->nama_kapal)
+                            ->where('voyage', $request->nomor_voyage)
+                            ->where('nama_supir', $detail['nama'])
+                            ->whereNull('deleted_at')
+                            ->first();
+
+                        if ($tagihanOb) {
+                            // Update atau increment field dp
+                            $currentDp = $tagihanOb->dp ?? 0;
+                            $newDp = $currentDp + $detail['jumlah'];
+                            
+                            $tagihanOb->update(['dp' => $newDp]);
+
+                            Log::info('Updated DP di tagihan OB', [
+                                'tagihan_id' => $tagihanOb->id,
+                                'kapal' => $request->nama_kapal,
+                                'voyage' => $request->nomor_voyage,
+                                'supir' => $detail['nama'],
+                                'dp_before' => $currentDp,
+                                'dp_added' => $detail['jumlah'],
+                                'dp_after' => $newDp
+                            ]);
+                        }
+                    }
                 }
             }
 
