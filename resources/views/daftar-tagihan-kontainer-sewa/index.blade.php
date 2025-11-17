@@ -591,12 +591,12 @@ input[required]:focus {
                 <table class="min-w-full divide-y divide-gray-200 compact-table" style="min-width: 2200px;">
                     <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                 <tr class="border-b border-gray-200">
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-wider" style="width: 45px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 35px;">
                         <div class="flex items-center justify-center">
-                            <input type="checkbox" id="select-all" class="checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
+                            <input type="checkbox" id="select-all" class="checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" style="width: 12px; height: 12px;">
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 110px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
                         <div class="flex items-center space-x-1">
                             <span>Grup</span>
                             <div class="relative group">
@@ -610,56 +610,51 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 100px;">
-                        <div class="flex items-center space-x-1">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 80px;">
+                        <div class="flex items-center space-x-0.5">
                             <span>Vendor</span>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 140px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 120px;">
                         <div class="flex items-center space-x-1">
                             <span>Nomor Kontainer</span>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
-                        <div class="flex items-center justify-center space-x-1">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 50px;">
+                        <div class="flex items-center justify-center space-x-0.5">
                             <span>Size</span>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 80px;">
-                        <div class="flex items-center justify-center space-x-1">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
+                        <div class="flex items-center justify-center space-x-0.5">
                             <span>Periode</span>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
-                        <div class="flex items-center justify-center space-x-1">
-                            <span>Masa</span>
-                        </div>
-                    </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
-                        <div class="flex items-center justify-center space-x-1">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 75px;">
+                        <div class="flex items-center justify-center space-x-0.5">
                             <span>Tgl Awal</span>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
-                        <div class="flex items-center justify-center space-x-1">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 75px;">
+                        <div class="flex items-center justify-center space-x-0.5">
                             <span>Tgl Akhir</span>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 80px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 65px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tarif</span>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
-                        <div class="flex items-center justify-end space-x-1">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 85px;">
+                        <div class="flex items-center justify-end space-x-0.5">
                             <span>DPP</span>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
-                        <div class="flex items-center justify-end space-x-1">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 85px;">
+                        <div class="flex items-center justify-end space-x-0.5">
                             <span>Adjustment</span>
                             <div class="relative group">
-                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 8px; height: 8px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -668,11 +663,11 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-left text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 140px;">
-                        <div class="flex items-center justify-start space-x-1">
+                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 120px;">
+                        <div class="flex items-center justify-start space-x-0.5">
                             <span>Alasan Adjustment</span>
                             <div class="relative group">
-                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 8px; height: 8px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -681,11 +676,11 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-left text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 120px;">
-                        <div class="flex items-center justify-start space-x-1">
+                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
+                        <div class="flex items-center justify-start space-x-0.5">
                             <span>Invoice Vendor</span>
                             <div class="relative group">
-                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 8px; height: 8px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -694,11 +689,11 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-left text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
-                        <div class="flex items-center justify-start space-x-1">
+                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 85px;">
+                        <div class="flex items-center justify-start space-x-0.5">
                             <span>Tanggal Vendor</span>
                             <div class="relative group">
-                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 8px; height: 8px;">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
@@ -707,31 +702,26 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 80px;">
-                        <div class="flex items-center justify-end space-x-1">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
+                        <div class="flex items-center justify-end space-x-0.5">
                             <span>PPN</span>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 80px;">
-                        <div class="flex items-center justify-end space-x-1">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
+                        <div class="flex items-center justify-end space-x-0.5">
                             <span>PPH</span>
                         </div>
                     </th>
-                    <th class="px-1 py-1 text-right text-[8px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 110px;">
-                        <div class="flex items-center justify-end space-x-1">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 90px;">
+                        <div class="flex items-center justify-end space-x-0.5">
                             <span>Grand Total</span>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 100px;">
-                        <div class="flex items-center justify-center space-x-1">
-                            <span>Status</span>
-                        </div>
-                    </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight bg-orange-50" style="min-width: 120px;">
-                        <div class="flex items-center justify-center space-x-1">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-orange-50" style="min-width: 100px;">">
+                        <div class="flex items-center justify-center space-x-0.5">
                             <span>Status Pranota</span>
                             <div class="relative group">
-                                <svg class="icon-compact text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20">
+                                <svg class="icon-compact text-gray-400 cursor-help" fill="currentColor" viewBox="0 0 20 20" style="width: 8px; height: 8px;">
                                     <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd"></path>
                                 </svg>
                                 <div class="absolute invisible group-hover:visible bg-gray-800 text-white text-xs rounded p-2 bottom-full left-1/2 transform -translate-x-1/2 mb-1 whitespace-nowrap z-20">
@@ -741,8 +731,8 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-2 py-1 text-center text-[8px] font-medium text-gray-500 uppercase tracking-tight bg-gray-50" style="min-width: 110px;">
-                        <div class="flex items-center justify-center space-x-1">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-gray-50" style="min-width: 90px;">
+                        <div class="flex items-center justify-center space-x-0.5">
                             <span>Aksi</span>
                         </div>
                     </th>
@@ -752,11 +742,11 @@ input[required]:focus {
                 @forelse($tagihans ?? [] as $index => $tagihan)
                     @php /** @var \App\Models\DaftarTagihanKontainerSewa $tagihan */ @endphp
                     <tr class="hover:bg-gray-50">
-                        <td class="px-2 py-1 whitespace-nowrap text-center text-[9px] text-gray-900">
-                            <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
+                            <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" style="width: 12px; height: 12px;">
                         </td>
                         <!-- Kolom Group -->
-                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900 font-mono" style="min-width: 100px;">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 font-mono" style="min-width: 90px;">
                             <div class="relative group compact-cell flex items-center justify-center">
                                 @if(optional($tagihan)->group)
                                     <div class="text-sm text-gray-700 w-full text-center">
@@ -782,21 +772,21 @@ input[required]:focus {
                                 </div>
                             </div>
                         </td>
-                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900 font-medium">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 font-medium">
                             <div class="flex items-center">
-                                <div class="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5"></div>
+                                <div class="w-1 h-1 bg-blue-500 rounded-full mr-1"></div>
                                 <span class="font-semibold">{{ optional($tagihan)->vendor ?? '-' }}</span>
                             </div>
                         </td>
-                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900 font-mono">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 font-mono">
                             {{ optional($tagihan)->nomor_kontainer ?? '-' }}
                         </td>
-                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             <span class="badge-compact inline-flex items-center rounded-full font-medium {{ optional($tagihan)->size == '20' ? 'bg-blue-100 text-blue-800' : 'bg-purple-100 text-purple-800' }}">
                                 {{ optional($tagihan)->size ?? '-' }}'
                             </span>
                         </td>
-                        <td class="px-1 py-1 whitespace-nowrap text-center text-[9px] text-gray-900">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             @php
                                 // Implementasi logika periode
                                 $currentPeriode = optional($tagihan)->periode ?? 1;
@@ -825,63 +815,31 @@ input[required]:focus {
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
-                            <div class="font-semibold">
-                                @if(optional($tagihan)->masa)
-                                    @php
-                                        $masa = optional($tagihan)->masa;
-                                        // Check if it's a date range format
-                                        if (strpos($masa, ' - ') !== false) {
-                                            $dates = explode(' - ', $masa);
-                                            $formattedDates = [];
-                                            foreach ($dates as $date) {
-                                                try {
-                                                    $formattedDates[] = \Carbon\Carbon::parse(trim($date))->format('d-M-Y');
-                                                } catch (\Exception $e) {
-                                                    $formattedDates[] = trim($date);
-                                                }
-                                            }
-                                            $masa = implode(' - ', $formattedDates);
-                                        } else {
-                                            // Single date
-                                            try {
-                                                $masa = \Carbon\Carbon::parse($masa)->format('d-M-Y');
-                                            } catch (\Exception $e) {
-                                                // Keep original if parsing fails
-                                            }
-                                        }
-                                    @endphp
-                                    {{ $masa }}
-                                @else
-                                    -
-                                @endif
-                            </div>
-                        </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
-                            <div class="text-xs bg-gray-100 px-3 py-2 rounded-lg font-medium">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
+                            <div class="text-[8px] bg-gray-100 px-2 py-1 rounded font-medium">
                                 {{ optional($tagihan)->tanggal_awal ? \Carbon\Carbon::parse(optional($tagihan)->tanggal_awal)->format('d-M-Y') : '-' }}
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center text-gray-900 ">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             @if(optional($tagihan)->tanggal_akhir)
-                                <div class="flex flex-col items-center space-y-1">
-                                    <div class="text-xs bg-gray-100 px-3 py-2 rounded-lg font-medium">
+                                <div class="flex flex-col items-center space-y-0.5">
+                                    <div class="text-[8px] bg-gray-100 px-2 py-1 rounded font-medium">
                                         {{ \Carbon\Carbon::parse(optional($tagihan)->tanggal_akhir)->format('d-M-Y') }}
                                     </div>
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-red-100 text-red-800">
+                                        <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                                         </svg>
                                         Selesai
                                     </span>
                                 </div>
                             @else
-                                <div class="flex flex-col items-center space-y-2">
-                                    <div class="text-xs bg-gray-100 px-3 py-2 rounded-lg font-medium text-gray-400">
+                                <div class="flex flex-col items-center space-y-1">
+                                    <div class="text-[8px] bg-gray-100 px-2 py-1 rounded font-medium text-gray-400">
                                         Belum Selesai
                                     </div>
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800 animate-pulse">
-                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-green-100 text-green-800 animate-pulse">
+                                        <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                         </svg>
                                         Ongoing
@@ -895,24 +853,24 @@ input[required]:focus {
                                                 $daysSince = 0;
                                             }
                                         @endphp
-                                        <div class="text-xs text-green-600">
+                                        <div class="text-[7px] text-green-600">
                                             {{ $daysSince }} hari
                                         </div>
                                     @endif
                                 </div>
                             @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             @php
                                 $tarif = optional($tagihan)->tarif ?? '-';
                                 $isHarian = strtolower($tarif) === 'harian';
                                 $isBulanan = strtolower($tarif) === 'bulanan';
                             @endphp
-                            <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium {{ $isHarian ? 'bg-green-100 text-green-800' : ($isBulanan ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800') }}">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[7px] font-medium {{ $isHarian ? 'bg-green-100 text-green-800' : ($isBulanan ? 'bg-orange-100 text-orange-800' : 'bg-gray-100 text-gray-800') }}">
                                 {{ $tarif }}
                             </span>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-[10px] text-gray-900 text-right font-mono">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
                                 $originalDpp = (float)(optional($tagihan)->dpp ?? 0);
                                 $adjustment = (float)(optional($tagihan)->adjustment ?? 0);
@@ -921,13 +879,8 @@ input[required]:focus {
                             <div class="font-semibold text-blue-900">
                                 Rp {{ number_format($adjustedDpp, 0, '.', ',') }}
                             </div>
-                            @if($adjustment != 0)
-                                <div class="text-xs text-gray-600 mt-1">
-                                    Disesuaikan dari Rp {{ number_format($originalDpp, 0, '.', ',') }}
-                                </div>
-                            @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 text-right font-mono">
                             <div class="group relative">
                                 @if(optional($tagihan)->adjustment)
                                     @php
@@ -937,21 +890,15 @@ input[required]:focus {
                                     <div class="font-semibold {{ $isPositive ? 'text-green-700' : 'text-red-700' }}">
                                         {{ $isPositive ? '+' : '' }}Rp {{ number_format(abs($adjustment), 0, '.', ',') }}
                                     </div>
-                                    <div class="text-xs {{ $isPositive ? 'text-green-600' : 'text-red-600' }} mt-1">
-                                        {{ $isPositive ? '↗ Penambahan' : '↘ Pengurangan' }}
-                                    </div>
                                 @else
-                                    <div class="font-medium text-gray-400 text-sm">
+                                    <div class="font-medium text-gray-400 text-[8px]">
                                         -
-                                    </div>
-                                    <div class="text-xs text-gray-400 mt-1">
-                                        Tidak ada
                                     </div>
                                 @endif
 
                                 <!-- Edit adjustment inline (could be implemented later) -->
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-cyan-100 bg-opacity-50 rounded flex items-center justify-center">
-                                    <button type="button" class="text-xs bg-cyan-600 text-white px-2 py-1 rounded hover:bg-cyan-700 transition-colors"
+                                    <button type="button" class="text-[7px] bg-cyan-600 text-white px-1.5 py-0.5 rounded hover:bg-cyan-700 transition-colors"
                                             onclick="editAdjustment({{ $tagihan->id }}, {{ optional($tagihan)->adjustment ?? 0 }})"
                                             title="Edit adjustment">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -989,26 +936,26 @@ input[required]:focus {
                             </div>
                         </td>
                         <!-- Kolom Invoice Vendor -->
-                        <td class="px-2 py-2 whitespace-nowrap text-left text-[10px] text-gray-900" style="min-width: 150px;">
-                            <div class="relative group min-h-[40px] flex items-center">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-left text-[8px] text-gray-900" style="min-width: 120px;">
+                            <div class="relative group min-h-[30px] flex items-center">
                                 @if(optional($tagihan)->invoice_vendor)
-                                    <div class="text-sm text-gray-700 w-full">
-                                        <div class="truncate max-w-[130px]" title="{{ $tagihan->invoice_vendor }}">
+                                    <div class="text-[8px] text-gray-700 w-full">
+                                        <div class="truncate max-w-[110px]" title="{{ $tagihan->invoice_vendor }}">
                                             {{ $tagihan->invoice_vendor }}
                                         </div>
                                     </div>
                                 @else
-                                    <div class="text-xs text-gray-400 w-full">
+                                    <div class="text-[7px] text-gray-400 w-full">
                                         -
                                     </div>
                                 @endif
 
                                 <!-- Edit button for invoice vendor -->
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
-                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                    <button type="button" class="text-[7px] bg-blue-600 text-white px-1.5 py-0.5 rounded hover:bg-blue-700 transition-colors"
                                             onclick="editVendorInfo({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->invoice_vendor ?? '') }}', '{{ optional($tagihan)->tanggal_vendor ? optional($tagihan)->tanggal_vendor->format('Y-m-d') : '' }}')"
                                             title="Edit invoice vendor">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </button>
@@ -1016,31 +963,31 @@ input[required]:focus {
                             </div>
                         </td>
                         <!-- Kolom Tanggal Vendor -->
-                        <td class="px-2 py-2 whitespace-nowrap text-left text-[10px] text-gray-900" style="min-width: 120px;">
-                            <div class="relative group min-h-[40px] flex items-center">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-left text-[8px] text-gray-900" style="min-width: 100px;">
+                            <div class="relative group min-h-[30px] flex items-center">
                                 @if(optional($tagihan)->tanggal_vendor)
-                                    <div class="text-sm text-gray-700 w-full">
+                                    <div class="text-[8px] text-gray-700 w-full">
                                         {{ optional($tagihan)->tanggal_vendor->format('d-M-Y') }}
                                     </div>
                                 @else
-                                    <div class="text-xs text-gray-400 w-full">
+                                    <div class="text-[7px] text-gray-400 w-full">
                                         -
                                     </div>
                                 @endif
 
                                 <!-- Edit button for tanggal vendor (same as invoice vendor) -->
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
-                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
+                                    <button type="button" class="text-[7px] bg-blue-600 text-white px-1.5 py-0.5 rounded hover:bg-blue-700 transition-colors"
                                             onclick="editVendorInfo({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->invoice_vendor ?? '') }}', '{{ optional($tagihan)->tanggal_vendor ? optional($tagihan)->tanggal_vendor->format('Y-m-d') : '' }}')"
                                             title="Edit tanggal vendor">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <svg class="w-2 h-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </button>
                                 </div>
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
                                 // Calculate adjusted DPP for PPN calculation
                                 $originalDpp = (float)(optional($tagihan)->dpp ?? 0);
@@ -1052,13 +999,8 @@ input[required]:focus {
                             <div class="font-semibold text-green-700">
                                 Rp {{ number_format($calculatedPpn, 0, '.', ',') }}
                             </div>
-                            @if($adjustment != 0)
-                                <div class="text-xs text-green-600 mt-1">
-                                    Dihitung dari DPP yang disesuaikan
-                                </div>
-                            @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
                                 // Calculate PPH from adjusted DPP
                                 $pphRate = 0.02; // 2% PPH (adjust as needed)
@@ -1067,13 +1009,8 @@ input[required]:focus {
                             <div class="font-semibold text-red-700">
                                 Rp {{ number_format($calculatedPph, 0, '.', ',') }}
                             </div>
-                            @if($adjustment != 0)
-                                <div class="text-xs text-red-600 mt-1">
-                                    Dihitung dari DPP yang disesuaikan
-                                </div>
-                            @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-right font-mono text-gray-900 ">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
                                 // Calculate grand total with adjustment impact
                                 // Formula: DPP + PPN - PPH (tanpa DPP Nilai Lain)
@@ -1083,107 +1020,77 @@ input[required]:focus {
                                 Rp {{ number_format($newGrandTotal, 0, '.', ',') }}
                             </div>
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center ">
-                            @php
-                                $paymentStatus = strtolower((string) optional($tagihan)->status_pembayaran);
-                                $isPranota = (bool) (optional($tagihan)->is_pranota ?? false);
-                                $nomorPranota = trim((string) (optional($tagihan)->nomor_pranota ?? ''));
-                            @endphp
-
-                            @if(!empty($paymentStatus) && $paymentStatus === 'lunas')
-                                <span class="inline-flex items-center px-3 py-2 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Sudah Dibayar
-                                </span>
-                            @elseif($isPranota || !empty($nomorPranota))
-                                <span @if(!empty($nomorPranota)) title="Pranota: {{ $nomorPranota }}" @endif class="inline-flex items-center px-3 py-2 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800 border border-yellow-200">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Sudah Masuk Pranota
-                                </span>
-                            @else
-                                <span class="inline-flex items-center px-3 py-2 rounded-full text-xs font-medium bg-gray-100 text-gray-800 border border-gray-200">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                                        <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                    </svg>
-                                    Belum Masuk Daftar Tagihan
-                                </span>
-                            @endif
-                        </td>
                         <!-- Status Pranota Column -->
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900 text-center ">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             @if($tagihan->pranota_id)
                                 @php
                                     // Find in PranotaTagihanKontainerSewa 
                                     $pranota = \App\Models\PranotaTagihanKontainerSewa::find($tagihan->pranota_id);
                                 @endphp
                                 @if($pranota)
-                                    <div class="flex flex-col items-center space-y-1">
+                                    <div class="flex flex-col items-center space-y-0.5">
                                         @if($tagihan->status_pranota == 'included')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-blue-100 text-blue-800">
+                                                <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                                                 </svg>
                                                 Included
                                             </span>
                                         @elseif($tagihan->status_pranota == 'invoiced')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-yellow-100 text-yellow-800">
+                                                <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                                 </svg>
                                                 Terkirim
                                             </span>
                                         @elseif($tagihan->status_pranota == 'paid')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-green-100 text-green-800">
+                                                <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
                                                 </svg>
                                                 Lunas
                                             </span>
                                         @elseif($tagihan->status_pranota == 'cancelled')
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                                <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-red-100 text-red-800">
+                                                <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                                     <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
                                                 </svg>
                                                 Dibatalkan
                                             </span>
                                         @else
-                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-gray-100 text-gray-800">
                                                 {{ ucfirst($tagihan->status_pranota) }}
                                             </span>
                                         @endif
-                                        <a href="{{ route('pranota-kontainer-sewa.show', $pranota->id) }}" class="text-xs text-blue-600 hover:text-blue-800 font-mono">
+                                        <a href="{{ route('pranota-kontainer-sewa.show', $pranota->id) }}" class="text-[7px] text-blue-600 hover:text-blue-800 font-mono">
                                             {{ $pranota->no_invoice }}
                                         </a>
                                     </div>
                                 @else
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-red-100 text-red-800">
                                         Error: Pranota tidak ditemukan
                                     </span>
                                 @endif
                             @else
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-gray-100 text-gray-600">
+                                    <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"></path>
                                     </svg>
                                     Belum masuk pranota
                                 </span>
                             @endif
                         </td>
-                        <td class="px-4 py-2 whitespace-nowrap text-center text-[10px] text-gray-900">
-                            <div class="flex items-center justify-center space-x-2">
-                                <a href="{{ route('daftar-tagihan-kontainer-sewa.show', $tagihan->id) }}" class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
+                            <div class="flex items-center justify-center space-x-1">
+                                <a href="{{ route('daftar-tagihan-kontainer-sewa.show', $tagihan->id) }}" class="inline-flex items-center px-2 py-1 rounded text-[7px] font-medium bg-indigo-100 text-indigo-700 hover:bg-indigo-200 transition-colors">
+                                    <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path>
                                         <path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path>
                                     </svg>
                                     Lihat
                                 </a>
-                                <a href="{{ route('daftar-tagihan-kontainer-sewa.edit', $tagihan->id) }}" class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors">
-                                    <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                <a href="{{ route('daftar-tagihan-kontainer-sewa.edit', $tagihan->id) }}" class="inline-flex items-center px-2 py-1 rounded text-[7px] font-medium bg-yellow-100 text-yellow-700 hover:bg-yellow-200 transition-colors">
+                                    <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                         <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z"></path>
                                     </svg>
                                     Edit
@@ -1191,8 +1098,8 @@ input[required]:focus {
                                 <form action="{{ route('daftar-tagihan-kontainer-sewa.destroy', $tagihan->id) }}" method="POST" onsubmit="return confirm('Hapus tagihan kontainer ini? Tindakan ini tidak dapat dibatalkan.')" class="inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
-                                        <svg class="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                    <button type="submit" class="inline-flex items-center px-2 py-1 rounded text-[7px] font-medium bg-red-100 text-red-700 hover:bg-red-200 transition-colors">
+                                        <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                             <path fill-rule="evenodd" d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z" clip-rule="evenodd"></path>
                                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
                                         </svg>
@@ -1200,11 +1107,11 @@ input[required]:focus {
                                     </button>
                                 </form>
                                 @can('audit-log-view')
-                                <button type="button" class="audit-log-btn inline-flex items-center px-3 py-2 rounded-lg text-xs font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
+                                <button type="button" class="audit-log-btn inline-flex items-center px-2 py-1 rounded text-[7px] font-medium bg-purple-100 text-purple-700 hover:bg-purple-200 transition-colors"
                                         data-model="{{ get_class($tagihan) }}"
                                         data-id="{{ $tagihan->id }}"
                                         title="Lihat Riwayat">
-                                    <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg class="w-2 h-2 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                                     </svg>
                                     Audit
@@ -1317,46 +1224,46 @@ input[required]:focus {
 
 /* Compact table styling */
 .compact-table th {
-    padding: 6px 8px !important;
-    font-size: 9px !important;
-    line-height: 1.2 !important;
+    padding: 3px 4px !important;
+    font-size: 7px !important;
+    line-height: 1.1 !important;
 }
 
 .compact-table td {
-    padding: 4px 6px !important;
-    font-size: 10px !important;
-    line-height: 1.3 !important;
+    padding: 2px 4px !important;
+    font-size: 8px !important;
+    line-height: 1.2 !important;
 }
 
 .compact-table .compact-cell {
-    min-height: 24px !important;
+    min-height: 20px !important;
 }
 
 .compact-table .badge-compact {
-    padding: 2px 6px !important;
-    font-size: 8px !important;
+    padding: 1px 4px !important;
+    font-size: 7px !important;
     font-weight: 500;
 }
 
 .compact-table .btn-compact {
-    padding: 2px 4px !important;
-    font-size: 8px !important;
+    padding: 1px 3px !important;
+    font-size: 7px !important;
 }
 
 .compact-table .icon-compact {
+    width: 10px !important;
+    height: 10px !important;
+}
+
+.compact-table .checkbox-compact {
     width: 12px !important;
     height: 12px !important;
 }
 
-.compact-table .checkbox-compact {
-    width: 14px !important;
-    height: 14px !important;
-}
-
 /* Override all table cells for compact layout */
 .compact-table tbody td {
-    padding: 4px 6px !important;
-    font-size: 9px !important;
+    padding: 2px 4px !important;
+    font-size: 8px !important;
     line-height: 1.2 !important;
 }
 
