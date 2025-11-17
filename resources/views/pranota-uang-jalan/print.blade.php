@@ -373,12 +373,12 @@
 </head>
 <body>
     <!-- Print Instructions Banner (hidden when printing) -->
-    <div class="no-print" style="position: fixed; top: 10px; left: 50%; transform: translateX(-50%); background: #fef3c7; padding: 15px 25px; border: 2px solid #f59e0b; border-radius: 8px; z-index: 1001; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: 650px;">
+    <div class="no-print" style="position: fixed; top: 10px; left: 10px; right: 10px; background: #fef3c7; padding: 15px 20px; border: 2px solid #f59e0b; border-radius: 8px; z-index: 1001; box-shadow: 0 4px 6px rgba(0,0,0,0.1); max-width: calc(100% - 20px); margin: 0 auto;">
         <div style="display: flex; align-items: start; gap: 12px;">
             <svg style="width: 28px; height: 28px; color: #f59e0b; flex-shrink: 0;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
-            <div style="flex: 1;">
+            <div style="flex: 1; min-width: 0;">
                 <strong style="color: #92400e; display: block; margin-bottom: 6px; font-size: 14px;">⚠️ PENTING - Setting Print untuk Half-Folio:</strong>
                 <div style="color: #78350f; font-size: 13px; line-height: 1.6;">
                     <strong>Ukuran: Setengah Folio (8.5 x 6.5 inch)</strong><br>
