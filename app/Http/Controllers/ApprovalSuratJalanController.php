@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\SuratJalanApproval;
 use App\Models\SuratJalan;
+use App\Models\TandaTerima;
 
 class ApprovalSuratJalanController extends Controller
 {
@@ -83,6 +84,41 @@ class ApprovalSuratJalanController extends Controller
         $suratJalan->update([
             'tanggal_tanda_terima' => today()
         ]);
+
+        // Create Tanda Terima record when surat jalan is approved
+        try {
+            $tandaTerima = TandaTerima::create([
+                'surat_jalan_id' => $suratJalan->id,
+                'no_surat_jalan' => $suratJalan->no_surat_jalan,
+                'tanggal_surat_jalan' => $suratJalan->tanggal_surat_jalan,
+                'supir' => $suratJalan->supir,
+                'kegiatan' => $suratJalan->kegiatan,
+                'jenis_barang' => $suratJalan->jenis_barang,
+                'tipe_kontainer' => $suratJalan->tipe_kontainer,
+                'size' => $suratJalan->size,
+                'jumlah_kontainer' => $suratJalan->jumlah_kontainer,
+                'no_kontainer' => $suratJalan->no_kontainer,
+                'no_seal' => $suratJalan->no_seal,
+                'tujuan_pengiriman' => $suratJalan->tujuan_pengiriman,
+                'pengirim' => $suratJalan->pengirim,
+                'catatan' => $request->approval_notes ?? 'Surat jalan diapprove pada ' . now()->format('d/m/Y H:i'),
+                'created_by' => auth()->id()
+            ]);
+
+            \Log::info('Tanda Terima created after approval', [
+                'tanda_terima_id' => $tandaTerima->id,
+                'surat_jalan_id' => $suratJalan->id,
+                'no_surat_jalan' => $suratJalan->no_surat_jalan
+            ]);
+        } catch (\Exception $e) {
+            // Log error but don't fail the approval
+            \Log::error('Error creating Tanda Terima after approval: ' . $e->getMessage(), [
+                'surat_jalan_id' => $suratJalan->id,
+                'no_surat_jalan' => $suratJalan->no_surat_jalan,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+        }
 
         // Process units on related order when surat jalan is approved
         if ($suratJalan->order_id && $suratJalan->jumlah_kontainer) {

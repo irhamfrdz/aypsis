@@ -518,17 +518,18 @@
                         <div class="flex items-start">
                             <i class="fas fa-info-circle text-blue-600 mt-1 mr-3"></i>
                             <div class="text-sm text-blue-800">
-                                <p class="font-medium mb-1">Update Otomatis Prospek Terkait</p>
+                                <p class="font-medium mb-1">Update Otomatis Data Terkait</p>
                                 <p>Saat Anda menyimpan perubahan pada tanda terima ini, sistem akan secara otomatis:</p>
                                 <ul class="list-disc list-inside mt-2 space-y-1">
+                                    <li><strong>Sync nomor kontainer dan seal</strong> kembali ke surat jalan terkait (ID: {{ $tandaTerima->surat_jalan_id ?? '-' }})</li>
                                     <li><strong>Mengupdate volume total</strong> pada prospek terkait berdasarkan dimensi yang diinput</li>
                                     <li><strong>Mengupdate tonase total</strong> pada prospek terkait berdasarkan tonase yang diinput</li>
                                     <li><strong>Mengupdate kuantitas</strong> pada prospek terkait berdasarkan jumlah per kontainer</li>
                                     <li><strong>Menghubungkan prospek</strong> dengan tanda terima ini jika belum terhubung</li>
                                 </ul>
                                 <p class="mt-2 text-xs text-blue-600">
-                                    <i class="fas fa-link mr-1"></i>
-                                    Prospek akan dicari berdasarkan: Surat Jalan ID → No. Surat Jalan → Nomor Kontainer
+                                    <i class="fas fa-sync-alt mr-1"></i>
+                                    Nomor kontainer dan seal akan di-sync ke: <strong>{{ $tandaTerima->no_surat_jalan }}</strong>
                                 </p>
                             </div>
                         </div>

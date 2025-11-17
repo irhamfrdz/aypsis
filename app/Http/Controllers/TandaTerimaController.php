@@ -241,6 +241,37 @@ class TandaTerimaController extends Controller
 
             $tandaTerima->update($updateData);
 
+            // Sync nomor kontainer dan seal kembali ke Surat Jalan terkait
+            if ($tandaTerima->surat_jalan_id) {
+                $suratJalan = \App\Models\SuratJalan::find($tandaTerima->surat_jalan_id);
+                if ($suratJalan) {
+                    $suratJalanUpdateData = [];
+                    
+                    // Update nomor kontainer jika ada perubahan
+                    if (isset($updateData['no_kontainer']) && $updateData['no_kontainer'] != $suratJalan->no_kontainer) {
+                        $suratJalanUpdateData['no_kontainer'] = $updateData['no_kontainer'];
+                    }
+                    
+                    // Update nomor seal jika ada perubahan
+                    if (isset($updateData['no_seal']) && $updateData['no_seal'] != $suratJalan->no_seal) {
+                        $suratJalanUpdateData['no_seal'] = $updateData['no_seal'];
+                    }
+                    
+                    // Lakukan update jika ada perubahan
+                    if (!empty($suratJalanUpdateData)) {
+                        $suratJalan->update($suratJalanUpdateData);
+                        
+                        Log::info('Surat Jalan synced from Tanda Terima', [
+                            'surat_jalan_id' => $suratJalan->id,
+                            'no_surat_jalan' => $suratJalan->no_surat_jalan,
+                            'updated_fields' => array_keys($suratJalanUpdateData),
+                            'no_kontainer' => $suratJalanUpdateData['no_kontainer'] ?? null,
+                            'no_seal' => $suratJalanUpdateData['no_seal'] ?? null,
+                        ]);
+                    }
+                }
+            }
+
             // Update related Prospek data and get count of updated prospeks
             $updatedProspekCount = $this->updateRelatedProspekData($tandaTerima, $request);
 
