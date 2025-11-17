@@ -579,7 +579,7 @@ const uangMukaData = {
         '{{ $uangMuka->id }}': {
             nomor: '{{ $uangMuka->nomor_pembayaran }}',
             total: {{ $uangMuka->total_pembayaran }},
-            supir_count: {{ count($uangMuka->supir_ids) }},
+            supir_count: {{ is_array($uangMuka->supir_ids) ? count($uangMuka->supir_ids) : 0 }},
             tanggal: '{{ $uangMuka->tanggal_pembayaran ? $uangMuka->tanggal_pembayaran->format('d/m/Y') : 'N/A' }}',
             supir_names: @json($uangMuka->supir_names ?? []),
             supir_ids: @json($uangMuka->supir_ids ?? []),
