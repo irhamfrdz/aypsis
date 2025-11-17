@@ -1,54 +1,20 @@
 <!DOCTYPE html>
 <html lang="id">
 @php
-    // Get paper size from request or default to Half-Folio
-    $paperSize = request('paper_size', 'Half-Folio');
-
-    // Define paper dimensions and styles
-    $paperMap = [
-        'A4' => [
-            'size' => 'A4',
-            'width' => '210mm',
-            'height' => '297mm',
-            'containerWidth' => '210mm',
-            'fontSize' => '12px',
-            'headerH1' => '18px',
-            'tableFont' => '12px',
-            'signatureBottom' => '15mm'
-        ],
-        'Folio' => [
-            'size' => '8.5in 13in',
-            'width' => '8.5in',
-            'height' => '13in',
-            'containerWidth' => '8.5in',
-            'fontSize' => '13px',
-            'headerH1' => '20px',
-            'tableFont' => '13px',
-            'signatureBottom' => '20mm'
-        ],
-        'Half-A4' => [
-            'size' => '210mm 148.5mm', // A4 width x half height (A5 landscape)
-            'width' => '210mm',
-            'height' => '148.5mm',
-            'containerWidth' => '210mm',
-            'fontSize' => '10px',
-            'headerH1' => '14px',
-            'tableFont' => '10px',
-            'signatureBottom' => '5mm'
-        ],
-        'Half-Folio' => [
-            'size' => '8.5in 6.5in', // Folio width x half height
-            'width' => '8.5in',
-            'height' => '6.5in',
-            'containerWidth' => '8.5in',
-            'fontSize' => '11px',
-            'headerH1' => '16px',
-            'tableFont' => '11px',
-            'signatureBottom' => '5mm'
-        ]
+    // Fixed paper size: Half-Folio only
+    $paperSize = 'Half-Folio';
+    
+    // Half-Folio paper dimensions and styles
+    $currentPaper = [
+        'size' => '8.5in 6.5in', // Folio width x half height
+        'width' => '8.5in',
+        'height' => '6.5in',
+        'containerWidth' => '8.5in',
+        'fontSize' => '11px',
+        'headerH1' => '16px',
+        'tableFont' => '11px',
+        'signatureBottom' => '5mm'
     ];
-
-    $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-Folio'];
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -140,7 +106,7 @@
             margin: 0 auto;
             padding: 5mm 1mm 5mm 5mm;
             position: relative;
-            padding-bottom: {{ $paperSize === 'Half-A4' ? '60px' : ($paperSize === 'Half-Folio' ? '60px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
+            padding-bottom: 60px;
             box-sizing: border-box;
             overflow: hidden;
             background: white;
@@ -149,43 +115,43 @@
         .header {
             text-align: center;
             border-bottom: 1px solid #333;
-            padding-bottom: {{ $paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '10px') }};
-            margin-bottom: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : '15px') }};
+            padding-bottom: 5px;
+            margin-bottom: 8px;
         }
 
         .header h1 {
             font-size: {{ $currentPaper['headerH1'] }};
             font-weight: bold;
-            margin-bottom: {{ $paperSize === 'Half-A4' ? '3px' : ($paperSize === 'Half-Folio' ? '3px' : '5px') }};
+            margin-bottom: 3px;
             text-transform: uppercase;
         }
 
         .header p {
-            font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : '11px') }};
+            font-size: 9px;
             color: #666;
         }
 
         .table-container {
-            margin: {{ $paperSize === 'Half-A4' ? '10px 0' : ($paperSize === 'Half-Folio' ? '10px 0' : '20px 0') }};
+            margin: 10px 0;
         }
 
         .table-title {
-            font-size: {{ $paperSize === 'Half-A4' ? '12px' : ($paperSize === 'Half-Folio' ? '12px' : '14px') }};
+            font-size: 12px;
             font-weight: bold;
-            margin-bottom: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : '10px') }};
+            margin-bottom: 8px;
             color: #495057;
         }
 
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : '15px') }};
+            margin-bottom: 8px;
             table-layout: fixed;
         }
 
         th, td {
             border: 1px solid #333;
-            padding: {{ $paperSize === 'Half-A4' ? '4px 3px' : ($paperSize === 'Half-Folio' ? '4px 3px' : '6px 4px') }};
+            padding: 4px 3px;
             text-align: left;
             vertical-align: middle;
             font-size: {{ $currentPaper['tableFont'] }};
@@ -213,8 +179,8 @@
         }
 
         .summary {
-            margin-top: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '20px') }};
-            padding: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : '15px') }};
+            margin-top: 10px;
+            padding: 8px;
             background-color: #f8f9fa;
             border: 1px solid #333;
         }
@@ -222,16 +188,16 @@
         .summary-row {
             display: flex;
             justify-content: space-between;
-            margin: {{ $paperSize === 'Half-A4' ? '3px 0' : ($paperSize === 'Half-Folio' ? '3px 0' : '5px 0') }};
-            font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : '11px') }};
+            margin: 3px 0;
+            font-size: 9px;
         }
 
         .summary-row.total {
             font-weight: bold;
-            font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '12px') }};
+            font-size: 10px;
             border-top: 1px solid #333;
-            padding-top: {{ $paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '8px') }};
-            margin-top: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : '10px') }};
+            padding-top: 5px;
+            margin-top: 8px;
         }
 
         .signature-section {
@@ -239,7 +205,7 @@
             text-align: center;
             page-break-inside: avoid;
             position: absolute;
-            bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '40px') }};
+            bottom: 20px;
             left: 0;
             right: 0;
             width: 100%;
@@ -248,24 +214,24 @@
         .signature-table {
             width: 100%;
             border-collapse: collapse;
-            margin-top: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '15px') }};
+            margin-top: 10px;
         }
 
         .signature-cell {
             width: 33.33%;
-            padding: {{ $paperSize === 'Half-A4' ? '8px 4px' : ($paperSize === 'Half-Folio' ? '8px 4px' : '12px 8px') }};
+            padding: 8px 4px;
             text-align: center;
             vertical-align: top;
         }
 
         .signature-label {
             font-weight: bold;
-            margin-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : '30px') }};
-            font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '11px') }};
+            margin-bottom: 20px;
+            font-size: 10px;
         }
 
         .signature-name {
-            font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '11px') }};
+            font-size: 10px;
             margin-bottom: 5px;
             font-weight: bold;
         }
@@ -364,20 +330,11 @@
 
             .container {
                 width: {{ $currentPaper['containerWidth'] }};
-                @if($paperSize === 'Half-A4')
-                    height: 148.5mm;
-                    max-height: 148.5mm;
-                    border-bottom: 2px dashed #999;
-                @elseif($paperSize === 'Half-Folio')
-                    height: 6.5in;
-                    max-height: 6.5in;
-                    border-bottom: 2px dashed #999;
-                @else
-                    height: 287mm;
-                    max-height: 287mm;
-                @endif
+                height: 6.5in;
+                max-height: 6.5in;
+                border-bottom: 2px dashed #999;
                 padding: 5mm 1mm 5mm 5mm;
-                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
+                padding-bottom: 40px;
                 margin: 0;
                 box-sizing: border-box;
                 overflow: hidden;
@@ -390,17 +347,17 @@
             }
 
             .header h1 {
-                font-size: {{ $paperSize === 'A4' ? '16px' : ($paperSize === 'Folio' ? '20px' : '14px') }};
+                font-size: 14px;
             }
 
             table {
                 page-break-inside: avoid;
-                margin-bottom: {{ $paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '10px') }};
+                margin-bottom: 5px;
                 font-size: {{ $currentPaper['tableFont'] }};
             }
 
             th, td {
-                padding: {{ $paperSize === 'Half-A4' ? '3px 2px' : ($paperSize === 'Half-Folio' ? '3px 2px' : '5px 3px') }};
+                padding: 3px 2px;
                 font-size: {{ $currentPaper['tableFont'] }};
                 border: 1px solid #000;
                 line-height: 1.2;
@@ -416,22 +373,14 @@
             }
 
             .signature-section {
-                @if($paperSize === 'Half-A4')
-                    position: absolute;
-                    bottom: 10mm;
-                @elseif($paperSize === 'Half-Folio')
-                    position: absolute;
-                    bottom: 10mm;
-                @else
-                    position: fixed;
-                    bottom: {{ $paperSize === 'A4' ? '15mm' : '20mm' }};
-                @endif
+                position: absolute;
+                bottom: 10mm;
             }
 
             .summary {
                 margin-top: 5px;
-                font-size: {{ $paperSize === 'Half-A4' ? '8px' : ($paperSize === 'Half-Folio' ? '8px' : '10px') }};
-                padding: {{ $paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '10px') }};
+                font-size: 8px;
+                padding: 5px;
             }
         }
     </style>
@@ -444,55 +393,27 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
             <div style="flex: 1;">
-                <strong style="color: #92400e; display: block; margin-bottom: 6px; font-size: 14px;">⚠️ PENTING - Setting Print untuk {{ $paperSize }}:</strong>
+                <strong style="color: #92400e; display: block; margin-bottom: 6px; font-size: 14px;">⚠️ PENTING - Setting Print untuk Half-Folio:</strong>
                 <div style="color: #78350f; font-size: 13px; line-height: 1.6;">
-                    @if($paperSize === 'Half-A4')
-                        <strong>Ukuran: Setengah A4 (210 x 148.5 mm)</strong><br>
-                        📌 Saat Print Dialog:<br>
-                        &nbsp;&nbsp;&nbsp;1️⃣ Scale: <strong>None / 100% / Actual Size</strong><br>
-                        &nbsp;&nbsp;&nbsp;2️⃣ Orientation: <strong>Portrait (Tegak)</strong><br>
-                        &nbsp;&nbsp;&nbsp;3️⃣ Paper: <strong>A4</strong><br>
-                        &nbsp;&nbsp;&nbsp;4️⃣ Margins: <strong>None / Minimal</strong><br>
-                        ✂️ Setelah print, potong kertas A4 menjadi 2 bagian (setengah horizontal)
-                    @elseif($paperSize === 'Half-Folio')
-                        <strong>Ukuran: Setengah Folio (8.5 x 6.5 inch)</strong><br>
-                        📌 Saat Print Dialog:<br>
-                        &nbsp;&nbsp;&nbsp;1️⃣ Scale: <strong>None / 100% / Actual Size</strong><br>
-                        &nbsp;&nbsp;&nbsp;2️⃣ Orientation: <strong>Portrait (Tegak)</strong><br>
-                        &nbsp;&nbsp;&nbsp;3️⃣ Paper: <strong>Legal/Folio</strong><br>
-                        &nbsp;&nbsp;&nbsp;4️⃣ Margins: <strong>None / Minimal</strong><br>
-                        ✂️ Setelah print, potong kertas Folio menjadi 2 bagian (setengah horizontal)
-                    @elseif($paperSize === 'Folio')
-                        <strong>Ukuran: Legal/Folio (8.5 x 13 inch)</strong><br>
-                        📌 Set Paper Size: <strong>Legal</strong> dan Scale: <strong>100%</strong>
-                    @else
-                        <strong>Ukuran: A4 (210 x 297 mm)</strong><br>
-                        📌 Set Paper Size: <strong>A4</strong> dan Scale: <strong>100%</strong>
-                    @endif
+                    <strong>Ukuran: Setengah Folio (8.5 x 6.5 inch)</strong><br>
+                    📌 Saat Print Dialog:<br>
+                    &nbsp;&nbsp;&nbsp;1️⃣ Scale: <strong>None / 100% / Actual Size</strong><br>
+                    &nbsp;&nbsp;&nbsp;2️⃣ Orientation: <strong>Portrait (Tegak)</strong><br>
+                    &nbsp;&nbsp;&nbsp;3️⃣ Paper: <strong>Legal/Folio</strong><br>
+                    &nbsp;&nbsp;&nbsp;4️⃣ Margins: <strong>None / Minimal</strong><br>
+                    ✂️ Setelah print, potong kertas Folio menjadi 2 bagian (setengah horizontal)
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Paper Size Selector (hidden when printing) -->
-    <div class="no-print" style="position: fixed; top: 10px; right: 10px; background: white; padding: 10px; border: 1px solid #ccc; border-radius: 5px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
-        @include('components.paper-selector', ['selectedSize' => $paperSize])
-        <div class="mt-2">
-            <small class="text-gray-600">
-                Current: {{ $paperSize }}
-                @if($paperSize === 'Half-A4')
-                    (210mm × 148.5mm)
-                @elseif($paperSize === 'Half-Folio')
-                    (8.5in × 6.5in)
-                @elseif($paperSize === 'A4')
-                    (210mm × 297mm)
-                @else
-                    (8.5in × 13in)
-                @endif
-            </small>
+    <!-- Print Button (hidden when printing) -->
+    <div class="no-print" style="position: fixed; top: 10px; right: 10px; background: white; padding: 15px; border: 1px solid #ccc; border-radius: 5px; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+        <div style="margin-bottom: 10px; text-align: center;">
+            <strong style="display: block; margin-bottom: 5px;">Half-Folio</strong>
+            <small style="color: #666;">(8.5in × 6.5in)</small>
         </div>
-        <!-- Print Button -->
-        <button class="print-button" onclick="window.print()" style="width: 100%; margin-top: 10px; background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
+        <button class="print-button" onclick="window.print()" style="width: 100%; background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 5px; cursor: pointer; font-size: 12px;">
             🖨️ Cetak Permohonan
         </button>
     </div>
@@ -502,7 +423,7 @@
         <!-- Header -->
         <div class="header">
             <h1>Form Permohonan Transfer</h1>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: {{ $paperSize === 'Half-A4' ? '10px' : ($paperSize === 'Half-Folio' ? '10px' : '12px') }};">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 10px;">
                 <span><strong>No Pranota : {{ $pranotaUangJalan->nomor_pranota }}</strong></span>
                 <span><strong>Tgl Uang Jalan : {{ $pranotaUangJalan->tanggal_pranota->format('d-m-Y') }}</strong></span>
             </div>
@@ -603,24 +524,24 @@
 
 
         <!-- Signature Section -->
-        <div class="signature-section" style="margin-top: {{ $paperSize === 'Half-A4' ? '30px' : ($paperSize === 'Half-Folio' ? '30px' : '50px') }};">
+        <div class="signature-section" style="margin-top: 30px;">
             <table style="width: 100%; border-collapse: collapse;">
                 <tr>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
                         <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
-                        <div style="font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : '11px') }};">
+                        <div style="font-size: 9px;">
                             (Pemohon)
                         </div>
                     </td>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
                         <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
-                        <div style="font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : '11px') }};">
+                        <div style="font-size: 9px;">
                             (Pemeriksa)
                         </div>
                     </td>
                     <td style="width: 33.33%; text-align: center; vertical-align: top; padding: 10px;">
                         <div style="border-bottom: 1px dotted #333; margin-bottom: 40px; height: 1px;"></div>
-                        <div style="font-size: {{ $paperSize === 'Half-A4' ? '9px' : ($paperSize === 'Half-Folio' ? '9px' : '11px') }};">
+                        <div style="font-size: 9px;">
                             (Kasir)
                         </div>
                     </td>
