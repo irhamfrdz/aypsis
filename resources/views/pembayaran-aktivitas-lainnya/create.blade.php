@@ -18,7 +18,7 @@
                 </div>
             </div>
 
-            <form action="{{ route('pembayaran-aktivitas-lainnya.store') }}" method="POST">
+            <form action="{{ route('pembayaran-aktivitas-lainnya.store') }}" method="POST" id="form-pembayaran-aktivitas">
                 @csrf
                 <div class="p-4">
                     @if (session('error'))

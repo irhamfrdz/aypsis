@@ -179,7 +179,11 @@ class PranotaTagihanKontainerSewaController extends Controller
      */
     public function print(PranotaTagihanKontainerSewa $pranota)
     {
-        $tagihanItems = $pranota->tagihanKontainerSewaItems();
+        // Get tagihan items sorted by invoice_vendor
+        $tagihanItems = $pranota->tagihanKontainerSewaItems()
+            ->sortBy('invoice_vendor')
+            ->values(); // Reset collection keys
+        
         return view('pranota.print', compact('pranota', 'tagihanItems'));
     }
 

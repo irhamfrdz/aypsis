@@ -172,7 +172,7 @@
             height: {{ $currentPaper['height'] }};
             max-height: {{ $currentPaper['height'] }};
             margin: 0 auto;
-            padding: 5mm 1mm 5mm 5mm;
+            padding: 5mm 5mm 5mm 5mm;
             position: relative;
             padding-bottom: {{ $paperSize === 'Half-A4' ? '60px' : ($paperSize === 'Half-Folio' ? '60px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
             box-sizing: border-box;
@@ -450,7 +450,7 @@
             .container {
                 width: {{ $currentPaper['containerWidth'] }};
                 min-height: {{ $currentPaper['height'] }};
-                padding: 5mm 1mm 5mm 5mm;
+                padding: 5mm 5mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
                 margin: 0;
                 box-sizing: border-box;
@@ -460,7 +460,7 @@
 
             /* Multi-page layout - let content flow naturally */
             .page-container {
-                padding: 5mm 1mm 5mm 5mm;
+                padding: 5mm 5mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
                 margin: 0;
                 box-sizing: border-box;

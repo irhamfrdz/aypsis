@@ -289,6 +289,7 @@ class TagihanObController extends Controller
                 $finalValue = floatval($value);
                 
                 Log::info('Biaya validation passed', [
+                    'field' => $field,
                     'original_value' => $value,
                     'final_value' => $finalValue,
                     'final_value_type' => gettype($finalValue)
@@ -299,6 +300,7 @@ class TagihanObController extends Controller
             
             // Update the field
             $tagihanOb->{$field} = $finalValue;
+            
             $tagihanOb->save();
             
             Log::info('Field updated in database', [
@@ -321,12 +323,14 @@ class TagihanObController extends Controller
                 'user_id' => Auth::id()
             ]);
             
-            return response()->json([
+            $response = [
                 'success' => true,
                 'message' => 'Data berhasil diperbarui.',
                 'formatted_value' => $formattedValue,
                 'raw_value' => $finalValue
-            ]);
+            ];
+            
+            return response()->json($response);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json([

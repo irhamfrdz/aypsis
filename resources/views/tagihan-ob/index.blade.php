@@ -198,8 +198,9 @@
                         <div class="ml-3">
                             <h3 class="text-sm font-medium text-blue-800">Inline Editing Aktif</h3>
                             <p class="text-sm text-blue-600">
-                                Anda dapat mengedit <strong>Nama Supir</strong>, <strong>Nomor Kontainer</strong>, dan <strong>Biaya</strong> langsung dari tabel. 
+                                Anda dapat mengedit <strong>Nama Supir</strong>, <strong>Nomor Kontainer</strong>, <strong>Biaya</strong>, dan <strong>DP</strong> langsung dari tabel. 
                                 Klik pada field yang ingin diedit, lalu tekan <kbd class="px-1 py-0.5 text-xs bg-blue-100 rounded">Enter</kbd> untuk menyimpan atau <kbd class="px-1 py-0.5 text-xs bg-blue-100 rounded">Esc</kbd> untuk membatalkan.
+                                <strong>Grand Total</strong> akan otomatis dihitung (Biaya - DP).
                             </p>
                         </div>
                     </div>
@@ -492,21 +493,10 @@
                                             <span id="total_biaya_display" class="text-sm font-medium text-blue-900">Rp 0</span>
                                         </div>
                                         <div class="flex justify-between items-center">
-                                            <span class="text-sm text-blue-700">DP (Down Payment):</span>
-                                            <span id="dp_amount_display" class="text-sm font-medium text-blue-900">Rp 0</span>
-                                        </div>
-                                        <div class="flex justify-between items-center">
                                             <span class="text-sm text-blue-700">Penyesuaian:</span>
                                             <span id="penyesuaian_display" class="text-sm font-medium text-blue-900">Rp 0</span>
                                         </div>
-                                        <div class="border-t border-blue-300 pt-2 mt-2">
-                                            <div class="flex justify-between items-center">
-                                                <span class="text-sm font-semibold text-blue-900">Grand Total:</span>
-                                                <span id="grand_total_display" class="text-lg font-bold text-blue-900">Rp 0</span>
-                                            </div>
-                                        </div>
                                     </div>
-                                    <p class="text-xs text-blue-700 mt-2">Grand Total = Total Biaya - DP + Penyesuaian</p>
                                 </div>
                                 
                                 <div>
@@ -733,11 +723,6 @@ function updateGrandTotal() {
     const sisaPembayaranDisplay = document.getElementById('sisa_pembayaran_display');
     if (sisaPembayaranDisplay) {
         sisaPembayaranDisplay.textContent = 'Rp ' + formatNumber(sisaPembayaran);
-    }
-    
-    const grandTotalDisplay = document.getElementById('grand_total_display');
-    if (grandTotalDisplay) {
-        grandTotalDisplay.textContent = 'Rp ' + formatNumber(grandTotal);
     }
 }
 
@@ -1016,10 +1001,10 @@ function saveField(field, display, input) {
         return;
     }
     
-    if (fieldName === 'biaya') {
+    if (fieldName === 'biaya' || fieldName === 'dp') {
         const numericValue = parseFloat(newValue);
         if (isNaN(numericValue) || numericValue < 0) {
-            alert('Nilai biaya harus berupa angka yang valid');
+            alert('Nilai harus berupa angka yang valid');
             input.focus();
             return;
         }
@@ -1047,6 +1032,7 @@ function saveField(field, display, input) {
     .then(data => {
         if (data.success) {
             updateDisplayValue(display, fieldName, data.raw_value || data.formatted_value || newValue);
+            
             showNotification('Data berhasil diperbarui', 'success');
         } else {
             throw new Error(data.message || 'Terjadi kesalahan');
@@ -1064,7 +1050,7 @@ function saveField(field, display, input) {
 }
 
 function updateDisplayValue(display, fieldName, value) {
-    if (fieldName === 'biaya') {
+    if (fieldName === 'biaya' || fieldName === 'dp') {
         display.innerHTML = `Rp ${formatNumber(parseFloat(value))}`;
     } else if (fieldName === 'nomor_kontainer') {
         display.innerHTML = `<code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-mono">${value}</code>`;
