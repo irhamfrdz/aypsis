@@ -21,11 +21,38 @@ class ApprovalSuratJalanController extends Controller
         $approvalLevel = $request->get('level', 'approval');
         
         // Get pending approvals for the specified level
-        $pendingApprovals = SuratJalanApproval::with(['suratJalan.order'])
+        $query = SuratJalanApproval::with(['suratJalan.order'])
             ->where('approval_level', $approvalLevel)
-            ->where('status', 'pending')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+            ->where('status', 'pending');
+
+        // Apply search filters
+        if ($request->filled('search_no_surat_jalan')) {
+            $query->whereHas('suratJalan', function($q) use ($request) {
+                $q->where('no_surat_jalan', 'LIKE', '%' . $request->search_no_surat_jalan . '%');
+            });
+        }
+
+        if ($request->filled('search_supir')) {
+            $query->whereHas('suratJalan', function($q) use ($request) {
+                $q->where('supir', 'LIKE', '%' . $request->search_supir . '%');
+            });
+        }
+
+        if ($request->filled('search_kegiatan')) {
+            $query->whereHas('suratJalan', function($q) use ($request) {
+                $q->where('kegiatan', 'LIKE', '%' . $request->search_kegiatan . '%');
+            });
+        }
+
+        if ($request->filled('search_no_pemesanan')) {
+            $query->whereHas('suratJalan', function($q) use ($request) {
+                $q->where('no_pemesanan', 'LIKE', '%' . $request->search_no_pemesanan . '%');
+            });
+        }
+
+        $pendingApprovals = $query->orderBy('created_at', 'desc')
+            ->paginate(15)
+            ->appends($request->except('page'));
 
         // Calculate statistics
         $stats = [

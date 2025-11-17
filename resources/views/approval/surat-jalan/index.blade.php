@@ -51,6 +51,75 @@
                 </div>
             @endif
 
+            <!-- Search Form -->
+            <div class="mb-4 bg-gray-50 p-4 rounded-lg border border-gray-200">
+                <form method="GET" action="{{ route('approval.surat-jalan.index', $approvalLevel) }}" class="space-y-3">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+                        <div>
+                            <label for="search_no_surat_jalan" class="block text-xs font-medium text-gray-700 mb-1">No. Surat Jalan</label>
+                            <input type="text" 
+                                   name="search_no_surat_jalan" 
+                                   id="search_no_surat_jalan"
+                                   value="{{ request('search_no_surat_jalan') }}"
+                                   placeholder="Cari nomor surat jalan..."
+                                   class="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="search_supir" class="block text-xs font-medium text-gray-700 mb-1">Supir</label>
+                            <input type="text" 
+                                   name="search_supir" 
+                                   id="search_supir"
+                                   value="{{ request('search_supir') }}"
+                                   placeholder="Cari nama supir..."
+                                   class="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="search_kegiatan" class="block text-xs font-medium text-gray-700 mb-1">Kegiatan</label>
+                            <input type="text" 
+                                   name="search_kegiatan" 
+                                   id="search_kegiatan"
+                                   value="{{ request('search_kegiatan') }}"
+                                   placeholder="Cari kegiatan..."
+                                   class="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                        <div>
+                            <label for="search_no_pemesanan" class="block text-xs font-medium text-gray-700 mb-1">No. Pemesanan</label>
+                            <input type="text" 
+                                   name="search_no_pemesanan" 
+                                   id="search_no_pemesanan"
+                                   value="{{ request('search_no_pemesanan') }}"
+                                   placeholder="Cari nomor pemesanan..."
+                                   class="w-full px-3 py-2 text-xs border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500">
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-medium rounded-md transition-colors duration-150">
+                            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Cari
+                        </button>
+                        @if(request()->hasAny(['search_no_surat_jalan', 'search_supir', 'search_kegiatan', 'search_no_pemesanan']))
+                            <a href="{{ route('approval.surat-jalan.index', $approvalLevel) }}" 
+                               class="inline-flex items-center px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white text-xs font-medium rounded-md transition-colors duration-150">
+                                <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                                </svg>
+                                Reset
+                            </a>
+                        @endif
+                        @if(request()->hasAny(['search_no_surat_jalan', 'search_supir', 'search_kegiatan', 'search_no_pemesanan']))
+                            <span class="text-xs text-gray-600 ml-2">
+                                <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+                                </svg>
+                                Filter aktif
+                            </span>
+                        @endif
+                    </div>
+                </form>
+            </div>
+
             @if($pendingApprovals->count() > 0)
                 <div class="overflow-x-auto">
                     <table class="min-w-full divide-y divide-gray-200 text-sm">
