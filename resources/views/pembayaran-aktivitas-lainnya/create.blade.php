@@ -635,8 +635,8 @@ $(document).ready(function() {
         let month = String(today.getMonth() + 1).padStart(2, '0');
         let random = Math.floor(Math.random() * 999999).toString().padStart(6, '0');
 
-        // Use PAL prefix as fallback
-        let nomorPembayaran = `PAL-${month}-${year}-${random}`;
+        // Use PMS prefix with new format (no dashes)
+        let nomorPembayaran = `PMS${month}${year}${random}`;
         $('#nomor_pembayaran').val(nomorPembayaran);
 
         console.log('📝 Fallback nomor generated:', nomorPembayaran);
