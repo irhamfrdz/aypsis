@@ -48,7 +48,7 @@
                                    id="nomor_pembayaran"
                                    name="nomor_pembayaran"
                                    value="{{ old('nomor_pembayaran') }}"
-                                   placeholder="Auto generated dari bank yang dipilih"
+                                   placeholder="Contoh: PMS1116000001 (Auto generated)"
                                    readonly>
                         </div>
 

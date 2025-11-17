@@ -110,23 +110,23 @@ class PembayaranAktivitasLainnya extends Model
     /**
      * Generate nomor pembayaran otomatis
      */
+    /**
+     * @deprecated Use generateNomorPembayaranCoa() instead
+     * Generate nomor pembayaran dengan format baru PMS[kode]MMYYNNNNNN
+     * This method now calls generateNomorPembayaranCoa with default bank ID
+     */
     public static function generateNomorPembayaran()
     {
-        $date = now();
-        $prefix = 'PAL/' . $date->format('Y/m') . '/';
-
-        $lastRecord = self::where('nomor_pembayaran', 'like', $prefix . '%')
-            ->orderBy('nomor_pembayaran', 'desc')
+        // Get default bank account (first available)
+        $defaultBank = \App\Models\Coa::where('tipe_akun', 'LIKE', '%Kas%')
+            ->orWhere('tipe_akun', 'LIKE', '%Bank%')
             ->first();
-
-        if ($lastRecord) {
-            $lastNumber = (int) substr($lastRecord->nomor_pembayaran, -4);
-            $newNumber = str_pad($lastNumber + 1, 4, '0', STR_PAD_LEFT);
-        } else {
-            $newNumber = '0001';
+        
+        if (!$defaultBank) {
+            throw new \Exception('Tidak ada akun bank/kas tersedia. Silakan gunakan generateNomorPembayaranCoa() dengan COA ID yang valid.');
         }
-
-        return $prefix . $newNumber;
+        
+        return self::generateNomorPembayaranCoa($defaultBank->id);
     }
 
     /**
