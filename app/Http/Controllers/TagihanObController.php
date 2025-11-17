@@ -64,7 +64,7 @@ class TagihanObController extends Controller
         $this->authorize('tagihan-ob-create');
         
         $bls = Bl::orderBy('nomor_bl')->get();
-        $pricelist = MasterPricelistOb::where('status', 'active')->get();
+        $pricelist = MasterPricelistOb::all();
         
         // Pre-fill kapal and voyage if provided
         $prefilledKapal = $request->get('kapal');
@@ -132,7 +132,7 @@ class TagihanObController extends Controller
         $this->authorize('tagihan-ob-update');
         
         $bls = Bl::orderBy('nomor_bl')->get();
-        $pricelist = MasterPricelistOb::where('status', 'active')->get();
+        $pricelist = MasterPricelistOb::all();
         
         return view('tagihan-ob.edit', compact('tagihanOb', 'bls', 'pricelist'));
     }
