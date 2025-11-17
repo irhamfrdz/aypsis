@@ -104,7 +104,7 @@
             height: {{ $currentPaper['height'] }};
             max-height: {{ $currentPaper['height'] }};
             margin: 0 auto;
-            padding: 5mm 1mm 5mm 5mm;
+            padding: 5mm 5mm 5mm 5mm;
             position: relative;
             padding-bottom: 60px;
             box-sizing: border-box;
@@ -319,7 +319,7 @@
                 height: 6.5in;
                 max-height: 6.5in;
                 border-bottom: 2px dashed #999;
-                padding: 5mm 1mm 5mm 5mm;
+                padding: 5mm 5mm 5mm 5mm;
                 padding-bottom: 40px;
                 margin: 0;
                 box-sizing: border-box;
