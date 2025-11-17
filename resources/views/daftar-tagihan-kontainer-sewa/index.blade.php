@@ -588,15 +588,15 @@ input[required]:focus {
             
             <!-- Table Section with Sticky Header -->
             <div class="table-container overflow-x-auto max-h-screen">
-                <table class="min-w-full divide-y divide-gray-200 compact-table" style="min-width: 2200px;">
+                <table class="min-w-full divide-y divide-gray-200 compact-table" style="min-width: 1400px;">
                     <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
                 <tr class="border-b border-gray-200">
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 35px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 30px;">
                         <div class="flex items-center justify-center">
                             <input type="checkbox" id="select-all" class="checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" style="width: 12px; height: 12px;">
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 70px;">
                         <div class="flex items-center space-x-1">
                             <span>Grup</span>
                             <div class="relative group">
@@ -610,47 +610,47 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 80px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
                         <div class="flex items-center space-x-0.5">
                             <span>Vendor</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 120px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
                         <div class="flex items-center space-x-1">
                             <span>Nomor Kontainer</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 50px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 35px;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Size</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 45px;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Periode</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 75px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Tgl Awal</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 75px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Tgl Akhir</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 65px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 45px;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tarif</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 85px;">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>DPP</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 85px;">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>Adjustment</span>
                             <div class="relative group">
@@ -663,7 +663,7 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 120px;">
+                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 90px;">
                         <div class="flex items-center justify-start space-x-0.5">
                             <span>Alasan Adjustment</span>
                             <div class="relative group">
@@ -676,7 +676,7 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 100px;">
+                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 75px;">
                         <div class="flex items-center justify-start space-x-0.5">
                             <span>Invoice Vendor</span>
                             <div class="relative group">
@@ -689,7 +689,7 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 85px;">
+                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
                         <div class="flex items-center justify-start space-x-0.5">
                             <span>Tanggal Vendor</span>
                             <div class="relative group">
@@ -702,22 +702,22 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 55px;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>PPN</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 55px;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>PPH</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 90px;">
+                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>Grand Total</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-orange-50" style="min-width: 100px;">">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-orange-50" style="min-width: 75px;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Status Pranota</span>
                             <div class="relative group">
@@ -731,7 +731,7 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-gray-50" style="min-width: 90px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-gray-50" style="min-width: 70px;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Aksi</span>
                         </div>
@@ -1224,15 +1224,15 @@ input[required]:focus {
 
 /* Compact table styling */
 .compact-table th {
-    padding: 3px 4px !important;
+    padding: 2px 3px !important;
     font-size: 7px !important;
-    line-height: 1.1 !important;
+    line-height: 1.0 !important;
 }
 
 .compact-table td {
-    padding: 2px 4px !important;
-    font-size: 8px !important;
-    line-height: 1.2 !important;
+    padding: 1px 2px !important;
+    font-size: 7px !important;
+    line-height: 1.1 !important;
 }
 
 .compact-table .compact-cell {
@@ -1262,9 +1262,9 @@ input[required]:focus {
 
 /* Override all table cells for compact layout */
 .compact-table tbody td {
-    padding: 2px 4px !important;
-    font-size: 8px !important;
-    line-height: 1.2 !important;
+    padding: 1px 2px !important;
+    font-size: 7px !important;
+    line-height: 1.1 !important;
 }
 
 /* Specific adjustments for different cell types */
@@ -1282,17 +1282,17 @@ input[required]:focus {
 
 /* Compact buttons and inputs inside table */
 .compact-table button {
-    padding: 2px 6px !important;
-    font-size: 8px !important;
+    padding: 1px 3px !important;
+    font-size: 7px !important;
 }
 
 .compact-table input {
-    font-size: 9px !important;
+    font-size: 7px !important;
 }
 
 .compact-table .badge {
-    padding: 1px 4px !important;
-    font-size: 7px !important;
+    padding: 1px 3px !important;
+    font-size: 6px !important;
 }
 </style>
 
