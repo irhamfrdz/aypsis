@@ -1536,19 +1536,22 @@ function updateUangMukaDisplay() {
                 if (selectedUangMukaId && uangMukaData[selectedUangMukaId]) {
                     const selectedUangMuka = uangMukaData[selectedUangMukaId];
                     
-                    // Nama supir dari database untuk matching
-                    const supirNama = '{{ $supir->nama_lengkap }}';
+                    // ID supir untuk matching (sekarang menggunakan ID, bukan nama)
+                    const supirId = '{{ $supir->id }}';
+                    const supirIdInt = {{ $supir->id }};
 
-                    // Untuk OB Muat/Bongkar - cek jumlah_per_supir by nama (karena pembayaran aktivitas lainnya menyimpan nama, bukan ID)
-                    if (selectedUangMuka.jumlah_per_supir && selectedUangMuka.jumlah_per_supir[supirNama]) {
-                        uangMukaAmount{{ $supir->id }} = selectedUangMuka.jumlah_per_supir[supirNama];
+                    // Untuk OB Muat/Bongkar - cek jumlah_per_supir by ID
+                    // Check both string and integer keys for compatibility
+                    if (selectedUangMuka.jumlah_per_supir && 
+                        (selectedUangMuka.jumlah_per_supir[supirId] || selectedUangMuka.jumlah_per_supir[supirIdInt])) {
+                        uangMukaAmount{{ $supir->id }} = selectedUangMuka.jumlah_per_supir[supirId] || selectedUangMuka.jumlah_per_supir[supirIdInt];
                         currentUangMukaData['{{ $supir->id }}'] = uangMukaAmount{{ $supir->id }};
                         uangMukaDiv{{ $supir->id }}.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Rp ${formatNumber(uangMukaAmount{{ $supir->id }})}</span>`;
                         
-                        console.log('Matched supir:', supirNama, 'Amount:', uangMukaAmount{{ $supir->id }});
+                        console.log('Matched supir ID:', supirId, 'Amount:', uangMukaAmount{{ $supir->id }});
                     } else {
                         uangMukaDiv{{ $supir->id }}.innerHTML = '<span class="text-gray-400 italic">-</span>';
-                        console.log('No match for supir:', supirNama, 'Available keys:', Object.keys(selectedUangMuka.jumlah_per_supir || {}));
+                        console.log('No match for supir ID:', supirId, 'Available keys:', Object.keys(selectedUangMuka.jumlah_per_supir || {}));
                     }
                 } else {
                     uangMukaDiv{{ $supir->id }}.innerHTML = '<span class="text-gray-400 italic">-</span>';

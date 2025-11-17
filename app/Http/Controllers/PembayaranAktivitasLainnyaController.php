@@ -158,6 +158,9 @@ class PembayaranAktivitasLainnyaController extends Controller
 
                 foreach ($request->supir_id as $index => $supirId) {
                     if (!empty($supirId)) {
+                        // Cast supir ID to integer
+                        $supirId = (int) $supirId;
+                        
                         // Get supir data from Karyawan model
                         $supir = \App\Models\Karyawan::find($supirId);
                         if (!$supir) {
