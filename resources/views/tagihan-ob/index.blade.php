@@ -453,6 +453,18 @@
                                     </div>
                                     
                                     <div>
+                                        <label for="dp_amount" class="block text-sm font-medium text-gray-700">
+                                            DP (Down Payment)
+                                        </label>
+                                        <input type="number" id="dp_amount" name="dp_amount" value="0"
+                                               class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-blue-500 focus:border-blue-500"
+                                               placeholder="0">
+                                        <p class="mt-1 text-xs text-gray-500">Masukkan nilai DP yang sudah dibayar</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div>
                                         <label for="penyesuaian" class="block text-sm font-medium text-gray-700">
                                             Penyesuaian (Adjustment)
                                         </label>
@@ -461,14 +473,40 @@
                                                placeholder="0">
                                         <p class="mt-1 text-xs text-gray-500">Masukkan nilai penyesuaian (+ atau -)</p>
                                     </div>
+                                    
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700">
+                                            Sisa Pembayaran
+                                        </label>
+                                        <div class="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 bg-gray-50 text-gray-700">
+                                            <span id="sisa_pembayaran_display" class="font-semibold">Rp 0</span>
+                                        </div>
+                                        <p class="mt-1 text-xs text-gray-500">Total Biaya - DP + Penyesuaian</p>
+                                    </div>
                                 </div>
                                 
                                 <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                                    <div class="flex justify-between items-center">
-                                        <span class="text-sm font-medium text-blue-900">Grand Total:</span>
-                                        <span id="grand_total_display" class="text-lg font-bold text-blue-900">Rp 0</span>
+                                    <div class="space-y-2">
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-blue-700">Total Biaya:</span>
+                                            <span id="total_biaya_display" class="text-sm font-medium text-blue-900">Rp 0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-blue-700">DP (Down Payment):</span>
+                                            <span id="dp_amount_display" class="text-sm font-medium text-blue-900">Rp 0</span>
+                                        </div>
+                                        <div class="flex justify-between items-center">
+                                            <span class="text-sm text-blue-700">Penyesuaian:</span>
+                                            <span id="penyesuaian_display" class="text-sm font-medium text-blue-900">Rp 0</span>
+                                        </div>
+                                        <div class="border-t border-blue-300 pt-2 mt-2">
+                                            <div class="flex justify-between items-center">
+                                                <span class="text-sm font-semibold text-blue-900">Grand Total:</span>
+                                                <span id="grand_total_display" class="text-lg font-bold text-blue-900">Rp 0</span>
+                                            </div>
+                                        </div>
                                     </div>
-                                    <p class="text-xs text-blue-700 mt-1">Total Biaya + Penyesuaian</p>
+                                    <p class="text-xs text-blue-700 mt-2">Grand Total = Total Biaya - DP + Penyesuaian</p>
                                 </div>
                                 
                                 <div>
@@ -596,7 +634,12 @@ function openPranotaModal() {
         totalBiayaField.value = totalBiaya;
     }
     
-    // Reset penyesuaian
+    // Reset DP and penyesuaian
+    const dpAmountField = document.getElementById('dp_amount');
+    if (dpAmountField) {
+        dpAmountField.value = 0;
+    }
+    
     const penyesuaianField = document.getElementById('penyesuaian');
     if (penyesuaianField) {
         penyesuaianField.value = 0;
@@ -664,8 +707,33 @@ function openPranotaModal() {
 // Fungsi untuk update grand total
 function updateGrandTotal() {
     const totalBiaya = parseFloat(document.getElementById('total_biaya')?.value || 0);
+    const dpAmount = parseFloat(document.getElementById('dp_amount')?.value || 0);
     const penyesuaian = parseFloat(document.getElementById('penyesuaian')?.value || 0);
-    const grandTotal = totalBiaya + penyesuaian;
+    
+    // Grand Total = Total Biaya - DP + Penyesuaian
+    const sisaPembayaran = totalBiaya - dpAmount;
+    const grandTotal = sisaPembayaran + penyesuaian;
+    
+    // Update displays
+    const totalBiayaDisplay = document.getElementById('total_biaya_display');
+    if (totalBiayaDisplay) {
+        totalBiayaDisplay.textContent = 'Rp ' + formatNumber(totalBiaya);
+    }
+    
+    const dpAmountDisplay = document.getElementById('dp_amount_display');
+    if (dpAmountDisplay) {
+        dpAmountDisplay.textContent = 'Rp ' + formatNumber(dpAmount);
+    }
+    
+    const penyesuaianDisplay = document.getElementById('penyesuaian_display');
+    if (penyesuaianDisplay) {
+        penyesuaianDisplay.textContent = (penyesuaian >= 0 ? '+' : '') + 'Rp ' + formatNumber(Math.abs(penyesuaian));
+    }
+    
+    const sisaPembayaranDisplay = document.getElementById('sisa_pembayaran_display');
+    if (sisaPembayaranDisplay) {
+        sisaPembayaranDisplay.textContent = 'Rp ' + formatNumber(sisaPembayaran);
+    }
     
     const grandTotalDisplay = document.getElementById('grand_total_display');
     if (grandTotalDisplay) {
@@ -738,7 +806,13 @@ document.addEventListener('DOMContentLoaded', function() {
         console.error('Pranota button NOT found!');
     }
     
-    // Penyesuaian field change listener
+    // DP and Penyesuaian field change listeners
+    const dpAmountField = document.getElementById('dp_amount');
+    if (dpAmountField) {
+        dpAmountField.addEventListener('input', updateGrandTotal);
+        dpAmountField.addEventListener('change', updateGrandTotal);
+    }
+    
     const penyesuaianField = document.getElementById('penyesuaian');
     if (penyesuaianField) {
         penyesuaianField.addEventListener('input', updateGrandTotal);
