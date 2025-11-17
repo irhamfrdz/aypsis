@@ -757,13 +757,13 @@ $(document).ready(function() {
             <tr class="supir-row hover:bg-gray-50">
                 <td class="px-6 py-4 text-center text-sm">${supirRowCounter}</td>
                 <td class="px-6 py-4">
-                    <select name="nama_supir[]" 
+                    <select name="supir_id[]" 
                             class="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm w-full text-sm"
                             required>
                         <option value="">Pilih Supir</option>
                         @if(isset($masterSupir) && $masterSupir->count() > 0)
                             @foreach($masterSupir as $supir)
-                                <option value="{{ $supir->nama_lengkap }}">
+                                <option value="{{ $supir->id }}">
                                     {{ $supir->nama_lengkap }}
                                     @if($supir->nama_panggilan)
                                         ({{ $supir->nama_panggilan }})

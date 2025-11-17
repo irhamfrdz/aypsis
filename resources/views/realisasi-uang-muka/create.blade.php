@@ -1535,14 +1535,20 @@ function updateUangMukaDisplay() {
 
                 if (selectedUangMukaId && uangMukaData[selectedUangMukaId]) {
                     const selectedUangMuka = uangMukaData[selectedUangMukaId];
+                    
+                    // Nama supir dari database untuk matching
+                    const supirNama = '{{ $supir->nama_lengkap }}';
 
-                    // Untuk OB Muat/Bongkar - cek jumlah_per_supir
-                    if (selectedUangMuka.jumlah_per_supir && selectedUangMuka.jumlah_per_supir['{{ $supir->id }}']) {
-                        uangMukaAmount{{ $supir->id }} = selectedUangMuka.jumlah_per_supir['{{ $supir->id }}'];
+                    // Untuk OB Muat/Bongkar - cek jumlah_per_supir by nama (karena pembayaran aktivitas lainnya menyimpan nama, bukan ID)
+                    if (selectedUangMuka.jumlah_per_supir && selectedUangMuka.jumlah_per_supir[supirNama]) {
+                        uangMukaAmount{{ $supir->id }} = selectedUangMuka.jumlah_per_supir[supirNama];
                         currentUangMukaData['{{ $supir->id }}'] = uangMukaAmount{{ $supir->id }};
                         uangMukaDiv{{ $supir->id }}.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">Rp ${formatNumber(uangMukaAmount{{ $supir->id }})}</span>`;
+                        
+                        console.log('Matched supir:', supirNama, 'Amount:', uangMukaAmount{{ $supir->id }});
                     } else {
                         uangMukaDiv{{ $supir->id }}.innerHTML = '<span class="text-gray-400 italic">-</span>';
+                        console.log('No match for supir:', supirNama, 'Available keys:', Object.keys(selectedUangMuka.jumlah_per_supir || {}));
                     }
                 } else {
                     uangMukaDiv{{ $supir->id }}.innerHTML = '<span class="text-gray-400 italic">-</span>';

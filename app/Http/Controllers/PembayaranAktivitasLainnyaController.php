@@ -152,12 +152,18 @@ class PembayaranAktivitasLainnyaController extends Controller
             ]);
 
             // Simpan detail uang muka supir jika ada
-            if ($request->has('nama_supir') && is_array($request->nama_supir)) {
+            if ($request->has('supir_id') && is_array($request->supir_id)) {
                 $totalUangMukaSupir = 0;
                 $supirDetails = [];
 
-                foreach ($request->nama_supir as $index => $namaSupir) {
-                    if (!empty($namaSupir)) {
+                foreach ($request->supir_id as $index => $supirId) {
+                    if (!empty($supirId)) {
+                        // Get supir data from Karyawan model
+                        $supir = \App\Models\Karyawan::find($supirId);
+                        if (!$supir) {
+                            continue; // Skip if supir not found
+                        }
+
                         // Clean jumlah uang muka (remove formatting)
                         $jumlahUangMuka = $request->jumlah_uang_muka[$index] ?? 0;
                         if (is_string($jumlahUangMuka)) {
@@ -166,7 +172,7 @@ class PembayaranAktivitasLainnyaController extends Controller
 
                         \App\Models\PembayaranUangMukaSupirDetail::create([
                             'pembayaran_id' => $pembayaran->id,
-                            'nama_supir' => $namaSupir,
+                            'nama_supir' => $supir->nama_lengkap, // Store nama for display
                             'jumlah_uang_muka' => $jumlahUangMuka,
                             'keterangan' => $request->keterangan_supir[$index] ?? null,
                             'status' => 'dibayar',
@@ -174,7 +180,8 @@ class PembayaranAktivitasLainnyaController extends Controller
 
                         $totalUangMukaSupir += $jumlahUangMuka;
                         $supirDetails[] = [
-                            'nama' => $namaSupir,
+                            'id' => $supirId,
+                            'nama' => $supir->nama_lengkap,
                             'jumlah' => $jumlahUangMuka
                         ];
                     }
@@ -189,10 +196,9 @@ class PembayaranAktivitasLainnyaController extends Controller
                     $jumlahPerSupir = [];
                     
                     foreach ($supirDetails as $index => $detail) {
-                        // For pembayaran aktivitas lainnya, we only have names, not IDs
-                        // Store index as ID and map to jumlah
-                        $supirIds[] = $detail['nama'];
-                        $jumlahPerSupir[$detail['nama']] = $detail['jumlah'];
+                        // Store supir ID (not name) for proper relational integrity
+                        $supirIds[] = $detail['id'];
+                        $jumlahPerSupir[$detail['id']] = $detail['jumlah'];
                     }
                     
                     \App\Models\PembayaranUangMuka::create([
