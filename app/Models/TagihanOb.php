@@ -21,6 +21,7 @@ class TagihanOb extends Model
         'barang',
         'status_kontainer', // full atau empty
         'biaya',
+        'dp',
         'size_kontainer',
         'bl_id', // untuk referensi ke BL (untuk OB Bongkar)
         'naik_kapal_id', // untuk referensi ke Naik Kapal (untuk OB Muat)
@@ -30,6 +31,7 @@ class TagihanOb extends Model
 
     protected $casts = [
         'biaya' => 'float',
+        'dp' => 'float',
     ];
 
     /**
