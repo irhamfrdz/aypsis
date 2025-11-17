@@ -20,7 +20,7 @@
                         <a href="{{ route('pembayaran-aktivitas-lainnya.create', [
                             'kapal' => $pranotaOb->items->first()?->tagihanOb?->kapal ?? '',
                             'voyage' => $pranotaOb->items->first()?->tagihanOb?->voyage ?? '',
-                            'supir' => $pranotaOb->items->pluck('tagihanOb.nama_supir')->filter()->unique()->implode(', ')
+                            'supir' => $pranotaOb->items->pluck('tagihanOb.nama_supir')->filter()->implode(', ')
                         ]) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
                             <i class="fas fa-money-bill-wave mr-1"></i>
                             Tambahkan DP
