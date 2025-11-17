@@ -630,14 +630,9 @@ input[required]:focus {
                             <span>Periode</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 70px;">
                         <div class="flex items-center justify-center space-x-0.5">
-                            <span>Tgl Awal</span>
-                        </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
-                        <div class="flex items-center justify-center space-x-0.5">
-                            <span>Tgl Akhir</span>
+                            <span>Masa</span>
                         </div>
                     </th>
                     <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 45px;">
@@ -659,19 +654,6 @@ input[required]:focus {
                                 </svg>
                                 <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
                                     Penyesuaian harga DPP
-                                </div>
-                            </div>
-                        </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 90px;">
-                        <div class="flex items-center justify-start space-x-0.5">
-                            <span>Alasan Adjustment</span>
-                            <div class="relative group">
-                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 8px; height: 8px;">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                                </svg>
-                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
-                                    Alasan penyesuaian harga
                                 </div>
                             </div>
                         </div>
@@ -815,50 +797,37 @@ input[required]:focus {
                                 </span>
                             @endif
                         </td>
-                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
-                            <div class="text-[8px] bg-gray-100 px-2 py-1 rounded font-medium">
-                                {{ optional($tagihan)->tanggal_awal ? \Carbon\Carbon::parse(optional($tagihan)->tanggal_awal)->format('d-M-Y') : '-' }}
-                            </div>
-                        </td>
-                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
-                            @if(optional($tagihan)->tanggal_akhir)
-                                <div class="flex flex-col items-center space-y-0.5">
-                                    <div class="text-[8px] bg-gray-100 px-2 py-1 rounded font-medium">
-                                        {{ \Carbon\Carbon::parse(optional($tagihan)->tanggal_akhir)->format('d-M-Y') }}
-                                    </div>
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-red-100 text-red-800">
-                                        <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Selesai
-                                    </span>
-                                </div>
-                            @else
-                                <div class="flex flex-col items-center space-y-1">
-                                    <div class="text-[8px] bg-gray-100 px-2 py-1 rounded font-medium text-gray-400">
-                                        Belum Selesai
-                                    </div>
-                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-green-100 text-green-800 animate-pulse">
-                                        <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                        </svg>
-                                        Ongoing
-                                    </span>
-                                    @if(optional($tagihan)->tanggal_awal)
-                                        @php
-                                            try {
-                                                $startDate = \Carbon\Carbon::parse(optional($tagihan)->tanggal_awal);
-                                                $daysSince = $startDate->diffInDays(\Carbon\Carbon::now());
-                                            } catch (\Exception $e) {
-                                                $daysSince = 0;
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[7px] text-gray-900">
+                            <div class="font-semibold">
+                                @if(optional($tagihan)->masa)
+                                    @php
+                                        $masa = optional($tagihan)->masa;
+                                        // Check if it's a date range format
+                                        if (strpos($masa, ' - ') !== false) {
+                                            $dates = explode(' - ', $masa);
+                                            $formattedDates = [];
+                                            foreach ($dates as $date) {
+                                                try {
+                                                    $formattedDates[] = \Carbon\Carbon::parse(trim($date))->format('d-M-Y');
+                                                } catch (\Exception $e) {
+                                                    $formattedDates[] = trim($date);
+                                                }
                                             }
-                                        @endphp
-                                        <div class="text-[7px] text-green-600">
-                                            {{ $daysSince }} hari
-                                        </div>
-                                    @endif
-                                </div>
-                            @endif
+                                            $masa = implode(' - ', $formattedDates);
+                                        } else {
+                                            // Single date
+                                            try {
+                                                $masa = \Carbon\Carbon::parse($masa)->format('d-M-Y');
+                                            } catch (\Exception $e) {
+                                                // Keep original if parsing fails
+                                            }
+                                        }
+                                    @endphp
+                                    {{ $masa }}
+                                @else
+                                    -
+                                @endif
+                            </div>
                         </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             @php
@@ -901,33 +870,6 @@ input[required]:focus {
                                     <button type="button" class="text-[7px] bg-cyan-600 text-white px-1.5 py-0.5 rounded hover:bg-cyan-700 transition-colors"
                                             onclick="editAdjustment({{ $tagihan->id }}, {{ optional($tagihan)->adjustment ?? 0 }})"
                                             title="Edit adjustment">
-                                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
-                                        </svg>
-                                    </button>
-                                </div>
-                            </div>
-                        </td>
-                        <!-- Kolom Alasan Adjustment -->
-                        <td class="px-2 py-2 whitespace-nowrap text-left text-[10px] text-gray-900" style="min-width: 200px;">
-                            <div class="relative group min-h-[40px] flex items-center">
-                                @if(optional($tagihan)->adjustment_note)
-                                    <div class="text-sm text-gray-700 w-full">
-                                        <div class="truncate max-w-[180px]" title="{{ $tagihan->adjustment_note }}">
-                                            {{ $tagihan->adjustment_note }}
-                                        </div>
-                                    </div>
-                                @else
-                                    <div class="text-xs text-gray-400 w-full">
-                                        -
-                                    </div>
-                                @endif
-
-                                <!-- Edit button for adjustment note -->
-                                <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-blue-100 bg-opacity-50 rounded flex items-center justify-center">
-                                    <button type="button" class="text-xs bg-blue-600 text-white px-2 py-1 rounded hover:bg-blue-700 transition-colors"
-                                            onclick="editAdjustmentNote({{ $tagihan->id }}, '{{ addslashes(optional($tagihan)->adjustment_note ?? '') }}')"
-                                            title="Edit alasan adjustment">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
@@ -3203,163 +3145,6 @@ window.showError = function(title, message, duration) {
 
 window.showWarning = function(title, message, duration) {
     return showNotification('warning', title, message, duration);
-};
-
-// Function to edit adjustment note
-window.editAdjustmentNote = function(tagihanId, currentNote) {
-    console.log('editAdjustmentNote called:', { tagihanId, currentNote });
-
-    // Check permission for updating tagihan
-    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
-        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk mengedit alasan adjustment. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
-        return;
-    @endif
-
-    // Create modal HTML for adjustment note editing
-    const modalHTML = `
-        <div id="adjustmentNoteModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
-            <div class="modal-content relative top-20 mx-auto p-5 border w-11/12 max-w-md shadow-lg rounded-md bg-white">
-                <div class="mt-3">
-                    <div class="flex items-center justify-between pb-4 border-b">
-                        <h3 class="text-lg font-medium text-gray-900">
-                            Edit Alasan Adjustment
-                        </h3>
-                        <button type="button" onclick="closeAdjustmentNoteModal()" class="text-gray-400 hover:text-gray-600">
-                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                            </svg>
-                        </button>
-                    </div>
-
-                    <form id="adjustmentNoteForm" class="mt-4">
-                        <div class="space-y-4">
-                            <div>
-                                <label for="adjustment_note_value" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Alasan Adjustment
-                                </label>
-                                <textarea id="adjustment_note_value" name="adjustment_note" rows="4"
-                                         class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                         placeholder="Masukkan alasan penyesuaian harga...">${currentNote}</textarea>
-                                <div class="text-xs text-gray-500 mt-1">
-                                    Jelaskan mengapa ada penyesuaian harga pada item ini
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="flex items-center justify-end space-x-3 pt-6 border-t mt-6">
-                            <button type="button" onclick="closeAdjustmentNoteModal()"
-                                    class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                Batal
-                            </button>
-                            <button type="submit"
-                                    class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                                <span class="btn-text">Simpan</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    `;
-
-    // Add modal to body
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
-
-    // Show modal with animation
-    const modal = document.getElementById('adjustmentNoteModal');
-    modal.classList.remove('hidden');
-    document.body.style.overflow = 'hidden';
-
-    setTimeout(() => {
-        modal.classList.add('modal-show');
-        const modalContent = modal.querySelector('.modal-content');
-        if (modalContent) {
-            modalContent.classList.add('modal-show');
-        }
-    }, 10);
-
-    // Handle form submission
-    const form = document.getElementById('adjustmentNoteForm');
-    if (form && form !== null) {
-        form.addEventListener('submit', function(e) {
-        e.preventDefault();
-
-        const adjustmentNote = document.getElementById('adjustment_note_value').value.trim();
-
-        // Show loading state
-        const submitBtn = form.querySelector('button[type="submit"]');
-        const btnText = submitBtn.querySelector('.btn-text');
-        const originalText = btnText.textContent;
-        btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
-        submitBtn.disabled = true;
-
-        // Prepare form data
-        const formData = new FormData();
-        formData.append('_token', '{{ csrf_token() }}');
-        formData.append('_method', 'PATCH');
-        formData.append('adjustment_note', adjustmentNote);
-
-        // Send AJAX request
-        fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${tagihanId}/adjustment-note`, {
-            method: 'POST',
-            body: formData,
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                return response.text().then(text => {
-                    throw new Error(`Server error: ${response.status}`);
-                });
-            }
-        })
-        .then(data => {
-            if (data.success) {
-                showNotification('success', 'Alasan Adjustment Berhasil Disimpan',
-                    'Alasan adjustment telah berhasil diperbarui.');
-
-                // Close modal and reload page
-                closeAdjustmentNoteModal();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
-            } else {
-                throw new Error(data.message || 'Gagal menyimpan alasan adjustment');
-            }
-        })
-        .catch(error => {
-            console.error('Error saving adjustment note:', error);
-            showNotification('error', 'Gagal Menyimpan', error.message || 'Terjadi kesalahan saat menyimpan alasan adjustment');
-
-            // Reset button state
-            btnText.textContent = originalText;
-            submitBtn.disabled = false;
-        });
-    });
-    }
-};
-
-// Function to close adjustment note modal
-window.closeAdjustmentNoteModal = function() {
-    const modal = document.getElementById('adjustmentNoteModal');
-    if (!modal) return;
-
-    modal.classList.add('modal-hide');
-    modal.classList.remove('modal-show');
-
-    const modalContent = modal.querySelector('.modal-content');
-    if (modalContent) {
-        modalContent.classList.add('modal-hide');
-        modalContent.classList.remove('modal-show');
-    }
-
-    setTimeout(() => {
-        modal.remove();
-        document.body.style.overflow = 'auto';
-    }, 300);
 };
 
 // Function to edit adjustment
