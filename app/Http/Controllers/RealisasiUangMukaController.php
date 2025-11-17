@@ -134,19 +134,31 @@ class RealisasiUangMukaController extends Controller
         foreach ($uangMukaBelumRealisasiList as $uangMuka) {
             $uangMuka->supir_names = $uangMuka->supirList()->pluck('nama_lengkap')->toArray();
             
-            // Ensure supir_ids is an array (cast might not work for old JSON-encoded data)
-            if (is_string($uangMuka->supir_ids)) {
-                $uangMuka->supir_ids = json_decode($uangMuka->supir_ids, true) ?? [];
-            }
-            if (!is_array($uangMuka->supir_ids)) {
+            // Ensure supir_ids is an array (handle double-encoded JSON from old data)
+            $supirIds = $uangMuka->getAttributes()['supir_ids'] ?? null;
+            if (is_string($supirIds)) {
+                // Try to decode once
+                $decoded = json_decode($supirIds, true);
+                // If still a string after first decode, decode again (double-encoded)
+                if (is_string($decoded)) {
+                    $decoded = json_decode($decoded, true);
+                }
+                $uangMuka->supir_ids = is_array($decoded) ? $decoded : [];
+            } elseif (!is_array($uangMuka->supir_ids)) {
                 $uangMuka->supir_ids = [];
             }
             
-            // Ensure jumlah_per_supir is an array
-            if (is_string($uangMuka->jumlah_per_supir)) {
-                $uangMuka->jumlah_per_supir = json_decode($uangMuka->jumlah_per_supir, true) ?? [];
-            }
-            if (!is_array($uangMuka->jumlah_per_supir)) {
+            // Ensure jumlah_per_supir is an array (handle double-encoded JSON)
+            $jumlahPerSupir = $uangMuka->getAttributes()['jumlah_per_supir'] ?? null;
+            if (is_string($jumlahPerSupir)) {
+                // Try to decode once
+                $decoded = json_decode($jumlahPerSupir, true);
+                // If still a string after first decode, decode again (double-encoded)
+                if (is_string($decoded)) {
+                    $decoded = json_decode($decoded, true);
+                }
+                $uangMuka->jumlah_per_supir = is_array($decoded) ? $decoded : [];
+            } elseif (!is_array($uangMuka->jumlah_per_supir)) {
                 $uangMuka->jumlah_per_supir = [];
             }
         }
