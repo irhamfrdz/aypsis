@@ -122,11 +122,9 @@ class PembayaranAktivitasLainnyaController extends Controller
             // Get bank info dari COA
             $bankCoa = Coa::find($request->pilih_bank);
 
-            // Generate nomor pembayaran jika kosong
-            $nomorPembayaran = $request->nomor_pembayaran;
-            if (!$nomorPembayaran) {
-                $nomorPembayaran = PembayaranAktivitasLainnya::generateNomorPembayaranCoa($request->pilih_bank);
-            }
+            // Always generate nomor pembayaran from server using new format
+            // Don't trust client-side generated number (could be old format or fallback)
+            $nomorPembayaran = PembayaranAktivitasLainnya::generateNomorPembayaranCoa($request->pilih_bank);
 
             // Clean total pembayaran
             $totalPembayaran = is_numeric($request->total_pembayaran)
