@@ -449,14 +449,11 @@ class DaftarTagihanKontainerSewaController extends Controller
             $oldGrandTotal = $tagihan->grand_total ?? 0;
             $newAdjustment = $request->input('adjustment');
 
-            // Update DPP by adding the adjustment to it
-            // This makes the adjusted DPP permanent in the database
-            $tagihan->dpp = floatval($oldDpp) + floatval($newAdjustment);
-            
-            // Reset adjustment to 0 since we've applied it to DPP
-            $tagihan->adjustment = 0;
+            // Update adjustment value (keep it, don't reset to 0)
+            $tagihan->adjustment = $newAdjustment;
 
             // Recalculate taxes and totals using model method
+            // The model will use: DPP + adjustment for calculations
             $tagihan->recalculateTaxes();
 
             // Save will trigger the boot method to calculate grand_total
@@ -467,9 +464,9 @@ class DaftarTagihanKontainerSewaController extends Controller
                 'container' => $tagihan->nomor_kontainer,
                 'old_dpp' => $oldDpp,
                 'old_adjustment' => $oldAdjustment,
-                'adjustment_applied' => $newAdjustment,
-                'new_dpp' => $tagihan->dpp,
-                'new_adjustment' => $tagihan->adjustment,
+                'new_adjustment' => $newAdjustment,
+                'dpp' => $tagihan->dpp,
+                'adjustment' => $tagihan->adjustment,
                 'old_grand_total' => $oldGrandTotal,
                 'new_ppn' => $tagihan->ppn,
                 'new_pph' => $tagihan->pph,
@@ -481,18 +478,19 @@ class DaftarTagihanKontainerSewaController extends Controller
             if ($request->ajax()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Adjustment berhasil diterapkan ke DPP dan nilai terkait telah dihitung ulang',
+                    'message' => 'Adjustment berhasil diperbarui dan nilai terkait telah dihitung ulang',
                     'data' => [
                         'id' => $tagihan->id,
                         'dpp' => $tagihan->dpp,
-                        'adjustment' => $tagihan->adjustment, // Now 0
-                        'adjusted_dpp' => floatval($tagihan->dpp ?? 0) + floatval($tagihan->adjustment ?? 0), // Same as dpp now
+                        'adjustment' => $tagihan->adjustment,
+                        'adjusted_dpp' => floatval($tagihan->dpp ?? 0) + floatval($tagihan->adjustment ?? 0),
                         'dpp_nilai_lain' => $tagihan->dpp_nilai_lain,
                         'ppn' => $tagihan->ppn,
                         'pph' => $tagihan->pph,
                         'grand_total' => $tagihan->grand_total,
                         'formatted_dpp' => 'Rp ' . number_format((float)$tagihan->dpp, 0, '.', ','),
                         'formatted_adjustment' => 'Rp ' . number_format((float)$tagihan->adjustment, 0, '.', ','),
+                        'formatted_adjusted_dpp' => 'Rp ' . number_format((float)($tagihan->dpp + $tagihan->adjustment), 0, '.', ','),
                         'formatted_dpp_nilai_lain' => 'Rp ' . number_format((float)$tagihan->dpp_nilai_lain, 0, '.', ','),
                         'formatted_ppn' => 'Rp ' . number_format((float)$tagihan->ppn, 0, '.', ','),
                         'formatted_pph' => 'Rp ' . number_format((float)$tagihan->pph, 0, '.', ','),
@@ -501,7 +499,7 @@ class DaftarTagihanKontainerSewaController extends Controller
                 ]);
             }
 
-            return redirect()->back()->with('success', 'Adjustment berhasil diterapkan ke DPP dan nilai terkait telah dihitung ulang');
+            return redirect()->back()->with('success', 'Adjustment berhasil diperbarui dan nilai terkait telah dihitung ulang');
 
         } catch (\Exception $e) {
             Log::error("Failed to update adjustment for tagihan ID {$id}", [

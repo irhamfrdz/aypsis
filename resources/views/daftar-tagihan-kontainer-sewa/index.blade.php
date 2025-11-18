@@ -851,7 +851,7 @@ input[required]:focus {
                         </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 text-right font-mono">
                             <div class="group relative">
-                                @if(optional($tagihan)->adjustment)
+                                @if(optional($tagihan)->adjustment && optional($tagihan)->adjustment != 0)
                                     @php
                                         $adjustment = (float)(optional($tagihan)->adjustment ?? 0);
                                         $isPositive = $adjustment >= 0;
@@ -859,17 +859,22 @@ input[required]:focus {
                                     <div class="font-semibold {{ $isPositive ? 'text-green-700' : 'text-red-700' }}">
                                         {{ $isPositive ? '+' : '' }}Rp {{ number_format(abs($adjustment), 0, '.', ',') }}
                                     </div>
+                                    @if(optional($tagihan)->adjustment_note)
+                                        <div class="text-[6px] text-gray-500 italic mt-0.5" title="{{ optional($tagihan)->adjustment_note }}">
+                                            {{ Str::limit(optional($tagihan)->adjustment_note, 15) }}
+                                        </div>
+                                    @endif
                                 @else
                                     <div class="font-medium text-gray-400 text-[8px]">
-                                        -
+                                        Rp 0
                                     </div>
                                 @endif
 
-                                <!-- Edit adjustment inline (could be implemented later) -->
+                                <!-- Edit adjustment button -->
                                 <div class="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity bg-cyan-100 bg-opacity-50 rounded flex items-center justify-center">
                                     <button type="button" class="text-[7px] bg-cyan-600 text-white px-1.5 py-0.5 rounded hover:bg-cyan-700 transition-colors"
                                             onclick="editAdjustment({{ $tagihan->id }}, {{ optional($tagihan)->adjustment ?? 0 }})"
-                                            title="Edit adjustment">
+                                            title="Edit adjustment{{ optional($tagihan)->adjustment_note ? ': ' . optional($tagihan)->adjustment_note : '' }}">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
