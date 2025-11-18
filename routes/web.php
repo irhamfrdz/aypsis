@@ -515,15 +515,19 @@ Route::middleware([
              ->name('mobil.import-asuransi')
              ->middleware('can:master-mobil-update');
 
-        Route::resource('mobil', MobilController::class)->middleware([
-            'index' => 'can:master-mobil-view',
-            'show' => 'can:master-mobil-view',
-            'create' => 'can:master-mobil-create',
-            'store' => 'can:master-mobil-create',
-            'edit' => 'can:master-mobil-update',
-            'update' => 'can:master-mobil-update',
-            'destroy' => 'can:master-mobil-delete'
-        ]);
+        // Resource route with individual middleware per action
+        Route::resource('mobil', MobilController::class)
+             ->middleware('can:master-mobil-view')
+             ->only(['index', 'show']);
+        Route::resource('mobil', MobilController::class)
+             ->middleware('can:master-mobil-create')
+             ->only(['create', 'store']);
+        Route::resource('mobil', MobilController::class)
+             ->middleware('can:master-mobil-update')
+             ->only(['edit', 'update']);
+        Route::resource('mobil', MobilController::class)
+             ->middleware('can:master-mobil-delete')
+             ->only(['destroy']);
 
         // Master pricelist sewa kontainer routes (with master prefix) - granular permissions
         Route::get('pricelist-sewa-kontainer', [\App\Http\Controllers\MasterPricelistSewaKontainerController::class, 'index'])
@@ -1410,6 +1414,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // �📋 TANDA TERIMA MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
 
+    // Route untuk select surat jalan (halaman awal)
+    Route::get('tanda-terima/select-surat-jalan', [\App\Http\Controllers\TandaTerimaController::class, 'selectSuratJalan'])
+         ->name('tanda-terima.select-surat-jalan')
+         ->middleware('can:tanda-terima-view');
+
     Route::resource('tanda-terima', \App\Http\Controllers\TandaTerimaController::class)
          ->except(['create', 'store'])
          ->middleware([
@@ -1859,18 +1868,6 @@ Route::get('/test-gate-in-ajax', function () {
         Route::post('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'storeSuratJalan'])
             ->name('checkpoint.store-surat-jalan');
     });
-
-     // === Approval Surat Jalan ===
-     Route::prefix('approval/surat-jalan')->name('approval.surat-jalan.')->middleware('can:approval-surat-jalan-view')->group(function () {
-         Route::get('/', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'index'])->name('index');
-         Route::get('/{suratJalan}', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'show'])->name('show');
-         Route::post('/{suratJalan}/approve', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'approve'])->name('approve')->middleware('can:approval-surat-jalan-approve');
-         Route::post('/{suratJalan}/reject', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'reject'])->name('reject')->middleware('can:approval-surat-jalan-approve');
-         
-         // API untuk stock kontainer dan update
-         Route::get('/api/stock-kontainers', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'getStockKontainers'])->name('api.stock-kontainers');
-         Route::patch('/{suratJalan}/update-kontainer-seal', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'updateKontainerSeal'])->name('update-kontainer-seal')->middleware('can:approval-surat-jalan-approve');
-     });
 
          // --- Rute Penyelesaian Tugas ---
         // Menggunakan PenyelesaianController yang sudah kita kembangkan

@@ -19,6 +19,8 @@ class Bl extends Model
         'tipe_kontainer',
         'no_voyage',
         'nama_kapal',
+        'pelabuhan_asal',
+        'pelabuhan_tujuan',
         'nama_barang',
         'penerima',
         'alamat_pengiriman',

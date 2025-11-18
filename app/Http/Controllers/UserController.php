@@ -1524,6 +1524,29 @@ class UserController extends Controller
                                 }
                             }
 
+                            // DIRECT FIX: Handle master-mobil permissions explicitly
+                            if ($module === 'master-mobil' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                                // Map action to correct permission name
+                                $actionMap = [
+                                    'view' => 'master-mobil-view',
+                                    'create' => 'master-mobil-create',
+                                    'update' => 'master-mobil-update',
+                                    'delete' => 'master-mobil-delete',
+                                    'print' => 'master-mobil-print',
+                                    'export' => 'master-mobil-export'
+                                ];
+
+                                if (isset($actionMap[$action])) {
+                                    $permissionName = $actionMap[$action];
+                                    $directPermission = Permission::where('name', $permissionName)->first();
+                                    if ($directPermission) {
+                                        $permissionIds[] = $directPermission->id;
+                                        $found = true;
+                                        continue; // Skip to next action
+                                    }
+                                }
+                            }
+
                             // DIRECT FIX: Handle master-permission permissions explicitly
                             if ($module === 'master-permission' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
                                 // Map action to correct permission name

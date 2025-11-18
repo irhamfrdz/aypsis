@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\TandaTerima;
 use App\Models\Prospek;
 use App\Models\MasterKapal;
+use App\Models\SuratJalan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -15,33 +16,59 @@ use Illuminate\Support\Facades\Storage;
 class TandaTerimaController extends Controller
 {
     /**
+     * Show surat jalan selection page
+     */
+    public function selectSuratJalan(Request $request)
+    {
+        // Get search and filter parameters
+        $search = $request->input('search', '');
+        $status = $request->input('status', 'belum_ada_tanda_terima');
+
+        // Status options
+        $statusOptions = [
+            'semua' => 'Semua Status',
+            'belum_ada_tanda_terima' => 'Belum Ada Tanda Terima',
+            'sudah_ada_tanda_terima' => 'Sudah Ada Tanda Terima'
+        ];
+
+        // Query surat jalan
+        $query = SuratJalan::with(['order.pengirim']);
+
+        // Apply status filter
+        if ($status === 'belum_ada_tanda_terima') {
+            $query->whereDoesntHave('tandaTerima');
+        } elseif ($status === 'sudah_ada_tanda_terima') {
+            $query->whereHas('tandaTerima');
+        }
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('supir', 'like', "%{$search}%")
+                  ->orWhere('no_plat', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhereHas('order', function($orderQuery) use ($search) {
+                      $orderQuery->whereHas('pengirim', function($pengirimQuery) use ($search) {
+                          $pengirimQuery->where('nama_pengirim', 'like', "%{$search}%");
+                      });
+                  });
+            });
+        }
+
+        // Order by newest and paginate
+        $suratJalans = $query->orderBy('created_at', 'desc')->paginate(100);
+
+        return view('tanda-terima.select-surat-jalan', compact('suratJalans', 'search', 'status', 'statusOptions'));
+    }
+
+    /**
      * Display a listing of tanda terima
      */
     public function index(Request $request)
     {
-        $query = TandaTerima::with(['suratJalan', 'creator', 'updater']);
-
-        // Filter by search
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function($q) use ($search) {
-                $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('no_kontainer', 'like', "%{$search}%")
-                  ->orWhere('estimasi_nama_kapal', 'like', "%{$search}%")
-                  ->orWhere('pengirim', 'like', "%{$search}%")
-                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%");
-            });
-        }
-
-        // Filter by date range
-        if ($request->filled('start_date') && $request->filled('end_date')) {
-            $query->whereBetween('tanggal_surat_jalan', [$request->start_date, $request->end_date]);
-        }
-
-        // Order by newest
-        $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate(20);
-
-        return view('tanda-terima.index', compact('tandaTerimas'));
+        // Redirect to select surat jalan page
+        return redirect()->route('tanda-terima.select-surat-jalan');
     }
 
 
