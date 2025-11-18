@@ -2193,12 +2193,10 @@ window.ungroupSelectedContainers = function() {
     .then(data => {
         if (data.success) {
             showNotification('success', 'Group Berhasil Dihapus',
-                `${data.ungrouped_count} kontainer berhasil dikembalikan ke status individual.`);
+                `${data.ungrouped_count} kontainer berhasil dikembalikan ke status individual. Halaman akan dimuat ulang...`);
 
-            // Reload page after success
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+            // Reload page immediately
+            window.location.reload();
         } else {
             throw new Error(data.message || 'Gagal menghapus group');
         }
@@ -3046,13 +3044,11 @@ window.deleteGroups = function(groupNames) {
     .then(data => {
         if (data.success) {
             showNotification('success', 'Group Berhasil Dihapus',
-                `Berhasil menghapus ${groupNames.length} group. Kontainer-kontainer telah dikembalikan ke status individual.`);
+                `Berhasil menghapus ${groupNames.length} group. Halaman akan dimuat ulang...`);
 
-            // Close modal and reload page
+            // Close modal and reload page immediately
             closeDeleteGroupModal();
-            setTimeout(() => {
-                window.location.reload();
-            }, 1500);
+            window.location.reload();
         } else {
             throw new Error(data.message || 'Gagal menghapus group');
         }
@@ -3277,13 +3273,15 @@ window.editAdjustment = function(tagihanId, currentAdjustment) {
         .then(data => {
             if (data.success) {
                 showNotification('success', 'Adjustment Berhasil',
-                    `Adjustment sebesar Rp ${adjustmentValue.toLocaleString('id-ID')} telah disimpan.`);
+                    'Data berhasil disimpan. Halaman akan dimuat ulang...');
 
-                // Close modal and reload page
+                // Close modal immediately
                 closeAdjustmentModal();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                
+                // Reload page immediately to get fresh data from database
+                // This ensures when user clicks "Masukan ke Pranota", 
+                // the values shown are the updated ones
+                window.location.reload();
             } else {
                 throw new Error(data.message || 'Gagal menyimpan adjustment');
             }
@@ -3445,13 +3443,11 @@ window.editVendorInfo = function(tagihanId, currentInvoice, currentTanggal) {
         .then(data => {
             if (data.success) {
                 showNotification('success', 'Informasi Vendor Berhasil Disimpan',
-                    'Informasi vendor telah berhasil diperbarui.');
+                    'Data berhasil disimpan. Halaman akan dimuat ulang...');
 
-                // Close modal and reload page after success
+                // Close modal and reload page immediately
                 closeVendorInfoModal();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                window.location.reload();
             } else {
                 throw new Error(data.message || 'Gagal menyimpan informasi vendor');
             }
@@ -3602,13 +3598,11 @@ window.editGroupInfo = function(tagihanId, currentGroup) {
         .then(data => {
             if (data.success) {
                 showNotification('success', 'Group Berhasil Disimpan',
-                    'Informasi group telah berhasil diperbarui.');
+                    'Data berhasil disimpan. Halaman akan dimuat ulang...');
 
-                // Close modal and reload page after success
+                // Close modal and reload page immediately
                 closeGroupInfoModal();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                window.location.reload();
             } else {
                 throw new Error(data.message || 'Gagal menyimpan informasi group');
             }
@@ -3826,10 +3820,10 @@ window.bulkEditVendorInfo = function() {
                     // Show summary notification
                     if (successCount > 0 && errorCount === 0) {
                         showNotification('success', 'Bulk Update Berhasil',
-                            `Informasi vendor berhasil disimpan untuk ${successCount} kontainer.`);
+                            `Data berhasil disimpan untuk ${successCount} kontainer. Halaman akan dimuat ulang...`);
                     } else if (successCount > 0 && errorCount > 0) {
                         showNotification('warning', 'Bulk Update Sebagian Berhasil',
-                            `${successCount} berhasil, ${errorCount} gagal. Cek detail error di console.`);
+                            `${successCount} berhasil, ${errorCount} gagal. Halaman akan dimuat ulang...`);
                         console.error('Bulk update errors:', errors);
                     } else {
                         showNotification('error', 'Bulk Update Gagal',
@@ -3837,12 +3831,10 @@ window.bulkEditVendorInfo = function() {
                         console.error('Bulk update errors:', errors);
                     }
 
-                    // Close modal and reload page
+                    // Close modal and reload page immediately if any success
                     closeBulkVendorInfoModal();
                     if (successCount > 0) {
-                        setTimeout(() => {
-                            window.location.reload();
-                        }, 1500);
+                        window.location.reload();
                     }
                 }
             });
@@ -4001,13 +3993,11 @@ window.bulkEditGroupInfo = function() {
             const successCount = results.filter(r => r.success).length;
             if (successCount === selectedIds.length) {
                 showNotification('success', 'Group Berhasil Disimpan',
-                    `Informasi group telah berhasil diperbarui untuk ${successCount} kontainer.`);
+                    `Data berhasil disimpan untuk ${successCount} kontainer. Halaman akan dimuat ulang...`);
 
-                // Close modal and reload page after success
+                // Close modal and reload page immediately
                 closeBulkGroupInfoModal();
-                setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                window.location.reload();
             } else {
                 throw new Error(`Only ${successCount} out of ${selectedIds.length} records were updated successfully`);
             }
