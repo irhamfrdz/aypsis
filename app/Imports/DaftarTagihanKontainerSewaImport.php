@@ -129,20 +129,21 @@ class DaftarTagihanKontainerSewaImport implements ToCollection, WithHeadingRow, 
             'size' => $this->cleanSize($row['size'] ?? ''),
             'tanggal_awal' => $this->parseDate($row['tanggal_awal'] ?? ''),
             'tanggal_akhir' => $this->parseDate($row['tanggal_akhir'] ?? ''),
-            'tarif' => $this->cleanNumber($row['tarif'] ?? 0),
+            'tarif' => trim($row['tarif'] ?? 'Bulanan'),
+            'periode' => $this->cleanNumber($row['periode'] ?? 1), // Periode dari Excel (1, 2, 3, dst)
             'group' => trim($row['group'] ?? ''),
             'status' => $this->cleanStatus($row['status'] ?? 'ongoing'),
             'status_pranota' => null, // Default null for new records
             'pranota_id' => null,
         ];
 
-        // Calculate periode and masa
+        // Calculate masa from dates
         if ($cleaned['tanggal_awal'] && $cleaned['tanggal_akhir']) {
             $startDate = Carbon::parse($cleaned['tanggal_awal']);
             $endDate = Carbon::parse($cleaned['tanggal_akhir']);
-
-            $cleaned['periode'] = $startDate->diffInDays($endDate) + 1; // +1 to include both start and end dates
-            $cleaned['masa'] = $cleaned['periode'] . ' Hari';
+            
+            // Format masa as "DD MMM YYYY - DD MMM YYYY"
+            $cleaned['masa'] = $startDate->format('d M Y') . ' - ' . $endDate->format('d M Y');
         }
 
         // Remove empty group
