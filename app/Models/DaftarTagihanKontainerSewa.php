@@ -71,6 +71,9 @@ class DaftarTagihanKontainerSewa extends Model
      */
     public function calculateGrandTotal()
     {
+        // First, recalculate PPN and PPH based on current DPP and adjustment
+        $this->recalculateTaxes();
+
         $dpp = floatval($this->dpp ?? 0);
         $adjustment = floatval($this->adjustment ?? 0);
         $ppn = floatval($this->ppn ?? 0);

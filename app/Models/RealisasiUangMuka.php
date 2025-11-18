@@ -15,7 +15,6 @@ class RealisasiUangMuka extends Model
     protected $table = 'realisasi_uang_muka';
 
     protected $fillable = [
-        'kegiatan',
         'nomor_pembayaran',
         'tanggal_pembayaran',
         'kas_bank_id',
@@ -23,6 +22,7 @@ class RealisasiUangMuka extends Model
         'supir_ids',
         'jumlah_per_supir',
         'keterangan_per_supir',
+        'total_realisasi',
         'total_pembayaran',
         'keterangan',
         'item_type',
@@ -40,16 +40,12 @@ class RealisasiUangMuka extends Model
         'supir_ids' => 'array', // JSON array untuk multi-select supir
         'jumlah_per_supir' => 'array', // JSON object untuk jumlah per supir (supir_id => jumlah)
         'keterangan_per_supir' => 'array', // JSON object untuk keterangan per supir (supir_id => keterangan)
+        'total_realisasi' => 'decimal:2',
         'total_pembayaran' => 'decimal:2',
         'dp_amount' => 'decimal:2',
     ];
 
     // Relationships
-    public function masterKegiatan()
-    {
-        return $this->belongsTo(MasterKegiatan::class, 'kegiatan');
-    }
-
     public function kasBankAkun()
     {
         return $this->belongsTo(Coa::class, 'kas_bank_id');

@@ -1419,10 +1419,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('tanda-terima.select-surat-jalan')
          ->middleware('can:tanda-terima-view');
 
+    // Route untuk create tanda terima dari surat jalan
+    Route::get('tanda-terima/from-surat-jalan/{suratJalan}', [\App\Http\Controllers\TandaTerimaController::class, 'createFromSuratJalan'])
+         ->name('tanda-terima.from-surat-jalan')
+         ->middleware('can:tanda-terima-edit');
+
     Route::resource('tanda-terima', \App\Http\Controllers\TandaTerimaController::class)
-         ->except(['create', 'store'])
          ->middleware([
              'index' => 'can:tanda-terima-view',
+             'create' => 'can:tanda-terima-edit',
+             'store' => 'can:tanda-terima-edit',
              'show' => 'can:tanda-terima-view',
              'edit' => 'can:tanda-terima-edit',
              'update' => 'can:tanda-terima-edit',
@@ -2573,6 +2579,10 @@ Route::prefix('realisasi-uang-muka')->name('realisasi-uang-muka.')->middleware([
          ->middleware('can:realisasi-uang-muka-edit');
     Route::post('/{id}/reject', [RealisasiUangMukaController::class, 'reject'])->name('reject')
          ->middleware('can:realisasi-uang-muka-edit');
+
+    // API routes for Realisasi Uang Muka
+    Route::get('/api/get-voyage-list', [RealisasiUangMukaController::class, 'getVoyageList']);
+    Route::get('/api/get-supir-by-voyage', [RealisasiUangMukaController::class, 'getSupirByVoyage']);
 
     // Debug route - no middleware to bypass permission issues
     Route::post('/debug-test', [RealisasiUangMukaController::class, 'store'])->name('debug-test');

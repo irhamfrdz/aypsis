@@ -29,16 +29,17 @@ class PembayaranAktivitasLainnyaController extends Controller
             $query->whereDate('tanggal_pembayaran', '<=', $request->date_to);
         }
 
-        // Filter berdasarkan kegiatan
-        if ($request->filled('kegiatan')) {
-            $query->where('kegiatan', $request->kegiatan);
+        // Filter berdasarkan nomor voyage
+        if ($request->filled('nomor_voyage')) {
+            $query->where('nomor_voyage', $request->nomor_voyage);
         }
 
         // Search
         if ($request->filled('search')) {
             $query->where(function($q) use ($request) {
                 $q->where('nomor_pembayaran', 'like', '%' . $request->search . '%')
-                  ->orWhere('keterangan', 'like', '%' . $request->search . '%');
+                  ->orWhere('aktivitas_pembayaran', 'like', '%' . $request->search . '%')
+                  ->orWhere('nomor_voyage', 'like', '%' . $request->search . '%');
             });
         }
 
@@ -85,7 +86,28 @@ class PembayaranAktivitasLainnyaController extends Controller
             ->orderBy('nama_lengkap')
             ->get();
 
-        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'coaBiaya', 'masterKegiatan', 'masterMobil', 'masterSupir'));
+        // Fetch voyage list dari tabel Naik Kapal dan BLS
+        $voyageFromNaikKapal = DB::table('naik_kapal')
+            ->select('no_voyage as voyage', 'nama_kapal')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->groupBy('no_voyage', 'nama_kapal')
+            ->get();
+
+        $voyageFromBls = DB::table('bls')
+            ->select('no_voyage as voyage', 'nama_kapal')
+            ->whereNotNull('no_voyage')
+            ->where('no_voyage', '!=', '')
+            ->groupBy('no_voyage', 'nama_kapal')
+            ->get();
+
+        // Gabungkan dan deduplikasi berdasarkan voyage
+        $voyageList = $voyageFromNaikKapal->merge($voyageFromBls)
+            ->unique('voyage')
+            ->sortBy('voyage')
+            ->values();
+
+        return view('pembayaran-aktivitas-lainnya.create', compact('bankAccounts', 'coaBiaya', 'masterKegiatan', 'masterMobil', 'masterSupir', 'voyageList'));
     }
 
     /**
@@ -151,22 +173,20 @@ class PembayaranAktivitasLainnyaController extends Controller
                 'tanggal_pembayaran' => $request->tanggal_pembayaran,
                 'nomor_accurate' => $request->nomor_accurate,
                 'pilih_bank' => $request->pilih_bank,
-                'total_nominal' => $totalPembayaran,
+                'total_pembayaran' => $totalPembayaran,
                 'akun_biaya_id' => $request->akun_biaya_id,
                 'jenis_transaksi' => $request->jenis_transaksi,
-                'keterangan' => $request->aktivitas_pembayaran,
-                'kegiatan' => $request->kegiatan,
+                'aktivitas_pembayaran' => $request->aktivitas_pembayaran,
+                'is_dp' => $request->has('is_dp') ? 1 : 0,
                 'plat_nomor' => $request->plat_nomor,
                 'nama_kapal' => $request->nama_kapal,
                 'nomor_voyage' => $request->nomor_voyage,
+                'status' => 'draft',
                 'created_by' => Auth::id(),
             ]);
 
             // Simpan detail uang muka supir jika ada
             if ($request->has('supir_id') && is_array($request->supir_id)) {
-                $totalUangMukaSupir = 0;
-                $supirDetails = [];
-
                 foreach ($request->supir_id as $index => $supirId) {
                     if (!empty($supirId)) {
                         // Cast supir ID to integer
@@ -184,161 +204,37 @@ class PembayaranAktivitasLainnyaController extends Controller
                             $jumlahUangMuka = (float) str_replace(['.', ','], ['', '.'], $jumlahUangMuka);
                         }
 
-                        \App\Models\PembayaranUangMukaSupirDetail::create([
+                        // Simpan ke tabel pembayaran_aktivitas_lainnya_supir
+                        \App\Models\PembayaranAktivitasLainnyaSupir::create([
                             'pembayaran_id' => $pembayaran->id,
-                            'nama_supir' => $supir->nama_lengkap, // Store nama for display
+                            'supir_id' => $supirId,
                             'jumlah_uang_muka' => $jumlahUangMuka,
                             'keterangan' => $request->keterangan_supir[$index] ?? null,
-                            'status' => 'dibayar',
                         ]);
-
-                        $totalUangMukaSupir += $jumlahUangMuka;
-                        $supirDetails[] = [
-                            'id' => $supirId,
-                            'nama' => $supir->nama_lengkap,
-                            'jumlah' => $jumlahUangMuka
-                        ];
                     }
-                }
-
-                // Create PembayaranUangMuka record for realisasi integration
-                if ($totalUangMukaSupir > 0) {
-                    $kegiatan = \App\Models\MasterKegiatan::where('nama_kegiatan', $request->kegiatan)->first();
-                    
-                    // Build supir_ids array and jumlah_per_supir associative array
-                    $supirIds = [];
-                    $jumlahPerSupir = [];
-                    
-                    foreach ($supirDetails as $index => $detail) {
-                        // Store supir ID (not name) for proper relational integrity
-                        $supirIds[] = $detail['id'];
-                        $jumlahPerSupir[$detail['id']] = $detail['jumlah'];
-                    }
-                    
-                    \App\Models\PembayaranUangMuka::create([
-                        'nomor_pembayaran' => $nomorPembayaran,
-                        'tanggal_pembayaran' => $request->tanggal_pembayaran,
-                        'total_pembayaran' => $totalUangMukaSupir,
-                        'kegiatan' => $kegiatan ? $kegiatan->id : null,
-                        'keterangan' => 'Uang Muka dari ' . $request->kegiatan . ' - ' . $request->aktivitas_pembayaran,
-                        'kas_bank_id' => $request->pilih_bank,
-                        'dibuat_oleh' => Auth::id(),
-                        'status' => 'uang_muka_belum_terpakai',
-                        // Store as arrays - model cast will handle JSON conversion
-                        'supir_ids' => $supirIds,
-                        'jumlah_per_supir' => $jumlahPerSupir
-                    ]);
-
-                    Log::info('Created PembayaranUangMuka for realisasi integration', [
-                        'nomor_pembayaran' => $nomorPembayaran,
-                        'total_uang_muka' => $totalUangMukaSupir,
-                        'supir_count' => count($supirDetails),
-                        'supir_ids' => $supirIds,
-                        'jumlah_per_supir' => $jumlahPerSupir
-                    ]);
-                }
-
-                // Update field dp di tagihan_ob untuk setiap supir
-                Log::info('Checking DP update conditions', [
-                    'kegiatan' => $request->kegiatan,
-                    'nomor_voyage' => $request->nomor_voyage,
-                    'supir_details_count' => count($supirDetails ?? [])
-                ]);
-
-                // Check jika kegiatan mengandung kata "OB" (case insensitive)
-                $isKegiatanOB = stripos($request->kegiatan, 'OB') !== false;
-                
-                if ($isKegiatanOB && !empty($request->nomor_voyage)) {
-                    Log::info('Starting DP update process', [
-                        'voyage' => $request->nomor_voyage,
-                        'supir_count' => count($supirDetails)
-                    ]);
-
-                    // Clean whitespace dari parameter
-                    $voyage = trim($request->nomor_voyage);
-                    
-                    // Group supir details by nama untuk aggregate total DP per supir
-                    $supirGrouped = [];
-                    foreach ($supirDetails as $detail) {
-                        $namaSupir = trim($detail['nama']);
-                        if (!isset($supirGrouped[$namaSupir])) {
-                            $supirGrouped[$namaSupir] = 0;
-                        }
-                        // Total semua DP untuk supir ini
-                        $supirGrouped[$namaSupir] += $detail['jumlah'];
-                    }
-                    
-                    // Process setiap supir
-                    foreach ($supirGrouped as $namaSupir => $totalDpSupir) {
-                        // Cari semua tagihan OB untuk supir ini berdasarkan voyage saja
-                        $tagihanObs = TagihanOb::where('voyage', $voyage)
-                            ->where('nama_supir', $namaSupir)
-                            ->orderBy('id')
-                            ->get();
-                        
-                        Log::info('Found tagihan OB for supir', [
-                            'supir' => $namaSupir,
-                            'tagihan_count' => $tagihanObs->count(),
-                            'total_dp_to_distribute' => $totalDpSupir
-                        ]);
-                        
-                        if ($tagihanObs->isNotEmpty()) {
-                            // Distribusi DP secara merata ke semua kontainer supir ini
-                            $jumlahKontainer = $tagihanObs->count();
-                            $dpPerKontainer = $totalDpSupir / $jumlahKontainer;
-                            
-                            foreach ($tagihanObs as $tagihanOb) {
-                                $currentDp = $tagihanOb->dp ?? 0;
-                                $newDp = $currentDp + $dpPerKontainer;
-                                
-                                $tagihanOb->update(['dp' => $newDp]);
-                                
-                                Log::info('Updated DP di tagihan OB', [
-                                    'tagihan_id' => $tagihanOb->id,
-                                    'kontainer' => $tagihanOb->nomor_kontainer,
-                                    'supir' => $namaSupir,
-                                    'dp_before' => $currentDp,
-                                    'dp_added' => $dpPerKontainer,
-                                    'dp_after' => $newDp
-                                ]);
-                            }
-                        } else {
-                            // Jika tidak ada tagihan OB ditemukan
-                            $allTagihans = TagihanOb::where('voyage', $voyage)->get(['id', 'kapal', 'voyage', 'nama_supir']);
-                            
-                            Log::warning('Tagihan OB not found for DP update', [
-                                'searched_voyage' => $voyage,
-                                'searched_nama_supir' => $namaSupir,
-                                'total_dp' => $totalDpSupir,
-                                'available_tagihans' => $allTagihans->toArray()
-                            ]);
-                        }
-                    }
-                } else {
-                    Log::info('DP update skipped - conditions not met', [
-                        'kegiatan' => $request->kegiatan,
-                        'is_kegiatan_ob' => stripos($request->kegiatan ?? '', 'OB') !== false,
-                        'has_voyage' => !empty($request->nomor_voyage)
-                    ]);
                 }
             }
 
-            // Single-Entry: Update saldo bank (kurangi saldo karena pengeluaran)
-            $bankCoa->decrement('saldo', $totalPembayaran);
+            // Update saldo bank (kurangi saldo karena pengeluaran)
+            $bankCoa = Coa::find($request->pilih_bank);
+            if ($bankCoa && $request->jenis_transaksi == 'kredit') {
+                $bankCoa->decrement('saldo', $totalPembayaran);
+            } elseif ($bankCoa && $request->jenis_transaksi == 'debit') {
+                $bankCoa->increment('saldo', $totalPembayaran);
+            }
 
             Log::info('Pembayaran aktivitas lainnya berhasil dibuat', [
                 'nomor_pembayaran' => $nomorPembayaran,
                 'bank_account' => $bankCoa->nama_akun,
-                'saldo_before' => $bankCoa->saldo + $totalPembayaran,
-                'saldo_after' => $bankCoa->saldo,
                 'amount' => $totalPembayaran,
+                'jenis_transaksi' => $request->jenis_transaksi,
                 'is_dp' => $request->has('is_dp')
             ]);
 
             DB::commit();
 
             return redirect()->route('pembayaran-aktivitas-lainnya.index')
-                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: ' . $pembayaran->nomor_pembayaran . '. Saldo ' . $bankCoa->nama_akun . ' telah dikurangi sebesar Rp ' . number_format($totalPembayaran, 0, ',', '.'));
+                ->with('success', 'Pembayaran berhasil disimpan dengan nomor: ' . $pembayaran->nomor_pembayaran);
 
         } catch (\Exception $e) {
             DB::rollBack();

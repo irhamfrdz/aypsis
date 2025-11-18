@@ -10,7 +10,6 @@ use App\Models\Karyawan;
 use App\Models\Coa;
 use App\Models\RealisasiUangMuka;
 use App\Models\PembayaranUangMuka;
-use App\Models\MasterKegiatan;
 use App\Models\Mobil;
 use App\Models\NomorTerakhir;
 use App\Models\CoaTransaction;
@@ -18,37 +17,6 @@ use Illuminate\Support\Facades\Log;
 
 class RealisasiUangMukaController extends Controller
 {
-    /**
-     * Determine if the activity is vehicle/mobil-based (only KIR & STNK)
-     * Following the same logic as pembayaran uang muka
-     */
-    private function isMobilBasedActivity($kegiatan)
-    {
-        if (!$kegiatan) {
-            return false;
-        }
-
-        $kegiatanNama = strtolower($kegiatan->nama_kegiatan);
-
-        // Only KIR & STNK uses mobil table
-        return (stripos($kegiatanNama, 'kir') !== false && stripos($kegiatanNama, 'stnk') !== false);
-    }
-
-    /**
-     * Determine if the activity is supir-based (OB Muat/Bongkar)
-     */
-    private function isSupirBasedActivity($kegiatan)
-    {
-        if (!$kegiatan) {
-            return false;
-        }
-
-        $kegiatanNama = strtolower($kegiatan->nama_kegiatan);
-
-        // OB Muat/Bongkar uses multiple supir
-        return (stripos($kegiatanNama, 'ob') !== false &&
-                (stripos($kegiatanNama, 'muat') !== false || stripos($kegiatanNama, 'bongkar') !== false));
-    }
     /**
      * Display a listing of the resource.
      */
@@ -110,7 +78,7 @@ class RealisasiUangMukaController extends Controller
                                ->orderBy('nama_lengkap')
                                ->get();
 
-        // Ambil data mobil untuk kegiatan KIR & STNK
+        // Ambik data mobil
         $mobilList = Mobil::orderBy('nomor_polisi')->get();
 
         // Ambil data akun kas/bank dari COA
@@ -118,15 +86,9 @@ class RealisasiUangMukaController extends Controller
                           ->orderBy('nomor_akun')
                           ->get();
 
-        // Ambil data master kegiatan dengan type uang muka
-        $masterKegiatanList = MasterKegiatan::where('type', 'uang muka')
-                                           ->where('status', 'aktif')
-                                           ->orderBy('kode_kegiatan')
-                                           ->get();
-
-        // Get Uang Muka yang belum direalisasi (tanpa filter kegiatan dulu)
+        // Get Uang Muka yang belum direalisasi
         $uangMukaBelumRealisasiList = PembayaranUangMuka::where('status', 'uang_muka_belum_terpakai')
-                                  ->with(['masterKegiatan', 'penerima', 'mobil'])
+                                  ->with(['penerima', 'mobil'])
                                   ->orderBy('tanggal_pembayaran', 'desc')
                                   ->get();
 
@@ -169,7 +131,6 @@ class RealisasiUangMukaController extends Controller
             'karyawanList' => $karyawanList,
             'mobilList' => $mobilList,
             'kasBankList' => $kasBankList,
-            'masterKegiatanList' => $masterKegiatanList,
             'uangMukaBelumRealisasiList' => $uangMukaBelumRealisasiList
         ]);
     }
@@ -385,48 +346,46 @@ class RealisasiUangMukaController extends Controller
         // Debug: Log semua input yang diterima
         Log::info('RealisasiUangMuka Store - Input Data:', $request->all());
 
-        // Ambil data kegiatan untuk menentukan jenis validasi
-        $kegiatan = MasterKegiatan::find($request->kegiatan);
-        $isMobilKegiatan = $this->isMobilBasedActivity($kegiatan);
-        $isSupirKegiatan = $this->isSupirBasedActivity($kegiatan);
+        // Determine input type based on what is present
+        $isMobilInput = $request->has('mobil') && is_array($request->mobil) && count($request->mobil) > 0;
+        $isSupirInput = $request->has('supir') && is_array($request->supir) && count($request->supir) > 0;
+        $isPenerimaInput = $request->has('penerima') && is_array($request->penerima) && count($request->penerima) > 0;
 
-        Log::info('RealisasiUangMuka Store - Kegiatan Analysis:', [
-            'kegiatan_id' => $request->kegiatan,
-            'kegiatan_nama' => $kegiatan ? $kegiatan->nama_kegiatan : 'null',
-            'isMobilKegiatan' => $isMobilKegiatan,
-            'isSupirKegiatan' => $isSupirKegiatan
+        Log::info('RealisasiUangMuka Store - Input Analysis:', [
+            'isMobilInput' => $isMobilInput,
+            'isSupirInput' => $isSupirInput,
+            'isPenerimaInput' => $isPenerimaInput
         ]);
 
         // Base validation rules
         $validationRules = [
-            'kegiatan' => 'required|exists:master_kegiatans,id',
             'nomor_pembayaran' => 'required|string|max:255|unique:realisasi_uang_muka,nomor_pembayaran',
             'tanggal_pembayaran' => 'required|date',
             'kas_bank' => 'required|exists:akun_coa,id',
             'jenis_transaksi' => 'required|in:debit,kredit',
             'keterangan' => 'nullable|string',
-            'pembayaran_uang_muka_id' => 'nullable|exists:pembayaran_uang_muka,id'
+            'pembayaran_uang_muka_id' => 'nullable|exists:pembayaran_uang_muka,id',
+            'nomor_voyage' => 'nullable|string'
         ];
 
-        // Conditional validation based on kegiatan type
-        if ($isMobilKegiatan) {
-            // For KIR & STNK - validate mobil
+        // Conditional validation based on input type
+        if ($isMobilInput) {
             $validationRules['mobil'] = 'required|array|min:1';
             $validationRules['mobil.*'] = 'required|exists:mobils,id';
             $validationRules['jumlah_mobil'] = 'required|array|min:1';
             $validationRules['jumlah_mobil.*'] = 'required|numeric|min:0';
-        } else if ($isSupirKegiatan) {
-            // For OB Muat/Bongkar - validate multiple supir
+        } else if ($isSupirInput) {
             $validationRules['supir'] = 'required|array|min:1';
             $validationRules['supir.*'] = 'required|exists:karyawans,id';
             $validationRules['jumlah'] = 'required|array|min:1';
             $validationRules['jumlah.*'] = 'required|numeric|min:0';
-        } else {
-            // For Amprahan, Solar, Lain-lain - validate penerima
+        } else if ($isPenerimaInput) {
             $validationRules['penerima'] = 'required|array|min:1';
             $validationRules['penerima.*'] = 'required|exists:karyawans,id';
             $validationRules['jumlah_karyawan'] = 'required|array|min:1';
             $validationRules['jumlah_karyawan.*'] = 'required|numeric|min:0';
+        } else {
+            return back()->withErrors(['error' => 'Harap pilih minimal satu supir, penerima, atau mobil'])->withInput();
         }
 
         Log::info('RealisasiUangMuka Store - Validation Rules:', $validationRules);
@@ -455,14 +414,14 @@ class RealisasiUangMukaController extends Controller
                 $nomorPembayaran = $generateResult['nomor_pembayaran'];
             }
 
-            // Process data based on kegiatan type
+            // Process data based on input type
             $totalPembayaran = 0;
             $itemIds = [];
             $jumlahPerItemData = [];
             $keteranganPerItemData = [];
-            $itemType = $isMobilKegiatan ? 'mobil' : ($isSupirKegiatan ? 'supir' : 'penerima');
+            $itemType = $isMobilInput ? 'mobil' : ($isSupirInput ? 'supir' : 'penerima');
 
-            if ($isMobilKegiatan) {
+            if ($isMobilInput) {
                 // Process mobil data for KIR & STNK
                 foreach ($validated['mobil'] as $mobilId) {
                     if (isset($validated['jumlah_mobil'][$mobilId])) {
@@ -483,7 +442,7 @@ class RealisasiUangMukaController extends Controller
                 if (empty($itemIds)) {
                     return back()->withErrors(['mobil' => 'Harap pilih minimal satu mobil dengan jumlah realisasi > 0'])->withInput();
                 }
-            } else if ($isSupirKegiatan) {
+            } else if ($isSupirInput) {
                 // Process supir data for OB Muat/Bongkar
                 foreach ($validated['supir'] as $supirId) {
                     if (isset($validated['jumlah'][$supirId])) {
@@ -530,31 +489,98 @@ class RealisasiUangMukaController extends Controller
             // Pastikan totalPembayaran adalah float
             $totalPembayaran = floatval($totalPembayaran);
 
-            // Get DP amount from Uang Muka if selected
+            // Get DP amount - DIFFERENT logic for voyage vs uang muka
             $dpAmount = 0;
-            if ($validated['pembayaran_uang_muka_id']) {
+            $voyageNumber = $request->input('nomor_voyage');
+            
+            // Scenario 1: OB Activity with Voyage - get DP from tagihan_ob
+            if ($isSupirInput && $voyageNumber) {
+                Log::info('Getting DP from tagihan_ob for voyage', ['voyage' => $voyageNumber]);
+                
+                // Get DP from tagihan_ob for selected supir (sum both muat and bongkar)
+                foreach ($itemIds as $supirId) {
+                    // Get supir nama_lengkap
+                    $supir = \App\Models\Karyawan::find($supirId);
+                    if ($supir) {
+                        // Get total DP from tagihan_ob for this supir and voyage (both muat and bongkar)
+                        $totalDp = DB::table('tagihan_ob')
+                            ->where('voyage', $voyageNumber)
+                            ->whereRaw('LOWER(nama_supir) = ?', [strtolower($supir->nama_lengkap)])
+                            ->sum('dp');
+                        
+                        $dpAmount += floatval($totalDp);
+                        Log::info("DP from tagihan_ob for supir {$supirId} ({$supir->nama_lengkap}): {$totalDp}");
+                    }
+                }
+            }
+            // Scenario 2: Using Uang Muka - get DP from pembayaran_uang_muka
+            else if ($validated['pembayaran_uang_muka_id']) {
+                Log::info('Getting DP from pembayaran_uang_muka', ['uang_muka_id' => $validated['pembayaran_uang_muka_id']]);
+                
                 $uangMuka = PembayaranUangMuka::find($validated['pembayaran_uang_muka_id']);
                 if ($uangMuka) {
-                    $dpAmount = floatval($uangMuka->total_pembayaran);
+                    // Hitung DP hanya untuk item yang dipilih saat ini
+                    $jumlahPerSupirUangMuka = $uangMuka->jumlah_per_supir; // JSON object
+                    
+                    // Log untuk debug
+                    Log::info('Uang Muka Data:', [
+                        'uang_muka_id' => $uangMuka->id,
+                        'jumlah_per_supir_raw' => $jumlahPerSupirUangMuka,
+                        'is_array' => is_array($jumlahPerSupirUangMuka),
+                        'is_string' => is_string($jumlahPerSupirUangMuka),
+                        'selected_item_ids' => $itemIds
+                    ]);
+                    
+                    // Decode jika masih string JSON
+                    if (is_string($jumlahPerSupirUangMuka)) {
+                        $jumlahPerSupirUangMuka = json_decode($jumlahPerSupirUangMuka, true);
+                    }
+                    
+                    if ($jumlahPerSupirUangMuka && is_array($jumlahPerSupirUangMuka)) {
+                        foreach ($itemIds as $itemId) {
+                            // Coba cari dengan key string dan integer
+                            $dpValue = $jumlahPerSupirUangMuka[$itemId] ?? 
+                                      $jumlahPerSupirUangMuka[strval($itemId)] ?? 
+                                      null;
+                            
+                            if ($dpValue !== null) {
+                                $dpAmount += floatval($dpValue);
+                                Log::info("DP Found for item {$itemId}: {$dpValue}");
+                            } else {
+                                Log::warning("No DP found for item {$itemId}");
+                            }
+                        }
+                    }
                 }
             }
 
+            Log::info('Total DP Amount calculated:', ['dpAmount' => $dpAmount, 'source' => $voyageNumber ? 'tagihan_ob' : 'uang_muka']);
+
+            // Hitung selisih yang harus dibayar (realisasi - DP)
+            $selisihPembayaran = $totalPembayaran - $dpAmount;
+            
+            Log::info('Payment Calculation:', [
+                'totalPembayaran' => $totalPembayaran,
+                'dpAmount' => $dpAmount,
+                'selisihPembayaran' => $selisihPembayaran
+            ]);
+
             // Simpan realisasi uang muka
             $realisasi = RealisasiUangMuka::create([
-                'kegiatan' => $validated['kegiatan'],
                 'nomor_pembayaran' => $nomorPembayaran,
                 'tanggal_pembayaran' => $validated['tanggal_pembayaran'],
                 'kas_bank_id' => $validated['kas_bank'],
                 'jenis_transaksi' => $validated['jenis_transaksi'],
-                'supir_ids' => $itemIds, // JSON array dengan ID items yang dipilih
-                'jumlah_per_supir' => $jumlahPerItemData, // JSON object dengan item_id => jumlah
-                'keterangan_per_supir' => $keteranganPerItemData, // JSON object dengan item_id => keterangan
-                'total_pembayaran' => $totalPembayaran,
+                'supir_ids' => $itemIds,
+                'jumlah_per_supir' => $jumlahPerItemData,
+                'keterangan_per_supir' => $keteranganPerItemData,
+                'total_realisasi' => $totalPembayaran,
+                'total_pembayaran' => $selisihPembayaran,
                 'keterangan' => $validated['keterangan'],
-                'pembayaran_uang_muka_id' => $validated['pembayaran_uang_muka_id'], // Store the ID reference
-                'dp_amount' => $dpAmount, // Store DP amount for reference
-                'item_type' => $itemType, // Store type: supir atau mobil
-                'status' => 'approved', // Langsung approved untuk realisasi
+                'pembayaran_uang_muka_id' => $validated['pembayaran_uang_muka_id'],
+                'dp_amount' => $dpAmount,
+                'item_type' => $itemType,
+                'status' => 'approved',
                 'dibuat_oleh' => Auth::id(),
                 'disetujui_oleh' => Auth::id(),
                 'tanggal_persetujuan' => now(),
@@ -574,7 +600,7 @@ class RealisasiUangMukaController extends Controller
             DB::commit();
 
             $jumlahItem = count($itemIds);
-            $itemLabel = $isMobilKegiatan ? 'mobil' : ($isSupirKegiatan ? 'supir' : 'penerima');
+            $itemLabel = $isMobilInput ? 'mobil' : ($isSupirInput ? 'supir' : 'penerima');
             $message = "Realisasi Uang Muka berhasil dibuat dengan nomor: {$nomorPembayaran}. ";
             $message .= "Total {$itemLabel}: {$jumlahItem}. ";
             $message .= "Total realisasi: Rp " . number_format($totalPembayaran, 0, ',', '.') . ".";
@@ -934,5 +960,124 @@ class RealisasiUangMukaController extends Controller
             'saldo' => $saldo,
             'jenis_transaksi' => $jenisTransaksi
         ]);
+    }
+
+    /**
+     * Get list of voyages for OB activities
+     */
+    public function getVoyageList(Request $request)
+    {
+        try {
+            $kegiatan = $request->input('kegiatan'); // 'muat' or 'bongkar'
+
+            $query = DB::table('tagihan_ob')
+                ->whereNotNull('voyage')
+                ->where('voyage', '!=', '');
+
+            // Filter by kegiatan if provided
+            if ($kegiatan && in_array(strtolower($kegiatan), ['muat', 'bongkar'])) {
+                $query->where('kegiatan', strtolower($kegiatan));
+            }
+
+            $voyages = $query->select('voyage')
+                ->distinct()
+                ->orderBy('voyage', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'data' => $voyages->pluck('voyage')->toArray()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading voyage list: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Get supir list by voyage for OB activities
+     */
+    public function getSupirByVoyage(Request $request)
+    {
+        try {
+            $voyage = $request->input('voyage');
+            $kegiatan = $request->input('kegiatan'); // 'muat' or 'bongkar'
+
+            if (!$voyage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Voyage parameter is required'
+                ], 400);
+            }
+
+            // Build query to get supir list with total tagihan from tagihan_ob
+            // Note: tagihan_ob uses nama_supir (string) not supir_id
+            $query = DB::table('tagihan_ob')
+                ->where('voyage', $voyage)
+                ->whereNotNull('nama_supir')
+                ->where('nama_supir', '!=', '');
+
+            // Filter by kegiatan if provided
+            if ($kegiatan && in_array(strtolower($kegiatan), ['muat', 'bongkar'])) {
+                $query->where('kegiatan', strtolower($kegiatan));
+            }
+
+            $tagihanData = $query->select(
+                    'nama_supir',
+                    DB::raw('SUM(biaya) as total_tagihan'),
+                    DB::raw('SUM(COALESCE(dp, 0)) as total_dp'),
+                    DB::raw('COUNT(*) as jumlah_kontainer')
+                )
+                ->groupBy('nama_supir')
+                ->orderBy('nama_supir')
+                ->get();
+
+            // Map nama_supir to supir_id from karyawans table
+            $supirList = [];
+            foreach ($tagihanData as $tagihan) {
+                // Find supir by name in karyawans table
+                $supir = DB::table('karyawans')
+                    ->whereRaw('LOWER(nama_lengkap) = ?', [strtolower($tagihan->nama_supir)])
+                    ->whereRaw('LOWER(divisi) = ?', ['supir'])
+                    ->where('status', 'active')
+                    ->first();
+
+                if ($supir) {
+                    $supirList[] = [
+                        'supir_id' => (int) $supir->id,
+                        'nama_supir' => $tagihan->nama_supir,
+                        'total_tagihan' => (float) $tagihan->total_tagihan,
+                        'jumlah_kontainer' => (int) $tagihan->jumlah_kontainer,
+                        'dp_dibayar' => (float) $tagihan->total_dp
+                    ];
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'data' => $supirList,
+                'filter' => [
+                    'voyage' => $voyage,
+                    'kegiatan' => $kegiatan
+                ],
+                'debug' => [
+                    'total_tagihan_records' => $tagihanData->count(),
+                    'matched_supir' => count($supirList)
+                ]
+            ]);
+        } catch (\Exception $e) {
+            \Log::error('Error in getSupirByVoyage: ' . $e->getMessage(), [
+                'voyage' => $request->input('voyage'),
+                'kegiatan' => $request->input('kegiatan'),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading supir data: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

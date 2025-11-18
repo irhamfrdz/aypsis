@@ -68,52 +68,6 @@
                         @endif
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <!-- Kegiatan -->
-                            <div class="md:col-span-2">
-                                <label for="kegiatan" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Kegiatan <span class="text-red-500">*</span>
-                                </label>
-                                <select name="kegiatan"
-                                        id="kegiatan"
-                                        required
-                                        onchange="filterUangMukaByKegiatan()"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kegiatan') border-red-300 @enderror">
-                                    <option value="">Pilih Kegiatan</option>
-                                    @foreach($masterKegiatanList as $kegiatan)
-                                        <option value="{{ $kegiatan->id }}"
-                                                {{ old('kegiatan') == $kegiatan->id ? 'selected' : '' }}
-                                                data-kode="{{ $kegiatan->kode_kegiatan }}"
-                                                data-nama="{{ $kegiatan->nama_kegiatan }}">
-                                            {{ $kegiatan->kode_kegiatan }} - {{ $kegiatan->nama_kegiatan }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('kegiatan')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                                <p class="mt-1 text-sm text-gray-500">Pilih kegiatan untuk memfilter uang muka yang tersedia</p>
-
-                                <!-- Kegiatan Selection Info -->
-                                <div id="kegiatan-info" class="mt-2 p-3 bg-blue-50 border border-blue-200 rounded-md hidden">
-                                    <!-- Dynamic content will be inserted here -->
-                                </div>
-                            </div>
-
-                            <!-- Nomor Voyage (untuk kegiatan OB Muat/Bongkar) -->
-                            <div id="voyage_container" class="md:col-span-2 hidden">
-                                <label for="nomor_voyage" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nomor Voyage <span class="text-red-500">*</span>
-                                </label>
-                                <select name="nomor_voyage"
-                                        id="nomor_voyage"
-                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                                    <option value="">Pilih Nomor Voyage</option>
-                                </select>
-                                <p class="mt-1 text-sm text-gray-500">
-                                    <i class="fas fa-ship mr-1"></i>Pilih nomor voyage untuk kegiatan OB
-                                </p>
-                            </div>
-
                             <!-- Nomor Pembayaran -->
                             <div>
                                 <label for="nomor_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
@@ -562,14 +516,6 @@
                                class="px-6 py-2 border border-gray-300 rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
                                 <i class="fas fa-times mr-1"></i> Batal
                             </a>
-                            <button type="button" onclick="debugSubmit()"
-                                    class="px-6 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition duration-200">
-                                <i class="fas fa-bug mr-1"></i> Debug
-                            </button>
-                            <button type="button" onclick="debugSubmitNoMiddleware()"
-                                    class="px-6 py-2 bg-orange-600 text-white rounded-md hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-orange-500 transition duration-200">
-                                <i class="fas fa-wrench mr-1"></i> Debug (No Auth)
-                            </button>
                             <button type="submit"
                                     class="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-200">
                                 <i class="fas fa-save mr-1"></i> Simpan Realisasi
@@ -599,24 +545,10 @@ const uangMukaData = {
             supir_names: @json($uangMuka->supir_names ?? []),
             supir_ids: @json($uangMuka->supir_ids ?? []),
             jumlah_per_supir: @json($uangMuka->jumlah_per_supir ?? []),
-            kegiatan_id: {{ $uangMuka->kegiatan ?? 'null' }},
-            kegiatan_nama: '{{ $uangMuka->masterKegiatan ? $uangMuka->masterKegiatan->nama_kegiatan : 'N/A' }}',
-            // Data untuk kegiatan berbasis penerima (Amprahan, Solar, dll)
             penerima_id: {{ $uangMuka->penerima_id ?? 'null' }},
             penerima_nama: '{{ $uangMuka->penerima ? $uangMuka->penerima->nama_lengkap : '' }}',
-            // Data untuk kegiatan berbasis mobil (KIR & STNK)
             mobil_id: {{ $uangMuka->mobil_id ?? 'null' }},
             mobil_plat: '{{ $uangMuka->mobil ? $uangMuka->mobil->nomor_polisi : '' }}'
-        },
-    @endforeach
-};
-
-// Master Kegiatan Data
-const masterKegiatanData = {
-    @foreach($masterKegiatanList as $kegiatan)
-        '{{ $kegiatan->id }}': {
-            kode: '{{ $kegiatan->kode_kegiatan }}',
-            nama: '{{ $kegiatan->nama_kegiatan }}'
         },
     @endforeach
 };
@@ -1340,32 +1272,32 @@ function updateTableByKegiatanType(tableType) {
 // Load supir data based on selected voyage
 function loadSupirByVoyage() {
     const selectedVoyage = $('#nomor_voyage').val();
-    const selectedKegiatanId = document.getElementById('kegiatan').value;
     
-    if (!selectedVoyage || !selectedKegiatanId) {
-        console.log('Voyage or kegiatan not selected');
+    if (!selectedVoyage) {
+        console.log('Voyage not selected');
         return;
     }
     
-    const kegiatan = masterKegiatanData[selectedKegiatanId];
-    const kegiatanNama = kegiatan ? kegiatan.nama.toLowerCase() : '';
-    const kegiatanFilter = kegiatanNama.includes('muat') ? 'muat' : 'bongkar';
-    
-    console.log('Loading supir for voyage:', selectedVoyage, 'kegiatan:', kegiatanFilter);
+    console.log('Loading supir for voyage:', selectedVoyage);
     
     // Call API to get supir by voyage
     $.ajax({
-        url: '/api/get-supir-by-voyage',
+        url: '/realisasi-uang-muka/api/get-supir-by-voyage',
         type: 'GET',
         data: {
-            voyage: selectedVoyage,
-            kegiatan: kegiatanFilter
+            voyage: selectedVoyage
         },
         dataType: 'json',
         success: function(response) {
-            console.log('Supir by voyage response:', response);
+            console.log('=== SUPIR BY VOYAGE RESPONSE ===');
+            console.log('Full response:', response);
+            console.log('Response success:', response.success);
+            console.log('Response data:', response.data);
+            console.log('Data length:', response.data ? response.data.length : 0);
             
             if (response.success && response.data && response.data.length > 0) {
+                console.log('Starting to process', response.data.length, 'supir');
+                
                 // Reset all supir selections first
                 document.querySelectorAll('input[name="supir[]"]').forEach(cb => {
                     cb.checked = false;
@@ -1373,19 +1305,19 @@ function loadSupirByVoyage() {
                     const row = document.querySelector(`.supir-row[data-supir-id="${supirId}"]`);
                     if (row) row.style.display = 'none';
                 });
+                console.log('All supir selections reset');
                 
                 // Auto-check and populate supir from response
                 let processedCount = 0;
                 response.data.forEach(function(supirData) {
-                    console.log('Processing supir:', supirData);
+                    console.log('--- Processing supir:', supirData.nama_supir, '(ID:', supirData.supir_id, ')');
                     
                     const supirCheckbox = document.querySelector(`input[name="supir[]"][value="${supirData.supir_id}"]`);
-                    console.log('Checkbox found:', supirCheckbox ? 'YES' : 'NO', 'for supir_id:', supirData.supir_id);
+                    console.log('Checkbox found:', supirCheckbox ? 'YES' : 'NO');
                     
                     if (supirCheckbox) {
                         // Check the checkbox
                         supirCheckbox.checked = true;
-                        console.log('Checkbox checked for supir:', supirData.supir_id);
                         
                         // Show the row
                         const row = document.querySelector(`.supir-row[data-supir-id="${supirData.supir_id}"]`);
@@ -1471,213 +1403,46 @@ function loadSupirByVoyage() {
                 
                 updateSummary();
             } else {
+                console.warn('No supir data or empty response');
+                console.warn('Success flag:', response.success);
+                console.warn('Data:', response.data);
                 alert('Tidak ada data supir untuk voyage ' + selectedVoyage);
             }
         },
         error: function(xhr, status, error) {
-            console.error('Error loading supir by voyage:', error);
-            alert('Gagal memuat data supir untuk voyage ini.');
+            console.error('=== AJAX ERROR ===');
+            console.error('Status:', status);
+            console.error('Error:', error);
+            console.error('XHR Status:', xhr.status);
+            console.error('XHR Response:', xhr.responseText);
+            console.error('XHR Full:', xhr);
+            alert('Gagal memuat data supir untuk voyage ini. Error: ' + error + ' (Status: ' + xhr.status + ')');
         }
     });
 }
 
-// Filter Uang Muka berdasarkan Kegiatan dan update tabel sesuai jenis kegiatan
-function filterUangMukaByKegiatan() {
-    const selectedKegiatanId = document.getElementById('kegiatan').value;
+// Update Uang Muka display
+function loadUangMukaList() {
     const uangMukaSelect = document.getElementById('pembayaran_uang_muka_id');
-
+    
     // Reset dropdown uang muka
     uangMukaSelect.innerHTML = '<option value="">-- Tidak Menggunakan Uang Muka --</option>';
-
-    if (selectedKegiatanId) {
-        // Get kegiatan info
-        const kegiatan = masterKegiatanData[selectedKegiatanId];
-        const kegiatanNama = kegiatan ? kegiatan.nama.toLowerCase() : '';
-
-        // Tentukan jenis input berdasarkan kegiatan (sesuai dengan struktur pembayaran uang muka)
-        const isMobilKegiatan = (
-            (kegiatanNama.includes('kir') && kegiatanNama.includes('stnk'))
-        );
-
-        const isSupirKegiatan = (
-            (kegiatanNama.includes('ob') && (kegiatanNama.includes('muat') || kegiatanNama.includes('bongkar')))
-        );
-
-        // Amprahan, Solar, Lain-lain, dll menggunakan penerima (tidak mobil, tidak supir multiple)
-
-        // Show/hide voyage field for OB activities
-        const voyageContainer = $('#voyage_container');
-        const nomor_voyageSelect = $('#nomor_voyage');
-        
-        if (isSupirKegiatan) {
-            // Show voyage field for OB Muat/Bongkar
-            voyageContainer.removeClass('hidden');
-            nomor_voyageSelect.attr('required', true);
-            
-            // Determine kegiatan filter
-            const kegiatanFilter = kegiatanNama.includes('muat') ? 'muat' : 'bongkar';
-            console.log('Loading voyages for kegiatan:', kegiatanFilter);
-            
-            // Load voyage list via AJAX with kegiatan filter
-            $.ajax({
-                url: '/api/get-voyage-list',
-                type: 'GET',
-                data: {
-                    kegiatan: kegiatanFilter
-                },
-                dataType: 'json',
-                success: function(response) {
-                    console.log('Voyage API Response:', response);
-                    nomor_voyageSelect.html('<option value="">Pilih Nomor Voyage</option>');
-                    
-                    if (response.success && response.data && response.data.length > 0) {
-                        console.log('Total voyages received:', response.data.length);
-                        
-                        response.data.forEach(function(voyage) {
-                            nomor_voyageSelect.append(
-                                `<option value="${voyage.voyage}">${voyage.voyage}</option>`
-                            );
-                        });
-                        
-                        console.log('Successfully populated voyage dropdown');
-                    } else {
-                        console.warn('No voyage data received');
-                        nomor_voyageSelect.append(`<option value="" disabled>Tidak ada voyage untuk ${kegiatanFilter}</option>`);
-                    }
-                },
-                error: function(xhr, status, error) {
-                    console.error('Error loading voyage list:', error);
-                    console.error('XHR:', xhr);
-                    alert('Gagal memuat daftar voyage. Silakan refresh halaman.');
-                }
-            });
-        } else {
-            // Hide voyage field for non-OB activities
-            voyageContainer.addClass('hidden');
-            nomor_voyageSelect.attr('required', false);
-            nomor_voyageSelect.html('<option value="">Pilih Nomor Voyage</option>');
-        }
-
-        // Update tabel input berdasarkan jenis kegiatan
-        if (isMobilKegiatan) {
-            updateTableByKegiatanType('mobil');
-        } else if (isSupirKegiatan) {
-            updateTableByKegiatanType('supir');
-        } else {
-            updateTableByKegiatanType('penerima');
-        }
-
-        // Filter uang muka berdasarkan kegiatan
-        Object.keys(uangMukaData).forEach(function(uangMukaId) {
-            const uangMuka = uangMukaData[uangMukaId];
-
-            // Tampilkan hanya uang muka yang sesuai dengan kegiatan yang dipilih
-            if (uangMuka.kegiatan_id == selectedKegiatanId) {
-                const option = document.createElement('option');
-                option.value = uangMukaId;
-                option.textContent = `${uangMuka.nomor} - ${uangMuka.tanggal} - ${uangMuka.supir_names.join(', ')} - Rp ${formatNumber(uangMuka.total)}`;
-                uangMukaSelect.appendChild(option);
-            }
-        });
-
-        // Update info kegiatan
-        const kegiatanInfo = document.getElementById('kegiatan-info');
-        if (kegiatanInfo && masterKegiatanData[selectedKegiatanId]) {
-            const kegiatan = masterKegiatanData[selectedKegiatanId];
-
-            // Determine icon and description based on activity type (following pembayaran uang muka logic)
-            let iconSvg = `<svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                          </svg>`;
-            let description = 'Daftar Uang Muka telah difilter sesuai kegiatan ini (berbasis supir)';
-            let bgColor = 'bg-blue-50 border-blue-200';
-            let textColor = 'text-blue-800';
-            let subTextColor = 'text-blue-600';
-
-            if (isMobilKegiatan) {
-                // Only KIR & STNK uses mobil table
-                iconSvg = `<svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M4 4a2 2 0 00-2 2v1h16V6a2 2 0 00-2-2H4zM18 9H2v5a2 2 0 002 2h12a2 2 0 002-2V9zM4 13a1 1 0 011-1h1a1 1 0 110 2H5a1 1 0 01-1-1zm5-1a1 1 0 100 2h1a1 1 0 100-2H9z"/>
-                          </svg>`;
-                description = 'Kegiatan KIR & STNK - berbasis kendaraan. Tabel mobil akan ditampilkan.';
-                bgColor = 'bg-green-50 border-green-200';
-                textColor = 'text-green-800';
-                subTextColor = 'text-green-600';
-            } else if (isSupirKegiatan) {
-                // OB Muat/Bongkar activities use supir table (multiple supir)
-                iconSvg = `<svg class="h-5 w-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
-                            <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
-                          </svg>`;
-                description = 'Kegiatan OB Muat/Bongkar - berbasis supir. Tabel supir akan ditampilkan.';
-                bgColor = 'bg-purple-50 border-purple-200';
-                textColor = 'text-purple-800';
-                subTextColor = 'text-purple-600';
-            } else {
-                // All other activities use penerima (Amprahan, Solar, Lain-lain, etc.)
-                if (kegiatanNama.includes('amprahan')) {
-                    iconSvg = `<svg class="h-5 w-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-                              </svg>`;
-                    description = 'Kegiatan Amprahan - berbasis penerima. Tabel penerima akan ditampilkan.';
-                    bgColor = 'bg-yellow-50 border-yellow-200';
-                    textColor = 'text-yellow-800';
-                    subTextColor = 'text-yellow-600';
-                } else if (kegiatanNama.includes('lain') || kegiatanNama.includes('other')) {
-                    iconSvg = `<svg class="h-5 w-5 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M3 4a1 1 0 011-1h12a1 1 0 011 1v2a1 1 0 01-1 1H4a1 1 0 01-1-1V4zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1zm0 4a1 1 0 011-1h6a1 1 0 110 2H4a1 1 0 01-1-1z" clip-rule="evenodd"/>
-                              </svg>`;
-                    description = 'Kegiatan Lain-lain - berbasis penerima. Tabel penerima akan ditampilkan.';
-                    bgColor = 'bg-gray-50 border-gray-200';
-                    textColor = 'text-gray-800';
-                    subTextColor = 'text-gray-600';
-                } else {
-                    // Solar, bahan bakar, dll menggunakan penerima juga
-                    iconSvg = `<svg class="h-5 w-5 text-blue-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
-                              </svg>`;
-                    description = 'Kegiatan berbasis penerima. Tabel penerima akan ditampilkan.';
-                }
-            }
-
-            // Update the div class to match the color scheme
-            kegiatanInfo.className = `mt-2 p-3 ${bgColor} border rounded-md`;
-
-            kegiatanInfo.innerHTML = `
-                <div class="flex items-center">
-                    <div class="flex-shrink-0">
-                        ${iconSvg}
-                    </div>
-                    <div class="ml-3">
-                        <p class="text-sm font-medium ${textColor}">Kegiatan Terpilih: ${kegiatan.kode} - ${kegiatan.nama}</p>
-                        <p class="text-xs ${subTextColor} mt-1">${description}</p>
-                    </div>
-                </div>
-            `;
-            kegiatanInfo.classList.remove('hidden');
-        }
-    } else {
-        // Jika tidak ada kegiatan dipilih, tampilkan semua uang muka
-        Object.keys(uangMukaData).forEach(function(uangMukaId) {
-            const uangMuka = uangMukaData[uangMukaId];
-            const option = document.createElement('option');
-            option.value = uangMukaId;
-            option.textContent = `${uangMuka.nomor} - ${uangMuka.tanggal} - ${uangMuka.kegiatan_nama} - ${uangMuka.supir_names.join(', ')} - Rp ${formatNumber(uangMuka.total)}`;
-            uangMukaSelect.appendChild(option);
-        });
-
-        // Hide kegiatan info
-        const kegiatanInfo = document.getElementById('kegiatan-info');
-        if (kegiatanInfo) {
-            kegiatanInfo.classList.add('hidden');
-        }
-    }
-
+    
+    // Tampilkan semua uang muka
+    Object.keys(uangMukaData).forEach(function(uangMukaId) {
+        const uangMuka = uangMukaData[uangMukaId];
+        const option = document.createElement('option');
+        option.value = uangMukaId;
+        option.textContent = `${uangMuka.nomor} - ${uangMuka.tanggal} - ${uangMuka.supir_names.join(', ')} - Rp ${formatNumber(uangMuka.total)}`;
+        uangMukaSelect.appendChild(option);
+    });
+    
     // Reset uang muka selection info
     const uangMukaInfoDiv = document.getElementById('uang-muka-selection-info');
     if (uangMukaInfoDiv) {
         uangMukaInfoDiv.classList.add('hidden');
     }
-
+    
     // Update display
     updateUangMukaDisplay();
 }
@@ -1907,275 +1672,6 @@ function updateSummary() {
     } else {
         document.getElementById('summary-section').classList.add('hidden');
     }
-}
-
-// Debug submit function
-function debugSubmit() {
-    const form = document.getElementById('form-realisasi-uang-muka');
-    const formData = new FormData(form);
-
-    // Add debug flag
-    formData.append('debug_mode', '1');
-
-    console.log('Debug Form Data:');
-    for (let [key, value] of formData.entries()) {
-        console.log(key + ': ' + value);
-    }
-
-    console.log('Form Action URL:', form.action);
-    console.log('Form Method:', form.method);
-
-    // Send AJAX request for debugging
-    fetch(form.action, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => {
-        console.log('Response Status:', response.status);
-        console.log('Response Headers:', response.headers);
-        console.log('Response Type:', response.headers.get('content-type'));
-
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return response.json();
-        } else {
-            // Get text response for non-JSON (like HTML error pages)
-            return response.text().then(text => {
-                throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 500)}...`);
-            });
-        }
-    })
-    .then(data => {
-        console.log('Debug Response:', data);
-        alert('Debug Response: ' + JSON.stringify(data, null, 2));
-    })
-    .catch(error => {
-        console.error('Debug Error:', error);
-        alert('Debug Error: ' + error.message);
-    });
-}
-
-// Debug submit function without middleware
-function debugSubmitNoMiddleware() {
-    const form = document.getElementById('form-realisasi-uang-muka');
-
-    // FIRST: Check what's in the form BEFORE collecting data
-    console.log('=== PRE-COLLECTION ANALYSIS ===');
-    console.log('Form found:', form ? 'YES' : 'NO');
-    console.log('Form action:', form ? form.action : 'N/A');
-
-    const allInputs = form.querySelectorAll('input, select, textarea');
-    console.log('Total inputs found in form:', allInputs.length);
-
-    // Count by type
-    let inputCount = 0, selectCount = 0, textareaCount = 0, checkboxCount = 0;
-    let namedInputs = 0, checkedCheckboxes = 0;
-
-    allInputs.forEach(input => {
-        if (input.tagName === 'INPUT') inputCount++;
-        if (input.tagName === 'SELECT') selectCount++;
-        if (input.tagName === 'TEXTAREA') textareaCount++;
-        if (input.type === 'checkbox') checkboxCount++;
-        if (input.name) namedInputs++;
-        if (input.type === 'checkbox' && input.checked) checkedCheckboxes++;
-    });
-
-    console.log('Input elements:', inputCount);
-    console.log('Select elements:', selectCount);
-    console.log('Textarea elements:', textareaCount);
-    console.log('Checkbox elements:', checkboxCount);
-    console.log('Elements WITH name attribute:', namedInputs);
-    console.log('Checked checkboxes:', checkedCheckboxes);
-
-    // Check specific critical fields
-    console.log('=== CRITICAL FIELD CHECK ===');
-    console.log('kegiatan field value:', document.getElementById('kegiatan')?.value || 'NOT FOUND');
-    console.log('nomor_pembayaran field value:', document.getElementById('nomor_pembayaran')?.value || 'NOT FOUND');
-    console.log('tanggal_pembayaran field value:', document.getElementById('tanggal_pembayaran')?.value || 'NOT FOUND');
-    console.log('kas_bank field value:', document.getElementById('kas_bank')?.value || 'NOT FOUND');
-    console.log('jenis_transaksi field value:', document.getElementById('jenis_transaksi')?.value || 'NOT FOUND');
-
-    // Check penerima checkboxes specifically
-    const penerimaCheckboxes = document.querySelectorAll('input[name="penerima[]"]');
-    const penerimaChecked = document.querySelectorAll('input[name="penerima[]"]:checked');
-    console.log('Total penerima[] checkboxes:', penerimaCheckboxes.length);
-    console.log('Checked penerima[] checkboxes:', penerimaChecked.length);
-
-    if (penerimaChecked.length > 0) {
-        penerimaChecked.forEach(cb => {
-            const id = cb.value;
-            const jumlahInput = document.getElementById(`jumlah_karyawan_${id}`);
-            console.log(`Penerima ${id}: checked, jumlah value = ${jumlahInput?.value || 'NOT FOUND'}`);
-        });
-    }
-
-    // NOW collect the form data
-    const formData = new FormData();
-
-    // Add debug flag
-    formData.append('debug_mode', '1');
-
-    // Manually collect ALL form fields (including disabled ones)
-    allInputs.forEach(input => {
-        if (input.name) {
-            if (input.type === 'checkbox' || input.type === 'radio') {
-                if (input.checked) {
-                    formData.append(input.name, input.value);
-                }
-            } else {
-                // Include disabled fields too
-                formData.append(input.name, input.value);
-            }
-        }
-    });    console.log('Debug Form Data (No Middleware):');
-    console.log('=== FORM DATA ANALYSIS ===');
-    console.log('Current Table Type:', currentTableType);
-
-    // Analyze form data by type
-    let penerimaFound = false;
-    let supirFound = false;
-    let mobilFound = false;
-    let jumlahKaryawanFound = false;
-    let jumlahSupirFound = false;
-    let jumlahMobilFound = false;
-
-    const formDataObj = {};
-    for (let [key, value] of formData.entries()) {
-        console.log(key + ': ' + value);
-        formDataObj[key] = value;
-
-        if (key.includes('penerima[')) penerimaFound = true;
-        if (key.includes('supir[')) supirFound = true;
-        if (key.includes('mobil[')) mobilFound = true;
-        if (key.includes('jumlah_karyawan[')) jumlahKaryawanFound = true;
-        if (key.includes('jumlah[') && !key.includes('jumlah_karyawan[') && !key.includes('jumlah_mobil[')) jumlahSupirFound = true;
-        if (key.includes('jumlah_mobil[')) jumlahMobilFound = true;
-    }
-
-    console.log('=== FIELD PRESENCE CHECK ===');
-    console.log('Penerima fields found:', penerimaFound);
-    console.log('Supir fields found:', supirFound);
-    console.log('Mobil fields found:', mobilFound);
-    console.log('Jumlah Karyawan fields found:', jumlahKaryawanFound);
-    console.log('Jumlah Supir fields found:', jumlahSupirFound);
-    console.log('Jumlah Mobil fields found:', jumlahMobilFound);
-
-    // Check specific required fields for Amprahan
-    if (currentTableType === 'penerima') {
-        console.log('=== AMPRAHAN SPECIFIC CHECKS ===');
-        const kegiatan = formDataObj['kegiatan'];
-        console.log('Selected kegiatan ID:', kegiatan);
-
-        // Check form element states
-        const kegiatanSelect = document.getElementById('kegiatan');
-        const nomorInput = document.getElementById('nomor_pembayaran');
-        const tanggalInput = document.getElementById('tanggal_pembayaran');
-        const kasBankSelect = document.getElementById('kas_bank');
-        const jenisTransaksiSelect = document.getElementById('jenis_transaksi');
-
-        console.log('Form element states:');
-        console.log('- Kegiatan select value:', kegiatanSelect ? kegiatanSelect.value : 'NOT FOUND');
-        console.log('- Nomor input value:', nomorInput ? nomorInput.value : 'NOT FOUND');
-        console.log('- Tanggal input value:', tanggalInput ? tanggalInput.value : 'NOT FOUND');
-        console.log('- Kas/Bank select value:', kasBankSelect ? kasBankSelect.value : 'NOT FOUND');
-        console.log('- Jenis transaksi select value:', jenisTransaksiSelect ? jenisTransaksiSelect.value : 'NOT FOUND');
-
-        // Check penerima checkboxes
-        const penerimaCheckboxes = document.querySelectorAll('input[name="penerima[]"]:checked');
-        console.log('Checked penerima checkboxes count:', penerimaCheckboxes.length);
-
-        const selectedPenerima = [];
-        const jumlahKaryawan = [];
-
-        penerimaCheckboxes.forEach(checkbox => {
-            selectedPenerima.push(checkbox.value);
-            const jumlahInput = document.getElementById(`jumlah_karyawan_${checkbox.value}`);
-            if (jumlahInput && jumlahInput.value && jumlahInput.value !== '0') {
-                jumlahKaryawan.push({id: checkbox.value, amount: jumlahInput.value});
-            }
-        });
-
-        console.log('Selected penerima IDs:', selectedPenerima);
-        console.log('Jumlah karyawan with amounts:', jumlahKaryawan);
-        console.log('Form validation should pass:', selectedPenerima.length > 0 && jumlahKaryawan.length > 0);
-    }
-
-    console.log('=== END ANALYSIS ===');
-
-    // Use debug route that bypasses middleware
-    const debugUrl = '{{ route("realisasi-uang-muka.debug-submit") }}';
-    console.log('Debug URL (No Middleware):', debugUrl);
-
-    // Send AJAX request for debugging
-    fetch(debugUrl, {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
-        }
-    })
-    .then(response => {
-        console.log('Debug Response Status (No Middleware):', response.status);
-        console.log('Debug Response Headers (No Middleware):', response.headers);
-        console.log('Debug Response Type (No Middleware):', response.headers.get('content-type'));
-
-        // Check if response is JSON
-        const contentType = response.headers.get('content-type');
-        if (contentType && contentType.includes('application/json')) {
-            return response.json();
-        } else {
-            // Get text response for non-JSON (like HTML error pages)
-            return response.text().then(text => {
-                throw new Error(`Expected JSON but got ${contentType}. Response: ${text.substring(0, 500)}...`);
-            });
-        }
-    })
-    .then(data => {
-        console.log('Debug Response (No Middleware):', data);
-
-        // Display in a more copy-friendly format
-        const debugText = JSON.stringify(data, null, 2);
-        console.log('=== COPYABLE DEBUG RESULT ===');
-        console.log(debugText);
-        console.log('=== END DEBUG RESULT ===');
-
-        // Create a text area for easy copying
-        const debugModal = document.createElement('div');
-        debugModal.style.cssText = `
-            position: fixed; top: 10px; left: 10px; right: 10px; bottom: 10px;
-            background: white; border: 2px solid #333; z-index: 10000;
-            padding: 20px; overflow: auto; font-family: monospace;
-        `;
-
-        debugModal.innerHTML = `
-            <div style="margin-bottom: 10px;">
-                <button onclick="this.parentElement.parentElement.remove()"
-                        style="background: red; color: white; padding: 5px 10px; border: none; cursor: pointer;">
-                    Close
-                </button>
-                <button onclick="navigator.clipboard.writeText(this.nextElementSibling.textContent).then(() => alert('Copied!'))"
-                        style="background: green; color: white; padding: 5px 10px; border: none; cursor: pointer; margin-left: 10px;">
-                    Copy to Clipboard
-                </button>
-            </div>
-            <textarea readonly style="width: 100%; height: 80%; font-family: monospace; font-size: 12px;">${debugText}</textarea>
-        `;
-
-        document.body.appendChild(debugModal);
-
-        // Also show alert for backward compatibility
-        alert('Debug completed! Check the modal for copyable result.');
-    })
-    .catch(error => {
-        console.error('Debug Error (No Middleware):', error);
-        alert('Debug Error (No Middleware): ' + error.message);
-    });
 }
 
 // Initialize page
@@ -2472,36 +1968,8 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     @endif
 
-    // Initialize kegiatan filter on page load
-    const kegiatanSelect = document.getElementById('kegiatan');
-    if (kegiatanSelect.value) {
-        filterUangMukaByKegiatan();
-    }
-
-    // Handle kegiatan selection change
-    kegiatanSelect.addEventListener('change', function() {
-        filterUangMukaByKegiatan();
-    });
-    
-    // Handle voyage selection change
-    $('#nomor_voyage').on('change', function() {
-        const selectedVoyage = $(this).val();
-        console.log('Voyage selected:', selectedVoyage);
-        
-        if (selectedVoyage) {
-            loadSupirByVoyage();
-        } else {
-            // Reset supir selections if voyage cleared
-            document.querySelectorAll('input[name="supir[]"]').forEach(cb => {
-                cb.checked = false;
-                const supirId = cb.value;
-                const row = document.querySelector(`.supir-row[data-supir-id="${supirId}"]`);
-                if (row) row.style.display = 'none';
-            });
-            currentUangMukaData = {};
-            updateSummary();
-        }
-    });
+    // Load uang muka list on page load
+    loadUangMukaList();
 });
 </script>
 @endpush

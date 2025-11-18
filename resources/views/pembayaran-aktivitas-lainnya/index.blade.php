@@ -30,18 +30,18 @@
                         <input type="date" id="filter_date_to" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                     </div>
                     <div>
-                        <label for="filter_kegiatan" class="block text-sm font-medium text-gray-700 mb-1">Kegiatan:</label>
-                        <select id="filter_kegiatan" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
-                            <option value="">Semua Kegiatan</option>
+                        <label for="filter_voyage" class="block text-sm font-medium text-gray-700 mb-1">Nomor Voyage:</label>
+                        <select id="filter_voyage" class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                            <option value="">Semua Voyage</option>
                             @php
-                                $kegiatanList = \App\Models\PembayaranAktivitasLainnya::whereNotNull('kegiatan')
+                                $voyageList = \App\Models\PembayaranAktivitasLainnya::whereNotNull('nomor_voyage')
                                     ->distinct()
-                                    ->pluck('kegiatan')
+                                    ->pluck('nomor_voyage')
                                     ->filter()
                                     ->sort();
                             @endphp
-                            @foreach($kegiatanList as $kegiatan)
-                                <option value="{{ $kegiatan }}">{{ $kegiatan }}</option>
+                            @foreach($voyageList as $voyage)
+                                <option value="{{ $voyage }}">{{ $voyage }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -77,12 +77,11 @@
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Pembayaran</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Voyage</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Bank/Kas</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Pembayaran</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aktivitas</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kegiatan</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Plat Nomor</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Dibuat Oleh</th>
                                 <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                             </tr>
@@ -95,6 +94,11 @@
                                         <span class="font-semibold text-blue-600">{{ $item->nomor_pembayaran }}</span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->tanggal_pembayaran->format('d/m/Y') }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                                        <span class="text-xs bg-purple-100 text-purple-800 px-2 py-1 rounded-full">
+                                            {{ $item->nomor_voyage ?? '-' }}
+                                        </span>
+                                    </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
                                         <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded-full">
                                             {{ $item->bank->nama_akun ?? 'Bank tidak ditemukan' }}
@@ -102,7 +106,7 @@
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
                                         <span class="font-semibold text-green-600">
-                                            Rp {{ number_format($item->total_nominal, 0, ',', '.') }}
+                                            Rp {{ number_format($item->total_pembayaran, 0, ',', '.') }}
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -119,15 +123,9 @@
                                         @endif
                                     </td>
                                     <td class="px-6 py-4 text-sm text-gray-600">
-                                        <div class="max-w-xs truncate" title="{{ $item->keterangan }}">
-                                            {{ Str::limit($item->keterangan, 50) }}
+                                        <div class="max-w-xs truncate" title="{{ $item->aktivitas_pembayaran }}">
+                                            {{ Str::limit($item->aktivitas_pembayaran, 50) }}
                                         </div>
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $item->kegiatan ?? '-' }}
-                                    </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                        {{ $item->plat_nomor ?? '-' }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $item->creator->username ?? '-' }}</td>
                                     <td class="px-6 py-4 whitespace-nowrap">
@@ -314,13 +312,13 @@ $(document).ready(function() {
         const search = $('#search').val();
         const dateFrom = $('#filter_date_from').val();
         const dateTo = $('#filter_date_to').val();
-        const kegiatan = $('#filter_kegiatan').val();
+        const voyage = $('#filter_voyage').val();
 
         let url = new URL(window.location.href);
         url.searchParams.set('search', search);
         url.searchParams.set('date_from', dateFrom);
         url.searchParams.set('date_to', dateTo);
-        url.searchParams.set('kegiatan', kegiatan);
+        url.searchParams.set('nomor_voyage', voyage);
 
         window.location.href = url.toString();
     }
@@ -337,13 +335,13 @@ $(document).ready(function() {
         const search = $('#search').val();
         const dateFrom = $('#filter_date_from').val();
         const dateTo = $('#filter_date_to').val();
-        const kegiatan = $('#filter_kegiatan').val();
+        const voyage = $('#filter_voyage').val();
 
         let url = '/pembayaran-aktivitas-lainnya/export?';
         url += `search=${encodeURIComponent(search)}&`;
         url += `date_from=${encodeURIComponent(dateFrom)}&`;
         url += `date_to=${encodeURIComponent(dateTo)}&`;
-        url += `kegiatan=${encodeURIComponent(kegiatan)}`;
+        url += `nomor_voyage=${encodeURIComponent(voyage)}`;
 
         window.open(url, '_blank');
     });
@@ -353,10 +351,10 @@ $(document).ready(function() {
     $('#search').val(urlParams.get('search') || '');
     $('#filter_date_from').val(urlParams.get('date_from') || '');
     $('#filter_date_to').val(urlParams.get('date_to') || '');
-    $('#filter_kegiatan').val(urlParams.get('kegiatan') || '');
+    $('#filter_voyage').val(urlParams.get('nomor_voyage') || '');
     
-    // Trigger search when kegiatan filter changes
-    $('#filter_kegiatan').on('change', function() {
+    // Trigger search when voyage filter changes
+    $('#filter_voyage').on('change', function() {
         performSearch();
     });
 });

@@ -418,4 +418,12 @@ class SuratJalan extends Model
     {
         return $this->hasMany(SuratJalanApproval::class);
     }
+
+    /**
+     * Relationship dengan TandaTerima
+     */
+    public function tandaTerima()
+    {
+        return $this->hasOne(TandaTerima::class);
+    }
 }

@@ -82,30 +82,6 @@
                         </div>
 
                         <div>
-                            <label for="kegiatan" class="block text-xs font-medium text-gray-700 mb-1">
-                                Kegiatan
-                            </label>
-                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    id="kegiatan"
-                                    name="kegiatan">
-                                <option value="">Pilih Kegiatan</option>
-                                @if(isset($masterKegiatan) && $masterKegiatan->count() > 0)
-                                    @foreach($masterKegiatan as $kegiatan)
-                                        <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('kegiatan') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
-                                            {{ $kegiatan->nama_kegiatan }}
-                                        </option>
-                                    @endforeach
-                                @else
-                                    <option value="" disabled>Tidak ada kegiatan uang muka tersedia</option>
-                                @endif
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Data dari master kegiatan bertipe "uang muka"</p>
-                        </div>
-                    </div>
-
-                    <!-- Row for Voyage (untuk Uang Muka OB) -->
-                    <div id="ob_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
-                        <div>
                             <label for="nomor_voyage" class="block text-xs font-medium text-gray-700 mb-1">
                                 Nomor Voyage <span class="text-red-500">*</span>
                             </label>
@@ -113,16 +89,25 @@
                                     id="nomor_voyage"
                                     name="nomor_voyage">
                                 <option value="">Pilih Nomor Voyage</option>
+                                @if(isset($voyageList) && $voyageList->count() > 0)
+                                    @foreach($voyageList as $voyage)
+                                        <option value="{{ $voyage->voyage }}" {{ old('nomor_voyage') == $voyage->voyage ? 'selected' : '' }}>
+                                            {{ $voyage->voyage }}
+                                            @if($voyage->nama_kapal)
+                                                - {{ $voyage->nama_kapal }}
+                                            @endif
+                                        </option>
+                                    @endforeach
+                                @else
+                                    <option value="" disabled>Tidak ada data voyage tersedia</option>
+                                @endif
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Pilih nomor voyage untuk kegiatan OB</p>
-                        </div>
-                        <div>
-                            <!-- Placeholder untuk menjaga grid layout -->
+                            <p class="text-xs text-gray-500 mt-1">Data dari tabel Naik Kapal dan BLS</p>
                         </div>
                     </div>
 
                     <!-- Tabel Uang Muka Supir (untuk Uang Muka OB Bongkar) -->
-                    <div id="uang_muka_supir_container" class="mb-4 hidden">
+                    <div id="uang_muka_supir_container" class="mb-4">
                         <div class="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4">
                             <div class="flex justify-between items-center mb-3">
                                 <h4 class="text-sm font-semibold text-gray-800 flex items-center">
@@ -142,7 +127,6 @@
                                         <tr>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir <span class="text-red-500">*</span></th>
-                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Tagihan</th>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Uang Muka <span class="text-red-500">*</span></th>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -151,7 +135,7 @@
                                     <tbody id="supir_table_body" class="bg-white divide-y divide-gray-200">
                                         <!-- Rows will be added dynamically -->
                                         <tr id="no_supir_row">
-                                            <td colspan="6" class="px-3 py-4 text-center text-sm text-gray-500">
+                                            <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-500">
                                                 <i class="fas fa-info-circle mr-1"></i>
                                                 Belum ada data supir. Klik "Tambah Supir" untuk menambahkan.
                                             </td>
@@ -181,6 +165,46 @@
                         </div>
                     </div>
 
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                        <div>
+                            <label for="total_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
+                                Total Pembayaran <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative">
+                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
+                                    <span class="text-gray-500 text-xs">Rp</span>
+                                </div>
+                                <input type="text"
+                                       class="w-full pl-6 pr-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                       id="total_pembayaran"
+                                       name="total_pembayaran"
+                                       value="{{ old('total_pembayaran') }}"
+                                       placeholder="0"
+                                       required>
+                            </div>
+                        </div>
+                        <div>
+                            <!-- Space for future fields if needed -->
+                        </div>
+                    </div>
+
+                    <div class="mb-4">
+                        <label for="aktivitas_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
+                            Aktivitas Pembayaran <span class="text-red-500">*</span>
+                        </label>
+                        <textarea class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
+                                  id="aktivitas_pembayaran"
+                                  name="aktivitas_pembayaran"
+                                  rows="3"
+                                  placeholder="Masukkan deskripsi aktivitas pembayaran (wajib diisi)"
+                                  required
+                                  minlength="5">{{ old('aktivitas_pembayaran') }}</textarea>
+                        <small class="text-xs text-red-600 mt-1">
+                            <i class="fas fa-exclamation-triangle mr-1"></i>
+                            Field ini wajib diisi - minimal 5 karakter
+                        </small>
+                    </div>
+
                     <!-- Plat Nomor Container (untuk kegiatan KIR & STNK) -->
                     <div id="plat_nomor_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
                         <div>
@@ -208,29 +232,6 @@
                         </div>
                         <div>
                             <!-- Placeholder untuk menjaga grid layout -->
-                        </div>
-                    </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
-                            <label for="total_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
-                                Total Pembayaran <span class="text-red-500">*</span>
-                            </label>
-                            <div class="relative">
-                                <div class="absolute inset-y-0 left-0 pl-2 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 text-xs">Rp</span>
-                                </div>
-                                <input type="text"
-                                       class="w-full pl-6 pr-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                       id="total_pembayaran"
-                                       name="total_pembayaran"
-                                       value="{{ old('total_pembayaran') }}"
-                                       placeholder="0"
-                                       required>
-                            </div>
-                        </div>
-                        <div>
-                            <!-- Space for future fields if needed -->
                         </div>
                     </div>
 
@@ -284,40 +285,6 @@
 
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div>
-                            <label class="block text-xs font-medium text-gray-700 mb-2">
-                                Jenis Pembayaran
-                            </label>
-                            <div class="space-y-2">
-                                <!-- Checkbox Bayar DP -->
-                                <div class="flex items-center">
-                                    <input type="checkbox"
-                                           id="is_dp"
-                                           name="is_dp"
-                                           value="1"
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                                           {{ old('is_dp') ? 'checked' : '' }}>
-                                    <label for="is_dp" class="ml-2 block text-sm text-gray-700">
-                                        <i class="fas fa-money-bill text-green-600 mr-1"></i>
-                                        Bayar DP (Down Payment)
-                                    </label>
-                                </div>
-
-                                <!-- Info DP -->
-                                <div id="dp_info" class="hidden bg-yellow-50 border border-yellow-200 rounded p-2">
-                                    <div class="flex items-start">
-                                        <i class="fas fa-info-circle text-yellow-600 mt-0.5 mr-2"></i>
-                                        <div class="text-xs text-yellow-800">
-                                            <strong>Pembayaran DP:</strong> Centang jika ini merupakan pembayaran uang muka/down payment untuk suatu transaksi atau kontrak.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Dropdown Debit/Kredit -->
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                        <div>
                             <label for="jenis_transaksi" class="block text-xs font-medium text-gray-700 mb-1">
                                 Jenis Transaksi <span class="text-red-500">*</span>
                             </label>
@@ -335,26 +302,34 @@
                             </select>
                             <p class="text-xs text-gray-500 mt-1">Pilih jenis transaksi untuk pencatatan akuntansi</p>
                         </div>
-                        <div>
-                            <!-- Space for future fields if needed -->
-                        </div>
-                    </div>
 
-                    <div class="mb-4">
-                        <label for="aktivitas_pembayaran" class="block text-xs font-medium text-gray-700 mb-1">
-                            Aktivitas Pembayaran <span class="text-red-500">*</span>
-                        </label>
-                        <textarea class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                  id="aktivitas_pembayaran"
-                                  name="aktivitas_pembayaran"
-                                  rows="3"
-                                  placeholder="Masukkan deskripsi aktivitas pembayaran (wajib diisi)"
-                                  required
-                                  minlength="5">{{ old('aktivitas_pembayaran') }}</textarea>
-                        <small class="text-xs text-red-600 mt-1">
-                            <i class="fas fa-exclamation-triangle mr-1"></i>
-                            Field ini wajib diisi - minimal 5 karakter
-                        </small>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-700 mb-2">
+                                Jenis Pembayaran
+                            </label>
+                            <div class="space-y-2">
+                                <div class="flex items-center">
+                                    <input type="checkbox"
+                                           id="is_dp"
+                                           name="is_dp"
+                                           value="1"
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                                           {{ old('is_dp') ? 'checked' : '' }}>
+                                    <label for="is_dp" class="ml-2 block text-sm text-gray-700">
+                                        <i class="fas fa-money-bill text-green-600 mr-1"></i>
+                                        Bayar DP (Down Payment)
+                                    </label>
+                                </div>
+                                <div id="dp_info" class="hidden bg-yellow-50 border border-yellow-200 rounded p-2">
+                                    <div class="flex items-start">
+                                        <i class="fas fa-info-circle text-yellow-600 mt-0.5 mr-2"></i>
+                                        <div class="text-xs text-yellow-800">
+                                            <strong>Pembayaran DP:</strong> Centang jika ini merupakan pembayaran uang muka/down payment.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     <!-- Summary Display -->
@@ -387,6 +362,9 @@
 @endsection
 
 @push('styles')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet" />
 <style>
     /* Custom styles for enhanced UX */
     .hover-scale:hover {
@@ -398,10 +376,23 @@
     input:focus, select:focus, textarea:focus {
         box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
+
+    /* Select2 custom styling */
+    .select2-container--bootstrap-5 .select2-selection {
+        min-height: 38px;
+        font-size: 0.875rem;
+    }
+    
+    .select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+        padding-left: 0.5rem;
+        line-height: 36px;
+    }
 </style>
 @endpush
 
 @push('scripts')
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script>
 $(document).ready(function() {
     // Format total pembayaran input
@@ -472,18 +463,6 @@ $(document).ready(function() {
             alert('Aktivitas Pembayaran minimal 5 karakter!');
             $('#aktivitas_pembayaran').focus();
             return false;
-        }
-
-        // Validation untuk plat nomor jika kegiatan KIR/STNK dipilih
-        let selectedKegiatan = $('#kegiatan').val();
-        if (selectedKegiatan && (selectedKegiatan.toLowerCase().includes('kir') || selectedKegiatan.toLowerCase().includes('stnk'))) {
-            let platNomorValue = $('#plat_nomor').val().trim();
-            if (!platNomorValue) {
-                e.preventDefault();
-                alert('Plat Nomor wajib dipilih untuk kegiatan KIR & STNK!');
-                $('#plat_nomor').focus();
-                return false;
-            }
         }
 
         // Remove number formatting before submission
@@ -560,81 +539,52 @@ $(document).ready(function() {
 
         console.log('URL Params:', { kapal: kapalParam, voyage: voyageParam, supir: supirParam });
 
-        // If kapal parameter exists, set kegiatan to "Uang Muka OB Bongkar" and pre-fill fields
-        if (kapalParam || voyageParam || supirParam) {
-            console.log('Detected URL params, starting auto-fill process...');
-            
-            // Find and select "Uang Muka OB Bongkar" kegiatan
-            $('#kegiatan option').each(function() {
-                const kegiatanText = $(this).text().toLowerCase();
-                if (kegiatanText.includes('uang muka ob')) {
-                    console.log('Found matching kegiatan:', $(this).text());
-                    $(this).prop('selected', true);
-                    $('#kegiatan').trigger('change');
+        // If URL parameters exist, pre-fill voyage and supir fields
+        if (voyageParam) {
+            console.log('Detected voyage param, setting value:', voyageParam);
+            $('#nomor_voyage').val(voyageParam);
+        }
 
-                    // Wait for container to show and data to load, then select voyage
+        // Pre-fill supir list if exists
+        if (supirParam) {
+            const supirList = supirParam.split(',').map(s => s.trim()).filter(s => s);
+            console.log('Processing supir list...', supirList);
+
+            setTimeout(function() {
+                // Add each supir to table
+                supirList.forEach(function(namaSupir, index) {
                     setTimeout(function() {
-                        console.log('Step 1: Processing voyage...');
+                        console.log('Adding row for supir:', namaSupir);
                         
-                        if (voyageParam) {
-                            // Wait for AJAX to complete loading voyage options
-                            setTimeout(function() {
-                                $('#nomor_voyage').val(voyageParam);
-                                console.log('Voyage selected:', voyageParam);
-                            }, 1000);
-                        }
-
-                        // Pre-fill supir list if exists
-                        if (supirParam) {
-                            const supirList = supirParam.split(',').map(s => s.trim()).filter(s => s);
-                            console.log('Step 2: Processing supir list...', supirList);
-
-                            // Wait a bit more for the table to be ready
-                            setTimeout(function() {
-                                console.log('Step 3: Starting to add supir rows...');
+                        // Trigger add supir button
+                        $('#btn_add_supir').trigger('click');
+                        
+                        // Fill the last added row with supir name by matching from dropdown options
+                        setTimeout(function() {
+                            const lastRow = $('#supir_table_body tr').not('#no_supir_row').last();
+                            const selectSupir = lastRow.find('select[name="supir_id[]"]');
+                            
+                            // Try to find matching supir in dropdown by name
+                            let found = false;
+                            selectSupir.find('option').each(function() {
+                                const optionText = $(this).text().toLowerCase();
+                                const searchName = namaSupir.toLowerCase();
                                 
-                                // Add each supir to table
-                                supirList.forEach(function(namaSupir, index) {
-                                    setTimeout(function() {
-                                        console.log('Adding row for supir:', namaSupir);
-                                        
-                                        // Trigger add supir button
-                                        $('#btn_add_supir').trigger('click');
-                                        
-                                        // Fill the last added row with supir name by matching from dropdown options
-                                        setTimeout(function() {
-                                            const lastRow = $('#supir_table_body tr').not('#no_supir_row').last();
-                                            const selectSupir = lastRow.find('select[name="supir_id[]"]');
-                                            
-                                            console.log('Looking for supir:', namaSupir, 'in dropdown with', selectSupir.find('option').length, 'options');
-                                            
-                                            // Try to find matching supir in dropdown by name
-                                            let found = false;
-                                            selectSupir.find('option').each(function() {
-                                                const optionText = $(this).text().toLowerCase();
-                                                const searchName = namaSupir.toLowerCase();
-                                                
-                                                if (optionText.includes(searchName) || searchName.includes(optionText.trim().split('(')[0].trim().toLowerCase())) {
-                                                    $(this).prop('selected', true);
-                                                    found = true;
-                                                    console.log('✓ Matched and selected:', $(this).text());
-                                                    return false; // break
-                                                }
-                                            });
-                                            
-                                            if (!found) {
-                                                console.log('✗ No match found for:', namaSupir);
-                                            }
-                                        }, 100);
-                                    }, 200 * index); // Stagger each row addition
-                                });
-                            }, 1500); // Wait for table container to appear
-                        }
-                    }, 1200); // Wait for kapal data to load
-
-                    return false; // Break the loop
-                }
-            });
+                                if (optionText.includes(searchName) || searchName.includes(optionText.trim().split('(')[0].trim().toLowerCase())) {
+                                    $(this).prop('selected', true);
+                                    found = true;
+                                    console.log('✓ Matched and selected:', $(this).text());
+                                    return false; // break
+                                }
+                            });
+                            
+                            if (!found) {
+                                console.log('✗ No match found for:', namaSupir);
+                            }
+                        }, 100);
+                    }, 200 * index); // Stagger each row addition
+                });
+            }, 500);
         }
     });
 
@@ -737,151 +687,7 @@ $(document).ready(function() {
         generateNomorPembayaran(initialBank, selectedOption.text());
     }
 
-    // Handler untuk dropdown kegiatan - tampilkan plat nomor jika kegiatan mengandung "kir" atau "stnk"
-    // atau tampilkan kapal & voyage jika kegiatan adalah "Uang Muka OB Bongkar" atau "Uang Muka OB Muat"
-    $('#kegiatan').on('change', function() {
-        let selectedKegiatan = $(this).val();
-        let lowerKegiatan = selectedKegiatan.toLowerCase();
 
-        // Reset semua container
-        $('#plat_nomor_container').addClass('hidden');
-        $('#plat_nomor').removeAttr('required').val('');
-        $('#ob_container').addClass('hidden');
-        $('#uang_muka_supir_container').addClass('hidden');
-        $('#nomor_voyage').removeAttr('required').val('');
-
-        // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
-        if (lowerKegiatan.includes('kir') || lowerKegiatan.includes('stnk')) {
-            $('#plat_nomor_container').removeClass('hidden');
-            $('#plat_nomor').attr('required', true);
-        }
-        // Cek apakah kegiatan adalah "Uang Muka OB Bongkar" atau "Uang Muka OB Muat"
-        else if (lowerKegiatan.includes('uang muka ob bongkar') || lowerKegiatan.includes('uang muka ob muat')) {
-            $('#ob_container').removeClass('hidden');
-            $('#nomor_voyage').attr('required', true);
-            
-            // Tampilkan tabel uang muka supir untuk SEMUA kegiatan OB (Bongkar dan Muat)
-            $('#uang_muka_supir_container').removeClass('hidden');
-            
-            // Load data voyage
-            loadVoyageData();
-        }
-    });
-
-    // Function to load voyage data from OB Bongkar
-    function loadVoyageData() {
-        $('#nomor_voyage').html('<option value="">Loading...</option>');
-        
-        $.ajax({
-            url: '/api/get-voyage-list',
-            method: 'GET',
-            success: function(response) {
-                let options = '<option value="">Pilih Nomor Voyage</option>';
-                
-                if (response.success && response.data.length > 0) {
-                    response.data.forEach(function(voyage) {
-                        options += `<option value="${voyage.voyage}">${voyage.voyage}</option>`;
-                    });
-                } else {
-                    options = '<option value="">Tidak ada data voyage</option>';
-                }
-                
-                $('#nomor_voyage').html(options);
-            },
-            error: function() {
-                $('#nomor_voyage').html('<option value="">Error loading data</option>');
-            }
-        });
-    }
-
-    // Handler untuk dropdown nomor voyage - load supir berdasarkan voyage yang dipilih
-    $('#nomor_voyage').on('change', function() {
-        let selectedVoyage = $(this).val();
-        let selectedKegiatan = $('#kegiatan').val();
-        
-        if (selectedVoyage && !$('#uang_muka_supir_container').hasClass('hidden')) {
-            // Clear existing rows
-            $('#supir_table_body .supir-row').remove();
-            $('#no_supir_row').show();
-            supirRowCounter = 0;
-            
-            // Tentukan kegiatan filter berdasarkan nama kegiatan yang dipilih
-            let kegiatanFilter = null;
-            if (selectedKegiatan.toLowerCase().includes('ob muat')) {
-                kegiatanFilter = 'muat';
-            } else if (selectedKegiatan.toLowerCase().includes('ob bongkar')) {
-                kegiatanFilter = 'bongkar';
-            }
-            
-            console.log('Loading supir for voyage:', selectedVoyage, 'with kegiatan filter:', kegiatanFilter);
-            
-            // Load supir data based on voyage and kegiatan
-            $.ajax({
-                url: '/api/get-supir-by-voyage',
-                method: 'GET',
-                data: { 
-                    voyage: selectedVoyage,
-                    kegiatan: kegiatanFilter
-                },
-                success: function(response) {
-                    if (response.success && response.data.length > 0) {
-                        console.log('✅ Loaded', response.data.length, 'supir for voyage:', selectedVoyage, 'kegiatan:', kegiatanFilter);
-                        
-                        // Auto-populate table with supir from this voyage
-                        response.data.forEach(function(supirData, index) {
-                            setTimeout(function() {
-                                $('#btn_add_supir').trigger('click');
-                                
-                                // Fill the last added row with supir name and tagihan
-                                setTimeout(function() {
-                                    const lastRow = $('#supir_table_body tr').not('#no_supir_row').last();
-                                    const selectSupir = lastRow.find('select[name="supir_id[]"]');
-                                    
-                                    // Store tagihan amount in row data attribute
-                                    lastRow.attr('data-tagihan', supirData.total_tagihan);
-                                    
-                                    // Display jumlah tagihan
-                                    const formattedTagihan = 'Rp ' + new Intl.NumberFormat('id-ID').format(supirData.total_tagihan);
-                                    lastRow.find('.jumlah-tagihan-display').text(formattedTagihan + ' (' + supirData.jumlah_kontainer + ' kontainer)');
-                                    
-                                    // Try to match supir by name
-                                    let found = false;
-                                    selectSupir.find('option').each(function() {
-                                        const optionText = $(this).text().toLowerCase();
-                                        const searchName = supirData.nama_supir.toLowerCase();
-                                        
-                                        if (optionText.includes(searchName) || searchName.includes(optionText.trim().split('(')[0].trim().toLowerCase())) {
-                                            $(this).prop('selected', true);
-                                            found = true;
-                                            console.log('✓ Auto-selected:', $(this).text(), 'with tagihan:', formattedTagihan);
-                                            return false;
-                                        }
-                                    });
-                                    
-                                    if (!found) {
-                                        console.log('⚠ No match found for:', supirData.nama_supir);
-                                    }
-                                }, 100);
-                            }, 150 * index);
-                        });
-                    } else {
-                        console.log('ℹ No supir data found for voyage:', selectedVoyage, 'kegiatan:', kegiatanFilter);
-                        alert('Tidak ada data supir dengan kegiatan ' + (kegiatanFilter || 'OB') + ' untuk voyage ini.');
-                    }
-                },
-                error: function() {
-                    console.error('❌ Error loading supir data');
-                    alert('Gagal memuat data supir. Silakan coba lagi.');
-                }
-            });
-        }
-    });
-
-    // Cek kegiatan pada saat load (untuk old input)
-    let initialKegiatan = $('#kegiatan').val();
-    if (initialKegiatan) {
-        $('#kegiatan').trigger('change');
-    }
 
     // === Fungsi untuk Tabel Uang Muka Supir ===
     let supirRowCounter = 0;
@@ -890,11 +696,11 @@ $(document).ready(function() {
     $('#btn_add_supir').on('click', function() {
         supirRowCounter++;
         const newRow = `
-            <tr class="supir-row hover:bg-gray-50" data-tagihan="0">
+            <tr class="supir-row hover:bg-gray-50">
                 <td class="px-6 py-4 text-center text-sm">${supirRowCounter}</td>
                 <td class="px-6 py-4">
                     <select name="supir_id[]" 
-                            class="border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm w-full text-sm"
+                            class="supir-select border-gray-300 focus:border-blue-500 focus:ring-blue-500 rounded-md shadow-sm w-full text-sm"
                             required>
                         <option value="">Pilih Supir</option>
                         @if(isset($masterSupir) && $masterSupir->count() > 0)
@@ -910,9 +716,6 @@ $(document).ready(function() {
                             <option value="" disabled>Tidak ada supir tersedia</option>
                         @endif
                     </select>
-                </td>
-                <td class="px-6 py-4 text-right">
-                    <span class="jumlah-tagihan-display text-sm font-medium text-gray-700">-</span>
                 </td>
                 <td class="px-6 py-4">
                     <input type="text" 
@@ -935,11 +738,27 @@ $(document).ready(function() {
                         </svg>
                     </button>
                 </td>
-            </tr>
+            </tr> 
         `;
         
         $('#no_supir_row').hide();
         $('#supir_table_body').append(newRow);
+        
+        // Initialize Select2 untuk dropdown supir yang baru ditambahkan
+        $('#supir_table_body tr:last .supir-select').select2({
+            placeholder: 'Ketik untuk mencari supir...',
+            allowClear: true,
+            width: '100%',
+            theme: 'bootstrap-5',
+            language: {
+                noResults: function() {
+                    return "Supir tidak ditemukan";
+                },
+                searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
         
         // Format currency untuk input yang baru ditambahkan
         formatCurrencyInputs();
@@ -950,6 +769,8 @@ $(document).ready(function() {
 
     // Handler untuk delete row
     $(document).on('click', '.btn-delete-supir', function() {
+        // Destroy Select2 sebelum menghapus row
+        $(this).closest('tr').find('.supir-select').select2('destroy');
         $(this).closest('tr').remove();
         updateSupirRowNumbers();
         calculateTotalUangMuka();

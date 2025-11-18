@@ -370,30 +370,6 @@
                     <span class="info-value">{{ $realisasi->kasBankAkun->nama_akun ?? '-' }}</span>
                 </div>
             </div>
-            <div class="info-right">
-                @if($uangMukaData && $uangMukaData->nomor_pembayaran)
-                <div class="info-item">
-                    <span class="info-label">Nomor Voucher UM:</span>
-                    <span class="info-value" style="font-weight: bold; color: #059669;">{{ $uangMukaData->nomor_pembayaran }}</span>
-                </div>
-                @elseif($realisasi->dp_amount > 0)
-                <div class="info-item">
-                    <span class="info-label">Nomor Voucher UM:</span>
-                    <span class="info-value" style="color: #dc2626; font-style: italic;">Linking...</span>
-                </div>
-                @endif
-                @if($uangMukaData && $uangMukaData->tanggal_pembayaran)
-                <div class="info-item">
-                    <span class="info-label">Tanggal Voucher UM:</span>
-                    <span class="info-value" style="font-weight: bold; color: #059669;">{{ $uangMukaData->tanggal_pembayaran->format('d M Y') }}</span>
-                </div>
-                @elseif($realisasi->dp_amount > 0)
-                <div class="info-item">
-                    <span class="info-label">Tanggal Voucher UM:</span>
-                    <span class="info-value" style="color: #dc2626; font-style: italic;">Linking...</span>
-                </div>
-                @endif
-            </div>
         </div>
 
         <!-- Table Section -->
@@ -562,11 +538,14 @@
             @endif
             <div class="summary-item total-amount">
                 <span class="summary-label">TOTAL REALISASI:</span>
-                <span>Rp {{ number_format($realisasi->total_pembayaran, 0, ',', '.') }}</span>
+                <span>Rp {{ number_format($realisasi->total_realisasi ?? $realisasi->total_pembayaran, 0, ',', '.') }}</span>
             </div>
             @if($realisasi->dp_amount > 0)
             <div class="summary-item" style="margin-top: 10px; font-size: 13px;">
-                @php $totalSelisihFinal = $realisasi->total_pembayaran - $realisasi->dp_amount; @endphp
+                @php 
+                    // Hitung selisih: total_pembayaran sudah berisi selisih yang benar
+                    $totalSelisihFinal = $realisasi->total_pembayaran;
+                @endphp
                 @if($totalSelisihFinal > 0)
                     <span class="summary-label">Kurang Bayar:</span>
                     <span style="font-weight: bold; color: #dc2626;">Rp {{ number_format($totalSelisihFinal, 0, ',', '.') }}</span>

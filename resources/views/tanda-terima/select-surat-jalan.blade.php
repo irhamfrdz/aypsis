@@ -96,11 +96,11 @@
                                 class="inline-flex items-center justify-center px-3 py-1.5 bg-emerald-600 hover:bg-emerald-700 disabled:bg-gray-400 disabled:cursor-not-allowed text-white text-sm font-medium rounded transition-colors"
                                 disabled>
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
                             </svg>
-                            Lanjutkan ke Edit Tanda Terima
+                            Buat Tanda Terima
                         </button>
-                        <a href="{{ route('dashboard') }}" 
+                        <a href="{{ route('tanda-terima.index') }}" 
                            class="inline-flex items-center justify-center px-3 py-1.5 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded transition-colors">
                             <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/>
@@ -329,9 +329,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         const selectedId = document.getElementById('selected_surat_jalan_id').value;
         if (selectedId) {
-            // Redirect to edit page for the tanda terima of selected surat jalan
-            const editUrl = '{{ route("tanda-terima.edit", ":id") }}'.replace(':id', selectedId);
-            window.location.href = editUrl;
+            // Redirect to create/find tanda terima from surat jalan
+            window.location.href = '{{ route("tanda-terima.from-surat-jalan", ":id") }}'.replace(':id', selectedId);
         }
     });
 

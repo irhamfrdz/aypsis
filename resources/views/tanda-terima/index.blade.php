@@ -11,9 +11,18 @@
 <div class="container mx-auto px-4 py-8">
     <!-- Header -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Tanda Terima</h1>
-            <p class="text-gray-600 mt-1">Kelola tanda terima kontainer dari surat jalan yang sudah di-approve</p>
+        <div class="flex items-center justify-between">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-900">Tanda Terima</h1>
+                <p class="text-gray-600 mt-1">Kelola tanda terima kontainer dari surat jalan yang sudah di-approve</p>
+            </div>
+            <div>
+                <a href="{{ route('tanda-terima.select-surat-jalan') }}" 
+                   class="inline-flex items-center px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-medium rounded-lg shadow-sm transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>
+                    Tambah Tanda Terima
+                </a>
+            </div>
         </div>
     </div>
 

@@ -4,32 +4,29 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-
-
+use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Traits\Auditable;
+
 class PembayaranAktivitasLainnya extends Model
 {
-    use HasFactory;
+    use HasFactory, SoftDeletes, Auditable;
 
-    use Auditable;
     protected $table = 'pembayaran_aktivitas_lainnya';
 
     protected $fillable = [
         'nomor_pembayaran',
-        'tanggal_pembayaran',
         'nomor_accurate',
+        'tanggal_pembayaran',
+        'nomor_voyage',
+        'nama_kapal',
+        'total_pembayaran',
+        'aktivitas_pembayaran',
+        'plat_nomor',
         'pilih_bank',
         'akun_biaya_id',
-        'total_nominal',
-        'metode_pembayaran',
-        'referensi_pembayaran',
-        'keterangan',
-        'status',
         'jenis_transaksi',
-        'kegiatan',
-        'plat_nomor',
-        'nama_kapal',
-        'nomor_voyage',
+        'is_dp',
+        'status',
         'created_by',
         'approved_by',
         'approved_at'
@@ -37,18 +34,17 @@ class PembayaranAktivitasLainnya extends Model
 
     protected $casts = [
         'tanggal_pembayaran' => 'date',
-        'total_nominal' => 'decimal:2',
+        'total_pembayaran' => 'decimal:2',
+        'is_dp' => 'boolean',
         'approved_at' => 'datetime'
     ];
 
     /**
-     * Relationship dengan aktivitas lainnya (many-to-many)
+     * Relationship dengan supir (untuk daftar uang muka supir)
      */
-    public function aktivitasLainnya()
+    public function supirList()
     {
-        return $this->belongsToMany(AktivitasLainnya::class, 'pembayaran_aktivitas_lainnya_items', 'pembayaran_id', 'aktivitas_id')
-                    ->withPivot('nominal', 'keterangan')
-                    ->withTimestamps();
+        return $this->hasMany(PembayaranAktivitasLainnyaSupir::class, 'pembayaran_id');
     }
 
     /**
@@ -68,6 +64,14 @@ class PembayaranAktivitasLainnya extends Model
     }
 
     /**
+     * Relationship dengan User (approved_by)
+     */
+    public function approver()
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
      * Relationship dengan COA Bank (pilih_bank)
      */
     public function bank()
@@ -81,22 +85,6 @@ class PembayaranAktivitasLainnya extends Model
     public function akunBiaya()
     {
         return $this->belongsTo(Coa::class, 'akun_biaya_id');
-    }
-
-    /**
-     * Relationship dengan items pembayaran
-     */
-    public function items()
-    {
-        return $this->hasMany(PembayaranAktivitasLainnyaItem::class, 'pembayaran_id');
-    }
-
-    /**
-     * Relationship dengan detail uang muka supir
-     */
-    public function detailSupir()
-    {
-        return $this->hasMany(PembayaranUangMukaSupirDetail::class, 'pembayaran_id');
     }
 
     /**
@@ -169,11 +157,11 @@ class PembayaranAktivitasLainnya extends Model
     }
 
     /**
-     * Calculate total from items
+     * Calculate total from supir list
      */
-    public function calculateTotal()
+    public function calculateTotalUangMukaSupir()
     {
-        return $this->items->sum('nominal');
+        return $this->supirList->sum('jumlah_uang_muka');
     }
 
     /**
@@ -190,5 +178,13 @@ class PembayaranAktivitasLainnya extends Model
     public function scopeByDateRange($query, $startDate, $endDate)
     {
         return $query->whereBetween('tanggal_pembayaran', [$startDate, $endDate]);
+    }
+
+    /**
+     * Scope untuk filter voyage
+     */
+    public function scopeByVoyage($query, $voyage)
+    {
+        return $query->where('nomor_voyage', $voyage);
     }
 }

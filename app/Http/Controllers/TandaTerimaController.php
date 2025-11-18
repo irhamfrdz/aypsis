@@ -67,11 +67,192 @@ class TandaTerimaController extends Controller
      */
     public function index(Request $request)
     {
-        // Redirect to select surat jalan page
-        return redirect()->route('tanda-terima.select-surat-jalan');
+        // Get search and filter parameters
+        $search = $request->input('search', '');
+        $status = $request->input('status', '');
+        $perPage = $request->input('rows_per_page', 25);
+
+        // Query tanda terima with relations
+        $query = TandaTerima::with(['suratJalan.order.pengirim']);
+
+        // Apply search filter
+        if (!empty($search)) {
+            $query->where(function($q) use ($search) {
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('estimasi_nama_kapal', 'like', "%{$search}%")
+                  ->orWhere('tujuan_pengiriman', 'like', "%{$search}%")
+                  ->orWhere('jenis_barang', 'like', "%{$search}%")
+                  ->orWhereHas('suratJalan.order', function($orderQuery) use ($search) {
+                      $orderQuery->where('tujuan_ambil', 'like', "%{$search}%");
+                  })
+                  ->orWhereHas('suratJalan', function($suratJalanQuery) use ($search) {
+                      $suratJalanQuery->where('tujuan_pengambilan', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Apply status filter
+        if (!empty($status)) {
+            $query->where('status', $status);
+        }
+
+        // Order by newest and paginate
+        $tandaTerimas = $query->orderBy('created_at', 'desc')->paginate($perPage);
+
+        return view('tanda-terima.index', compact('tandaTerimas'));
     }
 
+    /**
+     * Show the form for creating a new tanda terima
+     */
+    public function create(Request $request)
+    {
+        $suratJalanId = $request->input('surat_jalan_id');
+        
+        if (!$suratJalanId) {
+            return redirect()->route('tanda-terima.select-surat-jalan')
+                ->with('error', 'Silakan pilih surat jalan terlebih dahulu');
+        }
 
+        $suratJalan = SuratJalan::with(['order.pengirim'])->findOrFail($suratJalanId);
+        
+        // Check if tanda terima already exists
+        if ($suratJalan->tandaTerima) {
+            return redirect()->route('tanda-terima.edit', $suratJalan->tandaTerima->id)
+                ->with('info', 'Tanda terima untuk surat jalan ini sudah ada. Anda dapat mengeditnya.');
+        }
+
+        // Get master kapal for dropdown
+        $masterKapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
+
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals'));
+    }
+
+    /**
+     * Store a newly created tanda terima in storage
+     */
+    public function store(Request $request)
+    {
+        $request->validate([
+            'surat_jalan_id' => 'required|exists:surat_jalan,id',
+            'estimasi_nama_kapal' => 'nullable|string|max:255',
+            'tanggal_ambil_kontainer' => 'nullable|date',
+            'tanggal_terima_pelabuhan' => 'nullable|date',
+            'tanggal_garasi' => 'nullable|date',
+            'jumlah' => 'nullable|integer|min:0',
+            'satuan' => 'nullable|string|max:50',
+            'panjang' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable|numeric|min:0',
+            'tujuan_pengiriman' => 'nullable|string|max:255',
+            'catatan' => 'nullable|string',
+            'nomor_kontainer' => 'nullable|array',
+            'nomor_kontainer.*' => 'nullable|string|max:255',
+            'no_seal' => 'nullable|array',
+            'no_seal.*' => 'nullable|string|max:255',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $suratJalan = SuratJalan::with(['order.pengirim'])->findOrFail($request->surat_jalan_id);
+
+            // Create new tanda terima with data from surat jalan and form
+            $tandaTerima = new TandaTerima();
+            $tandaTerima->surat_jalan_id = $suratJalan->id;
+            $tandaTerima->no_surat_jalan = $suratJalan->no_surat_jalan;
+            $tandaTerima->tanggal_surat_jalan = $suratJalan->tanggal_surat_jalan;
+            $tandaTerima->supir = $suratJalan->supir;
+            $tandaTerima->kegiatan = $suratJalan->kegiatan;
+            $tandaTerima->jenis_barang = $suratJalan->jenis_barang;
+            $tandaTerima->tipe_kontainer = $suratJalan->tipe_kontainer;
+            $tandaTerima->size = $suratJalan->size;
+            $tandaTerima->jumlah_kontainer = $suratJalan->jumlah_kontainer;
+            $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
+            $tandaTerima->pengirim = $suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : null;
+            
+            // Additional data from form
+            $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
+            $tandaTerima->tanggal_ambil_kontainer = $request->tanggal_ambil_kontainer;
+            $tandaTerima->tanggal_terima_pelabuhan = $request->tanggal_terima_pelabuhan;
+            $tandaTerima->tanggal_garasi = $request->tanggal_garasi;
+            $tandaTerima->jumlah = $request->jumlah;
+            $tandaTerima->satuan = $request->satuan;
+            $tandaTerima->panjang = $request->panjang ? round((float) $request->panjang, 3) : null;
+            $tandaTerima->lebar = $request->lebar ? round((float) $request->lebar, 3) : null;
+            $tandaTerima->tinggi = $request->tinggi ? round((float) $request->tinggi, 3) : null;
+            $tandaTerima->meter_kubik = $request->meter_kubik ? round((float) $request->meter_kubik, 3) : null;
+            $tandaTerima->tonase = $request->tonase ? round((float) $request->tonase, 3) : null;
+            $tandaTerima->catatan = $request->catatan;
+            
+            // Handle multiple container numbers
+            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
+                $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
+                    return !empty(trim($value));
+                });
+                if (!empty($nomorKontainers)) {
+                    $tandaTerima->no_kontainer = implode(',', $nomorKontainers);
+                } else {
+                    $tandaTerima->no_kontainer = $suratJalan->no_kontainer;
+                }
+            } else {
+                $tandaTerima->no_kontainer = $suratJalan->no_kontainer;
+            }
+
+            // Handle multiple seal numbers
+            if ($request->has('no_seal') && is_array($request->no_seal)) {
+                $noSeals = array_filter($request->no_seal, function($value) {
+                    return !empty(trim($value));
+                });
+                if (!empty($noSeals)) {
+                    $tandaTerima->no_seal = implode(',', $noSeals);
+                }
+            }
+
+            $tandaTerima->created_by = Auth::id();
+            $tandaTerima->save();
+
+            // Sync nomor kontainer dan seal ke surat jalan
+            if (!empty($tandaTerima->no_kontainer) || !empty($tandaTerima->no_seal)) {
+                $suratJalanUpdate = [];
+                
+                if (!empty($tandaTerima->no_kontainer)) {
+                    $suratJalanUpdate['no_kontainer'] = $tandaTerima->no_kontainer;
+                }
+                
+                if (!empty($tandaTerima->no_seal)) {
+                    $suratJalanUpdate['no_seal'] = $tandaTerima->no_seal;
+                }
+                
+                if (!empty($suratJalanUpdate)) {
+                    $suratJalan->update($suratJalanUpdate);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('tanda-terima.show', $tandaTerima->id)
+                ->with('success', 'Tanda terima berhasil dibuat dan nomor kontainer/seal telah disinkronkan ke surat jalan');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error creating tanda terima: ' . $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', 'Gagal membuat tanda terima: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Create or find tanda terima from surat jalan (for backward compatibility)
+     */
+    public function createFromSuratJalan(Request $request, SuratJalan $suratJalan)
+    {
+        // Redirect to create page with surat jalan id
+        return redirect()->route('tanda-terima.create', ['surat_jalan_id' => $suratJalan->id]);
+    }
 
     /**
      * Show the form for editing the specified tanda terima
