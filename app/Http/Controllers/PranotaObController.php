@@ -147,7 +147,9 @@ class PranotaObController extends Controller
      */
     public function show(PranotaOb $pranotaOb)
     {
-        $pranotaOb->load(['items.tagihanOb.bl', 'creator', 'approver']);
+        // Query ulang dari database untuk memastikan data terbaru (termasuk DP)
+        $pranotaOb = PranotaOb::with(['items.tagihanOb.bl', 'creator', 'approver'])
+            ->findOrFail($pranotaOb->id);
         
         return view('pranota-ob.show', compact('pranotaOb'));
     }
@@ -426,5 +428,44 @@ class PranotaObController extends Controller
         }
         
         return $nomorPranota;
+    }
+
+    /**
+     * Update DP for tagihan OB items in pranota
+     */
+    public function updateDp(Request $request, PranotaOb $pranotaOb)
+    {
+        $request->validate([
+            'dp_values' => 'required|array',
+            'dp_values.*' => 'required|numeric|min:0'
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            foreach ($request->dp_values as $supirName => $dpValue) {
+                // Ambil semua tagihan untuk supir ini di pranota ini
+                $tagihanIds = $pranotaOb->items
+                    ->filter(fn($item) => $item->tagihanOb && $item->tagihanOb->nama_supir === $supirName)
+                    ->pluck('tagihanOb.id')
+                    ->toArray();
+
+                if (!empty($tagihanIds)) {
+                    // Update DP untuk semua tagihan supir ini
+                    TagihanOb::whereIn('id', $tagihanIds)
+                        ->update(['dp' => $dpValue / count($tagihanIds)]);
+                }
+            }
+
+            DB::commit();
+
+            return redirect()->route('pranota-ob.show', $pranotaOb)
+                ->with('success', 'DP berhasil diperbarui');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal memperbarui DP: ' . $e->getMessage());
+        }
     }
 }

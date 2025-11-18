@@ -103,19 +103,8 @@
                         </div>
                     </div>
 
-                    <!-- Row for Kapal and Voyage (untuk Uang Muka OB) -->
+                    <!-- Row for Voyage (untuk Uang Muka OB) -->
                     <div id="ob_container" class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 hidden">
-                        <div>
-                            <label for="nama_kapal" class="block text-xs font-medium text-gray-700 mb-1">
-                                Nama Kapal <span class="text-red-500">*</span>
-                            </label>
-                            <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
-                                    id="nama_kapal"
-                                    name="nama_kapal">
-                                <option value="">Pilih Kapal</option>
-                            </select>
-                            <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk kegiatan OB</p>
-                        </div>
                         <div>
                             <label for="nomor_voyage" class="block text-xs font-medium text-gray-700 mb-1">
                                 Nomor Voyage <span class="text-red-500">*</span>
@@ -123,9 +112,12 @@
                             <select class="w-full px-2 py-1.5 text-sm border border-gray-300 rounded shadow-sm focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500"
                                     id="nomor_voyage"
                                     name="nomor_voyage">
-                                <option value="">Pilih Voyage</option>
+                                <option value="">Pilih Nomor Voyage</option>
                             </select>
-                            <p class="text-xs text-gray-500 mt-1">Pilih nomor voyage kapal</p>
+                            <p class="text-xs text-gray-500 mt-1">Pilih nomor voyage untuk kegiatan OB</p>
+                        </div>
+                        <div>
+                            <!-- Placeholder untuk menjaga grid layout -->
                         </div>
                     </div>
 
@@ -150,6 +142,7 @@
                                         <tr>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir <span class="text-red-500">*</span></th>
+                                            <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Tagihan</th>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Jumlah Uang Muka <span class="text-red-500">*</span></th>
                                             <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keterangan</th>
                                             <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
@@ -158,7 +151,7 @@
                                     <tbody id="supir_table_body" class="bg-white divide-y divide-gray-200">
                                         <!-- Rows will be added dynamically -->
                                         <tr id="no_supir_row">
-                                            <td colspan="5" class="px-3 py-4 text-center text-sm text-gray-500">
+                                            <td colspan="6" class="px-3 py-4 text-center text-sm text-gray-500">
                                                 <i class="fas fa-info-circle mr-1"></i>
                                                 Belum ada data supir. Klik "Tambah Supir" untuk menambahkan.
                                             </td>
@@ -579,20 +572,16 @@ $(document).ready(function() {
                     $(this).prop('selected', true);
                     $('#kegiatan').trigger('change');
 
-                    // Wait for AJAX to load kapal list, then select the kapal
+                    // Wait for container to show and data to load, then select voyage
                     setTimeout(function() {
-                        console.log('Step 1: Processing kapal and voyage...');
+                        console.log('Step 1: Processing voyage...');
                         
-                        if (kapalParam) {
-                            $('#nama_kapal').val(kapalParam).trigger('change');
-                            
-                            // Wait for voyage to load, then select it
+                        if (voyageParam) {
+                            // Wait for AJAX to complete loading voyage options
                             setTimeout(function() {
-                                if (voyageParam) {
-                                    $('#nomor_voyage').val(voyageParam);
-                                    console.log('Voyage selected:', voyageParam);
-                                }
-                            }, 800);
+                                $('#nomor_voyage').val(voyageParam);
+                                console.log('Voyage selected:', voyageParam);
+                            }, 1000);
                         }
 
                         // Pre-fill supir list if exists
@@ -759,7 +748,7 @@ $(document).ready(function() {
         $('#plat_nomor').removeAttr('required').val('');
         $('#ob_container').addClass('hidden');
         $('#uang_muka_supir_container').addClass('hidden');
-        $('#nama_kapal, #nomor_voyage').removeAttr('required').val('');
+        $('#nomor_voyage').removeAttr('required').val('');
 
         // Cek apakah kegiatan mengandung kata "kir" atau "stnk"
         if (lowerKegiatan.includes('kir') || lowerKegiatan.includes('stnk')) {
@@ -769,74 +758,122 @@ $(document).ready(function() {
         // Cek apakah kegiatan adalah "Uang Muka OB Bongkar" atau "Uang Muka OB Muat"
         else if (lowerKegiatan.includes('uang muka ob bongkar') || lowerKegiatan.includes('uang muka ob muat')) {
             $('#ob_container').removeClass('hidden');
-            $('#nama_kapal, #nomor_voyage').attr('required', true);
+            $('#nomor_voyage').attr('required', true);
             
-            // Tampilkan tabel uang muka supir untuk Uang Muka OB Bongkar
-            if (lowerKegiatan.includes('uang muka ob bongkar')) {
-                $('#uang_muka_supir_container').removeClass('hidden');
-            }
+            // Tampilkan tabel uang muka supir untuk SEMUA kegiatan OB (Bongkar dan Muat)
+            $('#uang_muka_supir_container').removeClass('hidden');
             
-            // Load data kapal
-            loadKapalData();
+            // Load data voyage
+            loadVoyageData();
         }
     });
 
-    // Function to load kapal data from OB Bongkar
-    function loadKapalData() {
-        $('#nama_kapal').html('<option value="">Loading...</option>');
+    // Function to load voyage data from OB Bongkar
+    function loadVoyageData() {
+        $('#nomor_voyage').html('<option value="">Loading...</option>');
         
         $.ajax({
-            url: '/api/get-kapal-list',
+            url: '/api/get-voyage-list',
             method: 'GET',
             success: function(response) {
-                let options = '<option value="">Pilih Kapal</option>';
+                let options = '<option value="">Pilih Nomor Voyage</option>';
                 
                 if (response.success && response.data.length > 0) {
-                    response.data.forEach(function(kapal) {
-                        options += `<option value="${kapal.kapal}">${kapal.kapal}</option>`;
+                    response.data.forEach(function(voyage) {
+                        options += `<option value="${voyage.voyage}">${voyage.voyage}</option>`;
                     });
                 } else {
-                    options = '<option value="">Tidak ada data kapal</option>';
+                    options = '<option value="">Tidak ada data voyage</option>';
                 }
                 
-                $('#nama_kapal').html(options);
+                $('#nomor_voyage').html(options);
             },
             error: function() {
-                $('#nama_kapal').html('<option value="">Error loading data</option>');
+                $('#nomor_voyage').html('<option value="">Error loading data</option>');
             }
         });
     }
 
-    // Handler untuk dropdown kapal - load voyage berdasarkan kapal yang dipilih
-    $('#nama_kapal').on('change', function() {
-        let kapalName = $(this).val();
+    // Handler untuk dropdown nomor voyage - load supir berdasarkan voyage yang dipilih
+    $('#nomor_voyage').on('change', function() {
+        let selectedVoyage = $(this).val();
+        let selectedKegiatan = $('#kegiatan').val();
         
-        if (kapalName) {
-            $('#nomor_voyage').html('<option value="">Loading...</option>');
+        if (selectedVoyage && !$('#uang_muka_supir_container').hasClass('hidden')) {
+            // Clear existing rows
+            $('#supir_table_body .supir-row').remove();
+            $('#no_supir_row').show();
+            supirRowCounter = 0;
             
+            // Tentukan kegiatan filter berdasarkan nama kegiatan yang dipilih
+            let kegiatanFilter = null;
+            if (selectedKegiatan.toLowerCase().includes('ob muat')) {
+                kegiatanFilter = 'muat';
+            } else if (selectedKegiatan.toLowerCase().includes('ob bongkar')) {
+                kegiatanFilter = 'bongkar';
+            }
+            
+            console.log('Loading supir for voyage:', selectedVoyage, 'with kegiatan filter:', kegiatanFilter);
+            
+            // Load supir data based on voyage and kegiatan
             $.ajax({
-                url: '/api/get-voyage-list',
+                url: '/api/get-supir-by-voyage',
                 method: 'GET',
-                data: { kapal: kapalName },
+                data: { 
+                    voyage: selectedVoyage,
+                    kegiatan: kegiatanFilter
+                },
                 success: function(response) {
-                    let options = '<option value="">Pilih Voyage</option>';
-                    
                     if (response.success && response.data.length > 0) {
-                        response.data.forEach(function(voyage) {
-                            options += `<option value="${voyage.voyage}">${voyage.voyage}</option>`;
+                        console.log('✅ Loaded', response.data.length, 'supir for voyage:', selectedVoyage, 'kegiatan:', kegiatanFilter);
+                        
+                        // Auto-populate table with supir from this voyage
+                        response.data.forEach(function(supirData, index) {
+                            setTimeout(function() {
+                                $('#btn_add_supir').trigger('click');
+                                
+                                // Fill the last added row with supir name and tagihan
+                                setTimeout(function() {
+                                    const lastRow = $('#supir_table_body tr').not('#no_supir_row').last();
+                                    const selectSupir = lastRow.find('select[name="supir_id[]"]');
+                                    
+                                    // Store tagihan amount in row data attribute
+                                    lastRow.attr('data-tagihan', supirData.total_tagihan);
+                                    
+                                    // Display jumlah tagihan
+                                    const formattedTagihan = 'Rp ' + new Intl.NumberFormat('id-ID').format(supirData.total_tagihan);
+                                    lastRow.find('.jumlah-tagihan-display').text(formattedTagihan + ' (' + supirData.jumlah_kontainer + ' kontainer)');
+                                    
+                                    // Try to match supir by name
+                                    let found = false;
+                                    selectSupir.find('option').each(function() {
+                                        const optionText = $(this).text().toLowerCase();
+                                        const searchName = supirData.nama_supir.toLowerCase();
+                                        
+                                        if (optionText.includes(searchName) || searchName.includes(optionText.trim().split('(')[0].trim().toLowerCase())) {
+                                            $(this).prop('selected', true);
+                                            found = true;
+                                            console.log('✓ Auto-selected:', $(this).text(), 'with tagihan:', formattedTagihan);
+                                            return false;
+                                        }
+                                    });
+                                    
+                                    if (!found) {
+                                        console.log('⚠ No match found for:', supirData.nama_supir);
+                                    }
+                                }, 100);
+                            }, 150 * index);
                         });
                     } else {
-                        options = '<option value="">Tidak ada data voyage</option>';
+                        console.log('ℹ No supir data found for voyage:', selectedVoyage, 'kegiatan:', kegiatanFilter);
+                        alert('Tidak ada data supir dengan kegiatan ' + (kegiatanFilter || 'OB') + ' untuk voyage ini.');
                     }
-                    
-                    $('#nomor_voyage').html(options);
                 },
                 error: function() {
-                    $('#nomor_voyage').html('<option value="">Error loading data</option>');
+                    console.error('❌ Error loading supir data');
+                    alert('Gagal memuat data supir. Silakan coba lagi.');
                 }
             });
-        } else {
-            $('#nomor_voyage').html('<option value="">Pilih Voyage</option>');
         }
     });
 
@@ -853,7 +890,7 @@ $(document).ready(function() {
     $('#btn_add_supir').on('click', function() {
         supirRowCounter++;
         const newRow = `
-            <tr class="supir-row hover:bg-gray-50">
+            <tr class="supir-row hover:bg-gray-50" data-tagihan="0">
                 <td class="px-6 py-4 text-center text-sm">${supirRowCounter}</td>
                 <td class="px-6 py-4">
                     <select name="supir_id[]" 
@@ -873,6 +910,9 @@ $(document).ready(function() {
                             <option value="" disabled>Tidak ada supir tersedia</option>
                         @endif
                     </select>
+                </td>
+                <td class="px-6 py-4 text-right">
+                    <span class="jumlah-tagihan-display text-sm font-medium text-gray-700">-</span>
                 </td>
                 <td class="px-6 py-4">
                     <input type="text" 

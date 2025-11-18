@@ -16,16 +16,6 @@
                         <i class="fas fa-arrow-left mr-1"></i>
                         Kembali
                     </a>
-                    @can('pembayaran-aktivitas-lainnya-create')
-                        <a href="{{ route('pembayaran-aktivitas-lainnya.create', [
-                            'kapal' => $pranotaOb->items->first()?->tagihanOb?->kapal ?? '',
-                            'voyage' => $pranotaOb->items->first()?->tagihanOb?->voyage ?? '',
-                            'supir' => $pranotaOb->items->pluck('tagihanOb.nama_supir')->filter()->implode(', ')
-                        ]) }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
-                            <i class="fas fa-money-bill-wave mr-1"></i>
-                            Tambahkan DP
-                        </a>
-                    @endcan
                     @if($pranotaOb->status === 'draft')
                         @can('pranota-ob-update')
                             <a href="{{ route('pranota-ob.edit', $pranotaOb) }}" class="bg-yellow-500 hover:bg-yellow-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
@@ -56,6 +46,7 @@
                         <i class="fas {{ $pranotaOb->status === 'approved' ? 'fa-check-circle' : ($pranotaOb->status === 'rejected' ? 'fa-times-circle' : 'fa-clock') }} mr-2"></i>
                         {{ ucfirst($pranotaOb->status) }}
                     </span>
+
                 </div>
                 @if($pranotaOb->status === 'approved' && $pranotaOb->approved_at)
                     <div class="text-sm text-gray-600">
@@ -67,7 +58,7 @@
                     </div>
                 @endif
             </div>
-
+            
             @if($pranotaOb->keterangan)
                 <div class="mb-6">
                     <h2 class="text-lg font-semibold text-blue-600 mb-4 flex items-center">
@@ -87,66 +78,103 @@
                     Daftar Tagihan OB ({{ $pranotaOb->items->count() }} items)
                 </h2>
                 
-                <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voyage</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DP</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
-                            </tr>
-                        </thead>
+                <form method="POST" action="{{ route('pranota-ob.update-dp', $pranotaOb) }}" id="dpForm">
+                    @csrf
+                    <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Voyage</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No. Kontainer</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nama Supir</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Barang</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Biaya</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">DP Saat Ini</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Input DP</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
+                                </tr>
+                            </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                            @forelse ($pranotaOb->items as $index => $item)
+                            @php
+                                // Group items by supir untuk menggabungkan DP
+                                $groupedBySupir = $pranotaOb->items->filter(function($item) {
+                                    return $item->tagihanOb !== null;
+                                })->groupBy(function($item) {
+                                    return $item->tagihanOb->nama_supir;
+                                });
+                            @endphp
+                            
+                            @forelse ($groupedBySupir as $supirName => $items)
                                 @php
-                                    $tagihanOb = $item->tagihanOb;
+                                    $firstTagihan = $items->first()->tagihanOb;
+                                    $totalBiaya = $items->sum(fn($item) => $item->tagihanOb->biaya ?? 0);
+                                    $totalDp = $items->sum(fn($item) => $item->tagihanOb->dp ?? 0);
+                                    $totalSisa = $totalBiaya - $totalDp;
+                                    $kontainers = $items->pluck('tagihanOb.nomor_kontainer')->join(', ');
                                 @endphp
-                                @if($tagihanOb)
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $index + 1 }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $tagihanOb->kapal }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $tagihanOb->voyage }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                            <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-mono">{{ $tagihanOb->nomor_kontainer }}</code>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $tagihanOb->nama_supir }}</td>
-                                        <td class="px-6 py-4 text-sm text-gray-900">{{ Str::limit($tagihanOb->barang, 30) }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap">
-                                            <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $tagihanOb->status_kontainer === 'full' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
-                                                {{ ucfirst($tagihanOb->status_kontainer) }}
-                                            </span>
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            Rp {{ number_format($tagihanOb->biaya, 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                                            Rp {{ number_format($tagihanOb->dp ?? 0, 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
-                                            Rp {{ number_format(($tagihanOb->biaya ?? 0) - ($tagihanOb->dp ?? 0), 0, ',', '.') }}
-                                        </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            @can('tagihan-ob-view')
-                                                <a href="{{ route('tagihan-ob.show', $tagihanOb) }}" 
+                                <tr class="hover:bg-gray-50">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $loop->iteration }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $firstTagihan->kapal }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $firstTagihan->voyage }}</td>
+                                    <td class="px-6 py-4 text-sm">
+                                        @foreach($items as $item)
+                                            <code class="bg-gray-100 text-gray-800 px-2 py-1 rounded text-xs font-mono inline-block mb-1">{{ $item->tagihanOb->nomor_kontainer }}</code>
+                                            @if(!$loop->last)<br>@endif
+                                        @endforeach
+                                        @if($items->count() > 1)
+                                            <span class="text-xs text-gray-500">({{ $items->count() }} kontainer)</span>
+                                        @endif
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{{ $supirName }}</td>
+                                    <td class="px-6 py-4 text-sm text-gray-900">{{ Str::limit($firstTagihan->barang, 30) }}</td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $firstTagihan->status_kontainer === 'full' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' }}">
+                                            {{ ucfirst($firstTagihan->status_kontainer) }}
+                                        </span>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                                        Rp {{ number_format($totalBiaya, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">
+                                        Rp {{ number_format($totalDp, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @can('pranota-ob-update')
+                                            <input type="number" 
+                                                   name="dp_values[{{ $supirName }}]" 
+                                                   value="{{ $totalDp }}"
+                                                   min="0" 
+                                                   max="{{ $totalBiaya }}"
+                                                   class="w-32 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                                                   placeholder="Masukkan DP">
+                                        @else
+                                            <span class="text-sm text-gray-500">-</span>
+                                        @endcan
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
+                                        Rp {{ number_format($totalSisa, 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                        @can('tagihan-ob-view')
+                                            @if($items->count() === 1)
+                                                <a href="{{ route('tagihan-ob.show', $firstTagihan) }}" 
                                                    class="text-blue-600 hover:text-blue-900 bg-blue-100 hover:bg-blue-200 px-2 py-1 rounded" 
                                                    title="Lihat Detail">
                                                     <i class="fas fa-eye"></i>
                                                 </a>
-                                            @endcan
-                                        </td>
-                                    </tr>
-                                @endif
+                                            @else
+                                                <span class="text-xs text-gray-500">{{ $items->count() }} tagihan</span>
+                                            @endif
+                                        @endcan
+                                    </td>
+                                </tr>
                             @empty
                                 <tr>
-                                    <td colspan="11" class="px-6 py-12 text-center">
+                                    <td colspan="12" class="px-6 py-12 text-center">
                                         <div class="flex flex-col items-center">
                                             <i class="fas fa-inbox text-gray-400 text-4xl mb-4"></i>
                                             <p class="text-gray-500 text-lg">Belum ada item dalam pranota ini</p>
@@ -166,10 +194,18 @@
                                             return $item->tagihanOb->biaya ?? 0;
                                         }), 0, ',', '.') }}
                                     </td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900">
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-blue-600">
                                         Rp {{ number_format($pranotaOb->items->sum(function($item) {
                                             return $item->tagihanOb->dp ?? 0;
                                         }), 0, ',', '.') }}
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        @can('pranota-ob-update')
+                                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-150 ease-in-out">
+                                                <i class="fas fa-save mr-1"></i>
+                                                Simpan DP
+                                            </button>
+                                        @endcan
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-green-600">
                                         Rp {{ number_format($pranotaOb->items->sum(function($item) {
@@ -182,6 +218,7 @@
                         @endif
                     </table>
                 </div>
+                </form>
             </div>
 
             <!-- Timeline / History -->

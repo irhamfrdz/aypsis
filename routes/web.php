@@ -2236,6 +2236,9 @@ Route::middleware(['auth'])->group(function() {
     Route::get('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'show'])
          ->name('pranota-ob.show')
          ->middleware('can:pranota-ob-view');
+    Route::post('pranota-ob/{pranotaOb}/update-dp', [\App\Http\Controllers\PranotaObController::class, 'updateDp'])
+         ->name('pranota-ob.update-dp')
+         ->middleware('can:pranota-ob-update');
     Route::put('pranota-ob/{pranotaOb}', [\App\Http\Controllers\PranotaObController::class, 'update'])
          ->name('pranota-ob.update')
          ->middleware('can:pranota-ob-update');
@@ -2497,6 +2500,7 @@ Route::prefix('pembayaran-aktivitas-lainnya')->name('pembayaran-aktivitas-lainny
 Route::middleware(['auth'])->group(function () {
     Route::get('/api/get-kapal-list', [PembayaranAktivitasLainnyaController::class, 'getKapalList']);
     Route::get('/api/get-voyage-list', [PembayaranAktivitasLainnyaController::class, 'getVoyageList']);
+    Route::get('/api/get-supir-by-voyage', [PembayaranAktivitasLainnyaController::class, 'getSupirByVoyage']);
 });
 
 // Pembayaran Uang Muka routes

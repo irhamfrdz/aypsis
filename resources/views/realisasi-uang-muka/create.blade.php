@@ -99,6 +99,21 @@
                                 </div>
                             </div>
 
+                            <!-- Nomor Voyage (untuk kegiatan OB Muat/Bongkar) -->
+                            <div id="voyage_container" class="md:col-span-2 hidden">
+                                <label for="nomor_voyage" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nomor Voyage <span class="text-red-500">*</span>
+                                </label>
+                                <select name="nomor_voyage"
+                                        id="nomor_voyage"
+                                        class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="">Pilih Nomor Voyage</option>
+                                </select>
+                                <p class="mt-1 text-sm text-gray-500">
+                                    <i class="fas fa-ship mr-1"></i>Pilih nomor voyage untuk kegiatan OB
+                                </p>
+                            </div>
+
                             <!-- Nomor Pembayaran -->
                             <div>
                                 <label for="nomor_pembayaran" class="block text-sm font-medium text-gray-700 mb-2">
@@ -1322,6 +1337,150 @@ function updateTableByKegiatanType(tableType) {
     updateSummary();
 }
 
+// Load supir data based on selected voyage
+function loadSupirByVoyage() {
+    const selectedVoyage = $('#nomor_voyage').val();
+    const selectedKegiatanId = document.getElementById('kegiatan').value;
+    
+    if (!selectedVoyage || !selectedKegiatanId) {
+        console.log('Voyage or kegiatan not selected');
+        return;
+    }
+    
+    const kegiatan = masterKegiatanData[selectedKegiatanId];
+    const kegiatanNama = kegiatan ? kegiatan.nama.toLowerCase() : '';
+    const kegiatanFilter = kegiatanNama.includes('muat') ? 'muat' : 'bongkar';
+    
+    console.log('Loading supir for voyage:', selectedVoyage, 'kegiatan:', kegiatanFilter);
+    
+    // Call API to get supir by voyage
+    $.ajax({
+        url: '/api/get-supir-by-voyage',
+        type: 'GET',
+        data: {
+            voyage: selectedVoyage,
+            kegiatan: kegiatanFilter
+        },
+        dataType: 'json',
+        success: function(response) {
+            console.log('Supir by voyage response:', response);
+            
+            if (response.success && response.data && response.data.length > 0) {
+                // Reset all supir selections first
+                document.querySelectorAll('input[name="supir[]"]').forEach(cb => {
+                    cb.checked = false;
+                    const supirId = cb.value;
+                    const row = document.querySelector(`.supir-row[data-supir-id="${supirId}"]`);
+                    if (row) row.style.display = 'none';
+                });
+                
+                // Auto-check and populate supir from response
+                let processedCount = 0;
+                response.data.forEach(function(supirData) {
+                    console.log('Processing supir:', supirData);
+                    
+                    const supirCheckbox = document.querySelector(`input[name="supir[]"][value="${supirData.supir_id}"]`);
+                    console.log('Checkbox found:', supirCheckbox ? 'YES' : 'NO', 'for supir_id:', supirData.supir_id);
+                    
+                    if (supirCheckbox) {
+                        // Check the checkbox
+                        supirCheckbox.checked = true;
+                        console.log('Checkbox checked for supir:', supirData.supir_id);
+                        
+                        // Show the row
+                        const row = document.querySelector(`.supir-row[data-supir-id="${supirData.supir_id}"]`);
+                        if (row) {
+                            row.style.display = 'table-row';
+                            console.log('Row displayed for supir:', supirData.supir_id);
+                        }
+                        
+                        // Enable inputs
+                        const realisasiInput = document.getElementById(`realisasi_display_${supirData.supir_id}`);
+                        const keteranganInput = document.getElementById(`keterangan_${supirData.supir_id}`);
+                        
+                        if (realisasiInput) {
+                            realisasiInput.disabled = false;
+                        }
+                        if (keteranganInput) {
+                            keteranganInput.readOnly = false;
+                            keteranganInput.classList.remove('bg-gray-50');
+                            keteranganInput.classList.add('bg-white');
+                        }
+                        
+                        // Set the DP yang sudah dibayar sebagai uang muka data
+                        currentUangMukaData[supirData.supir_id] = supirData.dp_dibayar || 0;
+                        console.log('Set currentUangMukaData for', supirData.supir_id, '= DP:', supirData.dp_dibayar);
+                        
+                        // Update DP display - tampilkan DP yang sudah dibayar
+                        const dpDiv = document.getElementById(`dp_${supirData.supir_id}`);
+                        if (dpDiv) {
+                            if (supirData.dp_dibayar > 0) {
+                                dpDiv.innerHTML = `<span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    DP: Rp ${formatNumber(supirData.dp_dibayar)}
+                                </span>`;
+                            } else {
+                                dpDiv.innerHTML = `<span class="text-gray-400 italic text-xs">Belum ada DP</span>`;
+                            }
+                            console.log('DP display updated for supir:', supirData.supir_id, 'DP:', supirData.dp_dibayar);
+                        }
+                        
+                        // Auto-fill realisasi with total tagihan
+                        if (realisasiInput) {
+                            realisasiInput.value = formatNumber(supirData.total_tagihan);
+                            const jumlahInput = document.getElementById(`jumlah_${supirData.supir_id}`);
+                            if (jumlahInput) {
+                                jumlahInput.value = supirData.total_tagihan;
+                            }
+                            hitungSelisih(supirData.supir_id);
+                            console.log('Realisasi filled for supir:', supirData.supir_id, 'Tagihan:', supirData.total_tagihan, 'Kontainer:', supirData.jumlah_kontainer);
+                        }
+                        
+                        processedCount++;
+                    } else {
+                        console.warn('Supir checkbox not found for ID:', supirData.supir_id);
+                        console.warn('Available checkboxes:', document.querySelectorAll('input[name="supir[]"]').length);
+                    }
+                });
+                
+                console.log('Total supir processed:', processedCount, 'out of', response.data.length);
+                
+                // Show info message
+                const infoDiv = document.getElementById('kegiatan-info');
+                if (infoDiv) {
+                    const supirCount = response.data.length;
+                    const totalKontainer = response.data.reduce((sum, item) => sum + parseInt(item.jumlah_kontainer || 0), 0);
+                    
+                    infoDiv.innerHTML = `
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-green-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm font-medium text-green-800">Voyage ${selectedVoyage} - ${kegiatanFilter.toUpperCase()}</p>
+                                <p class="text-xs text-green-600 mt-1">
+                                    ${supirCount} supir dengan ${totalKontainer} kontainer telah dipilih dan diisi otomatis
+                                </p>
+                            </div>
+                        </div>
+                    `;
+                    infoDiv.className = 'mt-2 p-3 bg-green-50 border border-green-200 rounded-md';
+                    infoDiv.classList.remove('hidden');
+                }
+                
+                updateSummary();
+            } else {
+                alert('Tidak ada data supir untuk voyage ' + selectedVoyage);
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error loading supir by voyage:', error);
+            alert('Gagal memuat data supir untuk voyage ini.');
+        }
+    });
+}
+
 // Filter Uang Muka berdasarkan Kegiatan dan update tabel sesuai jenis kegiatan
 function filterUangMukaByKegiatan() {
     const selectedKegiatanId = document.getElementById('kegiatan').value;
@@ -1345,6 +1504,59 @@ function filterUangMukaByKegiatan() {
         );
 
         // Amprahan, Solar, Lain-lain, dll menggunakan penerima (tidak mobil, tidak supir multiple)
+
+        // Show/hide voyage field for OB activities
+        const voyageContainer = $('#voyage_container');
+        const nomor_voyageSelect = $('#nomor_voyage');
+        
+        if (isSupirKegiatan) {
+            // Show voyage field for OB Muat/Bongkar
+            voyageContainer.removeClass('hidden');
+            nomor_voyageSelect.attr('required', true);
+            
+            // Determine kegiatan filter
+            const kegiatanFilter = kegiatanNama.includes('muat') ? 'muat' : 'bongkar';
+            console.log('Loading voyages for kegiatan:', kegiatanFilter);
+            
+            // Load voyage list via AJAX with kegiatan filter
+            $.ajax({
+                url: '/api/get-voyage-list',
+                type: 'GET',
+                data: {
+                    kegiatan: kegiatanFilter
+                },
+                dataType: 'json',
+                success: function(response) {
+                    console.log('Voyage API Response:', response);
+                    nomor_voyageSelect.html('<option value="">Pilih Nomor Voyage</option>');
+                    
+                    if (response.success && response.data && response.data.length > 0) {
+                        console.log('Total voyages received:', response.data.length);
+                        
+                        response.data.forEach(function(voyage) {
+                            nomor_voyageSelect.append(
+                                `<option value="${voyage.voyage}">${voyage.voyage}</option>`
+                            );
+                        });
+                        
+                        console.log('Successfully populated voyage dropdown');
+                    } else {
+                        console.warn('No voyage data received');
+                        nomor_voyageSelect.append(`<option value="" disabled>Tidak ada voyage untuk ${kegiatanFilter}</option>`);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error loading voyage list:', error);
+                    console.error('XHR:', xhr);
+                    alert('Gagal memuat daftar voyage. Silakan refresh halaman.');
+                }
+            });
+        } else {
+            // Hide voyage field for non-OB activities
+            voyageContainer.addClass('hidden');
+            nomor_voyageSelect.attr('required', false);
+            nomor_voyageSelect.html('<option value="">Pilih Nomor Voyage</option>');
+        }
 
         // Update tabel input berdasarkan jenis kegiatan
         if (isMobilKegiatan) {
@@ -2269,6 +2481,26 @@ document.addEventListener('DOMContentLoaded', function() {
     // Handle kegiatan selection change
     kegiatanSelect.addEventListener('change', function() {
         filterUangMukaByKegiatan();
+    });
+    
+    // Handle voyage selection change
+    $('#nomor_voyage').on('change', function() {
+        const selectedVoyage = $(this).val();
+        console.log('Voyage selected:', selectedVoyage);
+        
+        if (selectedVoyage) {
+            loadSupirByVoyage();
+        } else {
+            // Reset supir selections if voyage cleared
+            document.querySelectorAll('input[name="supir[]"]').forEach(cb => {
+                cb.checked = false;
+                const supirId = cb.value;
+                const row = document.querySelector(`.supir-row[data-supir-id="${supirId}"]`);
+                if (row) row.style.display = 'none';
+            });
+            currentUangMukaData = {};
+            updateSummary();
+        }
     });
 });
 </script>

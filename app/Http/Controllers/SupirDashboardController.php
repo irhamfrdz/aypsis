@@ -192,7 +192,11 @@ class SupirDashboardController extends Controller
         $bls->each(function ($naikKapal) use ($existingTagihanOb) {
             // Field sudah sesuai dengan view (nomor_kontainer sudah ada)
             $naikKapal->nama_barang = $naikKapal->jenis_barang ?? '-';
-            $naikKapal->sudah_ob = in_array($naikKapal->nomor_kontainer, $existingTagihanOb);
+            
+            // Status OB dianggap TRUE jika:
+            // 1. Field sudah_ob di database naik_kapal = true, ATAU
+            // 2. Sudah ada tagihan OB untuk kontainer ini
+            $naikKapal->sudah_ob = ($naikKapal->sudah_ob == true) || in_array($naikKapal->nomor_kontainer, $existingTagihanOb);
         });
 
         // Log untuk debugging
@@ -222,16 +226,16 @@ class SupirDashboardController extends Controller
         $request->validate([
             'kapal' => 'required|string',
             'voyage' => 'required|string',
-            'bl_id' => 'required|exists:bls,id',
+            'naik_kapal_id' => 'required|exists:naik_kapal,id',
         ]);
 
         $selectedKapal = $request->get('kapal');
         $selectedVoyage = $request->get('voyage');
-        $blId = $request->get('bl_id');
+        $naikKapalId = $request->get('naik_kapal_id');
 
-        // Ambil data BL
-        $bl = \App\Models\Bl::findOrFail($blId);
-        $nomorKontainer = $bl->nomor_kontainer;
+        // Ambil data NaikKapal
+        $naikKapal = \App\Models\NaikKapal::findOrFail($naikKapalId);
+        $nomorKontainer = $naikKapal->nomor_kontainer;
 
         // Cek apakah sudah ada tagihan OB untuk kontainer ini (OB Muat)
         $existingTagihanOb = \App\Models\TagihanOb::where('kapal', $selectedKapal)
@@ -356,7 +360,7 @@ class SupirDashboardController extends Controller
                 'voyage' => $selectedVoyage
             ]);
 
-            return back()->with('error', 'Terjadi kesalahan saat memproses OB Muat. Silakan coba lagi.');
+            return back()->with('error', 'Terjadi kesalahan saat memproses OB Muat: ' . $e->getMessage());
         }
     }
 
@@ -627,6 +631,21 @@ class SupirDashboardController extends Controller
         }
 
         try {
+            // Ambil size kontainer dari BL
+            $sizeKontainer = '20ft'; // default
+            if ($bl->tipe_kontainer && in_array($bl->tipe_kontainer, ['20ft', '40ft'])) {
+                $sizeKontainer = $bl->tipe_kontainer;
+            } elseif ($bl->size) {
+                // Convert size dari BL (20, 40) ke format pricelist (20ft, 40ft)
+                $sizeKontainer = $bl->size . 'ft';
+            }
+            
+            // Default status kontainer untuk bongkar adalah 'full'
+            $statusKontainer = 'full';
+            
+            // Hitung biaya otomatis dari pricelist
+            $biaya = \App\Models\TagihanOb::calculateBiayaFromPricelist($sizeKontainer, $statusKontainer);
+            
             // Buat tagihan OB baru untuk bongkar
             $tagihanOb = new \App\Models\TagihanOb();
             $tagihanOb->kapal = $selectedKapal;
@@ -636,11 +655,10 @@ class SupirDashboardController extends Controller
             $tagihanOb->nama_supir = $user->name;
             $tagihanOb->bl_id = $blId;
             $tagihanOb->created_by = $user->id;
-            
-            // Set nilai dari BL jika tersedia
-            $tagihanOb->size_kontainer = $bl->tipe_kontainer ?? null;
-            $tagihanOb->barang = $bl->nama_barang ?? null;
-            $tagihanOb->status_kontainer = 'full'; // Default untuk bongkar
+            $tagihanOb->size_kontainer = $sizeKontainer;
+            $tagihanOb->barang = $bl->nama_barang ?? 'General Cargo';
+            $tagihanOb->status_kontainer = $statusKontainer;
+            $tagihanOb->biaya = $biaya;
             $tagihanOb->keterangan = 'OB Bongkar - dibuat oleh supir';
             
             $tagihanOb->save();
@@ -656,13 +674,16 @@ class SupirDashboardController extends Controller
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage,
                 'kegiatan' => 'bongkar',
-                'supir' => $user->name
+                'supir' => $user->name,
+                'size_kontainer' => $sizeKontainer,
+                'status_kontainer' => $statusKontainer,
+                'biaya' => $biaya
             ]);
 
             return redirect()->route('supir.ob-bongkar.index', [
                 'kapal' => $selectedKapal,
                 'voyage' => $selectedVoyage
-            ])->with('success', 'Tagihan OB Bongkar untuk kontainer ' . $nomorKontainer . ' berhasil dibuat.');
+            ])->with('success', 'OB Bongkar berhasil diproses! Tagihan OB untuk kontainer ' . $nomorKontainer . ' telah dibuat dengan status: ' . ucfirst($statusKontainer) . ', Biaya: Rp ' . number_format($biaya, 0, ',', '.'));
 
         } catch (\Exception $e) {
             \Log::error('Error creating TagihanOb Bongkar', [

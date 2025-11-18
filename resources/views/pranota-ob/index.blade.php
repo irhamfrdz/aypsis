@@ -66,10 +66,8 @@
                 <div>
                     <select name="status" class="block w-full px-3 py-2 border border-gray-300 rounded-md bg-white text-gray-700 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500">
                         <option value="">Semua Status</option>
-                        <option value="draft" {{ request('status') === 'draft' ? 'selected' : '' }}>Draft</option>
-                        <option value="pending" {{ request('status') === 'pending' ? 'selected' : '' }}>Pending</option>
-                        <option value="approved" {{ request('status') === 'approved' ? 'selected' : '' }}>Approved</option>
-                        <option value="cancelled" {{ request('status') === 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                        <option value="belum_realisasi" {{ request('status') === 'belum_realisasi' ? 'selected' : '' }}>Belum Realisasi</option>
+                        <option value="sudah_realisasi" {{ request('status') === 'sudah_realisasi' ? 'selected' : '' }}>Sudah Realisasi</option>
                     </select>
                 </div>
                 <div class="flex space-x-2">
@@ -84,76 +82,19 @@
                 </div>
             </form>
 
-            <!-- Statistics Cards -->
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-file-alt text-blue-400 text-2xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-blue-600">Total Pranota</p>
-                            <p class="text-lg font-semibold text-blue-900">{{ $pranotaObs->total() }}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                @php
-                    $draftCount = \App\Models\PranotaOb::where('status', 'draft')->count();
-                    $pendingCount = \App\Models\PranotaOb::where('status', 'pending')->count();
-                    $approvedCount = \App\Models\PranotaOb::where('status', 'approved')->count();
-                @endphp
-                
-                <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-edit text-gray-400 text-2xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-gray-600">Draft</p>
-                            <p class="text-lg font-semibold text-gray-900">{{ $draftCount }}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-clock text-yellow-400 text-2xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-yellow-600">Pending</p>
-                            <p class="text-lg font-semibold text-yellow-900">{{ $pendingCount }}</p>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
-                    <div class="flex items-center">
-                        <div class="flex-shrink-0">
-                            <i class="fas fa-check-circle text-green-400 text-2xl"></i>
-                        </div>
-                        <div class="ml-3">
-                            <p class="text-sm font-medium text-green-600">Approved</p>
-                            <p class="text-lg font-semibold text-green-900">{{ $approvedCount }}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
             <!-- Table -->
             <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 rounded-lg">
                 <table class="min-w-full divide-y divide-gray-200">
-                    <thead class="bg-gray-800">
+                    <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">No</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Nomor Pranota</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Jumlah Item</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Total</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Status</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Dibuat</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Aksi</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">No</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Nomor Pranota</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Tanggal</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Jumlah Item</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Total Sebelum DP</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Total Sesudah DP</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Status</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-tight">Aksi</th>
                         </tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
@@ -173,14 +114,11 @@
                                     </span>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">{{ $pranota->formatted_total }}</td>
+                                <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-green-600">{{ $pranota->formatted_total_after_dp }}</td>
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <span class="inline-flex px-2 py-1 text-xs font-semibold rounded-full {{ $pranota->status_badge }}">
-                                        {{ ucfirst($pranota->status) }}
+                                        {{ $pranota->status_text }}
                                     </span>
-                                </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                    <div>{{ $pranota->creator->name }}</div>
-                                    <div class="text-xs text-gray-500">{{ $pranota->created_at->format('d/m/Y H:i') }}</div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                     <div class="flex space-x-2">
@@ -201,26 +139,22 @@
                                             </a>
                                         @endcan
                                         
-                                        @if($pranota->status === 'draft')
-                                            @can('pranota-ob-update')
-                                                <a href="{{ route('pranota-ob.edit', $pranota) }}" 
-                                                   class="text-yellow-600 hover:text-yellow-900 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded" 
-                                                   title="Edit">
-                                                    <i class="fas fa-edit"></i>
-                                                </a>
-                                            @endcan
-                                        @endif
+                                        @can('pranota-ob-update')
+                                            <a href="{{ route('pranota-ob.edit', $pranota) }}" 
+                                               class="text-yellow-600 hover:text-yellow-900 bg-yellow-100 hover:bg-yellow-200 px-2 py-1 rounded" 
+                                               title="Edit">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                        @endcan
                                         
-                                        @if(in_array($pranota->status, ['draft', 'cancelled']))
-                                            @can('pranota-ob-delete')
-                                                <button type="button" 
-                                                        class="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded" 
-                                                        title="Hapus"
-                                                        onclick="confirmDelete({{ $pranota->id }})">
-                                                    <i class="fas fa-trash"></i>
-                                                </button>
-                                            @endcan
-                                        @endif
+                                        @can('pranota-ob-delete')
+                                            <button type="button" 
+                                                    class="text-red-600 hover:text-red-900 bg-red-100 hover:bg-red-200 px-2 py-1 rounded" 
+                                                    title="Hapus"
+                                                    onclick="confirmDelete({{ $pranota->id }})">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        @endcan
                                     </div>
                                 </td>
                             </tr>

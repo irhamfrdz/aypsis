@@ -119,6 +119,16 @@ class PembayaranAktivitasLainnyaController extends Controller
             'total_pembayaran.min' => 'Total pembayaran harus lebih dari 0.'
         ]);
 
+        // Log semua data request untuk debugging DP update
+        Log::info('=== PEMBAYARAN AKTIVITAS LAINNYA REQUEST ===', [
+            'kegiatan' => $request->kegiatan,
+            'nama_kapal' => $request->nama_kapal,
+            'nomor_voyage' => $request->nomor_voyage,
+            'nama_supir' => $request->nama_supir,
+            'jumlah_uang_muka' => $request->jumlah_uang_muka,
+            'all_request' => $request->except(['_token'])
+        ]);
+
         try {
             // Get bank info dari COA
             $bankCoa = Coa::find($request->pilih_bank);
@@ -229,33 +239,87 @@ class PembayaranAktivitasLainnyaController extends Controller
                 }
 
                 // Update field dp di tagihan_ob untuk setiap supir
-                if ($request->kegiatan === 'Uang Muka OB' && !empty($request->nama_kapal) && !empty($request->nomor_voyage)) {
+                Log::info('Checking DP update conditions', [
+                    'kegiatan' => $request->kegiatan,
+                    'nomor_voyage' => $request->nomor_voyage,
+                    'supir_details_count' => count($supirDetails ?? [])
+                ]);
+
+                // Check jika kegiatan mengandung kata "OB" (case insensitive)
+                $isKegiatanOB = stripos($request->kegiatan, 'OB') !== false;
+                
+                if ($isKegiatanOB && !empty($request->nomor_voyage)) {
+                    Log::info('Starting DP update process', [
+                        'voyage' => $request->nomor_voyage,
+                        'supir_count' => count($supirDetails)
+                    ]);
+
+                    // Clean whitespace dari parameter
+                    $voyage = trim($request->nomor_voyage);
+                    
+                    // Group supir details by nama untuk aggregate total DP per supir
+                    $supirGrouped = [];
                     foreach ($supirDetails as $detail) {
-                        // Find tagihan OB berdasarkan kapal, voyage, dan nama supir
-                        $tagihanOb = \App\Models\TagihanOb::where('kapal', $request->nama_kapal)
-                            ->where('voyage', $request->nomor_voyage)
-                            ->where('nama_supir', $detail['nama'])
-                            ->whereNull('deleted_at')
-                            ->first();
-
-                        if ($tagihanOb) {
-                            // Update atau increment field dp
-                            $currentDp = $tagihanOb->dp ?? 0;
-                            $newDp = $currentDp + $detail['jumlah'];
+                        $namaSupir = trim($detail['nama']);
+                        if (!isset($supirGrouped[$namaSupir])) {
+                            $supirGrouped[$namaSupir] = 0;
+                        }
+                        // Total semua DP untuk supir ini
+                        $supirGrouped[$namaSupir] += $detail['jumlah'];
+                    }
+                    
+                    // Process setiap supir
+                    foreach ($supirGrouped as $namaSupir => $totalDpSupir) {
+                        // Cari semua tagihan OB untuk supir ini berdasarkan voyage saja
+                        $tagihanObs = TagihanOb::where('voyage', $voyage)
+                            ->where('nama_supir', $namaSupir)
+                            ->orderBy('id')
+                            ->get();
+                        
+                        Log::info('Found tagihan OB for supir', [
+                            'supir' => $namaSupir,
+                            'tagihan_count' => $tagihanObs->count(),
+                            'total_dp_to_distribute' => $totalDpSupir
+                        ]);
+                        
+                        if ($tagihanObs->isNotEmpty()) {
+                            // Distribusi DP secara merata ke semua kontainer supir ini
+                            $jumlahKontainer = $tagihanObs->count();
+                            $dpPerKontainer = $totalDpSupir / $jumlahKontainer;
                             
-                            $tagihanOb->update(['dp' => $newDp]);
-
-                            Log::info('Updated DP di tagihan OB', [
-                                'tagihan_id' => $tagihanOb->id,
-                                'kapal' => $request->nama_kapal,
-                                'voyage' => $request->nomor_voyage,
-                                'supir' => $detail['nama'],
-                                'dp_before' => $currentDp,
-                                'dp_added' => $detail['jumlah'],
-                                'dp_after' => $newDp
+                            foreach ($tagihanObs as $tagihanOb) {
+                                $currentDp = $tagihanOb->dp ?? 0;
+                                $newDp = $currentDp + $dpPerKontainer;
+                                
+                                $tagihanOb->update(['dp' => $newDp]);
+                                
+                                Log::info('Updated DP di tagihan OB', [
+                                    'tagihan_id' => $tagihanOb->id,
+                                    'kontainer' => $tagihanOb->nomor_kontainer,
+                                    'supir' => $namaSupir,
+                                    'dp_before' => $currentDp,
+                                    'dp_added' => $dpPerKontainer,
+                                    'dp_after' => $newDp
+                                ]);
+                            }
+                        } else {
+                            // Jika tidak ada tagihan OB ditemukan
+                            $allTagihans = TagihanOb::where('voyage', $voyage)->get(['id', 'kapal', 'voyage', 'nama_supir']);
+                            
+                            Log::warning('Tagihan OB not found for DP update', [
+                                'searched_voyage' => $voyage,
+                                'searched_nama_supir' => $namaSupir,
+                                'total_dp' => $totalDpSupir,
+                                'available_tagihans' => $allTagihans->toArray()
                             ]);
                         }
                     }
+                } else {
+                    Log::info('DP update skipped - conditions not met', [
+                        'kegiatan' => $request->kegiatan,
+                        'is_kegiatan_ob' => stripos($request->kegiatan ?? '', 'OB') !== false,
+                        'has_voyage' => !empty($request->nomor_voyage)
+                    ]);
                 }
             }
 
@@ -629,28 +693,29 @@ class PembayaranAktivitasLainnyaController extends Controller
     }
 
     /**
-     * API: Get list of voyage based on kapal from Tagihan OB
+     * API: Get list of voyage from Tagihan OB
      */
     public function getVoyageList(Request $request)
     {
         try {
-            $kapal = $request->input('kapal');
-
-            if (!$kapal) {
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Kapal parameter is required'
-                ], 400);
-            }
-
-            $voyageList = DB::table('tagihan_ob')
-                ->select('voyage')
-                ->where('kapal', $kapal)
+            $query = DB::table('tagihan_ob')
+                ->select('voyage', 'kegiatan')
                 ->distinct()
                 ->whereNotNull('voyage')
                 ->where('voyage', '!=', '')
-                ->orderBy('voyage')
-                ->get();
+                ->orderBy('voyage', 'desc');
+
+            // Optional: filter by kapal if provided
+            if ($request->has('kapal') && $request->kapal) {
+                $query->where('kapal', $request->kapal);
+            }
+
+            // Optional: filter by kegiatan (muat/bongkar)
+            if ($request->has('kegiatan') && $request->kegiatan) {
+                $query->where('kegiatan', $request->kegiatan);
+            }
+
+            $voyageList = $query->get();
 
             return response()->json([
                 'success' => true,
@@ -663,5 +728,73 @@ class PembayaranAktivitasLainnyaController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * API: Get list of supir based on voyage from Tagihan OB
+     * Optional: Filter by kegiatan (muat/bongkar)
+     */
+    public function getSupirByVoyage(Request $request)
+    {
+        try {
+            $voyage = $request->input('voyage');
+            $kegiatan = $request->input('kegiatan'); // Optional: 'muat' or 'bongkar'
+
+            if (!$voyage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Voyage parameter is required'
+                ], 400);
+            }
+
+            // Build query untuk get supir list with total tagihan from tagihan_ob
+            $query = DB::table('tagihan_ob')
+                ->where('voyage', $voyage)
+                ->whereNotNull('nama_supir')
+                ->where('nama_supir', '!=', '')
+                ->whereNotNull('supir_id');
+
+            // Filter by kegiatan if provided (muat/bongkar)
+            if ($kegiatan && in_array(strtolower($kegiatan), ['muat', 'bongkar'])) {
+                $query->where('kegiatan', strtolower($kegiatan));
+            }
+
+            $supirData = $query->select(
+                    'supir_id', 
+                    'nama_supir', 
+                    DB::raw('SUM(biaya) as total_tagihan'), 
+                    DB::raw('SUM(COALESCE(dp, 0)) as total_dp'),
+                    DB::raw('COUNT(*) as jumlah_kontainer')
+                )
+                ->groupBy('supir_id', 'nama_supir')
+                ->orderBy('nama_supir')
+                ->get();
+
+            // Format response
+            $supirList = $supirData->map(function($supir) {
+                return [
+                    'supir_id' => (int) $supir->supir_id,
+                    'nama_supir' => $supir->nama_supir,
+                    'total_tagihan' => (float) $supir->total_tagihan,
+                    'jumlah_kontainer' => (int) $supir->jumlah_kontainer,
+                    'dp_dibayar' => (float) $supir->total_dp
+                ];
+            });
+
+            return response()->json([
+                'success' => true,
+                'data' => $supirList,
+                'filter' => [
+                    'voyage' => $voyage,
+                    'kegiatan' => $kegiatan
+                ]
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Error loading supir data: ' . $e->getMessage()
+            ], 500);
+        }
+    }
 }
+
 

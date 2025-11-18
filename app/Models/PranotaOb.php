@@ -106,16 +106,56 @@ class PranotaOb extends Model
     }
     
     /**
+     * Get total after DP deduction (Grand Total - Total DP)
+     */
+    public function getGrandTotalAfterDpAttribute(): float
+    {
+        $totalDp = $this->items->sum(function($item) {
+            return $item->tagihanOb->dp ?? 0;
+        });
+        
+        return ($this->grand_total ?? 0) - $totalDp;
+    }
+    
+    /**
+     * Get formatted total after DP deduction
+     */
+    public function getFormattedTotalAfterDpAttribute(): string
+    {
+        return 'Rp ' . number_format($this->grand_total_after_dp, 0, ',', '.');
+    }
+    
+    /**
      * Get status badge color
      */
     public function getStatusBadgeAttribute(): string
     {
         return match($this->status) {
-            'draft' => 'bg-gray-100 text-gray-800',
+            'belum_realisasi' => 'bg-yellow-100 text-yellow-800',
+            'sudah_realisasi' => 'bg-green-100 text-green-800',
+            // Legacy status support
+            'draft' => 'bg-yellow-100 text-yellow-800',
             'pending' => 'bg-yellow-100 text-yellow-800',
             'approved' => 'bg-green-100 text-green-800',
             'cancelled' => 'bg-red-100 text-red-800',
             default => 'bg-gray-100 text-gray-800'
+        };
+    }
+    
+    /**
+     * Get formatted status text
+     */
+    public function getStatusTextAttribute(): string
+    {
+        return match($this->status) {
+            'belum_realisasi' => 'Belum Realisasi',
+            'sudah_realisasi' => 'Sudah Realisasi',
+            // Legacy status support
+            'draft' => 'Belum Realisasi',
+            'pending' => 'Belum Realisasi',
+            'approved' => 'Sudah Realisasi',
+            'cancelled' => 'Dibatalkan',
+            default => ucfirst($this->status)
         };
     }
     
