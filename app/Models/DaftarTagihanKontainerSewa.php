@@ -79,11 +79,11 @@ class DaftarTagihanKontainerSewa extends Model
         $ppn = floatval($this->ppn ?? 0);
         $pph = floatval($this->pph ?? 0);
 
-        // Calculate adjusted DPP
-        $adjustedDpp = $dpp + $adjustment;
+        // Calculate base with DPP + adjustment (adjustment will be 0 after being applied)
+        $calculationBase = $dpp + $adjustment;
 
-        // Calculate grand total: Adjusted DPP + PPN - PPH
-        $this->grand_total = $adjustedDpp + $ppn - $pph;
+        // Calculate grand total: Base + PPN - PPH
+        $this->grand_total = $calculationBase + $ppn - $pph;
 
         return $this->grand_total;
     }
@@ -96,13 +96,15 @@ class DaftarTagihanKontainerSewa extends Model
     {
         $dpp = floatval($this->dpp ?? 0);
         $adjustment = floatval($this->adjustment ?? 0);
-        $adjustedDpp = $dpp + $adjustment;
+        
+        // Calculate from DPP + adjustment (for cases where adjustment hasn't been applied yet)
+        $calculationBase = $dpp + $adjustment;
 
-        // PPN = 11% of adjusted DPP
-        $this->ppn = $adjustedDpp * 0.11;
+        // PPN = 11% of calculation base
+        $this->ppn = $calculationBase * 0.11;
 
-        // PPH = 2% of adjusted DPP
-        $this->pph = $adjustedDpp * 0.02;
+        // PPH = 2% of calculation base
+        $this->pph = $calculationBase * 0.02;
 
         // Grand total will be auto-calculated by calculateGrandTotal
         return $this;

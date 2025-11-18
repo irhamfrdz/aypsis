@@ -842,11 +842,9 @@ input[required]:focus {
                         <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
                                 $originalDpp = (float)(optional($tagihan)->dpp ?? 0);
-                                $adjustment = (float)(optional($tagihan)->adjustment ?? 0);
-                                $adjustedDpp = $originalDpp + $adjustment;
                             @endphp
                             <div class="font-semibold text-blue-900">
-                                Rp {{ number_format($adjustedDpp, 0, '.', ',') }}
+                                Rp {{ number_format($originalDpp, 0, '.', ',') }}
                             </div>
                         </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 text-right font-mono">
@@ -936,35 +934,29 @@ input[required]:focus {
                         </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
-                                // Calculate adjusted DPP for PPN calculation
-                                $originalDpp = (float)(optional($tagihan)->dpp ?? 0);
-                                $adjustment = (float)(optional($tagihan)->adjustment ?? 0);
-                                $adjustedDpp = $originalDpp + $adjustment;
-                                $ppnRate = 0.11; // 11% PPN
-                                $calculatedPpn = $adjustedDpp * $ppnRate;
+                                // PPN dari database (sudah dihitung dengan adjustment)
+                                $ppnValue = (float)(optional($tagihan)->ppn ?? 0);
                             @endphp
                             <div class="font-semibold text-green-700">
-                                Rp {{ number_format($calculatedPpn, 0, '.', ',') }}
+                                Rp {{ number_format($ppnValue, 0, '.', ',') }}
                             </div>
                         </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
-                                // Calculate PPH from adjusted DPP
-                                $pphRate = 0.02; // 2% PPH (adjust as needed)
-                                $calculatedPph = $adjustedDpp * $pphRate;
+                                // PPH dari database (sudah dihitung dengan adjustment)
+                                $pphValue = (float)(optional($tagihan)->pph ?? 0);
                             @endphp
                             <div class="font-semibold text-red-700">
-                                Rp {{ number_format($calculatedPph, 0, '.', ',') }}
+                                Rp {{ number_format($pphValue, 0, '.', ',') }}
                             </div>
                         </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             @php
-                                // Calculate grand total with adjustment impact
-                                // Formula: DPP + PPN - PPH (tanpa DPP Nilai Lain)
-                                $newGrandTotal = $adjustedDpp + $calculatedPpn - $calculatedPph;
+                                // Grand Total dari database (sudah dihitung dengan adjustment)
+                                $grandTotalValue = (float)(optional($tagihan)->grand_total ?? 0);
                             @endphp
                             <div class="font-bold text-yellow-800">
-                                Rp {{ number_format($newGrandTotal, 0, '.', ',') }}
+                                Rp {{ number_format($grandTotalValue, 0, '.', ',') }}
                             </div>
                         </td>
                         <!-- Status Pranota Column -->
@@ -1803,7 +1795,7 @@ window.masukanKePranota = function() {
         const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
         const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
         const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(18)'); // Grand Total column (18th column, was 19 before) - Total Biaya
+        const totalElement = row.querySelector('td:nth-child(15)'); // Grand Total column (15th child/14th index) - Total Biaya
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -2043,7 +2035,7 @@ window.buatPranotaTerpilih = function() {
         const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
         const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
         const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(18)'); // Grand Total column (18th column, was 19 before) - Total Biaya
+        const totalElement = row.querySelector('td:nth-child(15)'); // Grand Total column (15th child/14th index) - Total Biaya
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -2098,12 +2090,12 @@ window.buatPranota = function(id) {
     // Extract data from the row - use more robust selectors
     const cells = row.querySelectorAll('td');
 
-    // Based on table structure: checkbox, no, vendor, container, ukuran, periode, etc
+    // Based on table structure: checkbox, grup, vendor, container, ukuran, periode, masa, tarif, dpp, adjustment, invoice_vendor, tanggal_vendor, ppn, pph, grand_total
     const vendor = cells[2] ? cells[2].textContent.trim() : '-';
     const container = cells[3] ? cells[3].textContent.trim() : '-';
     const size = cells[4] ? cells[4].textContent.trim() : '-'; // Size column (index 4)
     const periode = cells[5] ? cells[5].textContent.trim() : '-'; // Periode column (index 5)
-    const total = cells[12] ? cells[12].textContent.trim() : '-'; // Grand Total column (index 12) - Total Biaya
+    const total = cells[14] ? cells[14].textContent.trim() : '-'; // Grand Total column (index 14) - Total Biaya
 
     console.log('Single pranota data extracted:', { container, vendor, size, periode, total }); // Debug log
 
