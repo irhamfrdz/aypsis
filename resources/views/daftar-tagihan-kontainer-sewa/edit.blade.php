@@ -100,14 +100,11 @@
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
                                        id="dpp_display"
-                                       value="{{ old('dpp', number_format($item->dpp ?? 0, 2, ',', '.')) }}"
+                                       value="{{ number_format($item->dpp ?? 0, 0, ',', '.') }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
-                                       placeholder="0,00"
+                                       placeholder="0"
                                        data-currency="dpp" />
-                                <input type="hidden" name="dpp" id="dpp_hidden" value="{{ old('dpp', $item->dpp ?? 0) }}" />
-                            </div>
-                            <div class="mt-0.5 text-xs text-gray-400 text-right">
-                                Original: {{ number_format($item->dpp ?? 0, 2, ',', '.') }}
+                                <input type="hidden" name="dpp" id="dpp_hidden" value="{{ $item->dpp ?? 0 }}" />
                             </div>
                         </div>
                         <div>
@@ -116,14 +113,11 @@
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
                                        id="dpp_nilai_lain_display"
-                                       value="{{ old('dpp_nilai_lain', number_format($item->dpp_nilai_lain ?? 0, 2, ',', '.')) }}"
+                                       value="{{ number_format($item->dpp_nilai_lain ?? 0, 0, ',', '.') }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
-                                       placeholder="0,00"
+                                       placeholder="0"
                                        data-currency="dpp_nilai_lain" />
-                                <input type="hidden" name="dpp_nilai_lain" id="dpp_nilai_lain_hidden" value="{{ old('dpp_nilai_lain', $item->dpp_nilai_lain ?? 0) }}" />
-                            </div>
-                            <div class="mt-0.5 text-xs text-gray-400 text-right">
-                                Original: {{ number_format($item->dpp_nilai_lain ?? 0, 2, ',', '.') }}
+                                <input type="hidden" name="dpp_nilai_lain" id="dpp_nilai_lain_hidden" value="{{ $item->dpp_nilai_lain ?? 0 }}" />
                             </div>
                         </div>
 
@@ -133,14 +127,11 @@
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
                                        id="ppn_display"
-                                       value="{{ old('ppn', number_format($item->ppn ?? 0, 2, ',', '.')) }}"
+                                       value="{{ number_format($item->ppn ?? 0, 0, ',', '.') }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
-                                       placeholder="0,00"
+                                       placeholder="0"
                                        data-currency="ppn" />
-                                <input type="hidden" name="ppn" id="ppn_hidden" value="{{ old('ppn', $item->ppn ?? 0) }}" />
-                            </div>
-                            <div class="mt-0.5 text-xs text-gray-400 text-right">
-                                Original: {{ number_format($item->ppn ?? 0, 2, ',', '.') }}
+                                <input type="hidden" name="ppn" id="ppn_hidden" value="{{ $item->ppn ?? 0 }}" />
                             </div>
                         </div>
                         <div>
@@ -149,14 +140,11 @@
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-medium z-10 text-xs">Rp</span>
                                 <input type="text"
                                        id="pph_display"
-                                       value="{{ old('pph', number_format($item->pph ?? 0, 2, ',', '.')) }}"
+                                       value="{{ number_format($item->pph ?? 0, 0, ',', '.') }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12"
-                                       placeholder="0,00"
+                                       placeholder="0"
                                        data-currency="pph" />
-                                <input type="hidden" name="pph" id="pph_hidden" value="{{ old('pph', $item->pph ?? 0) }}" />
-                            </div>
-                            <div class="mt-0.5 text-xs text-gray-400 text-right">
-                                Original: {{ number_format($item->pph ?? 0, 2, ',', '.') }}
+                                <input type="hidden" name="pph" id="pph_hidden" value="{{ $item->pph ?? 0 }}" />
                             </div>
                         </div>
 
@@ -166,14 +154,11 @@
                                 <span class="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500 font-bold z-10 text-xs">Rp</span>
                                 <input type="text"
                                        id="grand_total_display"
-                                       value="{{ old('grand_total', number_format($item->grand_total ?? 0, 2, ',', '.')) }}"
+                                       value="{{ number_format($item->grand_total ?? 0, 0, ',', '.') }}"
                                        class="{{ $currencyClasses }} pl-8 pr-12 bg-yellow-50 border-yellow-200 font-bold"
-                                       placeholder="0,00"
+                                       placeholder="0"
                                        data-currency="grand_total" />
-                                <input type="hidden" name="grand_total" id="grand_total_hidden" value="{{ old('grand_total', $item->grand_total ?? 0) }}" />
-                            </div>
-                            <div class="mt-0.5 text-xs text-gray-400 text-right">
-                                Original: {{ number_format($item->grand_total ?? 0, 2, ',', '.') }}
+                                <input type="hidden" name="grand_total" id="grand_total_hidden" value="{{ $item->grand_total ?? 0 }}" />
                             </div>
                         </div>
                     </div>
@@ -212,7 +197,7 @@ console.log('Page:', 'Edit Tagihan Kontainer Sewa');
 document.addEventListener('DOMContentLoaded', function() {
     console.log('=== DOM CONTENT LOADED ===');
 
-    // Currency formatting function - Indonesian format: 1.234.567,89
+    // Currency formatting function - Indonesian format: 1.234.567 (no decimals for Rupiah)
     function formatCurrency(value) {
         if (!value || value === '' || value === null || value === undefined) {
             return '';
@@ -221,10 +206,10 @@ document.addEventListener('DOMContentLoaded', function() {
         // Remove non-numeric characters except comma and dot
         let numericValue = value.toString().replace(/[^\d,.-]/g, '');
 
-        // Handle Indonesian format input (1.234.567,89)
+        // Handle Indonesian format input (1.234.567)
         // Remove dots (thousands separator) first
         numericValue = numericValue.replace(/\./g, '');
-        // Then replace comma with dot for parsing
+        // Then replace comma with dot for parsing (if any)
         numericValue = numericValue.replace(',', '.');
 
         // Parse as float
@@ -234,10 +219,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return '';
         }
 
-        // Format with Indonesian locale (dot for thousands, comma for decimal)
+        // Round to nearest integer (no decimals for Rupiah)
+        number = Math.round(number);
+
+        // Format with Indonesian locale (dot for thousands, no decimals)
         return number.toLocaleString('id-ID', {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
         });
     }
 
@@ -251,38 +239,16 @@ document.addEventListener('DOMContentLoaded', function() {
         let stringValue = formattedValue.toString().trim();
         stringValue = stringValue.replace(/Rp\s*/gi, '').trim();
 
-        // Detect format by counting dots and commas
-        const dotCount = (stringValue.match(/\./g) || []).length;
-        const commaCount = (stringValue.match(/,/g) || []).length;
-
-        // Indonesian format: 1.234.567,89 (multiple dots, one comma)
-        if (dotCount > 0 && commaCount === 1) {
-            stringValue = stringValue.replace(/\./g, ''); // Remove thousands separator
-            stringValue = stringValue.replace(',', '.'); // Replace decimal separator
-        }
-        // US format: 1,234,567.89 (multiple commas, one dot) OR simple decimal: 1234567.89 (one dot)
-        else if (commaCount === 0 && dotCount === 1) {
-            // Keep the dot as decimal separator (already correct format)
-            // No changes needed
-        }
-        // Only comma: 1234567,89 (Indonesian decimal)
-        else if (commaCount === 1 && dotCount === 0) {
-            stringValue = stringValue.replace(',', '.'); // Replace decimal separator
-        }
-        // Multiple dots, no comma: 1.234.567 (Indonesian thousands, no decimal)
-        else if (dotCount > 1 && commaCount === 0) {
-            stringValue = stringValue.replace(/\./g, ''); // Remove all dots
-        }
-        // No special characters or multiple of both
-        else {
-            // Remove all dots and commas, treat as whole number
-            stringValue = stringValue.replace(/[.,]/g, '');
-        }
+        // Remove all dots (thousands separator in Indonesian format)
+        stringValue = stringValue.replace(/\./g, '');
+        
+        // Remove any commas
+        stringValue = stringValue.replace(/,/g, '');
 
         // Parse as float
         let number = parseFloat(stringValue);
 
-        return isNaN(number) || !isFinite(number) ? 0 : number;
+        return isNaN(number) || !isFinite(number) ? 0 : Math.round(number);
     }
 
     // Initialize currency formatting for all currency inputs
