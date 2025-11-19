@@ -449,7 +449,8 @@ class KontainerImportController extends Controller
             if ($request->filled('tanggal_sewa')) {
                 switch ($request->tanggal_sewa) {
                     case 'tanpa_tanggal_akhir':
-                        $query->whereNull('tanggal_selesai_sewa');
+                        $query->whereNotNull('tanggal_mulai_sewa')
+                              ->whereNull('tanggal_selesai_sewa');
                         break;
                     case 'ada_tanggal_akhir':
                         $query->whereNotNull('tanggal_selesai_sewa');
@@ -487,7 +488,7 @@ class KontainerImportController extends Controller
             if ($request->filled('tanggal_sewa')) {
                 switch ($request->tanggal_sewa) {
                     case 'tanpa_tanggal_akhir':
-                        $filterInfo[] = 'tanpa-akhir-sewa';
+                        $filterInfo[] = 'sewa-aktif-tanpa-akhir';
                         break;
                     case 'ada_tanggal_akhir':
                         $filterInfo[] = 'ada-akhir-sewa';

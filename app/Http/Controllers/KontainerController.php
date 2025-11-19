@@ -43,7 +43,8 @@ class KontainerController extends Controller
         if ($tanggalSewa = $request->get('tanggal_sewa')) {
             switch ($tanggalSewa) {
                 case 'tanpa_tanggal_akhir':
-                    $query->whereNull('tanggal_selesai_sewa');
+                    $query->whereNotNull('tanggal_mulai_sewa')
+                          ->whereNull('tanggal_selesai_sewa');
                     break;
                 case 'ada_tanggal_akhir':
                     $query->whereNotNull('tanggal_selesai_sewa');
