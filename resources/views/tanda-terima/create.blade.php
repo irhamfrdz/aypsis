@@ -985,45 +985,34 @@
                 console.log('=== Size Changed ===');
                 console.log('Selected size:', selectedSize);
                 
+                // Clear current selection first
+                $('#nomor_kontainer').val(null);
+                
                 // Destroy existing Select2 instance
                 $('#nomor_kontainer').select2('destroy');
                 
-                // Filter options based on size
-                $('#nomor_kontainer option').each(function() {
-                    var optionText = $(this).text();
-                    var optionValue = $(this).val();
-                    
-                    console.log('Checking option:', optionText);
-                    
-                    // Skip empty option
-                    if (optionValue === '') {
-                        $(this).show();
-                        return;
-                    }
-                    
-                    // Check if option text contains size information
-                    if (selectedSize) {
-                        // More flexible matching - check for various patterns
-                        // Pattern: (20ft - type) or (40ft - type)
-                        var sizePattern = new RegExp('\\(' + selectedSize + 'ft[\\s\\-]', 'i');
-                        
-                        console.log('Testing pattern:', sizePattern, 'against:', optionText);
-                        
-                        if (sizePattern.test(optionText)) {
-                            console.log('✓ Match found - showing option');
-                            $(this).show();
-                        } else {
-                            console.log('✗ No match - hiding option');
-                            $(this).hide();
-                        }
-                    } else {
-                        // Show all if no size selected
-                        console.log('No size selected - showing all');
-                        $(this).show();
-                    }
-                });
+                // Remove all options except the placeholder
+                var $select = $('#nomor_kontainer');
+                var placeholderOption = $select.find('option[value=""]').clone();
+                $select.empty().append(placeholderOption);
                 
-                // Re-initialize Select2
+                // Re-add filtered options
+                @foreach($stockKontainers as $stock)
+                    var optionText = '{{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})';
+                    var optionValue = '{{ $stock->nomor_seri_gabungan }}';
+                    var stockSize = '{{ $stock->ukuran }}';
+                    
+                    // Only add option if no size selected OR size matches
+                    if (!selectedSize || stockSize === selectedSize) {
+                        var newOption = new Option(optionText, optionValue, false, false);
+                        $select.append(newOption);
+                        console.log('✓ Added option:', optionText);
+                    } else {
+                        console.log('✗ Skipped option:', optionText);
+                    }
+                @endforeach
+                
+                // Re-initialize Select2 with filtered data
                 $('#nomor_kontainer').select2({
                     placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
                     allowClear: true,
@@ -1049,17 +1038,6 @@
                         }
                     }
                 });
-                
-                // Reset selection if current selection doesn't match size
-                var currentValue = $('#nomor_kontainer').val();
-                if (currentValue && selectedSize) {
-                    var currentText = $('#nomor_kontainer option:selected').text();
-                    var sizePattern = new RegExp('\\(' + selectedSize + 'ft[\\s\\-]', 'i');
-                    if (!sizePattern.test(currentText)) {
-                        $('#nomor_kontainer').val('').trigger('change');
-                        console.log('✓ Cleared kontainer selection (size mismatch)');
-                    }
-                }
                 
                 console.log('✓ Kontainer options filtered by size:', selectedSize);
             });

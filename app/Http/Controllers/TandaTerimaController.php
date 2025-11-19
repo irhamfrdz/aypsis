@@ -158,7 +158,7 @@ class TandaTerimaController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'surat_jalan_id' => 'required|exists:surat_jalan,id',
+            'surat_jalan_id' => 'required|exists:surat_jalans,id',
             // Field yang akan disinkronkan ke surat jalan
             'tanggal_surat_jalan' => 'nullable|date',
             'nomor_surat_jalan' => 'nullable|string|max:255',
