@@ -224,6 +224,16 @@ class SuratJalanBongkaranController extends Controller
                                    ->where('no_voyage', $noVoyage)
                                    ->where('nomor_kontainer', $request->no_bl)
                                    ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer']);
+                                   
+            // Debug: log the container data
+            if ($selectedContainer) {
+                \Log::info('Selected Container Data:', [
+                    'nomor_kontainer' => $selectedContainer->nomor_kontainer,
+                    'no_seal' => $selectedContainer->no_seal,
+                    'tipe_kontainer' => $selectedContainer->tipe_kontainer,
+                    'size_kontainer' => $selectedContainer->size_kontainer,
+                ]);
+            }
         }
         
         // Also check for container details passed via URL parameters
