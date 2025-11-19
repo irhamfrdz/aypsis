@@ -25,7 +25,7 @@
 
         <!-- Card Body -->
         <div class="p-6">
-            <form action="{{ route('surat-jalan-bongkaran.create') }}" method="GET" class="space-y-6">
+            <form action="{{ route('surat-jalan-bongkaran.create') }}" method="GET" class="space-y-6" id="kapalForm">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Kapal -->
                     <div>
@@ -61,6 +61,10 @@
                         <option value="" id="loading-bl-option" style="display: none;">Loading...</option>
                     </select>
                     <p class="mt-1 text-xs text-gray-500">Pilih kontainer dari voyage yang telah dipilih</p>
+                    
+                    <!-- Hidden fields for container details -->
+                    <input type="hidden" name="container_seal" id="container_seal">
+                    <input type="hidden" name="container_size" id="container_size">
                 </div>
 
                 <!-- Action Buttons -->
@@ -175,17 +179,83 @@ document.addEventListener('DOMContentLoaded', function() {
             option.value = container.value;
             // Display with format
             option.textContent = container.text;
-            // Store nomor_bl as data attribute if needed
+            // Store container details as data attributes
             if (container.nomor_bl) {
                 option.setAttribute('data-nomor-bl', container.nomor_bl);
+            }
+            if (container.no_seal) {
+                option.setAttribute('data-no-seal', container.no_seal);
+            }
+            if (container.size) {
+                option.setAttribute('data-size', container.size);
             }
             // Maintain selected value if exists
             if (container.value === "{{ request('no_bl') }}") {
                 option.selected = true;
+                // Update hidden fields if this option is pre-selected
+                updateContainerFields(container);
             }
             blSelect.appendChild(option);
         });
     }
+    
+    // Add event listener for BL selection change
+    blSelect.addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        
+        if (selectedOption.value) {
+            // Get container details from data attributes
+            const containerData = {
+                no_seal: selectedOption.getAttribute('data-no-seal') || '',
+                size: selectedOption.getAttribute('data-size') || '',
+                nomor_bl: selectedOption.getAttribute('data-nomor-bl') || ''
+            };
+            updateContainerFields(containerData);
+        } else {
+            // Clear hidden fields if no container selected
+            updateContainerFields({});
+        }
+    });
+    
+    function updateContainerFields(containerData) {
+        const sealField = document.getElementById('container_seal');
+        const sizeField = document.getElementById('container_size');
+        
+        if (sealField) {
+            sealField.value = containerData.no_seal || '';
+        }
+        if (sizeField) {
+            sizeField.value = containerData.size || '';
+        }
+    }
+    
+    // Handle form submission to include container data as URL parameters
+    const kapalForm = document.getElementById('kapalForm');
+    kapalForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        const formData = new FormData(this);
+        const params = new URLSearchParams();
+        
+        // Add form fields
+        for (let [key, value] of formData.entries()) {
+            if (value) params.append(key, value);
+        }
+        
+        // Add container details if available
+        const selectedBl = blSelect.options[blSelect.selectedIndex];
+        if (selectedBl && selectedBl.value) {
+            if (selectedBl.getAttribute('data-no-seal')) {
+                params.append('container_seal', selectedBl.getAttribute('data-no-seal'));
+            }
+            if (selectedBl.getAttribute('data-size')) {
+                params.append('container_size', selectedBl.getAttribute('data-size'));
+            }
+        }
+        
+        // Navigate to create page with parameters
+        window.location.href = this.action + '?' + params.toString();
+    });
     
     // Trigger kapal change if there's a pre-selected value
     if (kapalSelect.value) {

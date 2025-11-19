@@ -20,7 +20,6 @@ class SuratJalanBongkaran extends Model
         'pengirim',
         'alamat',
         'telp',
-        'jenis_barang',
         'tujuan_pengambilan',
         'retur_barang',
         'jumlah_retur',

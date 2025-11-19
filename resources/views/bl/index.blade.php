@@ -1,7 +1,79 @@
 @extends('layouts.app')
 
+@push('styles')
+<style>
+    /* Override default fonts to Arial 10px */
+    .bl-container,
+    .bl-container * {
+        font-family: Arial, sans-serif !important;
+        font-size: 10px !important;
+    }
+    
+    /* Maintain proper spacing for smaller font */
+    .bl-container .text-2xl {
+        font-size: 16px !important;
+        font-weight: bold;
+    }
+    
+    .bl-container .text-lg {
+        font-size: 12px !important;
+        font-weight: 600;
+    }
+    
+    .bl-container .text-sm {
+        font-size: 10px !important;
+    }
+    
+    .bl-container .text-xs {
+        font-size: 8px !important;
+    }
+    
+    /* Adjust padding for smaller font */
+    .bl-container .px-6 {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+    
+    .bl-container .py-4 {
+        padding-top: 0.5rem !important;
+        padding-bottom: 0.5rem !important;
+    }
+    
+    .bl-container .py-3 {
+        padding-top: 0.375rem !important;
+        padding-bottom: 0.375rem !important;
+    }
+    
+    /* Adjust button sizes */
+    .bl-container button,
+    .bl-container .btn {
+        font-size: 10px !important;
+        padding: 0.375rem 0.75rem !important;
+    }
+    
+    /* Adjust input sizes */
+    .bl-container input,
+    .bl-container select,
+    .bl-container textarea {
+        font-size: 10px !important;
+        padding: 0.375rem 0.5rem !important;
+    }
+    
+    /* Maintain icon sizes */
+    .bl-container .fas,
+    .bl-container .fa {
+        font-size: 10px !important;
+    }
+    
+    .bl-container .text-2xl .fas,
+    .bl-container .text-2xl .fa {
+        font-size: 14px !important;
+    }
+</style>
+@endpush
+
 @section('content')
-<div class="container mx-auto px-4 py-6">
+<div class="bl-container container mx-auto px-4 py-6">
     {{-- Header --}}
     <div class="bg-white rounded-lg shadow-sm p-6 mb-6">
         <div class="flex items-center justify-between">
@@ -33,9 +105,12 @@
                 <button type="button" onclick="openImportModal()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md transition duration-200 mr-3">
                     <i class="fas fa-upload mr-2"></i>Import Excel
                 </button>
-                <a href="{{ route('bl.download.template') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200">
+                <a href="{{ route('bl.download.template') }}" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition duration-200 mr-3">
                     <i class="fas fa-download mr-2"></i>Download Template
                 </a>
+                <button type="button" onclick="openExportModal()" class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-md transition duration-200">
+                    <i class="fas fa-file-excel mr-2"></i>Export Excel
+                </button>
             </div>
         </div>
     </div>
@@ -229,6 +304,9 @@
                                 Tipe Kontainer
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                Size Kontainer
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                 Tonnage
                             </th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -326,6 +404,11 @@
                                 <td class="px-6 py-4 whitespace-nowrap">
                                     <div class="text-sm text-gray-900">
                                         {{ $bl->tipe_kontainer ?: '-' }}
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 whitespace-nowrap">
+                                    <div class="text-sm text-gray-900">
+                                        {{ $bl->size_kontainer ?: '-' }}
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap">
@@ -448,7 +531,9 @@
                             <ul class="list-disc list-inside space-y-1">
                                 <li>Download template terlebih dahulu</li>
                                 <li>Isi data sesuai dengan format yang ada</li>
-                                <li>Kolom yang wajib diisi: Nomor Kontainer, Nama Kapal, No Voyage</li>
+                                <li>Kolom yang wajib diisi: <strong>Nama Kapal</strong> dan <strong>No Voyage</strong></li>
+                                <li>Nomor kontainer: Jika kosong akan otomatis diisi CARGO-1, CARGO-2, dst</li>
+                                <li>Size kontainer: Akan dicari otomatis dari database berdasarkan nomor kontainer</li>
                                 <li>Format file yang didukung: .xlsx, .xls, .csv</li>
                                 <li>Maksimal ukuran file: 10 MB</li>
                                 <li>Status bongkar otomatis diset "Belum Bongkar"</li>
@@ -628,6 +713,212 @@
     </div>
 </div>
 
+<!-- Modal untuk Export Excel -->
+<div id="exportModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full hidden z-50">
+    <div class="relative top-20 mx-auto p-5 border w-11/12 md:w-2/3 lg:w-1/2 shadow-lg rounded-md bg-white">
+        <div class="mt-3">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-medium text-gray-900">
+                    <i class="fas fa-file-excel mr-2 text-purple-600"></i>
+                    Export Data BL ke Excel
+                </h3>
+                <button type="button" onclick="closeExportModal()" class="text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="mb-4 p-4 bg-purple-50 border border-purple-200 rounded-md">
+                <div class="flex">
+                    <div class="flex-shrink-0">
+                        <svg class="h-5 w-5 text-purple-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-3">
+                        <h3 class="text-sm font-medium text-purple-800">Informasi Export</h3>
+                        <div class="mt-2 text-sm text-purple-700">
+                            <ul class="list-disc list-inside space-y-1">
+                                <li>Export akan mencakup semua kolom data BL</li>
+                                <li>Data akan difilter sesuai dengan pilihan kapal dan voyage</li>
+                                <li>Format file: Excel (.xlsx)</li>
+                                <li>Jika tidak ada filter, semua data akan diekspor</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <form id="exportForm" action="{{ route('bl.export') }}" method="GET">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <label for="export_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
+                            Filter Kapal
+                        </label>
+                        <select name="nama_kapal" id="export_nama_kapal" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Semua Kapal</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Pilih kapal untuk filter data</p>
+                    </div>
+                    
+                    <div>
+                        <label for="export_no_voyage" class="block text-sm font-medium text-gray-700 mb-2">
+                            Filter Voyage
+                        </label>
+                        <select name="no_voyage" id="export_no_voyage" 
+                                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                            <option value="">Semua Voyage</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">Pilih voyage untuk filter data</p>
+                    </div>
+                </div>
+
+                <div class="mb-6">
+                    <label for="export_search" class="block text-sm font-medium text-gray-700 mb-2">
+                        Filter Pencarian
+                    </label>
+                    <input type="text" id="export_search" name="search" 
+                           value="{{ request('search') }}"
+                           placeholder="Cari nomor BL, kontainer, barang..."
+                           class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500">
+                    <p class="text-xs text-gray-500 mt-1">Kosongkan untuk export semua data</p>
+                </div>
+
+                <div class="mb-6">
+                    <label class="block text-sm font-medium text-gray-700 mb-2">
+                        Kolom yang akan diekspor
+                    </label>
+                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="nomor_bl" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Nomor BL</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="nomor_kontainer" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Nomor Kontainer</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="no_seal" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">No Seal</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="nama_kapal" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Nama Kapal</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="no_voyage" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">No Voyage</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="pelabuhan_asal" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Pelabuhan Asal</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="pelabuhan_tujuan" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Pelabuhan Tujuan</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="nama_barang" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Nama Barang</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="tipe_kontainer" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Tipe Kontainer</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="size_kontainer" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Size Kontainer</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="tonnage" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Tonnage</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="volume" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Volume</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="kuantitas" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Kuantitas</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="satuan" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Satuan</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="term" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Term</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="penerima" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Penerima</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="alamat_pengiriman" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Alamat Pengiriman</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="contact_person" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Contact Person</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="supir_ob" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Supir OB</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="status_bongkar" checked 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Status Bongkar</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="sudah_ob" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Sudah OB</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="checkbox" name="columns[]" value="created_at" 
+                                   class="rounded border-gray-300 text-purple-600 shadow-sm focus:border-purple-300 focus:ring focus:ring-purple-200 focus:ring-opacity-50">
+                            <span class="ml-2 text-sm text-gray-700">Tanggal Dibuat</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="flex justify-end gap-3">
+                    <button type="button" onclick="closeExportModal()" 
+                            class="px-4 py-2 bg-gray-300 text-gray-700 rounded-md hover:bg-gray-400 focus:outline-none focus:ring-2 focus:ring-gray-500">
+                        <i class="fas fa-times mr-1"></i> Batal
+                    </button>
+                    <button type="submit"
+                            class="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500">
+                        <i class="fas fa-file-excel mr-1"></i> Export Excel
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @push('scripts')
@@ -646,6 +937,66 @@ function closeImportModal() {
 function showFileName(input) {
     const fileName = input.files[0]?.name || '';
     document.getElementById('file-name').textContent = fileName ? `File: ${fileName}` : '';
+}
+
+function openExportModal() {
+    document.getElementById('exportModal').classList.remove('hidden');
+    loadKapalAndVoyageForExport();
+}
+
+function closeExportModal() {
+    document.getElementById('exportModal').classList.add('hidden');
+}
+
+function loadKapalAndVoyageForExport() {
+    // Load ships
+    fetch('{{ route("bl.get-ships") }}')
+        .then(response => response.json())
+        .then(data => {
+            const kapalSelect = document.getElementById('export_nama_kapal');
+            kapalSelect.innerHTML = '<option value="">Semua Kapal</option>';
+            
+            data.ships.forEach(ship => {
+                const option = document.createElement('option');
+                option.value = ship;
+                option.textContent = ship;
+                if (ship === '{{ request("nama_kapal") }}') {
+                    option.selected = true;
+                }
+                kapalSelect.appendChild(option);
+            });
+            
+            // Load voyages for initial ship selection
+            if ('{{ request("nama_kapal") }}') {
+                loadVoyagesForExport('{{ request("nama_kapal") }}');
+            }
+        });
+    
+    // Add event listener for ship change
+    document.getElementById('export_nama_kapal').addEventListener('change', function() {
+        loadVoyagesForExport(this.value);
+    });
+}
+
+function loadVoyagesForExport(shipName) {
+    const voyageSelect = document.getElementById('export_no_voyage');
+    voyageSelect.innerHTML = '<option value="">Semua Voyage</option>';
+    
+    if (!shipName) return;
+    
+    fetch(`{{ route("bl.get-voyages") }}?nama_kapal=${encodeURIComponent(shipName)}`)
+        .then(response => response.json())
+        .then(data => {
+            data.voyages.forEach(voyage => {
+                const option = document.createElement('option');
+                option.value = voyage;
+                option.textContent = voyage;
+                if (voyage === '{{ request("no_voyage") }}') {
+                    option.selected = true;
+                }
+                voyageSelect.appendChild(option);
+            });
+        });
 }
 
 function bulkAction(action) {
@@ -993,9 +1344,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Close modal when clicking outside
     document.addEventListener('click', function(event) {
         const splitModal = document.getElementById('splitModal');
+        const exportModal = document.getElementById('exportModal');
         
         if (event.target === splitModal) {
             closeSplitModal();
+        }
+        
+        if (event.target === exportModal) {
+            closeExportModal();
         }
     });
 });

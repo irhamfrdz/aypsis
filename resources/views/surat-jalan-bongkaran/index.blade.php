@@ -148,7 +148,6 @@
                         <tr>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Surat Jalan</th>
-                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Bongkar</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Order</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal</th>
                             <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Container</th>
@@ -164,9 +163,6 @@
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $suratJalanBongkarans->firstItem() + $index }}</td>
                                 <td class="px-4 py-3 text-sm">
                                     <span class="font-semibold text-gray-900">{{ $sjb->nomor_surat_jalan }}</span>
-                                </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">
-                                    {{ $sjb->tanggal_bongkar ? \Carbon\Carbon::parse($sjb->tanggal_bongkar)->format('d/m/Y') : '-' }}
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->order ? $sjb->order->nomor_order : '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->kapal ? $sjb->kapal->nama_kapal : '-' }}</td>

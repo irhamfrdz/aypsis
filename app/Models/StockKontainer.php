@@ -152,6 +152,17 @@ class StockKontainer extends Model
         if (!empty($this->nomor_seri_gabungan)) {
             return $this->nomor_seri_gabungan;
         }
-        return ($this->awalan_kontainer ?? '') . ($this->nomor_seri_kontainer ?? '') . ($this->akhiran_kontainer ?? '');
+        
+        // Compose from parts with proper formatting: AWALAN SERI-AKHIRAN
+        $awalan = $this->awalan_kontainer ?? '';
+        $seri = $this->nomor_seri_kontainer ?? '';
+        $akhiran = $this->akhiran_kontainer ?? '';
+        
+        if ($awalan && $seri && $akhiran) {
+            return $awalan . ' ' . $seri . '-' . $akhiran;
+        }
+        
+        // Fallback to simple concatenation if any part is missing
+        return $awalan . $seri . $akhiran;
     }
 }

@@ -23,7 +23,13 @@ class StockKontainerController extends Controller
 
         // Search berdasarkan nomor kontainer
         if ($request->filled('search')) {
-            $query->where('nomor_kontainer', 'like', '%' . $request->search . '%');
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_seri_gabungan', 'like', '%' . $search . '%')
+                  ->orWhere('awalan_kontainer', 'like', '%' . $search . '%')
+                  ->orWhere('nomor_seri_kontainer', 'like', '%' . $search . '%')
+                  ->orWhere('akhiran_kontainer', 'like', '%' . $search . '%');
+            });
         }
 
         $stockKontainers = $query->latest()->paginate(15);

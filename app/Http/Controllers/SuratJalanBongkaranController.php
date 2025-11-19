@@ -31,11 +31,11 @@ class SuratJalanBongkaranController extends Controller
 
         // Filter berdasarkan tanggal
         if ($request->filled('start_date')) {
-            $query->whereDate('tanggal_bongkar', '>=', $request->start_date);
+            $query->whereDate('tanggal_surat_jalan', '>=', $request->start_date);
         }
 
         if ($request->filled('end_date')) {
-            $query->whereDate('tanggal_bongkar', '<=', $request->end_date);
+            $query->whereDate('tanggal_surat_jalan', '<=', $request->end_date);
         }
 
         // Filter berdasarkan kapal
@@ -106,7 +106,7 @@ class SuratJalanBongkaranController extends Controller
         $bls = Bl::where('nama_kapal', $kapal->nama_kapal)
               ->whereNotNull('no_voyage')
               ->whereNotNull('nomor_kontainer')
-              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer']);
+              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal']);
 
         // Group by voyage and get unique voyages
         $voyages = $bls->pluck('no_voyage')->unique()->values();
@@ -120,13 +120,18 @@ class SuratJalanBongkaranController extends Controller
                     $display = $item->nomor_bl . ' - ';
                 }
                 $display .= $item->nomor_kontainer;
-                if ($item->tipe_kontainer) {
+                if ($item->size_kontainer) {
+                    $display .= ' (' . strtoupper($item->size_kontainer) . ')';
+                } elseif ($item->tipe_kontainer) {
                     $display .= ' (' . strtoupper($item->tipe_kontainer) . ')';
                 }
                 return [
                     'value' => $item->nomor_kontainer,
                     'text' => $display,
-                    'nomor_bl' => $item->nomor_bl
+                    'nomor_bl' => $item->nomor_bl,
+                    'nomor_kontainer' => $item->nomor_kontainer,
+                    'no_seal' => $item->no_seal,
+                    'size' => $item->size_kontainer ?: $item->tipe_kontainer
                 ];
             })->values();
         });
@@ -153,8 +158,27 @@ class SuratJalanBongkaranController extends Controller
         
         $selectedKapal = MasterKapal::find($request->kapal_id);
         $noVoyage = $request->no_voyage;
+        $selectedContainer = null;
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage'));
+        // If no_bl (container) is selected, get the container details
+        if ($request->filled('no_bl')) {
+            $selectedContainer = Bl::where('nama_kapal', $selectedKapal->nama_kapal)
+                                   ->where('no_voyage', $noVoyage)
+                                   ->where('nomor_kontainer', $request->no_bl)
+                                   ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer']);
+        }
+        
+        // Also check for container details passed via URL parameters
+        if (!$selectedContainer && ($request->filled('container_seal') || $request->filled('container_size'))) {
+            $selectedContainer = (object) [
+                'nomor_kontainer' => $request->no_bl ?? '',
+                'no_seal' => $request->container_seal ?? '',
+                'size_kontainer' => $request->container_size ?? '',
+                'tipe_kontainer' => $request->container_size ?? ''
+            ];
+        }
+
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer'));
     }
 
     /**
@@ -165,23 +189,30 @@ class SuratJalanBongkaranController extends Controller
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
-            'tanggal_bongkar' => 'required|date',
-            'jam_mulai_bongkar' => 'nullable|string',
-            'jam_selesai_bongkar' => 'nullable|string',
-            'nama_pengirim' => 'nullable|string|max:255',
-            'alamat_pengirim' => 'nullable|string',
-            'telepon_pengirim' => 'nullable|string|max:50',
-            'nama_penerima' => 'nullable|string|max:255',
-            'alamat_penerima' => 'nullable|string',
-            'telepon_penerima' => 'nullable|string|max:50',
-            'jenis_barang' => 'nullable|string|max:255',
-            'nama_barang' => 'nullable|string|max:255',
-            'jumlah_barang' => 'nullable|numeric',
-            'satuan_barang' => 'nullable|string|max:50',
-            'berat_barang' => 'nullable|numeric',
-            'volume_barang' => 'nullable|numeric',
-            'nilai_barang' => 'nullable|numeric',
-            'keterangan_barang' => 'nullable|string',
+            'tanggal_surat_jalan' => 'required|date',
+            'term' => 'nullable|string|max:255',
+            'aktifitas' => 'nullable|string',
+            'pengirim' => 'nullable|string|max:255',
+            'tujuan_alamat' => 'nullable|string|max:255',
+            'tujuan_pengambilan' => 'nullable|string|max:255',
+            'tujuan_pengiriman' => 'nullable|string|max:255',
+            'jenis_pengiriman' => 'nullable|string|max:100',
+            'tanggal_ambil_barang' => 'nullable|date',
+            'supir' => 'nullable|string|max:255',
+            'no_plat' => 'nullable|string|max:50',
+            'kenek' => 'nullable|string|max:255',
+            'krani' => 'nullable|string|max:255',
+            'no_kontainer' => 'nullable|string|max:100',
+            'no_seal' => 'nullable|string|max:100',
+            'size' => 'nullable|string|max:50',
+            'karton' => 'nullable|string|in:ya,tidak',
+            'plastik' => 'nullable|string|in:ya,tidak',
+            'terpal' => 'nullable|string|in:ya,tidak',
+            'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
+            'uang_jalan_type' => 'nullable|string|in:full,setengah',
+            'tagihan_ayp' => 'nullable|boolean',
+            'tagihan_atb' => 'nullable|boolean',
+            'tagihan_pb' => 'nullable|boolean',
             'nama_supir' => 'nullable|string|max:255',
             'nomor_sim' => 'nullable|string|max:50',
             'telepon_supir' => 'nullable|string|max:50',
@@ -201,7 +232,6 @@ class SuratJalanBongkaranController extends Controller
             'status_pembayaran' => 'nullable|string|max:50',
             'keterangan' => 'nullable|string',
             'catatan_khusus' => 'nullable|string',
-            'kondisi_barang' => 'nullable|string|max:100',
             'dokumentasi' => 'nullable|string',
         ]);
 
@@ -251,25 +281,31 @@ class SuratJalanBongkaranController extends Controller
     {
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|exists:master_kapals,id',
-            'kapal_id' => 'nullable|exists:master_kapals,id',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,nomor_surat_jalan,' . $suratJalanBongkaran->id,
-            'tanggal_bongkar' => 'required|date',
-            'jam_mulai_bongkar' => 'nullable|string',
-            'jam_selesai_bongkar' => 'nullable|string',
-            'nama_pengirim' => 'nullable|string|max:255',
-            'alamat_pengirim' => 'nullable|string',
-            'telepon_pengirim' => 'nullable|string|max:50',
-            'nama_penerima' => 'nullable|string|max:255',
-            'alamat_penerima' => 'nullable|string',
-            'telepon_penerima' => 'nullable|string|max:50',
-            'jenis_barang' => 'nullable|string|max:255',
-            'nama_barang' => 'nullable|string|max:255',
-            'jumlah_barang' => 'nullable|numeric',
-            'satuan_barang' => 'nullable|string|max:50',
-            'berat_barang' => 'nullable|numeric',
-            'volume_barang' => 'nullable|numeric',
-            'nilai_barang' => 'nullable|numeric',
-            'keterangan_barang' => 'nullable|string',
+            'tanggal_surat_jalan' => 'required|date',
+            'term' => 'nullable|string|max:255',
+            'aktifitas' => 'nullable|string',
+            'pengirim' => 'nullable|string|max:255',
+            'tujuan_alamat' => 'nullable|string|max:255',
+            'tujuan_pengambilan' => 'nullable|string|max:255',
+            'tujuan_pengiriman' => 'nullable|string|max:255',
+            'jenis_pengiriman' => 'nullable|string|max:100',
+            'tanggal_ambil_barang' => 'nullable|date',
+            'supir' => 'nullable|string|max:255',
+            'no_plat' => 'nullable|string|max:50',
+            'kenek' => 'nullable|string|max:255',
+            'krani' => 'nullable|string|max:255',
+            'no_kontainer' => 'nullable|string|max:100',
+            'no_seal' => 'nullable|string|max:100',
+            'size' => 'nullable|string|max:50',
+            'karton' => 'nullable|string|in:ya,tidak',
+            'plastik' => 'nullable|string|in:ya,tidak',
+            'terpal' => 'nullable|string|in:ya,tidak',
+            'rit' => 'nullable|string|in:menggunakan_rit,tidak_menggunakan_rit',
+            'uang_jalan_type' => 'nullable|string|in:full,setengah',
+            'tagihan_ayp' => 'nullable|boolean',
+            'tagihan_atb' => 'nullable|boolean',
+            'tagihan_pb' => 'nullable|boolean',
             'nama_supir' => 'nullable|string|max:255',
             'nomor_sim' => 'nullable|string|max:50',
             'telepon_supir' => 'nullable|string|max:50',
@@ -289,7 +325,6 @@ class SuratJalanBongkaranController extends Controller
             'status_pembayaran' => 'nullable|string|max:50',
             'keterangan' => 'nullable|string',
             'catatan_khusus' => 'nullable|string',
-            'kondisi_barang' => 'nullable|string|max:100',
             'dokumentasi' => 'nullable|string',
         ]);
 

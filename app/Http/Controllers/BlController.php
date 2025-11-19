@@ -4,9 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Models\Bl;
 use App\Models\MasterKapal;
+use App\Models\StockKontainer;
+use App\Models\Kontainer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use PhpOffice\PhpSpreadsheet\Spreadsheet;
+use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
+use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Font;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
 
 class BlController extends Controller
 {
@@ -613,17 +620,17 @@ class BlController extends Controller
             ['PETUNJUK PENGGUNAAN TEMPLATE IMPORT BL'],
             [''],
             ['Kolom yang wajib diisi (bertanda *):'],
-            ['- Nomor Kontainer: Nomor kontainer yang digunakan'],
-            ['- Nama Kapal: Nama kapal yang mengangkut'],
-            ['- No Voyage: Nomor voyage/pelayaran'],
+            ['- Nama Kapal: Nama kapal yang mengangkut *'],
+            ['- No Voyage: Nomor voyage/pelayaran *'],
+            [''],
+            ['Kolom Opsional:'],
+            ['- Nomor Kontainer: Jika kosong akan otomatis diisi CARGO-1, CARGO-2, dst'],
+            ['- Nomor BL, No Seal, Pelabuhan, dll: Boleh dikosongkan'],
             [''],
             ['Format Data:'],
-            ['- Tanggal Muat: YYYY-MM-DD (contoh: 2025-11-12)'],
-            ['- Jam Muat: HH:MM (contoh: 08:00)'],
             ['- Tonnage: Angka desimal dengan titik (contoh: 15.500)'],
             ['- Volume: Angka desimal dengan titik (contoh: 25.750)'],
             ['- Kuantitas: Angka bulat (contoh: 100)'],
-            ['- Prospek ID: Kosongkan jika tidak ada prospek terkait'],
             [''],
             ['Catatan:'],
             ['- Hapus baris contoh sebelum import'],
@@ -693,8 +700,21 @@ class BlController extends Controller
             $importedCount = 0;
             $errors = [];
             $rowNumber = 1;
+            
+            // Get next cargo number for auto-generated container numbers
+            $lastCargoNumber = Bl::where('nomor_kontainer', 'LIKE', 'CARGO-%')
+                ->orderBy('nomor_kontainer', 'desc')
+                ->value('nomor_kontainer');
+            
+            $nextCargoNumber = 1;
+            if ($lastCargoNumber) {
+                $parts = explode('-', $lastCargoNumber);
+                if (count($parts) > 1 && is_numeric($parts[1])) {
+                    $nextCargoNumber = (int)$parts[1] + 1;
+                }
+            }
 
-            \Log::info('Starting BL import', ['extension' => $extension, 'file' => $file->getClientOriginalName()]);
+            \Log::info('Starting BL import', ['extension' => $extension, 'file' => $file->getClientOriginalName(), 'nextCargoNumber' => $nextCargoNumber]);
 
             if ($extension === 'csv') {
                 // Handle CSV import with semicolon delimiter
@@ -759,24 +779,37 @@ class BlController extends Controller
                         $nomorKontainer = isset($row[1]) ? trim($row[1]) : null;
                         $namaKapal = isset($row[3]) ? trim($row[3]) : null;
                         $noVoyage = isset($row[4]) ? trim($row[4]) : null;
+                        $sizeKontainerFromFile = isset($row[12]) ? trim($row[12]) : null;
                         
-                        // Validate required fields
-                        if (empty($nomorKontainer) || empty($namaKapal) || empty($noVoyage)) {
-                            $errors[] = "Baris {$rowNumber}: Nomor Kontainer, Nama Kapal, dan No Voyage wajib diisi";
+                        // Auto-generate container number if empty
+                        if (empty($nomorKontainer)) {
+                            $nomorKontainer = 'CARGO-' . $nextCargoNumber;
+                            $nextCargoNumber++;
+                        }
+                        
+                        // Auto-fill size kontainer from database if not provided in file
+                        $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
+                        if ($autoFilledSize['warning']) {
+                            $errors[] = "Baris {$rowNumber}: " . $autoFilledSize['warning'];
+                        }
+                        
+                        // Validate required fields (now only kapal and voyage since container is auto-generated)
+                        if (empty($namaKapal) || empty($noVoyage)) {
+                            $errors[] = "Baris {$rowNumber}: Nama Kapal dan No Voyage wajib diisi";
                             $rowNumber++;
                             continue;
                         }
 
                         // Parse tonnage dan volume
                         $tonnage = null;
-                        if (isset($row[12]) && !empty(trim($row[12]))) {
-                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[12]));
+                        if (isset($row[13]) && !empty(trim($row[13]))) {
+                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[13]));
                             $tonnage = (float)$tonnageStr;
                         }
                         
                         $volume = null;
-                        if (isset($row[13]) && !empty(trim($row[13]))) {
-                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[13]));
+                        if (isset($row[14]) && !empty(trim($row[14]))) {
+                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[14]));
                             $volume = (float)$volumeStr;
                         }
 
@@ -794,17 +827,13 @@ class BlController extends Controller
                             'alamat_pengiriman' => isset($row[9]) ? trim($row[9]) : null,
                             'contact_person' => isset($row[10]) ? trim($row[10]) : null,
                             'tipe_kontainer' => isset($row[11]) ? trim($row[11]) : null,
-                            'ukuran_kontainer' => isset($row[12]) ? trim($row[12]) : null,
+                            'size_kontainer' => $autoFilledSize['size'],
                             'tonnage' => $tonnage,
                             'volume' => $volume,
                             'satuan' => isset($row[15]) ? trim($row[15]) : null,
                             'kuantitas' => isset($row[16]) && !empty(trim($row[16])) ? (int)trim($row[16]) : null,
                             'term' => isset($row[17]) ? trim($row[17]) : null,
                             'supir_ob' => isset($row[18]) ? trim($row[18]) : null,
-                            'tanggal_muat' => isset($row[19]) && !empty(trim($row[19])) ? trim($row[19]) : null,
-                            'jam_muat' => isset($row[20]) && !empty(trim($row[20])) ? trim($row[20]) : null,
-                            'prospek_id' => isset($row[21]) && !empty(trim($row[21])) ? (int)trim($row[21]) : null,
-                            'keterangan' => isset($row[22]) ? trim($row[22]) : null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
@@ -828,15 +857,28 @@ class BlController extends Controller
                         $nomorKontainer = $worksheet->getCell("B{$row}")->getValue();
                         $namaKapal = $worksheet->getCell("D{$row}")->getValue();
                         $noVoyage = $worksheet->getCell("E{$row}")->getValue();
+                        $sizeKontainerFromFile = $worksheet->getCell("M{$row}")->getValue();
 
                         // Skip empty rows
-                        if (empty($nomorKontainer) && empty($namaKapal) && empty($noVoyage)) {
+                        if (empty($namaKapal) && empty($noVoyage)) {
                             continue;
                         }
+                        
+                        // Auto-generate container number if empty
+                        if (empty($nomorKontainer)) {
+                            $nomorKontainer = 'CARGO-' . $nextCargoNumber;
+                            $nextCargoNumber++;
+                        }
+                        
+                        // Auto-fill size kontainer from database if not provided in file
+                        $autoFilledSize = $this->getContainerSize($nomorKontainer, $sizeKontainerFromFile);
+                        if ($autoFilledSize['warning']) {
+                            $errors[] = "Baris {$row}: " . $autoFilledSize['warning'];
+                        }
 
-                        // Validate required fields
-                        if (empty($nomorKontainer) || empty($namaKapal) || empty($noVoyage)) {
-                            $errors[] = "Baris {$row}: Nomor Kontainer, Nama Kapal, dan No Voyage wajib diisi";
+                        // Validate required fields (now only kapal and voyage since container is auto-generated)
+                        if (empty($namaKapal) || empty($noVoyage)) {
+                            $errors[] = "Baris {$row}: Nama Kapal dan No Voyage wajib diisi";
                             continue;
                         }
 
@@ -854,17 +896,13 @@ class BlController extends Controller
                             'alamat_pengiriman' => $worksheet->getCell("J{$row}")->getValue() ?: null,
                             'contact_person' => $worksheet->getCell("K{$row}")->getValue() ?: null,
                             'tipe_kontainer' => $worksheet->getCell("L{$row}")->getValue() ?: null,
-                            'ukuran_kontainer' => $worksheet->getCell("M{$row}")->getValue() ?: null,
+                            'size_kontainer' => $autoFilledSize['size'],
                             'tonnage' => $worksheet->getCell("N{$row}")->getValue() ?: null,
                             'volume' => $worksheet->getCell("O{$row}")->getValue() ?: null,
                             'satuan' => $worksheet->getCell("P{$row}")->getValue() ?: null,
                             'kuantitas' => $worksheet->getCell("Q{$row}")->getValue() ?: null,
                             'term' => $worksheet->getCell("R{$row}")->getValue() ?: null,
                             'supir_ob' => $worksheet->getCell("S{$row}")->getValue() ?: null,
-                            'tanggal_muat' => $worksheet->getCell("T{$row}")->getValue() ?: null,
-                            'jam_muat' => $worksheet->getCell("U{$row}")->getValue() ?: null,
-                            'prospek_id' => $worksheet->getCell("V{$row}")->getValue() ?: null,
-                            'keterangan' => $worksheet->getCell("W{$row}")->getValue() ?: null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
@@ -913,5 +951,280 @@ class BlController extends Controller
                 ->with('error', 'Gagal import data: ' . $e->getMessage())
                 ->withInput();
         }
+    }
+
+    /**
+     * Get unique ships for export filter
+     */
+    public function getShips()
+    {
+        $ships = Bl::whereNotNull('nama_kapal')
+                   ->distinct()
+                   ->pluck('nama_kapal')
+                   ->sort()
+                   ->values();
+        
+        return response()->json(['ships' => $ships]);
+    }
+
+    /**
+     * Get voyages for specific ship
+     */
+    public function getVoyages(Request $request)
+    {
+        $voyages = Bl::where('nama_kapal', $request->nama_kapal)
+                     ->whereNotNull('no_voyage')
+                     ->distinct()
+                     ->pluck('no_voyage')
+                     ->sort()
+                     ->values();
+        
+        return response()->json(['voyages' => $voyages]);
+    }
+
+    /**
+     * Export BL data to Excel
+     */
+    public function export(Request $request)
+    {
+        $user = Auth::user();
+        
+        // Check permission
+        if (!in_array($user->role, ["admin", "user_admin"])) {
+            $hasPermission = DB::table("user_permissions")
+                ->join("permissions", "user_permissions.permission_id", "=", "permissions.id")
+                ->where("user_permissions.user_id", $user->id)
+                ->where("permissions.name", "bl-view")
+                ->exists();
+            
+            if (!$hasPermission) {
+                abort(403, "Tidak memiliki akses untuk export data BL");
+            }
+        }
+
+        $query = Bl::with('prospek');
+
+        // Apply filters
+        if ($request->filled('nama_kapal')) {
+            $query->where('nama_kapal', $request->nama_kapal);
+        }
+
+        if ($request->filled('no_voyage')) {
+            $query->where('no_voyage', $request->no_voyage);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_bl', 'like', "%{$search}%")
+                  ->orWhere('nomor_kontainer', 'like', "%{$search}%")
+                  ->orWhere('no_voyage', 'like', "%{$search}%")
+                  ->orWhere('nama_kapal', 'like', "%{$search}%")
+                  ->orWhere('nama_barang', 'like', "%{$search}%");
+            });
+        }
+
+        // Get data
+        $bls = $query->orderBy('created_at', 'desc')->get();
+
+        // Define all available columns
+        $availableColumns = [
+            'nomor_bl' => 'Nomor BL',
+            'nomor_kontainer' => 'Nomor Kontainer',
+            'no_seal' => 'No Seal',
+            'nama_kapal' => 'Nama Kapal',
+            'no_voyage' => 'No Voyage',
+            'pelabuhan_asal' => 'Pelabuhan Asal',
+            'pelabuhan_tujuan' => 'Pelabuhan Tujuan',
+            'nama_barang' => 'Nama Barang',
+            'tipe_kontainer' => 'Tipe Kontainer',
+            'size_kontainer' => 'Size Kontainer',
+            'tonnage' => 'Tonnage (Ton)',
+            'volume' => 'Volume (m³)',
+            'kuantitas' => 'Kuantitas',
+            'satuan' => 'Satuan',
+            'term' => 'Term',
+            'penerima' => 'Penerima',
+            'alamat_pengiriman' => 'Alamat Pengiriman',
+            'contact_person' => 'Contact Person',
+            'supir_ob' => 'Supir OB',
+            'status_bongkar' => 'Status Bongkar',
+            'sudah_ob' => 'Sudah OB',
+            'created_at' => 'Tanggal Dibuat'
+        ];
+
+        // Get selected columns
+        $selectedColumns = $request->input('columns', array_keys($availableColumns));
+        
+        // Create filename with filters
+        $filename = 'bl_export_' . date('Y-m-d_H-i-s');
+        if ($request->filled('nama_kapal')) {
+            $filename .= '_' . str_replace(' ', '_', $request->nama_kapal);
+        }
+        if ($request->filled('no_voyage')) {
+            $filename .= '_voyage_' . $request->no_voyage;
+        }
+        $filename .= '.xlsx';
+
+        // Create Excel file
+        return $this->createExcelExport($bls, $availableColumns, $selectedColumns, $filename);
+    }
+
+    /**
+     * Create Excel export file
+     */
+    private function createExcelExport($bls, $availableColumns, $selectedColumns, $filename)
+    {
+        // Create new spreadsheet
+        $spreadsheet = new Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Data BL');
+
+        // Set headers
+        $headers = [];
+        foreach ($selectedColumns as $column) {
+            $headers[] = $availableColumns[$column] ?? $column;
+        }
+
+        // Write headers to first row
+        $col = 'A';
+        foreach ($headers as $header) {
+            $sheet->setCellValue($col . '1', $header);
+            
+            // Style header
+            $sheet->getStyle($col . '1')->getFont()->setBold(true);
+            $sheet->getStyle($col . '1')->getFill()
+                ->setFillType(Fill::FILL_SOLID)
+                ->getStartColor()->setARGB('FFE6E6E6');
+            $sheet->getStyle($col . '1')->getAlignment()
+                ->setHorizontal(Alignment::HORIZONTAL_CENTER);
+            
+            $col++;
+        }
+
+        // Write data rows
+        $row = 2;
+        foreach ($bls as $bl) {
+            $col = 'A';
+            foreach ($selectedColumns as $column) {
+                $value = '';
+                switch ($column) {
+                    case 'tonnage':
+                        $value = $bl->tonnage ? number_format($bl->tonnage, 3, '.', '') : '';
+                        break;
+                    case 'volume':
+                        $value = $bl->volume ? number_format($bl->volume, 3, '.', '') : '';
+                        break;
+                    case 'kuantitas':
+                        $value = $bl->kuantitas ? number_format($bl->kuantitas, 0) : '';
+                        break;
+                    case 'sudah_ob':
+                        $value = $bl->sudah_ob ? 'Ya' : 'Tidak';
+                        break;
+                    case 'created_at':
+                        $value = $bl->created_at ? $bl->created_at->format('d/m/Y H:i') : '';
+                        break;
+                    case 'updated_at':
+                        $value = $bl->updated_at ? $bl->updated_at->format('d/m/Y H:i') : '';
+                        break;
+                    case 'alamat_pengiriman':
+                        $value = $bl->alamat_pengiriman ? strip_tags($bl->alamat_pengiriman) : '';
+                        break;
+                    default:
+                        // Handle all other fields safely
+                        if (isset($bl->$column)) {
+                            $value = $bl->$column ?? '';
+                        } else {
+                            $value = '';
+                        }
+                        break;
+                }
+                
+                $sheet->setCellValue($col . $row, $value);
+                $col++;
+            }
+            $row++;
+        }
+
+        // Auto-size columns
+        foreach (range('A', $sheet->getHighestColumn()) as $col) {
+            $sheet->getColumnDimension($col)->setAutoSize(true);
+        }
+
+        // Create Excel writer
+        $writer = new Xlsx($spreadsheet);
+        
+        // Set headers for download
+        $filename = 'BL_Export_' . date('Y-m-d_H-i-s') . '.xlsx';
+        
+        return response()->stream(function() use ($writer) {
+            $writer->save('php://output');
+        }, 200, [
+            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'Content-Disposition' => 'attachment;filename="' . $filename . '"',
+            'Cache-Control' => 'max-age=0',
+        ]);
+    }
+
+    /**
+     * Get container size from stock_kontainers or kontainers table
+     */
+    private function getContainerSize($nomorKontainer, $sizeFromFile = null)
+    {
+        // If size is already provided in file, use it
+        if (!empty($sizeFromFile)) {
+            return [
+                'size' => trim($sizeFromFile),
+                'warning' => null
+            ];
+        }
+
+        // Skip auto-fill for auto-generated CARGO containers
+        if (strpos($nomorKontainer, 'CARGO-') === 0) {
+            return [
+                'size' => null,
+                'warning' => null
+            ];
+        }
+
+        // First, try to find in stock_kontainers table
+        $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)
+            ->orWhere(function($query) use ($nomorKontainer) {
+                // Try searching by parts if the number is formatted
+                $cleanNomor = str_replace([' ', '-'], '', $nomorKontainer);
+                if (strlen($cleanNomor) >= 10) {
+                    $awalan = substr($cleanNomor, 0, 4);
+                    $seri = substr($cleanNomor, 4, -1);
+                    $akhiran = substr($cleanNomor, -1);
+                    
+                    $query->where('awalan_kontainer', $awalan)
+                          ->where('nomor_seri_kontainer', $seri)
+                          ->where('akhiran_kontainer', $akhiran);
+                }
+            })
+            ->first();
+
+        if ($stockKontainer && $stockKontainer->size_kontainer) {
+            return [
+                'size' => $stockKontainer->size_kontainer,
+                'warning' => null
+            ];
+        }
+
+        // If not found in stock_kontainers, try kontainers table
+        $kontainer = Kontainer::where('nomor_kontainer', $nomorKontainer)->first();
+        
+        if ($kontainer && $kontainer->size_kontainer) {
+            return [
+                'size' => $kontainer->size_kontainer,
+                'warning' => null
+            ];
+        }
+
+        // If container not found in either table, return warning
+        return [
+            'size' => null,
+            'warning' => "Size kontainer untuk nomor '{$nomorKontainer}' tidak ditemukan di database. Silakan isi manual atau tambahkan ke master data kontainer."
+        ];
     }
 }

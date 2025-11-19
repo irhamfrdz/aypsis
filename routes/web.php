@@ -2811,6 +2811,18 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                ->name('bl.download.template')
                ->middleware('can:bl-view');
                
+          Route::get('bl/export', [\App\Http\Controllers\BlController::class, 'export'])
+               ->name('bl.export')
+               ->middleware('can:bl-view');
+               
+          Route::get('bl/get-ships', [\App\Http\Controllers\BlController::class, 'getShips'])
+               ->name('bl.get-ships')
+               ->middleware('can:bl-view');
+               
+          Route::get('bl/get-voyages', [\App\Http\Controllers\BlController::class, 'getVoyages'])
+               ->name('bl.get-voyages')
+               ->middleware('can:bl-view');
+               
           Route::post('bl/import', [\App\Http\Controllers\BlController::class, 'import'])
                ->name('bl.import')
                ->middleware('can:bl-create');
