@@ -60,6 +60,7 @@
                         <option value="">-PILIH-</option>
                         <option value="" id="loading-bl-option" style="display: none;">Loading...</option>
                     </select>
+                    <p class="mt-1 text-xs text-gray-500">Pilih kontainer dari voyage yang telah dipilih</p>
                 </div>
 
                 <!-- Action Buttons -->
@@ -167,23 +168,23 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Populate BL dropdown
-        blData[voyage].forEach(bl => {
+        // Populate BL dropdown with container data
+        blData[voyage].forEach(container => {
             const option = document.createElement('option');
-            option.value = bl;
-            option.textContent = bl;
+            // Use nomor_kontainer as value
+            option.value = container.value;
+            // Display with format
+            option.textContent = container.text;
+            // Store nomor_bl as data attribute if needed
+            if (container.nomor_bl) {
+                option.setAttribute('data-nomor-bl', container.nomor_bl);
+            }
             // Maintain selected value if exists
-            if (bl === "{{ request('no_bl') }}") {
+            if (container.value === "{{ request('no_bl') }}") {
                 option.selected = true;
             }
             blSelect.appendChild(option);
         });
-        
-        // Add option for no BL selected
-        const noneOption = document.createElement('option');
-        noneOption.value = '';
-        noneOption.textContent = 'Tanpa BL';
-        blSelect.appendChild(noneOption);
     }
     
     // Trigger kapal change if there's a pre-selected value

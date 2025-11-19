@@ -108,18 +108,29 @@ class SuratJalanBongkaranController extends Controller
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
-        // Get BL data for this kapal
+        // Get BL data for this kapal with container information
         $bls = Bl::where('nama_kapal', $kapal->nama_kapal)
               ->whereNotNull('no_voyage')
-              ->whereNotNull('nomor_bl')
-              ->get(['no_voyage', 'nomor_bl']);
+              ->whereNotNull('nomor_kontainer')
+              ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer']);
 
         // Group by voyage and get unique voyages
         $voyages = $bls->pluck('no_voyage')->unique()->values();
         
-        // Get BLs grouped by voyage
+        // Get container data grouped by voyage
         $blsByVoyage = $bls->groupBy('no_voyage')->map(function($items) {
-            return $items->pluck('nomor_bl')->unique()->values();
+            return $items->map(function($item) {
+                // Format: "nomor_kontainer (tipe_kontainer)" or just nomor_kontainer
+                $display = $item->nomor_kontainer;
+                if ($item->tipe_kontainer) {
+                    $display .= ' (' . strtoupper($item->tipe_kontainer) . ')';
+                }
+                return [
+                    'value' => $item->nomor_kontainer,
+                    'text' => $display,
+                    'nomor_bl' => $item->nomor_bl
+                ];
+            })->values();
         });
 
         return response()->json([
