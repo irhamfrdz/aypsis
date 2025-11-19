@@ -534,6 +534,8 @@ class KontainerImportController extends Controller
                     'Tipe',
                     'Vendor',
                     'Status',
+                    'Tanggal Mulai Sewa',
+                    'Tanggal Selesai Sewa',
                     'Tanggal Dibuat',
                     'Tanggal Diperbarui'
                 ];
@@ -552,6 +554,12 @@ class KontainerImportController extends Controller
                         $displayStatus = 'Nonaktif';
                     }
 
+                    // Format tanggal sewa untuk display
+                    $tanggalMulaiSewa = $kontainer->tanggal_mulai_sewa ? 
+                        \Carbon\Carbon::parse($kontainer->tanggal_mulai_sewa)->format('d/M/Y') : '-';
+                    $tanggalSelesaiSewa = $kontainer->tanggal_selesai_sewa ? 
+                        \Carbon\Carbon::parse($kontainer->tanggal_selesai_sewa)->format('d/M/Y') : '-';
+
                     $rowData = [
                         $index + 1,
                         $kontainer->nomor_seri_gabungan ?? '-',
@@ -562,6 +570,8 @@ class KontainerImportController extends Controller
                         $kontainer->tipe_kontainer ?? '-',
                         $kontainer->vendor ?? '-',
                         $displayStatus,
+                        $tanggalMulaiSewa,
+                        $tanggalSelesaiSewa,
                         $kontainer->created_at ? $kontainer->created_at->format('d-m-Y H:i:s') : '-',
                         $kontainer->updated_at ? $kontainer->updated_at->format('d-m-Y H:i:s') : '-'
                     ];
