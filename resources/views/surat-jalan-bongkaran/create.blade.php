@@ -197,25 +197,35 @@
                     <!-- Pengirim -->
                     <div>
                         <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
-                        <input type="text" name="pengirim" id="pengirim"
-                               value="{{ old('pengirim') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('pengirim') border-red-300 @enderror"
-                               placeholder="Masukkan nama pengirim">
+                        <input type="text" name="pengirim" id="pengirim" readonly
+                               value="{{ old('pengirim', isset($selectedContainer) ? $selectedContainer->penerima : '') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700 @error('pengirim') border-red-300 @enderror"
+                               placeholder="Pengirim akan terisi otomatis">
                         @error('pengirim')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        @if(isset($selectedContainer) && $selectedContainer->penerima)
+                            <p class="mt-1 text-xs text-green-600">
+                                Pengirim terisi otomatis dari BL: {{ $selectedContainer->penerima }}
+                            </p>
+                        @endif
                     </div>
 
                     <!-- Tujuan Alamat -->
                     <div>
                         <label for="tujuan_alamat" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Alamat</label>
-                        <input type="text" name="tujuan_alamat" id="tujuan_alamat"
-                               value="{{ old('tujuan_alamat') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_alamat') border-red-300 @enderror"
-                               placeholder="Masukkan tujuan alamat">
+                        <input type="text" name="tujuan_alamat" id="tujuan_alamat" readonly
+                               value="{{ old('tujuan_alamat', isset($selectedContainer) ? $selectedContainer->alamat_pengiriman : '') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700 @error('tujuan_alamat') border-red-300 @enderror"
+                               placeholder="Alamat tujuan akan terisi otomatis">
                         @error('tujuan_alamat')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        @if(isset($selectedContainer) && $selectedContainer->alamat_pengiriman)
+                            <p class="mt-1 text-xs text-green-600">
+                                Alamat terisi otomatis dari BL: {{ $selectedContainer->alamat_pengiriman }}
+                            </p>
+                        @endif
                     </div>
 
                     <!-- Tujuan Pengambilan -->
