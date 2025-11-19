@@ -545,13 +545,21 @@ class KontainerImportController extends Controller
 
                 // Write data
                 foreach ($kontainers as $index => $kontainer) {
-                    // Format status untuk display
-                    $displayStatus = 'Tersedia'; // Default
-
-                    if (in_array($kontainer->status, ['Disewa', 'Digunakan', 'rented'])) {
+                    // Format status untuk display - exactly match database values
+                    $displayStatus = $kontainer->status; // Use actual database value
+                    
+                    // Ensure we handle all possible status values correctly
+                    if ($kontainer->status === 'Tersedia') {
+                        $displayStatus = 'Tersedia';
+                    } elseif ($kontainer->status === 'Tidak Tersedia') {
+                        $displayStatus = 'Tidak Tersedia';
+                    } elseif (in_array($kontainer->status, ['Disewa', 'Digunakan', 'rented'])) {
                         $displayStatus = 'Disewa';
                     } elseif ($kontainer->status === 'inactive') {
                         $displayStatus = 'Nonaktif';
+                    } else {
+                        // For any other status, use the actual value from database
+                        $displayStatus = $kontainer->status;
                     }
 
                     // Format tanggal sewa untuk display
