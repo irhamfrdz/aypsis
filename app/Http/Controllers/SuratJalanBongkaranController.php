@@ -43,6 +43,11 @@ class SuratJalanBongkaranController extends Controller
             $query->where('kapal_id', $request->kapal_id);
         }
 
+        // Filter berdasarkan order
+        if ($request->filled('order_id')) {
+            $query->where('order_id', $request->order_id);
+        }
+
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
@@ -58,9 +63,20 @@ class SuratJalanBongkaranController extends Controller
         $suratJalanBongkarans = $query->orderBy('created_at', 'desc')->paginate(25);
 
         // Data untuk filter dropdown
-        $kapals = MasterKapal::orderBy('nama_kapal')->get();
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->map(function($bl, $index) {
+                        return (object)[
+                            'id' => $index + 1,
+                            'nama_kapal' => $bl->nama_kapal
+                        ];
+                    });
+        $orders = Order::orderBy('nomor_order')->get();
 
-        return view('surat-jalan-bongkaran.index', compact('suratJalanBongkarans', 'kapals'));
+        return view('surat-jalan-bongkaran.index', compact('suratJalanBongkarans', 'kapals', 'orders'));
     }
 
     /**
@@ -68,20 +84,31 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectKapal(Request $request)
     {
-        $kapals = MasterKapal::orderBy('nama_kapal')->get();
+        // Get unique kapal names from BLs table
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->map(function($bl, $index) {
+                        return (object)[
+                            'id' => $index + 1, // Use incremental ID since we don't have master_kapal id
+                            'nama_kapal' => $bl->nama_kapal
+                        ];
+                    });
         
         // Get BL data based on selected kapal
         $bls = collect();
         if ($request->filled('kapal_id')) {
-            $bls = \App\Models\Bl::where('nama_kapal', function($query) use ($request) {
-                $query->select('nama_kapal')
-                      ->from('master_kapals')
-                      ->where('id', $request->kapal_id)
-                      ->limit(1);
-            })
-            ->distinct()
-            ->get(['no_voyage', 'nomor_bl'])
-            ->groupBy('no_voyage');
+            // Find kapal name by the incremental ID
+            $selectedKapalName = $kapals->where('id', $request->kapal_id)->first()?->nama_kapal;
+            
+            if ($selectedKapalName) {
+                $bls = Bl::where('nama_kapal', $selectedKapalName)
+                        ->distinct()
+                        ->get(['no_voyage', 'nomor_bl'])
+                        ->groupBy('no_voyage');
+            }
         }
         
         return view('surat-jalan-bongkaran.select-kapal', compact('kapals', 'bls'));
@@ -96,14 +123,26 @@ class SuratJalanBongkaranController extends Controller
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
-        // Get kapal name
-        $kapal = MasterKapal::find($request->kapal_id);
-        if (!$kapal) {
+        // Get kapal name from BLs table using incremental ID
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->map(function($bl, $index) {
+                        return (object)[
+                            'id' => $index + 1,
+                            'nama_kapal' => $bl->nama_kapal
+                        ];
+                    });
+        
+        $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
+        if (!$selectedKapal) {
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
         // Get BL data for this kapal with container information
-        $bls = Bl::where('nama_kapal', $kapal->nama_kapal)
+        $bls = Bl::where('nama_kapal', $selectedKapal->nama_kapal)
               ->whereNotNull('no_voyage')
               ->whereNotNull('nomor_kontainer')
               ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal']);
@@ -149,19 +188,32 @@ class SuratJalanBongkaranController extends Controller
     {
         // Validate that kapal and voyage are provided
         $request->validate([
-            'kapal_id' => 'required|exists:master_kapals,id',
+            'kapal_id' => 'required|integer',
             'no_voyage' => 'required|string',
         ]);
 
-        $kapals = MasterKapal::orderBy('nama_kapal')->get();
+        // Get unique kapal names from BLs table
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->map(function($bl, $index) {
+                        return (object)[
+                            'id' => $index + 1,
+                            'nama_kapal' => $bl->nama_kapal
+                        ];
+                    });
+        
         $users = User::orderBy('username')->get();
         
-        $selectedKapal = MasterKapal::find($request->kapal_id);
+        // Find selected kapal by ID
+        $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
         $noVoyage = $request->no_voyage;
         $selectedContainer = null;
 
         // If no_bl (container) is selected, get the container details
-        if ($request->filled('no_bl')) {
+        if ($request->filled('no_bl') && $selectedKapal) {
             $selectedContainer = Bl::where('nama_kapal', $selectedKapal->nama_kapal)
                                    ->where('no_voyage', $noVoyage)
                                    ->where('nomor_kontainer', $request->no_bl)

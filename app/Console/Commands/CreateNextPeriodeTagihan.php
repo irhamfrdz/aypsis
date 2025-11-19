@@ -47,15 +47,20 @@ class CreateNextPeriodeTagihan extends Command
                 $currentDate = Carbon::now();
 
                 // Calculate total periods needed like in CSV
+                // IMPORTANT: Always calculate periods until NOW, not until contract end
+                // This allows billing to continue even after contract expires
+                $totalMonthsToNow = intval($startDate->diffInMonths($currentDate));
+                $maxPeriode = $totalMonthsToNow + 1;
+                
+                // Log the calculation
                 if ($container->tanggal_akhir) {
-                    // Container with end date - calculate periods until end date
                     $endDate = Carbon::parse($container->tanggal_akhir);
-                    $totalMonths = intval($startDate->diffInMonths($endDate));
-                    $maxPeriode = $totalMonths + 1;
+                    $isExpired = $currentDate->gt($endDate);
+                    $this->line("Container {$container->nomor_kontainer}: " . 
+                               ($isExpired ? "EXPIRED ({$endDate->format('Y-m-d')})" : "ACTIVE") . 
+                               " - creating periods until now ({$currentDate->format('Y-m-d')})");
                 } else {
-                    // Ongoing container - calculate periods until now
-                    $totalMonths = intval($startDate->diffInMonths($currentDate));
-                    $maxPeriode = $totalMonths + 1;
+                    $this->line("Container {$container->nomor_kontainer}: ONGOING - creating periods until now ({$currentDate->format('Y-m-d')})");
                 }
 
                 // Ensure at least periode 1
@@ -73,10 +78,17 @@ class CreateNextPeriodeTagihan extends Command
                     $periodStart = $startDate->copy()->addMonthsNoOverflow($periode - 1);
                     $periodEnd = $periodStart->copy()->addMonthsNoOverflow(1)->subDay();
 
-                    // Cap by container end date if exists
+                    // Special handling for periods that cross or are after contract end date
+                    $isAfterContractEnd = false;
                     if ($container->tanggal_akhir) {
                         $containerEnd = Carbon::parse($container->tanggal_akhir);
-                        if ($periodEnd->gt($containerEnd)) {
+                        
+                        // If period start is after contract end, this is a post-contract period
+                        if ($periodStart->gt($containerEnd)) {
+                            $isAfterContractEnd = true;
+                            // For post-contract periods, use normal monthly periods (don't cap)
+                        } else if ($periodEnd->gt($containerEnd)) {
+                            // Period straddles the contract end - cap the end date for this specific period only
                             $periodEnd = $containerEnd;
                         }
                     }
@@ -110,7 +122,7 @@ class CreateNextPeriodeTagihan extends Command
                     $values = [
                         'size' => $baseRecord->size,
                         'group' => $baseRecord->group,
-                        'tanggal_akhir' => $container->tanggal_akhir,
+                        'tanggal_akhir' => $periodEnd->format('Y-m-d'), // Use calculated period end, not container end
                         'masa' => $this->generateMasaString($periodStart, $periodEnd),
                         'tarif' => $isFullMonth ? 'Bulanan' : 'Harian',
                         'dpp' => $periodDpp,

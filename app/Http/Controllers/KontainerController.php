@@ -39,6 +39,25 @@ class KontainerController extends Controller
             $query->where('status', $status);
         }
 
+        // Tanggal sewa filter
+        if ($tanggalSewa = $request->get('tanggal_sewa')) {
+            switch ($tanggalSewa) {
+                case 'tanpa_tanggal_akhir':
+                    $query->whereNull('tanggal_selesai_sewa');
+                    break;
+                case 'ada_tanggal_akhir':
+                    $query->whereNotNull('tanggal_selesai_sewa');
+                    break;
+                case 'tanpa_tanggal_mulai':
+                    $query->whereNull('tanggal_mulai_sewa');
+                    break;
+                case 'lengkap':
+                    $query->whereNotNull('tanggal_mulai_sewa')
+                          ->whereNotNull('tanggal_selesai_sewa');
+                    break;
+            }
+        }
+
         // Get distinct vendors for filter dropdown
         $vendors = Kontainer::distinct()
                            ->whereNotNull('vendor')
@@ -106,9 +125,6 @@ class KontainerController extends Controller
             'keterangan' => 'nullable|string',
             'tanggal_mulai_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date',
-            'tahun_pembuatan' => 'nullable|string|size:4',
-            'keterangan1' => 'nullable|string',
-            'keterangan2' => 'nullable|string',
             'status' => 'nullable|string|in:Tersedia,Disewa',
         ];
 
@@ -206,9 +222,6 @@ class KontainerController extends Controller
             'keterangan' => 'nullable|string',
             'tanggal_mulai_sewa' => 'nullable|date',
             'tanggal_selesai_sewa' => 'nullable|date',
-            'tahun_pembuatan' => 'nullable|string|size:4',
-            'keterangan1' => 'nullable|string',
-            'keterangan2' => 'nullable|string',
             'status' => 'nullable|string|in:Tersedia,Disewa',
         ];
 

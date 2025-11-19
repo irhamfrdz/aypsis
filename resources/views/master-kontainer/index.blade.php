@@ -76,6 +76,22 @@
                 </select>
             </div>
 
+            {{-- Tanggal Sewa Filter --}}
+            <div class="min-w-48">
+                <label for="tanggal_sewa" class="block text-sm font-medium text-gray-700 mb-1">
+                    Tanggal Sewa
+                </label>
+                <select id="tanggal_sewa"
+                        name="tanggal_sewa"
+                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 text-sm">
+                    <option value="">Semua Kontainer</option>
+                    <option value="tanpa_tanggal_akhir" {{ request('tanggal_sewa') == 'tanpa_tanggal_akhir' ? 'selected' : '' }}>Tanpa Tanggal Akhir Sewa</option>
+                    <option value="ada_tanggal_akhir" {{ request('tanggal_sewa') == 'ada_tanggal_akhir' ? 'selected' : '' }}>Ada Tanggal Akhir Sewa</option>
+                    <option value="tanpa_tanggal_mulai" {{ request('tanggal_sewa') == 'tanpa_tanggal_mulai' ? 'selected' : '' }}>Tanpa Tanggal Mulai Sewa</option>
+                    <option value="lengkap" {{ request('tanggal_sewa') == 'lengkap' ? 'selected' : '' }}>Tanggal Sewa Lengkap</option>
+                </select>
+            </div>
+
             {{-- Filter Buttons --}}
             <div class="flex space-x-2">
                 <button type="submit"
@@ -96,7 +112,7 @@
         </div>
 
         {{-- Active Filters Display --}}
-        @if(request('search') || request('vendor') || request('ukuran') || request('status'))
+        @if(request('search') || request('vendor') || request('ukuran') || request('status') || request('tanggal_sewa'))
             <div class="pt-3 border-t border-gray-200">
                 <div class="flex flex-wrap items-center gap-2">
                     <span class="text-sm font-medium text-gray-700">Filter aktif:</span>
@@ -144,6 +160,33 @@
                             </a>
                         </span>
                     @endif
+
+                    @if(request('tanggal_sewa'))
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                            Filter: 
+                            @switch(request('tanggal_sewa'))
+                                @case('tanpa_tanggal_akhir')
+                                    Tanpa Tanggal Akhir Sewa
+                                    @break
+                                @case('ada_tanggal_akhir')
+                                    Ada Tanggal Akhir Sewa
+                                    @break
+                                @case('tanpa_tanggal_mulai')
+                                    Tanpa Tanggal Mulai Sewa
+                                    @break
+                                @case('lengkap')
+                                    Tanggal Sewa Lengkap
+                                    @break
+                                @default
+                                    {{ request('tanggal_sewa') }}
+                            @endswitch
+                            <a href="{{ request()->fullUrlWithQuery(['tanggal_sewa' => '']) }}" class="ml-1 text-orange-600 hover:text-orange-800">
+                                <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path>
+                                </svg>
+                            </a>
+                        </span>
+                    @endif
                 </div>
             </div>
         @endif
@@ -179,13 +222,13 @@
             Export CSV
         </a>
 
-        <!-- Export Kontainer Tanpa Tanggal Sewa Button -->
-        <a href="{{ route('master.kontainer.export-tanpa-tanggal-sewa') }}"
+        <!-- Export Kontainer Tanpa Tanggal Akhir Sewa Button -->
+        <a href="{{ route('master.kontainer.export', array_merge(request()->query(), ['tanggal_sewa' => 'tanpa_tanggal_akhir'])) }}"
            class="inline-flex items-center px-4 py-2 border border-red-600 text-sm font-medium rounded-md shadow-sm text-red-600 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
             </svg>
-            Export Tanpa Tanggal Sewa
+            Export Tanpa Tanggal Akhir Sewa
         </a>
 
         <!-- Import Button -->
@@ -252,12 +295,12 @@
         <div class="text-sm text-gray-600">
             Menampilkan {{ $kontainers->firstItem() }} sampai {{ $kontainers->lastItem() }}
             dari {{ $kontainers->total() }} kontainer
-            @if(request('search') || request('vendor') || request('ukuran') || request('status'))
+            @if(request('search') || request('vendor') || request('ukuran') || request('status') || request('tanggal_sewa'))
                 (difilter)
             @endif
         </div>
         <div class="flex items-center space-x-4 text-sm">
-            @if(request('search') || request('vendor') || request('ukuran') || request('status'))
+            @if(request('search') || request('vendor') || request('ukuran') || request('status') || request('tanggal_sewa'))
                 <div class="text-blue-600">
                     <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -422,7 +465,8 @@
                             </h3>
                             <div class="mt-4">
                                 <p class="text-sm text-gray-500 mb-4">
-                                    Upload file CSV untuk mengimpor data kontainer secara bulk.
+                                    Upload file CSV untuk mengimpor data kontainer secara bulk. 
+                                    Template menyediakan <strong>format lengkap (10 kolom)</strong> dengan kolom opsional yang dapat dikosongkan.
                                 </p>
 
                                 <div class="mb-4">
@@ -443,21 +487,42 @@
                                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                         </svg>
                                         <div class="ml-3">
-                                            <h4 class="text-sm font-medium text-blue-800">Format File CSV:</h4>
+                                            <h4 class="text-sm font-medium text-blue-800">Format File CSV (delimiter: semicolon):</h4>
                                             <div class="mt-1 text-sm text-blue-700">
-                                                <ul class="list-disc pl-5 space-y-1">
-                                                    <li>Kolom 1: Awalan Kontainer (4 karakter, contoh: ALLU)</li>
-                                                    <li>Kolom 2: Nomor Seri (6 digit, contoh: 220209)</li>
-                                                    <li>Kolom 3: Akhiran (1 karakter, contoh: 7)</li>
-                                                    <li>Kolom 4: Ukuran (20 atau 40)</li>
-                                                    <li>Kolom 5: Vendor/Pemilik</li>
-                                                </ul>
-                                                <p class="mt-2 text-xs text-blue-600 font-medium">
-                                                    Nomor Seri Gabungan akan dibuat otomatis: Awalan + Nomor Seri + Akhiran
-                                                </p>
-                                                <p class="mt-1 text-xs text-green-600 font-medium">
-                                                    Status kontainer akan diset ke "Tersedia" secara otomatis
-                                                </p>
+                                                <div class="mb-2">
+                                                    <strong>Template Dasar (5 kolom wajib):</strong>
+                                                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                                                        <li>Kolom 1: Awalan Kontainer (4 karakter, contoh: ALLU)</li>
+                                                        <li>Kolom 2: Nomor Seri (maks 6 digit, auto-pad dengan 0)</li>
+                                                        <li>Kolom 3: Akhiran (1 karakter, kosong = "0")</li>
+                                                        <li>Kolom 4: Ukuran (10, 20, atau 40)</li>
+                                                        <li>Kolom 5: Vendor (ZONA atau DPE)</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <strong>Template Lengkap (10 kolom total):</strong>
+                                                    <ul class="list-disc pl-5 space-y-1 mt-1 text-xs">
+                                                        <li>Kolom 6: Tipe Kontainer (default: "Dry Container")</li>
+                                                        <li>Kolom 7: Tanggal Mulai Sewa (dd/mmm/yyyy)</li>
+                                                        <li>Kolom 8: Tanggal Selesai Sewa (dd/mmm/yyyy)</li>
+                                                        <li>Kolom 9: Keterangan (text)</li>
+                                                        <li>Kolom 10: Status (Tersedia/Tidak Tersedia)</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="mt-3 space-y-1">
+                                                    <p class="text-xs text-blue-600 font-medium">
+                                                        📝 Nomor Seri Gabungan: Auto-generated (Awalan+Nomor+Akhiran)
+                                                    </p>
+                                                    <p class="text-xs text-green-600 font-medium">
+                                                        🏷️ Auto-set: Tipe="Dry Container", Status="Tersedia"
+                                                    </p>
+                                                    <p class="text-xs text-purple-600 font-medium">
+                                                        🔄 Gate In & Checkpoint: Default "pending"
+                                                    </p>
+                                                    <p class="text-xs text-yellow-600 font-medium">
+                                                        ⚠️ Duplikasi: Kontainer lama auto-nonaktif
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -533,19 +598,24 @@
                                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                                         </svg>
                                         <div class="ml-3">
-                                            <h4 class="text-sm font-medium text-orange-800">Format File CSV:</h4>
+                                            <h4 class="text-sm font-medium text-orange-800">Format File CSV (delimiter: semicolon):</h4>
                                             <div class="mt-1 text-sm text-orange-700">
                                                 <ul class="list-disc pl-5 space-y-1">
-                                                    <li>Kolom 1: Nomor Kontainer (contoh: ALLU2202097)</li>
-                                                    <li>Kolom 2: Tanggal Mulai Sewa (format: dd/mmm/yyyy, contoh: 12/Nov/2025)</li>
-                                                    <li>Kolom 3: Tanggal Selesai Sewa (format: dd/mmm/yyyy, contoh: 31/Des/2025)</li>
+                                                    <li>Kolom 1: Nomor Kontainer Lengkap (11 karakter, contoh: ALLU2202097)</li>
+                                                    <li>Kolom 2: Tanggal Mulai Sewa (format: dd/mmm/yyyy, contoh: 01/Jan/2024)</li>
+                                                    <li>Kolom 3: Tanggal Selesai Sewa (format: dd/mmm/yyyy, contoh: 31/Des/2024)</li>
                                                 </ul>
-                                                <p class="mt-2 text-xs text-orange-600 font-medium">
-                                                    Sistem akan mencari kontainer berdasarkan nomor kontainer lengkap
-                                                </p>
-                                                <p class="mt-1 text-xs text-green-600 font-medium">
-                                                    Kolom tanggal boleh kosong jika tidak ingin diupdate
-                                                </p>
+                                                <div class="mt-3 space-y-1">
+                                                    <p class="text-xs text-orange-600 font-medium">
+                                                        🔍 Pencarian berdasarkan nomor kontainer gabungan (exact match)
+                                                    </p>
+                                                    <p class="text-xs text-green-600 font-medium">
+                                                        📅 Kolom tanggal boleh kosong jika tidak ingin diupdate
+                                                    </p>
+                                                    <p class="text-xs text-blue-600 font-medium">
+                                                        📄 Contoh: AMFU3153692;;(kosongkan kolom yang tidak diupdate)
+                                                    </p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -799,7 +869,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Auto-submit filter form when filter selections change
     const filterForm = document.querySelector('form[action*="master.kontainer.index"]');
     if (filterForm) {
-        const filterSelects = filterForm.querySelectorAll('select[name="vendor"], select[name="ukuran"], select[name="status"]');
+        const filterSelects = filterForm.querySelectorAll('select[name="vendor"], select[name="ukuran"], select[name="status"], select[name="tanggal_sewa"]');
 
         filterSelects.forEach(select => {
             select.addEventListener('change', function() {

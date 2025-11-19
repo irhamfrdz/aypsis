@@ -1187,39 +1187,90 @@ class BlController extends Controller
             ];
         }
 
-        // First, try to find in stock_kontainers table
-        $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)
-            ->orWhere(function($query) use ($nomorKontainer) {
-                // Try searching by parts if the number is formatted
-                $cleanNomor = str_replace([' ', '-'], '', $nomorKontainer);
-                if (strlen($cleanNomor) >= 10) {
-                    $awalan = substr($cleanNomor, 0, 4);
-                    $seri = substr($cleanNomor, 4, -1);
-                    $akhiran = substr($cleanNomor, -1);
-                    
-                    $query->where('awalan_kontainer', $awalan)
-                          ->where('nomor_seri_kontainer', $seri)
-                          ->where('akhiran_kontainer', $akhiran);
-                }
-            })
-            ->first();
+        \Log::info("Searching container size for: {$nomorKontainer}");
 
-        if ($stockKontainer && $stockKontainer->size_kontainer) {
-            return [
-                'size' => $stockKontainer->size_kontainer,
-                'warning' => null
-            ];
+        // First, try to find in stock_kontainers table
+        $stockKontainer = StockKontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+        
+        if (!$stockKontainer) {
+            // Try searching by parts if the number is formatted or needs parsing
+            $cleanNomor = str_replace([' ', '-'], '', $nomorKontainer);
+            \Log::info("Clean nomor: {$cleanNomor}, length: " . strlen($cleanNomor));
+            
+            if (strlen($cleanNomor) === 11) {
+                // Standard format: ABCD1234567 (4+6+1)
+                $awalan = substr($cleanNomor, 0, 4);
+                $seri = substr($cleanNomor, 4, 6);
+                $akhiran = substr($cleanNomor, 10, 1);
+            } elseif (strlen($cleanNomor) === 10) {
+                // Alternative format: ABCD123456 (4+5+1)
+                $awalan = substr($cleanNomor, 0, 4);
+                $seri = substr($cleanNomor, 4, 5);
+                $akhiran = substr($cleanNomor, 9, 1);
+            } else {
+                \Log::info("Unsupported nomor format length: " . strlen($cleanNomor));
+                $awalan = $seri = $akhiran = null;
+            }
+            
+            if ($awalan && $seri && $akhiran) {
+                \Log::info("Searching by parts: awalan={$awalan}, seri={$seri}, akhiran={$akhiran}");
+                
+                $stockKontainer = StockKontainer::where('awalan_kontainer', $awalan)
+                    ->where('nomor_seri_kontainer', $seri)
+                    ->where('akhiran_kontainer', $akhiran)
+                    ->first();
+            }
+        }
+
+        if ($stockKontainer) {
+            \Log::info("Found in stock_kontainers: " . ($stockKontainer->ukuran ?? 'NULL'));
+            if ($stockKontainer->ukuran) {
+                return [
+                    'size' => $stockKontainer->ukuran,
+                    'warning' => null
+                ];
+            }
         }
 
         // If not found in stock_kontainers, try kontainers table
-        $kontainer = Kontainer::where('nomor_kontainer', $nomorKontainer)->first();
+        // Note: kontainers table uses 'nomor_seri_gabungan' and 'ukuran' columns
+        $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
         
-        if ($kontainer && $kontainer->size_kontainer) {
-            return [
-                'size' => $kontainer->size_kontainer,
-                'warning' => null
-            ];
+        if (!$kontainer) {
+            // Try searching by parts
+            $cleanNomor = str_replace([' ', '-'], '', $nomorKontainer);
+            
+            if (strlen($cleanNomor) === 11) {
+                $awalan = substr($cleanNomor, 0, 4);
+                $seri = substr($cleanNomor, 4, 6);
+                $akhiran = substr($cleanNomor, 10, 1);
+            } elseif (strlen($cleanNomor) === 10) {
+                $awalan = substr($cleanNomor, 0, 4);
+                $seri = substr($cleanNomor, 4, 5);
+                $akhiran = substr($cleanNomor, 9, 1);
+            } else {
+                $awalan = $seri = $akhiran = null;
+            }
+            
+            if ($awalan && $seri && $akhiran) {
+                $kontainer = Kontainer::where('awalan_kontainer', $awalan)
+                    ->where('nomor_seri_kontainer', $seri)
+                    ->where('akhiran_kontainer', $akhiran)
+                    ->first();
+            }
         }
+        
+        if ($kontainer) {
+            \Log::info("Found in kontainers: " . ($kontainer->ukuran ?? 'NULL'));
+            if ($kontainer->ukuran) {
+                return [
+                    'size' => $kontainer->ukuran,
+                    'warning' => null
+                ];
+            }
+        }
+
+        \Log::warning("Container size not found for: {$nomorKontainer}");
 
         // If container not found in either table, return warning
         return [

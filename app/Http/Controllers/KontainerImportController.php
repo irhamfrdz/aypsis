@@ -25,16 +25,44 @@ class KontainerImportController extends Controller
                 'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
             ];
 
-            // CSV content - template dengan contoh data
+            // CSV content - template dengan contoh data (basic + extended)
             $csvData = [
-                ['Awalan Kontainer (4 karakter)', 'Nomor Seri (6 digit)', 'Akhiran (1 karakter)', 'Ukuran', 'Vendor'],
-                ['ALLU', '220209', '7', '20', 'PT. ZONA LINTAS SAMUDERA'],
-                ['AMFU', '313132', '7', '20', 'PT. ZONA LINTAS SAMUDERA'],
-                ['AMFU', '315369', '2', '20', 'PT. ZONA LINTAS SAMUDERA']
+                // Header row with all available fields
+                [
+                    'Awalan Kontainer (4 karakter)', 
+                    'Nomor Seri (maks 6 digit)', 
+                    'Akhiran (1 karakter)', 
+                    'Ukuran (10/20/40)', 
+                    'Vendor (ZONA/DPE)',
+                    'Tipe Kontainer (opsional)',
+                    'Tanggal Mulai Sewa (dd/mmm/yyyy)',
+                    'Tanggal Selesai Sewa (dd/mmm/yyyy)',
+                    'Keterangan (opsional)',
+                    'Status (Tersedia/Tidak Tersedia)'
+                ],
+                // Example row 1 - Basic format
+                ['ALLU', '220209', '7', '20', 'ZONA', '', '', '', '', ''],
+                // Example row 2 - With optional fields
+                ['AMFU', '313132', '7', '20', 'ZONA', 'Dry Container', '01/Jan/2024', '31/Des/2024', 'Kontainer sewa tahunan', 'Tersedia'],
+                // Example row 3 - Minimal format
+                ['AMFU', '315369', '2', '40', 'DPE', '', '', '', '', ''],
+                // Info rows
+                [''],
+                ['=== INFORMASI TEMPLATE ==='],
+                ['Kolom 1-5: WAJIB diisi'],
+                ['Kolom 6-10: OPSIONAL (boleh kosong)'],
+                ['Ukuran: 10, 20, atau 40'],
+                ['Vendor: ZONA atau DPE'],
+                ['Tanggal: format dd/mmm/yyyy (contoh: 15/Jan/2024)'],
+                ['Status default: "Tersedia" jika kosong'],
+                ['Tipe default: "Dry Container" jika kosong']
             ];
 
             $callback = function() use ($csvData) {
                 $file = fopen('php://output', 'w');
+
+                // Add BOM for proper Excel UTF-8 handling
+                fputs($file, "\xEF\xBB\xBF");
 
                 // Set CSV dengan semicolon delimiter
                 foreach ($csvData as $row) {
@@ -157,6 +185,13 @@ class KontainerImportController extends Controller
                     $ukuran = isset($row[3]) ? trim($row[3]) : '';
                     $vendor = isset($row[4]) ? trim($row[4]) : '';
                     
+                    // Additional optional fields
+                    $tipeKontainer = isset($row[5]) ? trim($row[5]) : 'Dry Container';
+                    $tanggalMulaiSewa = isset($row[6]) ? trim($row[6]) : '';
+                    $tanggalSelesaiSewa = isset($row[7]) ? trim($row[7]) : '';
+                    $keterangan = isset($row[8]) ? trim($row[8]) : '';
+                    $status = isset($row[9]) ? trim($row[9]) : 'Tersedia';
+                    
                     // Debug logging untuk troubleshooting
                     \Log::info("Processing CSV row {$rowNumber}", [
                         'raw_row' => $row,
@@ -165,6 +200,11 @@ class KontainerImportController extends Controller
                         'akhiran' => $akhiranKontainer,
                         'ukuran' => $ukuran,
                         'vendor' => $vendor,
+                        'tipe_kontainer' => $tipeKontainer,
+                        'tanggal_mulai_sewa' => $tanggalMulaiSewa,
+                        'tanggal_selesai_sewa' => $tanggalSelesaiSewa,
+                        'keterangan' => $keterangan,
+                        'status' => $status,
                     ]);
 
                     // Validation dengan pesan error yang lebih spesifik
@@ -206,9 +246,61 @@ class KontainerImportController extends Controller
                     }
 
                     // Validate ukuran
-                    if (!in_array($ukuran, ['20', '40'])) {
+                    if (!in_array($ukuran, ['10', '20', '40'])) {
                         $stats['errors']++;
-                        $stats['error_details'][] = "Baris {$rowNumber}: Ukuran harus 20 atau 40";
+                        $stats['error_details'][] = "Baris {$rowNumber}: Ukuran harus 10, 20, atau 40";
+                        continue;
+                    }
+
+                    // Validate vendor
+                    if (!in_array($vendor, ['ZONA', 'DPE'])) {
+                        $stats['errors']++;
+                        $stats['error_details'][] = "Baris {$rowNumber}: Vendor harus ZONA atau DPE";
+                        continue;
+                    }
+
+                    // Process optional date fields
+                    $tanggalMulaiSewaConverted = null;
+                    $tanggalSelesaiSewaConverted = null;
+                    
+                    if (!empty($tanggalMulaiSewa)) {
+                        try {
+                            $date = \DateTime::createFromFormat('d/M/Y', $tanggalMulaiSewa);
+                            if ($date) {
+                                $tanggalMulaiSewaConverted = $date->format('Y-m-d');
+                            } else {
+                                $stats['errors']++;
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid (gunakan dd/mmm/yyyy)";
+                                continue;
+                            }
+                        } catch (\Exception $e) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal mulai sewa tidak valid";
+                            continue;
+                        }
+                    }
+                    
+                    if (!empty($tanggalSelesaiSewa)) {
+                        try {
+                            $date = \DateTime::createFromFormat('d/M/Y', $tanggalSelesaiSewa);
+                            if ($date) {
+                                $tanggalSelesaiSewaConverted = $date->format('Y-m-d');
+                            } else {
+                                $stats['errors']++;
+                                $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid (gunakan dd/mmm/yyyy)";
+                                continue;
+                            }
+                        } catch (\Exception $e) {
+                            $stats['errors']++;
+                            $stats['error_details'][] = "Baris {$rowNumber}: Format tanggal selesai sewa tidak valid";
+                            continue;
+                        }
+                    }
+
+                    // Validate status if provided
+                    if (!empty($status) && !in_array($status, ['Tersedia', 'Tidak Tersedia', 'Disewa'])) {
+                        $stats['errors']++;
+                        $stats['error_details'][] = "Baris {$rowNumber}: Status harus 'Tersedia' atau 'Tidak Tersedia'";
                         continue;
                     }
 
@@ -233,32 +325,58 @@ class KontainerImportController extends Controller
 
                     if ($existingKontainer) {
                         // Update existing
-                        $existingKontainer->update([
+                        $updateData = [
                             'awalan_kontainer' => $awalanKontainer,
                             'nomor_seri_kontainer' => $nomorSeri,
                             'akhiran_kontainer' => $akhiranKontainer,
                             'nomor_seri_gabungan' => $nomorSeriGabungan,
                             'ukuran' => $ukuran,
                             'vendor' => $vendor,
-                            'tipe_kontainer' => 'Dry Container', // Default
-                            'status' => 'Tersedia',
+                            'tipe_kontainer' => $tipeKontainer,
+                            'status' => $status,
                             'updated_at' => now()
-                        ]);
+                        ];
+                        
+                        // Add optional fields if provided
+                        if ($tanggalMulaiSewaConverted) {
+                            $updateData['tanggal_mulai_sewa'] = $tanggalMulaiSewaConverted;
+                        }
+                        if ($tanggalSelesaiSewaConverted) {
+                            $updateData['tanggal_selesai_sewa'] = $tanggalSelesaiSewaConverted;
+                        }
+                        if (!empty($keterangan)) {
+                            $updateData['keterangan'] = $keterangan;
+                        }
+                        
+                        $existingKontainer->update($updateData);
                         $stats['updated']++;
                     } else {
                         // Create new
-                        Kontainer::create([
+                        $createData = [
                             'awalan_kontainer' => $awalanKontainer,
                             'nomor_seri_kontainer' => $nomorSeri,
                             'akhiran_kontainer' => $akhiranKontainer,
                             'nomor_seri_gabungan' => $nomorSeriGabungan,
                             'ukuran' => $ukuran,
                             'vendor' => $vendor,
-                            'tipe_kontainer' => 'Dry Container', // Default value
-                            'status' => 'Tersedia', // Default value - akan divalidasi oleh model jika ada konflik
+                            'tipe_kontainer' => $tipeKontainer,
+                            'status' => $status,
                             'created_at' => now(),
                             'updated_at' => now()
-                        ]);
+                        ];
+                        
+                        // Add optional fields if provided
+                        if ($tanggalMulaiSewaConverted) {
+                            $createData['tanggal_mulai_sewa'] = $tanggalMulaiSewaConverted;
+                        }
+                        if ($tanggalSelesaiSewaConverted) {
+                            $createData['tanggal_selesai_sewa'] = $tanggalSelesaiSewaConverted;
+                        }
+                        if (!empty($keterangan)) {
+                            $createData['keterangan'] = $keterangan;
+                        }
+                        
+                        Kontainer::create($createData);
                         $stats['success']++;
                     }
 
@@ -327,6 +445,25 @@ class KontainerImportController extends Controller
                 $query->where('status', $request->status);
             }
 
+            // Tanggal sewa filter
+            if ($request->filled('tanggal_sewa')) {
+                switch ($request->tanggal_sewa) {
+                    case 'tanpa_tanggal_akhir':
+                        $query->whereNull('tanggal_selesai_sewa');
+                        break;
+                    case 'ada_tanggal_akhir':
+                        $query->whereNotNull('tanggal_selesai_sewa');
+                        break;
+                    case 'tanpa_tanggal_mulai':
+                        $query->whereNull('tanggal_mulai_sewa');
+                        break;
+                    case 'lengkap':
+                        $query->whereNotNull('tanggal_mulai_sewa')
+                              ->whereNotNull('tanggal_selesai_sewa');
+                        break;
+                }
+            }
+
             // Get all matching records (no pagination for export)
             $kontainers = $query->orderBy('nomor_seri_gabungan')->get();
 
@@ -346,6 +483,22 @@ class KontainerImportController extends Controller
             }
             if ($request->filled('status')) {
                 $filterInfo[] = 'status-' . strtolower($request->status);
+            }
+            if ($request->filled('tanggal_sewa')) {
+                switch ($request->tanggal_sewa) {
+                    case 'tanpa_tanggal_akhir':
+                        $filterInfo[] = 'tanpa-akhir-sewa';
+                        break;
+                    case 'ada_tanggal_akhir':
+                        $filterInfo[] = 'ada-akhir-sewa';
+                        break;
+                    case 'tanpa_tanggal_mulai':
+                        $filterInfo[] = 'tanpa-mulai-sewa';
+                        break;
+                    case 'lengkap':
+                        $filterInfo[] = 'sewa-lengkap';
+                        break;
+                }
             }
 
             if (!empty($filterInfo)) {
