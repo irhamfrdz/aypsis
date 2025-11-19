@@ -120,8 +120,12 @@ class SuratJalanBongkaranController extends Controller
         // Get container data grouped by voyage
         $blsByVoyage = $bls->groupBy('no_voyage')->map(function($items) {
             return $items->map(function($item) {
-                // Format: "nomor_kontainer (tipe_kontainer)" or just nomor_kontainer
-                $display = $item->nomor_kontainer;
+                // Format: "nomor_bl - nomor_kontainer (tipe_kontainer)"
+                $display = '';
+                if ($item->nomor_bl) {
+                    $display = $item->nomor_bl . ' - ';
+                }
+                $display .= $item->nomor_kontainer;
                 if ($item->tipe_kontainer) {
                     $display .= ' (' . strtoupper($item->tipe_kontainer) . ')';
                 }
