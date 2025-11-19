@@ -14,7 +14,6 @@ class SuratJalanBongkaran extends Model
     protected $table = 'surat_jalan_bongkarans';
 
     protected $fillable = [
-        'order_id',
         'tanggal_surat_jalan',
         'no_surat_jalan',
         'kegiatan',
@@ -79,11 +78,6 @@ class SuratJalanBongkaran extends Model
     ];
 
     // Relationships
-    public function order()
-    {
-        return $this->belongsTo(Order::class);
-    }
-
     public function inputBy()
     {
         return $this->belongsTo(User::class, 'input_by');

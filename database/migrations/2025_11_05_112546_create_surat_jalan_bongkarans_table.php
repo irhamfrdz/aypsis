@@ -15,7 +15,6 @@ return new class extends Migration
             $table->id();
             
             // Basic Information
-            $table->unsignedBigInteger('order_id')->nullable();
             $table->date('tanggal_surat_jalan');
             $table->string('no_surat_jalan')->unique();
             $table->enum('kegiatan', ['bongkar_muat', 'delivery', 'pickup', 'stuffing', 'stripping', 'lainnya'])->nullable();
@@ -95,15 +94,11 @@ return new class extends Migration
             // Timestamps
             $table->timestamps();
 
-            // Foreign key constraints
-            $table->foreign('order_id')->references('id')->on('orders')->onDelete('set null');
-
             // Indexes for performance
             $table->index(['tanggal_surat_jalan', 'status']);
             $table->index(['no_surat_jalan']);
             $table->index(['pengirim']);
             $table->index(['status']);
-            $table->index(['order_id']);
             $table->index(['no_kontainer']);
             $table->index(['kegiatan']);
         });

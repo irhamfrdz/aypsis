@@ -88,25 +88,6 @@
                 @endif
 
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- Order -->
-                    <div>
-                        <label for="order_id" class="block text-sm font-medium text-gray-700 mb-1">
-                            Order <span class="text-red-500">*</span>
-                        </label>
-                        <select name="order_id" id="order_id" required
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('order_id') border-red-300 @enderror">
-                            <option value="">Pilih Order</option>
-                            @foreach($orders as $order)
-                                <option value="{{ $order->id }}" {{ old('order_id') == $order->id ? 'selected' : '' }}>
-                                    {{ $order->nomor_order }}
-                                </option>
-                            @endforeach
-                        </select>
-                        @error('order_id')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
                     <!-- Kapal (if not pre-selected) -->
                     @if(!isset($selectedKapal))
                     <div>

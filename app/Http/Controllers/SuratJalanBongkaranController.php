@@ -27,7 +27,7 @@ class SuratJalanBongkaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SuratJalanBongkaran::with(['order', 'kapal', 'user']);
+        $query = SuratJalanBongkaran::with(['kapal', 'user']);
 
         // Filter berdasarkan tanggal
         if ($request->filled('start_date')) {
@@ -36,11 +36,6 @@ class SuratJalanBongkaranController extends Controller
 
         if ($request->filled('end_date')) {
             $query->whereDate('tanggal_bongkar', '<=', $request->end_date);
-        }
-
-        // Filter berdasarkan order
-        if ($request->filled('order_id')) {
-            $query->where('order_id', $request->order_id);
         }
 
         // Filter berdasarkan kapal
@@ -63,10 +58,9 @@ class SuratJalanBongkaranController extends Controller
         $suratJalanBongkarans = $query->orderBy('created_at', 'desc')->paginate(25);
 
         // Data untuk filter dropdown
-        $orders = Order::orderBy('nomor_order')->get();
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
 
-        return view('surat-jalan-bongkaran.index', compact('suratJalanBongkarans', 'orders', 'kapals'));
+        return view('surat-jalan-bongkaran.index', compact('suratJalanBongkarans', 'kapals'));
     }
 
     /**
@@ -154,14 +148,13 @@ class SuratJalanBongkaranController extends Controller
             'no_voyage' => 'required|string',
         ]);
 
-        $orders = Order::orderBy('nomor_order')->get();
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
         $users = User::orderBy('username')->get();
         
         $selectedKapal = MasterKapal::find($request->kapal_id);
         $noVoyage = $request->no_voyage;
 
-        return view('surat-jalan-bongkaran.create', compact('orders', 'kapals', 'users', 'selectedKapal', 'noVoyage'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage'));
     }
 
     /**
@@ -170,7 +163,6 @@ class SuratJalanBongkaranController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'order_id' => 'required|exists:orders,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
             'tanggal_bongkar' => 'required|date',
@@ -246,11 +238,10 @@ class SuratJalanBongkaranController extends Controller
      */
     public function edit(SuratJalanBongkaran $suratJalanBongkaran)
     {
-        $orders = Order::orderBy('nomor_order')->get();
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
         $users = User::orderBy('username')->get();
 
-        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'orders', 'kapals', 'users'));
+        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'kapals', 'users'));
     }
 
     /**
@@ -259,7 +250,7 @@ class SuratJalanBongkaranController extends Controller
     public function update(Request $request, SuratJalanBongkaran $suratJalanBongkaran)
     {
         $validatedData = $request->validate([
-            'order_id' => 'required|exists:orders,id',
+            'kapal_id' => 'nullable|exists:master_kapals,id',
             'kapal_id' => 'nullable|exists:master_kapals,id',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,nomor_surat_jalan,' . $suratJalanBongkaran->id,
             'tanggal_bongkar' => 'required|date',
