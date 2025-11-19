@@ -231,6 +231,15 @@
             Export Sewa Aktif Tanpa Tanggal Akhir
         </a>
 
+        <!-- Export Kontainer Tidak Tersedia Button -->
+        <a href="{{ route('master.kontainer.export', array_merge(request()->query(), ['search' => '', 'vendor' => '', 'ukuran' => '', 'status' => 'Tidak Tersedia', 'tanggal_sewa' => ''])) }}"
+           class="inline-flex items-center px-4 py-2 border border-gray-600 text-sm font-medium rounded-md shadow-sm text-gray-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728L5.636 5.636m12.728 12.728L18.364 5.636M5.636 18.364l12.728-12.728"></path>
+            </svg>
+            Export Kontainer Tidak Tersedia
+        </a>
+
         <!-- Import Button -->
         <button onclick="openImportModal()"
                 class="inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-600 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
@@ -865,6 +874,29 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 3000);
         });
     }
+
+    // Export CSV functionality for all export buttons
+    const exportButtons = document.querySelectorAll('a[href*="export"]');
+    exportButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = `
+                <svg class="animate-spin w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                Mengunduh...
+            `;
+            this.classList.add('pointer-events-none');
+
+            // Reset after download starts (approximate)
+            setTimeout(() => {
+                this.innerHTML = originalText;
+                this.classList.remove('pointer-events-none');
+            }, 3000);
+        });
+    });
 
     // Auto-submit filter form when filter selections change
     const filterForm = document.querySelector('form[action*="master.kontainer.index"]');
