@@ -358,13 +358,18 @@
                     <!-- No Seal -->
                     <div>
                         <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">No Seal</label>
-                        <input type="text" name="no_seal" id="no_seal"
+                        <input type="text" name="no_seal" id="no_seal" readonly
                                value="{{ old('no_seal', isset($selectedContainer) ? $selectedContainer->no_seal : '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_seal') border-red-300 @enderror"
-                               placeholder="Masukkan nomor seal">
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700 @error('no_seal') border-red-300 @enderror"
+                               placeholder="Nomor seal akan terisi otomatis">
                         @error('no_seal')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        @if(isset($selectedContainer) && $selectedContainer->no_seal)
+                            <p class="mt-1 text-xs text-green-600">
+                                Seal terisi otomatis dari kontainer: {{ $selectedContainer->no_seal }}
+                            </p>
+                        @endif
                     </div>
 
                     <!-- Size Kontainer -->
