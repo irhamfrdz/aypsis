@@ -55,122 +55,93 @@
                     @method('PUT')
 
                     <div class="space-y-6">
-                        <!-- Update Kontainer Section -->
+                        <!-- Data Kontainer Section -->
                         <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Update Data Kontainer
-                                </label>
-                                <span class="text-xs text-gray-500">
-                                    {{ $jumlahKontainer }} Kontainer - {{ $tandaTerima->size }}ft
-                                </span>
-                            </div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Data Kontainer
+                            </label>
 
-                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Kontainer
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                No. Kontainer
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                No. Seal
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        @for($i = 1; $i <= $jumlahKontainer; $i++)
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                            <span class="text-sm font-medium text-blue-600">#{{ $i }}</span>
-                                                        </div>
-                                                        <div class="ml-3">
-                                                            <p class="text-sm font-medium text-gray-900">
-                                                                @if(isset($nomorKontainerArray[$i-1]) && !empty($nomorKontainerArray[$i-1]))
-                                                                    {{ $nomorKontainerArray[$i-1] }}
-                                                                @else
-                                                                    Kontainer {{ $i }}
-                                                                @endif
-                                                            </p>
-                                                            <p class="text-xs text-gray-500">{{ $tandaTerima->size }}ft - {{ strtoupper($tandaTerima->tipe_kontainer ?: 'FCL') }}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    @if(isset($nomorKontainerArray[$i-1]) && !empty($nomorKontainerArray[$i-1]))
-                                                        <!-- Nomor kontainer sudah ada, tidak bisa diedit -->
-                                                        <div class="flex items-center">
-                                                            <input type="text"
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700 text-sm font-mono cursor-not-allowed"
-                                                                   value="{{ $nomorKontainerArray[$i-1] }}"
-                                                                   readonly>
-                                                            <span class="ml-2 text-xs text-gray-500">
-                                                                <i class="fas fa-lock"></i>
-                                                            </span>
-                                                        </div>
-                                                        <!-- Hidden field untuk mengirim data yang sama -->
-                                                        <input type="hidden" name="nomor_kontainer[]" value="{{ $nomorKontainerArray[$i-1] }}">
-                                                    @else
-                                                        <!-- Nomor kontainer kosong, bisa diedit -->
-                                                        <input type="text"
-                                                               name="nomor_kontainer[]"
-                                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('nomor_kontainer.'.$i) border-red-500 @enderror"
-                                                               placeholder="Nomor kontainer #{{ $i }}"
-                                                               value="{{ old('nomor_kontainer.'.$i, '') }}">
-                                                        @error('nomor_kontainer.'.$i)
-                                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                        @enderror
-                                                    @endif
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    @if(isset($noSealArray[$i-1]) && !empty($noSealArray[$i-1]))
-                                                        <!-- Nomor seal sudah ada, tidak bisa diedit -->
-                                                        <div class="flex items-center">
-                                                            <input type="text"
-                                                                   class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-gray-700 text-sm font-mono cursor-not-allowed"
-                                                                   value="{{ $noSealArray[$i-1] }}"
-                                                                   readonly>
-                                                            <span class="ml-2 text-xs text-gray-500">
-                                                                <i class="fas fa-lock"></i>
-                                                            </span>
-                                                        </div>
-                                                        <!-- Hidden field untuk mengirim data yang sama -->
-                                                        <input type="hidden" name="no_seal[]" value="{{ $noSealArray[$i-1] }}">
-                                                    @else
-                                                        <!-- Nomor seal kosong, bisa diedit -->
-                                                        <input type="text"
-                                                               name="no_seal[]"
-                                                               class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.'.$i) border-red-500 @enderror"
-                                                               placeholder="Nomor seal #{{ $i }}"
-                                                               value="{{ old('no_seal.'.$i, '') }}">
-                                                        @error('no_seal.'.$i)
-                                                            <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                        @enderror
-                                                    @endif
-                                                </td>
-                                            </tr>
-                                        @endfor
-                                    </tbody>
-                                </table>
-                            </div>
-                            <div class="text-xs text-gray-500 mt-2 space-y-1">
-                                <p>
-                                    <i class="fas fa-lock mr-1"></i>
-                                    <strong>Nomor kontainer</strong> tidak dapat diedit setelah tersimpan
-                                </p>
-                                <p>
-                                    <i class="fas fa-lock mr-1"></i>
-                                    <strong>Nomor seal</strong> tidak dapat diedit jika sudah diisi sebelumnya
-                                </p>
-                                <p>
-                                    <i class="fas fa-edit mr-1"></i>
-                                    Anda hanya dapat mengisi field yang masih kosong
-                                </p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="tipe_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Tipe Kontainer
+                                    </label>
+                                    <select name="tipe_kontainer[]"
+                                            id="tipe_kontainer"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Tipe</option>
+                                        <option value="fcl" {{ old('tipe_kontainer.0', strtolower($tandaTerima->tipe_kontainer ?: 'fcl')) === 'fcl' ? 'selected' : '' }}>FCL</option>
+                                        <option value="lcl" {{ old('tipe_kontainer.0', strtolower($tandaTerima->tipe_kontainer ?: 'fcl')) === 'lcl' ? 'selected' : '' }}>LCL</option>
+                                        <option value="cargo" {{ old('tipe_kontainer.0', strtolower($tandaTerima->tipe_kontainer ?: 'fcl')) === 'cargo' ? 'selected' : '' }}>Cargo</option>
+                                        <option value="bb" {{ old('tipe_kontainer.0', strtolower($tandaTerima->tipe_kontainer ?: 'fcl')) === 'bb' ? 'selected' : '' }}>BB</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="size" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Size Kontainer
+                                    </label>
+                                    <select name="size[]"
+                                            id="size"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Size</option>
+                                        <option value="20" {{ old('size.0', $tandaTerima->size) == '20' ? 'selected' : '' }}>20</option>
+                                        <option value="40" {{ old('size.0', $tandaTerima->size) == '40' ? 'selected' : '' }}>40</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="jumlah_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Jumlah Kontainer
+                                    </label>
+                                    <input type="number"
+                                           name="jumlah_kontainer"
+                                           id="jumlah_kontainer"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                           value="{{ old('jumlah_kontainer', $tandaTerima->jumlah_kontainer) }}"
+                                           placeholder="Jumlah kontainer"
+                                           min="0">
+                                </div>
+                                <div>
+                                    <label for="nomor_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
+                                        No. Kontainer
+                                    </label>
+                                    <select name="nomor_kontainer[]"
+                                            id="nomor_kontainer"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror">
+                                        <option value="">-- Pilih atau Ketik Nomor Kontainer --</option>
+                                        @foreach($stockKontainers as $stock)
+                                            <option value="{{ $stock->nomor_seri_gabungan }}"
+                                                    data-size="{{ $stock->ukuran }}"
+                                                    {{ old('nomor_kontainer.0', isset($nomorKontainerArray[0]) ? $nomorKontainerArray[0] : '') == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
+                                                {{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})
+                                            </option>
+                                        @endforeach
+                                        @if(old('nomor_kontainer.0', isset($nomorKontainerArray[0]) ? $nomorKontainerArray[0] : ''))
+                                            <option value="{{ old('nomor_kontainer.0', isset($nomorKontainerArray[0]) ? $nomorKontainerArray[0] : '') }}" selected>
+                                                {{ old('nomor_kontainer.0', isset($nomorKontainerArray[0]) ? $nomorKontainerArray[0] : '') }}
+                                            </option>
+                                        @endif
+                                    </select>
+                                    @error('nomor_kontainer.0')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari atau input nomor kontainer baru
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="no_seal" class="block text-xs font-medium text-gray-500 mb-2">
+                                        No. Seal
+                                    </label>
+                                    <input type="text"
+                                           name="no_seal[]"
+                                           id="no_seal"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.0') border-red-500 @enderror"
+                                           placeholder="Nomor seal"
+                                           value="{{ old('no_seal.0', isset($noSealArray[0]) ? $noSealArray[0] : '') }}">
+                                    @error('no_seal.0')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
 
@@ -830,6 +801,96 @@
 
     // Initialize other functionality after DOM is ready
     $(document).ready(function() {
+
+        // Initialize Select2 for nomor kontainer with tags (allow free input)
+        $('.select2-kontainer').select2({
+            placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
+            allowClear: true,
+            width: '100%',
+            tags: true,
+            createTag: function (params) {
+                var term = $.trim(params.term);
+                if (term === '') {
+                    return null;
+                }
+                return {
+                    id: term,
+                    text: term,
+                    newTag: true
+                }
+            },
+            language: {
+                noResults: function() {
+                    return "Ketik nomor kontainer baru atau pilih dari daftar";
+                },
+                searching: function() {
+                    return "Mencari...";
+                }
+            }
+        });
+
+        // Filter nomor kontainer berdasarkan size yang dipilih
+        $('#size').on('change', function() {
+            var selectedSize = $(this).val();
+            console.log('=== Size Changed ===');
+            console.log('Selected size:', selectedSize);
+            
+            // Clear current selection first
+            $('#nomor_kontainer').val(null);
+            
+            // Destroy existing Select2 instance
+            $('#nomor_kontainer').select2('destroy');
+            
+            // Remove all options except the placeholder
+            var $select = $('#nomor_kontainer');
+            var placeholderOption = $select.find('option[value=""]').clone();
+            $select.empty().append(placeholderOption);
+            
+            // Re-add filtered options
+            @foreach($stockKontainers as $stock)
+                var optionText = '{{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})';
+                var optionValue = '{{ $stock->nomor_seri_gabungan }}';
+                var stockSize = '{{ $stock->ukuran }}';
+                
+                // Only add option if no size selected OR size matches
+                if (!selectedSize || stockSize === selectedSize) {
+                    var newOption = new Option(optionText, optionValue, false, false);
+                    $select.append(newOption);
+                    console.log('✓ Added option:', optionText);
+                } else {
+                    console.log('✗ Skipped option:', optionText);
+                }
+            @endforeach
+            
+            // Re-initialize Select2 with filtered data
+            $('#nomor_kontainer').select2({
+                placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
+                allowClear: true,
+                width: '100%',
+                tags: true,
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    }
+                },
+                language: {
+                    noResults: function() {
+                        return "Ketik nomor kontainer baru atau pilih dari daftar";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+            
+            console.log('✓ Kontainer options filtered by size:', selectedSize);
+        });
 
         // Calculate initial volumes and totals
         calculateAllVolumesAndTotals();

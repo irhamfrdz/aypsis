@@ -396,7 +396,33 @@ class TandaTerimaController extends Controller
         // Get master kapal for dropdown
         $masterKapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
 
-        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals'));
+        // Get all pengirims for dropdown
+        $pengirims = \App\Models\Pengirim::orderBy('nama_pengirim')->get();
+
+        // Get stock kontainers for dropdown
+        $stockKontainers = \App\Models\StockKontainer::whereIn('status_ketersediaan', ['tersedia', 'tidak_tersedia'])
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+
+        // Get supirs for dropdown
+        $supirs = \App\Models\Supir::where('status', 'aktif')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        // Get keneks for dropdown
+        $keneks = \App\Models\Kenek::where('status', 'aktif')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        // Get kranis for dropdown
+        $kranis = \App\Models\Krani::where('status', 'aktif')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        // Get master kegiatans
+        $masterKegiatans = \App\Models\MasterKegiatan::orderBy('nama_kegiatan')->get();
+
+        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans'));
     }
 
     /**
