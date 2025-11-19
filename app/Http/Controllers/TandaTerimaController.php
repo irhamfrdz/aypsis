@@ -126,7 +126,30 @@ class TandaTerimaController extends Controller
         // Get master kapal for dropdown
         $masterKapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
 
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals'));
+        // Get all pengirims for dropdown
+        $pengirims = \App\Models\Pengirim::orderBy('nama_pengirim')->get();
+
+        // Get all terms for dropdown
+        $terms = \App\Models\Term::where('status', 'active')->orderBy('nama_status')->get();
+
+        // Get all jenis barangs for dropdown
+        $jenisBarangs = \App\Models\JenisBarang::where('status', 'active')->orderBy('nama_barang')->get();
+
+        // Get all master kegiatans for dropdown - only type kegiatan surat jalan
+        $masterKegiatans = \App\Models\MasterKegiatan::where('status', 'aktif')
+                                                      ->where('type', 'kegiatan surat jalan')
+                                                      ->orderBy('nama_kegiatan')->get();
+
+        // Get all karyawans for dropdown (supir) - only from divisi supir
+        $karyawans = \App\Models\Karyawan::where('divisi', 'supir')->orderBy('nama_lengkap')->get();
+
+        // Get all karyawans for dropdown (kenek/krani) - only from divisi krani
+        $kranisKenek = \App\Models\Karyawan::where('divisi', 'krani')->orderBy('nama_lengkap')->get();
+
+        // Get all stock kontainers for dropdown
+        $stockKontainers = \App\Models\StockKontainer::orderBy('nomor_seri_gabungan')->get();
+
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers'));
     }
 
     /**
@@ -136,6 +159,31 @@ class TandaTerimaController extends Controller
     {
         $request->validate([
             'surat_jalan_id' => 'required|exists:surat_jalan,id',
+            // Field yang akan disinkronkan ke surat jalan
+            'tanggal_surat_jalan' => 'nullable|date',
+            'nomor_surat_jalan' => 'nullable|string|max:255',
+            'rit' => 'nullable|string|max:255',
+            'pengirim' => 'nullable|string|max:255',
+            'term' => 'nullable|string|max:255',
+            'aktifitas' => 'nullable|string|max:255',
+            'jenis_barang' => 'nullable|string|max:255',
+            'alamat' => 'nullable|string',
+            'telepon' => 'nullable|string|max:50',
+            'jumlah_retur' => 'nullable|integer|min:0',
+            'supir' => 'nullable|string|max:255',
+            'supir_pengganti' => 'nullable|string|max:255',
+            'no_plat' => 'nullable|string|max:50',
+            'kenek' => 'nullable|string|max:255',
+            'krani' => 'nullable|string|max:255',
+            'tipe_kontainer' => 'nullable|array',
+            'tipe_kontainer.*' => 'nullable|string|max:50',
+            'size' => 'nullable|array',
+            'size.*' => 'nullable|string|max:50',
+            'jumlah_kontainer' => 'nullable|integer|min:0',
+            'karton' => 'nullable|string|max:50',
+            'plastik' => 'nullable|string|max:50',
+            'terpal' => 'nullable|string|max:50',
+            // Field khusus tanda terima
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
@@ -214,27 +262,110 @@ class TandaTerimaController extends Controller
             $tandaTerima->created_by = Auth::id();
             $tandaTerima->save();
 
-            // Sync nomor kontainer dan seal ke surat jalan
-            if (!empty($tandaTerima->no_kontainer) || !empty($tandaTerima->no_seal)) {
-                $suratJalanUpdate = [];
-                
-                if (!empty($tandaTerima->no_kontainer)) {
-                    $suratJalanUpdate['no_kontainer'] = $tandaTerima->no_kontainer;
+            // Sync semua field yang diubah di form tanda terima ke surat jalan
+            $suratJalanUpdate = [];
+            
+            // Nomor kontainer dan seal
+            if (!empty($tandaTerima->no_kontainer)) {
+                $suratJalanUpdate['no_kontainer'] = $tandaTerima->no_kontainer;
+            }
+            if (!empty($tandaTerima->no_seal)) {
+                $suratJalanUpdate['no_seal'] = $tandaTerima->no_seal;
+            }
+            
+            // Data dari form yang bisa diupdate
+            if ($request->filled('tanggal_surat_jalan')) {
+                $suratJalanUpdate['tanggal_surat_jalan'] = $request->tanggal_surat_jalan;
+            }
+            if ($request->filled('nomor_surat_jalan')) {
+                $suratJalanUpdate['no_surat_jalan'] = $request->nomor_surat_jalan;
+            }
+            if ($request->filled('rit')) {
+                $suratJalanUpdate['rit'] = $request->rit;
+            }
+            if ($request->filled('pengirim')) {
+                $suratJalanUpdate['pengirim'] = $request->pengirim;
+            }
+            if ($request->filled('term')) {
+                $suratJalanUpdate['term'] = $request->term;
+            }
+            if ($request->filled('aktifitas')) {
+                $suratJalanUpdate['kegiatan'] = $request->aktifitas;
+            }
+            if ($request->filled('jenis_barang')) {
+                $suratJalanUpdate['jenis_barang'] = $request->jenis_barang;
+            }
+            if ($request->filled('alamat')) {
+                $suratJalanUpdate['alamat'] = $request->alamat;
+            }
+            if ($request->filled('telepon')) {
+                $suratJalanUpdate['telepon'] = $request->telepon;
+            }
+            if ($request->filled('jumlah_retur')) {
+                $suratJalanUpdate['jumlah_retur'] = $request->jumlah_retur;
+            }
+            
+            // Data supir dan kendaraan
+            if ($request->filled('supir')) {
+                $suratJalanUpdate['supir'] = $request->supir;
+            }
+            if ($request->filled('supir_pengganti')) {
+                $suratJalanUpdate['supir_pengganti'] = $request->supir_pengganti;
+            }
+            if ($request->filled('no_plat')) {
+                $suratJalanUpdate['no_plat'] = $request->no_plat;
+            }
+            if ($request->filled('kenek')) {
+                $suratJalanUpdate['kenek'] = $request->kenek;
+            }
+            if ($request->filled('krani')) {
+                $suratJalanUpdate['krani'] = $request->krani;
+            }
+            
+            // Data kontainer
+            if ($request->filled('tipe_kontainer')) {
+                // Ambil tipe kontainer pertama jika ada (karena array)
+                $tipeKontainer = is_array($request->tipe_kontainer) ? $request->tipe_kontainer[0] : $request->tipe_kontainer;
+                if (!empty($tipeKontainer)) {
+                    $suratJalanUpdate['tipe_kontainer'] = $tipeKontainer;
                 }
-                
-                if (!empty($tandaTerima->no_seal)) {
-                    $suratJalanUpdate['no_seal'] = $tandaTerima->no_seal;
+            }
+            if ($request->filled('size')) {
+                // Ambil size pertama jika ada (karena array)
+                $size = is_array($request->size) ? $request->size[0] : $request->size;
+                if (!empty($size)) {
+                    $suratJalanUpdate['size'] = $size;
                 }
-                
-                if (!empty($suratJalanUpdate)) {
-                    $suratJalan->update($suratJalanUpdate);
-                }
+            }
+            if ($request->filled('jumlah_kontainer')) {
+                $suratJalanUpdate['jumlah_kontainer'] = $request->jumlah_kontainer;
+            }
+            
+            // Data packing/pengamanan
+            if ($request->filled('karton')) {
+                $suratJalanUpdate['karton'] = $request->karton;
+            }
+            if ($request->filled('plastik')) {
+                $suratJalanUpdate['plastik'] = $request->plastik;
+            }
+            if ($request->filled('terpal')) {
+                $suratJalanUpdate['terpal'] = $request->terpal;
+            }
+            
+            // Tujuan pengiriman
+            if ($request->filled('tujuan_pengiriman')) {
+                $suratJalanUpdate['tujuan_pengiriman'] = $request->tujuan_pengiriman;
+            }
+            
+            // Update surat jalan jika ada perubahan
+            if (!empty($suratJalanUpdate)) {
+                $suratJalan->update($suratJalanUpdate);
             }
 
             DB::commit();
 
             return redirect()->route('tanda-terima.show', $tandaTerima->id)
-                ->with('success', 'Tanda terima berhasil dibuat dan nomor kontainer/seal telah disinkronkan ke surat jalan');
+                ->with('success', 'Tanda terima berhasil dibuat dan data telah disinkronkan ke surat jalan');
 
         } catch (\Exception $e) {
             DB::rollBack();

@@ -40,88 +40,420 @@
         </div>
     </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Form Section (Left - 2/3) -->
-        <div class="lg:col-span-2">
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-                <div class="p-6 border-b border-gray-200">
-                    <h2 class="text-lg font-semibold text-gray-900">Data Tanda Terima</h2>
-                    <p class="text-sm text-gray-600 mt-1">Lengkapi informasi untuk tanda terima baru</p>
-                </div>
+    <!-- Form Section -->
+    <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+        <div class="p-6 border-b border-gray-200">
+            <h2 class="text-lg font-semibold text-gray-900">Data Tanda Terima</h2>
+            <p class="text-sm text-gray-600 mt-1">Lengkapi informasi untuk tanda terima baru</p>
+        </div>
 
-                <form action="{{ route('tanda-terima.store') }}" method="POST" class="p-6">
+        <form action="{{ route('tanda-terima.store') }}" method="POST" class="p-6">
                     @csrf
                     <input type="hidden" name="surat_jalan_id" value="{{ $suratJalan->id }}">
 
                     <div class="space-y-6">
-                        <!-- Data Kontainer Section -->
-                        <div>
-                            <div class="flex items-center justify-between mb-4">
-                                <label class="block text-sm font-medium text-gray-700">
-                                    Data Kontainer
-                                </label>
-                                <span class="text-xs text-gray-500">
-                                    {{ $jumlahKontainer }} Kontainer - {{ $suratJalan->size }}ft
-                                </span>
-                            </div>
+                        <!-- Informasi Surat Jalan Section -->
+                        <div class="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                </svg>
+                                Informasi Surat Jalan
+                            </h3>
 
-                            <div class="overflow-x-auto border border-gray-200 rounded-lg">
-                                <table class="min-w-full divide-y divide-gray-200">
-                                    <thead class="bg-gray-50">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                Kontainer
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                No. Kontainer
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                                                No. Seal
-                                            </th>
-                                        </tr>
-                                    </thead>
-                                    <tbody class="bg-white divide-y divide-gray-200">
-                                        @for($i = 1; $i <= $jumlahKontainer; $i++)
-                                            <tr class="hover:bg-gray-50">
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <div class="flex items-center">
-                                                        <div class="flex-shrink-0 h-8 w-8 bg-blue-100 rounded-full flex items-center justify-center">
-                                                            <span class="text-sm font-medium text-blue-600">#{{ $i }}</span>
-                                                        </div>
-                                                        <div class="ml-3">
-                                                            <p class="text-sm font-medium text-gray-900">
-                                                                Kontainer {{ $i }}
-                                                            </p>
-                                                            <p class="text-xs text-gray-500">{{ $suratJalan->size }}ft - {{ strtoupper($suratJalan->tipe_kontainer ?: 'FCL') }}</p>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <input type="text"
-                                                           name="nomor_kontainer[]"
-                                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('nomor_kontainer.'.$i) border-red-500 @enderror"
-                                                           placeholder="Nomor kontainer #{{ $i }}"
-                                                           value="{{ old('nomor_kontainer.'.$i, isset($nomorKontainerArray[$i-1]) ? $nomorKontainerArray[$i-1] : '') }}">
-                                                    @error('nomor_kontainer.'.$i)
-                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                    @enderror
-                                                </td>
-                                                <td class="px-4 py-3 whitespace-nowrap">
-                                                    <input type="text"
-                                                           name="no_seal[]"
-                                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.'.$i) border-red-500 @enderror"
-                                                           placeholder="Nomor seal #{{ $i }}"
-                                                           value="{{ old('no_seal.'.$i, '') }}">
-                                                    @error('no_seal.'.$i)
-                                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
-                                                    @enderror
-                                                </td>
-                                            </tr>
-                                        @endfor
-                                    </tbody>
-                                </table>
+                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="tanggal_surat_jalan" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Tanggal Surat Jalan
+                                    </label>
+                                    <input type="date"
+                                           name="tanggal_surat_jalan"
+                                           id="tanggal_surat_jalan"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                           value="{{ old('tanggal_surat_jalan', $suratJalan->tanggal_surat_jalan?->format('Y-m-d')) }}">
+                                </div>
+                                <div>
+                                    <label for="nomor_surat_jalan" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Nomor Surat Jalan
+                                    </label>
+                                    <input type="text"
+                                           name="nomor_surat_jalan"
+                                           id="nomor_surat_jalan"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono"
+                                           value="{{ old('nomor_surat_jalan', $suratJalan->no_surat_jalan) }}"
+                                           placeholder="Nomor surat jalan">
+                                </div>
+                                <div>
+                                    <label for="rit" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Rit
+                                    </label>
+                                    <select name="rit"
+                                            id="rit"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Status Rit</option>
+                                        <option value="menggunakan_rit" {{ old('rit', $suratJalan->rit) == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
+                                        <option value="tidak_menggunakan_rit" {{ old('rit', $suratJalan->rit) == 'tidak_menggunakan_rit' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
+                                    </select>
+                                </div>
                             </div>
                         </div>
+
+                        <!-- Data Pengirim & Order Section -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Data Pengirim & Order
+                            </label>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="pengirim" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Pengirim
+                                    </label>
+                                    <select name="pengirim"
+                                            id="pengirim"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-pengirim">
+                                        <option value="">-- Pilih Pengirim --</option>
+                                        @foreach($pengirims as $pengirim)
+                                            <option value="{{ $pengirim->nama_pengirim }}"
+                                                    {{ old('pengirim', ($suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '')) == $pengirim->nama_pengirim ? 'selected' : '' }}>
+                                                {{ $pengirim->nama_pengirim }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari pengirim
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="term" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Term
+                                    </label>
+                                    <select name="term"
+                                            id="term"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-term">
+                                        <option value="">-- Pilih Term --</option>
+                                        @foreach($terms as $term)
+                                            <option value="{{ $term->nama_status }}"
+                                                    {{ old('term', $suratJalan->term) == $term->nama_status ? 'selected' : '' }}>
+                                                {{ $term->nama_status }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari term
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="aktifitas" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Aktifitas/Kegiatan
+                                    </label>
+                                    <select name="aktifitas"
+                                            id="aktifitas"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-kegiatan">
+                                        <option value="">-- Pilih Kegiatan --</option>
+                                        @foreach($masterKegiatans as $kegiatan)
+                                            <option value="{{ $kegiatan->nama_kegiatan }}"
+                                                    {{ old('aktifitas', $suratJalan->kegiatan) == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                                {{ $kegiatan->nama_kegiatan }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari kegiatan
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="jenis_barang" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Jenis Barang
+                                    </label>
+                                    <select name="jenis_barang"
+                                            id="jenis_barang"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm select2-jenis-barang">
+                                        <option value="">-- Pilih Jenis Barang --</option>
+                                        @foreach($jenisBarangs as $jenisBarang)
+                                            <option value="{{ $jenisBarang->nama_barang }}"
+                                                    {{ old('jenis_barang', $suratJalan->jenis_barang) == $jenisBarang->nama_barang ? 'selected' : '' }}>
+                                                {{ $jenisBarang->nama_barang }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari jenis barang
+                                    </p>
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label for="alamat" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Alamat
+                                    </label>
+                                    <textarea name="alamat"
+                                              id="alamat"
+                                              rows="2"
+                                              class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                              placeholder="Alamat lengkap">{{ old('alamat', $suratJalan->alamat) }}</textarea>
+                                </div>
+                                <div>
+                                    <label for="telepon" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Telepon
+                                    </label>
+                                    <input type="text"
+                                           name="telepon"
+                                           id="telepon"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                           value="{{ old('telepon', $suratJalan->telepon) }}"
+                                           placeholder="Nomor telepon">
+                                </div>
+                                <div>
+                                    <label for="jumlah_retur" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Jumlah Retur
+                                    </label>
+                                    <input type="number"
+                                           name="jumlah_retur"
+                                           id="jumlah_retur"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                           value="{{ old('jumlah_retur', $suratJalan->jumlah_retur) }}"
+                                           placeholder="0"
+                                           min="0">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Supir & Kendaraan Section -->
+                        <div class="bg-green-50 p-4 rounded-lg border border-green-200">
+                            <h3 class="text-lg font-medium text-gray-900 mb-4 flex items-center">
+                                <svg class="w-5 h-5 mr-2 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+                                </svg>
+                                Data Supir & Kendaraan
+                            </h3>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="supir" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Supir
+                                    </label>
+                                    <select name="supir"
+                                            id="supir"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm select2-supir">
+                                        <option value="">-- Pilih Supir --</option>
+                                        @foreach($karyawans as $karyawan)
+                                            <option value="{{ $karyawan->nama_lengkap }}"
+                                                    data-plat="{{ $karyawan->plat }}"
+                                                    {{ old('supir', $suratJalan->supir) == $karyawan->nama_lengkap ? 'selected' : '' }}>
+                                                {{ $karyawan->nama_lengkap }}{{ $karyawan->nama_panggilan ? ' (' . $karyawan->nama_panggilan . ')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari supir
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="supir_pengganti" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Supir Pengganti
+                                    </label>
+                                    <input type="text"
+                                           name="supir_pengganti"
+                                           id="supir_pengganti"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm"
+                                           value="{{ old('supir_pengganti', $suratJalan->supir_pengganti) }}"
+                                           placeholder="Nama supir pengganti">
+                                </div>
+                                <div>
+                                    <label for="no_plat" class="block text-xs font-medium text-gray-500 mb-2">
+                                        No. Plat
+                                    </label>
+                                    <input type="text"
+                                           name="no_plat"
+                                           id="no_plat"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm font-mono"
+                                           value="{{ old('no_plat', $suratJalan->no_plat) }}"
+                                           placeholder="Nomor plat kendaraan">
+                                </div>
+                                <div>
+                                    <label for="kenek" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Kenek
+                                    </label>
+                                    <select name="kenek"
+                                            id="kenek"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm select2-kenek">
+                                        <option value="">-- Pilih Kenek --</option>
+                                        @foreach($kranisKenek as $krani)
+                                            <option value="{{ $krani->nama_lengkap }}"
+                                                    {{ old('kenek', $suratJalan->kenek) == $krani->nama_lengkap ? 'selected' : '' }}>
+                                                {{ $krani->nama_lengkap }}{{ $krani->nama_panggilan ? ' (' . $krani->nama_panggilan . ')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari kenek
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="krani" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Krani
+                                    </label>
+                                    <select name="krani"
+                                            id="krani"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-green-500 focus:border-green-500 text-sm select2-krani">
+                                        <option value="">-- Pilih Krani --</option>
+                                        @foreach($kranisKenek as $krani)
+                                            <option value="{{ $krani->nama_lengkap }}"
+                                                    {{ old('krani', $suratJalan->krani) == $krani->nama_lengkap ? 'selected' : '' }}>
+                                                {{ $krani->nama_lengkap }}{{ $krani->nama_panggilan ? ' (' . $krani->nama_panggilan . ')' : '' }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari krani
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Data Kontainer Section -->
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-4">
+                                Data Kontainer
+                            </label>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="tipe_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Tipe Kontainer
+                                    </label>
+                                    <select name="tipe_kontainer[]"
+                                            id="tipe_kontainer"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Tipe</option>
+                                        <option value="fcl" {{ old('tipe_kontainer.0', strtolower($suratJalan->tipe_kontainer ?: 'fcl')) === 'fcl' ? 'selected' : '' }}>FCL</option>
+                                        <option value="lcl" {{ old('tipe_kontainer.0', strtolower($suratJalan->tipe_kontainer ?: 'fcl')) === 'lcl' ? 'selected' : '' }}>LCL</option>
+                                        <option value="cargo" {{ old('tipe_kontainer.0', strtolower($suratJalan->tipe_kontainer ?: 'fcl')) === 'cargo' ? 'selected' : '' }}>Cargo</option>
+                                        <option value="bb" {{ old('tipe_kontainer.0', strtolower($suratJalan->tipe_kontainer ?: 'fcl')) === 'bb' ? 'selected' : '' }}>BB</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="size" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Size Kontainer
+                                    </label>
+                                    <select name="size[]"
+                                            id="size"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Size</option>
+                                        <option value="20" {{ old('size.0', $suratJalan->size) == '20' ? 'selected' : '' }}>20</option>
+                                        <option value="40" {{ old('size.0', $suratJalan->size) == '40' ? 'selected' : '' }}>40</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="jumlah_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Jumlah Kontainer
+                                    </label>
+                                    <input type="number"
+                                           name="jumlah_kontainer"
+                                           id="jumlah_kontainer"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                                           value="{{ old('jumlah_kontainer', $suratJalan->jumlah_kontainer) }}"
+                                           placeholder="Jumlah kontainer"
+                                           min="0">
+                                </div>
+                                <div>
+                                    <label for="nomor_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
+                                        No. Kontainer
+                                    </label>
+                                    <select name="nomor_kontainer[]"
+                                            id="nomor_kontainer"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror">
+                                        <option value="">-- Pilih atau Ketik Nomor Kontainer --</option>
+                                        @foreach($stockKontainers as $stock)
+                                            <option value="{{ $stock->nomor_seri_gabungan }}"
+                                                    {{ old('nomor_kontainer.0', $suratJalan->no_kontainer) == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
+                                                {{ $stock->nomor_seri_gabungan }} ({{ $stock->ukuran }}ft - {{ $stock->tipe_kontainer }})
+                                            </option>
+                                        @endforeach
+                                        @if(old('nomor_kontainer.0', $suratJalan->no_kontainer))
+                                            <option value="{{ old('nomor_kontainer.0', $suratJalan->no_kontainer) }}" selected>
+                                                {{ old('nomor_kontainer.0', $suratJalan->no_kontainer) }}
+                                            </option>
+                                        @endif
+                                    </select>
+                                    @error('nomor_kontainer.0')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    <p class="mt-1 text-xs text-gray-500">
+                                        <i class="fas fa-search mr-1"></i>Ketik untuk mencari atau input nomor kontainer baru
+                                    </p>
+                                </div>
+                                <div>
+                                    <label for="no_seal" class="block text-xs font-medium text-gray-500 mb-2">
+                                        No. Seal
+                                    </label>
+                                    <input type="text"
+                                           name="no_seal[]"
+                                           id="no_seal"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.0') border-red-500 @enderror"
+                                           placeholder="Nomor seal"
+                                           value="{{ old('no_seal.0', $suratJalan->no_seal) }}">
+                                    @error('no_seal.0')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
+                            </div>
+
+                            <!-- Data Packing/Pengamanan -->
+                            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
+                                <div>
+                                    <label for="karton" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Karton
+                                    </label>
+                                    <select name="karton"
+                                            id="karton"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Status Karton</option>
+                                        <option value="pakai" {{ old('karton', $suratJalan->karton) == 'pakai' ? 'selected' : '' }}>Pakai</option>
+                                        <option value="tidak_pakai" {{ old('karton', $suratJalan->karton) == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="plastik" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Plastik
+                                    </label>
+                                    <select name="plastik"
+                                            id="plastik"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Status Plastik</option>
+                                        <option value="pakai" {{ old('plastik', $suratJalan->plastik) == 'pakai' ? 'selected' : '' }}>Pakai</option>
+                                        <option value="tidak_pakai" {{ old('plastik', $suratJalan->plastik) == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label for="terpal" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Terpal
+                                    </label>
+                                    <select name="terpal"
+                                            id="terpal"
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
+                                        <option value="">Pilih Status Terpal</option>
+                                        <option value="pakai" {{ old('terpal', $suratJalan->terpal) == 'pakai' ? 'selected' : '' }}>Pakai</option>
+                                        <option value="tidak_pakai" {{ old('terpal', $suratJalan->terpal) == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Separator: Form Surat Jalan End -->
+                        <div class="relative py-6">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t-2 border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center">
+                                <span class="px-6 py-2 bg-white text-sm font-semibold text-gray-700 border-2 border-gray-300 rounded-full shadow-sm">
+                                    <i class="fas fa-arrow-down mr-2 text-blue-600"></i>
+                                    Form Tanda Terima
+                                    <i class="fas fa-arrow-down ml-2 text-blue-600"></i>
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- FORM TANDA TERIMA START -->
 
                         <!-- Estimasi Nama Kapal -->
                         <div>
@@ -389,100 +721,6 @@
                 </form>
             </div>
         </div>
-
-        <!-- Info Section (Right - 1/3) -->
-        <div class="lg:col-span-1">
-            <!-- Surat Jalan Info -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                <h3 class="text-md font-semibold text-gray-900 mb-4">Informasi Surat Jalan</h3>
-                <dl class="space-y-3">
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">No. Surat Jalan</dt>
-                        <dd class="mt-1 text-sm text-gray-900 font-semibold">{{ $suratJalan->no_surat_jalan }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Tanggal</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $suratJalan->tanggal_surat_jalan?->format('d F Y') ?? '-' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Supir</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $suratJalan->supir ?: '-' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Jenis Barang</dt>
-                        <dd class="mt-1">
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
-                                {{ $suratJalan->jenis_barang ?: '-' }}
-                            </span>
-                        </dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Kegiatan</dt>
-                        <dd class="mt-1">
-                            @php
-                                $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $suratJalan->kegiatan)
-                                                ->value('nama_kegiatan') ?? $suratJalan->kegiatan;
-                            @endphp
-                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
-                                {{ $kegiatanName }}
-                            </span>
-                        </dd>
-                    </div>
-                </dl>
-            </div>
-
-            <!-- Kontainer Info -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6 mb-6">
-                <h3 class="text-md font-semibold text-gray-900 mb-4">Informasi Kontainer</h3>
-                <dl class="space-y-3">
-                    @if(!empty($nomorKontainerArray))
-                        @foreach($nomorKontainerArray as $index => $kontainer)
-                            <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
-                                <h4 class="text-sm font-medium text-gray-700 mb-2">Kontainer #{{ $index + 1 }}</h4>
-                                <div>
-                                    <dt class="text-xs font-medium text-gray-500 uppercase">No. Kontainer</dt>
-                                    <dd class="mt-1">
-                                        <code class="text-xs bg-gray-100 px-2 py-1 rounded">
-                                            {{ $kontainer }}
-                                        </code>
-                                    </dd>
-                                </div>
-                            </div>
-                        @endforeach
-                    @endif
-
-                    <div class="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-gray-200">
-                        <div>
-                            <dt class="text-xs font-medium text-gray-500 uppercase">Size</dt>
-                            <dd class="mt-1 text-sm text-gray-900">{{ $suratJalan->size ?: '-' }} ft</dd>
-                        </div>
-                        <div>
-                            <dt class="text-xs font-medium text-gray-500 uppercase">Jumlah Kontainer</dt>
-                            <dd class="mt-1">
-                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                    {{ $jumlahKontainer }} Kontainer
-                                </span>
-                            </dd>
-                        </div>
-                    </div>
-                </dl>
-            </div>
-
-            <!-- Location Info -->
-            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <h3 class="text-md font-semibold text-gray-900 mb-4">Lokasi</h3>
-                <dl class="space-y-3">
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Tujuan</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $suratJalan->tujuan_pengiriman ?: '-' }}</dd>
-                    </div>
-                    <div>
-                        <dt class="text-xs font-medium text-gray-500 uppercase">Pengirim</dt>
-                        <dd class="mt-1 text-sm text-gray-900">{{ $suratJalan->order && $suratJalan->order->pengirim ? $suratJalan->order->pengirim->nama_pengirim : '-' }}</dd>
-                    </div>
-                </dl>
-            </div>
-        </div>
     </div>
 </div>
 @endsection
@@ -538,18 +776,38 @@
 @endpush
 
 @push('scripts')
-<!-- jQuery (required for Select2) -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-<!-- Select2 JS -->
+<!-- Select2 JS - jQuery already loaded in layout -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
-    // Use window.onload to ensure everything is loaded
-    window.addEventListener('load', function() {
-        // Initialize Select2 for kapal dropdown
-        if (typeof $ !== 'undefined' && typeof $.fn.select2 !== 'undefined') {
-            $('.select2-kapal').select2({
+    console.log('=== Script Loading Started ===');
+    console.log('jQuery available:', typeof jQuery !== 'undefined');
+    console.log('$ available:', typeof $ !== 'undefined');
+    
+    // Create a mapping of supir names to plat numbers
+    var supirPlatMap = {
+        @foreach($karyawans as $karyawan)
+            "{{ $karyawan->nama_lengkap }}": "{{ $karyawan->plat ?? '' }}",
+        @endforeach
+    };
+
+    console.log('Supir-Plat mapping loaded:', supirPlatMap);
+
+    // Use jQuery ready with better checking
+    (function() {
+        if (typeof jQuery === 'undefined') {
+            console.error('jQuery is not loaded!');
+            return;
+        }
+        
+        jQuery(document).ready(function($) {
+            console.log('✓ Document ready - initializing Select2');
+            
+            if (typeof $.fn.select2 !== 'undefined') {
+                console.log('✓ Select2 plugin is available');
+                
+                // Initialize Select2 for kapal dropdown
+                $('.select2-kapal').select2({
                 placeholder: '-- Pilih Kapal --',
                 allowClear: true,
                 width: '100%',
@@ -562,8 +820,265 @@
                     }
                 }
             });
-        }
-    });
+
+            // Initialize Select2 for pengirim dropdown
+            $('.select2-pengirim').select2({
+                placeholder: '-- Pilih Pengirim --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Pengirim tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for term dropdown
+            $('.select2-term').select2({
+                placeholder: '-- Pilih Term --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Term tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for jenis barang dropdown
+            $('.select2-jenis-barang').select2({
+                placeholder: '-- Pilih Jenis Barang --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Jenis barang tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for kegiatan dropdown
+            $('.select2-kegiatan').select2({
+                placeholder: '-- Pilih Kegiatan --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Kegiatan tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for supir dropdown
+            $('.select2-supir').select2({
+                placeholder: '-- Pilih Supir --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Supir tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for kenek dropdown
+            $('.select2-kenek').select2({
+                placeholder: '-- Pilih Kenek --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Kenek tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for krani dropdown
+            $('.select2-krani').select2({
+                placeholder: '-- Pilih Krani --',
+                allowClear: true,
+                width: '100%',
+                language: {
+                    noResults: function() {
+                        return "Krani tidak ditemukan";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            // Initialize Select2 for nomor kontainer with tags (allow free input)
+            $('.select2-kontainer').select2({
+                placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
+                allowClear: true,
+                width: '100%',
+                tags: true,
+                createTag: function (params) {
+                    var term = $.trim(params.term);
+                    if (term === '') {
+                        return null;
+                    }
+                    return {
+                        id: term,
+                        text: term,
+                        newTag: true
+                    }
+                },
+                language: {
+                    noResults: function() {
+                        return "Ketik nomor kontainer baru atau pilih dari daftar";
+                    },
+                    searching: function() {
+                        return "Mencari...";
+                    }
+                }
+            });
+
+            console.log('Select2 initialized for all dropdowns');
+
+            // Auto-fill no_plat when supir is selected - using change event
+            $('#supir').on('change', function() {
+                console.log('=== Supir Change Event Triggered ===');
+                var supirName = $(this).val();
+                console.log('Selected supir name:', supirName);
+                
+                if (supirName && supirName !== '') {
+                    var plat = supirPlatMap[supirName];
+                    console.log('Looking up plat for:', supirName);
+                    console.log('Found plat:', plat);
+                    
+                    if (plat && plat !== '' && plat !== 'null') {
+                        $('#no_plat').val(plat);
+                        console.log('✓ Plat field updated to:', plat);
+                    } else {
+                        console.log('✗ No plat found or plat is empty');
+                        $('#no_plat').val('');
+                    }
+                } else {
+                    console.log('Supir cleared, clearing plat field');
+                    $('#no_plat').val('');
+                }
+            });
+
+            // Filter nomor kontainer berdasarkan size yang dipilih
+            $('#size').on('change', function() {
+                var selectedSize = $(this).val();
+                console.log('=== Size Changed ===');
+                console.log('Selected size:', selectedSize);
+                
+                // Destroy existing Select2 instance
+                $('#nomor_kontainer').select2('destroy');
+                
+                // Filter options based on size
+                $('#nomor_kontainer option').each(function() {
+                    var optionText = $(this).text();
+                    var optionValue = $(this).val();
+                    
+                    console.log('Checking option:', optionText);
+                    
+                    // Skip empty option
+                    if (optionValue === '') {
+                        $(this).show();
+                        return;
+                    }
+                    
+                    // Check if option text contains size information
+                    if (selectedSize) {
+                        // More flexible matching - check for various patterns
+                        // Pattern: (20ft - type) or (40ft - type)
+                        var sizePattern = new RegExp('\\(' + selectedSize + 'ft[\\s\\-]', 'i');
+                        
+                        console.log('Testing pattern:', sizePattern, 'against:', optionText);
+                        
+                        if (sizePattern.test(optionText)) {
+                            console.log('✓ Match found - showing option');
+                            $(this).show();
+                        } else {
+                            console.log('✗ No match - hiding option');
+                            $(this).hide();
+                        }
+                    } else {
+                        // Show all if no size selected
+                        console.log('No size selected - showing all');
+                        $(this).show();
+                    }
+                });
+                
+                // Re-initialize Select2
+                $('#nomor_kontainer').select2({
+                    placeholder: '-- Pilih atau Ketik Nomor Kontainer --',
+                    allowClear: true,
+                    width: '100%',
+                    tags: true,
+                    createTag: function (params) {
+                        var term = $.trim(params.term);
+                        if (term === '') {
+                            return null;
+                        }
+                        return {
+                            id: term,
+                            text: term,
+                            newTag: true
+                        }
+                    },
+                    language: {
+                        noResults: function() {
+                            return "Ketik nomor kontainer baru atau pilih dari daftar";
+                        },
+                        searching: function() {
+                            return "Mencari...";
+                        }
+                    }
+                });
+                
+                // Reset selection if current selection doesn't match size
+                var currentValue = $('#nomor_kontainer').val();
+                if (currentValue && selectedSize) {
+                    var currentText = $('#nomor_kontainer option:selected').text();
+                    var sizePattern = new RegExp('\\(' + selectedSize + 'ft[\\s\\-]', 'i');
+                    if (!sizePattern.test(currentText)) {
+                        $('#nomor_kontainer').val('').trigger('change');
+                        console.log('✓ Cleared kontainer selection (size mismatch)');
+                    }
+                }
+                
+                console.log('✓ Kontainer options filtered by size:', selectedSize);
+            });
+
+            // Also listen to Select2 specific events as backup
+            $('#supir').on('select2:select', function(e) {
+                console.log('=== Select2:select Event Triggered ===');
+                $('#supir').trigger('change');
+            });
+
+            $('#supir').on('select2:clear', function() {
+                console.log('=== Select2:clear Event Triggered ===');
+                $('#no_plat').val('');
+            });
+            } else {
+                console.error('✗ Select2 plugin not loaded!');
+            }
+        });
+    })();
 
     function calculateVolume() {
         const panjang = parseFloat(document.getElementById('panjang').value) || 0;

@@ -640,8 +640,8 @@ input[required]:focus {
                             <span>Tarif</span>
                         </div>
                     </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
-                        <div class="flex items-center justify-end space-x-0.5">
+                    <th class="px-1 py-0.5 text-center text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
+                        <div class="flex items-center justify-center space-x-0.5">
                             <span>DPP</span>
                         </div>
                     </th>
@@ -1164,13 +1164,15 @@ input[required]:focus {
 /* Compact table styling */
 .compact-table th {
     padding: 2px 3px !important;
-    font-size: 7px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
     line-height: 1.0 !important;
 }
 
 .compact-table td {
     padding: 1px 2px !important;
-    font-size: 7px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
     line-height: 1.1 !important;
 }
 
@@ -1180,13 +1182,15 @@ input[required]:focus {
 
 .compact-table .badge-compact {
     padding: 1px 4px !important;
-    font-size: 7px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
     font-weight: 500;
 }
 
 .compact-table .btn-compact {
     padding: 1px 3px !important;
-    font-size: 7px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
 }
 
 .compact-table .icon-compact {
@@ -1202,7 +1206,8 @@ input[required]:focus {
 /* Override all table cells for compact layout */
 .compact-table tbody td {
     padding: 1px 2px !important;
-    font-size: 7px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
     line-height: 1.1 !important;
 }
 
@@ -1222,16 +1227,19 @@ input[required]:focus {
 /* Compact buttons and inputs inside table */
 .compact-table button {
     padding: 1px 3px !important;
-    font-size: 7px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
 }
 
 .compact-table input {
-    font-size: 7px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
 }
 
 .compact-table .badge {
     padding: 1px 3px !important;
-    font-size: 6px !important;
+    font-size: 10px !important;
+    font-family: Arial, sans-serif !important;
 }
 </style>
 
