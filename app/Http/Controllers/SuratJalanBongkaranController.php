@@ -156,7 +156,7 @@ class SuratJalanBongkaranController extends Controller
 
         $orders = Order::orderBy('nomor_order')->get();
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
-        $users = User::orderBy('name')->get();
+        $users = User::orderBy('username')->get();
         
         $selectedKapal = MasterKapal::find($request->kapal_id);
         $noVoyage = $request->no_voyage;
@@ -248,7 +248,7 @@ class SuratJalanBongkaranController extends Controller
     {
         $orders = Order::orderBy('nomor_order')->get();
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
-        $users = User::orderBy('name')->get();
+        $users = User::orderBy('username')->get();
 
         return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'orders', 'kapals', 'users'));
     }
