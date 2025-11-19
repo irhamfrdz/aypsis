@@ -198,15 +198,15 @@
                     <div>
                         <label for="pengirim" class="block text-sm font-medium text-gray-700 mb-1">Pengirim</label>
                         <input type="text" name="pengirim" id="pengirim" readonly
-                               value="{{ old('pengirim', isset($selectedContainer) ? $selectedContainer->penerima : '') }}"
+                               value="{{ old('pengirim', isset($selectedContainer) ? $selectedContainer->pengirim : '') }}"
                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700 @error('pengirim') border-red-300 @enderror"
                                placeholder="Pengirim akan terisi otomatis">
                         @error('pengirim')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        @if(isset($selectedContainer) && $selectedContainer->penerima)
+                        @if(isset($selectedContainer) && $selectedContainer->pengirim)
                             <p class="mt-1 text-xs text-green-600">
-                                Pengirim terisi otomatis dari BL: {{ $selectedContainer->penerima }}
+                                Pengirim terisi otomatis dari BL: {{ $selectedContainer->pengirim }}
                             </p>
                         @endif
                     </div>
