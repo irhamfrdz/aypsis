@@ -281,10 +281,17 @@
                     <!-- Supir -->
                     <div>
                         <label for="supir" class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                        <input type="text" name="supir" id="supir"
-                               value="{{ old('supir') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('supir') border-red-300 @enderror"
-                               placeholder="Masukkan nama supir">
+                        <select name="supir" id="supir"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('supir') border-red-300 @enderror">
+                            <option value="">Pilih Supir</option>
+                            @foreach($karyawanSupirs as $supir)
+                                <option value="{{ $supir->nama_lengkap }}" 
+                                        data-plat="{{ $supir->plat }}"
+                                        {{ old('supir') == $supir->nama_lengkap ? 'selected' : '' }}>
+                                    {{ $supir->nama_lengkap }}{{ $supir->nama_panggilan ? ' (' . $supir->nama_panggilan . ')' : '' }}
+                                </option>
+                            @endforeach
+                        </select>
                         @error('supir')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -599,6 +606,20 @@ document.addEventListener('DOMContentLoaded', function() {
         tanggalInput.value = today;
     }
     
+    // Auto-fill plat nomor when supir is selected
+    const supirSelect = document.getElementById('supir');
+    const noPlatInput = document.getElementById('no_plat');
+    
+    if (supirSelect && noPlatInput) {
+        supirSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const platNumber = selectedOption.getAttribute('data-plat');
+            
+            if (platNumber && platNumber.trim() !== '' && !noPlatInput.value) {
+                noPlatInput.value = platNumber;
+            }
+        });
+    }
 
 });
 </script>

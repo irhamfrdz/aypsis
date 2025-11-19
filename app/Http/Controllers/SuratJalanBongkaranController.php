@@ -207,6 +207,12 @@ class SuratJalanBongkaranController extends Controller
         
         $users = User::orderBy('username')->get();
         
+        // Get karyawan dengan divisi supir untuk dropdown supir
+        $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
+                                                ->whereNull('tanggal_berhenti')
+                                                ->orderBy('nama_lengkap')
+                                                ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
+        
         // Find selected kapal by ID
         $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
         $noVoyage = $request->no_voyage;
@@ -230,7 +236,7 @@ class SuratJalanBongkaranController extends Controller
             ];
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs'));
     }
 
     /**
