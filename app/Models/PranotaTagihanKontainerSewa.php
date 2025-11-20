@@ -32,26 +32,29 @@ class PranotaTagihanKontainerSewa extends Model
 
     public function tagihanKontainerSewaItems()
     {
-        if (empty($this->tagihan_kontainer_sewa_ids)) {
+        $ids = $this->tagihan_kontainer_sewa_ids;
+        if (empty($ids) || !is_array($ids)) {
             return collect();
         }
-        return DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_kontainer_sewa_ids)->get();
+        return DaftarTagihanKontainerSewa::whereIn('id', $ids)->get();
     }
 
     public function calculateTotalAmount()
     {
-        if (empty($this->tagihan_kontainer_sewa_ids)) {
+        $ids = $this->tagihan_kontainer_sewa_ids;
+        if (empty($ids) || !is_array($ids)) {
             return 0;
         }
 
-        $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $this->tagihan_kontainer_sewa_ids)->get();
+        $tagihanItems = DaftarTagihanKontainerSewa::whereIn('id', $ids)->get();
         return $tagihanItems->sum('grand_total');
     }
 
     public function updateTotalAmount()
     {
         $this->total_amount = $this->calculateTotalAmount();
-        $this->jumlah_tagihan = count($this->tagihan_kontainer_sewa_ids);
+        $ids = $this->tagihan_kontainer_sewa_ids;
+        $this->jumlah_tagihan = is_array($ids) ? count($ids) : 0;
         $this->save();
     }
 

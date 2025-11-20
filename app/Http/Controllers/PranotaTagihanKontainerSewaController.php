@@ -519,6 +519,10 @@ class PranotaTagihanKontainerSewaController extends Controller
 
             // Update pranota: hapus tagihan_ids yang dilepas
             $currentTagihanIds = $pranota->tagihan_kontainer_sewa_ids ?? [];
+            // Ensure currentTagihanIds is an array
+            if (!is_array($currentTagihanIds)) {
+                $currentTagihanIds = [];
+            }
             $remainingTagihanIds = array_diff($currentTagihanIds, $validTagihanIds);
             $pranota->tagihan_kontainer_sewa_ids = array_values($remainingTagihanIds);
             $pranota->jumlah_tagihan = count($remainingTagihanIds);
