@@ -610,19 +610,26 @@
                                             <h4 class="text-sm font-medium text-orange-800">Format File CSV (delimiter: semicolon):</h4>
                                             <div class="mt-1 text-sm text-orange-700">
                                                 <ul class="list-disc pl-5 space-y-1">
-                                                    <li>Kolom 1: Nomor Kontainer Lengkap (11 karakter, contoh: ALLU2202097)</li>
-                                                    <li>Kolom 2: Tanggal Mulai Sewa (format: dd/mmm/yyyy, contoh: 01/Jan/2024)</li>
-                                                    <li>Kolom 3: Tanggal Selesai Sewa (format: dd/mmm/yyyy, contoh: 31/Des/2024)</li>
+                                                    <li>Kolom 1: Nomor Kontainer Lengkap (11 karakter, contoh: ALLU2202097) - <strong>WAJIB</strong></li>
+                                                    <li>Kolom 2: Tanggal Mulai Sewa (format: dd/Mmm/yyyy, contoh: 01/Jan/2024) - opsional</li>
+                                                    <li>Kolom 3: Tanggal Selesai Sewa (format: dd/Mmm/yyyy, contoh: 31/Des/2024) - opsional</li>
+                                                    <li>Kolom 4: Status (Tersedia atau Tidak Tersedia) - opsional</li>
                                                 </ul>
                                                 <div class="mt-3 space-y-1">
+                                                    <p class="text-xs text-red-600 font-medium">
+                                                        ⚠️ HANYA UPDATE data yang sudah ada - TIDAK MEMBUAT kontainer baru
+                                                    </p>
                                                     <p class="text-xs text-orange-600 font-medium">
                                                         🔍 Pencarian berdasarkan nomor kontainer gabungan (exact match)
                                                     </p>
                                                     <p class="text-xs text-green-600 font-medium">
-                                                        📅 Kolom tanggal boleh kosong jika tidak ingin diupdate
+                                                        📅 Kolom opsional boleh kosong jika tidak ingin diupdate
                                                     </p>
                                                     <p class="text-xs text-blue-600 font-medium">
-                                                        📄 Contoh: AMFU3153692;;(kosongkan kolom yang tidak diupdate)
+                                                        📄 Contoh update status saja: AMFU3153692;;;Tidak Tersedia
+                                                    </p>
+                                                    <p class="text-xs text-purple-600 font-medium">
+                                                        ℹ️ Kontainer tidak ditemukan akan ditampilkan sebagai warning
                                                     </p>
                                                 </div>
                                             </div>

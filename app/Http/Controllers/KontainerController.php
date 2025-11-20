@@ -274,4 +274,212 @@ class KontainerController extends Controller
         return redirect()->route('master.kontainer.index')
                          ->with('success', 'Kontainer berhasil dihapus!');
     }
+
+    /**
+     * Import data tanggal sewa dan status kontainer dari CSV
+     * Format CSV: nomor_kontainer;tanggal_mulai_sewa;tanggal_selesai_sewa;status
+     * Hanya update data yang sudah ada, tidak create kontainer baru
+     */
+    public function importTanggalSewa(Request $request)
+    {
+        $request->validate([
+            'excel_file' => 'required|file|mimes:csv,txt|max:5120', // max 5MB
+        ]);
+
+        try {
+            $file = $request->file('excel_file');
+            $fileContent = file_get_contents($file->getRealPath());
+            
+            // Handle UTF-8 BOM
+            $fileContent = str_replace("\xEF\xBB\xBF", '', $fileContent);
+            
+            // Split into lines
+            $lines = array_filter(array_map('trim', explode("\n", $fileContent)));
+            
+            if (count($lines) < 2) {
+                return redirect()->route('master.kontainer.index')
+                    ->with('error', 'File CSV kosong atau tidak valid. Minimal harus ada header dan 1 baris data.');
+            }
+
+            // Skip header
+            array_shift($lines);
+            
+            $updated = 0;
+            $notFound = [];
+            $errors = [];
+            $skipped = 0;
+
+            foreach ($lines as $lineNumber => $line) {
+                $actualLine = $lineNumber + 2; // +2 karena array index 0 + skip header
+                
+                // Parse CSV with semicolon delimiter
+                $data = str_getcsv($line, ';');
+                
+                // Skip empty lines
+                if (empty(array_filter($data))) {
+                    $skipped++;
+                    continue;
+                }
+
+                // Minimal harus ada nomor kontainer (kolom 1)
+                if (!isset($data[0]) || empty(trim($data[0]))) {
+                    $errors[] = "Baris {$actualLine}: Nomor kontainer tidak boleh kosong";
+                    continue;
+                }
+
+                $nomorKontainer = strtoupper(trim($data[0]));
+                
+                // Cari kontainer berdasarkan nomor gabungan
+                $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorKontainer)->first();
+                
+                if (!$kontainer) {
+                    $notFound[] = "Baris {$actualLine}: Kontainer '{$nomorKontainer}' tidak ditemukan";
+                    continue;
+                }
+
+                // Prepare update data
+                $updateData = [];
+
+                // Parse tanggal mulai sewa (kolom 2)
+                if (isset($data[1]) && !empty(trim($data[1]))) {
+                    try {
+                        $tanggalMulai = trim($data[1]);
+                        $date = \DateTime::createFromFormat('d/M/Y', $tanggalMulai);
+                        if ($date) {
+                            $updateData['tanggal_mulai_sewa'] = $date->format('Y-m-d');
+                        } else {
+                            $errors[] = "Baris {$actualLine}: Format tanggal mulai sewa tidak valid (gunakan format dd/Mmm/yyyy, contoh: 01/Jan/2024)";
+                            continue;
+                        }
+                    } catch (\Exception $e) {
+                        $errors[] = "Baris {$actualLine}: Error parsing tanggal mulai sewa - " . $e->getMessage();
+                        continue;
+                    }
+                }
+
+                // Parse tanggal selesai sewa (kolom 3)
+                if (isset($data[2]) && !empty(trim($data[2]))) {
+                    try {
+                        $tanggalSelesai = trim($data[2]);
+                        $date = \DateTime::createFromFormat('d/M/Y', $tanggalSelesai);
+                        if ($date) {
+                            $updateData['tanggal_selesai_sewa'] = $date->format('Y-m-d');
+                        } else {
+                            $errors[] = "Baris {$actualLine}: Format tanggal selesai sewa tidak valid (gunakan format dd/Mmm/yyyy, contoh: 31/Des/2024)";
+                            continue;
+                        }
+                    } catch (\Exception $e) {
+                        $errors[] = "Baris {$actualLine}: Error parsing tanggal selesai sewa - " . $e->getMessage();
+                        continue;
+                    }
+                }
+
+                // Parse status (kolom 4)
+                if (isset($data[3]) && !empty(trim($data[3]))) {
+                    $status = trim($data[3]);
+                    // Accept both "Tersedia"/"Tidak Tersedia" format
+                    if (in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
+                        $updateData['status'] = $status;
+                    } else {
+                        $errors[] = "Baris {$actualLine}: Status harus 'Tersedia' atau 'Tidak Tersedia'";
+                        continue;
+                    }
+                }
+
+                // Update jika ada data yang diubah
+                if (!empty($updateData)) {
+                    $kontainer->update($updateData);
+                    $updated++;
+                }
+            }
+
+            // Build success message
+            $message = "Import selesai: {$updated} kontainer berhasil diupdate";
+            
+            if ($skipped > 0) {
+                $message .= ", {$skipped} baris kosong dilewati";
+            }
+
+            // Add warnings for not found containers
+            if (!empty($notFound)) {
+                $notFoundMessage = implode('; ', array_slice($notFound, 0, 5));
+                if (count($notFound) > 5) {
+                    $notFoundMessage .= ' dan ' . (count($notFound) - 5) . ' lainnya';
+                }
+                session()->flash('warning', 'Kontainer tidak ditemukan: ' . $notFoundMessage);
+            }
+
+            // Add errors if any
+            if (!empty($errors)) {
+                $errorMessage = implode('; ', array_slice($errors, 0, 5));
+                if (count($errors) > 5) {
+                    $errorMessage .= ' dan ' . (count($errors) - 5) . ' error lainnya';
+                }
+                session()->flash('error', 'Error: ' . $errorMessage);
+            }
+
+            return redirect()->route('master.kontainer.index')->with('success', $message);
+
+        } catch (\Exception $e) {
+            return redirect()->route('master.kontainer.index')
+                ->with('error', 'Terjadi kesalahan saat import: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Download template CSV untuk import tanggal sewa
+     */
+    public function downloadTemplateTanggalSewa()
+    {
+        $filename = 'template_tanggal_sewa_kontainer.csv';
+        
+        $headers = [
+            'Content-Type' => 'text/csv; charset=UTF-8',
+            'Content-Disposition' => "attachment; filename=\"{$filename}\"",
+            'Pragma' => 'no-cache',
+            'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+            'Expires' => '0',
+        ];
+
+        $callback = function() {
+            $file = fopen('php://output', 'w');
+            
+            // Add UTF-8 BOM for Excel compatibility
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // Header
+            fputcsv($file, [
+                'nomor_kontainer',
+                'tanggal_mulai_sewa',
+                'tanggal_selesai_sewa',
+                'status'
+            ], ';');
+            
+            // Example data
+            fputcsv($file, [
+                'ALLU2202097',
+                '01/Jan/2024',
+                '31/Des/2024',
+                'Tersedia'
+            ], ';');
+            
+            fputcsv($file, [
+                'AMFU3153692',
+                '15/Feb/2024',
+                '',
+                'Tidak Tersedia'
+            ], ';');
+            
+            fputcsv($file, [
+                'DNAU2622206',
+                '',
+                '',
+                'Tersedia'
+            ], ';');
+            
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
+    }
 }
