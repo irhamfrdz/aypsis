@@ -153,7 +153,9 @@
         document.addEventListener('DOMContentLoaded', function() {
             // Initialize Flatpickr for all date inputs
             flatpickr('.datepicker', {
-                dateFormat: 'd/M/Y',
+                dateFormat: 'Y-m-d',  // Format yang diterima Laravel
+                altInput: true,
+                altFormat: 'd/M/Y',   // Format yang ditampilkan ke user
                 allowInput: true,
                 locale: {
                     firstDayOfWeek: 1,

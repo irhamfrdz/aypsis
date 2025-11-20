@@ -4,7 +4,7 @@
 @section('page_title', 'Master Cabang')
 
 @section('content')
-<div class="bg-white shadow-md rounded-lg p-6">
+<div class="bg-white shadow-md rounded-lg p-6" style="font-family: Arial, sans-serif; font-size: 10px;">
     <div class="flex justify-between items-center mb-6">
         <h2 class="text-2xl font-bold text-gray-800">Daftar Cabang</h2>
         <div class="flex items-center space-x-3">
