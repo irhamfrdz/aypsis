@@ -49,8 +49,24 @@ try {
     echo str_repeat("-", 130) . "\n";
     
     foreach ($tagihans as $index => $tagihan) {
-        $vendor = $tagihan->vendor ? $tagihan->vendor->nama_perusahaan : 'N/A';
-        $kontainer = $tagihan->kontainer ? $tagihan->kontainer->nomor_kontainer : 'N/A';
+        // Handle vendor - could be string or object
+        if (is_string($tagihan->vendor)) {
+            $vendor = $tagihan->vendor;
+        } elseif (is_object($tagihan->vendor)) {
+            $vendor = $tagihan->vendor->nama_perusahaan ?? 'N/A';
+        } else {
+            $vendor = 'N/A';
+        }
+        
+        // Handle kontainer - could be string or object
+        if (is_string($tagihan->kontainer)) {
+            $kontainer = $tagihan->kontainer;
+        } elseif (is_object($tagihan->kontainer)) {
+            $kontainer = $tagihan->kontainer->nomor_kontainer ?? 'N/A';
+        } else {
+            $kontainer = 'N/A';
+        }
+        
         $currentStatus = $tagihan->status_pranota ?? 'NULL';
         
         printf(
@@ -94,8 +110,23 @@ try {
             
             $successCount++;
             
-            $vendor = $tagihan->vendor ? $tagihan->vendor->nama_perusahaan : 'N/A';
-            $kontainer = $tagihan->kontainer ? $tagihan->kontainer->nomor_kontainer : 'N/A';
+            // Handle vendor - could be string or object
+            if (is_string($tagihan->vendor)) {
+                $vendor = $tagihan->vendor;
+            } elseif (is_object($tagihan->vendor)) {
+                $vendor = $tagihan->vendor->nama_perusahaan ?? 'N/A';
+            } else {
+                $vendor = 'N/A';
+            }
+            
+            // Handle kontainer - could be string or object
+            if (is_string($tagihan->kontainer)) {
+                $kontainer = $tagihan->kontainer;
+            } elseif (is_object($tagihan->kontainer)) {
+                $kontainer = $tagihan->kontainer->nomor_kontainer ?? 'N/A';
+            } else {
+                $kontainer = 'N/A';
+            }
             
             echo sprintf(
                 "[%d/%d] ✓ Updated: %s - %s (Bank: %s) | %s → %s\n",
