@@ -30,6 +30,7 @@ class DaftarTagihanKontainerSewa extends Model
         'dpp',
         'adjustment',
         'adjustment_note',
+        'nomor_bank',
         'invoice_vendor',
         'tanggal_vendor',
         'dpp_nilai_lain',
