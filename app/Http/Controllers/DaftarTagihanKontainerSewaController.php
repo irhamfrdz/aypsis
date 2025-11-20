@@ -1203,102 +1203,182 @@ class DaftarTagihanKontainerSewaController extends Controller
                 if ($format === 'dpe') {
                     // DPE Format Template (Auto Group Format)
                     fputcsv($file, [
-                        'vendor',
                         'nomor_kontainer',
+                        'vendor',
                         'size',
-                        'group',
                         'tanggal_awal',
                         'tanggal_akhir',
-                        'periode',
+                        'group',
+                        'masa',
                         'tarif',
-                        'status'
+                        'dpp',
+                        'adjustment',
+                        'adjustment_note',
+                        'nomor_bank',
+                        'invoice_vendor',
+                        'tanggal_vendor',
+                        'dpp_nilai_lain',
+                        'ppn',
+                        'pph',
+                        'grand_total',
+                        'periode'
                     ], ';');
 
                     // Sample data for DPE format
                     fputcsv($file, [
-                        'DPE',
                         'CCLU3836629',
+                        'DPE',
                         '20',
-                        '',
                         '2025-01-21',
                         '2025-02-20',
+                        '',
                         '1',
-                        'Bulanan',
-                        'Tersedia'
+                        '35000',
+                        '35000',
+                        '0',
+                        '',
+                        'BCA123456',
+                        'INV-DPE-001',
+                        '2025-01-21',
+                        '0',
+                        '3850',
+                        '350',
+                        '38500',
+                        '2025-01'
                     ], ';');
 
                     fputcsv($file, [
-                        'DPE',
                         'CCLU3836629',
+                        'DPE',
                         '20',
-                        '',
                         '2025-02-21',
                         '2025-03-20',
-                        '2',
-                        'Bulanan',
-                        'Tersedia'
+                        '',
+                        '1',
+                        '35000',
+                        '35000',
+                        '0',
+                        '',
+                        'BCA123456',
+                        'INV-DPE-001',
+                        '2025-02-21',
+                        '0',
+                        '3850',
+                        '350',
+                        '38500',
+                        '2025-02'
                     ], ';');
 
                     fputcsv($file, [
-                        'DPE',
                         'CBHU4077764',
+                        'DPE',
                         '20',
-                        '',
                         '2025-01-21',
                         '2025-02-20',
+                        '',
                         '1',
-                        'Bulanan',
-                        'Tersedia'
+                        '35000',
+                        '35000',
+                        '0',
+                        '',
+                        'BCA123456',
+                        'INV-DPE-002',
+                        '2025-01-21',
+                        '0',
+                        '3850',
+                        '350',
+                        '38500',
+                        '2025-01'
                     ], ';');
 
                     fputcsv($file, [
-                        'DPE',
                         'RXTU4540180',
+                        'DPE',
                         '40',
-                        '',
                         '2025-03-04',
                         '2025-04-03',
+                        '',
                         '1',
-                        'Bulanan',
-                        'Tersedia'
+                        '50000',
+                        '50000',
+                        '0',
+                        '',
+                        'BCA123456',
+                        'INV-DPE-003',
+                        '2025-03-04',
+                        '0',
+                        '5500',
+                        '500',
+                        '55000',
+                        '2025-03'
                     ], ';');
                 } else {
                     // Standard Format Template
                     fputcsv($file, [
-                        'vendor',
                         'nomor_kontainer',
+                        'vendor',
                         'size',
-                        'group',
                         'tanggal_awal',
                         'tanggal_akhir',
-                        'periode',
+                        'group',
+                        'masa',
                         'tarif',
-                        'status'
+                        'dpp',
+                        'adjustment',
+                        'adjustment_note',
+                        'nomor_bank',
+                        'invoice_vendor',
+                        'tanggal_vendor',
+                        'dpp_nilai_lain',
+                        'ppn',
+                        'pph',
+                        'grand_total',
+                        'periode'
                     ], ';');
 
                     // Write sample data
                     fputcsv($file, [
-                        'ZONA',
                         'ZONA001234',
+                        'ZONA',
                         '20',
-                        'GROUP001',
                         '2024-01-01',
                         '2024-01-31',
+                        'GROUP001',
                         '1',
-                        'Bulanan',
-                        'ongoing'
+                        '40000',
+                        '40000',
+                        '0',
+                        '',
+                        'BCA789012',
+                        'INV-ZONA-001',
+                        '2024-01-01',
+                        '0',
+                        '4400',
+                        '400',
+                        '44000',
+                        '2024-01'
                     ], ';');
 
                     fputcsv($file, [
-                        'DPE',
                         'DPE567890',
+                        'DPE',
                         '40',
-                        'GROUP002',
                         '2024-01-01',
                         '2024-01-31',
+                        'GROUP002',
                         '1',
-                        'Bulanan',
-                        'selesai'
+                        '50000',
+                        '50000',
+                        '0',
+                        '',
+                        'BCA789012',
+                        'INV-DPE-004',
+                        '2024-01-01',
+                        '0',
+                        '5500',
+                        '500',
+                        '55000',
+                        '2024-01'
                     ], ';');
                 }
 
