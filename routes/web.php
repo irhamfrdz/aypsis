@@ -329,6 +329,8 @@ Route::middleware([
         // Master kontainer import/export routes (MUST BE BEFORE {kontainer} routes)
         Route::get('kontainer/download-template', [KontainerImportController::class, 'downloadTemplate'])
              ->name('kontainer.download-template');
+        Route::get('kontainer/download-template-nomor-gabungan', [KontainerImportController::class, 'downloadTemplateNomorGabungan'])
+             ->name('kontainer.download-template-nomor-gabungan');
         Route::get('kontainer/download-template-tanggal-sewa', [KontainerImportController::class, 'downloadTemplateTanggalSewa'])
              ->name('kontainer.download-template-tanggal-sewa');
         Route::get('kontainer/export', [KontainerImportController::class, 'export'])
@@ -339,6 +341,9 @@ Route::middleware([
              ->middleware('can:master-kontainer-view');
         Route::post('kontainer/import', [KontainerImportController::class, 'import'])
              ->name('kontainer.import')
+             ->middleware('can:master-kontainer-create');
+        Route::post('kontainer/import-nomor-gabungan', [KontainerImportController::class, 'importNomorGabungan'])
+             ->name('kontainer.import-nomor-gabungan')
              ->middleware('can:master-kontainer-create');
         Route::post('kontainer/import-tanggal-sewa', [KontainerImportController::class, 'importTanggalSewa'])
              ->name('kontainer.import-tanggal-sewa')

@@ -201,7 +201,16 @@
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
             </svg>
-            Download Template
+            Template (Terpisah)
+        </a>
+
+        <!-- Download Template Nomor Gabungan Button -->
+        <a href="{{ route('master.kontainer.download-template-nomor-gabungan') }}"
+           class="inline-flex items-center px-4 py-2 border border-green-600 text-sm font-medium rounded-md shadow-sm text-green-600 bg-white hover:bg-green-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path>
+            </svg>
+            Template (Gabungan)
         </a>
 
         <!-- Download Template Tanggal Sewa Button -->
@@ -246,7 +255,16 @@
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
             </svg>
-            Import CSV
+            Import (Terpisah)
+        </button>
+
+        <!-- Import Nomor Gabungan Button -->
+        <button onclick="openImportNomorGabunganModal()"
+                class="inline-flex items-center px-4 py-2 border border-teal-600 text-sm font-medium rounded-md shadow-sm text-teal-600 bg-white hover:bg-teal-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+            </svg>
+            Import (Gabungan)
         </button>
 
         <!-- Import Tanggal Sewa Button -->
@@ -563,6 +581,116 @@
     </div>
 </div>
 
+{{-- Import Nomor Gabungan Modal --}}
+<div id="importNomorGabunganModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" onclick="closeImportNomorGabunganModal()"></div>
+
+        <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+
+        <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full">
+            <form id="importNomorGabunganForm" action="{{ route('master.kontainer.import-nomor-gabungan') }}" method="POST" enctype="multipart/form-data">
+                @csrf
+                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+                    <div class="sm:flex sm:items-start">
+                        <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-teal-100 sm:mx-0 sm:h-10 sm:w-10">
+                            <svg class="h-6 w-6 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                        </div>
+                        <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
+                            <h3 class="text-lg leading-6 font-medium text-gray-900" id="modal-title">
+                                Import Data Kontainer (Format Nomor Gabungan)
+                            </h3>
+                            <div class="mt-4">
+                                <p class="text-sm text-gray-500 mb-4">
+                                    Upload file CSV dengan format nomor seri gabungan (11 karakter: ABCD123456X). 
+                                    Sistem akan <strong>otomatis memecah</strong> menjadi awalan, nomor seri, dan akhiran.
+                                </p>
+
+                                <div class="mb-4">
+                                    <label for="excel_file_gabungan" class="block text-sm font-medium text-gray-700 mb-2">
+                                        Pilih File CSV
+                                    </label>
+                                    <input type="file"
+                                           id="excel_file_gabungan"
+                                           name="excel_file"
+                                           accept=".csv"
+                                           required
+                                           class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-teal-50 file:text-teal-700 hover:file:bg-teal-100">
+                                </div>
+
+                                <div class="bg-teal-50 border border-teal-200 rounded-md p-3">
+                                    <div class="flex">
+                                        <svg class="h-5 w-5 text-teal-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        <div class="ml-3">
+                                            <h4 class="text-sm font-medium text-teal-800">Format File CSV (delimiter: semicolon):</h4>
+                                            <div class="mt-1 text-sm text-teal-700">
+                                                <div class="mb-2">
+                                                    <strong>Kolom WAJIB:</strong>
+                                                    <ul class="list-disc pl-5 space-y-1 mt-1">
+                                                        <li>Kolom 1: Nomor Seri Gabungan (11 karakter, contoh: ALLU2202097)</li>
+                                                        <li>Kolom 2: Ukuran (10, 20, atau 40)</li>
+                                                        <li>Kolom 3: Vendor (ZONA atau DPE)</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="mb-2">
+                                                    <strong>Kolom OPSIONAL:</strong>
+                                                    <ul class="list-disc pl-5 space-y-1 mt-1 text-xs">
+                                                        <li>Kolom 4: Tipe Kontainer (default: "Dry Container")</li>
+                                                        <li>Kolom 5: Tanggal Mulai Sewa (dd/mmm/yyyy atau dd mmm yy)</li>
+                                                        <li>Kolom 6: Tanggal Selesai Sewa (dd/mmm/yyyy atau dd mmm yy)</li>
+                                                        <li>Kolom 7: Keterangan (text)</li>
+                                                        <li>Kolom 8: Status (Tersedia/Tidak Tersedia, default: Tersedia)</li>
+                                                    </ul>
+                                                </div>
+                                                <div class="mt-3 space-y-1">
+                                                    <p class="text-xs text-teal-600 font-medium">
+                                                        🔄 ALLU2202097 → Awalan: ALLU, Nomor: 220209, Akhiran: 7
+                                                    </p>
+                                                    <p class="text-xs text-green-600 font-medium">
+                                                        ✅ Otomatis Update jika nomor sudah ada
+                                                    </p>
+                                                    <p class="text-xs text-blue-600 font-medium">
+                                                        ➕ Otomatis Create jika nomor belum ada
+                                                    </p>
+                                                    <p class="text-xs text-purple-600 font-medium">
+                                                        📅 Support format: 01/Jan/2024 atau 01 Jan 24
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-gray-50 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+                    <button type="submit"
+                            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-teal-600 text-base font-medium text-white hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 sm:ml-3 sm:w-auto sm:text-sm">
+                        <span class="upload-text-gabungan">Upload & Import</span>
+                        <span class="upload-loading-gabungan hidden">
+                            <svg class="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
+                            Processing...
+                        </span>
+                    </button>
+                    <button type="button"
+                            onclick="closeImportNomorGabunganModal()"
+                            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 shadow-sm px-4 py-2 bg-white text-base font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm">
+                        Batal
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 {{-- Import Tanggal Sewa Modal --}}
 <div id="importTanggalSewaModal" class="fixed inset-0 z-50 hidden overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
@@ -705,6 +833,43 @@ document.addEventListener('DOMContentLoaded', function() {
     window.openImportModal = openImportModal;
     window.closeImportModal = closeImportModal;
 
+    // Import Nomor Gabungan Modal Functions
+    function openImportNomorGabunganModal() {
+        const modal = document.getElementById('importNomorGabunganModal');
+        if (modal) {
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeImportNomorGabunganModal() {
+        const modal = document.getElementById('importNomorGabunganModal');
+        if (modal) {
+            modal.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+
+            // Reset form
+            const form = document.getElementById('importNomorGabunganForm');
+            if (form) {
+                form.reset();
+            }
+
+            // Reset button state
+            const submitBtn = document.querySelector('#importNomorGabunganForm button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text-gabungan');
+                const uploadLoading = submitBtn.querySelector('.upload-loading-gabungan');
+
+                if (uploadText) uploadText.classList.remove('hidden');
+                if (uploadLoading) uploadLoading.classList.add('hidden');
+                submitBtn.disabled = false;
+            }
+        }
+    }
+
+    window.openImportNomorGabunganModal = openImportNomorGabunganModal;
+    window.closeImportNomorGabunganModal = closeImportNomorGabunganModal;
+
     // Import Tanggal Sewa Modal Functions
     function openImportTanggalSewaModal() {
         const modal = document.getElementById('importTanggalSewaModal');
@@ -760,6 +925,23 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
+    // Handle form submission for nomor gabungan
+    const importNomorGabunganForm = document.getElementById('importNomorGabunganForm');
+    if (importNomorGabunganForm) {
+        importNomorGabunganForm.addEventListener('submit', function(e) {
+            const submitBtn = this.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                const uploadText = submitBtn.querySelector('.upload-text-gabungan');
+                const uploadLoading = submitBtn.querySelector('.upload-loading-gabungan');
+
+                // Show loading state
+                if (uploadText) uploadText.classList.add('hidden');
+                if (uploadLoading) uploadLoading.classList.remove('hidden');
+                submitBtn.disabled = true;
+            }
+        });
+    }
+
     // Handle form submission for tanggal sewa
     const importTanggalSewaForm = document.getElementById('importTanggalSewaForm');
     if (importTanggalSewaForm) {
@@ -783,6 +965,16 @@ document.addEventListener('DOMContentLoaded', function() {
         importModal.addEventListener('click', function(e) {
             if (e.target === this) {
                 closeImportModal();
+            }
+        });
+    }
+
+    // Close nomor gabungan modal when clicking outside
+    const importNomorGabunganModal = document.getElementById('importNomorGabunganModal');
+    if (importNomorGabunganModal) {
+        importNomorGabunganModal.addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeImportNomorGabunganModal();
             }
         });
     }

@@ -77,7 +77,355 @@ class KontainerImportController extends Controller
         } catch (Exception $e) {
             return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
         }
-    }    /**
+    }
+
+    /**
+     * Download template untuk import kontainer dengan format Nomor Seri Gabungan
+     * Format: ABCD123456X (4 digit awalan + 6 digit nomor seri + 1 digit akhiran)
+     */
+    public function downloadTemplateNomorGabungan()
+    {
+        try {
+            $fileName = 'template_kontainer_nomor_gabungan_' . date('Y-m-d_H-i-s') . '.csv';
+
+            // Headers for CSV
+            $headers = [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            ];
+
+            // CSV content
+            $csvData = [
+                // Header
+                [
+                    'Nomor Seri Gabungan (11 karakter)',
+                    'Ukuran (10/20/40)',
+                    'Vendor (ZONA/DPE)',
+                    'Tipe Kontainer (opsional)',
+                    'Tanggal Mulai Sewa (dd/mmm/yyyy)',
+                    'Tanggal Selesai Sewa (dd/mmm/yyyy)',
+                    'Keterangan (opsional)',
+                    'Status (Tersedia/Tidak Tersedia)'
+                ],
+                // Contoh data dengan format lengkap
+                ['ALLU2202097', '20', 'ZONA', 'HC', '01/Jan/2024', '31/Des/2024', 'Kontainer sewa tahunan', 'Tersedia'],
+                ['AMFU3131327', '20', 'ZONA', 'Dry Container', '15/Feb/2024', '14/Feb/2025', '', 'Tidak Tersedia'],
+                ['AMFU3153692', '40', 'DPE', '', '', '', '', 'Tersedia'],
+                ['CAXU6957708', '20', 'ZONA', 'HC', '', '', '', ''],
+                // Info rows
+                [''],
+                ['=== INFORMASI TEMPLATE ==='],
+                ['Format Nomor Seri Gabungan: ABCD123456X (11 karakter)'],
+                ['  - 4 karakter pertama: Awalan Kontainer (contoh: ALLU, AMFU, CAXU)'],
+                ['  - 6 karakter berikutnya: Nomor Seri (contoh: 220209, 313132)'],
+                ['  - 1 karakter terakhir: Akhiran (contoh: 7, 2, 8)'],
+                [''],
+                ['Kolom 1-3: WAJIB diisi'],
+                ['Kolom 4-8: OPSIONAL (boleh kosong)'],
+                ['Ukuran: 10, 20, atau 40'],
+                ['Vendor: ZONA atau DPE'],
+                ['Tanggal: format dd/mmm/yyyy atau dd mmm yy (contoh: 15/Jan/2024 atau 15 Jan 24)'],
+                ['Status: "Tersedia" atau "Tidak Tersedia" (default: Tersedia jika kosong)'],
+                ['Tipe: "HC", "Dry Container", dll (default: Dry Container jika kosong)'],
+                [''],
+                ['Sistem akan otomatis memecah Nomor Seri Gabungan menjadi:'],
+                ['  ALLU2202097 → Awalan: ALLU, Nomor Seri: 220209, Akhiran: 7'],
+                ['  AMFU3131327 → Awalan: AMFU, Nomor Seri: 313132, Akhiran: 7']
+            ];
+
+            $callback = function() use ($csvData) {
+                $file = fopen('php://output', 'w');
+
+                // Add BOM for proper Excel UTF-8 handling
+                fputs($file, "\xEF\xBB\xBF");
+
+                // Set CSV dengan semicolon delimiter
+                foreach ($csvData as $row) {
+                    fputcsv($file, $row, ';');
+                }
+
+                fclose($file);
+            };
+
+            return Response::stream($callback, 200, $headers);
+
+        } catch (Exception $e) {
+            return back()->with('error', 'Gagal mendownload template: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Import data kontainer dari CSV dengan format Nomor Seri Gabungan
+     * Format: ABCD123456X akan dipecah menjadi Awalan (ABCD), Nomor Seri (123456), Akhiran (X)
+     */
+    public function importNomorGabungan(Request $request)
+    {
+        // Validasi file upload
+        $validator = Validator::make($request->all(), [
+            'excel_file' => [
+                'required',
+                'file',
+                'mimes:csv,txt',
+                'max:5120' // 5MB
+            ]
+        ], [
+            'excel_file.required' => 'File CSV harus dipilih.',
+            'excel_file.mimes' => 'File harus berformat .csv',
+            'excel_file.max' => 'Ukuran file maksimal 5MB.'
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        try {
+            $file = $request->file('excel_file');
+            $fileContent = file_get_contents($file->getRealPath());
+            
+            // Handle UTF-8 BOM
+            $fileContent = str_replace("\xEF\xBB\xBF", '', $fileContent);
+            
+            // Split into lines
+            $lines = array_filter(array_map('trim', explode("\n", $fileContent)));
+            
+            if (count($lines) < 2) {
+                return redirect()->route('master.kontainer.index')
+                    ->with('error', 'File CSV kosong atau tidak valid. Minimal harus ada header dan 1 baris data.');
+            }
+
+            // Skip header
+            array_shift($lines);
+            
+            $created = 0;
+            $updated = 0;
+            $errors = [];
+            $skipped = 0;
+
+            DB::beginTransaction();
+
+            foreach ($lines as $lineNumber => $line) {
+                $actualLine = $lineNumber + 2; // +2 karena array index 0 + skip header
+                
+                // Parse CSV with semicolon delimiter
+                $data = str_getcsv($line, ';');
+                
+                // Skip empty lines
+                if (empty(array_filter($data))) {
+                    $skipped++;
+                    continue;
+                }
+
+                // Minimal harus ada nomor seri gabungan dan ukuran (kolom 1 & 2)
+                if (!isset($data[0]) || empty(trim($data[0])) || !isset($data[1]) || empty(trim($data[1]))) {
+                    $errors[] = "Baris {$actualLine}: Nomor seri gabungan dan ukuran wajib diisi";
+                    continue;
+                }
+
+                $nomorSeriGabungan = strtoupper(trim($data[0]));
+                $ukuran = trim($data[1]);
+                
+                // Validasi panjang nomor seri gabungan (harus 11 karakter)
+                if (strlen($nomorSeriGabungan) != 11) {
+                    $errors[] = "Baris {$actualLine}: Nomor seri gabungan harus 11 karakter (format: ABCD123456X), ditemukan " . strlen($nomorSeriGabungan) . " karakter";
+                    continue;
+                }
+                
+                // Pecah nomor seri gabungan
+                $awalanKontainer = substr($nomorSeriGabungan, 0, 4);      // 4 karakter pertama
+                $nomorSeriKontainer = substr($nomorSeriGabungan, 4, 6);   // 6 karakter berikutnya
+                $akhiranKontainer = substr($nomorSeriGabungan, 10, 1);    // 1 karakter terakhir
+                
+                // Validasi ukuran
+                if (!in_array($ukuran, ['10', '20', '40'])) {
+                    $errors[] = "Baris {$actualLine}: Ukuran tidak valid '{$ukuran}'. Gunakan 10, 20, atau 40";
+                    continue;
+                }
+                
+                // Vendor (opsional, default ZONA)
+                $vendor = isset($data[2]) && !empty(trim($data[2])) ? trim($data[2]) : 'ZONA';
+                
+                // Cek apakah kontainer sudah ada
+                $kontainer = Kontainer::where('nomor_seri_gabungan', $nomorSeriGabungan)->first();
+                
+                if ($kontainer) {
+                    // Update data yang ada
+                    $kontainer->awalan_kontainer = $awalanKontainer;
+                    $kontainer->nomor_seri_kontainer = $nomorSeriKontainer;
+                    $kontainer->akhiran_kontainer = $akhiranKontainer;
+                    $kontainer->ukuran = $ukuran;
+                    $kontainer->vendor = $vendor;
+                    
+                    // Tipe kontainer (opsional)
+                    if (isset($data[3]) && !empty(trim($data[3]))) {
+                        $kontainer->tipe_kontainer = trim($data[3]);
+                    }
+                    
+                    // Tanggal mulai sewa (opsional, kolom 5)
+                    if (isset($data[4]) && !empty(trim($data[4]))) {
+                        try {
+                            $tanggalMulai = trim($data[4]);
+                            $parsedDate = $this->parseDate($tanggalMulai);
+                            if ($parsedDate) {
+                                $kontainer->tanggal_mulai_sewa = $parsedDate->format('Y-m-d');
+                            }
+                        } catch (\Exception $e) {
+                            $errors[] = "Baris {$actualLine}: Format tanggal mulai sewa tidak valid";
+                        }
+                    }
+                    
+                    // Tanggal selesai sewa (opsional, kolom 6)
+                    if (isset($data[5]) && !empty(trim($data[5]))) {
+                        try {
+                            $tanggalSelesai = trim($data[5]);
+                            $parsedDate = $this->parseDate($tanggalSelesai);
+                            if ($parsedDate) {
+                                $kontainer->tanggal_selesai_sewa = $parsedDate->format('Y-m-d');
+                            }
+                        } catch (\Exception $e) {
+                            $errors[] = "Baris {$actualLine}: Format tanggal selesai sewa tidak valid";
+                        }
+                    }
+                    
+                    // Keterangan (opsional, kolom 7)
+                    if (isset($data[6]) && !empty(trim($data[6]))) {
+                        $kontainer->keterangan = trim($data[6]);
+                    }
+                    
+                    // Status (opsional, kolom 8)
+                    if (isset($data[7]) && !empty(trim($data[7]))) {
+                        $status = trim($data[7]);
+                        if (!in_array($status, ['Tersedia', 'Tidak Tersedia'])) {
+                            $errors[] = "Baris {$actualLine}: Status tidak valid '{$status}'. Gunakan 'Tersedia' atau 'Tidak Tersedia'";
+                            continue;
+                        }
+                        $kontainer->status = $status;
+                    }
+                    
+                    $kontainer->save();
+                    $updated++;
+                } else {
+                    // Buat kontainer baru
+                    $newKontainer = new Kontainer();
+                    $newKontainer->awalan_kontainer = $awalanKontainer;
+                    $newKontainer->nomor_seri_kontainer = $nomorSeriKontainer;
+                    $newKontainer->akhiran_kontainer = $akhiranKontainer;
+                    $newKontainer->nomor_seri_gabungan = $nomorSeriGabungan;
+                    $newKontainer->ukuran = $ukuran;
+                    $newKontainer->vendor = $vendor;
+                    
+                    // Tipe kontainer (opsional, default Dry Container)
+                    $newKontainer->tipe_kontainer = isset($data[3]) && !empty(trim($data[3])) 
+                        ? trim($data[3]) 
+                        : 'Dry Container';
+                    
+                    // Tanggal mulai sewa (opsional, kolom 5)
+                    if (isset($data[4]) && !empty(trim($data[4]))) {
+                        try {
+                            $tanggalMulai = trim($data[4]);
+                            $parsedDate = $this->parseDate($tanggalMulai);
+                            if ($parsedDate) {
+                                $newKontainer->tanggal_mulai_sewa = $parsedDate->format('Y-m-d');
+                            }
+                        } catch (\Exception $e) {
+                            // Ignore date parse errors for new records
+                        }
+                    }
+                    
+                    // Tanggal selesai sewa (opsional, kolom 6)
+                    if (isset($data[5]) && !empty(trim($data[5]))) {
+                        try {
+                            $tanggalSelesai = trim($data[5]);
+                            $parsedDate = $this->parseDate($tanggalSelesai);
+                            if ($parsedDate) {
+                                $newKontainer->tanggal_selesai_sewa = $parsedDate->format('Y-m-d');
+                            }
+                        } catch (\Exception $e) {
+                            // Ignore date parse errors for new records
+                        }
+                    }
+                    
+                    // Keterangan (opsional, kolom 7)
+                    if (isset($data[6]) && !empty(trim($data[6]))) {
+                        $newKontainer->keterangan = trim($data[6]);
+                    }
+                    
+                    // Status (opsional, default Tersedia, kolom 8)
+                    $newKontainer->status = isset($data[7]) && !empty(trim($data[7])) 
+                        ? trim($data[7]) 
+                        : 'Tersedia';
+                    
+                    $newKontainer->save();
+                    $created++;
+                }
+            }
+
+            DB::commit();
+
+            // Build pesan hasil import
+            $messages = [];
+            
+            if ($created > 0) {
+                $messages[] = "Berhasil menambahkan {$created} kontainer baru";
+            }
+            
+            if ($updated > 0) {
+                $messages[] = "Berhasil update {$updated} kontainer";
+            }
+            
+            if (!empty($errors)) {
+                $errorCount = count($errors);
+                $errorPreview = implode('; ', array_slice($errors, 0, 3));
+                if ($errorCount > 3) {
+                    $errorPreview .= " ... dan " . ($errorCount - 3) . " error lainnya";
+                }
+                $messages[] = "ERROR: {$errorCount} baris gagal - {$errorPreview}";
+            }
+            
+            if ($skipped > 0) {
+                $messages[] = "Dilewati: {$skipped} baris (kosong)";
+            }
+
+            $finalMessage = implode('. ', $messages);
+            $flashType = (!empty($errors)) ? 'warning' : 'success';
+
+            return redirect()->route('master.kontainer.index')->with($flashType, $finalMessage);
+
+        } catch (Exception $e) {
+            DB::rollback();
+            return back()->with('error', 'Gagal mengimpor data: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Helper function untuk parse berbagai format tanggal
+     */
+    private function parseDate($dateString)
+    {
+        $formats = [
+            'd/M/Y',   // 01/Jan/2025
+            'd/M/y',   // 01/Jan/25
+            'd M Y',   // 01 Jan 2025
+            'd M y',   // 01 Jan 25
+            'd-M-Y',   // 01-Jan-2025
+            'd-M-y',   // 01-Jan-25
+            'Y-m-d',   // 2025-01-01
+        ];
+        
+        foreach ($formats as $format) {
+            try {
+                $parsedDate = \Carbon\Carbon::createFromFormat($format, $dateString);
+                if ($parsedDate) {
+                    return $parsedDate;
+                }
+            } catch (\Exception $e) {
+                continue;
+            }
+        }
+        
+        return null;
+    }
+
+    /**
      * Import data kontainer dari CSV
      */
     public function import(Request $request)
