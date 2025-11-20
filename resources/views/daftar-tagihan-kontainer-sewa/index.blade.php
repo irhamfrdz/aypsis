@@ -1406,21 +1406,28 @@ document.addEventListener('DOMContentLoaded', function() {
     // Restore checkbox state from localStorage
     function restoreCheckboxState() {
         try {
-            const savedIds = JSON.parse(localStorage.getItem('daftar_tagihan_checked_ids') || '[]');
-            console.log('Restoring checkbox state:', savedIds);
+            const rawData = localStorage.getItem('daftar_tagihan_checked_ids');
+            console.log('Raw localStorage data:', rawData);
+            
+            const savedIds = JSON.parse(rawData || '[]');
+            console.log('Parsed saved IDs:', savedIds);
+            console.log('Saved IDs type:', typeof savedIds, 'Length:', savedIds.length);
             console.log('Available checkboxes:', rowCheckboxes.length);
             
             if (savedIds.length > 0) {
                 let restoredCount = 0;
+                const availableIds = [];
                 
                 rowCheckboxes.forEach(checkbox => {
+                    availableIds.push(checkbox.value);
                     if (savedIds.includes(checkbox.value)) {
                         checkbox.checked = true;
                         restoredCount++;
-                        console.log('Restored checkbox:', checkbox.value);
+                        console.log('✓ Restored checkbox:', checkbox.value);
                     }
                 });
                 
+                console.log('Available IDs on page:', availableIds);
                 console.log(`Restored ${restoredCount} out of ${savedIds.length} saved checkboxes`);
                 
                 updateSelectAllState();
@@ -1436,9 +1443,12 @@ document.addEventListener('DOMContentLoaded', function() {
                         
                         showNotification('success', 'Centangan Dipulihkan', message, 3000);
                     }, 500);
+                } else {
+                    console.warn('No checkboxes were restored even though there are saved IDs');
+                    console.warn('Possible mismatch between saved IDs and available checkboxes');
                 }
             } else {
-                console.log('No saved checkbox state found');
+                console.log('No saved checkbox state found in localStorage');
             }
         } catch (error) {
             console.error('Error restoring checkbox state:', error);
@@ -1448,21 +1458,41 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // clearSavedState function moved to global scope above
 
+    // Auto-save checkbox state when any navigation is about to happen
+    window.addEventListener('beforeunload', function() {
+        saveCheckboxState();
+        console.log('Page unloading, checkbox state saved');
+    });
+
     // Handle search form submission to preserve checkbox state
     const searchForm = document.querySelector('form[method="GET"].space-y-4');
     if (searchForm && searchForm !== null) {
-        searchForm.addEventListener('submit', function() {
-            saveCheckboxState(); // Save current state before form submission
+        // Save on form submit
+        searchForm.addEventListener('submit', function(e) {
+            // Force save before allowing form to submit
+            saveCheckboxState();
             console.log('Search form submitted, checkbox state saved');
+            console.log('Saved IDs:', localStorage.getItem('daftar_tagihan_checked_ids'));
+            // Allow form to continue submitting
+        });
+        
+        // Also save when search button is clicked (before form submit)
+        const searchButtons = searchForm.querySelectorAll('button[type="submit"]');
+        searchButtons.forEach(btn => {
+            btn.addEventListener('click', function() {
+                saveCheckboxState();
+                console.log('Search button clicked, state saved');
+            });
         });
     } else {
         console.warn('searchForm element not found - using alternative selector');
         // Try alternative selector
         const altSearchForm = document.querySelector('form[method="GET"]');
         if (altSearchForm) {
-            altSearchForm.addEventListener('submit', function() {
+            altSearchForm.addEventListener('submit', function(e) {
                 saveCheckboxState();
                 console.log('Search form submitted (alt selector), checkbox state saved');
+                console.log('Saved IDs:', localStorage.getItem('daftar_tagihan_checked_ids'));
             });
         }
     }
