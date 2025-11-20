@@ -1433,27 +1433,80 @@ document.addEventListener('DOMContentLoaded', function() {
                 updateSelectAllState();
                 updateBulkActions();
                 
+                // Show badge if there are items not visible on this page
+                const notFoundCount = savedIds.length - restoredCount;
+                if (notFoundCount > 0) {
+                    showHiddenSelectionBadge(savedIds.length, notFoundCount);
+                    console.log(`Showing badge: ${notFoundCount} items hidden`);
+                }
+                
                 // Only show notification if some items were restored
                 if (restoredCount > 0) {
                     setTimeout(() => {
-                        const notFoundCount = savedIds.length - restoredCount;
                         const message = notFoundCount > 0 
-                            ? `${restoredCount} item dipulihkan. ${notFoundCount} item tidak ditemukan (mungkin difilter).`
+                            ? `${restoredCount} item terlihat dicentang. ${notFoundCount} item lainnya tersimpan (tidak tampil di halaman ini).`
                             : `${restoredCount} item yang dicentang telah dipulihkan.`;
                         
-                        showNotification('success', 'Centangan Dipulihkan', message, 3000);
+                        showNotification('info', 'Centangan Dipulihkan', message, 4000);
                     }, 500);
-                } else {
-                    console.warn('No checkboxes were restored even though there are saved IDs');
-                    console.warn('Possible mismatch between saved IDs and available checkboxes');
+                } else if (savedIds.length > 0) {
+                    // All saved items are not visible on current page
+                    console.warn('All saved items are not visible on current page');
+                    setTimeout(() => {
+                        showNotification('warning', 'Item Tersimpan', `${savedIds.length} item tercentang tidak tampil di halaman ini. Ubah filter/pencarian untuk melihatnya.`, 5000);
+                    }, 500);
                 }
             } else {
                 console.log('No saved checkbox state found in localStorage');
+                // Remove badge if no selections
+                const existingBadge = document.getElementById('hiddenSelectionBadge');
+                if (existingBadge) {
+                    existingBadge.remove();
+                }
             }
         } catch (error) {
             console.error('Error restoring checkbox state:', error);
             localStorage.removeItem('daftar_tagihan_checked_ids');
         }
+    }
+
+    // Show badge for hidden selected items
+    function showHiddenSelectionBadge(totalSelected, notVisibleCount) {
+        // Remove existing badge if any
+        const existingBadge = document.getElementById('hiddenSelectionBadge');
+        if (existingBadge) {
+            existingBadge.remove();
+        }
+        
+        // Create badge element
+        const badge = document.createElement('div');
+        badge.id = 'hiddenSelectionBadge';
+        badge.className = 'fixed top-20 right-4 z-40 bg-blue-600 text-white px-4 py-3 rounded-lg shadow-lg flex items-center gap-3';
+        badge.innerHTML = `
+            <div class="flex items-center gap-2">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"/>
+                </svg>
+                <div>
+                    <div class="font-semibold text-sm">Total ${totalSelected} item terpilih</div>
+                    <div class="text-xs opacity-90">${notVisibleCount} item tidak tampil di halaman ini</div>
+                </div>
+            </div>
+            <button onclick="clearSelectionAndBadge()" class="ml-2 hover:bg-blue-700 rounded p-1" title="Hapus semua pilihan">
+                <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"/>
+                </svg>
+            </button>
+        `;
+        
+        document.body.appendChild(badge);
+        
+        // Add fade-in animation
+        setTimeout(() => {
+            badge.style.opacity = '0';
+            badge.style.transition = 'opacity 0.3s';
+            badge.style.opacity = '1';
+        }, 10);
     }
 
     // clearSavedState function moved to global scope above
@@ -1536,22 +1589,42 @@ document.addEventListener('DOMContentLoaded', function() {
     // Update bulk actions visibility and count
     function updateBulkActions() {
         const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
-        const count = checkedBoxes.length;
+        const visibleCount = checkedBoxes.length;
+        
+        // Get total count from localStorage (including hidden items)
+        let totalCount = visibleCount;
+        try {
+            const savedData = localStorage.getItem('daftar_tagihan_checked_ids');
+            if (savedData) {
+                const savedIds = JSON.parse(savedData);
+                if (Array.isArray(savedIds) && savedIds.length > 0) {
+                    totalCount = savedIds.length;
+                }
+            }
+        } catch (error) {
+            console.error('Error reading saved state:', error);
+        }
 
         // Get elements fresh each time to avoid stale references
         const bulkActionsElement = document.getElementById('bulkActions');
         const selectedCountElement = document.getElementById('selected-count');
 
-        console.log('updateBulkActions called, checked boxes:', count);
+        console.log('updateBulkActions called, visible:', visibleCount, 'total saved:', totalCount);
         console.log('bulkActions element:', bulkActionsElement);
         console.log('selectedCount element:', selectedCountElement);
 
         if (selectedCountElement) {
-            selectedCountElement.textContent = count;
+            // Show both visible and total if different
+            if (totalCount > visibleCount && visibleCount > 0) {
+                selectedCountElement.textContent = `${totalCount} (${visibleCount} tampil)`;
+            } else {
+                selectedCountElement.textContent = totalCount;
+            }
         }
 
         if (bulkActionsElement) {
-            if (count > 0) {
+            // Show bulk actions if there are any selections (visible or hidden)
+            if (totalCount > 0) {
                 console.log('Showing bulk actions - removing hidden class');
                 bulkActionsElement.classList.remove('hidden');
                 bulkActionsElement.style.display = 'block'; // Force show
@@ -1762,6 +1835,32 @@ window.testPranota = function() {
 window.clearSavedState = function() {
     localStorage.removeItem('daftar_tagihan_checked_ids');
     console.log('Cleared saved checkbox state');
+};
+
+// Clear selection and remove badge
+window.clearSelectionAndBadge = function() {
+    // Clear localStorage
+    localStorage.removeItem('daftar_tagihan_checked_ids');
+    
+    // Uncheck all visible checkboxes
+    const checkboxes = document.querySelectorAll('.row-checkbox');
+    checkboxes.forEach(cb => cb.checked = false);
+    
+    // Update select all
+    const selectAll = document.getElementById('select-all');
+    if (selectAll) selectAll.checked = false;
+    
+    // Remove badge
+    const badge = document.getElementById('hiddenSelectionBadge');
+    if (badge) badge.remove();
+    
+    // Hide bulk actions
+    const bulkActions = document.getElementById('bulkActions');
+    if (bulkActions) bulkActions.classList.add('hidden');
+    
+    showNotification('success', 'Pilihan Dihapus', 'Semua pilihan telah dihapus');
+    
+    console.log('Cleared all selections and badge');
 };
 
 // Function for "Masukan ke Pranota" - shows modal first
