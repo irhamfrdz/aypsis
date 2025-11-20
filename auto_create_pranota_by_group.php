@@ -124,25 +124,30 @@ try {
             }
             $keterangan = 'Pranota ' . implode(' dan ', $statParts) . " - Group {$group} - Periode {$periode}";
             
-            // Generate nomor invoice
+            // Generate nomor invoice dengan format: PMS + Cetak(1) + Tahun(2) + Bulan(2) + Running(9)
+            // Contoh: PMS11125000176
             $today = Carbon::today();
-            $yearMonth = $today->format('ym'); // Format: 2511 untuk November 2025
+            $cetak = '1'; // Cetak pertama
+            $tahun = $today->format('y'); // 25 untuk 2025
+            $bulan = $today->format('m'); // 11 untuk November
+            
+            $prefix = 'PMS' . $cetak . $tahun . $bulan;
             
             // Cari nomor terakhir untuk bulan ini
-            $lastPranota = PranotaTagihanKontainerSewa::where('no_invoice', 'like', "TK1{$yearMonth}%")
+            $lastPranota = PranotaTagihanKontainerSewa::where('no_invoice', 'like', "{$prefix}%")
                 ->orderBy('no_invoice', 'desc')
                 ->first();
             
             if ($lastPranota) {
-                // Ambil 7 digit terakhir dan tambah 1
-                $lastNumber = intval(substr($lastPranota->no_invoice, -7));
+                // Ambil 9 digit terakhir dan tambah 1
+                $lastNumber = intval(substr($lastPranota->no_invoice, -9));
                 $newNumber = $lastNumber + 1;
             } else {
                 // Mulai dari 1
                 $newNumber = 1;
             }
             
-            $noInvoice = 'TK1' . $yearMonth . str_pad($newNumber, 7, '0', STR_PAD_LEFT);
+            $noInvoice = $prefix . str_pad($newNumber, 9, '0', STR_PAD_LEFT);
             
             // Hitung total
             $totalGrandTotal = $items->sum('grand_total');
