@@ -217,7 +217,7 @@ input[required]:focus {
                 </a>
                 @endcan
 
-                <!-- Import Data -->
+                <!-- Import Data (Old) -->
                 @can('tagihan-kontainer-sewa-create')
                 <a href="{{ route('daftar-tagihan-kontainer-sewa.import') }}" class="bg-green-600 hover:bg-green-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -225,6 +225,16 @@ input[required]:focus {
                     </svg>
                     Import Data
                 </a>
+                @endcan
+
+                <!-- Import CSV (New with Modal) -->
+                @can('tagihan-kontainer-sewa-create')
+                <button type="button" onclick="openImportModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Import CSV
+                </button>
                 @endcan
 
                 <!-- Export Data -->
@@ -4239,6 +4249,195 @@ window.closeExistingPranotaModal = function() {
     }, 300);
 };
 
+// ========== IMPORT CSV MODAL FUNCTIONS ==========
+
+// Function to open import CSV modal
+window.openImportModal = function() {
+    const modal = document.getElementById('importCsvModal');
+    if (!modal) {
+        console.error('Import modal not found!');
+        return;
+    }
+
+    // Reset form
+    document.getElementById('importCsvForm').reset();
+    
+    // Hide progress bar
+    document.getElementById('import_progress').classList.add('hidden');
+    
+    // Show modal with animation
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+};
+
+// Function to close import CSV modal
+window.closeImportModal = function() {
+    const modal = document.getElementById('importCsvModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.classList.add('hidden');
+        modal.classList.remove('modal-hide');
+        if (modalContent) {
+            modalContent.classList.remove('modal-hide');
+        }
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
+// Handle import CSV form submission
+document.addEventListener('DOMContentLoaded', function() {
+    const importForm = document.getElementById('importCsvForm');
+    
+    if (importForm) {
+        importForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('csv_file');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                showNotification('error', 'Error', 'Silakan pilih file CSV terlebih dahulu.');
+                return;
+            }
+
+            // Validate file type
+            const fileName = file.name.toLowerCase();
+            if (!fileName.endsWith('.csv') && !fileName.endsWith('.txt')) {
+                showNotification('error', 'Format File Salah', 'File harus berformat CSV (.csv atau .txt)');
+                return;
+            }
+
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showNotification('error', 'File Terlalu Besar', 'Ukuran file maksimal 10MB');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = document.getElementById('import_submit_btn');
+            const btnText = document.getElementById('import_btn_text');
+            const originalText = btnText.textContent;
+            
+            btnText.innerHTML = '<span class="loading-spinner"></span>Mengimport...';
+            submitBtn.disabled = true;
+
+            // Show progress bar
+            const progressDiv = document.getElementById('import_progress');
+            const progressBar = document.getElementById('progress_bar');
+            const progressText = document.getElementById('progress_text');
+            
+            progressDiv.classList.remove('hidden');
+            progressBar.style.width = '10%';
+            progressText.textContent = '10%';
+
+            // Prepare form data
+            const formData = new FormData(importForm);
+
+            // Send AJAX request
+            fetch('{{ route("daftar-tagihan-kontainer-sewa.import-csv") }}', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => {
+                progressBar.style.width = '50%';
+                progressText.textContent = '50%';
+                
+                return response.json();
+            })
+            .then(data => {
+                progressBar.style.width = '100%';
+                progressText.textContent = '100%';
+                
+                console.log('Import response:', data);
+
+                if (data.success) {
+                    // Show success notification
+                    const message = `✅ Import berhasil!\n\n` +
+                                  `📊 Diimport: ${data.imported_count || 0} data\n` +
+                                  `🔄 Diupdate: ${data.updated_count || 0} data\n` +
+                                  `⏭️ Dilewati: ${data.skipped_count || 0} data`;
+                    
+                    showNotification('success', 'Import Berhasil', message, 8000);
+
+                    // Show warnings if any
+                    if (data.warnings && data.warnings.length > 0) {
+                        setTimeout(() => {
+                            const warningMsg = data.warnings.slice(0, 5).join('\n');
+                            showNotification('warning', 'Peringatan', warningMsg, 10000);
+                        }, 1000);
+                    }
+
+                    // Close modal and reload page
+                    setTimeout(() => {
+                        closeImportModal();
+                        window.location.reload();
+                    }, 2000);
+                } else {
+                    // Show error notification
+                    let errorMessage = data.message || 'Terjadi kesalahan saat import data.';
+                    
+                    if (data.errors && data.errors.length > 0) {
+                        errorMessage += '\n\n❌ Error:\n';
+                        errorMessage += data.errors.slice(0, 5).map(err => 
+                            `Baris ${err.row}: ${err.message}`
+                        ).join('\n');
+                        
+                        if (data.errors.length > 5) {
+                            errorMessage += `\n\n... dan ${data.errors.length - 5} error lainnya`;
+                        }
+                    }
+
+                    showNotification('error', 'Import Gagal', errorMessage, 15000);
+
+                    // Reset button
+                    btnText.textContent = originalText;
+                    submitBtn.disabled = false;
+                    
+                    // Hide progress
+                    progressDiv.classList.add('hidden');
+                }
+            })
+            .catch(error => {
+                console.error('Import error:', error);
+                
+                showNotification('error', 'Error', 
+                    'Terjadi kesalahan saat mengirim data. Silakan coba lagi.\n\n' + 
+                    'Detail: ' + error.message, 
+                    10000
+                );
+
+                // Reset button
+                btnText.textContent = originalText;
+                submitBtn.disabled = false;
+                
+                // Hide progress
+                progressDiv.classList.add('hidden');
+            });
+        });
+    }
+});
+
 
 </script>
 
@@ -4336,6 +4535,100 @@ window.closeExistingPranotaModal = function() {
                 </div>
             </form>
         </div>
+    </div>
+</div>
+
+<!-- Modal Import CSV -->
+<div id="importCsvModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 hidden">
+    <div class="modal-content relative top-20 mx-auto p-6 border w-11/12 max-w-lg shadow-lg rounded-md bg-white">
+        <div class="flex justify-between items-center mb-4">
+            <h3 class="text-xl font-semibold text-gray-900">Import Data CSV</h3>
+            <button type="button" onclick="closeImportModal()" class="text-gray-400 hover:text-gray-600">
+                <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                </svg>
+            </button>
+        </div>
+
+        <form id="importCsvForm" enctype="multipart/form-data">
+            @csrf
+            
+            <!-- File Upload -->
+            <div class="mb-4">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Pilih File CSV
+                    <span class="text-red-500">*</span>
+                </label>
+                <div class="relative">
+                    <input type="file" 
+                           id="csv_file" 
+                           name="import_file" 
+                           accept=".csv,.txt"
+                           required
+                           class="block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-gray-50 focus:outline-none focus:border-blue-500 p-2">
+                </div>
+                <p class="mt-1 text-xs text-gray-500">
+                    Format: CSV dengan delimiter semicolon (;). Maksimal 10MB.
+                </p>
+            </div>
+
+            <!-- Import Options -->
+            <div class="mb-4 space-y-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                    Opsi Import
+                </label>
+                
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                           id="skip_duplicates" 
+                           name="skip_duplicates" 
+                           value="1"
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="skip_duplicates" class="ml-2 text-sm text-gray-700">
+                        Lewati data duplikat
+                    </label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" 
+                           id="update_existing" 
+                           name="update_existing" 
+                           value="1"
+                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="update_existing" class="ml-2 text-sm text-gray-700">
+                        Update data yang sudah ada
+                    </label>
+                </div>
+            </div>
+
+            <!-- Progress Bar (Hidden initially) -->
+            <div id="import_progress" class="hidden mb-4">
+                <div class="flex justify-between items-center mb-1">
+                    <span class="text-sm font-medium text-gray-700">Progress Import</span>
+                    <span id="progress_text" class="text-sm text-gray-600">0%</span>
+                </div>
+                <div class="w-full bg-gray-200 rounded-full h-2.5">
+                    <div id="progress_bar" class="bg-blue-600 h-2.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+                </div>
+            </div>
+
+            <!-- Buttons -->
+            <div class="flex items-center justify-end space-x-3 pt-4 border-t">
+                <button type="button" 
+                        onclick="closeImportModal()"
+                        class="px-4 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-colors">
+                    Batal
+                </button>
+                <button type="submit"
+                        id="import_submit_btn"
+                        class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10"></path>
+                    </svg>
+                    <span id="import_btn_text">Import Data</span>
+                </button>
+            </div>
+        </form>
     </div>
 </div>
 

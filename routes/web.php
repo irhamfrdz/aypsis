@@ -1933,6 +1933,11 @@ Route::get('/test-gate-in-ajax', function () {
                     ->name('daftar-tagihan-kontainer-sewa.import.process')
                     ->middleware('can:tagihan-kontainer-sewa-create');
 
+               // Import CSV via modal (new AJAX endpoint)
+               Route::post('daftar-tagihan-kontainer-sewa/import-csv', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'importCsvModal'])
+                    ->name('daftar-tagihan-kontainer-sewa.import-csv')
+                    ->middleware('can:tagihan-kontainer-sewa-create');
+
                // Export data to CSV
                Route::get('daftar-tagihan-kontainer-sewa/export', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'export'])
                     ->name('daftar-tagihan-kontainer-sewa.export')

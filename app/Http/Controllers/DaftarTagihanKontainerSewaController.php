@@ -1052,6 +1052,74 @@ class DaftarTagihanKontainerSewaController extends Controller
     }
 
     /**
+     * Import CSV via modal (AJAX endpoint)
+     */
+    public function importCsvModal(Request $request)
+    {
+        // Validate file upload
+        $request->validate([
+            'import_file' => 'required|file|mimes:csv,txt|max:10240', // 10MB max
+        ]);
+
+        try {
+            $file = $request->file('import_file');
+
+            // Get import options from request
+            $options = [
+                'validate_only' => false,
+                'skip_duplicates' => $request->has('skip_duplicates'),
+                'update_existing' => $request->has('update_existing'),
+            ];
+
+            // Process the CSV import
+            $results = $this->processCsvImport($file, $options);
+
+            // Log the import activity
+            Log::info('CSV Import via modal completed', [
+                'user_id' => Auth::id(),
+                'filename' => $file->getClientOriginalName(),
+                'imported' => $results['imported_count'],
+                'updated' => $results['updated_count'],
+                'skipped' => $results['skipped_count'],
+                'errors' => count($results['errors']),
+                'options' => $options,
+            ]);
+
+            // Return JSON response
+            return response()->json([
+                'success' => $results['success'],
+                'message' => $results['success'] 
+                    ? 'Import berhasil!' 
+                    : 'Import gagal!',
+                'imported_count' => $results['imported_count'],
+                'updated_count' => $results['updated_count'],
+                'skipped_count' => $results['skipped_count'],
+                'errors' => $results['errors'],
+                'warnings' => $results['warnings'],
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Import CSV via modal failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'user_id' => Auth::id(),
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Terjadi kesalahan saat import',
+                'errors' => [
+                    ['row' => 0, 'message' => $e->getMessage()]
+                ],
+                'imported_count' => 0,
+                'updated_count' => 0,
+                'skipped_count' => 0,
+                'warnings' => [],
+            ], 500);
+        }
+    }
+
+    /**
      * Export data tagihan to CSV
      */
     public function export(Request $request)
