@@ -124,48 +124,41 @@ try {
             }
             $keterangan = 'Pranota ' . implode(' dan ', $statParts) . " - Group {$group} - Periode {$periode}";
             
-            // Generate nomor pranota
+            // Generate nomor invoice
             $today = Carbon::today();
-            $yearMonth = $today->format('ym'); // Format: 2411 untuk November 2024
+            $yearMonth = $today->format('ym'); // Format: 2511 untuk November 2025
             
             // Cari nomor terakhir untuk bulan ini
-            $lastPranota = PranotaTagihanKontainerSewa::where('nomor_pranota', 'like', "TK1{$yearMonth}%")
-                ->orderBy('nomor_pranota', 'desc')
+            $lastPranota = PranotaTagihanKontainerSewa::where('no_invoice', 'like', "TK1{$yearMonth}%")
+                ->orderBy('no_invoice', 'desc')
                 ->first();
             
             if ($lastPranota) {
                 // Ambil 7 digit terakhir dan tambah 1
-                $lastNumber = intval(substr($lastPranota->nomor_pranota, -7));
+                $lastNumber = intval(substr($lastPranota->no_invoice, -7));
                 $newNumber = $lastNumber + 1;
             } else {
                 // Mulai dari 1
                 $newNumber = 1;
             }
             
-            $nomorPranota = 'TK1' . $yearMonth . str_pad($newNumber, 7, '0', STR_PAD_LEFT);
+            $noInvoice = 'TK1' . $yearMonth . str_pad($newNumber, 7, '0', STR_PAD_LEFT);
             
             // Hitung total
-            $totalDpp = $items->sum('dpp');
-            $totalAdjustment = $items->sum('adjustment');
-            $totalDppNilaiLain = $items->sum('dpp_nilai_lain');
-            $totalPpn = $items->sum('ppn');
-            $totalPph = $items->sum('pph');
             $totalGrandTotal = $items->sum('grand_total');
+            
+            // Ambil IDs dari tagihan
+            $tagihanIds = $items->pluck('id')->toArray();
             
             // Buat pranota baru
             $pranota = PranotaTagihanKontainerSewa::create([
-                'nomor_pranota' => $nomorPranota,
+                'no_invoice' => $noInvoice,
                 'tanggal_pranota' => $today,
                 'keterangan' => $keterangan,
-                'vendor' => $vendor,
-                'total_dpp' => $totalDpp,
-                'total_adjustment' => $totalAdjustment,
-                'total_dpp_nilai_lain' => $totalDppNilaiLain,
-                'total_ppn' => $totalPpn,
-                'total_pph' => $totalPph,
-                'total_grand_total' => $totalGrandTotal,
-                'jumlah_kontainer' => $items->count(),
-                'status' => 'draft',
+                'total_amount' => $totalGrandTotal,
+                'jumlah_tagihan' => $items->count(),
+                'tagihan_kontainer_sewa_ids' => json_encode($tagihanIds),
+                'status' => 'unpaid',
             ]);
             
             // Update semua kontainer dalam group ini
@@ -179,7 +172,7 @@ try {
             
             $createdCount++;
             
-            echo "✅ Pranota #{$nomorPranota} dibuat untuk Group: {$group}, Periode: {$periode}\n";
+            echo "✅ Pranota #{$noInvoice} dibuat untuk Group: {$group}, Periode: {$periode}\n";
             echo "   - Kontainer: {$items->count()}\n";
             echo "   - Total: Rp " . number_format($totalGrandTotal, 0, '.', ',') . "\n";
             echo "\n";
