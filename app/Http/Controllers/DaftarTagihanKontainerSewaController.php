@@ -2215,19 +2215,35 @@ class DaftarTagihanKontainerSewaController extends Controller
             return null;
         }
 
+        // Trim whitespace
+        $date = trim($date);
+
         try {
             // Handle various date formats
-            $formats = ['Y-m-d', 'd/m/Y', 'd-m-Y', 'm/d/Y', 'Y/m/d'];
+            $formats = [
+                'Y-m-d',      // 2023-06-07
+                'd/m/Y',      // 07/06/2023
+                'd-m-Y',      // 07-06-2023
+                'm/d/Y',      // 06/07/2023
+                'Y/m/d',      // 2023/06/07
+                'd M y',      // 07 Jun 23
+                'd M Y',      // 07 Jun 2023
+                'd-M-y',      // 07-Jun-23
+                'd-M-Y',      // 07-Jun-2023
+            ];
 
             foreach ($formats as $format) {
                 try {
-                    return Carbon::createFromFormat($format, $date)->format('Y-m-d');
+                    $parsed = Carbon::createFromFormat($format, $date);
+                    if ($parsed) {
+                        return $parsed->format('Y-m-d');
+                    }
                 } catch (\Exception $e) {
                     continue;
                 }
             }
 
-            // Try Carbon parse as last resort
+            // Try Carbon parse as last resort (handles many formats automatically)
             return Carbon::parse($date)->format('Y-m-d');
         } catch (\Exception $e) {
             throw new \Exception("Format tanggal tidak valid: {$date}");
@@ -2236,13 +2252,42 @@ class DaftarTagihanKontainerSewaController extends Controller
 
     private function cleanNumber($value)
     {
+        // Trim whitespace first
+        $value = trim($value);
+        
         if (empty($value)) {
             return 0;
         }
 
-        // Remove currency symbols and formatting
-        $cleaned = preg_replace('/[^\d.,\-]/', '', $value);
-        $cleaned = str_replace(',', '.', $cleaned);
+        // Remove all spaces and currency symbols
+        $cleaned = preg_replace('/\s+/', '', $value); // Remove all whitespace
+        $cleaned = preg_replace('/[^\d.,\-]/', '', $cleaned); // Remove non-numeric except . , -
+        
+        // Handle different decimal separators
+        // If has both comma and dot, assume dot is thousands separator (European format)
+        if (strpos($cleaned, '.') !== false && strpos($cleaned, ',') !== false) {
+            // Format: 1.234.567,89 (European) -> remove dots, replace comma with dot
+            $cleaned = str_replace('.', '', $cleaned);
+            $cleaned = str_replace(',', '.', $cleaned);
+        } elseif (strpos($cleaned, ',') !== false) {
+            // Only comma: could be decimal or thousands
+            // If only one comma and digits after it <= 2, it's decimal
+            $parts = explode(',', $cleaned);
+            if (count($parts) == 2 && strlen($parts[1]) <= 2) {
+                $cleaned = str_replace(',', '.', $cleaned); // Decimal separator
+            } else {
+                $cleaned = str_replace(',', '', $cleaned); // Thousands separator
+            }
+        } elseif (strpos($cleaned, '.') !== false) {
+            // Only dot: could be decimal or thousands
+            // If only one dot and digits after it <= 2, it's decimal
+            $parts = explode('.', $cleaned);
+            if (count($parts) == 2 && strlen($parts[1]) <= 2) {
+                // Already using dot as decimal, keep it
+            } else {
+                $cleaned = str_replace('.', '', $cleaned); // Thousands separator
+            }
+        }
 
         return (float) $cleaned;
     }
