@@ -748,40 +748,68 @@ class KontainerImportController extends Controller
                 // Parse tanggal mulai sewa (kolom 2)
                 if (isset($data[1]) && !empty(trim($data[1]))) {
                     $tanggalMulai = trim($data[1]);
+                    $parsedDate = null;
                     
-                    try {
-                        // Coba parse format d/M/Y (contoh: 01/Jan/2025)
-                        $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalMulai);
-                        $updateData['tanggal_mulai_sewa'] = $parsedDate->format('Y-m-d');
-                    } catch (\Exception $e) {
+                    // Coba berbagai format tanggal
+                    $formats = [
+                        'd/M/Y',   // 01/Jan/2025
+                        'd/M/y',   // 01/Jan/25
+                        'd M Y',   // 01 Jan 2025
+                        'd M y',   // 01 Jan 25 atau 18 Oct 21
+                        'd-M-Y',   // 01-Jan-2025
+                        'd-M-y',   // 01-Jan-25
+                        'Y-m-d',   // 2025-01-01
+                    ];
+                    
+                    foreach ($formats as $format) {
                         try {
-                            // Coba parse format Y-m-d (contoh: 2025-01-01)
-                            $parsedDate = \Carbon\Carbon::createFromFormat('Y-m-d', $tanggalMulai);
-                            $updateData['tanggal_mulai_sewa'] = $parsedDate->format('Y-m-d');
-                        } catch (\Exception $e2) {
-                            $errors[] = "Baris {$actualLine}: Format tanggal mulai sewa tidak valid '{$tanggalMulai}'. Gunakan format dd/mmm/yyyy (contoh: 01/Jan/2025)";
+                            $parsedDate = \Carbon\Carbon::createFromFormat($format, $tanggalMulai);
+                            if ($parsedDate) {
+                                $updateData['tanggal_mulai_sewa'] = $parsedDate->format('Y-m-d');
+                                break;
+                            }
+                        } catch (\Exception $e) {
                             continue;
                         }
+                    }
+                    
+                    if (!$parsedDate) {
+                        $errors[] = "Baris {$actualLine}: Format tanggal mulai sewa tidak valid '{$tanggalMulai}'. Gunakan format dd/mmm/yyyy, dd mmm yy, atau dd/mmm/yy";
+                        continue;
                     }
                 }
                 
                 // Parse tanggal selesai sewa (kolom 3)
                 if (isset($data[2]) && !empty(trim($data[2]))) {
                     $tanggalSelesai = trim($data[2]);
+                    $parsedDate = null;
                     
-                    try {
-                        // Coba parse format d/M/Y (contoh: 31/Dec/2025)
-                        $parsedDate = \Carbon\Carbon::createFromFormat('d/M/Y', $tanggalSelesai);
-                        $updateData['tanggal_selesai_sewa'] = $parsedDate->format('Y-m-d');
-                    } catch (\Exception $e) {
+                    // Coba berbagai format tanggal
+                    $formats = [
+                        'd/M/Y',   // 31/Dec/2025
+                        'd/M/y',   // 31/Dec/25
+                        'd M Y',   // 31 Dec 2025
+                        'd M y',   // 31 Dec 25 atau 18 Oct 21
+                        'd-M-Y',   // 31-Dec-2025
+                        'd-M-y',   // 31-Dec-25
+                        'Y-m-d',   // 2025-12-31
+                    ];
+                    
+                    foreach ($formats as $format) {
                         try {
-                            // Coba parse format Y-m-d (contoh: 2025-12-31)
-                            $parsedDate = \Carbon\Carbon::createFromFormat('Y-m-d', $tanggalSelesai);
-                            $updateData['tanggal_selesai_sewa'] = $parsedDate->format('Y-m-d');
-                        } catch (\Exception $e2) {
-                            $errors[] = "Baris {$actualLine}: Format tanggal selesai sewa tidak valid '{$tanggalSelesai}'. Gunakan format dd/mmm/yyyy (contoh: 31/Dec/2025)";
+                            $parsedDate = \Carbon\Carbon::createFromFormat($format, $tanggalSelesai);
+                            if ($parsedDate) {
+                                $updateData['tanggal_selesai_sewa'] = $parsedDate->format('Y-m-d');
+                                break;
+                            }
+                        } catch (\Exception $e) {
                             continue;
                         }
+                    }
+                    
+                    if (!$parsedDate) {
+                        $errors[] = "Baris {$actualLine}: Format tanggal selesai sewa tidak valid '{$tanggalSelesai}'. Gunakan format dd/mmm/yyyy, dd mmm yy, atau dd/mmm/yy";
+                        continue;
                     }
                 }
                 
