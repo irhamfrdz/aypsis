@@ -1312,7 +1312,10 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Restore checkbox state from localStorage on page load
-    restoreCheckboxState();
+    // Use setTimeout to ensure all elements are fully loaded
+    setTimeout(() => {
+        restoreCheckboxState();
+    }, 100);
     
     // Initialize bulk actions on page load
     updateBulkActions();
@@ -1405,21 +1408,37 @@ document.addEventListener('DOMContentLoaded', function() {
         try {
             const savedIds = JSON.parse(localStorage.getItem('daftar_tagihan_checked_ids') || '[]');
             console.log('Restoring checkbox state:', savedIds);
+            console.log('Available checkboxes:', rowCheckboxes.length);
             
             if (savedIds.length > 0) {
+                let restoredCount = 0;
+                
                 rowCheckboxes.forEach(checkbox => {
                     if (savedIds.includes(checkbox.value)) {
                         checkbox.checked = true;
+                        restoredCount++;
+                        console.log('Restored checkbox:', checkbox.value);
                     }
                 });
+                
+                console.log(`Restored ${restoredCount} out of ${savedIds.length} saved checkboxes`);
+                
                 updateSelectAllState();
                 updateBulkActions();
                 
-                // Show notification that selections were restored
-                setTimeout(() => {
-                    showNotification('success', 'Centangan Dipulihkan', 
-                        `${savedIds.length} item yang sebelumnya dicentang telah dipulihkan.`);
-                }, 500);
+                // Only show notification if some items were restored
+                if (restoredCount > 0) {
+                    setTimeout(() => {
+                        const notFoundCount = savedIds.length - restoredCount;
+                        const message = notFoundCount > 0 
+                            ? `${restoredCount} item dipulihkan. ${notFoundCount} item tidak ditemukan (mungkin difilter).`
+                            : `${restoredCount} item yang dicentang telah dipulihkan.`;
+                        
+                        showNotification('success', 'Centangan Dipulihkan', message, 3000);
+                    }, 500);
+                }
+            } else {
+                console.log('No saved checkbox state found');
             }
         } catch (error) {
             console.error('Error restoring checkbox state:', error);
@@ -1457,10 +1476,11 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Handle filter buttons to preserve checkbox state
-    document.querySelectorAll('a[href*="status="], a[href*="status_pranota="]').forEach(link => {
-        link.addEventListener('click', function() {
+    document.querySelectorAll('a[href*="status="], a[href*="status_pranota="], a[href*="daftar-tagihan-kontainer-sewa"], .pagination a').forEach(link => {
+        link.addEventListener('click', function(e) {
+            // Don't prevent default, just save state before navigation
             saveCheckboxState(); // Save current state before navigation
-            console.log('Filter link clicked, checkbox state saved');
+            console.log('Filter/navigation link clicked, checkbox state saved');
         });
     });
 
