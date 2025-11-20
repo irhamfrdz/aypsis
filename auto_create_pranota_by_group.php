@@ -162,7 +162,7 @@ try {
                 'keterangan' => $keterangan,
                 'total_amount' => $totalGrandTotal,
                 'jumlah_tagihan' => $items->count(),
-                'tagihan_kontainer_sewa_ids' => json_encode($tagihanIds),
+                'tagihan_kontainer_sewa_ids' => $tagihanIds, // Model akan otomatis encode karena cast 'array'
                 'status' => 'unpaid',
             ]);
             
