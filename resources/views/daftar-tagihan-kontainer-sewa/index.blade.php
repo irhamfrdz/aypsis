@@ -694,6 +694,19 @@ input[required]:focus {
                             </div>
                         </div>
                     </th>
+                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
+                        <div class="flex items-center justify-start space-x-0.5">
+                            <span>Nomor Bank</span>
+                            <div class="relative group">
+                                <svg class="icon-compact text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="width: 8px; height: 8px;">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <div class="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-2 py-1 bg-gray-800 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-20">
+                                    Nomor rekening bank
+                                </div>
+                            </div>
+                        </div>
+                    </th>
                     <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 55px;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>PPN</span>
@@ -857,7 +870,7 @@ input[required]:focus {
                                 Rp {{ number_format($originalDpp, 0, '.', ',') }}
                             </div>
                         </td>
-                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 text-right font-mono">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
                             <div class="group relative">
                                 @if(optional($tagihan)->adjustment && optional($tagihan)->adjustment != 0)
                                     @php
@@ -940,6 +953,20 @@ input[required]:focus {
                                         </svg>
                                     </button>
                                 </div>
+                            </div>
+                        </td>
+                        <!-- Kolom Nomor Bank -->
+                        <td class="px-1 py-0.5 whitespace-nowrap text-left text-[8px] text-gray-900" style="min-width: 100px;">
+                            <div class="relative group min-h-[30px] flex items-center">
+                                @if(optional($tagihan)->nomor_bank)
+                                    <div class="text-[8px] text-gray-700 w-full font-mono">
+                                        {{ optional($tagihan)->nomor_bank }}
+                                    </div>
+                                @else
+                                    <div class="text-[7px] text-gray-400 w-full">
+                                        -
+                                    </div>
+                                @endif
                             </div>
                         </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-[8px] text-gray-900 text-right font-mono">
