@@ -1530,24 +1530,45 @@ class DaftarTagihanKontainerSewaController extends Controller
                         'Vendor' => 'vendor',
                         'Kontainer' => 'nomor_kontainer',
                         'Nomor Kontainer' => 'nomor_kontainer', // Support "Nomor Kontainer" variant
+                        'nomor_kontainer' => 'nomor_kontainer',
                         'Size' => 'size',
+                        'size' => 'size',
                         'Awal' => 'tanggal_awal',
                         'Tanggal Awal' => 'tanggal_awal', // Support "Tanggal Awal" variant
+                        'tanggal_awal' => 'tanggal_awal',
                         'Akhir' => 'tanggal_akhir',
                         'Tanggal Akhir' => 'tanggal_akhir', // Support "Tanggal Akhir" variant
+                        'tanggal_akhir' => 'tanggal_akhir',
                         'Ukuran' => 'size',
                         'Harga' => 'tarif',
                         'Tarif' => 'tarif',
+                        'tarif' => 'tarif',
                         'Periode' => 'periode_input',
+                        'periode' => 'periode_input',
                         'Masa' => 'masa',
+                        'masa' => 'masa',
                         'Status' => 'status_type',
                         'Hari' => 'hari',
                         'DPP' => 'dpp',
+                        'dpp' => 'dpp',
                         'Adjustment' => 'adjustment',
+                        'adjustment' => 'adjustment',
+                        'Adjustment Note' => 'adjustment_note',
+                        'adjustment_note' => 'adjustment_note',
+                        'Nomor Bank' => 'nomor_bank',
+                        'nomor_bank' => 'nomor_bank',
+                        'Invoice Vendor' => 'invoice_vendor',
+                        'invoice_vendor' => 'invoice_vendor',
+                        'Tanggal Vendor' => 'tanggal_vendor',
+                        'tanggal_vendor' => 'tanggal_vendor',
                         'DPP Nilai Lain' => 'dpp_nilai_lain',
+                        'dpp_nilai_lain' => 'dpp_nilai_lain',
                         'PPN' => 'ppn',
+                        'ppn' => 'ppn',
                         'PPH' => 'pph',
+                        'pph' => 'pph',
                         'Grand Total' => 'grand_total',
+                        'grand_total' => 'grand_total',
                         'Status Pranota' => 'status_pranota',
                         'Pranota ID' => 'pranota_id',
                         'Keterangan' => 'keterangan',
@@ -1765,6 +1786,18 @@ class DaftarTagihanKontainerSewaController extends Controller
                 $tarifText = 'Harian';
             }
 
+            // Parse additional financial columns from CSV if provided
+            $adjustment = isset($data['adjustment']) ? $this->cleanNumber($data['adjustment']) : 0;
+            $adjustmentNote = isset($data['adjustment_note']) ? trim($data['adjustment_note']) : null;
+            $nomorBank = isset($data['nomor_bank']) ? trim($data['nomor_bank']) : null;
+            $invoiceVendor = isset($data['invoice_vendor']) ? trim($data['invoice_vendor']) : null;
+            $tanggalVendor = isset($data['tanggal_vendor']) ? $this->parseDate($data['tanggal_vendor']) : null;
+            $dppFromCsv = isset($data['dpp']) ? $this->cleanNumber($data['dpp']) : null;
+            $dppNilaiLain = isset($data['dpp_nilai_lain']) ? $this->cleanNumber($data['dpp_nilai_lain']) : null;
+            $ppn = isset($data['ppn']) ? $this->cleanNumber($data['ppn']) : null;
+            $pph = isset($data['pph']) ? $this->cleanNumber($data['pph']) : null;
+            $grandTotal = isset($data['grand_total']) ? $this->cleanNumber($data['grand_total']) : null;
+
             $cleaned = [
                 'vendor' => $vendor,
                 'nomor_kontainer' => strtoupper(trim($data['nomor_kontainer'] ?? '')),
@@ -1777,10 +1810,22 @@ class DaftarTagihanKontainerSewaController extends Controller
                 'status' => $this->cleanStatus($data['status'] ?? 'ongoing'),
                 'status_pranota' => null,
                 'pranota_id' => null,
+                // Additional columns from CSV
+                'adjustment' => $adjustment,
+                'adjustment_note' => $adjustmentNote,
+                'nomor_bank' => $nomorBank,
+                'invoice_vendor' => $invoiceVendor,
+                'tanggal_vendor' => $tanggalVendor,
                 // Store tarifNominal and jumlah hari aktual untuk perhitungan DPP
                 '_tarif_for_calculation' => $tarifNominal,
                 '_jumlah_hari_for_dpp' => $jumlahHariUntukDpp, // Jumlah hari aktual untuk DPP
                 '_is_bulanan' => $isBulanan ?? false, // Mark if this is monthly rate
+                // Store financial data from CSV if provided (will override calculation)
+                '_dpp_from_csv' => $dppFromCsv,
+                '_dpp_nilai_lain_from_csv' => $dppNilaiLain,
+                '_ppn_from_csv' => $ppn,
+                '_pph_from_csv' => $pph,
+                '_grand_total_from_csv' => $grandTotal,
             ];
         }
 
@@ -1819,8 +1864,18 @@ class DaftarTagihanKontainerSewaController extends Controller
             $cleaned['group'] = null;
         }
 
-        // Calculate financial data (skip if DPE format with existing financial data)
-        if (!$isDpeFormat || (!isset($cleaned['dpp']) || $cleaned['dpp'] == 0)) {
+        // Calculate financial data or use values from CSV
+        $hasFinancialDataInCsv = isset($cleaned['_dpp_from_csv']) && $cleaned['_dpp_from_csv'] > 0;
+        
+        if ($hasFinancialDataInCsv) {
+            // Use financial data from CSV
+            $cleaned['dpp'] = $cleaned['_dpp_from_csv'];
+            $cleaned['dpp_nilai_lain'] = $cleaned['_dpp_nilai_lain_from_csv'] ?? round($cleaned['dpp'] * 11/12, 2);
+            $cleaned['ppn'] = $cleaned['_ppn_from_csv'] ?? round($cleaned['dpp'] * 0.11, 2);
+            $cleaned['pph'] = $cleaned['_pph_from_csv'] ?? round($cleaned['dpp'] * 0.01, 2);
+            $cleaned['grand_total'] = $cleaned['_grand_total_from_csv'] ?? ($cleaned['dpp'] + $cleaned['ppn']);
+        } else if (!$isDpeFormat || (!isset($cleaned['dpp']) || $cleaned['dpp'] == 0)) {
+            // Calculate financial data from tariff
             $financialData = $this->calculateFinancialData($cleaned);
             $cleaned = array_merge($cleaned, $financialData);
         } else {
@@ -1831,11 +1886,21 @@ class DaftarTagihanKontainerSewaController extends Controller
         }
 
         // Remove temporary calculation keys before validation and saving
-        if (isset($cleaned['_tarif_for_calculation'])) {
-            unset($cleaned['_tarif_for_calculation']);
-        }
-        if (isset($cleaned['_is_bulanan'])) {
-            unset($cleaned['_is_bulanan']);
+        $temporaryKeys = [
+            '_tarif_for_calculation',
+            '_is_bulanan',
+            '_jumlah_hari_for_dpp',
+            '_dpp_from_csv',
+            '_dpp_nilai_lain_from_csv',
+            '_ppn_from_csv',
+            '_pph_from_csv',
+            '_grand_total_from_csv'
+        ];
+        
+        foreach ($temporaryKeys as $key) {
+            if (isset($cleaned[$key])) {
+                unset($cleaned[$key]);
+            }
         }
 
         // Validate business rules
