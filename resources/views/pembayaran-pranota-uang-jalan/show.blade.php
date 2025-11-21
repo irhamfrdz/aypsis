@@ -127,29 +127,41 @@
         <!-- Informasi Pranota -->
         <div class="bg-gray-50 rounded-lg p-4 border border-gray-200 mb-6">
             <h3 class="text-lg font-semibold text-gray-800 mb-4">Pranota Uang Jalan</h3>
-            @if($pembayaranPranotaUangJalan->pranotaUangJalan)
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div>
-                        <label class="{{ $labelClasses }}">Nomor Pranota</label>
-                        <div class="{{ $valueClasses }}">{{ $pembayaranPranotaUangJalan->pranotaUangJalan->nomor_pranota ?? '-' }}</div>
-                    </div>
-                    <div>
-                        <label class="{{ $labelClasses }}">Tanggal Pranota</label>
-                        <div class="{{ $valueClasses }}">
-                            @if($pembayaranPranotaUangJalan->pranotaUangJalan->tanggal_pranota)
-                                {{ \Carbon\Carbon::parse($pembayaranPranotaUangJalan->pranotaUangJalan->tanggal_pranota)->format('d/M/Y') }}
-                            @else
-                                -
-                            @endif
-                        </div>
-                    </div>
-                    <div>
-                        <label class="{{ $labelClasses }}">Status Pranota</label>
-                        <div class="{{ $valueClasses }}">{{ ucfirst($pembayaranPranotaUangJalan->pranotaUangJalan->status_pembayaran ?? 'pending') }}</div>
-                    </div>
+            @if($pembayaranPranotaUangJalan->pranotaUangJalans->count() > 0)
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-100">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Nomor Pranota</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Tanggal</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200">
+                            @foreach($pembayaranPranotaUangJalan->pranotaUangJalans as $pranota)
+                            <tr>
+                                <td class="px-4 py-2 text-sm">{{ $pranota->nomor_pranota }}</td>
+                                <td class="px-4 py-2 text-sm">
+                                    {{ $pranota->tanggal_pranota ? \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') : '-' }}
+                                </td>
+                                <td class="px-4 py-2 text-sm">
+                                    <span class="px-2 py-1 text-xs rounded-full
+                                        @if($pranota->status_pembayaran == 'paid') bg-green-100 text-green-800
+                                        @else bg-yellow-100 text-yellow-800 @endif">
+                                        {{ ucfirst($pranota->status_pembayaran) }}
+                                    </span>
+                                </td>
+                                <td class="px-4 py-2 text-sm text-right font-medium">
+                                    Rp {{ number_format($pranota->pivot->subtotal, 0, ',', '.') }}
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
                 </div>
             @else
-                <p class="text-sm text-gray-500">Informasi pranota tidak tersedia.</p>
+                <p class="text-sm text-gray-500">Tidak ada pranota terkait.</p>
             @endif
         </div>
 

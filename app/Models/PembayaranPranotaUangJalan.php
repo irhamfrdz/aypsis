@@ -13,7 +13,6 @@ class PembayaranPranotaUangJalan extends Model
     protected $table = 'pembayaran_pranota_uang_jalans';
 
     protected $fillable = [
-        'pranota_uang_jalan_id',
         'nomor_pembayaran',
         'nomor_accurate',
         'nomor_cetakan',
@@ -55,11 +54,33 @@ class PembayaranPranotaUangJalan extends Model
     const METHOD_GIRO = 'giro';
 
     /**
-     * Relationship with PranotaUangJalan
+     * Many-to-many relationship with PranotaUangJalan through pivot table
+     */
+    public function pranotaUangJalans()
+    {
+        return $this->belongsToMany(
+            PranotaUangJalan::class,
+            'pembayaran_pranota_uang_jalan_items',
+            'pembayaran_pranota_uang_jalan_id',
+            'pranota_uang_jalan_id'
+        )->withPivot('subtotal')->withTimestamps();
+    }
+
+    /**
+     * Get all items (pivot records)
+     */
+    public function items()
+    {
+        return $this->hasMany(PembayaranPranotaUangJalanItem::class, 'pembayaran_pranota_uang_jalan_id');
+    }
+
+    /**
+     * Backward compatibility - get first pranota (deprecated, use pranotaUangJalans instead)
+     * @deprecated
      */
     public function pranotaUangJalan()
     {
-        return $this->belongsTo(PranotaUangJalan::class, 'pranota_uang_jalan_id');
+        return $this->pranotaUangJalans()->first();
     }
 
     /**

@@ -79,11 +79,17 @@
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             {{ $item->tanggal_pembayaran->format('d/m/Y') }}
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {{ $item->pranotaUangJalan->nomor_pranota ?? '-' }}
-                            <div class="text-xs text-gray-400">
-                                {{ $item->pranotaUangJalan->jumlah_uang_jalan ?? 0 }} item uang jalan
-                            </div>
+                        <td class="px-6 py-4 text-sm text-gray-500">
+                            @if($item->pranotaUangJalans->count() > 0)
+                                @foreach($item->pranotaUangJalans->take(2) as $pranota)
+                                    <div>{{ $pranota->nomor_pranota }}</div>
+                                @endforeach
+                                @if($item->pranotaUangJalans->count() > 2)
+                                    <div class="text-xs text-gray-400">+{{ $item->pranotaUangJalans->count() - 2 }} lainnya</div>
+                                @endif
+                            @else
+                                <span class="text-gray-400">-</span>
+                            @endif
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 font-medium">
                             {{ $item->formatted_amount }}

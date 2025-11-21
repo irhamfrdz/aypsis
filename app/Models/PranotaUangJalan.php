@@ -52,11 +52,24 @@ class PranotaUangJalan extends Model
     }
 
     /**
-     * Get the pembayaran associated with this pranota.
+     * Get the pembayaran associated with this pranota (many-to-many).
+     */
+    public function pembayaranPranotaUangJalans()
+    {
+        return $this->belongsToMany(
+            PembayaranPranotaUangJalan::class,
+            'pembayaran_pranota_uang_jalan_items',
+            'pranota_uang_jalan_id',
+            'pembayaran_pranota_uang_jalan_id'
+        )->withPivot('subtotal')->withTimestamps();
+    }
+    
+    /**
+     * Legacy method for backward compatibility (deprecated).
      */
     public function pembayaranPranotaUangJalan()
     {
-        return $this->hasOne(PembayaranPranotaUangJalan::class, 'pranota_uang_jalan_id');
+        return $this->pembayaranPranotaUangJalans()->latest()->first();
     }
 
     /**

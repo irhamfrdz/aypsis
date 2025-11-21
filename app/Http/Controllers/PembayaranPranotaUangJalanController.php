@@ -35,7 +35,7 @@ class PembayaranPranotaUangJalanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PembayaranPranotaUangJalan::with(['pranotaUangJalan', 'createdBy', 'updatedBy']);
+        $query = PembayaranPranotaUangJalan::with(['pranotaUangJalans', 'createdBy', 'updatedBy']);
 
         // Filter by status
         if ($request->filled('status')) {
@@ -75,7 +75,7 @@ class PembayaranPranotaUangJalanController extends Controller
 
         // Only show unpaid pranota
         $pranotaUangJalanQuery->where('status_pembayaran', 'unpaid')
-            ->whereDoesntHave('pembayaranPranotaUangJalan');
+            ->whereDoesntHave('pembayaranPranotaUangJalans');
 
         // Filter by date range if provided
         if ($request->filled('start_date') && $request->filled('end_date')) {
@@ -145,32 +145,31 @@ class PembayaranPranotaUangJalanController extends Controller
             // Update nomor_terakhir for SIS modul
             $modulSis->increment('nomor_terakhir');
 
-            // Process each selected pranota
-            $totalProspeksCreated = 0;
-            $pembayaranIds = [];
+            // Prepare payment data (without pranota_uang_jalan_id)
+            $paymentData = $validated;
+            unset($paymentData['pranota_uang_jalan_ids']);
             
-            foreach ($validated['pranota_uang_jalan_ids'] as $index => $pranotaId) {
+            // Set payment details
+            $paymentData['nomor_pembayaran'] = $nomorPembayaran;
+            $paymentData['status_pembayaran'] = PembayaranPranotaUangJalan::STATUS_PAID;
+            $paymentData['created_by'] = Auth::id();
+            $paymentData['updated_by'] = Auth::id();
+
+            // Create ONE payment record
+            $pembayaran = PembayaranPranotaUangJalan::create($paymentData);
+
+            // Process each selected pranota and attach to payment via pivot table
+            $totalProspeksCreated = 0;
+            
+            foreach ($validated['pranota_uang_jalan_ids'] as $pranotaId) {
                 $pranota = PranotaUangJalan::with(['uangJalans'])->findOrFail($pranotaId);
                 
-                // Prepare payment data
-                $paymentData = $validated;
-                $paymentData['pranota_uang_jalan_id'] = $pranotaId;
-                // Use same payment number for all pranota in this transaction
-                $paymentData['nomor_pembayaran'] = $nomorPembayaran;
-                
-                // Remove array field (not needed in payment table)
-                unset($paymentData['pranota_uang_jalan_ids']);
-                
-                // Set status pembayaran as paid (setelah pembayaran berhasil disimpan)
-                $paymentData['status_pembayaran'] = PembayaranPranotaUangJalan::STATUS_PAID;
-                
-                // Set created and updated by
-                $paymentData['created_by'] = Auth::id();
-                $paymentData['updated_by'] = Auth::id();
-
-                // Create the payment
-                $pembayaran = PembayaranPranotaUangJalan::create($paymentData);
-                $pembayaranIds[] = $pembayaran->id;
+                // Attach pranota to payment via pivot table with subtotal
+                $pembayaran->pranotaUangJalans()->attach($pranotaId, [
+                    'subtotal' => $pranota->total_for_payment,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
 
                 // Update pranota status to paid
                 $pranota->update([
@@ -234,7 +233,8 @@ class PembayaranPranotaUangJalanController extends Controller
             DB::commit();
 
             // Prepare success message
-            $successMessage = 'Pembayaran berhasil disimpan untuk ' . count($pembayaranIds) . ' pranota uang jalan.';
+            $pranotaCount = count($validated['pranota_uang_jalan_ids']);
+            $successMessage = 'Pembayaran ' . $nomorPembayaran . ' berhasil disimpan untuk ' . $pranotaCount . ' pranota uang jalan.';
             if ($totalProspeksCreated > 0) {
                 $successMessage .= ' ' . $totalProspeksCreated . ' data prospek FCL/CARGO telah dibuat otomatis.';
             }
@@ -280,7 +280,7 @@ class PembayaranPranotaUangJalanController extends Controller
      */
     public function show(PembayaranPranotaUangJalan $pembayaranPranotaUangJalan)
     {
-        $pembayaranPranotaUangJalan->load(['pranotaUangJalan', 'createdBy', 'updatedBy']);
+        $pembayaranPranotaUangJalan->load(['pranotaUangJalans', 'createdBy', 'updatedBy']);
         
         return view('pembayaran-pranota-uang-jalan.show', compact('pembayaranPranotaUangJalan'));
     }
