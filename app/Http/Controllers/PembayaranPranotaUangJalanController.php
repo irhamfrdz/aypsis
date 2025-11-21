@@ -106,7 +106,8 @@ class PembayaranPranotaUangJalanController extends Controller
                       ->orderBy('nama_akun')
                       ->get();
 
-        $nomorPembayaran = PembayaranPranotaUangJalan::generateNomorPembayaran();
+        // Generate nomor pembayaran using SIS modul
+        $nomorPembayaran = $this->generateNomorPembayaranSIS();
 
         return view('pembayaran-pranota-uang-jalan.create', compact('pranotaUangJalans', 'nomorPembayaran', 'akunCoa'));
     }
@@ -120,6 +121,7 @@ class PembayaranPranotaUangJalanController extends Controller
             'pranota_uang_jalan_ids' => ['required', 'array', 'min:1'],
             'pranota_uang_jalan_ids.*' => ['exists:pranota_uang_jalans,id'],
             'nomor_pembayaran' => 'nullable|string',
+            'nomor_accurate' => 'nullable|string|max:255',
             'tanggal_pembayaran' => 'required|date',
             'jenis_transaksi' => ['required', Rule::in(['Debit', 'Kredit'])],
             'bank' => 'required|string|max:255',
@@ -134,8 +136,14 @@ class PembayaranPranotaUangJalanController extends Controller
         DB::beginTransaction();
 
         try {
-            // Generate nomor pembayaran jika kosong
-            $nomorPembayaran = $validated['nomor_pembayaran'] ?: PembayaranPranotaUangJalan::generateNomorPembayaran();
+            // Get SIS modul from nomor_terakhir
+            $modulSis = NomorTerakhir::where('modul', 'SIS')->firstOrFail();
+            
+            // Generate new payment number and increment
+            $nomorPembayaran = $this->generateNomorPembayaranSIS();
+            
+            // Update nomor_terakhir for SIS modul
+            $modulSis->increment('nomor_terakhir');
 
             // Process each selected pranota
             $totalProspeksCreated = 0;
@@ -149,7 +157,7 @@ class PembayaranPranotaUangJalanController extends Controller
                 $paymentData['pranota_uang_jalan_id'] = $pranotaId;
                 $paymentData['nomor_pembayaran'] = $nomorPembayaran . ($index > 0 ? '-' . ($index + 1) : '');
                 
-                // Remove array field
+                // Remove array field (not needed in payment table)
                 unset($paymentData['pranota_uang_jalan_ids']);
                 
                 // Set status pembayaran as paid (setelah pembayaran berhasil disimpan)
@@ -536,5 +544,54 @@ class PembayaranPranotaUangJalanController extends Controller
         }
 
         return $prospeksCreated;
+    }
+
+    /**
+     * Generate nomor pembayaran menggunakan modul SIS
+     * Format: SIS-[MM]-[YY]-[NNNNNN]
+     */
+    private function generateNomorPembayaranSIS()
+    {
+        // Get or create SIS modul
+        $modulSis = NomorTerakhir::firstOrCreate(
+            ['modul' => 'SIS'],
+            [
+                'nomor_terakhir' => 0,
+                'keterangan' => 'Nomor Pembayaran Pranota Uang Jalan'
+            ]
+        );
+
+        // Get current date
+        $now = now();
+        $bulan = $now->format('m'); // 2 digit month
+        $tahun = $now->format('y'); // 2 digit year
+        
+        // Get next running number
+        $runningNumber = str_pad($modulSis->nomor_terakhir + 1, 6, '0', STR_PAD_LEFT);
+        
+        // Format: SIS-MM-YY-NNNNNN
+        return "SIS-{$bulan}-{$tahun}-{$runningNumber}";
+    }
+
+    /**
+     * AJAX endpoint to generate new nomor pembayaran
+     */
+    public function generateNomor()
+    {
+        try {
+            $nomorPembayaran = $this->generateNomorPembayaranSIS();
+            
+            return response()->json([
+                'success' => true,
+                'nomor_pembayaran' => $nomorPembayaran
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error generating nomor pembayaran: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor pembayaran: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }

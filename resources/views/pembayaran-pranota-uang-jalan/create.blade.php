@@ -95,12 +95,25 @@
                 <div class="lg:col-span-2">
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Data Pembayaran</h4>
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-2">
                             <div>
-                                <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran</label>
-                                <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
-                                    value="{{ old('nomor_pembayaran') }}"
-                                    class="{{ $inputClasses }}" required placeholder="Masukkan nomor pembayaran">
+                                <label for="nomor_pembayaran" class="{{ $labelClasses }}">Nomor Pembayaran <span class="text-red-500">*</span></label>
+                                <div class="flex gap-1">
+                                    <input type="text" name="nomor_pembayaran" id="nomor_pembayaran"
+                                        value="{{ $nomorPembayaran ?? old('nomor_pembayaran') }}"
+                                        class="{{ $readonlyInputClasses }}" readonly required placeholder="Auto generate">
+                                    <button type="button" id="generateNomorBtn" class="px-2 py-1 bg-blue-500 hover:bg-blue-600 text-white text-xs rounded transition-colors" title="Generate nomor pembayaran">
+                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+                                        </svg>
+                                    </button>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="nomor_accurate" class="{{ $labelClasses }}">Nomor Accurate</label>
+                                <input type="text" name="nomor_accurate" id="nomor_accurate"
+                                    value="{{ old('nomor_accurate') }}"
+                                    class="{{ $inputClasses }}" placeholder="Masukkan nomor accurate">
                             </div>
                             <div>
                                 <label for="tanggal_kas" class="{{ $labelClasses }}">Tanggal Kas</label>
@@ -108,6 +121,17 @@
                                     value="{{ now()->format('d/M/Y') }}"
                                     class="{{ $readonlyInputClasses }}" readonly required>
                                 <input type="hidden" name="tanggal_pembayaran" id="tanggal_pembayaran" value="{{ now()->toDateString() }}">
+                            </div>
+                        </div>
+                        <div class="mt-2 p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
+                            <div class="flex items-start">
+                                <svg class="w-3 h-3 mr-1 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
+                                </svg>
+                                <div>
+                                    <strong>Format Nomor:</strong> SIS-[2 digit bulan]-[2 digit tahun]-[6 digit running number]<br>
+                                    <span class="text-xs">Contoh: SIS-11-25-000001 (Modul SIS, 11 = November, 25 = 2025, 000001 = urutan otomatis)</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -118,9 +142,17 @@
                     <div class="bg-gray-50 rounded-lg p-3 border border-gray-200">
                         <h4 class="text-sm font-semibold text-gray-800 mb-2">Bank & Transaksi (Double Book Accounting)</h4>
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            <div>
+                            <div class="relative">
                                 <label for="bank" class="{{ $labelClasses }}">Pilih Bank</label>
-                                <select name="bank" id="bank" class="{{ $inputClasses }}" required>
+                                <div class="relative">
+                                    <input type="text" id="bankSearch" placeholder="Cari bank..." 
+                                        class="mt-1 block w-full rounded-md border-gray-300 bg-white shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 text-sm p-2 transition-colors pr-8"
+                                        autocomplete="off">
+                                    <svg class="absolute right-2 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                                    </svg>
+                                </div>
+                                <select name="bank" id="bank" class="hidden" required>
                                     <option value="">-- Pilih Bank --</option>
                                     @if(isset($akunCoa))
                                         @foreach($akunCoa as $akun)
@@ -130,6 +162,14 @@
                                         @endforeach
                                     @endif
                                 </select>
+                                <div id="bankDropdown" class="hidden absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                                    <div id="bankOptions" class="py-1">
+                                        <!-- Options will be populated by JavaScript -->
+                                    </div>
+                                    <div id="noBankResults" class="hidden px-3 py-2 text-xs text-gray-500 text-center">
+                                        Tidak ada bank yang sesuai
+                                    </div>
+                                </div>
                             </div>
                             <div>
                                 <label for="jenis_transaksi" class="{{ $labelClasses }}">Jenis Transaksi</label>
@@ -390,7 +430,148 @@
 
 {{-- Script --}}
 <script>
-    // Search functionality
+    // Auto-generate nomor pembayaran functionality using SIS modul
+    document.addEventListener('DOMContentLoaded', function () {
+        const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
+        const generateBtn = document.getElementById('generateNomorBtn');
+
+        // Function to generate nomor pembayaran via AJAX
+        function generateNomorPembayaran() {
+            // Show loading state
+            if (generateBtn) {
+                generateBtn.disabled = true;
+                generateBtn.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>';
+            }
+
+            // Make AJAX call to generate new number
+            fetch('{{ route("pembayaran-pranota-uang-jalan.generate-nomor") }}', {
+                method: 'GET',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.nomor_pembayaran) {
+                    nomorPembayaranInput.value = data.nomor_pembayaran;
+                } else {
+                    alert('Gagal generate nomor pembayaran');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Terjadi kesalahan saat generate nomor pembayaran');
+            })
+            .finally(() => {
+                // Restore button state
+                if (generateBtn) {
+                    generateBtn.disabled = false;
+                    generateBtn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>';
+                }
+            });
+        }
+
+        // Manual generate button
+        if (generateBtn) {
+            generateBtn.addEventListener('click', generateNomorPembayaran);
+        }
+    });
+
+    // Bank search functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const bankSearch = document.getElementById('bankSearch');
+        const bankSelect = document.getElementById('bank');
+        const bankDropdown = document.getElementById('bankDropdown');
+        const bankOptions = document.getElementById('bankOptions');
+        const noBankResults = document.getElementById('noBankResults');
+
+        if (bankSearch && bankSelect && bankDropdown && bankOptions) {
+            // Build bank options list
+            const banks = Array.from(bankSelect.options).slice(1); // Skip first empty option
+            
+            function renderBankOptions(filteredBanks) {
+                bankOptions.innerHTML = '';
+                
+                if (filteredBanks.length === 0) {
+                    bankOptions.classList.add('hidden');
+                    noBankResults.classList.remove('hidden');
+                } else {
+                    bankOptions.classList.remove('hidden');
+                    noBankResults.classList.add('hidden');
+                    
+                    filteredBanks.forEach(option => {
+                        const div = document.createElement('div');
+                        div.className = 'px-3 py-2 text-sm hover:bg-indigo-50 cursor-pointer transition-colors';
+                        div.textContent = option.text;
+                        div.dataset.value = option.value;
+                        
+                        div.addEventListener('click', function() {
+                            bankSelect.value = this.dataset.value;
+                            bankSearch.value = this.textContent;
+                            bankDropdown.classList.add('hidden');
+                            
+                            // Trigger change event
+                            bankSelect.dispatchEvent(new Event('change'));
+                        });
+                        
+                        bankOptions.appendChild(div);
+                    });
+                }
+            }
+
+            // Show dropdown on focus
+            bankSearch.addEventListener('focus', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filtered = banks.filter(option => 
+                    option.text.toLowerCase().includes(searchTerm)
+                );
+                renderBankOptions(filtered);
+                bankDropdown.classList.remove('hidden');
+            });
+
+            // Filter on input
+            bankSearch.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase();
+                const filtered = banks.filter(option => 
+                    option.text.toLowerCase().includes(searchTerm)
+                );
+                renderBankOptions(filtered);
+                bankDropdown.classList.remove('hidden');
+                
+                // Clear selection if input is empty
+                if (!searchTerm) {
+                    bankSelect.value = '';
+                }
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!bankSearch.contains(e.target) && !bankDropdown.contains(e.target)) {
+                    bankDropdown.classList.add('hidden');
+                }
+            });
+
+            // Set initial value if bank was previously selected
+            if (bankSelect.value) {
+                const selectedOption = bankSelect.options[bankSelect.selectedIndex];
+                if (selectedOption) {
+                    bankSearch.value = selectedOption.text;
+                }
+            }
+
+            // Handle form reset
+            const form = document.getElementById('pembayaranForm');
+            if (form) {
+                form.addEventListener('reset', function() {
+                    bankSearch.value = '';
+                    bankSelect.value = '';
+                });
+            }
+        }
+    });
+
+    // Pranota search functionality
     document.addEventListener('DOMContentLoaded', function () {
         const searchInput = document.getElementById('searchPranota');
         const tableBody = document.getElementById('pranotaTableBody');
@@ -463,6 +644,14 @@
                 const checkedCheckboxes = document.querySelectorAll('.pranota-checkbox:checked');
                 const bankSelect = document.getElementById('bank');
                 const jenisTransaksiSelect = document.getElementById('jenis_transaksi');
+                const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
+
+                // Validasi nomor pembayaran
+                if (!nomorPembayaranInput.value) {
+                    e.preventDefault();
+                    showWarning('Nomor pembayaran belum digenerate. Silakan klik tombol refresh untuk generate nomor.', 'warning');
+                    return false;
+                }
 
                 // Validasi pranota yang dipilih
                 if (checkedCheckboxes.length === 0) {
@@ -587,30 +776,23 @@
         }
     });
 
-    // Validasi nomor pembayaran - pastikan tidak kosong
+    // Validasi nomor pembayaran format
     document.addEventListener('DOMContentLoaded', function () {
-        console.log('Script 3: Validasi nomor pembayaran');
+        console.log('Script 3: Validasi nomor pembayaran format');
         const nomorPembayaranInput = document.getElementById('nomor_pembayaran');
-        const pembayaranForm = document.getElementById('pembayaranForm');
-
-        // Tambahkan validasi nomor pembayaran ke form submit
-        if (pembayaranForm) {
-            const originalSubmitHandler = pembayaranForm.onsubmit;
-            pembayaranForm.addEventListener('submit', function(e) {
-                // Validasi nomor pembayaran
-                if (!nomorPembayaranInput.value.trim()) {
-                    e.preventDefault();
-                    showWarning('Nomor pembayaran harus diisi.', 'warning');
-                    nomorPembayaranInput.focus();
-                    return false;
-                }
+        
+        // Validasi format nomor pembayaran saat blur
+        if (nomorPembayaranInput) {
+            nomorPembayaranInput.addEventListener('blur', function() {
+                const value = this.value.trim();
                 
-                // Validasi format nomor pembayaran (minimal 3 karakter)
-                if (nomorPembayaranInput.value.trim().length < 3) {
-                    e.preventDefault();
-                    showWarning('Nomor pembayaran minimal 3 karakter.', 'warning');
-                    nomorPembayaranInput.focus();
-                    return false;
+                if (value && value.length > 0) {
+                    // Validasi format: XXX-MM-YY-NNNNNN
+                    const formatRegex = /^[A-Z0-9]{1,3}-\d{2}-\d{2}-\d{6}$/;
+                    
+                    if (!formatRegex.test(value)) {
+                        showWarning('Format nomor pembayaran tidak valid. Format yang benar: XXX-MM-YY-NNNNNN', 'warning');
+                    }
                 }
             });
         }

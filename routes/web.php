@@ -1807,6 +1807,9 @@ Route::get('/test-gate-in-ajax', function () {
             Route::get('/create', [PembayaranPranotaUangJalanController::class, 'create'])
                 ->name('create')
                 ->middleware('can:pembayaran-pranota-uang-jalan-create');
+            Route::get('/generate-nomor', [PembayaranPranotaUangJalanController::class, 'generateNomor'])
+                ->name('generate-nomor')
+                ->middleware('can:pembayaran-pranota-uang-jalan-create');
             Route::post('/', [PembayaranPranotaUangJalanController::class, 'store'])
                 ->name('store')
                 ->middleware('can:pembayaran-pranota-uang-jalan-create');

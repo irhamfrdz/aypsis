@@ -15,6 +15,7 @@ class PembayaranPranotaUangJalan extends Model
     protected $fillable = [
         'pranota_uang_jalan_id',
         'nomor_pembayaran',
+        'nomor_accurate',
         'nomor_cetakan',
         'tanggal_pembayaran',
         'bank',
