@@ -606,6 +606,9 @@ input[required]:focus {
                             <input type="checkbox" id="select-all" class="checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" style="width: 12px; height: 12px;">
                         </div>
                     </th>
+                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 35px;">
+                        <span>No</span>
+                    </th>
                     <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 70px;">
                         <div class="flex items-center space-x-1">
                             <span>Grup</span>
@@ -747,6 +750,12 @@ input[required]:focus {
                 @forelse($tagihans ?? [] as $index => $tagihan)
                     @php /** @var \App\Models\DaftarTagihanKontainerSewa $tagihan */ @endphp
                     <tr class="hover:bg-gray-50">
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
+                            <input type="checkbox" class="row-checkbox checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" value="{{ $tagihan->id }}" style="width: 12px; height: 12px;">
+                        </td>
+                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] font-medium text-gray-700">
+                            {{ ($tagihans->currentPage() - 1) * $tagihans->perPage() + $index + 1 }}
+                        </td>
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
                             <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" style="width: 12px; height: 12px;">
                         </td>
