@@ -247,12 +247,7 @@
                                     @if(count($imagePaths) > 0)
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         @foreach($imagePaths as $index => $imagePath)
-                                        @php
-                                            // Skip if imagePath is null or empty
-                                            if (empty($imagePath) || !is_string($imagePath)) {
-                                                continue;
-                                            }
-                                        @endphp
+                                        @if(!empty($imagePath) && is_string($imagePath))
                                         <div class="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
                                             <a href="{{ asset('storage/' . $imagePath) }}" 
                                                target="_blank" 
@@ -301,6 +296,7 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        @endif
                                         @endforeach
                                     </div>
                                     <p class="text-xs text-gray-500 mt-2">
