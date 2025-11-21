@@ -41,16 +41,39 @@ class DaftarTagihanKontainerSewaController extends Controller
         $query->where('nomor_kontainer', 'NOT LIKE', 'GROUP_SUMMARY_%')
               ->where('nomor_kontainer', 'NOT LIKE', 'GROUP_TEMPLATE%');
 
-        // Handle search functionality - show only matching containers
+        // Handle search functionality - show matching containers and all containers in the same group
         if ($request->filled('q')) {
             $searchTerm = $request->input('q');
 
-            // Direct search - show only containers that match the search term
-            $query->where(function ($q) use ($searchTerm) {
+            // First, find all matching containers
+            $matchingContainers = DaftarTagihanKontainerSewa::where(function ($q) use ($searchTerm) {
                 $q->where('vendor', 'LIKE', '%' . $searchTerm . '%')
                   ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
                   ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
                   ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+            })->get();
+
+            // Collect all group names from matching containers
+            $groupNames = $matchingContainers->where('group', '!=', null)
+                                             ->where('group', '!=', '')
+                                             ->pluck('group')
+                                             ->unique()
+                                             ->values();
+
+            // Now apply the filter: show direct matches OR containers in the same groups
+            $query->where(function ($q) use ($searchTerm, $groupNames) {
+                // Show containers that directly match the search term
+                $q->where(function ($subQ) use ($searchTerm) {
+                    $subQ->where('vendor', 'LIKE', '%' . $searchTerm . '%')
+                         ->orWhere('nomor_kontainer', 'LIKE', '%' . $searchTerm . '%')
+                         ->orWhere('group', 'LIKE', '%' . $searchTerm . '%')
+                         ->orWhere('invoice_vendor', 'LIKE', '%' . $searchTerm . '%');
+                });
+
+                // OR show all containers that belong to the same groups as matching containers
+                if ($groupNames->isNotEmpty()) {
+                    $q->orWhereIn('group', $groupNames);
+                }
             });
         }
 
@@ -180,7 +203,7 @@ class DaftarTagihanKontainerSewaController extends Controller
     public function create()
     {
         // Get all containers with vendor information
-        $containersData = \App\Models\Kontainer::select('nomor_seri_gabungan', 'vendor')
+        $containersData = \App\Models\Kontainer::select('nomor_seri_gabungan', 'vendor', 'ukuran')
             ->whereNotNull('nomor_seri_gabungan')
             ->whereNotNull('vendor')
             ->orderBy('nomor_seri_gabungan')

@@ -91,6 +91,7 @@
                                     @foreach($containersData as $container)
                                         <option value="{{ $container->nomor_seri_gabungan }}" 
                                                 data-vendor="{{ $container->vendor }}"
+                                                data-size="{{ $container->ukuran }}"
                                                 {{ old('nomor_kontainer') == $container->nomor_seri_gabungan ? 'selected' : '' }}
                                                 style="display: none;">
                                             {{ $container->nomor_seri_gabungan }}
@@ -132,6 +133,37 @@
                                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
                                    placeholder="Kosongkan jika tidak ada grup">
                             @error('group')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Invoice Vendor -->
+                        <div>
+                            <label for="invoice_vendor" class="block text-sm font-medium text-gray-700 mb-2">
+                                Invoice Vendor
+                            </label>
+                            <input type="text" 
+                                   name="invoice_vendor" 
+                                   id="invoice_vendor" 
+                                   value="{{ old('invoice_vendor') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('invoice_vendor') border-red-500 @enderror"
+                                   placeholder="Nomor Invoice Vendor">
+                            @error('invoice_vendor')
+                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <!-- Tanggal Invoice Vendor -->
+                        <div>
+                            <label for="tanggal_invoice_vendor" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Invoice Vendor
+                            </label>
+                            <input type="date" 
+                                   name="tanggal_invoice_vendor" 
+                                   id="tanggal_invoice_vendor" 
+                                   value="{{ old('tanggal_invoice_vendor') }}"
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 @error('tanggal_invoice_vendor') border-red-500 @enderror">
+                            @error('tanggal_invoice_vendor')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
                         </div>
@@ -413,6 +445,121 @@ function filterContainersByVendor() {
     });
 }
 
+// Auto-fill size when container is selected
+function fillContainerSize() {
+    const containerSelect = document.getElementById('nomor_kontainer');
+    const sizeSelect = document.getElementById('size');
+    const selectedOption = containerSelect.options[containerSelect.selectedIndex];
+    
+    if (selectedOption && selectedOption.value) {
+        const size = selectedOption.getAttribute('data-size');
+        if (size) {
+            sizeSelect.value = size;
+        }
+    }
+}
+
+// Format date to ddmmmyyyy
+function formatDateToDDMMMYYYY(dateString) {
+    if (!dateString) return '';
+    
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return '';
+    
+    const day = String(date.getDate()).padStart(2, '0');
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const month = months[date.getMonth()];
+    const year = date.getFullYear();
+    
+    return `${day}${month}${year}`;
+}
+
+// Convert ddmmmyyyy to yyyy-mm-dd for input value
+function parseDDMMMYYYY(dateString) {
+    if (!dateString) return '';
+    
+    // Match format like 21Nov2024
+    const regex = /^(\d{2})([A-Za-z]{3})(\d{4})$/;
+    const match = dateString.match(regex);
+    
+    if (!match) return '';
+    
+    const day = match[1];
+    const monthStr = match[2];
+    const year = match[3];
+    
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthIndex = months.findIndex(m => m.toLowerCase() === monthStr.toLowerCase());
+    
+    if (monthIndex === -1) return '';
+    
+    const month = String(monthIndex + 1).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Setup date input formatting
+function setupDateFormatting(inputId) {
+    const input = document.getElementById(inputId);
+    if (!input) return;
+    
+    // Store the actual date value
+    input.dataset.actualValue = input.value;
+    
+    // Create a display element
+    const displaySpan = document.createElement('span');
+    displaySpan.className = 'absolute left-3 top-1/2 -translate-y-1/2 text-gray-700 pointer-events-none';
+    displaySpan.style.display = 'none';
+    
+    // Wrap input in relative container
+    const wrapper = document.createElement('div');
+    wrapper.className = 'relative';
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+    wrapper.appendChild(displaySpan);
+    
+    // Update display when date changes
+    input.addEventListener('change', function() {
+        const formatted = formatDateToDDMMMYYYY(this.value);
+        if (formatted) {
+            displaySpan.textContent = formatted;
+            displaySpan.style.display = 'block';
+            this.style.color = 'transparent';
+        } else {
+            displaySpan.style.display = 'none';
+            this.style.color = '';
+        }
+        this.dataset.actualValue = this.value;
+    });
+    
+    // Show formatted date on load if value exists
+    if (input.value) {
+        const formatted = formatDateToDDMMMYYYY(input.value);
+        if (formatted) {
+            displaySpan.textContent = formatted;
+            displaySpan.style.display = 'block';
+            input.style.color = 'transparent';
+        }
+    }
+    
+    // Reset color when focused
+    input.addEventListener('focus', function() {
+        this.style.color = '';
+        displaySpan.style.display = 'none';
+    });
+    
+    // Reapply formatting when blurred
+    input.addEventListener('blur', function() {
+        if (this.value) {
+            const formatted = formatDateToDDMMMYYYY(this.value);
+            if (formatted) {
+                displaySpan.textContent = formatted;
+                displaySpan.style.display = 'block';
+                this.style.color = 'transparent';
+            }
+        }
+    });
+}
+
 // Auto-calculate Grand Total
 document.addEventListener('DOMContentLoaded', function() {
     const dppInput = document.getElementById('dpp');
@@ -420,9 +567,18 @@ document.addEventListener('DOMContentLoaded', function() {
     const pphInput = document.getElementById('pph');
     const grandTotalInput = document.getElementById('grand_total');
     const dppNilaiLainInput = document.getElementById('dpp_nilai_lain');
+    const containerSelect = document.getElementById('nomor_kontainer');
     
     // Initialize container filtering on page load
     filterContainersByVendor();
+    
+    // Listen to container selection changes
+    containerSelect.addEventListener('change', fillContainerSize);
+    
+    // Setup date formatting for all date inputs
+    setupDateFormatting('tanggal_awal');
+    setupDateFormatting('tanggal_akhir');
+    setupDateFormatting('tanggal_invoice_vendor');
 
     function calculateGrandTotal() {
         const dpp = parseFloat(dppInput.value) || 0;

@@ -229,11 +229,11 @@ input[required]:focus {
 
                 <!-- Import CSV (New with Modal) -->
                 @can('tagihan-kontainer-sewa-create')
-                <button type="button" onclick="openImportModal()" class="bg-teal-600 hover:bg-teal-700 text-white px-2 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <button type="button" onclick="openImportModal()" class="bg-cyan-600 hover:bg-cyan-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center font-medium shadow-sm border border-cyan-700">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                     </svg>
-                    Import CSV
+                    📊 Import CSV
                 </button>
                 @endcan
 
