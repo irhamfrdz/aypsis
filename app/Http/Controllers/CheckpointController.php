@@ -346,28 +346,11 @@ class CheckpointController extends Controller
             abort(403, 'Anda tidak memiliki akses ke surat jalan ini. User: ' . $userName . ', Surat Jalan Supir: ' . $suratJalan->supir);
         }
 
-        // Get kegiatan name from master kegiatan if available
-        $kegiatanName = \App\Models\MasterKegiatan::where('kode_kegiatan', $suratJalan->kegiatan)
-                        ->value('nama_kegiatan') ?? $suratJalan->kegiatan;
-
-        $kegiatanLower = strtolower($kegiatanName);
-        $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false &&
-                                stripos($kegiatanLower, 'kontainer') !== false &&
-                                stripos($kegiatanLower, 'sewa') !== false);
-
-        // Filter kontainer berdasarkan kegiatan dan ukuran
-        if ($isAntarKontainerSewa) {
-            // Untuk antar kontainer sewa, filter berdasarkan ukuran dan status tersedia
-            $kontainerList = Kontainer::where('ukuran', $suratJalan->size)
-                                    ->where('status', 'Tersedia')
-                                    ->orderBy('nomor_seri_gabungan')
-                                    ->get();
-        } else {
-            // Untuk kegiatan lain, ambil kontainer sesuai vendor dan kondisi lainnya
-            $kontainerList = Kontainer::where('ukuran', $suratJalan->size)
-                                    ->orderBy('nomor_seri_gabungan')
-                                    ->get();
-        }
+        // Untuk surat jalan, ambil kontainer dengan status Tersedia
+        $kontainerList = Kontainer::where('ukuran', $suratJalan->size)
+                                ->where('status', 'Tersedia')
+                                ->orderBy('nomor_seri_gabungan')
+                                ->get();
 
         // Ambil stock kontainer berdasarkan ukuran surat jalan (20ft atau 40ft)
         $stockKontainers = \App\Models\StockKontainer::where('ukuran', $suratJalan->size)

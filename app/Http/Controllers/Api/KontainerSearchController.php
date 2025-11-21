@@ -29,15 +29,8 @@ class KontainerSearchController extends Controller
                 $kontainerQuery->where('ukuran', $ukuran);
             }
             
-            // Apply kegiatan-based filters
-            $kegiatanLower = strtolower($kegiatan);
-            $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false &&
-                                    stripos($kegiatanLower, 'kontainer') !== false &&
-                                    stripos($kegiatanLower, 'sewa') !== false);
-            
-            if ($isAntarKontainerSewa) {
-                $kontainerQuery->where('status', 'Tersedia');
-            }
+            // For surat jalan, filter kontainers table by status Tersedia
+            $kontainerQuery->where('status', 'Tersedia');
             
             $kontainers = $kontainerQuery->orderBy('nomor_seri_gabungan')
                                         ->limit(15)
@@ -84,14 +77,8 @@ class KontainerSearchController extends Controller
                 $stockQuery->where('ukuran', $ukuran);
             }
             
-            $kegiatanLower = strtolower($kegiatan);
-            $isAntarKontainerSewa = (stripos($kegiatanLower, 'antar') !== false &&
-                                    stripos($kegiatanLower, 'kontainer') !== false &&
-                                    stripos($kegiatanLower, 'sewa') !== false);
-            
-            if ($isAntarKontainerSewa) {
-                $kontainerQuery->where('status', 'Tersedia');
-            }
+            // For surat jalan, filter kontainers table by status Tersedia
+            $kontainerQuery->where('status', 'Tersedia');
             
             $kontainers = $kontainerQuery->orderBy('nomor_seri_gabungan')->limit(10)->get();
             $stocks = $stockQuery->orderBy('nomor_seri_gabungan')->limit(10)->get();
