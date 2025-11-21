@@ -159,8 +159,14 @@
             <!-- Pilih Pranota Uang Jalan -->
             <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                 <div class="bg-gray-50 px-3 py-2 border-b border-gray-200">
-                    <h4 class="text-sm font-semibold text-gray-800">Pilih Pranota Uang Jalan</h4>
-                    <p class="text-xs text-blue-600 mt-1">
+                    <div class="flex items-center justify-between mb-2">
+                        <h4 class="text-sm font-semibold text-gray-800">Pilih Pranota Uang Jalan</h4>
+                        <div class="flex items-center gap-2">
+                            <input type="text" id="searchPranota" placeholder="Cari nomor pranota, supir, tujuan..." class="px-3 py-1.5 text-xs border border-gray-300 rounded-md focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 w-64">
+                            <span id="searchCounter" class="text-xs text-gray-600"></span>
+                        </div>
+                    </div>
+                    <p class="text-xs text-blue-600">
                         <svg class="w-3 h-3 inline mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path>
                         </svg>
@@ -184,9 +190,9 @@
                                 <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody id="pranotaTableBody" class="bg-white divide-y divide-gray-200">
                             @forelse ($pranotaUangJalans as $pranota)
-                                <tr class="hover:bg-gray-50 transition-colors">
+                                <tr class="pranota-row hover:bg-gray-50 transition-colors" data-search="{{ strtolower($pranota->nomor_pranota ?? '') }}">
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox" name="pranota_uang_jalan_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" data-total="{{ $pranota->total_for_payment }}">
                                     </td>
@@ -295,12 +301,17 @@
                                     </td>
                                 </tr>
                             @empty
-                                <tr>
+                                <tr id="emptyRow">
                                     <td colspan="9" class="px-2 py-4 text-center text-xs text-gray-500">
                                         Tidak ada pranota uang jalan yang tersedia.
                                     </td>
                                 </tr>
                             @endforelse
+                            <tr id="noResultsRow" class="hidden">
+                                <td colspan="9" class="px-2 py-4 text-center text-xs text-gray-500">
+                                    Tidak ada hasil yang sesuai dengan pencarian.
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
@@ -379,6 +390,58 @@
 
 {{-- Script --}}
 <script>
+    // Search functionality
+    document.addEventListener('DOMContentLoaded', function () {
+        const searchInput = document.getElementById('searchPranota');
+        const tableBody = document.getElementById('pranotaTableBody');
+        const searchCounter = document.getElementById('searchCounter');
+        const noResultsRow = document.getElementById('noResultsRow');
+        const emptyRow = document.getElementById('emptyRow');
+        
+        if (searchInput && tableBody) {
+            searchInput.addEventListener('input', function() {
+                const searchTerm = this.value.toLowerCase().trim();
+                const rows = tableBody.querySelectorAll('.pranota-row');
+                let visibleCount = 0;
+                let totalCount = rows.length;
+                
+                rows.forEach(row => {
+                    // Get all text content from the row
+                    const nomorPranota = row.querySelector('td:nth-child(2)')?.textContent.toLowerCase() || '';
+                    const supir = row.querySelector('td:nth-child(4)')?.textContent.toLowerCase() || '';
+                    const tujuan = row.querySelector('td:nth-child(5)')?.textContent.toLowerCase() || '';
+                    const tipe = row.querySelector('td:nth-child(6)')?.textContent.toLowerCase() || '';
+                    
+                    // Combine all searchable text
+                    const searchableText = nomorPranota + ' ' + supir + ' ' + tujuan + ' ' + tipe;
+                    
+                    if (searchableText.includes(searchTerm)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                
+                // Update counter
+                if (searchTerm) {
+                    searchCounter.textContent = `${visibleCount} dari ${totalCount} pranota`;
+                } else {
+                    searchCounter.textContent = '';
+                }
+                
+                // Show/hide no results message
+                if (visibleCount === 0 && totalCount > 0) {
+                    if (noResultsRow) noResultsRow.classList.remove('hidden');
+                    if (emptyRow) emptyRow.classList.add('hidden');
+                } else {
+                    if (noResultsRow) noResultsRow.classList.add('hidden');
+                    if (emptyRow && totalCount === 0) emptyRow.classList.remove('hidden');
+                }
+            });
+        }
+    });
+
     document.addEventListener('DOMContentLoaded', function () {
         console.log('Script 1: DOM loaded');
         const selectAllCheckbox = document.getElementById('select-all');

@@ -703,6 +703,8 @@
         $user->can('order-update') ||
         $user->can('order-delete') ||
         $user->can('pranota-uang-jalan-view') ||
+        $user->can('uang-jalan-view') ||
+        $user->can('pembayaran-pranota-uang-jalan-view') ||
         $user->can('pranota-rit-view') ||
         $user->can('pranota-uang-rit-view') ||
         $user->can('surat-jalan-view') ||
@@ -777,7 +779,7 @@
         {{-- Aktivitas Supir Sub-Dropdown --}}
         @php
             $isAktivitasSupirRoute = Request::routeIs('permohonan.*') || Request::routeIs('pranota-supir.*') || Request::routeIs('pembayaran-pranota-supir.*') || Request::routeIs('orders.*') || Request::routeIs('pranota-uang-jalan.*') || Request::routeIs('uang-jalan.*') || Request::routeIs('pembayaran-pranota-uang-jalan.*') || Request::routeIs('pranota-rit.*') || Request::routeIs('pranota-uang-rit.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('surat-jalan-bongkaran.*');
-            $hasAktivitasSupirPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || $user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete') || $user->can('pranota-uang-jalan-view') || $user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view') || $user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete') || $user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
+            $hasAktivitasSupirPermissions = $user && ($user->can('permohonan-memo-view') || $user->can('pranota-supir-view') || $user->can('pembayaran-pranota-supir-view') || $user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete') || $user->can('pranota-uang-jalan-view') || $user->can('uang-jalan-view') || $user->can('pembayaran-pranota-uang-jalan-view') || $user->can('pranota-rit-view') || $user->can('pranota-uang-rit-view') || $user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete') || $user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
         @endphp
 
         @if($hasAktivitasSupirPermissions)
