@@ -61,7 +61,7 @@
                                 Informasi Surat Jalan
                             </h3>
 
-                            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label for="tanggal_surat_jalan" class="block text-xs font-medium text-gray-500 mb-2">
                                         Tanggal Surat Jalan
@@ -82,18 +82,6 @@
                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono"
                                            value="{{ old('nomor_surat_jalan', $suratJalan->no_surat_jalan) }}"
                                            placeholder="Nomor surat jalan">
-                                </div>
-                                <div>
-                                    <label for="rit" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Rit
-                                    </label>
-                                    <select name="rit"
-                                            id="rit"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                        <option value="">Pilih Status Rit</option>
-                                        <option value="menggunakan_rit" {{ old('rit', $suratJalan->rit) == 'menggunakan_rit' ? 'selected' : '' }}>Menggunakan Rit</option>
-                                        <option value="tidak_menggunakan_rit" {{ old('rit', $suratJalan->rit) == 'tidak_menggunakan_rit' ? 'selected' : '' }}>Tidak Menggunakan Rit</option>
-                                    </select>
                                 </div>
                             </div>
                         </div>
@@ -497,45 +485,6 @@
                                 </div>
                             </div>
 
-                            <!-- Data Packing/Pengamanan -->
-                            <div class="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4">
-                                <div>
-                                    <label for="karton" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Karton
-                                    </label>
-                                    <select name="karton"
-                                            id="karton"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                        <option value="">Pilih Status Karton</option>
-                                        <option value="pakai" {{ old('karton', $suratJalan->karton) == 'pakai' ? 'selected' : '' }}>Pakai</option>
-                                        <option value="tidak_pakai" {{ old('karton', $suratJalan->karton) == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="plastik" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Plastik
-                                    </label>
-                                    <select name="plastik"
-                                            id="plastik"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                        <option value="">Pilih Status Plastik</option>
-                                        <option value="pakai" {{ old('plastik', $suratJalan->plastik) == 'pakai' ? 'selected' : '' }}>Pakai</option>
-                                        <option value="tidak_pakai" {{ old('plastik', $suratJalan->plastik) == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
-                                    </select>
-                                </div>
-                                <div>
-                                    <label for="terpal" class="block text-xs font-medium text-gray-500 mb-2">
-                                        Terpal
-                                    </label>
-                                    <select name="terpal"
-                                            id="terpal"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm">
-                                        <option value="">Pilih Status Terpal</option>
-                                        <option value="pakai" {{ old('terpal', $suratJalan->terpal) == 'pakai' ? 'selected' : '' }}>Pakai</option>
-                                        <option value="tidak_pakai" {{ old('terpal', $suratJalan->terpal) == 'tidak_pakai' ? 'selected' : '' }}>Tidak Pakai</option>
-                                    </select>
-                                </div>
-                            </div>
                         </div>
 
                         <!-- Separator: Form Surat Jalan End -->
