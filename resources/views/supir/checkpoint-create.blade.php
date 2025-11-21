@@ -265,29 +265,23 @@
                                 </label>
                                 @for ($i = 0; $i < $suratJalan->jumlah_kontainer; $i++)
                                     <div class="relative mt-1">
-                                        <label class="block text-xs font-medium text-gray-500 mb-1">Kontainer #{{ $i + 1 }}</label>
+                                        <label class="block text-xs font-medium text-gray-500 mb-1">
+                                            Kontainer #{{ $i + 1 }}
+                                            @if($suratJalan->nomor_kontainer && $i == 0)
+                                                <span class="ml-2 text-xs font-normal text-green-600">✓ Pre-filled dari surat jalan</span>
+                                            @endif
+                                        </label>
                                         
                                         @if($suratJalan->nomor_kontainer && $i == 0)
-                                            {{-- If nomor kontainer already filled in surat jalan, show as input (editable) --}}
-                                            <div class="flex items-center gap-2">
-                                                <input type="text" 
-                                                       name="nomor_kontainer[]" 
-                                                       value="{{ $suratJalan->nomor_kontainer }}"
-                                                       class="flex-1 block w-full rounded-lg border-2 border-green-300 bg-green-50 shadow focus:ring-2 focus:ring-green-500 focus:border-green-500 transition p-2.5" 
-                                                       placeholder="Nomor kontainer"
-                                                       required>
-                                                <span class="text-xs text-green-600 whitespace-nowrap">Pre-filled</span>
-                                            </div>
-                                            <p class="text-xs text-gray-500 mt-1">Data dari surat jalan. Anda bisa mengubah jika ada perubahan.</p>
+                                            {{-- If nomor kontainer already filled, show select with pre-selected value --}}
+                                            <select name="nomor_kontainer[]" class="select-kontainer block w-full rounded-lg border-2 border-green-300 bg-green-50 shadow focus:ring-2 focus:ring-green-500 focus:border-green-500 transition p-2.5 pr-10" required>
+                                                <option value="{{ $suratJalan->nomor_kontainer }}" selected>{{ $suratJalan->nomor_kontainer }}</option>
+                                            </select>
+                                            <p class="text-xs text-gray-500 mt-1">Data dari surat jalan. Ketik untuk mencari nomor lain jika ada perubahan.</p>
                                         @else
                                             {{-- Otherwise show dropdown to select --}}
                                             <select name="nomor_kontainer[]" class="select-kontainer block w-full rounded-lg border border-indigo-300 bg-white shadow focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 transition p-2.5 pr-10" required>
                                                 <option value="">-- Pilih Kontainer #{{ $i + 1 }} --</option>
-                                                @if(isset($stockKontainers) && $stockKontainers->isNotEmpty())
-                                                    @foreach($stockKontainers as $stock)
-                                                        <option value="{{ $stock->nomor_seri_gabungan }}">{{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }}ft ({{ ucfirst($stock->status) }})</option>
-                                                    @endforeach
-                                                @endif
                                             </select>
                                         @endif
                                     </div>
