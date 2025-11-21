@@ -737,7 +737,10 @@ class KaryawanController extends Controller
             $pekerjaanByDivisi[$divisi][] = $pekerjaan->nama_pekerjaan;
         }
 
-        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi'));
+        // Generate next NIK for auto-fill
+        $nextNik = Karyawan::generateNextNik();
+
+        return view('master-karyawan.create', compact('divisis', 'pekerjaans', 'pajaks', 'cabangs', 'banks', 'pekerjaanByDivisi', 'nextNik'));
     }
 
     /**

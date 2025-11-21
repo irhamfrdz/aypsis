@@ -327,6 +327,19 @@
 
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
+                                    <label for="supir" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Nama Supir
+                                    </label>
+                                    <input type="text"
+                                           name="supir"
+                                           id="supir"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded bg-gray-100 text-sm cursor-not-allowed"
+                                           value="{{ old('supir', $suratJalan->supir) }}"
+                                           placeholder="Nama supir"
+                                           readonly
+                                           disabled>
+                                </div>
+                                <div>
                                     <label for="supir_pengganti" class="block text-xs font-medium text-gray-500 mb-2">
                                         Supir Pengganti
                                     </label>

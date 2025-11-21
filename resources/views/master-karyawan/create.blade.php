@@ -77,8 +77,8 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                         <label for="nik" class="{{ $labelClasses }}">NIK <span class="text-red-500">*</span></label>
-                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }}" required placeholder="Masukkan NIK karyawan" value="{{ old('nik') }}">
-                        <p class="text-xs text-gray-500 mt-1">Masukkan NIK unik untuk karyawan</p>
+                        <input type="text" name="nik" id="nik" class="{{ $inputClasses }} bg-green-50" required readonly value="{{ old('nik', $nextNik ?? '') }}">
+                        <p class="text-xs text-green-600 mt-1 font-medium">✅ NIK otomatis: {{ $nextNik ?? '' }} (Running number dari 1514)</p>
                         <div id="nikError" class="text-xs text-red-600 mt-1 hidden">NIK wajib diisi</div>
                     </div>
 

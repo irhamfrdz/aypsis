@@ -87,30 +87,30 @@ class Karyawan extends Model
     }
 
     /**
-     * Generate the next available NIK starting from 1503
-     * This will use a specific range (1503-9999) for new employees,
+     * Generate the next available NIK starting from 1514
+     * This will use a specific range (1514-9999) for new employees,
      * ignoring any existing higher NIKs from the old system
      *
      * @return string
      */
     public static function generateNextNik(): string
     {
-        // Define the range for new NIK system: 1503 to 9999
-        $minNik = 1503;
+        // Define the range for new NIK system: 1514 to 9999
+        $minNik = 1514;
         $maxNik = 9999;
 
-        // FORCED: Always start from 1503 and find the next available NIK
+        // FORCED: Always start from 1514 and find the next available NIK
         // This ignores any existing NIKs outside our intended range
         $nextNikNumber = $minNik;
 
-        // Find the next available NIK starting from 1503
+        // Find the next available NIK starting from 1514
         while ($nextNikNumber <= $maxNik && self::where('nik', (string)$nextNikNumber)->exists()) {
             $nextNikNumber++;
         }
 
         // If we've exceeded our range, throw an exception
         if ($nextNikNumber > $maxNik) {
-            throw new \Exception("NIK range (1503-9999) is exhausted. Please contact system administrator.");
+            throw new \Exception("NIK range (1514-9999) is exhausted. Please contact system administrator.");
         }
 
         return (string)$nextNikNumber;

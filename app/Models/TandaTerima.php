@@ -30,6 +30,7 @@ class TandaTerima extends Model
         'gambar_checkpoint',
         'estimasi_nama_kapal',
         'nomor_ro',
+        'nomor_performa',
         'tanggal_ambil_kontainer',
         'tanggal_checkpoint_supir',
         'tanggal_terima_pelabuhan',
