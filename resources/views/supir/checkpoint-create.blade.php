@@ -122,14 +122,6 @@
                             <p class="text-gray-800">{{ $suratJalan->size }} ft</p>
                         </div>
                         <div>
-                            <p class="font-medium text-gray-500">Tipe</p>
-                            <p class="text-gray-800">{{ strtoupper($suratJalan->tipe_kontainer ?? 'FCL') }}</p>
-                        </div>
-                        <div>
-                            <p class="font-medium text-gray-500">Jumlah Kontainer</p>
-                            <p class="text-gray-800">{{ $suratJalan->jumlah_kontainer }}</p>
-                        </div>
-                        <div>
                             <p class="font-medium text-gray-500">Tujuan Pengambilan</p>
                             <p class="text-gray-800">{{ $suratJalan->tujuan_pengambilan ?? $suratJalan->order->tujuan_ambil ?? '-' }}</p>
                         </div>

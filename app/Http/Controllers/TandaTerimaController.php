@@ -146,10 +146,26 @@ class TandaTerimaController extends Controller
         // Get all karyawans for dropdown (kenek/krani) - only from divisi krani
         $kranisKenek = \App\Models\Karyawan::where('divisi', 'krani')->orderBy('nama_lengkap')->get();
 
-        // Get all stock kontainers for dropdown
-        $stockKontainers = \App\Models\StockKontainer::orderBy('nomor_seri_gabungan')->get();
+        // Get all stock kontainers for dropdown - combine from stock_kontainers and kontainers (tersedia)
+        $stockKontainersFromStock = \App\Models\StockKontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+        
+        $stockKontainersFromKontainers = \App\Models\Kontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->where('status', 'tersedia')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+        
+        // Merge both collections and remove duplicates based on nomor_seri_gabungan
+        $stockKontainers = $stockKontainersFromStock->concat($stockKontainersFromKontainers)
+            ->unique('nomor_seri_gabungan')
+            ->sortBy('nomor_seri_gabungan')
+            ->values();
 
-        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers'));
+        // Get all master tujuan kirims for dropdown
+        $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+
+        return view('tanda-terima.create', compact('suratJalan', 'masterKapals', 'pengirims', 'terms', 'jenisBarangs', 'masterKegiatans', 'karyawans', 'kranisKenek', 'stockKontainers', 'masterTujuanKirims'));
     }
 
     /**
@@ -185,16 +201,25 @@ class TandaTerimaController extends Controller
             'terpal' => 'nullable|string|max:50',
             // Field khusus tanda terima
             'estimasi_nama_kapal' => 'nullable|string|max:255',
+            'nomor_ro' => 'nullable|string|max:255',
+            'tanggal_checkpoint_supir' => 'nullable|date',
             'tanggal_ambil_kontainer' => 'nullable|date',
             'tanggal_terima_pelabuhan' => 'nullable|date',
             'tanggal_garasi' => 'nullable|date',
-            'jumlah' => 'nullable|integer|min:0',
-            'satuan' => 'nullable|string|max:50',
-            'panjang' => 'nullable|numeric|min:0',
-            'lebar' => 'nullable|numeric|min:0',
-            'tinggi' => 'nullable|numeric|min:0',
-            'meter_kubik' => 'nullable|numeric|min:0',
-            'tonase' => 'nullable|numeric|min:0',
+            'jumlah' => 'nullable|array',
+            'jumlah.*' => 'nullable|integer|min:0',
+            'satuan' => 'nullable|array',
+            'satuan.*' => 'nullable|string|max:50',
+            'panjang' => 'nullable|array',
+            'panjang.*' => 'nullable|numeric|min:0',
+            'lebar' => 'nullable|array',
+            'lebar.*' => 'nullable|numeric|min:0',
+            'tinggi' => 'nullable|array',
+            'tinggi.*' => 'nullable|numeric|min:0',
+            'meter_kubik' => 'nullable|array',
+            'meter_kubik.*' => 'nullable|numeric|min:0',
+            'tonase' => 'nullable|array',
+            'tonase.*' => 'nullable|numeric|min:0',
             'tujuan_pengiriman' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'nomor_kontainer' => 'nullable|array',
@@ -223,25 +248,101 @@ class TandaTerimaController extends Controller
             
             // Additional data from form
             $tandaTerima->estimasi_nama_kapal = $request->estimasi_nama_kapal;
+            $tandaTerima->nomor_ro = $request->nomor_ro;
+            $tandaTerima->tanggal_checkpoint_supir = $request->tanggal_checkpoint_supir;
+            $tandaTerima->supir_pengganti = $request->supir_pengganti;
+            $tandaTerima->no_plat = $request->no_plat;
             $tandaTerima->tanggal_ambil_kontainer = $request->tanggal_ambil_kontainer;
             $tandaTerima->tanggal_terima_pelabuhan = $request->tanggal_terima_pelabuhan;
             $tandaTerima->tanggal_garasi = $request->tanggal_garasi;
-            $tandaTerima->jumlah = $request->jumlah;
-            $tandaTerima->satuan = $request->satuan;
-            $tandaTerima->panjang = $request->panjang ? round((float) $request->panjang, 3) : null;
-            $tandaTerima->lebar = $request->lebar ? round((float) $request->lebar, 3) : null;
-            $tandaTerima->tinggi = $request->tinggi ? round((float) $request->tinggi, 3) : null;
-            $tandaTerima->meter_kubik = $request->meter_kubik ? round((float) $request->meter_kubik, 3) : null;
-            $tandaTerima->tonase = $request->tonase ? round((float) $request->tonase, 3) : null;
+            $tandaTerima->tujuan_pengiriman = $request->tujuan_pengiriman ?: $suratJalan->tujuan_pengiriman;
             $tandaTerima->catatan = $request->catatan;
             
-            // Handle multiple container numbers
+            // Handle dimensi details (multiple dimensi entries)
+            $dimensiDetails = [];
+            if ($request->has('jumlah') && is_array($request->jumlah)) {
+                $jumlahArray = $request->jumlah;
+                $satuanArray = $request->satuan ?? [];
+                $panjangArray = $request->panjang ?? [];
+                $lebarArray = $request->lebar ?? [];
+                $tinggiArray = $request->tinggi ?? [];
+                $meterKubikArray = $request->meter_kubik ?? [];
+                $tonaseArray = $request->tonase ?? [];
+                
+                foreach ($jumlahArray as $index => $jumlah) {
+                    // Skip jika semua field kosong
+                    if (empty($jumlah) && empty($satuanArray[$index] ?? '') && 
+                        empty($panjangArray[$index] ?? '') && empty($lebarArray[$index] ?? '') && 
+                        empty($tinggiArray[$index] ?? '') && empty($tonaseArray[$index] ?? '')) {
+                        continue;
+                    }
+                    
+                    $dimensiDetails[] = [
+                        'jumlah' => $jumlah ? (int) $jumlah : null,
+                        'satuan' => $satuanArray[$index] ?? null,
+                        'panjang' => isset($panjangArray[$index]) && $panjangArray[$index] !== '' ? round((float) $panjangArray[$index], 3) : null,
+                        'lebar' => isset($lebarArray[$index]) && $lebarArray[$index] !== '' ? round((float) $lebarArray[$index], 3) : null,
+                        'tinggi' => isset($tinggiArray[$index]) && $tinggiArray[$index] !== '' ? round((float) $tinggiArray[$index], 3) : null,
+                        'meter_kubik' => isset($meterKubikArray[$index]) && $meterKubikArray[$index] !== '' ? round((float) $meterKubikArray[$index], 3) : null,
+                        'tonase' => isset($tonaseArray[$index]) && $tonaseArray[$index] !== '' ? round((float) $tonaseArray[$index], 3) : null,
+                    ];
+                }
+            }
+            
+            // Simpan dimensi details jika ada
+            if (!empty($dimensiDetails)) {
+                $tandaTerima->dimensi_details = $dimensiDetails;
+                
+                // Simpan dimensi pertama ke field tunggal untuk backward compatibility
+                $firstDimensi = $dimensiDetails[0];
+                $tandaTerima->jumlah = $firstDimensi['jumlah'];
+                $tandaTerima->satuan = $firstDimensi['satuan'];
+                $tandaTerima->panjang = $firstDimensi['panjang'];
+                $tandaTerima->lebar = $firstDimensi['lebar'];
+                $tandaTerima->tinggi = $firstDimensi['tinggi'];
+                $tandaTerima->meter_kubik = $firstDimensi['meter_kubik'];
+                $tandaTerima->tonase = $firstDimensi['tonase'];
+            } else {
+                // Fallback ke single values jika tidak ada array
+                $tandaTerima->jumlah = is_array($request->jumlah) ? null : $request->jumlah;
+                $tandaTerima->satuan = is_array($request->satuan) ? null : $request->satuan;
+                $tandaTerima->panjang = is_array($request->panjang) ? null : ($request->panjang ? round((float) $request->panjang, 3) : null);
+                $tandaTerima->lebar = is_array($request->lebar) ? null : ($request->lebar ? round((float) $request->lebar, 3) : null);
+                $tandaTerima->tinggi = is_array($request->tinggi) ? null : ($request->tinggi ? round((float) $request->tinggi, 3) : null);
+                $tandaTerima->meter_kubik = is_array($request->meter_kubik) ? null : ($request->meter_kubik ? round((float) $request->meter_kubik, 3) : null);
+                $tandaTerima->tonase = is_array($request->tonase) ? null : ($request->tonase ? round((float) $request->tonase, 3) : null);
+            }
+            
+            // Handle multiple container numbers and details
+            $kontainerDetails = [];
             if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
                 $nomorKontainers = array_filter($request->nomor_kontainer, function($value) {
                     return !empty(trim($value));
                 });
+                
                 if (!empty($nomorKontainers)) {
                     $tandaTerima->no_kontainer = implode(',', $nomorKontainers);
+                    
+                    // Build kontainer details
+                    $sizeArray = $request->size ?? [];
+                    $tipeKontainerArray = $request->tipe_kontainer ?? [];
+                    $noSealArray = $request->no_seal ?? [];
+                    
+                    foreach ($nomorKontainers as $index => $nomorKontainer) {
+                        $kontainerDetails[] = [
+                            'nomor_kontainer' => $nomorKontainer,
+                            'size' => $sizeArray[$index] ?? null,
+                            'tipe' => $tipeKontainerArray[$index] ?? null,
+                            'no_seal' => $noSealArray[$index] ?? null,
+                        ];
+                    }
+                    
+                    $tandaTerima->kontainer_details = $kontainerDetails;
+                    
+                    // Save tipe kontainer details separately
+                    if (!empty($tipeKontainerArray)) {
+                        $tandaTerima->tipe_kontainer_details = array_filter($tipeKontainerArray);
+                    }
                 } else {
                     $tandaTerima->no_kontainer = $suratJalan->no_kontainer;
                 }
@@ -249,7 +350,7 @@ class TandaTerimaController extends Controller
                 $tandaTerima->no_kontainer = $suratJalan->no_kontainer;
             }
 
-            // Handle multiple seal numbers
+            // Handle multiple seal numbers (untuk backward compatibility)
             if ($request->has('no_seal') && is_array($request->no_seal)) {
                 $noSeals = array_filter($request->no_seal, function($value) {
                     return !empty(trim($value));
