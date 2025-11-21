@@ -155,7 +155,8 @@ class PembayaranPranotaUangJalanController extends Controller
                 // Prepare payment data
                 $paymentData = $validated;
                 $paymentData['pranota_uang_jalan_id'] = $pranotaId;
-                $paymentData['nomor_pembayaran'] = $nomorPembayaran . ($index > 0 ? '-' . ($index + 1) : '');
+                // Use same payment number for all pranota in this transaction
+                $paymentData['nomor_pembayaran'] = $nomorPembayaran;
                 
                 // Remove array field (not needed in payment table)
                 unset($paymentData['pranota_uang_jalan_ids']);
