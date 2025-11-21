@@ -222,12 +222,37 @@
                                     @php
                                         // Check if it's a JSON array (multiple images) or single image path
                                         $gambarCheckpoint = $suratJalan->gambar_checkpoint;
-                                        $isJson = is_string($gambarCheckpoint) && (str_starts_with($gambarCheckpoint, '[') || str_starts_with($gambarCheckpoint, '{'));
-                                        $imagePaths = $isJson ? json_decode($gambarCheckpoint, true) : [$gambarCheckpoint];
-                                        $imagePaths = is_array($imagePaths) ? array_filter($imagePaths) : [$gambarCheckpoint];
+                                        $imagePaths = [];
+                                        
+                                        try {
+                                            if (empty($gambarCheckpoint)) {
+                                                $imagePaths = [];
+                                            } elseif (is_array($gambarCheckpoint)) {
+                                                $imagePaths = array_filter($gambarCheckpoint);
+                                            } elseif (is_string($gambarCheckpoint)) {
+                                                // Try to decode as JSON
+                                                $decoded = json_decode($gambarCheckpoint, true);
+                                                if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
+                                                    $imagePaths = array_filter($decoded);
+                                                } else {
+                                                    // Single path
+                                                    $imagePaths = [$gambarCheckpoint];
+                                                }
+                                            }
+                                        } catch (\Exception $e) {
+                                            \Log::error('Error parsing gambar_checkpoint: ' . $e->getMessage());
+                                            $imagePaths = [];
+                                        }
                                     @endphp
+                                    @if(count($imagePaths) > 0)
                                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                                         @foreach($imagePaths as $index => $imagePath)
+                                        @php
+                                            // Skip if imagePath is null or empty
+                                            if (empty($imagePath) || !is_string($imagePath)) {
+                                                continue;
+                                            }
+                                        @endphp
                                         <div class="flex items-start gap-2 bg-gray-50 p-3 rounded-lg border border-gray-200">
                                             <a href="{{ asset('storage/' . $imagePath) }}" 
                                                target="_blank" 
@@ -282,6 +307,14 @@
                                         <i class="fas fa-camera mr-1"></i>
                                         {{ count($imagePaths) }} foto diupload saat checkpoint di lapangan
                                     </p>
+                                    @else
+                                    <div class="bg-gray-100 p-4 rounded-lg text-center">
+                                        <svg class="w-12 h-12 mx-auto text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                        </svg>
+                                        <p class="text-sm text-gray-500">Tidak ada gambar checkpoint</p>
+                                    </div>
+                                    @endif
                                 </div>
                                 @endif
                             </div>
