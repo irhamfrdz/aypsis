@@ -575,7 +575,7 @@
                                value="{{ old('uang_jalan', '0') }}"
                                placeholder="0"
                                min="0"
-                               step="1000"
+                               step="1"
                                class="flex-1 px-3 py-2 border border-gray-300 rounded-l-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('uang_jalan') border-red-500 @enderror">
                         <button type="button"
                                 onclick="updateUangJalan()"
