@@ -500,10 +500,21 @@ class TandaTerimaController extends Controller
         // Get all pengirims for dropdown
         $pengirims = \App\Models\Pengirim::orderBy('nama_pengirim')->get();
 
-        // Get stock kontainers for dropdown
-        $stockKontainers = \App\Models\StockKontainer::whereIn('status_ketersediaan', ['tersedia', 'tidak_tersedia'])
+        // Get stock kontainers for dropdown - combine from stock_kontainers and kontainers
+        $stockKontainersFromStock = \App\Models\StockKontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
             ->orderBy('nomor_seri_gabungan')
             ->get();
+        
+        $stockKontainersFromKontainers = \App\Models\Kontainer::select('nomor_seri_gabungan', 'ukuran', 'tipe_kontainer')
+            ->where('status', 'tersedia')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+        
+        // Merge both collections and remove duplicates
+        $stockKontainers = $stockKontainersFromStock->concat($stockKontainersFromKontainers)
+            ->unique('nomor_seri_gabungan')
+            ->sortBy('nomor_seri_gabungan')
+            ->values();
 
         // Get supirs for dropdown
         $supirs = \App\Models\Supir::where('status', 'aktif')
@@ -523,7 +534,13 @@ class TandaTerimaController extends Controller
         // Get master kegiatans
         $masterKegiatans = \App\Models\MasterKegiatan::orderBy('nama_kegiatan')->get();
 
-        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans'));
+        // Get all karyawans for dropdown (supir) - only from divisi supir
+        $karyawans = \App\Models\Karyawan::where('divisi', 'supir')->orderBy('nama_lengkap')->get();
+
+        // Get all master tujuan kirims for dropdown
+        $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
+
+        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims'));
     }
 
     /**

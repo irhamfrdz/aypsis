@@ -478,7 +478,21 @@
 
                             <div id="dimensi-container">
                                 <div class="dimensi-row mb-4 pb-4 border-b border-purple-200">
-                                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                                <div>
+                                    <label for="nama_barang" class="block text-xs font-medium text-gray-500 mb-2">
+                                        Nama Barang
+                                    </label>
+                                    <input type="text"
+                                           name="nama_barang"
+                                           id="nama_barang"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm @error('nama_barang') border-red-500 @enderror"
+                                           placeholder="Nama barang"
+                                           value="{{ old('nama_barang') }}">
+                                    @error('nama_barang')
+                                        <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                </div>
                                 <div>
                                     <label for="jumlah" class="block text-xs font-medium text-gray-500 mb-2">
                                         Jumlah
@@ -969,7 +983,11 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
                         </svg>
                     </button>
-                    <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-500 mb-2">Nama Barang</label>
+                            <input type="text" name="nama_barang[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="Nama barang">
+                        </div>
                         <div>
                             <label class="block text-xs font-medium text-gray-500 mb-2">Jumlah</label>
                             <input type="number" name="jumlah[]" class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-purple-500 text-sm" placeholder="0" min="0" step="1">

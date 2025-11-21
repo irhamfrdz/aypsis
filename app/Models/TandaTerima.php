@@ -43,6 +43,7 @@ class TandaTerima extends Model
         'meter_kubik',
         'tonase',
         'dimensi_details',
+        'nama_barang',
         'catatan',
         'term',
         'created_by',
@@ -67,6 +68,7 @@ class TandaTerima extends Model
         'dimensi_details' => 'array',
         'kontainer_details' => 'array',
         'tipe_kontainer_details' => 'array',
+        'nama_barang' => 'array',
     ];
 
     /**
