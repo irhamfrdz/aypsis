@@ -179,7 +179,21 @@ class DaftarTagihanKontainerSewaController extends Controller
      */
     public function create()
     {
-        return view('daftar-tagihan-kontainer-sewa.create');
+        // Get all containers with vendor information
+        $containersData = \App\Models\Kontainer::select('nomor_seri_gabungan', 'vendor')
+            ->whereNotNull('nomor_seri_gabungan')
+            ->whereNotNull('vendor')
+            ->orderBy('nomor_seri_gabungan')
+            ->get();
+
+        // Get distinct vendors from kontainers table
+        $vendors = \App\Models\Kontainer::select('vendor')
+            ->distinct()
+            ->whereNotNull('vendor')
+            ->orderBy('vendor')
+            ->pluck('vendor');
+
+        return view('daftar-tagihan-kontainer-sewa.create', compact('containersData', 'vendors'));
     }
 
 

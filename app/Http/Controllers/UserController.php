@@ -2260,9 +2260,23 @@ class UserController extends Controller
                         if (isset($actionMap[$action])) {
                             $permissionName = 'pembayaran-pranota-uang-jalan-' . $actionMap[$action];
                             $permission = Permission::where('name', $permissionName)->first();
+                            
+                            Log::info('Processing pembayaran-pranota-uang-jalan permission', [
+                                'module' => $module,
+                                'action' => $action,
+                                'mapped_action' => $actionMap[$action],
+                                'permission_name' => $permissionName,
+                                'permission_found' => $permission ? true : false,
+                                'permission_id' => $permission ? $permission->id : null
+                            ]);
+                            
                             if ($permission) {
                                 $permissionIds[] = $permission->id;
                                 $found = true;
+                            } else {
+                                Log::warning('Permission not found in database', [
+                                    'permission_name' => $permissionName
+                                ]);
                             }
                         }
                     }
