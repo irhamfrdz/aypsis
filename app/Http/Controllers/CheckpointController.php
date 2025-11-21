@@ -117,7 +117,8 @@ class CheckpointController extends Controller
         $rules = [
             'surat_jalan_vendor' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
-            'gambar' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB
+            'gambar' => 'nullable|array',
+            'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
         ];
 
         // Add no_seal validation only if tipe is not 'cargo'
@@ -256,13 +257,17 @@ class CheckpointController extends Controller
                 }
             }
 
-            // Handle image upload
-            $imagePath = null;
+            // Handle multiple image uploads
+            $imagePaths = [];
             if ($request->hasFile('gambar')) {
-                $image = $request->file('gambar');
-                $filename = time() . '_checkpoint_' . $image->getClientOriginalName();
-                $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                foreach ($request->file('gambar') as $index => $image) {
+                    $filename = time() . '_' . $index . '_checkpoint_' . $image->getClientOriginalName();
+                    $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                    $imagePaths[] = $imagePath;
+                }
             }
+            // Store as JSON array if multiple files, or null if none
+            $imagePath = !empty($imagePaths) ? json_encode($imagePaths) : null;
 
             // Handle multiple seals for checkpoint
             $noSealData = null;
@@ -402,7 +407,8 @@ class CheckpointController extends Controller
             'surat_jalan_vendor' => 'nullable|string|max:255',
             'catatan' => 'nullable|string',
             'tanggal_checkpoint' => 'required|date',
-            'gambar' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB
+            'gambar' => 'nullable|array',
+            'gambar.*' => 'nullable|file|mimes:jpeg,png,jpg,gif,pdf|max:5120', // 5MB per file
         ];
 
         // Add nomor_kontainer and no_seal validation only if tipe_kontainer is not 'cargo'
@@ -424,13 +430,17 @@ class CheckpointController extends Controller
         try {
             DB::beginTransaction();
 
-            // Handle image upload
-            $imagePath = null;
+            // Handle multiple image uploads
+            $imagePaths = [];
             if ($request->hasFile('gambar')) {
-                $image = $request->file('gambar');
-                $filename = time() . '_surat_jalan_checkpoint_' . $image->getClientOriginalName();
-                $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                foreach ($request->file('gambar') as $index => $image) {
+                    $filename = time() . '_' . $index . '_surat_jalan_checkpoint_' . $image->getClientOriginalName();
+                    $imagePath = $image->storeAs('file_surat_jalan', $filename, 'public');
+                    $imagePaths[] = $imagePath;
+                }
             }
+            // Store as JSON array if multiple files, or null if none
+            $imagePath = !empty($imagePaths) ? json_encode($imagePaths) : null;
 
             // Update surat jalan dengan nomor kontainer dan status
             $updateData = [

@@ -204,7 +204,7 @@
 
                             {{-- Upload Gambar untuk Permohonan --}}
                             <div>
-                                <label for="gambar_permohonan" class="block text-sm font-medium text-gray-700">Upload Gambar / Dokumen</label>
+                                <label for="gambar_permohonan" class="block text-sm font-medium text-gray-700">Upload Gambar / Dokumen (Bisa Lebih Dari 1)</label>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
                                     <div class="space-y-1 text-center">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -213,33 +213,26 @@
                                         <div class="flex text-sm text-gray-600">
                                             <label for="gambar_permohonan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                                 <span>Upload file</span>
-                                                <input id="gambar_permohonan" name="gambar" type="file" class="sr-only" accept="image/*,application/pdf" onchange="previewFilePermohonan(this)">
+                                                <input id="gambar_permohonan" name="gambar[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewFilePermohonan(this)">
                                             </label>
                                             <p class="pl-1">atau drag and drop</p>
                                         </div>
-                                        <p class="text-xs text-gray-500">PNG, JPG, GIF, PDF hingga 5MB</p>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF, PDF hingga 5MB per file</p>
+                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih beberapa file sekaligus</p>
                                     </div>
                                 </div>
 
                                 {{-- Preview Area untuk Permohonan --}}
                                 <div id="file-preview-permohonan" class="mt-3 hidden">
-                                    <div class="flex items-center p-3 bg-gray-50 rounded-md">
-                                        <svg class="h-8 w-8 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-900" id="file-name-permohonan"></p>
-                                            <p class="text-xs text-gray-500" id="file-size-permohonan"></p>
-                                        </div>
-                                        <button type="button" onclick="removeFilePermohonan()" class="ml-3 text-red-400 hover:text-red-600">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </button>
+                                    <div class="space-y-2" id="preview-list-permohonan">
+                                        <!-- Preview items will be added here -->
                                     </div>
                                 </div>
 
                                 @error('gambar')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('gambar.*')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -365,7 +358,7 @@
 
                             {{-- Upload Gambar untuk Surat Jalan --}}
                             <div>
-                                <label for="gambar_surat_jalan" class="block text-sm font-medium text-gray-700">Upload Gambar / Dokumen</label>
+                                <label for="gambar_surat_jalan" class="block text-sm font-medium text-gray-700">Upload Gambar / Dokumen (Bisa Lebih Dari 1)</label>
                                 <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md hover:border-indigo-400 transition-colors">
                                     <div class="space-y-1 text-center">
                                         <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
@@ -374,33 +367,26 @@
                                         <div class="flex text-sm text-gray-600">
                                             <label for="gambar_surat_jalan" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
                                                 <span>Upload file</span>
-                                                <input id="gambar_surat_jalan" name="gambar" type="file" class="sr-only" accept="image/*,application/pdf" onchange="previewFileSuratJalan(this)">
+                                                <input id="gambar_surat_jalan" name="gambar[]" type="file" class="sr-only" accept="image/*,application/pdf" multiple onchange="previewFileSuratJalan(this)">
                                             </label>
                                             <p class="pl-1">atau drag and drop</p>
                                         </div>
-                                        <p class="text-xs text-gray-500">PNG, JPG, GIF, PDF hingga 5MB</p>
+                                        <p class="text-xs text-gray-500">PNG, JPG, GIF, PDF hingga 5MB per file</p>
+                                        <p class="text-xs text-indigo-600 font-medium">Bisa pilih beberapa file sekaligus</p>
                                     </div>
                                 </div>
 
                                 {{-- Preview Area untuk Surat Jalan --}}
                                 <div id="file-preview-surat-jalan" class="mt-3 hidden">
-                                    <div class="flex items-center p-3 bg-gray-50 rounded-md">
-                                        <svg class="h-8 w-8 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-                                        </svg>
-                                        <div class="flex-1">
-                                            <p class="text-sm font-medium text-gray-900" id="file-name-surat-jalan"></p>
-                                            <p class="text-xs text-gray-500" id="file-size-surat-jalan"></p>
-                                        </div>
-                                        <button type="button" onclick="removeFileSuratJalan()" class="ml-3 text-red-400 hover:text-red-600">
-                                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
-                                            </svg>
-                                        </button>
+                                    <div class="space-y-2" id="preview-list-surat-jalan">
+                                        <!-- Preview items will be added here -->
                                     </div>
                                 </div>
 
                                 @error('gambar')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                @error('gambar.*')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
@@ -446,12 +432,22 @@
                                 <p class="text-xs text-gray-500 mt-1">{{ $suratJalan->updated_at->format('d M Y, H:i') }}</p>
                                 @if($suratJalan->gambar_checkpoint)
                                     <div class="mt-2">
-                                        <a href="{{ asset('storage/' . $suratJalan->gambar_checkpoint) }}" target="_blank" class="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800">
-                                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                                            </svg>
-                                            Lihat Gambar
-                                        </a>
+                                        @php
+                                            $gambarCheckpoint = $suratJalan->gambar_checkpoint;
+                                            $isJson = is_string($gambarCheckpoint) && (str_starts_with($gambarCheckpoint, '[') || str_starts_with($gambarCheckpoint, '{'));
+                                            $imagePaths = $isJson ? json_decode($gambarCheckpoint, true) : [$gambarCheckpoint];
+                                            $imagePaths = is_array($imagePaths) ? array_filter($imagePaths) : [$gambarCheckpoint];
+                                        @endphp
+                                        <div class="flex flex-wrap gap-2">
+                                        @foreach($imagePaths as $index => $imagePath)
+                                            <a href="{{ asset('storage/' . $imagePath) }}" target="_blank" class="inline-flex items-center text-xs text-indigo-600 hover:text-indigo-800">
+                                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                                </svg>
+                                                Gambar {{ $index + 1 }}
+                                            </a>
+                                        @endforeach
+                                        </div>
                                     </div>
                                 @endif
                             </div>
@@ -475,11 +471,43 @@
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function () {
-            // Inisialisasi Select2 pada dropdown kontainer biasa
+            // Get data attributes for filtering
+            @if(isset($permohonan))
+                const ukuran = '{{ $permohonan->ukuran }}';
+                const kegiatan = '{{ $permohonan->kegiatan }}';
+            @elseif(isset($suratJalan))
+                const ukuran = '{{ $suratJalan->size }}';
+                const kegiatan = '{{ $suratJalan->kegiatan }}';
+            @else
+                const ukuran = '';
+                const kegiatan = '';
+            @endif
+
+            // Inisialisasi Select2 pada dropdown kontainer biasa dengan AJAX search
             $('select.select-kontainer').each(function() {
                 $(this).select2({
                     placeholder: 'Cari nomor kontainer',
-                    width: '100%'
+                    width: '100%',
+                    minimumInputLength: 0,
+                    ajax: {
+                        url: '{{ route("supir.api.kontainer.search") }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                q: params.term || '',
+                                ukuran: ukuran,
+                                kegiatan: kegiatan,
+                                page: params.page || 1
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data.results
+                            };
+                        },
+                        cache: true
+                    }
                 });
             });
 
@@ -489,7 +517,27 @@
                     placeholder: 'Pilih atau ketik nomor kontainer',
                     width: '100%',
                     tags: true,
+                    minimumInputLength: 0,
                     tokenSeparators: [',', ' '],
+                    ajax: {
+                        url: '{{ route("supir.api.kontainer.search") }}',
+                        dataType: 'json',
+                        delay: 250,
+                        data: function (params) {
+                            return {
+                                q: params.term || '',
+                                ukuran: ukuran,
+                                kegiatan: kegiatan,
+                                page: params.page || 1
+                            };
+                        },
+                        processResults: function (data) {
+                            return {
+                                results: data.results
+                            };
+                        },
+                        cache: true
+                    },
                     createTag: function (params) {
                         var term = $.trim(params.term);
                         if (term === '') {
@@ -497,7 +545,7 @@
                         }
                         return {
                             id: term,
-                            text: term,
+                            text: term + ' (Nomor Baru)',
                             newTag: true
                         }
                     }
@@ -603,42 +651,213 @@
             @endif
         }
 
-        // Preview file function untuk Permohonan
+        // Store selected files
+        let selectedFilesPermohonan = [];
+        let selectedFilesSuratJalan = [];
+
+        // Preview file function untuk Permohonan (Multiple files)
         function previewFilePermohonan(input) {
-            const file = input.files[0];
-            if (file) {
-                const fileName = file.name;
-                const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-
-                document.getElementById('file-name-permohonan').textContent = fileName;
-                document.getElementById('file-size-permohonan').textContent = fileSize;
-                document.getElementById('file-preview-permohonan').classList.remove('hidden');
+            const files = Array.from(input.files);
+            const previewContainer = document.getElementById('preview-list-permohonan');
+            const previewSection = document.getElementById('file-preview-permohonan');
+            
+            if (files.length > 0) {
+                // Add new files to the list
+                selectedFilesPermohonan = selectedFilesPermohonan.concat(files);
+                
+                // Clear and rebuild preview
+                previewContainer.innerHTML = '';
+                
+                selectedFilesPermohonan.forEach((file, index) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeFilePermohonanByIndex(${index})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+                
+                previewSection.classList.remove('hidden');
+                updateFileInputPermohonan();
             }
         }
 
-        // Remove file function untuk Permohonan
-        function removeFilePermohonan() {
-            document.getElementById('gambar_permohonan').value = '';
-            document.getElementById('file-preview-permohonan').classList.add('hidden');
+        // Remove specific file untuk Permohonan
+        function removeFilePermohonanByIndex(index) {
+            selectedFilesPermohonan.splice(index, 1);
+            
+            if (selectedFilesPermohonan.length === 0) {
+                document.getElementById('file-preview-permohonan').classList.add('hidden');
+                document.getElementById('gambar_permohonan').value = '';
+            } else {
+                // Rebuild preview
+                const input = document.getElementById('gambar_permohonan');
+                const fakeEvent = { target: { files: [] } };
+                previewFilePermohonan({ files: [] });
+                
+                // Re-render existing files
+                const previewContainer = document.getElementById('preview-list-permohonan');
+                previewContainer.innerHTML = '';
+                
+                selectedFilesPermohonan.forEach((file, idx) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeFilePermohonanByIndex(${idx})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+            }
+            
+            updateFileInputPermohonan();
         }
 
-        // Preview file function untuk Surat Jalan
+        // Update file input with selected files
+        function updateFileInputPermohonan() {
+            const input = document.getElementById('gambar_permohonan');
+            const dataTransfer = new DataTransfer();
+            
+            selectedFilesPermohonan.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            
+            input.files = dataTransfer.files;
+        }
+
+        // Preview file function untuk Surat Jalan (Multiple files)
         function previewFileSuratJalan(input) {
-            const file = input.files[0];
-            if (file) {
-                const fileName = file.name;
-                const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
-
-                document.getElementById('file-name-surat-jalan').textContent = fileName;
-                document.getElementById('file-size-surat-jalan').textContent = fileSize;
-                document.getElementById('file-preview-surat-jalan').classList.remove('hidden');
+            const files = Array.from(input.files);
+            const previewContainer = document.getElementById('preview-list-surat-jalan');
+            const previewSection = document.getElementById('file-preview-surat-jalan');
+            
+            if (files.length > 0) {
+                // Add new files to the list
+                selectedFilesSuratJalan = selectedFilesSuratJalan.concat(files);
+                
+                // Clear and rebuild preview
+                previewContainer.innerHTML = '';
+                
+                selectedFilesSuratJalan.forEach((file, index) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeFileSuratJalanByIndex(${index})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+                
+                previewSection.classList.remove('hidden');
+                updateFileInputSuratJalan();
             }
         }
 
-        // Remove file function untuk Surat Jalan
-        function removeFileSuratJalan() {
-            document.getElementById('gambar_surat_jalan').value = '';
-            document.getElementById('file-preview-surat-jalan').classList.add('hidden');
+        // Remove specific file untuk Surat Jalan
+        function removeFileSuratJalanByIndex(index) {
+            selectedFilesSuratJalan.splice(index, 1);
+            
+            if (selectedFilesSuratJalan.length === 0) {
+                document.getElementById('file-preview-surat-jalan').classList.add('hidden');
+                document.getElementById('gambar_surat_jalan').value = '';
+            } else {
+                // Rebuild preview
+                const previewContainer = document.getElementById('preview-list-surat-jalan');
+                previewContainer.innerHTML = '';
+                
+                selectedFilesSuratJalan.forEach((file, idx) => {
+                    const fileName = file.name;
+                    const fileSize = (file.size / 1024 / 1024).toFixed(2) + ' MB';
+                    const isImage = file.type.startsWith('image/');
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'flex items-center p-3 bg-gray-50 rounded-md border border-gray-200';
+                    previewItem.innerHTML = `
+                        ${isImage ? 
+                            `<img src="${URL.createObjectURL(file)}" class="h-12 w-12 object-cover rounded mr-3" alt="${fileName}">` :
+                            `<svg class="h-12 w-12 text-gray-400 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>`
+                        }
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-gray-900 truncate">${fileName}</p>
+                            <p class="text-xs text-gray-500">${fileSize}</p>
+                        </div>
+                        <button type="button" onclick="removeFileSuratJalanByIndex(${idx})" class="ml-3 text-red-400 hover:text-red-600">
+                            <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    `;
+                    previewContainer.appendChild(previewItem);
+                });
+            }
+            
+            updateFileInputSuratJalan();
+        }
+
+        // Update file input with selected files
+        function updateFileInputSuratJalan() {
+            const input = document.getElementById('gambar_surat_jalan');
+            const dataTransfer = new DataTransfer();
+            
+            selectedFilesSuratJalan.forEach(file => {
+                dataTransfer.items.add(file);
+            });
+            
+            input.files = dataTransfer.files;
         }
 
         // Drag and drop functionality

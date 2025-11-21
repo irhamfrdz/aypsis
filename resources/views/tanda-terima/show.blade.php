@@ -318,40 +318,59 @@
                 </div>
                 <div class="p-6">
                     @php
-                        $extension = strtolower(pathinfo($tandaTerima->gambar_checkpoint, PATHINFO_EXTENSION));
-                        $isPdf = $extension === 'pdf';
-                        $fileUrl = asset('storage/' . $tandaTerima->gambar_checkpoint);
+                        // Check if it's a JSON array (multiple images) or single image path
+                        $gambarCheckpoint = $tandaTerima->gambar_checkpoint;
+                        $isJson = is_string($gambarCheckpoint) && (str_starts_with($gambarCheckpoint, '[') || str_starts_with($gambarCheckpoint, '{'));
+                        $imagePaths = $isJson ? json_decode($gambarCheckpoint, true) : [$gambarCheckpoint];
+                        $imagePaths = is_array($imagePaths) ? array_filter($imagePaths) : [$gambarCheckpoint];
                     @endphp
 
-                    @if($isPdf)
-                        <div class="text-center py-8">
-                            <i class="fas fa-file-pdf text-red-500 text-6xl mb-4"></i>
-                            <p class="text-gray-600 mb-4">File PDF</p>
-                            <div class="flex items-center justify-center gap-3">
-                                <a href="{{ $fileUrl }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-200">
-                                    <i class="fas fa-external-link-alt mr-2"></i> Buka di Tab Baru
-                                </a>
-                                <a href="{{ $fileUrl }}" download class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition duration-200">
-                                    <i class="fas fa-download mr-2"></i> Download
-                                </a>
-                            </div>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($imagePaths as $index => $imagePath)
+                        @php
+                            $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+                            $isPdf = $extension === 'pdf';
+                            $fileUrl = asset('storage/' . $imagePath);
+                        @endphp
+                        
+                        <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                            @if($isPdf)
+                                <div class="text-center p-6">
+                                    <i class="fas fa-file-pdf text-red-500 text-4xl mb-3"></i>
+                                    <p class="text-sm text-gray-600 mb-3">File PDF {{ $index + 1 }}</p>
+                                    <div class="flex flex-col gap-2">
+                                        <a href="{{ $fileUrl }}" target="_blank" class="inline-flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition duration-200">
+                                            <i class="fas fa-external-link-alt mr-2"></i> Buka
+                                        </a>
+                                        <a href="{{ $fileUrl }}" download class="inline-flex items-center justify-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition duration-200">
+                                            <i class="fas fa-download mr-2"></i> Download
+                                        </a>
+                                    </div>
+                                </div>
+                            @else
+                                <div class="relative group">
+                                    <img src="{{ $fileUrl }}"
+                                         alt="Checkpoint Image {{ $index + 1 }}"
+                                         class="w-full h-64 object-cover cursor-pointer"
+                                         onclick="window.open('{{ $fileUrl }}', '_blank')">
+                                    <div class="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 flex items-center justify-center transition-all">
+                                        <svg class="w-12 h-12 text-white opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"></path>
+                                        </svg>
+                                    </div>
+                                </div>
+                                <div class="p-3 flex gap-2">
+                                    <a href="{{ $fileUrl }}" target="_blank" class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition duration-200">
+                                        <i class="fas fa-external-link-alt mr-2"></i> Buka
+                                    </a>
+                                    <a href="{{ $fileUrl }}" download class="flex-1 inline-flex items-center justify-center px-3 py-2 bg-green-600 hover:bg-green-700 text-white text-sm rounded-lg transition duration-200">
+                                        <i class="fas fa-download mr-2"></i> Download
+                                    </a>
+                                </div>
+                            @endif
                         </div>
-                    @else
-                        <div class="text-center">
-                            <img src="{{ $fileUrl }}"
-                                 alt="Checkpoint Image"
-                                 class="max-w-full h-auto rounded-lg border border-gray-200 cursor-pointer hover:opacity-90 transition"
-                                 onclick="window.open('{{ $fileUrl }}', '_blank')">
-                            <div class="mt-4 flex items-center justify-center gap-3">
-                                <a href="{{ $fileUrl }}" target="_blank" class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition duration-200">
-                                    <i class="fas fa-external-link-alt mr-2"></i> Buka di Tab Baru
-                                </a>
-                                <a href="{{ $fileUrl }}" download class="inline-flex items-center px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition duration-200">
-                                    <i class="fas fa-download mr-2"></i> Download
-                                </a>
-                            </div>
-                        </div>
-                    @endif
+                        @endforeach
+                    </div>
                 </div>
             </div>
             @endif

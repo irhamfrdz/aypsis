@@ -1881,6 +1881,10 @@ Route::get('/test-gate-in-ajax', function () {
             ->name('checkpoint.create-surat-jalan');
         Route::post('/surat-jalan/{suratJalan}/checkpoint', [CheckpointController::class, 'storeSuratJalan'])
             ->name('checkpoint.store-surat-jalan');
+        
+        // API for kontainer search
+        Route::get('/api/kontainer/search', [\App\Http\Controllers\Api\KontainerSearchController::class, 'search'])
+            ->name('api.kontainer.search');
     });
 
          // --- Rute Penyelesaian Tugas ---
