@@ -179,6 +179,13 @@ class PembayaranPranotaKontainerController extends Controller
 
                 // Update pranota status to paid
                 $pranota->update(['status' => 'paid']);
+
+                // Update status_pranota to 'paid' for all related tagihan kontainer sewa items
+                $tagihanIds = $pranota->tagihan_kontainer_sewa_ids;
+                if (is_array($tagihanIds) && !empty($tagihanIds)) {
+                    \App\Models\DaftarTagihanKontainerSewa::whereIn('id', $tagihanIds)
+                        ->update(['status_pranota' => 'paid']);
+                }
             }
 
             // Catat transaksi ke akun bank yang dipilih
