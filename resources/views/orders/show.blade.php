@@ -81,10 +81,6 @@
                             <p class="mt-1 text-sm text-gray-900">{{ $order->tujuan_ambil }}</p>
                         </div>
                         <div>
-                            <label class="block text-sm font-medium text-gray-700">Term</label>
-                            <p class="mt-1 text-sm text-gray-900">{{ $order->term->nama_status ?? '-' }}</p>
-                        </div>
-                        <div>
                             <label class="block text-sm font-medium text-gray-700">Pengirim</label>
                             <p class="mt-1 text-sm text-gray-900">{{ $order->pengirim->nama_pengirim ?? '-' }}</p>
                         </div>
