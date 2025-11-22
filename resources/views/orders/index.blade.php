@@ -254,53 +254,7 @@
 </div>
 @endsection
 
-@push('styles')
-<style>
-.resize-handle {
-    position: absolute;
-    top: 0;
-    right: 0;
-    width: 8px;
-    height: 100%;
-    cursor: col-resize;
-    user-select: none;
-    background: linear-gradient(to right, transparent 0%, #d1d5db 50%, transparent 100%);
-    z-index: 10;
-}
-
-.resize-handle:hover {
-    background: linear-gradient(to right, transparent 0%, #6366f1 50%, transparent 100%);
-    width: 10px;
-}
-
-.resize-handle::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: 2px;
-    height: 20px;
-    background: #9ca3af;
-}
-
-.resize-handle:hover::after {
-    background: #6366f1;
-    height: 30px;
-}
-
-.resizable-th {
-    min-width: 80px;
-    max-width: 600px;
-    border-right: 1px solid #e5e7eb;
-}
-
-#ordersTable th {
-    white-space: nowrap;
-    overflow: hidden;
-}
-</style>
-@endpush
+@include('components.resizable-table')
 
 @push('scripts')
 <script>
@@ -309,7 +263,7 @@ $(document).ready(function() {
     loadOutstandingStats();
     
     // Initialize resizable columns
-    initResizableColumns();
+    initResizableTable('ordersTable');
 });
 
 function loadOutstandingStats() {
@@ -322,48 +276,6 @@ function loadOutstandingStats() {
         // Show error state
         $('#pendingOrdersCount, #partialOrdersCount, #completedOrdersCount, #totalOutstandingCount').text('Error');
     });
-}
-
-function initResizableColumns() {
-    const table = document.getElementById('ordersTable');
-    if (!table) return;
-    
-    const headers = table.querySelectorAll('.resizable-th');
-    let currentHeader = null;
-    let startX = 0;
-    let startWidth = 0;
-    
-    headers.forEach(header => {
-        const handle = header.querySelector('.resize-handle');
-        if (!handle) return;
-        
-        handle.addEventListener('mousedown', function(e) {
-            currentHeader = header;
-            startX = e.pageX;
-            startWidth = header.offsetWidth;
-            
-            document.addEventListener('mousemove', onMouseMove);
-            document.addEventListener('mouseup', onMouseUp);
-            
-            e.preventDefault();
-        });
-    });
-    
-    function onMouseMove(e) {
-        if (!currentHeader) return;
-        
-        const diff = e.pageX - startX;
-        const newWidth = Math.max(80, Math.min(600, startWidth + diff));
-        currentHeader.style.width = newWidth + 'px';
-        currentHeader.style.minWidth = newWidth + 'px';
-        currentHeader.style.maxWidth = newWidth + 'px';
-    }
-    
-    function onMouseUp() {
-        currentHeader = null;
-        document.removeEventListener('mousemove', onMouseMove);
-        document.removeEventListener('mouseup', onMouseUp);
-    }
 }
 </script>
 @endpush

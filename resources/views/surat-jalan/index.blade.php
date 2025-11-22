@@ -138,21 +138,21 @@ use Illuminate\Support\Str;
                 <p class="mt-1 text-sm text-gray-600">Total: {{ $suratJalans->total() }} surat jalan</p>
             </div>
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-xs">
+                <table class="min-w-full divide-y divide-gray-200 text-xs resizable-table" id="suratJalanTable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16">Actions</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Order</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">No. SJ</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Tanggal</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Pengirim</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Tujuan Ambil</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Tujuan Kirim</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Barang</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Kontainer</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Supir</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Status</th>
-                            <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">Pembayaran</th>
+                            <th class="resizable-th px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-16" style="position: relative;">Actions<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Order<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">No. SJ<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Tanggal<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Pengirim<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Tujuan Ambil<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Tujuan Kirim<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Barang<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Kontainer<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Supir<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Status<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28" style="position: relative;">Pembayaran<div class="resize-handle"></div></th>
                             <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Aksi</th>
                         </tr>
                     </thead>
@@ -417,6 +417,14 @@ function updateStatus(suratJalanId, status) {
 function printPreprinted(suratJalanId) {
     window.open(`/surat-jalan/${suratJalanId}/print-preprinted`, '_blank');
 }
+
+// Initialize resizable columns
+$(document).ready(function() {
+    initResizableTable('suratJalanTable');
+});
 </script>
+
+@include('components.resizable-table-styles')
+@include('components.resizable-table-script')
 
 @endsection
