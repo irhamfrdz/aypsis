@@ -417,12 +417,15 @@ function updateStatus(suratJalanId, status) {
 function printPreprinted(suratJalanId) {
     window.open(`/surat-jalan/${suratJalanId}/print-preprinted`, '_blank');
 }
-
-// Initialize resizable columns
-$(document).ready(function() {
-    initResizableTable('suratJalanTable');
-});
 </script>
 @endsection
 
 @include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('suratJalanTable');
+});
+</script>
+@endpush
