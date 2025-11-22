@@ -157,34 +157,6 @@
                             <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
-
-                    <!-- Kategori Uang Jalan -->
-                    <div>
-                        <label class="block text-xs font-medium text-gray-700 mb-1">Kategori <span class="text-red-600">*</span></label>
-                        <div class="flex gap-3">
-                            <label class="flex items-center">
-                                <input type="radio" 
-                                       name="kategori_uang_jalan" 
-                                       value="uang_jalan" 
-                                       {{ old('kategori_uang_jalan') == 'uang_jalan' ? 'checked' : '' }}
-                                       required
-                                       class="h-3.5 w-3.5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                <span class="ml-1.5 text-xs text-gray-700">Uang Jalan</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" 
-                                       name="kategori_uang_jalan" 
-                                       value="non_uang_jalan" 
-                                       {{ old('kategori_uang_jalan') == 'non_uang_jalan' ? 'checked' : '' }}
-                                       required
-                                       class="h-3.5 w-3.5 text-indigo-600 focus:ring-indigo-500 border-gray-300">
-                                <span class="ml-1.5 text-xs text-gray-700">Non Uang Jalan</span>
-                            </label>
-                        </div>
-                        @error('kategori_uang_jalan')
-                            <p class="mt-0.5 text-xs text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
                 </div>
             </div>
 

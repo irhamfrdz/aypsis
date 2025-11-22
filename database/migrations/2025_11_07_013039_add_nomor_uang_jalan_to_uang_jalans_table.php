@@ -25,11 +25,8 @@ return new class extends Migration
             if (!Schema::hasColumn('uang_jalans', 'jenis_transaksi')) {
                 $table->enum('jenis_transaksi', ['debit', 'kredit'])->nullable()->after('kegiatan_bongkar_muat');
             }
-            if (!Schema::hasColumn('uang_jalans', 'kategori_uang_jalan')) {
-                $table->enum('kategori_uang_jalan', ['uang_jalan', 'non_uang_jalan'])->nullable()->after('jenis_transaksi');
-            }
             if (!Schema::hasColumn('uang_jalans', 'jumlah_uang_jalan')) {
-                $table->decimal('jumlah_uang_jalan', 12, 2)->default(0)->after('kategori_uang_jalan');
+                $table->decimal('jumlah_uang_jalan', 12, 2)->default(0)->after('jenis_transaksi');
             }
             if (!Schema::hasColumn('uang_jalans', 'jumlah_mel')) {
                 $table->decimal('jumlah_mel', 12, 2)->default(0)->after('jumlah_uang_jalan');
@@ -73,7 +70,6 @@ return new class extends Migration
                 'tanggal_kas_bank',
                 'kegiatan_bongkar_muat',
                 'jenis_transaksi',
-                'kategori_uang_jalan',
                 'jumlah_uang_jalan',
                 'jumlah_mel',
                 'jumlah_pelancar',

@@ -183,6 +183,15 @@ class PembayaranPranotaUangJalanController extends Controller
                         'status' => 'lunas',
                         'updated_by' => Auth::id()
                     ]);
+                    
+                    // Update related surat jalan status
+                    if ($uangJalan->suratJalan) {
+                        $uangJalan->suratJalan->update([
+                            'status_pembayaran_uang_jalan' => 'dibayar',
+                            'status' => 'belum masuk checkpoint',
+                            'updated_by' => Auth::id()
+                        ]);
+                    }
                 }
 
                 // Create prospek from FCL/CARGO uang jalan after successful payment

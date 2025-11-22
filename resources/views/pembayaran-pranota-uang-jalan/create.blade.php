@@ -236,7 +236,11 @@
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         <input type="checkbox" name="pranota_uang_jalan_ids[]" value="{{ $pranota->id }}" class="pranota-checkbox h-3 w-3 text-indigo-600 border-gray-300 rounded" data-total="{{ $pranota->total_for_payment }}">
                                     </td>
-                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">{{ $pranota->nomor_pranota ?? '-' }}</td>
+                                    <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                                        <a href="{{ route('pranota-uang-jalan.show', $pranota->id) }}" target="_blank" class="text-indigo-600 hover:text-indigo-900 hover:underline">
+                                            {{ $pranota->nomor_pranota ?? '-' }}
+                                        </a>
+                                    </td>
                                     <td class="px-2 py-2 whitespace-nowrap text-xs">
                                         @if ($pranota->tanggal_pranota)
                                             {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d/M/Y') }}

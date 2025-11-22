@@ -17,7 +17,6 @@ class UangJalan extends Model
         'tanggal_uang_jalan',
         'surat_jalan_id',
         'kegiatan_bongkar_muat',
-        'kategori_uang_jalan',
         'jumlah_uang_jalan',
         'jumlah_mel',
         'jumlah_pelancar',

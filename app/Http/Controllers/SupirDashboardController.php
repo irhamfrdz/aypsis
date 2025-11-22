@@ -31,13 +31,14 @@ class SupirDashboardController extends Controller
                      ->get();
 
         // Ambil surat jalan yang perlu checkpoint atau sedang berjalan (menggunakan nama_lengkap karyawan)
-        // Try multiple matching strategies to ensure we find the records
+        // Hanya tampilkan surat jalan yang sudah ada pembayaran pranota uang jalan
         $suratJalans = SuratJalan::where(function($query) use ($supirNamaLengkap, $supirUsername, $supirName) {
                          $query->where('supir', $supirNamaLengkap)
                                ->orWhere('supir', $supirUsername)
                                ->orWhere('supir', $supirName);
                      })
                      ->whereIn('status', ['belum masuk checkpoint', 'checkpoint_completed'])
+                     ->where('status_pembayaran_uang_jalan', 'dibayar') // Hanya yang sudah dibayar
                      ->latest()
                      ->get();
 

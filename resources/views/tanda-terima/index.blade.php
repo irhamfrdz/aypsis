@@ -91,11 +91,44 @@
                 </div>
             </form>
 
+            <!-- Bulk Actions -->
+            <div class="flex justify-between items-center mb-4">
+                <div class="flex items-center space-x-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
+                        <span class="ml-2 text-sm text-gray-700">Pilih Semua</span>
+                    </label>
+                    <span id="selectedCount" class="text-sm text-gray-500">0 tanda terima dipilih</span>
+                </div>
+
+                <!-- Bulk Delete Button -->
+                <div id="bulkActionsContainer" class="hidden">
+                    <button type="button"
+                            onclick="bulkDelete()"
+                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                        </svg>
+                        Hapus Terpilih
+                    </button>
+                </div>
+            </div>
+
+            <!-- Bulk Delete Form (Hidden) -->
+            <form id="bulkDeleteForm" action="{{ route('tanda-terima.bulk-delete') }}" method="POST" style="display: none;">
+                @csrf
+                @method('DELETE')
+                <input type="hidden" name="tanda_terima_ids" id="bulkDeleteIds">
+            </form>
+
             <!-- Table -->
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 text-sm">
                     <thead class="bg-gray-50">
                         <tr>
+                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                                <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
+                            </th>
                             <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
                                 No
                             </th>
@@ -103,13 +136,10 @@
                                 No. Surat Jalan
                             </th>
                             <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                                Tanggal
+                                Tgl Checkpoint
                             </th>
                             <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[110px]">
                                 No. Kontainer
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[90px]">
-                                Nama Kapal
                             </th>
                             <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
                                 Jenis Barang
@@ -134,6 +164,13 @@
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($tandaTerimas as $tandaTerima)
                         <tr class="hover:bg-gray-50 transition duration-150">
+                            <td class="px-3 py-2 whitespace-nowrap">
+                                <input type="checkbox"
+                                       class="tanda-terima-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                                       value="{{ $tandaTerima->id }}"
+                                       data-no-surat-jalan="{{ $tandaTerima->no_surat_jalan }}"
+                                       onchange="updateSelection()">
+                            </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900 text-center">
                                 {{ ($tandaTerimas->currentPage() - 1) * $tandaTerimas->perPage() + $loop->iteration }}
                             </td>
@@ -148,13 +185,10 @@
                                 </div>
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ $tandaTerima->tanggal_surat_jalan ? $tandaTerima->tanggal_surat_jalan->format('d/m/y') : '-' }}
+                                {{ $tandaTerima->tanggal_checkpoint_supir ? $tandaTerima->tanggal_checkpoint_supir->format('d/m/y') : '-' }}
                             </td>
                             <td class="px-3 py-2 text-xs text-gray-600">
                                 <code class="text-xs bg-gray-100 px-1.5 py-0.5 rounded">{{ $tandaTerima->no_kontainer ?: '-' }}</code>
-                            </td>
-                            <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
-                                {{ Str::limit($tandaTerima->estimasi_nama_kapal ?: '-', 15) }}
                             </td>
                             <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-600">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
@@ -329,6 +363,105 @@
             setTimeout(() => alert.remove(), 500);
         });
     }, 5000);
+
+    // Checkbox functionality
+    function toggleAllCheckboxes() {
+        const selectAll = document.getElementById('selectAll');
+        const selectAllHeader = document.getElementById('selectAllHeader');
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox');
+
+        // Sync both select all checkboxes
+        if (selectAll.checked) {
+            selectAllHeader.checked = true;
+        } else {
+            selectAllHeader.checked = false;
+        }
+
+        // If triggered from header checkbox, sync with sidebar checkbox
+        if (event.target.id === 'selectAllHeader') {
+            selectAll.checked = selectAllHeader.checked;
+        }
+
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = selectAll.checked;
+        });
+
+        updateSelection();
+    }
+
+    function updateSelection() {
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+        const selectedCount = checkboxes.length;
+
+        // Update count display
+        document.getElementById('selectedCount').textContent =
+            selectedCount > 0 ?
+            `${selectedCount} tanda terima dipilih` :
+            '0 tanda terima dipilih';
+
+        // Show/hide bulk actions container
+        const bulkActionsContainer = document.getElementById('bulkActionsContainer');
+        if (bulkActionsContainer) {
+            if (selectedCount > 0) {
+                bulkActionsContainer.classList.remove('hidden');
+            } else {
+                bulkActionsContainer.classList.add('hidden');
+            }
+        }
+
+        // Update select all checkboxes
+        const allCheckboxes = document.querySelectorAll('.tanda-terima-checkbox');
+        const selectAll = document.getElementById('selectAll');
+        const selectAllHeader = document.getElementById('selectAllHeader');
+
+        if (selectedCount === 0) {
+            selectAll.indeterminate = false;
+            selectAll.checked = false;
+            selectAllHeader.indeterminate = false;
+            selectAllHeader.checked = false;
+        } else if (selectedCount === allCheckboxes.length) {
+            selectAll.indeterminate = false;
+            selectAll.checked = true;
+            selectAllHeader.indeterminate = false;
+            selectAllHeader.checked = true;
+        } else {
+            selectAll.indeterminate = true;
+            selectAll.checked = false;
+            selectAllHeader.indeterminate = true;
+            selectAllHeader.checked = false;
+        }
+    }
+
+    // Bulk delete function
+    function bulkDelete() {
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+        const selectedCount = checkboxes.length;
+
+        if (selectedCount === 0) {
+            alert('Pilih minimal 1 tanda terima untuk dihapus.');
+            return;
+        }
+
+        const noSuratJalans = Array.from(checkboxes).map(cb => cb.dataset.noSuratJalan).join(', ');
+        const confirmMessage = `Apakah Anda yakin ingin menghapus ${selectedCount} tanda terima?\n\nNo. Surat Jalan:\n${noSuratJalans}\n\nTindakan ini tidak dapat dibatalkan!`;
+
+        if (confirm(confirmMessage)) {
+            const tandaTerimaIds = Array.from(checkboxes).map(cb => cb.value);
+            document.getElementById('bulkDeleteIds').value = JSON.stringify(tandaTerimaIds);
+            document.getElementById('bulkDeleteForm').submit();
+        }
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', function() {
+        // Add change listeners to existing checkboxes
+        document.querySelectorAll('.tanda-terima-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', updateSelection);
+        });
+
+        // Initial update
+        updateSelection();
+    });
 
     // Function to toggle dropdown
     function toggleDropdown(dropdownId) {

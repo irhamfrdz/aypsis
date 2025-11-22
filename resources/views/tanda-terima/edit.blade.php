@@ -41,6 +41,27 @@
         </div>
     </div>
 
+    @if($sudahMasukBl)
+    <!-- Warning Alert -->
+    <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+        <div class="flex">
+            <div class="flex-shrink-0">
+                <i class="fas fa-exclamation-triangle text-yellow-400 text-xl"></i>
+            </div>
+            <div class="ml-3">
+                <p class="text-sm font-medium text-yellow-800">
+                    Tanda terima ini sudah masuk BL. Field berikut tidak dapat diubah:
+                </p>
+                <ul class="mt-2 text-sm text-yellow-700 list-disc list-inside">
+                    <li>Nomor Kontainer</li>
+                    <li>Nomor Seal</li>
+                    <li>Supir Pengganti</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    @endif
+
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Form Section (Left - 2/3) -->
         <div class="lg:col-span-2">
@@ -103,10 +124,20 @@
                                 <div>
                                     <label for="nomor_kontainer" class="block text-xs font-medium text-gray-500 mb-2">
                                         No. Kontainer
+                                        @if($sudahMasukBl)
+                                            <span class="text-yellow-600 text-xs">
+                                                <i class="fas fa-lock ml-1"></i> Terkunci (sudah masuk BL)
+                                            </span>
+                                        @endif
                                     </label>
-                                    <select name="nomor_kontainer[]"
+                                    @if($sudahMasukBl)
+                                        <!-- Hidden input to preserve value when disabled -->
+                                        <input type="hidden" name="nomor_kontainer[]" value="{{ old('nomor_kontainer.0', isset($nomorKontainerArray[0]) ? $nomorKontainerArray[0] : '') }}">
+                                    @endif
+                                    <select name="{{ $sudahMasukBl ? '' : 'nomor_kontainer[]' }}"
                                             id="nomor_kontainer"
-                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror">
+                                            class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono select2-kontainer @error('nomor_kontainer.0') border-red-500 @enderror {{ $sudahMasukBl ? 'bg-gray-100 cursor-not-allowed' : '' }}"
+                                            {{ $sudahMasukBl ? 'disabled' : '' }}>
                                         <option value="">-- Pilih atau Ketik Nomor Kontainer --</option>
                                         @foreach($stockKontainers as $stock)
                                             <option value="{{ $stock->nomor_seri_gabungan }}"
@@ -131,13 +162,19 @@
                                 <div>
                                     <label for="no_seal" class="block text-xs font-medium text-gray-500 mb-2">
                                         No. Seal
+                                        @if($sudahMasukBl)
+                                            <span class="text-yellow-600 text-xs">
+                                                <i class="fas fa-lock ml-1"></i> Terkunci (sudah masuk BL)
+                                            </span>
+                                        @endif
                                     </label>
                                     <input type="text"
                                            name="no_seal[]"
                                            id="no_seal"
-                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.0') border-red-500 @enderror"
+                                           class="w-full px-3 py-2 border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm font-mono @error('no_seal.0') border-red-500 @enderror {{ $sudahMasukBl ? 'bg-gray-100 cursor-not-allowed' : '' }}"
                                            placeholder="Nomor seal"
-                                           value="{{ old('no_seal.0', isset($noSealArray[0]) ? $noSealArray[0] : '') }}">
+                                           value="{{ old('no_seal.0', isset($noSealArray[0]) ? $noSealArray[0] : '') }}"
+                                           {{ $sudahMasukBl ? 'readonly' : '' }}>
                                     @error('no_seal.0')
                                         <p class="mt-1 text-xs text-red-600">{{ $message }}</p>
                                     @enderror

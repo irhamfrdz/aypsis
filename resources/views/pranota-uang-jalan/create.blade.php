@@ -149,8 +149,18 @@
                                         <td class="px-3 py-2">
                                             @if($uangJalan->suratJalan)
                                                 <div class="text-xs text-gray-900">
-                                                    <div>Supir: {{ $uangJalan->suratJalan->supir ?? '-' }}</div>
-                                                    <div>Kenek: {{ $uangJalan->suratJalan->kenek ?? '-' }}</div>
+                                                    <div>
+                                                        <span class="font-medium">Supir:</span> {{ $uangJalan->suratJalan->supir ?? '-' }}
+                                                        @if($uangJalan->suratJalan->supir_nik)
+                                                            <span class="text-gray-500">({{ $uangJalan->suratJalan->supir_nik }})</span>
+                                                        @endif
+                                                    </div>
+                                                    <div>
+                                                        <span class="font-medium">Kenek:</span> {{ $uangJalan->suratJalan->kenek ?? '-' }}
+                                                        @if($uangJalan->suratJalan->kenek_nik)
+                                                            <span class="text-gray-500">({{ $uangJalan->suratJalan->kenek_nik }})</span>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             @else
                                                 <div class="text-xs text-gray-500">-</div>

@@ -32,9 +32,11 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
+        // Get remember me checkbox value
+        $remember = $request->filled('remember');
 
-        // Custom query untuk autentikasi dengan username
-        if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']])) {
+        // Custom query untuk autentikasi dengan username - with remember me
+        if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $remember)) {
             $user = Auth::user();
 
             // Handle user status cases.

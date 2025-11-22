@@ -76,7 +76,7 @@ class PranotaSuratJalanController extends Controller
         }
 
         // Get uang jalan yang belum ada pranota
-        $availableUangJalans = UangJalan::with(['suratJalan'])
+        $availableUangJalans = UangJalan::with(['suratJalan.supirKaryawan', 'suratJalan.kenekKaryawan'])
             ->whereDoesntHave('pranotaUangJalan')
             ->whereIn('status', ['belum_dibayar', 'belum_masuk_pranota'])
             ->orderBy('tanggal_uang_jalan', 'desc')

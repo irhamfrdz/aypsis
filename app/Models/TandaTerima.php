@@ -204,4 +204,25 @@ class TandaTerima extends Model
         }
         return rtrim(rtrim(number_format($this->tinggi, 3, '.', ''), '0'), '.');
     }
+
+    /**
+     * Check if this tanda terima sudah masuk BL
+     */
+    public function sudahMasukBl()
+    {
+        // Cek apakah ada prospek yang terkait dengan tanda terima ini yang sudah punya BL
+        return $this->prospeks()
+            ->whereHas('bls')
+            ->exists();
+    }
+
+    /**
+     * Get semua BL yang terkait dengan tanda terima ini
+     */
+    public function getBls()
+    {
+        return \App\Models\Bl::whereIn('prospek_id', 
+            $this->prospeks()->pluck('id')
+        )->get();
+    }
 }

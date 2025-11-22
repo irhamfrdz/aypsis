@@ -229,7 +229,10 @@
                                 @enderror
                             </div>
 
-                            <div class="flex justify-end">
+                            <div class="flex justify-end gap-2">
+                                <a href="{{ route('supir.dashboard') }}" class="w-full sm:w-auto inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Kembali
+                                </a>
                                 <button type="submit" class="w-full sm:w-auto inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                     Simpan Checkpoint
                                 </button>
@@ -377,7 +380,10 @@
                                 @enderror
                             </div>
 
-                            <div class="flex justify-end">
+                            <div class="flex justify-end gap-2">
+                                <a href="{{ route('supir.dashboard') }}" class="w-full sm:w-auto inline-flex justify-center py-2 px-6 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                                    Kembali
+                                </a>
                                 <button type="submit" class="w-full sm:w-auto inline-flex justify-center py-2 px-6 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700">
                                     Simpan Checkpoint
                                 </button>

@@ -1166,6 +1166,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
     // ═══════════════════════════════════════════════════════════════════════
+    // 🔍 APPROVAL ORDER ROUTES
+    // ═══════════════════════════════════════════════════════════════════════
+
+    Route::prefix('approval-order')->name('approval-order.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ApprovalOrderController::class, 'index'])
+             ->name('index')
+             ->middleware('can:approval-order-view');
+        
+        Route::get('/create', [\App\Http\Controllers\ApprovalOrderController::class, 'create'])
+             ->name('create')
+             ->middleware('can:approval-order-create');
+        
+        Route::post('/', [\App\Http\Controllers\ApprovalOrderController::class, 'store'])
+             ->name('store')
+             ->middleware('can:approval-order-create');
+        
+        Route::get('/{id}', [\App\Http\Controllers\ApprovalOrderController::class, 'show'])
+             ->name('show')
+             ->middleware('can:approval-order-view');
+        
+        Route::get('/{id}/edit', [\App\Http\Controllers\ApprovalOrderController::class, 'edit'])
+             ->name('edit')
+             ->middleware('can:approval-order-update');
+        
+        Route::put('/{id}', [\App\Http\Controllers\ApprovalOrderController::class, 'update'])
+             ->name('update')
+             ->middleware('can:approval-order-update');
+        
+        Route::delete('/{id}', [\App\Http\Controllers\ApprovalOrderController::class, 'destroy'])
+             ->name('destroy')
+             ->middleware('can:approval-order-delete');
+        
+        Route::post('/{id}/approve', [\App\Http\Controllers\ApprovalOrderController::class, 'approve'])
+             ->name('approve')
+             ->middleware('can:approval-order-approve');
+        
+        Route::post('/{id}/reject', [\App\Http\Controllers\ApprovalOrderController::class, 'reject'])
+             ->name('reject')
+             ->middleware('can:approval-order-reject');
+    });
+
+    // ═══════════════════════════════════════════════════════════════════════
     // 📋 SURAT JALAN MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════
 
@@ -1220,6 +1262,48 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/surat-jalan/{suratJalan}/print-preprinted', [\App\Http\Controllers\SuratJalanController::class, 'printPreprinted'])
          ->name('surat-jalan.print-preprinted')
          ->middleware('can:surat-jalan-view');
+
+    // ═══════════════════════════════════════════════════════════════════════
+    // APPROVAL SURAT JALAN ROUTES
+    // ═══════════════════════════════════════════════════════════════════════
+
+    Route::prefix('approval-surat-jalan')->name('approval-surat-jalan.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'index'])
+             ->name('index')
+             ->middleware('can:approval-surat-jalan-view');
+        
+        Route::get('/create', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'create'])
+             ->name('create')
+             ->middleware('can:approval-surat-jalan-create');
+        
+        Route::post('/', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'store'])
+             ->name('store')
+             ->middleware('can:approval-surat-jalan-create');
+        
+        Route::get('/{id}', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'show'])
+             ->name('show')
+             ->middleware('can:approval-surat-jalan-view');
+        
+        Route::get('/{id}/edit', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'edit'])
+             ->name('edit')
+             ->middleware('can:approval-surat-jalan-update');
+        
+        Route::put('/{id}', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'update'])
+             ->name('update')
+             ->middleware('can:approval-surat-jalan-update');
+        
+        Route::delete('/{id}', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'destroy'])
+             ->name('destroy')
+             ->middleware('can:approval-surat-jalan-delete');
+        
+        Route::post('/{id}/approve', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'approve'])
+             ->name('approve')
+             ->middleware('can:approval-surat-jalan-approve');
+        
+        Route::post('/{id}/reject', [\App\Http\Controllers\ApprovalSuratJalanController::class, 'reject'])
+             ->name('reject')
+             ->middleware('can:approval-surat-jalan-reject');
+    });
 
     // =============================
     // UANG JALAN MANAGEMENT ROUTES
@@ -1444,6 +1528,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('tanda-terima/{tandaTerima}/add-to-prospek', [\App\Http\Controllers\TandaTerimaController::class, 'addToProspek'])
          ->name('tanda-terima.add-to-prospek')
          ->middleware('can:tanda-terima-edit');
+
+    // Route untuk bulk delete tanda terima
+    Route::delete('tanda-terima/bulk-delete', [\App\Http\Controllers\TandaTerimaController::class, 'bulkDelete'])
+         ->name('tanda-terima.bulk-delete')
+         ->middleware('can:tanda-terima-delete');
 
     // ═══════════════════════════════════════════════════════════════════════
     // 📋 TANDA TERIMA TANPA SURAT JALAN MANAGEMENT

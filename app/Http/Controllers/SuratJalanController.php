@@ -212,7 +212,7 @@ class SuratJalanController extends Controller
             $data = $request->except(['gambar']);
             $data['input_by'] = Auth::id();
             $data['input_date'] = now();
-            $data['status'] = 'belum masuk checkpoint'; // Set default status to belum masuk checkpoint
+            $data['status'] = 'pending_payment'; // Set default status to pending_payment (menunggu pembayaran uang jalan)
 
             // Map nomor_kontainer to no_kontainer (database column name)
             if (isset($data['nomor_kontainer'])) {
@@ -249,11 +249,10 @@ class SuratJalanController extends Controller
             Log::info('Surat jalan created successfully:', [
                 'id' => $suratJalan->id,
                 'supir_saved' => $suratJalan->supir,
-                'supir_from_request' => $request->input('supir')
+                'supir_from_request' => $request->input('supir'),
+                'status' => $suratJalan->status,
+                'status_pembayaran_uang_jalan' => $suratJalan->status_pembayaran_uang_jalan
             ]);
-
-            // Update status surat jalan to indicate it needs checkpoint
-            $suratJalan->update(['status' => 'belum masuk checkpoint']);
 
             // Langsung buat approval record untuk surat jalan
             \App\Models\SuratJalanApproval::create([
@@ -300,6 +299,12 @@ class SuratJalanController extends Controller
     {
         $suratJalan = SuratJalan::findOrFail($id);
 
+        // Cek apakah sudah ada pembayaran pranota uang jalan
+        if ($suratJalan->status_pembayaran_uang_jalan === 'dibayar') {
+            return redirect()->route('surat-jalan.index')
+                           ->with('error', 'Surat jalan tidak dapat diedit karena pembayaran pranota uang jalan sudah dibuat.');
+        }
+
         // Get karyawan supir data - hanya divisi supir
         $supirs = Karyawan::where('divisi', 'supir')
                          ->whereNotNull('nama_lengkap')
@@ -321,6 +326,12 @@ class SuratJalanController extends Controller
     public function update(Request $request, $id)
     {
         $suratJalan = SuratJalan::findOrFail($id);
+
+        // Cek apakah sudah ada pembayaran pranota uang jalan
+        if ($suratJalan->status_pembayaran_uang_jalan === 'dibayar') {
+            return redirect()->route('surat-jalan.index')
+                           ->with('error', 'Surat jalan tidak dapat diupdate karena pembayaran pranota uang jalan sudah dibuat.');
+        }
 
         $request->validate([
             'tanggal_surat_jalan' => 'required|date',

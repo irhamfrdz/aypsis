@@ -492,7 +492,10 @@ class TandaTerimaController extends Controller
     public function edit(TandaTerima $tandaTerima)
     {
         // Load relations
-        $tandaTerima->load('suratJalan');
+        $tandaTerima->load('suratJalan', 'prospeks.bls');
+
+        // Check if tanda terima sudah masuk BL
+        $sudahMasukBl = $tandaTerima->sudahMasukBl();
 
         // Get master kapal for dropdown
         $masterKapals = MasterKapal::where('status', 'aktif')->orderBy('nama_kapal')->get();
@@ -516,18 +519,18 @@ class TandaTerimaController extends Controller
             ->sortBy('nomor_seri_gabungan')
             ->values();
 
-        // Get supirs for dropdown
-        $supirs = \App\Models\Supir::where('status', 'aktif')
+        // Get supirs for dropdown - from karyawan with divisi supir
+        $supirs = \App\Models\Karyawan::where('divisi', 'supir')
             ->orderBy('nama_lengkap')
             ->get();
 
-        // Get keneks for dropdown
-        $keneks = \App\Models\Kenek::where('status', 'aktif')
+        // Get keneks for dropdown - from karyawan with divisi kenek
+        $keneks = \App\Models\Karyawan::where('divisi', 'kenek')
             ->orderBy('nama_lengkap')
             ->get();
 
-        // Get kranis for dropdown
-        $kranis = \App\Models\Krani::where('status', 'aktif')
+        // Get kranis for dropdown - from karyawan with divisi krani
+        $kranis = \App\Models\Karyawan::where('divisi', 'krani')
             ->orderBy('nama_lengkap')
             ->get();
 
@@ -540,7 +543,7 @@ class TandaTerimaController extends Controller
         // Get all master tujuan kirims for dropdown
         $masterTujuanKirims = \App\Models\MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
 
-        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims'));
+        return view('tanda-terima.edit', compact('tandaTerima', 'masterKapals', 'pengirims', 'stockKontainers', 'supirs', 'keneks', 'kranis', 'masterKegiatans', 'karyawans', 'masterTujuanKirims', 'sudahMasukBl'));
     }
 
     /**
@@ -548,6 +551,41 @@ class TandaTerimaController extends Controller
      */
     public function update(Request $request, TandaTerima $tandaTerima)
     {
+        // Check if tanda terima sudah masuk BL
+        $sudahMasukBl = $tandaTerima->sudahMasukBl();
+
+        // Jika sudah masuk BL, cek apakah ada perubahan pada field yang dilindungi
+        if ($sudahMasukBl) {
+            $protectedFields = [];
+            
+            // Check nomor kontainer
+            if ($request->has('nomor_kontainer') && is_array($request->nomor_kontainer)) {
+                $newNoKontainer = implode(',', array_filter($request->nomor_kontainer));
+                if ($newNoKontainer !== $tandaTerima->no_kontainer) {
+                    $protectedFields[] = 'Nomor Kontainer';
+                }
+            }
+            
+            // Check nomor seal
+            if ($request->has('no_seal') && is_array($request->no_seal)) {
+                $newNoSeal = implode(',', array_filter($request->no_seal));
+                if ($newNoSeal !== $tandaTerima->no_seal) {
+                    $protectedFields[] = 'Nomor Seal';
+                }
+            }
+            
+            // Check supir pengganti
+            if ($request->has('supir_pengganti') && $request->supir_pengganti !== $tandaTerima->supir_pengganti) {
+                $protectedFields[] = 'Supir Pengganti';
+            }
+            
+            if (!empty($protectedFields)) {
+                return redirect()->back()
+                    ->withInput()
+                    ->with('error', 'Tanda terima sudah masuk BL. Field berikut tidak dapat diubah: ' . implode(', ', $protectedFields));
+            }
+        }
+
         $request->validate([
             'estimasi_nama_kapal' => 'nullable|string|max:255',
             'tanggal_ambil_kontainer' => 'nullable|date',
@@ -817,6 +855,50 @@ class TandaTerimaController extends Controller
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error deleting tanda terima: ' . $e->getMessage());
+            return back()->with('error', 'Gagal menghapus tanda terima: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Bulk delete tanda terimas
+     */
+    public function bulkDelete(Request $request)
+    {
+        $request->validate([
+            'tanda_terima_ids' => 'required|json',
+        ]);
+
+        DB::beginTransaction();
+        try {
+            $tandaTerimaIds = json_decode($request->tanda_terima_ids, true);
+            
+            if (empty($tandaTerimaIds) || !is_array($tandaTerimaIds)) {
+                throw new \Exception('Invalid tanda terima IDs');
+            }
+
+            $tandaTerimas = TandaTerima::whereIn('id', $tandaTerimaIds)->get();
+            $deletedCount = 0;
+            $noSuratJalans = [];
+
+            foreach ($tandaTerimas as $tandaTerima) {
+                $noSuratJalans[] = $tandaTerima->no_surat_jalan;
+                $tandaTerima->delete();
+                $deletedCount++;
+            }
+
+            Log::info('Bulk delete tanda terimas', [
+                'count' => $deletedCount,
+                'no_surat_jalans' => implode(', ', $noSuratJalans),
+                'deleted_by' => Auth::user()->name,
+            ]);
+
+            DB::commit();
+            return redirect()->route('tanda-terima.index')
+                ->with('success', "Berhasil menghapus {$deletedCount} tanda terima!");
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Error bulk deleting tanda terimas: ' . $e->getMessage());
             return back()->with('error', 'Gagal menghapus tanda terima: ' . $e->getMessage());
         }
     }

@@ -179,6 +179,14 @@
                                     <p class="font-medium text-gray-500">Jumlah Kontainer</p>
                                     <p class="text-gray-800 font-semibold">{{ $suratJalan->jumlah_kontainer ?? 0 }}</p>
                                 </div>
+                                <div>
+                                    <p class="font-medium text-gray-500">No. Kontainer</p>
+                                    <p class="text-gray-800 font-semibold">{{ $suratJalan->no_kontainer ?? '-' }}</p>
+                                </div>
+                                <div>
+                                    <p class="font-medium text-gray-500">No. Seal</p>
+                                    <p class="text-gray-800 font-semibold">{{ $suratJalan->no_seal ?? '-' }}</p>
+                                </div>
                             </div>
                             @if($needsCheckpoint)
                                 <div class="mt-4 text-yellow-700 text-xs font-semibold flex items-center gap-1">

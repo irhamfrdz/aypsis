@@ -925,8 +925,8 @@
 
                 {{-- Surat Jalan Sub-Dropdown --}}
                 @php
-                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('surat-jalan.*');
-                    $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')));
+                    $isSuratJalanRoute = Request::routeIs('orders.*') || Request::routeIs('surat-jalan.*') || Request::routeIs('approval-order.*');
+                    $hasSuratJalanPermissions = $user && (($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')) || ($user->can('surat-jalan-view') || $user->can('surat-jalan-create') || $user->can('surat-jalan-update') || $user->can('surat-jalan-delete')) || $user->can('approval-order-view'));
                 @endphp
 
                 @if($hasSuratJalanPermissions)
@@ -940,11 +940,21 @@
                     <div id="surat-jalan-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isSuratJalanRoute) style="display: block;" @endif>
                         {{-- Order Management --}}
                         @if($user && ($user->can('order-view') || $user->can('order-create') || $user->can('order-update') || $user->can('order-delete')))
-                            <a href="{{ route('orders.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('orders.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                            <a href="{{ route('orders.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('orders.index') || Request::routeIs('orders.show') || Request::routeIs('orders.edit') || Request::routeIs('orders.create') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
                                 <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
                                 </svg>
                                 <span class="text-xs">Order Management</span>
+                            </a>
+                        @endif
+
+                        {{-- Approval Order --}}
+                        @if($user && $user->can('approval-order-view'))
+                            <a href="{{ route('approval-order.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-orange-50 hover:text-orange-700 transition-all duration-200 {{ Request::routeIs('approval-order.*') ? 'bg-orange-50 text-orange-700 font-medium' : 'text-gray-600' }}">
+                                <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                </svg>
+                                <span class="text-xs">Approval Order</span>
                             </a>
                         @endif
 

@@ -161,7 +161,7 @@ use Illuminate\Support\Str;
                         <tr class="hover:bg-gray-50">
                             <td class="px-2 py-2 whitespace-nowrap text-center">
                                 <div class="relative inline-block text-left">
-                                    <button type="button" onclick="toggleDropdown('dropdown-{{ $suratJalan->id }}')" 
+                                    <button type="button" onclick="toggleDropdown('dropdown-{{ $suratJalan->id }}')"
                                             class="inline-flex items-center justify-center w-6 h-6 bg-indigo-600 text-white rounded-full hover:bg-indigo-700 focus:outline-none focus:ring-1 focus:ring-offset-1 focus:ring-indigo-500 transition-colors duration-200">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
@@ -170,6 +170,7 @@ use Illuminate\Support\Str;
                                     
                                     <div id="dropdown-{{ $suratJalan->id }}" class="hidden absolute left-0 z-50 mt-1 w-44 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 divide-y divide-gray-100">
                                         <div class="py-1">
+                                            @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar')
                                             <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" 
                                                class="group flex items-center px-3 py-1.5 text-xs text-gray-700 hover:bg-gray-100 hover:text-gray-900">
                                                 <svg class="mr-2 h-3 w-3 text-gray-400 group-hover:text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -184,6 +185,7 @@ use Illuminate\Support\Str;
                                                 </svg>
                                                 Cancel
                                             </button>
+                                            @endif
                                             <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" 
                                                target="_blank"
                                                class="group flex items-center px-3 py-1.5 text-xs text-blue-700 hover:bg-blue-50 hover:text-blue-900">
@@ -301,11 +303,13 @@ use Illuminate\Support\Str;
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path>
                                         </svg>
                                     </a>
+                                    @if($suratJalan->status_pembayaran_uang_jalan !== 'dibayar')
                                     <a href="{{ route('surat-jalan.edit', $suratJalan->id) }}" class="text-indigo-600 hover:text-indigo-900" title="Edit">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                                         </svg>
                                     </a>
+                                    @endif
                                     @can('audit-log-view')
                                     <button type="button" onclick="showAuditLog('{{ get_class($suratJalan) }}', '{{ $suratJalan->id }}', '{{ $suratJalan->nomor_surat }}')" class="text-purple-600 hover:text-purple-900" title="Audit">
                                         <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
