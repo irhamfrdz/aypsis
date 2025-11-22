@@ -213,57 +213,57 @@ use Illuminate\Support\Str;
                                     </div>
                                 </div>
                             </td>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
-                                <div class="truncate w-20" title="{{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}">
-                                    {{ $suratJalan->order ? Str::limit($suratJalan->order->nomor_order, 10) : '-' }}
+                            <td class="px-2 py-2 text-xs font-medium text-gray-900">
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}">
+                                    {{ $suratJalan->order ? $suratJalan->order->nomor_order : '-' }}
                                 </div>
                             </td>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs font-medium">
+                            <td class="px-2 py-2 text-xs font-medium">
                                 <a href="{{ route('surat-jalan.print', $suratJalan->id) }}" 
-                                   class="text-indigo-600 hover:text-indigo-900 hover:underline font-medium truncate block w-24"
+                                   class="text-indigo-600 hover:text-indigo-900 hover:underline font-medium overflow-hidden text-ellipsis block"
                                    title="{{ $suratJalan->no_surat_jalan }} - Klik untuk print"
                                    target="_blank">
-                                    {{ Str::limit($suratJalan->no_surat_jalan, 12) }}
+                                    {{ $suratJalan->no_surat_jalan }}
                                 </a>
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                                <div class="truncate w-20" title="{{ $suratJalan->formatted_tanggal_surat_jalan }}">
-                                    {{ date('d/m', strtotime($suratJalan->tanggal_surat_jalan)) }}
+                                <div title="{{ $suratJalan->formatted_tanggal_surat_jalan }}">
+                                    {{ date('d/m/Y', strtotime($suratJalan->tanggal_surat_jalan)) }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
-                                <div class="truncate w-24" title="{{ $suratJalan->pengirim ?? '-' }}">
-                                    {{ $suratJalan->pengirim ? Str::limit($suratJalan->pengirim, 15) : '-' }}
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->pengirim ?? '-' }}">
+                                    {{ $suratJalan->pengirim ?? '-' }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
-                                <div class="truncate w-28" title="{{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}">
-                                    {{ ($suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil) ? Str::limit($suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil, 18) : '-' }}
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}">
+                                    {{ $suratJalan->tujuanPengambilanRelation->nama ?? $suratJalan->order->tujuan_ambil ?? '-' }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
-                                <div class="truncate w-28" title="{{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}">
-                                    {{ ($suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim) ? Str::limit($suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim, 18) : '-' }}
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}">
+                                    {{ $suratJalan->tujuanPengirimanRelation->nama ?? $suratJalan->order->tujuan_kirim ?? '-' }}
                                 </div>
                             </td>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                                <div class="truncate w-20" title="{{ $suratJalan->jenis_barang ?? '-' }}">
-                                    {{ $suratJalan->jenis_barang ? Str::limit($suratJalan->jenis_barang, 12) : '-' }}
+                            <td class="px-2 py-2 text-xs text-gray-900">
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->jenis_barang ?? '-' }}">
+                                    {{ $suratJalan->jenis_barang ?? '-' }}
                                 </div>
                             </td>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs font-mono text-gray-900">
-                                <div class="truncate w-24" title="{{ $suratJalan->no_kontainer ?? '-' }}">
-                                    {{ $suratJalan->no_kontainer ? Str::limit($suratJalan->no_kontainer, 12) : '-' }}
+                            <td class="px-2 py-2 text-xs font-mono text-gray-900">
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->no_kontainer ?? '-' }}">
+                                    {{ $suratJalan->no_kontainer ?? '-' }}
                                 </div>
                             </td>
-                            <td class="px-2 py-2 whitespace-nowrap text-xs text-gray-900">
-                                <div class="truncate w-20" title="{{ $suratJalan->supir ?? '-' }}">
-                                    {{ $suratJalan->supir ? Str::limit($suratJalan->supir, 12) : '-' }}
+                            <td class="px-2 py-2 text-xs text-gray-900">
+                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->supir ?? '-' }}">
+                                    {{ $suratJalan->supir ?? '-' }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap">
                                 <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium {{ $suratJalan->status_badge }}">
-                                    {{ ucfirst(Str::limit($suratJalan->status, 8)) }}
+                                    {{ ucfirst($suratJalan->status) }}
                                 </span>
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap">

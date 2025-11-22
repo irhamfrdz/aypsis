@@ -27,6 +27,7 @@ class DaftarTagihanKontainerSewa extends Model
         'status',
         'status_pranota',
         'pranota_id',
+        'invoice_id',
         'dpp',
         'adjustment',
         'adjustment_note',
@@ -186,5 +187,37 @@ class DaftarTagihanKontainerSewa extends Model
     public function scopeInPranota($query)
     {
         return $query->where('status_pranota', 'included');
+    }
+
+    /**
+     * Relasi ke Invoice Kontainer Sewa
+     */
+    public function invoice()
+    {
+        return $this->belongsTo(InvoiceKontainerSewa::class, 'invoice_id');
+    }
+
+    /**
+     * Relasi ke Invoice Item
+     */
+    public function invoiceItem()
+    {
+        return $this->hasOne(InvoiceKontainerSewaItem::class, 'tagihan_id');
+    }
+
+    /**
+     * Scope untuk tagihan yang belum masuk invoice
+     */
+    public function scopeNotInInvoice($query)
+    {
+        return $query->whereNull('invoice_id');
+    }
+
+    /**
+     * Scope untuk tagihan yang sudah masuk invoice
+     */
+    public function scopeInInvoice($query)
+    {
+        return $query->whereNotNull('invoice_id');
     }
 }

@@ -333,8 +333,11 @@ input[required]:focus {
                     </button>
                     @endcan
                     @can('tagihan-kontainer-sewa-update')
-                    <button type="button" onclick="bulkEditVendorInfo()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
-                        Input Tgl/no Vendor
+                    <button type="button" onclick="bulkAddInvoice()" class="bg-purple-600 hover:bg-purple-700 text-white px-3 py-1 rounded text-sm font-medium transition duration-200">
+                        <svg class="w-4 h-4 inline-block mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Tambah Invoice
                     </button>
                     @endcan
                     @can('tagihan-kontainer-sewa-update')
@@ -4266,6 +4269,323 @@ window.bulkEditGroupInfo = function() {
 // Function to close bulk group info modal
 window.closeBulkGroupInfoModal = function() {
     const modal = document.getElementById('bulkGroupInfoModal');
+    if (!modal) return;
+
+    modal.classList.add('modal-hide');
+    modal.classList.remove('modal-show');
+
+    const modalContent = modal.querySelector('.modal-content');
+    if (modalContent) {
+        modalContent.classList.add('modal-hide');
+        modalContent.classList.remove('modal-show');
+    }
+
+    setTimeout(() => {
+        modal.remove();
+        document.body.style.overflow = 'auto';
+    }, 300);
+};
+
+// Function to bulk add invoice
+window.bulkAddInvoice = function() {
+    console.log('bulkAddInvoice called');
+
+    // Check permission for updating tagihan
+    @if(!auth()->user()->hasPermissionTo('tagihan-kontainer-sewa-update'))
+        showNotification('error', 'Akses Ditolak', 'Anda tidak memiliki izin untuk menambah invoice. Diperlukan izin "Edit" pada modul Tagihan Kontainer.');
+        return;
+    @endif
+
+    const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+    const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+    console.log('Selected IDs for bulk invoice:', selectedIds);
+
+    if (selectedIds.length === 0) {
+        alert('Pilih minimal satu kontainer untuk menambah invoice');
+        return;
+    }
+
+    // Collect data from selected rows
+    const selectedData = {
+        containers: [],
+        vendors: [],
+        sizes: [],
+        periodes: [],
+        totals: []
+    };
+
+    checkedBoxes.forEach((checkbox, index) => {
+        const row = checkbox.closest('tr');
+        if (!row) {
+            console.warn('Row not found for checkbox:', checkbox);
+            return;
+        }
+
+        // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, ..., 17=grand_total
+        const vendorElement = row.querySelector('td:nth-child(4) .font-semibold');
+        const containerElement = row.querySelector('td:nth-child(5)');
+        const sizeElement = row.querySelector('td:nth-child(6) .inline-flex');
+        const periodeElement = row.querySelector('td:nth-child(7) .inline-flex');
+        const totalElement = row.querySelector('td:nth-child(17)');
+
+        selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
+        selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
+        selectedData.sizes.push(sizeElement ? sizeElement.textContent.trim() : '-');
+        selectedData.periodes.push(periodeElement ? periodeElement.textContent.trim() : '-');
+        selectedData.totals.push(totalElement ? totalElement.textContent.trim() : '-');
+    });
+
+    console.log('Invoice data extracted:', selectedData);
+
+    // Create detailed table for selected items
+    let containerRows = '';
+    selectedData.containers.forEach((container, index) => {
+        containerRows += `
+            <tr class="border-b border-gray-200 hover:bg-gray-50">
+                <td class="px-3 py-2 text-sm text-gray-600">${index + 1}</td>
+                <td class="px-3 py-2 text-sm font-medium text-gray-900">${container}</td>
+                <td class="px-3 py-2 text-sm text-gray-600">${selectedData.vendors[index]}</td>
+                <td class="px-3 py-2 text-sm text-center">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        ${selectedData.sizes[index]}
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-sm text-center">
+                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                        ${selectedData.periodes[index]} bln
+                    </span>
+                </td>
+                <td class="px-3 py-2 text-sm text-right font-medium text-gray-900">${selectedData.totals[index]}</td>
+            </tr>
+        `;
+    });
+
+    // Calculate total
+    const totals = selectedData.totals.map(total => {
+        const cleanTotal = total.replace(/Rp\s*/g, '').replace(/\./g, '').replace(/,/g, '');
+        return parseFloat(cleanTotal) || 0;
+    });
+    const grandTotal = totals.reduce((sum, total) => sum + total, 0);
+
+    // Create modal HTML for bulk invoice creation
+    const modalHTML = `
+        <div id="bulkInvoiceModal" class="modal-overlay modal-backdrop fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+            <div class="modal-content relative top-20 mx-auto p-6 border w-11/12 max-w-4xl shadow-lg rounded-md bg-white">
+                <div class="flex justify-between items-center mb-4">
+                    <h3 class="text-lg font-semibold text-gray-900">Tambah Invoice - ${selectedIds.length} Item</h3>
+                    <button onclick="closeBulkInvoiceModal()" class="text-gray-400 hover:text-gray-600">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Tagihan Info Table -->
+                <div class="mb-4 border border-gray-200 rounded-lg overflow-hidden">
+                    <div class="bg-gray-50 px-4 py-2 border-b border-gray-200">
+                        <h4 class="text-sm font-semibold text-gray-700">Detail Kontainer yang Dipilih</h4>
+                    </div>
+                    <div class="max-h-64 overflow-y-auto">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
+                                    <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                    <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
+                                    <th class="px-3 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${containerRows}
+                            </tbody>
+                            <tfoot class="bg-gray-50 border-t-2 border-gray-300">
+                                <tr>
+                                    <td colspan="5" class="px-3 py-2 text-sm font-semibold text-gray-900 text-right">Total Keseluruhan:</td>
+                                    <td class="px-3 py-2 text-sm font-bold text-indigo-600 text-right">Rp ${grandTotal.toLocaleString('id-ID')}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <form id="bulkInvoiceForm" class="space-y-4">
+                    <input type="hidden" name="tagihan_ids" value="${selectedIds.join(',')}">
+                    
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Invoice Vendor <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="bulk_invoice_vendor" name="invoice_vendor" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="Masukkan nomor invoice vendor">
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Tanggal Invoice Vendor <span class="text-red-500">*</span>
+                        </label>
+                        <input type="date" id="bulk_tanggal_vendor" name="tanggal_vendor" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                        <p class="text-sm text-blue-800">
+                            <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Invoice ini akan ditambahkan ke ${selectedIds.length} tagihan kontainer yang dipilih.
+                        </p>
+                    </div>
+
+                    <div class="flex justify-end gap-3 pt-4 border-t">
+                        <button type="button" onclick="closeBulkInvoiceModal()"
+                                class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors duration-200">
+                            Batal
+                        </button>
+                        <button type="submit"
+                                class="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors duration-200">
+                            <span class="btn-text">Simpan Invoice</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    `;
+
+    // Add modal to body
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+
+    // Show modal with animation
+    const modal = document.getElementById('bulkInvoiceModal');
+    modal.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+
+    setTimeout(() => {
+        modal.classList.add('modal-show');
+        const modalContent = modal.querySelector('.modal-content');
+        if (modalContent) {
+            modalContent.classList.add('modal-show');
+        }
+    }, 10);
+
+    // Set default date to today
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('bulk_tanggal_vendor').value = today;
+
+    // Handle form submission
+    const form = document.getElementById('bulkInvoiceForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            const invoiceVendor = document.getElementById('bulk_invoice_vendor').value.trim();
+            const tanggalVendor = document.getElementById('bulk_tanggal_vendor').value;
+
+            if (!invoiceVendor) {
+                showNotification('error', 'Validasi Gagal', 'Nomor invoice vendor harus diisi');
+                return;
+            }
+
+            if (!tanggalVendor) {
+                showNotification('error', 'Validasi Gagal', 'Tanggal invoice vendor harus diisi');
+                return;
+            }
+
+            // Show loading state
+            const submitBtn = form.querySelector('button[type="submit"]');
+            const btnText = submitBtn.querySelector('.btn-text');
+            const originalText = btnText.textContent;
+            btnText.innerHTML = '<span class="loading-spinner"></span>Menyimpan...';
+            submitBtn.disabled = true;
+
+            // Process each item sequentially
+            let successCount = 0;
+            let errorCount = 0;
+            const totalItems = selectedIds.length;
+
+            // Function to process single item
+            const processItem = (id, index) => {
+                return new Promise((resolve, reject) => {
+                    const formData = new FormData();
+                    formData.append('_token', '{{ csrf_token() }}');
+                    formData.append('_method', 'PATCH');
+                    formData.append('invoice_vendor', invoiceVendor);
+                    formData.append('tanggal_vendor', tanggalVendor);
+
+                    fetch(`{{ url('daftar-tagihan-kontainer-sewa') }}/${id}/vendor-info`, {
+                        method: 'POST',
+                        body: formData,
+                        headers: {
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    })
+                    .then(response => {
+                        if (response.ok) {
+                            return response.json();
+                        } else {
+                            return response.text().then(text => {
+                                throw new Error(`Error untuk item ${index + 1}: ${response.status}`);
+                            });
+                        }
+                    })
+                    .then(data => {
+                        if (data.success) {
+                            successCount++;
+                            resolve(data);
+                        } else {
+                            errorCount++;
+                            reject(new Error(data.message || `Gagal menyimpan item ${index + 1}`));
+                        }
+                    })
+                    .catch(error => {
+                        errorCount++;
+                        reject(error);
+                    });
+                });
+            };
+
+            // Process all items sequentially
+            const processAllItems = async () => {
+                for (let i = 0; i < selectedIds.length; i++) {
+                    try {
+                        await processItem(selectedIds[i], i);
+                        btnText.innerHTML = `<span class="loading-spinner"></span>Menyimpan ${i + 1}/${totalItems}...`;
+                    } catch (error) {
+                        console.error(`Error processing item ${i + 1}:`, error);
+                    }
+                }
+
+                // Show final result
+                if (successCount > 0 && errorCount === 0) {
+                    showNotification('success', 'Berhasil', `Invoice berhasil ditambahkan ke ${successCount} item`);
+                } else if (successCount > 0 && errorCount > 0) {
+                    showNotification('warning', 'Sebagian Berhasil', `${successCount} berhasil, ${errorCount} gagal`);
+                } else {
+                    showNotification('error', 'Gagal', `Gagal menambahkan invoice ke semua item`);
+                }
+
+                closeBulkInvoiceModal();
+                window.clearSavedState();
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            };
+
+            processAllItems().catch(error => {
+                console.error('Error in bulk process:', error);
+                btnText.textContent = originalText;
+                submitBtn.disabled = false;
+            });
+        });
+    }
+};
+
+// Function to close bulk invoice modal
+window.closeBulkInvoiceModal = function() {
+    const modal = document.getElementById('bulkInvoiceModal');
     if (!modal) return;
 
     modal.classList.add('modal-hide');
