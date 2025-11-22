@@ -162,15 +162,15 @@
             </div>
 
                         <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200">
+                <table class="min-w-full divide-y divide-gray-200" id="ordersTable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Nomor Order</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pengirim</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tujuan Ambil</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Pelabuhan Tujuan</th>
-                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
+                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nomor Order<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Pengirim<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tujuan Ambil<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Pelabuhan Tujuan<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kontainer<div class="resize-handle"></div></th>
                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th>
                         </tr>
                     </thead>
@@ -254,11 +254,44 @@
 </div>
 @endsection
 
+@push('styles')
+<style>
+.resize-handle {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 5px;
+    height: 100%;
+    cursor: col-resize;
+    user-select: none;
+    background: transparent;
+    z-index: 10;
+}
+
+.resize-handle:hover {
+    background: rgba(99, 102, 241, 0.3);
+}
+
+.resizable-th {
+    min-width: 80px;
+    max-width: 600px;
+}
+
+#ordersTable th {
+    white-space: nowrap;
+    overflow: hidden;
+}
+</style>
+@endpush
+
 @push('scripts')
 <script>
 $(document).ready(function() {
     // Load outstanding statistics
     loadOutstandingStats();
+    
+    // Initialize resizable columns
+    initResizableColumns();
 });
 
 function loadOutstandingStats() {
@@ -271,6 +304,48 @@ function loadOutstandingStats() {
         // Show error state
         $('#pendingOrdersCount, #partialOrdersCount, #completedOrdersCount, #totalOutstandingCount').text('Error');
     });
+}
+
+function initResizableColumns() {
+    const table = document.getElementById('ordersTable');
+    if (!table) return;
+    
+    const headers = table.querySelectorAll('.resizable-th');
+    let currentHeader = null;
+    let startX = 0;
+    let startWidth = 0;
+    
+    headers.forEach(header => {
+        const handle = header.querySelector('.resize-handle');
+        if (!handle) return;
+        
+        handle.addEventListener('mousedown', function(e) {
+            currentHeader = header;
+            startX = e.pageX;
+            startWidth = header.offsetWidth;
+            
+            document.addEventListener('mousemove', onMouseMove);
+            document.addEventListener('mouseup', onMouseUp);
+            
+            e.preventDefault();
+        });
+    });
+    
+    function onMouseMove(e) {
+        if (!currentHeader) return;
+        
+        const diff = e.pageX - startX;
+        const newWidth = Math.max(80, Math.min(600, startWidth + diff));
+        currentHeader.style.width = newWidth + 'px';
+        currentHeader.style.minWidth = newWidth + 'px';
+        currentHeader.style.maxWidth = newWidth + 'px';
+    }
+    
+    function onMouseUp() {
+        currentHeader = null;
+        document.removeEventListener('mousemove', onMouseMove);
+        document.removeEventListener('mouseup', onMouseUp);
+    }
 }
 </script>
 @endpush
