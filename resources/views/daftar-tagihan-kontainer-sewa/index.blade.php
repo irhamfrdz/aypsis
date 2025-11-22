@@ -1104,7 +1104,27 @@ input[required]:focus {
                         </td>
                         <!-- Status Pranota Column -->
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
-                            @if($tagihan->pranota_id)
+                            @if($tagihan->status_pranota == 'paid')
+                                {{-- Prioritas: Jika status_pranota = paid, tampilkan Lunas --}}
+                                <div class="flex flex-col items-center space-y-0.5">
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-green-100 text-green-800">
+                                        <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Lunas
+                                    </span>
+                                    @if($tagihan->pranota_id)
+                                        @php
+                                            $pranota = \App\Models\PranotaTagihanKontainerSewa::find($tagihan->pranota_id);
+                                        @endphp
+                                        @if($pranota)
+                                            <a href="{{ route('pranota-kontainer-sewa.show', $pranota->id) }}" class="text-[7px] text-blue-600 hover:text-blue-800 font-mono">
+                                                {{ $pranota->no_invoice }}
+                                            </a>
+                                        @endif
+                                    @endif
+                                </div>
+                            @elseif($tagihan->pranota_id)
                                 @php
                                     // Find in PranotaTagihanKontainerSewa 
                                     $pranota = \App\Models\PranotaTagihanKontainerSewa::find($tagihan->pranota_id);
@@ -1124,13 +1144,6 @@ input[required]:focus {
                                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
                                                 </svg>
                                                 Terkirim
-                                            </span>
-                                        @elseif($tagihan->status_pranota == 'paid')
-                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-green-100 text-green-800">
-                                                <svg class="w-2 h-2 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
-                                                    <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
-                                                </svg>
-                                                Lunas
                                             </span>
                                         @elseif($tagihan->status_pranota == 'cancelled')
                                             <span class="inline-flex items-center px-1.5 py-0.5 rounded-full text-[7px] font-medium bg-red-100 text-red-800">
