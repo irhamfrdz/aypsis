@@ -1893,40 +1893,12 @@ window.masukanKePranota = function() {
         return;
     }
 
-    // Validasi: Periksa apakah semua item yang dipilih memiliki grup
-    let itemsWithoutGroup = [];
-    checkedBoxes.forEach((checkbox, index) => {
-        const row = checkbox.closest('tr');
-        if (row) {
-            const groupElement = row.querySelector('td:nth-child(3)'); // Group column (1=checkbox, 2=no, 3=grup) (index 2)
-            const groupValue = groupElement ? groupElement.textContent.trim() : '';
-
-            console.log(`Validation Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
-
-            if (!groupValue || groupValue === '-' || groupValue === '') {
-                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
-                const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
-                itemsWithoutGroup.push(containerName);
-                console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutGroup`);
-            } else {
-                console.log(`Item ${index + 1} has valid group: "${groupValue}"`);
-            }
-        }
-    });
-
-    // Jika ada item yang tidak memiliki grup, tampilkan pesan error
-    if (itemsWithoutGroup.length > 0) {
-        const itemList = itemsWithoutGroup.join(', ');
-        alert(`❌ Tidak dapat memasukkan ke pranota!\n\nItem berikut belum memiliki grup:\n${itemList}\n\nSilakan buat grup terlebih dahulu sebelum memasukkan ke pranota.`);
-        return;
-    }
-
     // Validasi: Periksa apakah semua item memiliki nomor vendor (invoice vendor)
     let itemsWithoutVendorNumber = [];
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const invoiceVendorElement = row.querySelector('td:nth-child(14)'); // Invoice Vendor column (index 14, was 14 before)
+            const invoiceVendorElement = row.querySelector('td:nth-child(12)'); // Invoice Vendor column (kolom 12)
             const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
 
             console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
@@ -2069,18 +2041,18 @@ window.masukanKePranotaExisting = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const invoiceVendorElement = row.querySelector('td:nth-child(14)'); // Invoice Vendor column (index 14)
+            const invoiceVendorElement = row.querySelector('td:nth-child(12)'); // Invoice Vendor column (kolom 12)
             const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
 
-            console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
+            console.log(`Existing Pranota - Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
 
             if (!invoiceVendorValue || invoiceVendorValue === '-' || invoiceVendorValue === '') {
                 const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
                 itemsWithoutVendorNumber.push(containerName);
-                console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutVendorNumber`);
+                console.log(`Existing Pranota - Item ${index + 1} (${containerName}) added to itemsWithoutVendorNumber`);
             } else {
-                console.log(`Item ${index + 1} has vendor invoice: ${invoiceVendorValue}`);
+                console.log(`Existing Pranota - Item ${index + 1} has vendor invoice: ${invoiceVendorValue}`);
             }
         }
     });
