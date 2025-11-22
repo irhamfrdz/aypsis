@@ -85,16 +85,9 @@
 
     <!-- Table -->
     <div class="overflow-x-auto shadow-md sm:rounded-lg">
-        <table class="min-w-full bg-white divide-y divide-gray-200 text-xs">
+        <table class="min-w-full bg-white divide-y divide-gray-200 text-xs resizable-table" id="masterPricelistCatTable">
             <thead class="bg-gray-100">
-                <tr>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">No</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Vendor</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Status CAT</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">Ukuran</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Tarif</th>
-                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th>
-                </tr>
+                <tr><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32" style="position: relative;">Vendor<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Status CAT<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20" style="position: relative;">Ukuran<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32" style="position: relative;">Tarif<div class="resize-handle"></div></th><th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th></tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($pricelists as $index => $pricelist)
@@ -230,3 +223,13 @@
     </div>
 </div>
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('masterPricelistCatTable');
+});
+</script>
+@endpush

@@ -153,17 +153,9 @@
     <!-- Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 text-sm">
+            <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="pergerakanKapalTable">
                 <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapal & Voyage</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kapten</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rute</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Transit</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Tanggal Sandar</th>
-                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                        <th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th>
-                    </tr>
+                    <tr><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal & Voyage<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapten<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Rute<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Transit<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Sandar<div class="resize-handle"></div></th><th class="resizable-th px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th></tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($pergerakanKapals as $pergerakan)
@@ -255,3 +247,13 @@
     </div>
 </div>
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('pergerakanKapalTable');
+});
+</script>
+@endpush

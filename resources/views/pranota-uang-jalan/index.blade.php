@@ -129,17 +129,9 @@
     <!-- Table -->
     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pranotaUangJalanTable">
                 <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">No</th>
-                        <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Nomor Pranota</th>
-                        <th class="px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">Tanggal</th>
-                        <th class="px-2 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Qty</th>
-                        <th class="px-2 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide">Total</th>
-                        <th class="px-2 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Status</th>
-                        <th class="px-2 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Aksi</th>
-                    </tr>
+                    <tr><th class="resizable-th px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide" style="position: relative;">Nomor Pranota<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide" style="position: relative;">Tanggal<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide" style="position: relative;">Qty<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-right text-xs font-semibold text-gray-600 uppercase tracking-wide" style="position: relative;">Total<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-2 py-2 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">Aksi</th></tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($pranotaUangJalans as $index => $pranota)
@@ -384,3 +376,13 @@ window.addEventListener('load', adjustAlertPosition);
 window.addEventListener('resize', adjustAlertPosition);
 </script>
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('pranotaUangJalanTable');
+});
+</script>
+@endpush

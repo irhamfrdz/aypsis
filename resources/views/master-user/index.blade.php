@@ -118,39 +118,34 @@
         </div>
 
         <div class="overflow-x-auto table-container">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 resizable-table" id="masterUserTable">
                 <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
-                    <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    <tr><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                             <div class="flex items-center">
                                 <span>No</span>
                             </div>
-                        </th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                             <div class="flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
                                 </svg>
                                 Username
                             </div>
-                        </th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                             <div class="flex items-center">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path>
                                 </svg>
                                 Karyawan Terkait
                             </div>
-                        </th>
-                        <th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <div class="resize-handle"></div></th><th class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             <div class="flex items-center justify-center">
                                 <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 100 4m0-4v2m0-6V4"></path>
                                 </svg>
                                 Aksi
                             </div>
-                        </th>
-                    </tr>
+                        </th></tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                     @forelse ($users as $index => $user)

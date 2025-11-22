@@ -43,22 +43,9 @@
             <p class="text-gray-500">Belum ada data tujuan.</p>
         @else
             <div class="overflow-x-auto">
-                <table class="min-w-full bg-white rounded-lg shadow-md">
+                <table class="min-w-full bg-white rounded-lg shadow-md resizable-table" id="masterTujuanTable">
                     <thead>
-                        <tr class="bg-gray-100 text-left text-gray-600 text-[10px] font-semibold">
-                            <th class="py-3 px-4">Nama Tujuan</th>
-                            <th class="py-3 px-4">Cabang</th>
-                            <th class="py-3 px-4">Wilayah</th>
-                            <th class="py-3 px-4">Dari</th>
-                            <th class="py-3 px-4">Ke</th>
-                            <th class="py-3 px-4">UJ 20ft</th>
-                            <th class="py-3 px-4">Ongkos Truk 20ft</th>
-                            <th class="py-3 px-4">UJ 40ft</th>
-                            <th class="py-3 px-4">Ongkos Truk 40ft</th>
-                            <th class="py-3 px-4">Antarlokasi 20ft</th>
-                            <th class="py-3 px-4">Antarlokasi 40ft</th>
-                            <th class="py-3 px-4">Aksi</th>
-                        </tr>
+                        <tr class="bg-gray-100 text-left text-gray-600 text-[10px] font-semibold"><th class="resizable-th py-3 px-4" style="position: relative;">Nama Tujuan<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Cabang<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Wilayah<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Dari<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Ke<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">UJ 20ft<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Ongkos Truk 20ft<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">UJ 40ft<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Ongkos Truk 40ft<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Antarlokasi 20ft<div class="resize-handle"></div></th><th class="resizable-th py-3 px-4" style="position: relative;">Antarlokasi 40ft<div class="resize-handle"></div></th><th class="py-3 px-4">Aksi</th></tr>
                     </thead>
                     <tbody class="text-gray-700 text-[10px]">
                         @foreach ($tujuans as $tujuan)
@@ -176,3 +163,13 @@
 @include('components.audit-log-modal')
 
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('masterTujuanTable');
+});
+</script>
+@endpush

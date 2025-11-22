@@ -203,23 +203,11 @@
             </div>
         </div>
         <div class="overflow-x-auto bg-white border border-gray-200 rounded-lg table-responsive" style="width: 100%;">
-            <table class="min-w-full bg-white border border-gray-200 rounded-lg" style="width: 100%; table-layout: fixed;">
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg resizable-table" id="tagihanCatTable" style="width: 100%; table-layout: fixed;">
                 <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 5%;">
+                    <tr><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 5%;" style="position: relative;">
                             <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        </th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 5%;">No</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;">Nomor Tagihan CAT</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 12%;">Nomor Kontainer</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;">Vendo/Bengkel</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Tanggal CAT</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Tanggal Pranota</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Estimasi Biaya</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Realisasi Biaya</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Status</th>
-                        <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Aksi</th>
-                    </tr>
+                        <div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 5%;" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;" style="position: relative;">Nomor Tagihan CAT<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 12%;" style="position: relative;">Nomor Kontainer<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 15%;" style="position: relative;">Vendo/Bengkel<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;" style="position: relative;">Tanggal CAT<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;" style="position: relative;">Tanggal Pranota<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;" style="position: relative;">Estimasi Biaya<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;" style="position: relative;">Realisasi Biaya<div class="resize-handle"></div></th><th class="resizable-th px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="width: 10%;">Aksi</th></tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                     @forelse($tagihanCats as $index => $tagihanCat)

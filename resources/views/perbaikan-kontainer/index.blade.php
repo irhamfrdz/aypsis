@@ -214,25 +214,11 @@
         </div>
         <!-- Table Container with Horizontal Scroll -->
         <div class="overflow-x-auto bg-white border border-gray-200 rounded-lg table-responsive">
-            <table class="min-w-full bg-white border border-gray-200 rounded-lg">
+            <table class="min-w-full bg-white border border-gray-200 rounded-lg resizable-table" id="perbaikanKontainerTable">
                 <thead class="bg-gray-50">
-                    <tr>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
+                    <tr><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12" style="position: relative;">
                             <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
-                        </th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16">No</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Nomor Tagihan</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Kontainer</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40">Vendor/Bengkel</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48">Estimasi Kerusakan</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Estimasi Biaya</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32">Realisasi Biaya</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Status</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Tgl Masuk</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Tgl Selesai</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Tgl Cat</th>
-                        <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th>
-                    </tr>
+                        <div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-16" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32" style="position: relative;">Nomor Tagihan<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32" style="position: relative;">Kontainer<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-40" style="position: relative;">Vendor/Bengkel<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-48" style="position: relative;">Estimasi Kerusakan<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32" style="position: relative;">Estimasi Biaya<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-32" style="position: relative;">Realisasi Biaya<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Status<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Tgl Masuk<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Tgl Selesai<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24" style="position: relative;">Tgl Cat<div class="resize-handle"></div></th><th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-24">Aksi</th></tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200 text-[10px]">
                     @forelse($perbaikanKontainers as $index => $perbaikan)

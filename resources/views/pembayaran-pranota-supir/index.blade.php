@@ -17,18 +17,9 @@
             @endcan
         </div>
         <div class="overflow-x-auto rounded-xl border shadow-sm">
-            <table class="min-w-full text-sm text-left text-gray-700">
+            <table class="min-w-full text-sm text-left text-gray-700 resizable-table" id="pembayaranPranotaSupirTable">
                 <thead class="bg-gray-100 text-xs">
-                        <tr>
-                            <th class="px-4 py-3">Nomor Pembayaran</th>
-                            <th class="px-4 py-3">Tanggal Pembayaran</th>
-                            <th class="px-4 py-3">Nomor Pranota</th>
-                            <th class="px-4 py-3">Total Pembayaran</th>
-                            <th class="px-4 py-3">Bank</th>
-                            <th class="px-4 py-3">Jenis Transaksi</th>
-                            <th class="px-4 py-3">Keterangan</th>
-                            <th class="px-4 py-3">Aksi</th>
-                        </tr>
+                        <tr><th class="resizable-th px-4 py-3" style="position: relative;">Nomor Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3" style="position: relative;">Tanggal Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3" style="position: relative;">Nomor Pranota<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3" style="position: relative;">Total Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3" style="position: relative;">Bank<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3" style="position: relative;">Jenis Transaksi<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3" style="position: relative;">Keterangan<div class="resize-handle"></div></th><th class="px-4 py-3">Aksi</th></tr>
                 </thead>
                 <tbody class="divide-y divide-gray-200 bg-white text-[10px]">
                     @forelse ($pembayarans as $pembayaran)
@@ -74,3 +65,13 @@
 @include('components.audit-log-modal')
 
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('pembayaranPranotaSupirTable');
+});
+</script>
+@endpush

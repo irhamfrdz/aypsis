@@ -89,25 +89,9 @@
 ])
 
 <div class="overflow-x-auto shadow-md sm:rounded-lg table-container">
-    <table class="min-w-full divide-y divide-gray-200">
+    <table class="min-w-full divide-y divide-gray-200 resizable-table" id="masterStockKontainerTable">
         <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
-            <tr>
-                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Nomor Kontainer
-                </th>
-                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Ukuran
-                </th>
-                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Tipe
-                </th>
-                <th scope="col" class="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Status
-                </th>
-                <th scope="col" class="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
-                    Aksi
-                </th>
-            </tr>
+            <tr></tr>
         </thead>
 
         <tbody class="bg-white divide-y divide-gray-200">
@@ -294,3 +278,13 @@ document.addEventListener('DOMContentLoaded', function() {
 @include('components.audit-log-modal')
 
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('masterStockKontainerTable');
+});
+</script>
+@endpush

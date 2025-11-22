@@ -123,28 +123,9 @@
             <p class="text-gray-500">Belum ada data tujuan kegiatan utama.</p>
         @else
             <div class="overflow-x-auto">
-                <table class="min-w-full bg-white rounded-lg shadow-md">
+                <table class="min-w-full bg-white rounded-lg shadow-md resizable-table" id="masterTujuanKegiatanUtamaTable">
                     <thead>
-                        <tr class="bg-gray-100 text-left text-gray-600 text-[8px] font-semibold">
-                            <th class="py-2 px-2">Kode</th>
-                            <th class="py-2 px-2">Cabang</th>
-                            <th class="py-2 px-2">Wilayah</th>
-                            <th class="py-2 px-2">Dari</th>
-                            <th class="py-2 px-2">Ke</th>
-                            <th class="py-2 px-2">Uang Jalan 20ft</th>
-                            <th class="py-2 px-2">Uang Jalan 40ft</th>
-                            <th class="py-2 px-2">Keterangan</th>
-                            <th class="py-2 px-2">Liter</th>
-                            <th class="py-2 px-2">Jarak Penjaringan (km)</th>
-                            <th class="py-2 px-2">MEL 20ft</th>
-                            <th class="py-2 px-2">MEL 40ft</th>
-                            <th class="py-2 px-2">Ongkos Truk 20ft</th>
-                            <th class="py-2 px-2">Ongkos Truk 40ft</th>
-                            <th class="py-2 px-2">Antar Lokasi 20ft</th>
-                            <th class="py-2 px-2">Antar Lokasi 40ft</th>
-                            <th class="py-2 px-2">Status</th>
-                            <th class="py-2 px-2">Aksi</th>
-                        </tr>
+                        <tr class="bg-gray-100 text-left text-gray-600 text-[8px] font-semibold"><th class="resizable-th py-2 px-2" style="position: relative;">Kode<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Cabang<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Wilayah<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Dari<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Ke<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Uang Jalan 20ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Uang Jalan 40ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Keterangan<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Liter<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Jarak Penjaringan (km)<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">MEL 20ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">MEL 40ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Ongkos Truk 20ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Ongkos Truk 40ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Antar Lokasi 20ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Antar Lokasi 40ft<div class="resize-handle"></div></th><th class="resizable-th py-2 px-2" style="position: relative;">Status<div class="resize-handle"></div></th><th class="py-2 px-2">Aksi</th></tr>
                     </thead>
                     <tbody class="text-gray-700 text-[8px]">
                         @foreach ($tujuanKegiatanUtamas as $item)
@@ -219,3 +200,13 @@
 @include('components.audit-log-modal')
 
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('masterTujuanKegiatanUtamaTable');
+});
+</script>
+@endpush

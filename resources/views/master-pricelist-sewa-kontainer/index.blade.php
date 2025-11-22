@@ -28,7 +28,7 @@
         </div>
     @endif
     <div class="overflow-x-auto shadow-md sm:rounded-lg">
-    <table class="min-w-full bg-white divide-y divide-gray-200 text-xs table-fixed" style="table-layout: fixed;">
+    <table class="min-w-full bg-white divide-y divide-gray-200 text-xs table-fixed resizable-table" id="masterPricelistSewaKontainerTable" style="table-layout: fixed;">
             <colgroup>
                 <col style="width: 2.5rem;"> <!-- No -->
                 <col style="width: 8rem;">  <!-- Vendor -->
@@ -41,17 +41,7 @@
                 <col style="width: 6rem;">  <!-- Aksi -->
             </colgroup>
             <thead class="bg-gray-100">
-                <tr>
-                    <th class="py-1 px-3 text-center font-semibold text-gray-600 w-10 align-top" style="height: 36px; vertical-align: top;">No</th>
-                    <th class="py-1 px-3 font-semibold text-gray-600 w-32 align-top" style="height: 36px; vertical-align: top;">Vendor</th>
-                    <th class="py-1 px-3 font-semibold text-gray-600 w-24 align-top" style="height: 36px; vertical-align: top;">Tarif</th>
-                    <th class="py-1 px-3 font-semibold text-gray-600 w-16 text-center align-top" style="height: 36px; vertical-align: top;">Ukuran</th>
-                    <th class="py-1 px-3 font-semibold text-gray-600 w-32 text-center align-top" style="height: 36px; vertical-align: top;">Harga</th>
-                    <th class="py-1 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 36px; vertical-align: top;">Tanggal Awal</th>
-                    <th class="py-1 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 36px; vertical-align: top;">Tanggal Akhir</th>
-                    <th class="py-1 px-3 font-semibold text-gray-600 w-40 align-top" style="height: 36px; vertical-align: top;">Keterangan</th>
-                    <th class="py-1 px-3 text-center font-semibold text-gray-600 w-24 align-top" style="height: 36px; vertical-align: top;">Aksi</th>
-                </tr>
+                <tr><th class="resizable-th py-1 px-3 text-center font-semibold text-gray-600 w-10 align-top" style="height: 36px; vertical-align: top;" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th py-1 px-3 font-semibold text-gray-600 w-32 align-top" style="height: 36px; vertical-align: top;" style="position: relative;">Vendor<div class="resize-handle"></div></th><th class="resizable-th py-1 px-3 font-semibold text-gray-600 w-24 align-top" style="height: 36px; vertical-align: top;" style="position: relative;">Tarif<div class="resize-handle"></div></th><th class="resizable-th py-1 px-3 font-semibold text-gray-600 w-16 text-center align-top" style="height: 36px; vertical-align: top;" style="position: relative;">Ukuran<div class="resize-handle"></div></th><th class="resizable-th py-1 px-3 font-semibold text-gray-600 w-32 text-center align-top" style="height: 36px; vertical-align: top;" style="position: relative;">Harga<div class="resize-handle"></div></th><th class="resizable-th py-1 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 36px; vertical-align: top;" style="position: relative;">Tanggal Awal<div class="resize-handle"></div></th><th class="resizable-th py-1 px-3 font-semibold text-gray-600 w-28 text-center align-top" style="height: 36px; vertical-align: top;" style="position: relative;">Tanggal Akhir<div class="resize-handle"></div></th><th class="resizable-th py-1 px-3 font-semibold text-gray-600 w-40 align-top" style="height: 36px; vertical-align: top;" style="position: relative;">Keterangan<div class="resize-handle"></div></th><th class="py-1 px-3 text-center font-semibold text-gray-600 w-24 align-top" style="height: 36px; vertical-align: top;">Aksi</th></tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-100 text-gray-700 text-[10px]">
                 @forelse ($pricelists as $index => $pricelist)
@@ -153,3 +143,13 @@
 @include('components.audit-log-modal')
 
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('masterPricelistSewaKontainerTable');
+});
+</script>
+@endpush

@@ -139,43 +139,9 @@
 
             <!-- Table -->
             <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm">
+                <table class="min-w-full divide-y divide-gray-200 text-sm resizable-table" id="tandaTerimaTable">
                     <thead class="bg-gray-50">
-                        <tr>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                                <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-12">
-                                No
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[110px]">
-                                No. Surat Jalan
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                                Tgl Checkpoint
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[110px]">
-                                No. Kontainer
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                                Jenis Barang
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">
-                                Tujuan Ambil
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider min-w-[130px]">
-                                Tujuan Kirim
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                                Kegiatan
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-20">
-                                Status
-                            </th>
-                            <th scope="col" class="px-3 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider w-28">
-                                Aksi
-                            </th>
-                        </tr>
+                        <tr></tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($tandaTerimas as $tandaTerima)
@@ -551,3 +517,13 @@
 @include('components.audit-log-modal')
 
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('tandaTerimaTable');
+});
+</script>
+@endpush

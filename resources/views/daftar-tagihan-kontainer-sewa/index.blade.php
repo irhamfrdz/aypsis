@@ -698,18 +698,15 @@ input[required]:focus {
             
             <!-- Table Section with Sticky Header -->
             <div class="table-container overflow-x-auto max-h-screen">
-                <table class="min-w-full divide-y divide-gray-200 compact-table" style="min-width: 1400px;">
+                <table class="min-w-full divide-y divide-gray-200 compact-table resizable-table" id="tagihanKontainerSewaTable" style="min-width: 1400px;">
                     <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
-                <tr class="border-b border-gray-200">
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 30px;">
+                <tr class="border-b border-gray-200"><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 30px;" style="position: relative;">
                         <div class="flex items-center justify-center">
                             <input type="checkbox" id="select-all" class="checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" style="width: 12px; height: 12px;">
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 35px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-wider" style="width: 35px;" style="position: relative;">
                         <span>No</span>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 70px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 70px;" style="position: relative;">
                         <div class="flex items-center space-x-1">
                             <span>Grup</span>
                             <div class="relative group">
@@ -722,43 +719,35 @@ input[required]:focus {
                                 </div>
                             </div>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 60px;" style="position: relative;">
                         <div class="flex items-center space-x-0.5">
                             <span>Vendor</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 90px;" style="position: relative;">
                         <div class="flex items-center space-x-1">
                             <span>Nomor Kontainer</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 35px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 35px;" style="position: relative;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Size</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 45px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 45px;" style="position: relative;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Periode</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 70px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 70px;" style="position: relative;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Masa</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 45px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight" style="min-width: 45px;" style="position: relative;">
                         <div class="flex items-center justify-center space-x-1">
                             <span>Tarif</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;" style="position: relative;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>DPP</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;" style="position: relative;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>Adjustment</span>
                             <div class="relative group">
@@ -770,8 +759,7 @@ input[required]:focus {
                                 </div>
                             </div>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 75px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 75px;" style="position: relative;">
                         <div class="flex items-center justify-start space-x-0.5">
                             <span>Invoice Vendor</span>
                             <div class="relative group">
@@ -783,8 +771,7 @@ input[required]:focus {
                                 </div>
                             </div>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 65px;" style="position: relative;">
                         <div class="flex items-center justify-start space-x-0.5">
                             <span>Tanggal Vendor</span>
                             <div class="relative group">
@@ -796,8 +783,7 @@ input[required]:focus {
                                 </div>
                             </div>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-left text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;" style="position: relative;">
                         <div class="flex items-center justify-start space-x-0.5">
                             <span>Nomor Bank</span>
                             <div class="relative group">
@@ -809,23 +795,19 @@ input[required]:focus {
                                 </div>
                             </div>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 55px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 55px;" style="position: relative;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>PPN</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 55px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 55px;" style="position: relative;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>PPH</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-right text-[7px] font-semibold text-gray-700 uppercase tracking-tight" style="min-width: 70px;" style="position: relative;">
                         <div class="flex items-center justify-end space-x-0.5">
                             <span>Grand Total</span>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-orange-50" style="min-width: 75px;">
+                    <div class="resize-handle"></div></th><th class="resizable-th px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-orange-50" style="min-width: 75px;" style="position: relative;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Status Pranota</span>
                             <div class="relative group">
@@ -838,13 +820,11 @@ input[required]:focus {
                                 </div>
                             </div>
                         </div>
-                    </th>
-                    <th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-gray-50" style="min-width: 70px;">
+                    <div class="resize-handle"></div></th><th class="px-1 py-0.5 text-center text-[7px] font-medium text-gray-500 uppercase tracking-tight bg-gray-50" style="min-width: 70px;">
                         <div class="flex items-center justify-center space-x-0.5">
                             <span>Aksi</span>
                         </div>
-                    </th>
-                </tr>
+                    </th></tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
                 @forelse($tagihans ?? [] as $index => $tagihan)
@@ -2653,14 +2633,7 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Container</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Ukuran</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
-                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th>
-                            </tr>
+                            <tr><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Container<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Vendor<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Ukuran<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Periode<div class="resize-handle"></div></th><th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Total Biaya</th></tr>
                         </thead>
                         <tbody class="bg-white">
                             ${containerRows}
@@ -2738,14 +2711,7 @@ window.openModal = function(type, ids, data, action = 'buat_pranota') {
                 <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
                     <table class="min-w-full divide-y divide-gray-200">
                         <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">No</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Container</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Vendor</th>
-                                <th class="px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">Ukuran</th>
-                                <th class="px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">Periode</th>
-                                <th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th>
-                            </tr>
+                            <tr><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase" style="position: relative;">Container<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase" style="position: relative;">Vendor<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase" style="position: relative;">Ukuran<div class="resize-handle"></div></th><th class="resizable-th px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase" style="position: relative;">Periode<div class="resize-handle"></div></th><th class="px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">Total</th></tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             ${containerRows}
@@ -3151,23 +3117,17 @@ window.showDeleteGroupModal = function(groups) {
                             <div class="max-h-96 overflow-y-auto">
                                 <table class="min-w-full divide-y divide-gray-200">
                                     <thead class="bg-gray-50 sticky top-0">
-                                        <tr>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                        <tr><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                                                 <input type="checkbox" id="select-all-groups" class="w-4 h-4 text-red-600 bg-gray-100 border-gray-300 rounded focus:ring-red-500">
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                                                 Nama Group
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                                                 Jumlah Kontainer
-                                            </th>
-                                            <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
                                                 Dibuat Pada
-                                            </th>
-                                            <th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                            <div class="resize-handle"></div></th><th class="px-4 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Aksi
-                                            </th>
-                                        </tr>
+                                            </th></tr>
                                     </thead>
                                     <tbody class="bg-white divide-y divide-gray-200">
                                         ${groups.map(group => `

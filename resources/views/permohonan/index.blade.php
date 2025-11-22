@@ -302,24 +302,11 @@
             <form id="bulk-delete-form" action="{{ route('permohonan.bulk-delete') }}" method="POST">
                 @csrf
                 @method('DELETE')
-                <table class="min-w-full divide-y divide-indigo-200 bg-white rounded-lg">
+                <table class="min-w-full divide-y divide-indigo-200 bg-white rounded-lg resizable-table" id="permohonanTable">
                     <thead class="bg-indigo-100 sticky top-0 z-20 shadow-sm">
-                        <tr>
-                            <th class="px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider">
+                        <tr><th class="resizable-th px-6 py-3 text-left text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">
                                 <input type="checkbox" id="select-all" class="rounded border-indigo-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleSelectAll()">
-                            </th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Nomor Memo</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Tanggal Memo</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Kegiatan</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Vendor</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Supir</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Dari - Ke</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Uang Jalan</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Adjustment</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Alasan Adjustment</th>
-                            <th class="px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider">Total Biaya</th>
-                            <th class="px-6 py-3 text-right text-xs font-bold text-indigo-700 uppercase tracking-wider">Aksi</th>
-                        </tr>
+                            <div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Nomor Memo<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Tanggal Memo<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Kegiatan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Vendor<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Supir<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Dari - Ke<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Uang Jalan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Adjustment<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Alasan Adjustment<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-center text-xs font-bold text-indigo-700 uppercase tracking-wider" style="position: relative;">Total Biaya<div class="resize-handle"></div></th><th class="px-6 py-3 text-right text-xs font-bold text-indigo-700 uppercase tracking-wider">Aksi</th></tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-indigo-100 text-[10px]">
                         @forelse ($permohonans as $permohonan)
@@ -558,3 +545,13 @@ function quickFilterByDateRange(days) {
 @include('components.audit-log-modal')
 
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('permohonanTable');
+});
+</script>
+@endpush

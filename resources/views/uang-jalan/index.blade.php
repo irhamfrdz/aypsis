@@ -108,7 +108,7 @@
         <div class="bg-white rounded-lg shadow-sm border border-gray-200">
             @if($uangJalans->count() > 0)
                 <div class="overflow-x-auto">
-                    <table class="min-w-full divide-y divide-gray-200 text-xs table-fixed">
+                    <table class="min-w-full divide-y divide-gray-200 text-xs table-fixed resizable-table" id="uangJalanTable">
                         <colgroup>
                             <col class="w-12">   <!-- No -->
                             <col class="w-28">   <!-- No Uang Jalan -->
@@ -120,16 +120,7 @@
                             <col class="w-20">   <!-- Aksi -->
                         </colgroup>
                         <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-8">No</th>
-                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24">No Uang Jalan</th>
-                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-32">No Surat Jalan</th>
-                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-20">Tanggal UJ</th>
-                                <th class="px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24">Supir</th>
-                                <th class="px-2 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-tight w-20">Total</th>
-                                <th class="px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24">Status</th>
-                                <th class="px-1 py-1 text-center text-xs font-medium text-gray-500 uppercase tracking-tight w-20">Aksi</th>
-                            </tr>
+                            <tr><th class="resizable-th px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-8" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24" style="position: relative;">No Uang Jalan<div class="resize-handle"></div></th><th class="resizable-th px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-32" style="position: relative;">No Surat Jalan<div class="resize-handle"></div></th><th class="resizable-th px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-20" style="position: relative;">Tanggal UJ<div class="resize-handle"></div></th><th class="resizable-th px-2 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24" style="position: relative;">Supir<div class="resize-handle"></div></th><th class="resizable-th px-2 py-1 text-right text-xs font-medium text-gray-500 uppercase tracking-tight w-20" style="position: relative;">Total<div class="resize-handle"></div></th><th class="resizable-th px-1 py-1 text-left text-xs font-medium text-gray-500 uppercase tracking-tight w-24" style="position: relative;">Status<div class="resize-handle"></div></th><th class="px-1 py-1 text-center text-xs font-medium text-gray-500 uppercase tracking-tight w-20">Aksi</th></tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
                             @foreach($uangJalans as $index => $uangJalan)

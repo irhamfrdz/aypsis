@@ -152,25 +152,9 @@
     <!-- Data Table -->
     <div class="bg-white shadow overflow-hidden sm:rounded-lg">
         <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200">
+            <table class="min-w-full divide-y divide-gray-200 resizable-table" id="masterPelabuhanTable">
                 <thead class="bg-gray-50">
-                    <tr>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Nama Pelabuhan
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Kota
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Status
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Keterangan
-                        </th>
-                        <th scope="col" class="relative px-6 py-3">
-                            <span class="sr-only">Aksi</span>
-                        </th>
-                    </tr>
+                    <tr></tr>
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     @forelse($pelabuhans as $pelabuhan)
@@ -244,3 +228,13 @@
     </div>
 </div>
 @endsection
+
+@include('components.resizable-table')
+
+@push('scripts')
+<script>
+$(document).ready(function() {
+    initResizableTable('masterPelabuhanTable');
+});
+</script>
+@endpush
