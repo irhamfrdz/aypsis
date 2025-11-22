@@ -212,7 +212,7 @@ class SuratJalanController extends Controller
             $data = $request->except(['gambar']);
             $data['input_by'] = Auth::id();
             $data['input_date'] = now();
-            $data['status'] = 'pending_payment'; // Set default status to pending_payment (menunggu pembayaran uang jalan)
+            $data['status'] = 'draft'; // Set default status to draft
 
             // Map nomor_kontainer to no_kontainer (database column name)
             if (isset($data['nomor_kontainer'])) {
