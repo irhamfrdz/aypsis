@@ -1635,17 +1635,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 bulkActionsElement.classList.remove('hidden');
                 bulkActionsElement.style.display = 'block'; // Force show
 
-                // Cek apakah ada item yang memiliki grup untuk tombol "Masukan ke Pranota"
-                let hasItemsWithGroup = false;
+                // Cek apakah ada item yang memiliki nomor vendor untuk tombol "Masukan ke Pranota"
                 let hasItemsWithVendorNumber = false;
                 let hasItemsAlreadyInPranota = false;
                 checkedBoxes.forEach((checkbox, index) => {
                     const row = checkbox.closest('tr');
                     if (row) {
-                        // Kolom: 1=checkbox, 2=no, 3=grup
-                        const groupElement = row.querySelector('td:nth-child(3)');
-                        const groupValue = groupElement ? groupElement.textContent.trim() : '';
-
                         // Kolom: 12=invoice_vendor
                         const invoiceVendorElement = row.querySelector('td:nth-child(12)');
                         const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
@@ -1654,16 +1649,8 @@ document.addEventListener('DOMContentLoaded', function() {
                         const statusPranotaElement = row.querySelector('td:nth-child(18)');
                         const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
-                        console.log(`Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
                         console.log(`Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
                         console.log(`Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
-
-                        if (groupValue && groupValue !== '-' && groupValue !== '') {
-                            hasItemsWithGroup = true;
-                            console.log(`Item ${index + 1} has valid group: "${groupValue}"`);
-                        } else {
-                            console.log(`Item ${index + 1} has invalid/no group: "${groupValue}"`);
-                        }
 
                         // Cek apakah item memiliki nomor vendor
                         if (invoiceVendorValue && invoiceVendorValue !== '-' && invoiceVendorValue !== '') {
@@ -1688,16 +1675,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                console.log('Final result: hasItemsWithGroup =', hasItemsWithGroup, 'hasItemsWithVendorNumber =', hasItemsWithVendorNumber, 'hasItemsAlreadyInPranota =', hasItemsAlreadyInPranota);
+                console.log('Final result: hasItemsWithVendorNumber =', hasItemsWithVendorNumber, 'hasItemsAlreadyInPranota =', hasItemsAlreadyInPranota);
 
-                // Enable/disable tombol "Buat Pranota Baru" berdasarkan validasi grup, nomor vendor, dan status pranota
+                // Enable/disable tombol "Buat Pranota Baru" berdasarkan validasi nomor vendor dan status pranota
                 const btnMasukanPranota = document.getElementById('btnMasukanPranota');
                 if (btnMasukanPranota) {
-                    // Tombol aktif hanya jika ada item dengan grup DAN nomor vendor DAN tidak ada yang sudah masuk pranota
-                    if (hasItemsWithGroup && hasItemsWithVendorNumber && !hasItemsAlreadyInPranota) {
+                    // Tombol aktif hanya jika ada item dengan nomor vendor DAN tidak ada yang sudah masuk pranota
+                    if (hasItemsWithVendorNumber && !hasItemsAlreadyInPranota) {
                         btnMasukanPranota.disabled = false;
                         btnMasukanPranota.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnMasukanPranota.title = 'Buat pranota baru dari item terpilih yang memiliki grup dan nomor vendor';
+                        btnMasukanPranota.title = 'Buat pranota baru dari item terpilih yang memiliki nomor vendor';
                         console.log('✓ Button "Buat Pranota Baru" ENABLED');
                     } else {
                         btnMasukanPranota.disabled = true;
@@ -1706,11 +1693,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             btnMasukanPranota.title = 'Tidak dapat membuat pranota: Beberapa item sudah masuk pranota';
                             console.log('✗ Button "Buat Pranota Baru" DISABLED: Item sudah masuk pranota');
                         } else if (!hasItemsWithVendorNumber) {
-                            btnMasukanPranota.title = 'Tidak dapat membuat pranota: Pilih item yang memiliki nomor vendor terlebih dahulu';
+                            btnMasukanPranota.title = 'Tidak dapat membuat pranota: Pilih item yang memiliki nomor invoice vendor terlebih dahulu';
                             console.log('✗ Button "Buat Pranota Baru" DISABLED: Tidak ada item dengan nomor vendor');
-                        } else if (!hasItemsWithGroup) {
-                            btnMasukanPranota.title = 'Tidak dapat membuat pranota: Pilih item yang memiliki grup terlebih dahulu';
-                            console.log('✗ Button "Buat Pranota Baru" DISABLED: Tidak ada item dengan grup');
                         } else {
                             btnMasukanPranota.title = 'Tidak dapat membuat pranota';
                             console.log('✗ Button "Buat Pranota Baru" DISABLED: Unknown reason');
