@@ -756,9 +756,6 @@ input[required]:focus {
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] font-medium text-gray-700">
                             {{ ($tagihans->currentPage() - 1) * $tagihans->perPage() + $index + 1 }}
                         </td>
-                        <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900">
-                            <input type="checkbox" name="selected_items[]" value="{{ $tagihan->id }}" class="row-checkbox checkbox-compact text-indigo-600 bg-gray-100 border-gray-300 rounded focus:ring-indigo-500 focus:ring-2" style="width: 12px; height: 12px;">
-                        </td>
                         <!-- Kolom Group -->
                         <td class="px-1 py-0.5 whitespace-nowrap text-center text-[8px] text-gray-900 font-mono" style="min-width: 90px;">
                             <div class="relative group compact-cell flex items-center justify-center">
@@ -1644,10 +1641,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 checkedBoxes.forEach((checkbox, index) => {
                     const row = checkbox.closest('tr');
                     if (row) {
-                        const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
+                        // Kolom: 1=checkbox, 2=no, 3=grup
+                        const groupElement = row.querySelector('td:nth-child(3)');
                         const groupValue = groupElement ? groupElement.textContent.trim() : '';
 
-                        const statusPranotaElement = row.querySelector('td:nth-child(20)'); // Status Pranota column (index 20, was 21 before)
+                        // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, 8=masa, 9=tarif, 10=dpp, 11=adjustment, 12=invoice, 13=tgl_vendor, 14=nomor_bank, 15=ppn, 16=pph, 17=grand_total, 18=status_pranota
+                        const statusPranotaElement = row.querySelector('td:nth-child(18)');
                         const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
                         console.log(`Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
@@ -1677,20 +1676,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 console.log('Final result: hasItemsWithGroup =', hasItemsWithGroup, 'hasItemsAlreadyInPranota =', hasItemsAlreadyInPranota);
 
-                // Enable/disable tombol "Masukan ke Pranota" berdasarkan validasi grup dan status pranota
+                // Enable/disable tombol "Buat Pranota Baru" berdasarkan validasi grup dan status pranota
                 const btnMasukanPranota = document.getElementById('btnMasukanPranota');
                 if (btnMasukanPranota) {
+                    // Tombol aktif hanya jika ada item dengan grup DAN tidak ada yang sudah masuk pranota
                     if (hasItemsWithGroup && !hasItemsAlreadyInPranota) {
                         btnMasukanPranota.disabled = false;
                         btnMasukanPranota.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnMasukanPranota.title = 'Masukan item terpilih ke pranota';
+                        btnMasukanPranota.title = 'Buat pranota baru dari item terpilih yang memiliki grup';
+                        console.log('✓ Button "Buat Pranota Baru" ENABLED');
                     } else {
                         btnMasukanPranota.disabled = true;
                         btnMasukanPranota.classList.add('opacity-50', 'cursor-not-allowed');
                         if (hasItemsAlreadyInPranota) {
-                            btnMasukanPranota.title = 'Beberapa item sudah masuk pranota dan tidak dapat dimasukkan kembali';
+                            btnMasukanPranota.title = 'Tidak dapat membuat pranota: Beberapa item sudah masuk pranota';
+                            console.log('✗ Button "Buat Pranota Baru" DISABLED: Item sudah masuk pranota');
+                        } else if (!hasItemsWithGroup) {
+                            btnMasukanPranota.title = 'Tidak dapat membuat pranota: Pilih item yang memiliki grup terlebih dahulu';
+                            console.log('✗ Button "Buat Pranota Baru" DISABLED: Tidak ada item dengan grup');
                         } else {
-                            btnMasukanPranota.title = 'Pilih item yang memiliki grup terlebih dahulu';
+                            btnMasukanPranota.title = 'Tidak dapat membuat pranota';
+                            console.log('✗ Button "Buat Pranota Baru" DISABLED: Unknown reason');
                         }
                     }
                 }

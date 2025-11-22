@@ -1028,8 +1028,8 @@ class TandaTerimaController extends Controller
 
                         // Format expired date (29/12/24 format)
                         $expiredDate = '';
-                        if ($tandaTerima->tanggal_checkpoint_supir) {
-                            $expiredDate = $tandaTerima->tanggal_checkpoint_supir->format('d/m/y');
+                        if ($tandaTerima->expired_date) {
+                            $expiredDate = $tandaTerima->expired_date->format('d/m/y');
                         }
 
                         $row = [
