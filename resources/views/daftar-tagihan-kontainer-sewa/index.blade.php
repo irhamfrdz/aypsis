@@ -1637,6 +1637,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Cek apakah ada item yang memiliki grup untuk tombol "Masukan ke Pranota"
                 let hasItemsWithGroup = false;
+                let hasItemsWithVendorNumber = false;
                 let hasItemsAlreadyInPranota = false;
                 checkedBoxes.forEach((checkbox, index) => {
                     const row = checkbox.closest('tr');
@@ -1645,11 +1646,16 @@ document.addEventListener('DOMContentLoaded', function() {
                         const groupElement = row.querySelector('td:nth-child(3)');
                         const groupValue = groupElement ? groupElement.textContent.trim() : '';
 
+                        // Kolom: 12=invoice_vendor
+                        const invoiceVendorElement = row.querySelector('td:nth-child(12)');
+                        const invoiceVendorValue = invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '';
+
                         // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, 8=masa, 9=tarif, 10=dpp, 11=adjustment, 12=invoice, 13=tgl_vendor, 14=nomor_bank, 15=ppn, 16=pph, 17=grand_total, 18=status_pranota
                         const statusPranotaElement = row.querySelector('td:nth-child(18)');
                         const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
                         console.log(`Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
+                        console.log(`Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
                         console.log(`Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
 
                         if (groupValue && groupValue !== '-' && groupValue !== '') {
@@ -1657,6 +1663,14 @@ document.addEventListener('DOMContentLoaded', function() {
                             console.log(`Item ${index + 1} has valid group: "${groupValue}"`);
                         } else {
                             console.log(`Item ${index + 1} has invalid/no group: "${groupValue}"`);
+                        }
+
+                        // Cek apakah item memiliki nomor vendor
+                        if (invoiceVendorValue && invoiceVendorValue !== '-' && invoiceVendorValue !== '') {
+                            hasItemsWithVendorNumber = true;
+                            console.log(`Item ${index + 1} has valid vendor number: "${invoiceVendorValue}"`);
+                        } else {
+                            console.log(`Item ${index + 1} has invalid/no vendor number: "${invoiceVendorValue}"`);
                         }
 
                         // Cek apakah item sudah masuk pranota
@@ -1674,16 +1688,16 @@ document.addEventListener('DOMContentLoaded', function() {
                     }
                 });
 
-                console.log('Final result: hasItemsWithGroup =', hasItemsWithGroup, 'hasItemsAlreadyInPranota =', hasItemsAlreadyInPranota);
+                console.log('Final result: hasItemsWithGroup =', hasItemsWithGroup, 'hasItemsWithVendorNumber =', hasItemsWithVendorNumber, 'hasItemsAlreadyInPranota =', hasItemsAlreadyInPranota);
 
-                // Enable/disable tombol "Buat Pranota Baru" berdasarkan validasi grup dan status pranota
+                // Enable/disable tombol "Buat Pranota Baru" berdasarkan validasi grup, nomor vendor, dan status pranota
                 const btnMasukanPranota = document.getElementById('btnMasukanPranota');
                 if (btnMasukanPranota) {
-                    // Tombol aktif hanya jika ada item dengan grup DAN tidak ada yang sudah masuk pranota
-                    if (hasItemsWithGroup && !hasItemsAlreadyInPranota) {
+                    // Tombol aktif hanya jika ada item dengan grup DAN nomor vendor DAN tidak ada yang sudah masuk pranota
+                    if (hasItemsWithGroup && hasItemsWithVendorNumber && !hasItemsAlreadyInPranota) {
                         btnMasukanPranota.disabled = false;
                         btnMasukanPranota.classList.remove('opacity-50', 'cursor-not-allowed');
-                        btnMasukanPranota.title = 'Buat pranota baru dari item terpilih yang memiliki grup';
+                        btnMasukanPranota.title = 'Buat pranota baru dari item terpilih yang memiliki grup dan nomor vendor';
                         console.log('✓ Button "Buat Pranota Baru" ENABLED');
                     } else {
                         btnMasukanPranota.disabled = true;
@@ -1691,6 +1705,9 @@ document.addEventListener('DOMContentLoaded', function() {
                         if (hasItemsAlreadyInPranota) {
                             btnMasukanPranota.title = 'Tidak dapat membuat pranota: Beberapa item sudah masuk pranota';
                             console.log('✗ Button "Buat Pranota Baru" DISABLED: Item sudah masuk pranota');
+                        } else if (!hasItemsWithVendorNumber) {
+                            btnMasukanPranota.title = 'Tidak dapat membuat pranota: Pilih item yang memiliki nomor vendor terlebih dahulu';
+                            console.log('✗ Button "Buat Pranota Baru" DISABLED: Tidak ada item dengan nomor vendor');
                         } else if (!hasItemsWithGroup) {
                             btnMasukanPranota.title = 'Tidak dapat membuat pranota: Pilih item yang memiliki grup terlebih dahulu';
                             console.log('✗ Button "Buat Pranota Baru" DISABLED: Tidak ada item dengan grup');
@@ -1897,13 +1914,13 @@ window.masukanKePranota = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
+            const groupElement = row.querySelector('td:nth-child(3)'); // Group column (1=checkbox, 2=no, 3=grup) (index 2)
             const groupValue = groupElement ? groupElement.textContent.trim() : '';
 
             console.log(`Validation Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
 
             if (!groupValue || groupValue === '-' || groupValue === '') {
-                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
                 itemsWithoutGroup.push(containerName);
                 console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutGroup`);
@@ -1931,7 +1948,7 @@ window.masukanKePranota = function() {
             console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
 
             if (!invoiceVendorValue || invoiceVendorValue === '-' || invoiceVendorValue === '') {
-                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
                 itemsWithoutVendorNumber.push(containerName);
                 console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutVendorNumber`);
@@ -1953,7 +1970,7 @@ window.masukanKePranota = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const statusPranotaElement = row.querySelector('td:nth-child(20)'); // Status Pranota column (index 20, was 21 before)
+            const statusPranotaElement = row.querySelector('td:nth-child(18)'); // Status Pranota column (index 20, was 21 before)
             const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
             console.log(`Pranota Status Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
@@ -1965,7 +1982,7 @@ window.masukanKePranota = function() {
                                    statusPranotaValue === '-';
 
             if (!isNotInPranota) {
-                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
                 itemsAlreadyInPranota.push(`${containerName} (${statusPranotaValue})`);
                 console.log(`Item ${index + 1} (${containerName}) already in pranota: "${statusPranotaValue}"`);
@@ -2000,11 +2017,12 @@ window.masukanKePranota = function() {
             return;
         }
 
-        const containerElement = row.querySelector('td:nth-child(4)');
-        const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
-        const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
-        const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(15)'); // Grand Total column (15th child/14th index) - Total Biaya
+        // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, ..., 17=grand_total
+        const vendorElement = row.querySelector('td:nth-child(4) .font-semibold'); // Vendor column
+        const containerElement = row.querySelector('td:nth-child(5)');
+        const sizeElement = row.querySelector('td:nth-child(6) .inline-flex');
+        const periodeElement = row.querySelector('td:nth-child(7) .inline-flex');
+        const totalElement = row.querySelector('td:nth-child(17)'); // Grand Total column
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -2039,13 +2057,13 @@ window.masukanKePranotaExisting = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const groupElement = row.querySelector('td:nth-child(2)'); // Group column (index 2)
+            const groupElement = row.querySelector('td:nth-child(3)'); // Group column (1=checkbox, 2=no, 3=grup) (index 2)
             const groupValue = groupElement ? groupElement.textContent.trim() : '';
 
             console.log(`Validation Item ${index + 1}: groupElement=`, groupElement, `groupValue="${groupValue}"`);
 
             if (!groupValue || groupValue === '-' || groupValue === '') {
-                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
                 itemsWithoutGroup.push(containerName);
                 console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutGroup`);
@@ -2073,7 +2091,7 @@ window.masukanKePranotaExisting = function() {
             console.log(`Vendor Invoice Item ${index + 1}: invoiceVendorElement=`, invoiceVendorElement, `invoiceVendorValue="${invoiceVendorValue}"`);
 
             if (!invoiceVendorValue || invoiceVendorValue === '-' || invoiceVendorValue === '') {
-                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
                 itemsWithoutVendorNumber.push(containerName);
                 console.log(`Item ${index + 1} (${containerName}) added to itemsWithoutVendorNumber`);
@@ -2095,7 +2113,7 @@ window.masukanKePranotaExisting = function() {
     checkedBoxes.forEach((checkbox, index) => {
         const row = checkbox.closest('tr');
         if (row) {
-            const statusPranotaElement = row.querySelector('td:nth-child(20)'); // Status Pranota column (index 20)
+            const statusPranotaElement = row.querySelector('td:nth-child(18)'); // Status Pranota column (index 20)
             const statusPranotaValue = statusPranotaElement ? statusPranotaElement.textContent.trim() : '';
 
             console.log(`Pranota Status Item ${index + 1}: statusPranotaElement=`, statusPranotaElement, `statusPranotaValue="${statusPranotaValue}"`);
@@ -2106,7 +2124,7 @@ window.masukanKePranotaExisting = function() {
                                    statusPranotaValue === '';
             
             if (!isNotInPranota) {
-                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const containerName = containerElement ? containerElement.textContent.trim() : `Item ${index + 1}`;
                 itemsAlreadyInPranota.push(containerName);
                 console.log(`Item ${index + 1} (${containerName}) is already in pranota`);
@@ -2164,10 +2182,10 @@ window.masukanKePranotaExisting = function() {
                 const row = checkbox.closest('tr');
                 if (!row) return;
 
-                const containerElement = row.querySelector('td:nth-child(4)');
+                const containerElement = row.querySelector('td:nth-child(5)'); // Kontainer column
                 const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
-                const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
-                const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
+                const sizeElement = row.querySelector('td:nth-child(6) .inline-flex'); // Size column
+                const periodeElement = row.querySelector('td:nth-child(7) .inline-flex'); // Periode column
                 const totalElement = row.querySelector('td:nth-child(18)'); // Grand Total column
 
                 selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
@@ -2240,11 +2258,12 @@ window.buatPranotaTerpilih = function() {
             return;
         }
 
-        const containerElement = row.querySelector('td:nth-child(4)');
-        const vendorElement = row.querySelector('td:nth-child(3) .font-semibold');
-        const sizeElement = row.querySelector('td:nth-child(5) .inline-flex');
-        const periodeElement = row.querySelector('td:nth-child(6) .inline-flex');
-        const totalElement = row.querySelector('td:nth-child(15)'); // Grand Total column (15th child/14th index) - Total Biaya
+        // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, ..., 17=grand_total
+        const vendorElement = row.querySelector('td:nth-child(4) .font-semibold'); // Vendor column
+        const containerElement = row.querySelector('td:nth-child(5)');
+        const sizeElement = row.querySelector('td:nth-child(6) .inline-flex');
+        const periodeElement = row.querySelector('td:nth-child(7) .inline-flex');
+        const totalElement = row.querySelector('td:nth-child(17)'); // Grand Total column
 
         selectedData.containers.push(containerElement ? containerElement.textContent.trim() : '-');
         selectedData.vendors.push(vendorElement ? vendorElement.textContent.trim() : '-');
@@ -4827,3 +4846,6 @@ document.addEventListener('DOMContentLoaded', function() {
 @include('components.audit-log-modal')
 
 @endpush
+
+
+
