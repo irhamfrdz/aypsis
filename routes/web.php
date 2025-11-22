@@ -1511,23 +1511,23 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Route untuk create tanda terima dari surat jalan
     Route::get('tanda-terima/from-surat-jalan/{suratJalan}', [\App\Http\Controllers\TandaTerimaController::class, 'createFromSuratJalan'])
          ->name('tanda-terima.from-surat-jalan')
-         ->middleware('can:tanda-terima-edit');
+         ->middleware('can:tanda-terima-create');
 
     Route::resource('tanda-terima', \App\Http\Controllers\TandaTerimaController::class)
          ->middleware([
              'index' => 'can:tanda-terima-view',
-             'create' => 'can:tanda-terima-edit',
-             'store' => 'can:tanda-terima-edit',
+             'create' => 'can:tanda-terima-create',
+             'store' => 'can:tanda-terima-create',
              'show' => 'can:tanda-terima-view',
-             'edit' => 'can:tanda-terima-edit',
-             'update' => 'can:tanda-terima-edit',
+             'edit' => 'can:tanda-terima-update',
+             'update' => 'can:tanda-terima-update',
              'destroy' => 'can:tanda-terima-delete'
          ]);
 
     // Route untuk menambahkan cargo ke prospek
     Route::post('tanda-terima/{tandaTerima}/add-to-prospek', [\App\Http\Controllers\TandaTerimaController::class, 'addToProspek'])
          ->name('tanda-terima.add-to-prospek')
-         ->middleware('can:tanda-terima-edit');
+         ->middleware('can:tanda-terima-update');
 
     // Route untuk bulk delete tanda terima
     Route::delete('tanda-terima/bulk-delete', [\App\Http\Controllers\TandaTerimaController::class, 'bulkDelete'])
