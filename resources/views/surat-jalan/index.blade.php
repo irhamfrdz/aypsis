@@ -423,8 +423,6 @@ $(document).ready(function() {
     initResizableTable('suratJalanTable');
 });
 </script>
-
-@include('components.resizable-table-styles')
-@include('components.resizable-table-script')
-
 @endsection
+
+@include('components.resizable-table')
