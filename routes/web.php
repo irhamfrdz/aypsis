@@ -1513,16 +1513,34 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('tanda-terima.from-surat-jalan')
          ->middleware('can:tanda-terima-create');
 
-    Route::resource('tanda-terima', \App\Http\Controllers\TandaTerimaController::class)
-         ->middleware([
-             'index' => 'can:tanda-terima-view',
-             'create' => 'can:tanda-terima-create',
-             'store' => 'can:tanda-terima-create',
-             'show' => 'can:tanda-terima-view',
-             'edit' => 'can:tanda-terima-update',
-             'update' => 'can:tanda-terima-update',
-             'destroy' => 'can:tanda-terima-delete'
-         ]);
+    // Resource routes untuk tanda terima dengan middleware yang benar
+    Route::get('tanda-terima', [\App\Http\Controllers\TandaTerimaController::class, 'index'])
+         ->name('tanda-terima.index')
+         ->middleware('can:tanda-terima-view');
+    
+    Route::get('tanda-terima/create', [\App\Http\Controllers\TandaTerimaController::class, 'create'])
+         ->name('tanda-terima.create')
+         ->middleware('can:tanda-terima-create');
+    
+    Route::post('tanda-terima', [\App\Http\Controllers\TandaTerimaController::class, 'store'])
+         ->name('tanda-terima.store')
+         ->middleware('can:tanda-terima-create');
+    
+    Route::get('tanda-terima/{tanda_terima}', [\App\Http\Controllers\TandaTerimaController::class, 'show'])
+         ->name('tanda-terima.show')
+         ->middleware('can:tanda-terima-view');
+    
+    Route::get('tanda-terima/{tanda_terima}/edit', [\App\Http\Controllers\TandaTerimaController::class, 'edit'])
+         ->name('tanda-terima.edit')
+         ->middleware('can:tanda-terima-update');
+    
+    Route::put('tanda-terima/{tanda_terima}', [\App\Http\Controllers\TandaTerimaController::class, 'update'])
+         ->name('tanda-terima.update')
+         ->middleware('can:tanda-terima-update');
+    
+    Route::delete('tanda-terima/{tanda_terima}', [\App\Http\Controllers\TandaTerimaController::class, 'destroy'])
+         ->name('tanda-terima.destroy')
+         ->middleware('can:tanda-terima-delete');
 
     // Route untuk menambahkan cargo ke prospek
     Route::post('tanda-terima/{tandaTerima}/add-to-prospek', [\App\Http\Controllers\TandaTerimaController::class, 'addToProspek'])
