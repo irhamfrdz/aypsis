@@ -1534,6 +1534,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('tanda-terima.bulk-delete')
          ->middleware('can:tanda-terima-delete');
 
+    // Route untuk export Excel tanda terima
+    Route::post('tanda-terima/export-excel', [\App\Http\Controllers\TandaTerimaController::class, 'exportExcel'])
+         ->name('tanda-terima.export-excel')
+         ->middleware('can:tanda-terima-view');
+
     // ═══════════════════════════════════════════════════════════════════════
     // 📋 TANDA TERIMA TANPA SURAT JALAN MANAGEMENT
     // ═══════════════════════════════════════════════════════════════════════

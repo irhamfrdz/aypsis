@@ -380,8 +380,8 @@
 
                         <!-- FORM TANDA TERIMA START -->
 
-                        <!-- Estimasi Nama Kapal & Nomor RO -->
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <!-- Estimasi Nama Kapal, Nomor RO & Expired Date -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div>
                                 <label for="estimasi_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
                                     Estimasi Nama Kapal <span class="text-red-500">*</span>
@@ -418,6 +418,22 @@
                                 @error('nomor_ro')
                                     <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                            </div>
+                            <div>
+                                <label for="expired_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Expired Date
+                                </label>
+                                <input type="date"
+                                       name="expired_date"
+                                       id="expired_date"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm @error('expired_date') border-red-500 @enderror"
+                                       value="{{ old('expired_date') }}">
+                                @error('expired_date')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <i class="fas fa-calendar mr-1"></i>Tanggal kadaluarsa
+                                </p>
                             </div>
                         </div>
 

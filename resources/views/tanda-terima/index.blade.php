@@ -103,6 +103,15 @@
 
                 <!-- Bulk Delete Button -->
                 <div id="bulkActionsContainer" class="hidden">
+                    <div class="flex items-center gap-2">
+                    <button type="button"
+                            onclick="bulkExportExcel()"
+                            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Export Excel
+                    </button>
                     <button type="button"
                             onclick="bulkDelete()"
                             class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
@@ -111,6 +120,7 @@
                         </svg>
                         Hapus Terpilih
                     </button>
+                    </div>
                 </div>
             </div>
 
@@ -119,6 +129,12 @@
                 @csrf
                 @method('DELETE')
                 <input type="hidden" name="tanda_terima_ids" id="bulkDeleteIds">
+            </form>
+
+            <!-- Bulk Export Excel Form (Hidden) -->
+            <form id="bulkExportForm" action="{{ route('tanda-terima.export-excel') }}" method="POST" style="display: none;">
+                @csrf
+                <input type="hidden" name="tanda_terima_ids" id="bulkExportIds">
             </form>
 
             <!-- Table -->
@@ -430,6 +446,21 @@
             selectAllHeader.indeterminate = true;
             selectAllHeader.checked = false;
         }
+    }
+
+    // Bulk export to Excel function
+    function bulkExportExcel() {
+        const checkboxes = document.querySelectorAll('.tanda-terima-checkbox:checked');
+        const selectedCount = checkboxes.length;
+
+        if (selectedCount === 0) {
+            alert('Pilih minimal 1 tanda terima untuk di-export.');
+            return;
+        }
+
+        const tandaTerimaIds = Array.from(checkboxes).map(cb => cb.value);
+        document.getElementById('bulkExportIds').value = JSON.stringify(tandaTerimaIds);
+        document.getElementById('bulkExportForm').submit();
     }
 
     // Bulk delete function

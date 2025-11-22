@@ -904,6 +904,177 @@ class TandaTerimaController extends Controller
     }
 
     /**
+     * Export selected tanda terimas to Excel
+     */
+    public function exportExcel(Request $request)
+    {
+        $request->validate([
+            'tanda_terima_ids' => 'required|json',
+        ]);
+
+        try {
+            $tandaTerimaIds = json_decode($request->tanda_terima_ids, true);
+            
+            if (empty($tandaTerimaIds) || !is_array($tandaTerimaIds)) {
+                throw new \Exception('Invalid tanda terima IDs');
+            }
+
+            $fileName = 'tanda_terima_export_' . date('Ymd_His') . '.csv';
+
+            $callback = function() use ($tandaTerimaIds) {
+                $out = fopen('php://output', 'w');
+
+                // Write UTF-8 BOM for Excel recognition
+                fwrite($out, chr(0xEF) . chr(0xBB) . chr(0xBF));
+
+                // Get tanda terimas with relations, grouped by nomor_ro
+                $tandaTerimas = TandaTerima::with(['suratJalan'])
+                    ->whereIn('id', $tandaTerimaIds)
+                    ->orderBy('nomor_ro')
+                    ->orderBy('created_at', 'desc')
+                    ->get()
+                    ->groupBy('nomor_ro');
+
+                // Define headers
+                $headers = [
+                    'CONTAINER_NO',
+                    'SIZE',
+                    'TIPE',
+                    'STATUS',
+                    'BERAT',
+                    'EXPIRED_DATE',
+                    'CONSIGNEE',
+                    'REMARK',
+                    'POD',
+                    'BOX_OPR'
+                ];
+
+                // Process each RO group
+                foreach ($tandaTerimas as $nomorRo => $groupedTandaTerimas) {
+                    // Write RO NOMOR header
+                    fputcsv($out, ['RO NOMOR :', $nomorRo ?: 'N/A'], ';');
+                    
+                    // Write column headers
+                    fputcsv($out, $headers, ';');
+
+                    // Write data for this RO
+                    foreach ($groupedTandaTerimas as $tandaTerima) {
+                        // Determine STATUS based on kegiatan
+                        // If from surat jalan: tarik isi = F, tarik kosong = E
+                        $status = '';
+                        if ($tandaTerima->suratJalan) {
+                            $kegiatan = strtolower($tandaTerima->kegiatan ?? '');
+                            if (str_contains($kegiatan, 'isi') || str_contains($kegiatan, 'full')) {
+                                $status = 'F';
+                            } elseif (str_contains($kegiatan, 'kosong') || str_contains($kegiatan, 'empty')) {
+                                $status = 'E';
+                            }
+                        }
+
+                        // Determine POD based on tujuan_pengiriman
+                        $tujuanKirim = strtolower($tandaTerima->tujuan_pengiriman ?? '');
+                        $pod = '';
+                        if (str_contains($tujuanKirim, 'batam')) {
+                            $pod = 'IDBTM';
+                        } elseif (str_contains($tujuanKirim, 'pinang')) {
+                            $pod = 'IDKID';
+                        }
+
+                        // Get tipe kontainer from kontainers or stock_kontainers table
+                        $tipeKontainer = '';
+                        $noKontainer = $tandaTerima->no_kontainer;
+                        
+                        if ($noKontainer && strtoupper($noKontainer) !== 'CARGO') {
+                            // Try to find in kontainers table first
+                            $kontainer = \App\Models\Kontainer::where('nomor_seri_gabungan', $noKontainer)
+                                ->orWhere(function($q) use ($noKontainer) {
+                                    $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
+                                })
+                                ->first();
+                            
+                            if ($kontainer && $kontainer->tipe_kontainer) {
+                                $tipeKontainer = strtoupper($kontainer->tipe_kontainer);
+                            } else {
+                                // If not found, try stock_kontainers table
+                                $stockKontainer = \App\Models\StockKontainer::where('nomor_seri_gabungan', $noKontainer)
+                                    ->orWhere(function($q) use ($noKontainer) {
+                                        $q->whereRaw("CONCAT(awalan_kontainer, nomor_seri_kontainer, akhiran_kontainer) = ?", [$noKontainer]);
+                                    })
+                                    ->first();
+                                
+                                if ($stockKontainer && $stockKontainer->tipe_kontainer) {
+                                    $tipeKontainer = strtoupper($stockKontainer->tipe_kontainer);
+                                }
+                            }
+                            
+                            // Normalize tipe kontainer
+                            if (str_contains($tipeKontainer, 'DRY')) {
+                                $tipeKontainer = 'DRY';
+                            } elseif (str_contains($tipeKontainer, 'REEFER')) {
+                                $tipeKontainer = 'REEFER';
+                            } elseif (str_contains($tipeKontainer, 'HC')) {
+                                $tipeKontainer = 'HC';
+                            } elseif (str_contains($tipeKontainer, 'FLAT')) {
+                                $tipeKontainer = 'FLAT RACK';
+                            } elseif (str_contains($tipeKontainer, 'OPEN')) {
+                                $tipeKontainer = 'OPEN TOP';
+                            }
+                        }
+                        
+                        // Default to DRY if not found or if CARGO
+                        if (empty($tipeKontainer)) {
+                            $tipeKontainer = 'DRY';
+                        }
+
+                        // Format expired date (29/12/24 format)
+                        $expiredDate = '';
+                        if ($tandaTerima->tanggal_checkpoint_supir) {
+                            $expiredDate = $tandaTerima->tanggal_checkpoint_supir->format('d/m/y');
+                        }
+
+                        $row = [
+                            $tandaTerima->no_kontainer ?? '',    // CONTAINER_NO
+                            $tandaTerima->size ?? '',            // SIZE
+                            $tipeKontainer,                      // TIPE (from kontainers/stock_kontainers)
+                            $status,                             // STATUS (F/E)
+                            $tandaTerima->tonase ?? '',          // BERAT
+                            $expiredDate,                        // EXPIRED_DATE
+                            '02522267',                          // CONSIGNEE (fixed value)
+                            '',                                  // REMARK (kosong)
+                            $pod,                                // POD (IDBTM/IDKID)
+                            ''                                   // BOX_OPR (kosong)
+                        ];
+
+                        fputcsv($out, $row, ';');
+                    }
+
+                    // Add empty row between RO groups
+                    fputcsv($out, [], ';');
+                }
+
+                fclose($out);
+            };
+
+            Log::info('Export tanda terima to Excel', [
+                'count' => count($tandaTerimaIds),
+                'exported_by' => Auth::user()->name,
+            ]);
+
+            return response()->stream($callback, 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+                'Pragma' => 'no-cache',
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0',
+                'Expires' => '0'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Error exporting tanda terimas: ' . $e->getMessage());
+            return back()->with('error', 'Gagal export tanda terima: ' . $e->getMessage());
+        }
+    }
+
+    /**
      * Add cargo container to prospek
      */
     public function addToProspek(TandaTerima $tandaTerima)

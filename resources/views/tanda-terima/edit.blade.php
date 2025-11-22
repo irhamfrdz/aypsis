@@ -182,29 +182,60 @@
                             </div>
                         </div>
 
-                        <!-- Estimasi Nama Kapal -->
-                        <div>
-                            <label for="estimasi_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
-                                Estimasi Nama Kapal <span class="text-red-500">*</span>
-                            </label>
-                            <select name="estimasi_nama_kapal"
-                                    id="estimasi_nama_kapal"
-                                    class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-kapal @error('estimasi_nama_kapal') border-red-500 @enderror"
-                                    required>
-                                <option value="">-- Pilih Kapal --</option>
-                                @foreach($masterKapals as $kapal)
-                                    <option value="{{ $kapal->nama_kapal }}"
-                                            {{ old('estimasi_nama_kapal', $tandaTerima->estimasi_nama_kapal) == $kapal->nama_kapal ? 'selected' : '' }}>
-                                        {{ $kapal->nama_kapal }}{{ $kapal->nickname ? ' (' . $kapal->nickname . ')' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('estimasi_nama_kapal')
-                                <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-1 text-xs text-gray-500">
-                                <i class="fas fa-search mr-1"></i>Ketik untuk mencari nama kapal
-                            </p>
+                        <!-- Estimasi Nama Kapal, Nomor RO & Expired Date -->
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <div>
+                                <label for="estimasi_nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Estimasi Nama Kapal <span class="text-red-500">*</span>
+                                </label>
+                                <select name="estimasi_nama_kapal"
+                                        id="estimasi_nama_kapal"
+                                        class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent select2-kapal @error('estimasi_nama_kapal') border-red-500 @enderror"
+                                        required>
+                                    <option value="">-- Pilih Kapal --</option>
+                                    @foreach($masterKapals as $kapal)
+                                        <option value="{{ $kapal->nama_kapal }}"
+                                                {{ old('estimasi_nama_kapal', $tandaTerima->estimasi_nama_kapal) == $kapal->nama_kapal ? 'selected' : '' }}>
+                                            {{ $kapal->nama_kapal }}{{ $kapal->nickname ? ' (' . $kapal->nickname . ')' : '' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('estimasi_nama_kapal')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <i class="fas fa-search mr-1"></i>Ketik untuk mencari nama kapal
+                                </p>
+                            </div>
+                            <div>
+                                <label for="nomor_ro" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nomor RO
+                                </label>
+                                <input type="text"
+                                       name="nomor_ro"
+                                       id="nomor_ro"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('nomor_ro') border-red-500 @enderror"
+                                       value="{{ old('nomor_ro', $tandaTerima->nomor_ro) }}">
+                                @error('nomor_ro')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="expired_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Expired Date
+                                </label>
+                                <input type="date"
+                                       name="expired_date"
+                                       id="expired_date"
+                                       class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent @error('expired_date') border-red-500 @enderror"
+                                       value="{{ old('expired_date', $tandaTerima->expired_date?->format('Y-m-d')) }}">
+                                @error('expired_date')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                                <p class="mt-1 text-xs text-gray-500">
+                                    <i class="fas fa-calendar mr-1"></i>Tanggal kadaluarsa kontainer
+                                </p>
+                            </div>
                         </div>
 
                         <!-- Tanggal Section Table -->
