@@ -4599,32 +4599,51 @@ window.generateInvoiceNumber = function() {
     invoiceField.value = 'Generating...';
     invoiceField.disabled = true;
 
+    console.log('Calling generate invoice number API...');
+
     // Call API to generate invoice number
     fetch('{{ route("daftar-tagihan-kontainer-sewa.generate-invoice-number") }}', {
         method: 'GET',
         headers: {
             'X-Requested-With': 'XMLHttpRequest',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': '{{ csrf_token() }}'
         }
     })
     .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response ok:', response.ok);
+        
         if (!response.ok) {
-            throw new Error('Failed to generate invoice number');
+            return response.text().then(text => {
+                console.error('Error response text:', text);
+                throw new Error(`Server error: ${response.status} ${response.statusText}`);
+            });
         }
         return response.json();
     })
     .then(data => {
-        if (data.success) {
+        console.log('API response data:', data);
+        
+        if (data.success && data.invoice_number) {
             invoiceField.value = data.invoice_number;
-            console.log('Generated invoice number:', data.invoice_number);
+            console.log('✅ Successfully generated invoice number:', data.invoice_number);
+            showNotification('success', 'Berhasil', 'Nomor invoice berhasil di-generate: ' + data.invoice_number);
         } else {
-            throw new Error(data.message || 'Failed to generate invoice number');
+            console.error('API returned success=false:', data);
+            throw new Error(data.message || 'Gagal generate nomor invoice');
         }
     })
     .catch(error => {
-        console.error('Error generating invoice number:', error);
+        console.error('❌ Error generating invoice number:', error);
+        console.error('Error details:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        
         invoiceField.value = '';
-        showNotification('error', 'Error', 'Gagal generate nomor invoice: ' + error.message);
+        showNotification('error', 'Error Generate Invoice', 'Gagal generate nomor invoice. Silakan input manual atau coba lagi.');
     })
     .finally(() => {
         invoiceField.disabled = false;
