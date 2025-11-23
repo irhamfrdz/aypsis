@@ -1023,6 +1023,13 @@
                             </a>
                         @endif
 
+                        {{-- Invoice Tagihan Sewa --}}
+                        @if($user && $user->can('tagihan-kontainer-sewa-index'))
+                            <a href="{{ route('invoice-tagihan-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('invoice-tagihan-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <span class="text-xs">Invoice Tagihan Sewa</span>
+                            </a>
+                        @endif
+
                         {{-- Pranota Kontainer Sewa --}}
                         @if($user && $user->can('pranota-kontainer-sewa-view'))
                             <a href="{{ route('pranota-kontainer-sewa.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-cyan-50 hover:text-cyan-700 transition-all duration-200 {{ Request::routeIs('pranota-kontainer-sewa.*') ? 'bg-cyan-50 text-cyan-700 font-medium shadow-sm' : 'text-gray-600' }}">

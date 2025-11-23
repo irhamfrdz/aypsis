@@ -121,6 +121,20 @@ class DaftarTagihanKontainerSewaController extends Controller
             }
         }
 
+        // Handle status invoice filter
+        if ($request->filled('status_invoice')) {
+            $statusInvoice = $request->input('status_invoice');
+            if ($statusInvoice === 'null') {
+                // Filter untuk tagihan yang belum ada invoice
+                $query->whereNull('invoice_id');
+            } else {
+                // Filter untuk status invoice spesifik - join dengan tabel invoices_kontainer_sewa
+                $query->whereHas('invoice', function($q) use ($statusInvoice) {
+                    $q->where('status', $statusInvoice);
+                });
+            }
+        }
+
         // Handle nomor kontainer filter (for modal search)
         if ($request->filled('nomor_kontainer')) {
             $query->where('nomor_kontainer', 'LIKE', '%' . $request->input('nomor_kontainer') . '%');

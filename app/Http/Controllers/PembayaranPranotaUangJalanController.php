@@ -35,34 +35,43 @@ class PembayaranPranotaUangJalanController extends Controller
      */
     public function index(Request $request)
     {
-        $query = PembayaranPranotaUangJalan::with(['pranotaUangJalans', 'createdBy', 'updatedBy']);
+        $query = PranotaUangJalan::with([
+            'pembayaranPranotaUangJalans', 
+            'creator', 
+            'updater',
+            'uangJalans.suratJalan.supirKaryawan'
+        ]);
 
-        // Filter by status
+        // Filter by status pembayaran
         if ($request->filled('status')) {
-            $query->byStatus($request->status);
-        }
-
-        // Filter by payment method
-        if ($request->filled('metode')) {
-            $query->byMethod($request->metode);
+            $query->where('status_pembayaran', $request->status);
         }
 
         // Filter by date range
         if ($request->filled('tanggal_dari') && $request->filled('tanggal_sampai')) {
-            $query->whereBetween('tanggal_pembayaran', [$request->tanggal_dari, $request->tanggal_sampai]);
+            $query->whereBetween('tanggal_pranota', [$request->tanggal_dari, $request->tanggal_sampai]);
         }
 
-        // Search by payment number or reference number
+        // Search by pranota number or supir name
         if ($request->filled('search')) {
-            $query->search($request->search);
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('nomor_pranota', 'like', "%{$search}%")
+                  ->orWhereHas('uangJalans.suratJalan', function($sq) use ($search) {
+                      $sq->where('supir', 'like', "%{$search}%");
+                  });
+            });
         }
 
-        $pembayaran = $query->orderBy('tanggal_pembayaran', 'desc')->paginate(15);
+        $pranotaList = $query->orderBy('tanggal_pranota', 'desc')->paginate(15);
 
-        $statuses = $this->getStatuses();
-        $methods = $this->getPaymentMethods();
+        $statuses = [
+            'unpaid' => 'Belum Dibayar',
+            'paid' => 'Sudah Dibayar',
+            'cancelled' => 'Dibatalkan'
+        ];
 
-        return view('pembayaran-pranota-uang-jalan.index', compact('pembayaran', 'statuses', 'methods'));
+        return view('pembayaran-pranota-uang-jalan.index', compact('pranotaList', 'statuses'));
     }
 
     /**

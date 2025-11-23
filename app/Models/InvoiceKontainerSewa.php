@@ -60,9 +60,25 @@ class InvoiceKontainerSewa extends Model
     }
 
     /**
+     * Alias untuk creator (untuk konsistensi dengan controller)
+     */
+    public function createdBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    /**
      * Relasi ke User yang approve invoice
      */
     public function approver(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'approved_by');
+    }
+
+    /**
+     * Alias untuk approver (untuk konsistensi dengan controller)
+     */
+    public function approvedBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'approved_by');
     }

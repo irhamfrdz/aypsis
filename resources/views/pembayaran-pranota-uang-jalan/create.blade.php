@@ -176,7 +176,7 @@
                                 <select name="jenis_transaksi" id="jenis_transaksi" class="{{ $inputClasses }}" required>
                                     <option value="">-- Pilih Jenis --</option>
                                     <option value="Debit" {{ old('jenis_transaksi') == 'Debit' ? 'selected' : '' }}>Debit (Bank +, Biaya -)</option>
-                                    <option value="Kredit" {{ old('jenis_transaksi') == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya +, Bank -)</option>
+                                    <option value="Kredit" {{ old('jenis_transaksi', 'Kredit') == 'Kredit' ? 'selected' : '' }}>Kredit (Biaya +, Bank -)</option>
                                 </select>
                             </div>
                         </div>
@@ -424,7 +424,10 @@
             </div>
 
             <!-- Submit Button -->
-            <div class="flex justify-end">
+            <div class="flex justify-end gap-2">
+                <a href="{{ route('pembayaran-pranota-uang-jalan.index') }}" class="inline-flex justify-center py-2 px-4 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
+                    Batal
+                </a>
                 <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors">
                     Simpan Pembayaran
                 </button>
@@ -561,6 +564,15 @@
                 const selectedOption = bankSelect.options[bankSelect.selectedIndex];
                 if (selectedOption) {
                     bankSearch.value = selectedOption.text;
+                }
+            } else {
+                // Set default to BCA TRUCKING
+                const bcaTruckingOption = Array.from(bankSelect.options).find(option => 
+                    option.text.toLowerCase().includes('bca') && option.text.toLowerCase().includes('trucking')
+                );
+                if (bcaTruckingOption) {
+                    bankSelect.value = bcaTruckingOption.value;
+                    bankSearch.value = bcaTruckingOption.text;
                 }
             }
 

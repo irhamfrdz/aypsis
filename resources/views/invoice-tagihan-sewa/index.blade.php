@@ -1,0 +1,744 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container mx-auto px-4 py-6">
+    <div class="mb-6">
+        <div class="flex justify-between items-center">
+            <div>
+                <h1 class="text-2xl font-bold text-gray-800">Invoice Tagihan Sewa Kontainer</h1>
+                <p class="text-gray-600 mt-1">Kelola invoice tagihan sewa kontainer</p>
+            </div>
+            <a href="{{ route('invoice-tagihan-sewa.create') }}" 
+               class="inline-flex items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                </svg>
+                Buat Invoice Baru
+            </a>
+        </div>
+    </div>
+
+    <!-- Bulk Actions Section -->
+    <div id="bulkActions" class="hidden mb-6 bg-blue-50 border border-blue-200 rounded-lg shadow-sm p-4">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-medium text-gray-700">
+                    <span id="selected-count">0</span> invoice dipilih
+                </span>
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="button" 
+                        id="btnBulkPranota"
+                        class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white text-sm font-medium rounded-lg transition">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Masukan ke Pranota
+                </button>
+                <button type="button" 
+                        id="btnBulkDelete"
+                        class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-sm font-medium rounded-lg transition">
+                    <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                    </svg>
+                    Hapus Terpilih
+                </button>
+                <button type="button" 
+                        id="btnCancelSelection"
+                        class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 text-sm font-medium rounded-lg transition">
+                    Batal
+                </button>
+            </div>
+        </div>
+    </div>
+
+    @if(session('success'))
+        <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+            {{ session('success') }}
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="mb-4 p-4 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+            {{ session('error') }}
+        </div>
+    @endif
+
+    <!-- Filters -->
+    <div class="bg-white rounded-lg shadow mb-6 p-4">
+        <form method="GET" action="{{ route('invoice-tagihan-sewa.index') }}" class="grid grid-cols-1 md:grid-cols-5 gap-4">
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Invoice</label>
+                <input type="text" name="nomor_invoice" value="{{ request('nomor_invoice') }}" 
+                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="Cari nomor invoice...">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nomor Pranota</label>
+                <input type="text" name="nomor_pranota" value="{{ request('nomor_pranota') }}" 
+                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="Cari nomor pranota...">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Vendor</label>
+                <input type="text" name="vendor" value="{{ request('vendor') }}" 
+                       class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                       placeholder="Cari vendor...">
+            </div>
+            <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select name="status" class="w-full border-gray-300 rounded-md shadow-sm focus:border-blue-500 focus:ring-blue-500">
+                    <option value="">Semua Status</option>
+                    <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
+                    <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
+                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                    <option value="paid" {{ request('status') == 'paid' ? 'selected' : '' }}>Paid</option>
+                    <option value="cancelled" {{ request('status') == 'cancelled' ? 'selected' : '' }}>Cancelled</option>
+                </select>
+            </div>
+            <div class="flex items-end gap-2">
+                <button type="submit" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition">
+                    Filter
+                </button>
+                <a href="{{ route('invoice-tagihan-sewa.index') }}" 
+                   class="px-4 py-2 bg-gray-300 hover:bg-gray-400 text-gray-700 rounded-md transition">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Table -->
+    <div class="bg-white rounded-lg shadow overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="min-w-full divide-y divide-gray-200">
+                <thead class="bg-gray-50">
+                    <tr>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            <input type="checkbox" id="select-all" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Nomor Invoice
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Vendor
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Tanggal Invoice
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Invoice Vendor
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Total
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Status Pranota
+                        </th>
+                        <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                            Aksi
+                        </th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white divide-y divide-gray-200">
+                    @forelse($invoices as $invoice)
+                        <tr class="hover:bg-gray-50 transition">
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <input type="checkbox" class="row-checkbox rounded border-gray-300 text-blue-600 focus:ring-blue-500" value="{{ $invoice->id }}">
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">{{ $invoice->nomor_invoice }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ $invoice->vendor_name ?? '-' }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">{{ $invoice->tanggal_invoice->format('d/m/Y') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm text-gray-900">
+                                    @if($invoice->items->isNotEmpty())
+                                        {{ $invoice->items->first()->tagihan->invoice_vendor ?? '-' }}
+                                    @else
+                                        -
+                                    @endif
+                                </div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                <div class="text-sm font-medium text-gray-900">Rp {{ number_format($invoice->total, 0, ',', '.') }}</div>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @php
+                                    $statusColors = [
+                                        'draft' => 'bg-gray-100 text-gray-800',
+                                        'submitted' => 'bg-yellow-100 text-yellow-800',
+                                        'approved' => 'bg-blue-100 text-blue-800',
+                                        'paid' => 'bg-green-100 text-green-800',
+                                        'cancelled' => 'bg-red-100 text-red-800',
+                                    ];
+                                    $statusLabels = [
+                                        'draft' => 'Draft',
+                                        'submitted' => 'Submitted',
+                                        'approved' => 'Approved',
+                                        'paid' => 'Paid',
+                                        'cancelled' => 'Cancelled',
+                                    ];
+                                @endphp
+                                <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ $statusColors[$invoice->status] ?? 'bg-gray-100 text-gray-800' }}">
+                                    {{ $statusLabels[$invoice->status] ?? $invoice->status }}
+                                </span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap">
+                                @if($invoice->pranota_id)
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Sudah Pranota
+                                    </span>
+                                @else
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
+                                        <svg class="w-4 h-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"></path>
+                                        </svg>
+                                        Belum Pranota
+                                    </span>
+                                @endif
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                                <div class="flex items-center gap-2">
+                                    <a href="{{ route('invoice-tagihan-sewa.show', $invoice->id) }}" 
+                                       class="text-blue-600 hover:text-blue-900 transition"
+                                       title="Lihat Detail">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                                        </svg>
+                                    </a>
+                                    <a href="{{ route('invoice-tagihan-sewa.edit', $invoice->id) }}" 
+                                       class="text-yellow-600 hover:text-yellow-900 transition"
+                                       title="Edit">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
+                                        </svg>
+                                    </a>
+                                    <form action="{{ route('invoice-tagihan-sewa.destroy', $invoice->id) }}" 
+                                          method="POST" 
+                                          class="inline-block"
+                                          onsubmit="return confirm('Apakah Anda yakin ingin menghapus invoice ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" 
+                                                class="text-red-600 hover:text-red-900 transition"
+                                                title="Hapus">
+                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                                            </svg>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    @empty
+                        <tr>
+                            <td colspan="9" class="px-6 py-8 text-center text-gray-500">
+                                <div class="flex flex-col items-center justify-center">
+                                    <svg class="w-16 h-16 text-gray-300 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                    <p class="text-lg font-medium">Tidak ada invoice ditemukan</p>
+                                    <p class="text-sm mt-1">Mulai dengan membuat invoice baru</p>
+                                </div>
+                            </td>
+                        </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+
+        @if($invoices->hasPages())
+            <div class="bg-white px-4 py-3 border-t border-gray-200 sm:px-6">
+                {{ $invoices->links() }}
+            </div>
+        @endif
+    </div>
+</div>
+
+@push('scripts')
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const selectAllCheckbox = document.getElementById('select-all');
+    const rowCheckboxes = document.querySelectorAll('.row-checkbox');
+    const bulkActions = document.getElementById('bulkActions');
+    const selectedCount = document.getElementById('selected-count');
+    const btnBulkPranota = document.getElementById('btnBulkPranota');
+    const btnBulkDelete = document.getElementById('btnBulkDelete');
+    const btnCancelSelection = document.getElementById('btnCancelSelection');
+
+    // Handle select all checkbox
+    if (selectAllCheckbox) {
+        selectAllCheckbox.addEventListener('change', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+            updateBulkActions();
+        });
+    }
+
+    // Handle individual checkboxes
+    rowCheckboxes.forEach(checkbox => {
+        checkbox.addEventListener('change', function() {
+            updateSelectAllState();
+            updateBulkActions();
+        });
+    });
+
+    // Update select all checkbox state
+    function updateSelectAllState() {
+        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+        const totalBoxes = rowCheckboxes.length;
+
+        if (selectAllCheckbox) {
+            if (checkedBoxes.length === 0) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            } else if (checkedBoxes.length === totalBoxes) {
+                selectAllCheckbox.checked = true;
+                selectAllCheckbox.indeterminate = false;
+            } else {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = true;
+            }
+        }
+    }
+
+    // Update bulk actions visibility and count
+    function updateBulkActions() {
+        const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+        
+        if (selectedCount) {
+            selectedCount.textContent = checkedBoxes.length;
+        }
+
+        if (bulkActions) {
+            if (checkedBoxes.length > 0) {
+                bulkActions.classList.remove('hidden');
+            } else {
+                bulkActions.classList.add('hidden');
+            }
+        }
+    }
+
+    // Cancel selection
+    if (btnCancelSelection) {
+        btnCancelSelection.addEventListener('click', function() {
+            rowCheckboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+            if (selectAllCheckbox) {
+                selectAllCheckbox.checked = false;
+                selectAllCheckbox.indeterminate = false;
+            }
+            updateBulkActions();
+        });
+    }
+
+    // Bulk pranota handler
+    if (btnBulkPranota) {
+        btnBulkPranota.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                alert('Pilih minimal satu invoice untuk dimasukan ke pranota');
+                return;
+            }
+
+            // Open modal with invoice details
+            openPranotaModal(selectedIds);
+        });
+    }
+
+    // Function to open pranota modal
+    function openPranotaModal(invoiceIds) {
+        // Show loading state
+        showLoadingModal();
+
+        // Fetch invoice details via AJAX
+        fetch('{{ route("invoice-tagihan-sewa.details") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ invoice_ids: invoiceIds })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Server error: ' + response.status);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                showPranotaModal(data.invoices, invoiceIds, data.nomor_pranota);
+            } else {
+                closeLoadingModal();
+                alert('Gagal memuat data invoice: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching invoice details:', error);
+            closeLoadingModal();
+            alert('Terjadi kesalahan saat memuat data invoice:\n\n' + error.message + '\n\nSilakan cek console browser untuk detail error.');
+        });
+    }
+
+    // Function to show loading modal
+    function showLoadingModal() {
+        const modalHTML = `
+            <div id="loadingModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50 flex items-center justify-center">
+                <div class="bg-white rounded-lg p-8 shadow-xl">
+                    <div class="flex flex-col items-center">
+                        <svg class="animate-spin h-12 w-12 text-blue-600 mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        <p class="text-gray-700 font-medium">Memuat data invoice...</p>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+    }
+
+    // Function to close loading modal
+    function closeLoadingModal() {
+        const loadingModal = document.getElementById('loadingModal');
+        if (loadingModal) {
+            loadingModal.remove();
+        }
+    }
+
+    // Function to show pranota modal with invoice details
+    function showPranotaModal(invoices, invoiceIds, nomorPranota) {
+        closeLoadingModal();
+
+        // Build container rows
+        let containerRows = '';
+        let totalContainers = 0;
+        let grandTotal = 0;
+
+        invoices.forEach((invoice, index) => {
+            invoice.items.forEach((item, itemIndex) => {
+                totalContainers++;
+                grandTotal += parseFloat(item.grand_total || 0);
+                
+                containerRows += `
+                    <tr class="hover:bg-gray-50">
+                        <td class="px-4 py-2 text-sm text-gray-900">${totalContainers}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${invoice.nomor_invoice}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.invoice_vendor || '-'}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.vendor_name || '-'}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.nomor_kontainer || '-'}</td>
+                        <td class="px-4 py-2 text-sm">
+                            <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                                ${item.size || '-'}
+                            </span>
+                        </td>
+                        <td class="px-4 py-2 text-sm text-gray-900">${item.periode || '-'}</td>
+                        <td class="px-4 py-2 text-sm text-gray-900 text-right font-medium">
+                            Rp ${parseFloat(item.grand_total || 0).toLocaleString('id-ID')}
+                        </td>
+                    </tr>
+                `;
+            });
+        });
+
+        const modalHTML = `
+            <div id="pranotaModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+                <div class="relative top-20 mx-auto p-6 border w-11/12 max-w-6xl shadow-lg rounded-lg bg-white">
+                    <!-- Header -->
+                    <div class="flex justify-between items-center pb-4 border-b">
+                        <div>
+                            <h3 class="text-xl font-bold text-gray-900">Konfirmasi Masukan ke Pranota</h3>
+                            <p class="text-sm text-gray-600 mt-1">Berikut adalah daftar kontainer dari ${invoices.length} invoice yang akan dimasukkan ke pranota</p>
+                        </div>
+                        <button type="button" onclick="closePranotaModal()" class="text-gray-400 hover:text-gray-600 transition">
+                            <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Input Nomor Pranota -->
+                    <div class="mt-6 mb-4">
+                        <label for="nomorPranota" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Pranota <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               id="nomorPranota" 
+                               value="${nomorPranota}"
+                               class="w-full border-gray-300 bg-gray-50 rounded-lg shadow-sm px-4 py-2 text-gray-700 font-semibold" 
+                               readonly>
+                        <p class="mt-1 text-sm text-gray-500">Nomor pranota di-generate otomatis dari sistem</p>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="grid grid-cols-3 gap-4 my-6">
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-blue-600 font-medium">Total Invoice</p>
+                                    <p class="text-2xl font-bold text-blue-900 mt-1">${invoices.length}</p>
+                                </div>
+                                <div class="bg-blue-100 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-green-600 font-medium">Total Kontainer</p>
+                                    <p class="text-2xl font-bold text-green-900 mt-1">${totalContainers}</p>
+                                </div>
+                                <div class="bg-green-100 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="bg-purple-50 border border-purple-200 rounded-lg p-4">
+                            <div class="flex items-center justify-between">
+                                <div>
+                                    <p class="text-sm text-purple-600 font-medium">Total Nilai</p>
+                                    <p class="text-2xl font-bold text-purple-900 mt-1">Rp ${grandTotal.toLocaleString('id-ID')}</p>
+                                </div>
+                                <div class="bg-purple-100 rounded-full p-3">
+                                    <svg class="w-6 h-6 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div class="max-h-96 overflow-y-auto border border-gray-200 rounded-lg">
+                        <table class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50 sticky top-0">
+                                <tr>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">No</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Invoice Vendor</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Vendor</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontainer</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Periode</th>
+                                    <th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                ${containerRows}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Footer -->
+                    <div class="flex items-center justify-end gap-3 pt-6 border-t mt-6">
+                        <button type="button" onclick="closePranotaModal()" 
+                                class="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition font-medium">
+                            Batal
+                        </button>
+                        <button type="button" onclick="confirmPranotaFromModal()" 
+                                data-invoice-ids="${invoiceIds.join(',')}"
+                                class="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition font-medium">
+                            <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                            </svg>
+                            Simpan Pranota
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        document.body.style.overflow = 'hidden';
+    }
+
+    // Function to close pranota modal
+    window.closePranotaModal = function() {
+        const modal = document.getElementById('pranotaModal');
+        if (modal) {
+            modal.remove();
+            document.body.style.overflow = 'auto';
+        }
+    };
+
+    // Function to confirm and redirect to pranota from modal button
+    window.confirmPranotaFromModal = function() {
+        const button = event.target.closest('button');
+        const invoiceIdsString = button.getAttribute('data-invoice-ids');
+        const invoiceIds = invoiceIdsString ? invoiceIdsString.split(',') : [];
+        
+        const nomorPranota = document.getElementById('nomorPranota');
+        
+        if (!nomorPranota || !nomorPranota.value.trim()) {
+            alert('Nomor pranota tidak valid');
+            return;
+        }
+
+        // Disable button to prevent double submission
+        button.disabled = true;
+        button.innerHTML = `
+            <svg class="animate-spin h-5 w-5 inline mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Menyimpan...
+        `;
+
+        // Send AJAX request to create pranota
+        fetch('{{ route("invoice-tagihan-sewa.store-pranota") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({ 
+                invoice_ids: invoiceIds,
+                nomor_pranota: nomorPranota.value.trim()
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(data => {
+                    throw new Error(data.message || 'Server error: ' + response.status);
+                });
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                // Close modal
+                closePranotaModal();
+                
+                // Show success message
+                alert('Pranota berhasil dibuat dengan nomor: ' + (data.pranota.nomor_pranota || data.pranota.no_invoice));
+                
+                // Redirect to pranota detail page or invoice index
+                if (data.redirect_url) {
+                    window.location.href = data.redirect_url;
+                } else {
+                    window.location.href = '{{ route("invoice-tagihan-sewa.index") }}';
+                }
+            } else {
+                button.disabled = false;
+                button.innerHTML = `
+                    <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    Simpan Pranota
+                `;
+                alert('Gagal membuat pranota: ' + (data.message || 'Terjadi kesalahan'));
+            }
+        })
+        .catch(error => {
+            console.error('Error creating pranota:', error);
+            button.disabled = false;
+            button.innerHTML = `
+                <svg class="w-5 h-5 inline mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                </svg>
+                Simpan Pranota
+            `;
+            alert('Terjadi kesalahan saat membuat pranota:\n\n' + error.message);
+        });
+    };
+
+    // Function to confirm and redirect to pranota (legacy support)
+    window.confirmPranota = function(invoiceIds) {
+        const nomorPranota = document.getElementById('nomorPranota');
+        
+        if (!nomorPranota || !nomorPranota.value.trim()) {
+            alert('Silakan masukkan nomor pranota terlebih dahulu');
+            if (nomorPranota) {
+                nomorPranota.focus();
+            }
+            return;
+        }
+        
+        const params = new URLSearchParams();
+        invoiceIds.forEach(id => {
+            params.append('invoice_ids[]', id);
+        });
+        params.append('nomor_pranota', nomorPranota.value.trim());
+        
+        window.location.href = '{{ route("pranota-kontainer-sewa.create") }}?' + params.toString();
+    };
+
+    // Bulk delete handler
+    if (btnBulkDelete) {
+        btnBulkDelete.addEventListener('click', function() {
+            const checkedBoxes = document.querySelectorAll('.row-checkbox:checked');
+            const selectedIds = Array.from(checkedBoxes).map(cb => cb.value);
+
+            if (selectedIds.length === 0) {
+                alert('Pilih minimal satu invoice untuk dihapus');
+                return;
+            }
+
+            const message = selectedIds.length === 1
+                ? 'Apakah Anda yakin ingin menghapus invoice ini?'
+                : `Apakah Anda yakin ingin menghapus ${selectedIds.length} invoice yang dipilih?`;
+
+            if (!confirm(message)) {
+                return;
+            }
+
+            // Create form and submit
+            const form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '{{ route("invoice-tagihan-sewa.bulk-delete") }}';
+
+            const csrfToken = document.createElement('input');
+            csrfToken.type = 'hidden';
+            csrfToken.name = '_token';
+            csrfToken.value = '{{ csrf_token() }}';
+            form.appendChild(csrfToken);
+
+            const methodField = document.createElement('input');
+            methodField.type = 'hidden';
+            methodField.name = '_method';
+            methodField.value = 'DELETE';
+            form.appendChild(methodField);
+
+            selectedIds.forEach(id => {
+                const input = document.createElement('input');
+                input.type = 'hidden';
+                input.name = 'ids[]';
+                input.value = id;
+                form.appendChild(input);
+            });
+
+            document.body.appendChild(form);
+            form.submit();
+        });
+    }
+}); // End of DOMContentLoaded
+</script>
+@endpush
+
+@endsection
