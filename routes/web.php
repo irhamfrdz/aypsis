@@ -2101,6 +2101,11 @@ Route::get('/test-gate-in-ajax', function () {
                     ->name('daftar-tagihan-kontainer-sewa.group-info.update')
                     ->middleware('can:tagihan-kontainer-sewa-update');
 
+               // Generate invoice number (must be before resource routes to avoid conflict)
+               Route::get('daftar-tagihan-kontainer-sewa/generate-invoice-number', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'generateInvoiceNumber'])
+                    ->name('daftar-tagihan-kontainer-sewa.generate-invoice-number')
+                    ->middleware('can:tagihan-kontainer-sewa-update');
+
                // Individual routes with specific middleware instead of resource
                Route::get('daftar-tagihan-kontainer-sewa', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'index'])
                     ->name('daftar-tagihan-kontainer-sewa.index')
@@ -2163,10 +2168,6 @@ Route::get('/test-gate-in-ajax', function () {
                Route::post('daftar-tagihan-kontainer-sewa/bulk-update-status', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'bulkUpdateStatus'])
                     ->name('daftar-tagihan-kontainer-sewa.bulk-update-status')
                     ->middleware('can:tagihan-kontainer-update');
-
-               Route::get('daftar-tagihan-kontainer-sewa/generate-invoice-number', [\App\Http\Controllers\DaftarTagihanKontainerSewaController::class, 'generateInvoiceNumber'])
-                    ->name('daftar-tagihan-kontainer-sewa.generate-invoice-number')
-                    ->middleware('can:tagihan-kontainer-sewa-update');
 
                // Pembayaran Pranota Kontainer routes
                Route::prefix('pembayaran-pranota-kontainer')->name('pembayaran-pranota-kontainer.')->group(function () {
