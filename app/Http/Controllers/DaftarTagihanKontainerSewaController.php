@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\DaftarTagihanKontainerSewa;
 use App\Models\PranotaTagihanKontainerSewa;
+use App\Models\NomorTerakhir;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Artisan;
@@ -885,6 +886,51 @@ class DaftarTagihanKontainerSewaController extends Controller
 
         return redirect()->back()
                         ->with('success', "Status pembayaran {$count} data tagihan berhasil diperbarui.");
+    }
+
+    /**
+     * Generate invoice number with format: MS-MMYY-0000001
+     */
+    public function generateInvoiceNumber(Request $request)
+    {
+        try {
+            return DB::transaction(function () {
+                // Get or create nomor_terakhir record for MS module
+                $nomorTerakhir = NomorTerakhir::where('modul', 'MS')->lockForUpdate()->first();
+                
+                if (!$nomorTerakhir) {
+                    $nomorTerakhir = NomorTerakhir::create([
+                        'modul' => 'MS',
+                        'nomor_terakhir' => 1,
+                        'keterangan' => 'Nomor Invoice Vendor Kontainer Sewa'
+                    ]);
+                    $runningNumber = 1;
+                } else {
+                    $runningNumber = $nomorTerakhir->nomor_terakhir + 1;
+                    $nomorTerakhir->update(['nomor_terakhir' => $runningNumber]);
+                }
+
+                // Format: MS-MMYY-0000001
+                $month = date('m'); // 2 digit month
+                $year = date('y');  // 2 digit year
+                $invoiceNumber = sprintf('MS-%s%s-%07d', $month, $year, $runningNumber);
+
+                return response()->json([
+                    'success' => true,
+                    'invoice_number' => $invoiceNumber,
+                    'running_number' => $runningNumber
+                ]);
+            });
+
+        } catch (\Exception $e) {
+            Log::error('Error generating invoice number: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Gagal generate nomor invoice',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**

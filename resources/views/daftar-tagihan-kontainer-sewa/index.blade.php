@@ -4475,6 +4475,9 @@ window.bulkAddInvoice = function() {
     const today = new Date().toISOString().split('T')[0];
     document.getElementById('bulk_tanggal_vendor').value = today;
 
+    // Auto-generate invoice number when modal opens
+    generateInvoiceNumber();
+
     // Handle form submission
     const form = document.getElementById('bulkInvoiceForm');
     if (form) {
@@ -4581,6 +4584,51 @@ window.bulkAddInvoice = function() {
             });
         });
     }
+};
+
+// Function to generate invoice number with format MS-MMYY-0000001
+window.generateInvoiceNumber = function() {
+    const invoiceField = document.getElementById('bulk_invoice_vendor');
+    
+    if (!invoiceField) {
+        console.error('Invoice field not found');
+        return;
+    }
+
+    // Show loading state
+    invoiceField.value = 'Generating...';
+    invoiceField.disabled = true;
+
+    // Call API to generate invoice number
+    fetch('{{ route("daftar-tagihan-kontainer-sewa.generate-invoice-number") }}', {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json'
+        }
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Failed to generate invoice number');
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            invoiceField.value = data.invoice_number;
+            console.log('Generated invoice number:', data.invoice_number);
+        } else {
+            throw new Error(data.message || 'Failed to generate invoice number');
+        }
+    })
+    .catch(error => {
+        console.error('Error generating invoice number:', error);
+        invoiceField.value = '';
+        showNotification('error', 'Error', 'Gagal generate nomor invoice: ' + error.message);
+    })
+    .finally(() => {
+        invoiceField.disabled = false;
+    });
 };
 
 // Function to close bulk invoice modal
