@@ -110,8 +110,9 @@
                                                 if (old('tujuan_kirim_id')) {
                                                     $isSelected = old('tujuan_kirim_id') == $tujuanKirim->id;
                                                 } else {
-                                                    // Check if this tujuan kirim matches the current order's tujuan_kirim
-                                                    $isSelected = $order->tujuan_kirim == $tujuanKirim->nama_tujuan;
+                                                    // Check if this tujuan kirim matches the current order's tujuan_kirim_id or tujuan_kirim string
+                                                    $isSelected = ($order->tujuan_kirim_id == $tujuanKirim->id) ||
+                                                                  ($order->tujuan_kirim == $tujuanKirim->nama_tujuan);
                                                 }
                                             @endphp
                                             <option value="{{ $tujuanKirim->id }}" {{ $isSelected ? 'selected' : '' }}>
@@ -153,8 +154,9 @@
                                                 if (old('tujuan_ambil_id')) {
                                                     $isSelected = old('tujuan_ambil_id') == $tujuanKegiatanUtama->id;
                                                 } else {
-                                                    // Check if this tujuan ambil matches the current order's tujuan_ambil
-                                                    $isSelected = $order->tujuan_ambil == $tujuanKegiatanUtama->ke;
+                                                    // Check if this tujuan ambil matches the current order's tujuan_ambil_id or tujuan_ambil string
+                                                    $isSelected = ($order->tujuan_ambil_id == $tujuanKegiatanUtama->id) ||
+                                                                  ($order->tujuan_ambil == $tujuanKegiatanUtama->ke);
                                                 }
                                             @endphp
                                             <option value="{{ $tujuanKegiatanUtama->id }}" {{ $isSelected ? 'selected' : '' }}>

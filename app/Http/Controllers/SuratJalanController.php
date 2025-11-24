@@ -147,10 +147,44 @@ class SuratJalanController extends Controller
                                                         ->orderBy('nama_kegiatan')
                                                         ->get(['id', 'nama_kegiatan']);
 
-        // Get stock kontainer data - hanya yang available
+        // Get kontainer data dari 2 table: stock_kontainers dan kontainers
+        // 1. Dari table stock_kontainers - hanya yang available/tersedia
         $stockKontainers = \App\Models\StockKontainer::whereIn('status', ['available', 'tersedia'])
                                                      ->orderBy('nomor_seri_gabungan')
                                                      ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+        
+        // 2. Dari table kontainers - hanya yang status tersedia
+        $kontainers = \App\Models\Kontainer::where('status', 'tersedia')
+                                          ->orderBy('nomor_seri_gabungan')
+                                          ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+        
+        // Gabungkan kedua data dengan format yang sama
+        $allKontainers = collect();
+        
+        // Tambahkan data dari stock_kontainers
+        foreach ($stockKontainers as $stock) {
+            $allKontainers->push((object)[
+                'id' => 'stock_' . $stock->id,
+                'nomor_seri_gabungan' => $stock->nomor_seri_gabungan,
+                'ukuran' => $stock->ukuran,
+                'tipe_kontainer' => $stock->tipe_kontainer,
+                'source' => 'stock_kontainers'
+            ]);
+        }
+        
+        // Tambahkan data dari kontainers
+        foreach ($kontainers as $kontainer) {
+            $allKontainers->push((object)[
+                'id' => 'kontainer_' . $kontainer->id,
+                'nomor_seri_gabungan' => $kontainer->nomor_seri_gabungan,
+                'ukuran' => $kontainer->ukuran,
+                'tipe_kontainer' => $kontainer->tipe_kontainer,
+                'source' => 'kontainers'
+            ]);
+        }
+        
+        // Urutkan berdasarkan nomor
+        $stockKontainers = $allKontainers->sortBy('nomor_seri_gabungan');
 
         return view('surat-jalan.create', compact('selectedOrder', 'supirs', 'keneks', 'kegiatanSuratJalan', 'stockKontainers'));
     }
@@ -317,7 +351,69 @@ class SuratJalanController extends Controller
                          ->orderBy('nama_lengkap')
                          ->get(['id', 'nama_lengkap']);
 
-        return view('surat-jalan.edit', compact('suratJalan', 'supirs', 'keneks'));
+        // Get kegiatan surat jalan from master kegiatan
+        $kegiatanSuratJalan = \App\Models\MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                                        ->where('status', 'Aktif')
+                                                        ->orderBy('nama_kegiatan')
+                                                        ->get(['id', 'nama_kegiatan']);
+
+        // Get kontainer data dari 2 table: stock_kontainers dan kontainers
+        // 1. Dari table stock_kontainers - hanya yang available/tersedia
+        $stockKontainers = \App\Models\StockKontainer::whereIn('status', ['available', 'tersedia'])
+                                                     ->orderBy('nomor_seri_gabungan')
+                                                     ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+        
+        // 2. Dari table kontainers - hanya yang status tersedia
+        $kontainers = \App\Models\Kontainer::where('status', 'tersedia')
+                                          ->orderBy('nomor_seri_gabungan')
+                                          ->get(['id', 'nomor_seri_gabungan', 'ukuran', 'tipe_kontainer', 'status']);
+        
+        // Gabungkan kedua data dengan format yang sama
+        $allKontainers = collect();
+        
+        // Tambahkan data dari stock_kontainers
+        foreach ($stockKontainers as $stock) {
+            $allKontainers->push((object)[
+                'id' => 'stock_' . $stock->id,
+                'nomor_seri_gabungan' => $stock->nomor_seri_gabungan,
+                'ukuran' => $stock->ukuran,
+                'tipe_kontainer' => $stock->tipe_kontainer,
+                'source' => 'stock_kontainers'
+            ]);
+        }
+        
+        // Tambahkan data dari kontainers
+        foreach ($kontainers as $kontainer) {
+            $allKontainers->push((object)[
+                'id' => 'kontainer_' . $kontainer->id,
+                'nomor_seri_gabungan' => $kontainer->nomor_seri_gabungan,
+                'ukuran' => $kontainer->ukuran,
+                'tipe_kontainer' => $kontainer->tipe_kontainer,
+                'source' => 'kontainers'
+            ]);
+        }
+        
+        // Urutkan berdasarkan nomor
+        $stockKontainers = $allKontainers->sortBy('nomor_seri_gabungan');
+
+        // Get pengirim data for dropdown
+        $pengirims = \App\Models\Pengirim::orderBy('nama_pengirim')->get(['id', 'nama_pengirim']);
+
+        // Get jenis barang data for dropdown
+        $jenisBarangOptions = \App\Models\JenisBarang::where('status', 'active')
+                                                     ->orderBy('nama_barang')
+                                                     ->get(['id', 'nama_barang']);
+
+        // Get tujuan kegiatan utama untuk tujuan pengambilan
+        $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::orderBy('ke')
+                                                               ->get(['id', 'ke']);
+
+        // Get tujuan kirim untuk tujuan pengiriman
+        $tujuanKirimOptions = \App\Models\MasterTujuanKirim::where('status', 'active')
+                                                           ->orderBy('nama_tujuan')
+                                                           ->get(['id', 'nama_tujuan']);
+
+        return view('surat-jalan.edit', compact('suratJalan', 'supirs', 'keneks', 'kegiatanSuratJalan', 'stockKontainers', 'pengirims', 'jenisBarangOptions', 'tujuanKegiatanUtamas', 'tujuanKirimOptions'));
     }
 
     /**
@@ -336,9 +432,11 @@ class SuratJalanController extends Controller
         $request->validate([
             'tanggal_surat_jalan' => 'required|date',
             'no_surat_jalan' => 'required|string|max:255|unique:surat_jalans,no_surat_jalan,' . $id,
-            'pengirim' => 'nullable|string|max:255',
-            'jenis_barang' => 'nullable|string|max:255',
-            'tujuan_pengambilan' => 'nullable|string|max:255',
+            'kegiatan' => 'required|string|max:255',
+            'pengirim_id' => 'nullable|exists:pengirims,id',
+            'jenis_barang_id' => 'nullable|exists:jenis_barangs,id',
+            'tujuan_pengambilan_id' => 'nullable|exists:tujuan_kegiatan_utamas,id',
+            'tujuan_pengiriman' => 'nullable|string|max:255',
             'retur_barang' => 'nullable|string|max:255',
             'jumlah_retur' => 'nullable|integer|min:0',
             'supir' => 'nullable|string|max:255',
@@ -346,26 +444,44 @@ class SuratJalanController extends Controller
             'no_plat' => 'nullable|string|max:20',
             'kenek' => 'nullable|string|max:255',
             'tipe_kontainer' => 'nullable|string|max:50',
+            'nomor_kontainer' => 'nullable|string|max:255',
+            'kontainer_id' => 'nullable|integer|min:1',
             'no_seal' => 'nullable|string|max:255',
             'size' => 'nullable|string|max:50',
             'jumlah_kontainer' => 'nullable|integer|min:1',
-            'karton' => 'nullable|in:pakai,tidak_pakai',
-            'plastik' => 'nullable|in:pakai,tidak_pakai',
-            'terpal' => 'nullable|in:pakai,tidak_pakai',
-            'tanggal_berangkat' => 'nullable|date',
-            'tujuan_pengiriman' => 'nullable|string|max:255',
-            'tanggal_muat' => 'nullable|date',
-            'term' => 'nullable|string|max:255',
-            'aktifitas' => 'nullable|string',
-            'rit' => 'nullable|integer|min:0',
             'uang_jalan' => 'nullable|numeric|min:0',
-            'no_pemesanan' => 'nullable|string|max:255',
+            'aktifitas' => 'nullable|string',
             'gambar' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048',
             'status' => 'required|in:draft,active,belum masuk checkpoint,sudah_checkpoint,approved,fully_approved,rejected,completed,cancelled',
         ]);
 
         try {
             $data = $request->except(['gambar']);
+
+            // Map nomor_kontainer to no_kontainer (database column name)
+            if (isset($data['nomor_kontainer'])) {
+                $data['no_kontainer'] = $data['nomor_kontainer'];
+                unset($data['nomor_kontainer']);
+            }
+
+            // Convert IDs to text values for dropdown fields
+            if (!empty($data['pengirim_id'])) {
+                $pengirim = \App\Models\Pengirim::find($data['pengirim_id']);
+                $data['pengirim'] = $pengirim ? $pengirim->nama_pengirim : null;
+                unset($data['pengirim_id']);
+            }
+
+            if (!empty($data['jenis_barang_id'])) {
+                $jenisBarang = \App\Models\JenisBarang::find($data['jenis_barang_id']);
+                $data['jenis_barang'] = $jenisBarang ? $jenisBarang->nama_barang : null;
+                unset($data['jenis_barang_id']);
+            }
+
+            if (!empty($data['tujuan_pengambilan_id'])) {
+                $tujuanPengambilan = \App\Models\TujuanKegiatanUtama::find($data['tujuan_pengambilan_id']);
+                $data['tujuan_pengambilan'] = $tujuanPengambilan ? $tujuanPengambilan->ke : null;
+                unset($data['tujuan_pengambilan_id']);
+            }
 
             // Set default values for required fields if empty
             if (empty($data['status_pembayaran_uang_rit'])) {

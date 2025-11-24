@@ -351,8 +351,12 @@
                                     <option value="{{ $stock->nomor_seri_gabungan }}" 
                                             data-ukuran="{{ $stock->ukuran }}"
                                             data-tipe="{{ $stock->tipe_kontainer }}"
+                                            data-source="{{ $stock->source ?? 'stock_kontainers' }}"
                                             {{ old('nomor_kontainer') == $stock->nomor_seri_gabungan ? 'selected' : '' }}>
-                                        {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }}
+                                        {{ $stock->nomor_seri_gabungan }} - {{ $stock->ukuran }} - {{ $stock->tipe_kontainer }} 
+                                        @if(isset($stock->source))
+                                            ({{ $stock->source == 'stock_kontainers' ? 'Stock' : 'Kontainer' }})
+                                        @endif
                                     </option>
                                 @endforeach
                             @endif
@@ -361,7 +365,7 @@
                     @error('nomor_kontainer')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
-                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia). Filter otomatis berdasarkan size kontainer.</p>
+                    <p class="text-xs text-gray-500 mt-1">Pilih nomor kontainer dari stock yang tersedia (status: available/tersedia) dan kontainer sewa (status: tersedia). Data berasal dari table stock_kontainers dan kontainers. Filter otomatis berdasarkan size kontainer.</p>
                 </div>
 
                 <div>
@@ -638,7 +642,8 @@ function initializeKontainerFiltering() {
                     value: option.value,
                     text: option.textContent,
                     ukuran: option.getAttribute('data-ukuran'),
-                    tipe: option.getAttribute('data-tipe')
+                    tipe: option.getAttribute('data-tipe'),
+                    source: option.getAttribute('data-source') || 'stock_kontainers'
                 });
             }
         });
@@ -680,6 +685,7 @@ function filterNomorKontainerBySize() {
             newOption.textContent = optionData.text;
             newOption.setAttribute('data-ukuran', optionData.ukuran);
             newOption.setAttribute('data-tipe', optionData.tipe);
+            newOption.setAttribute('data-source', optionData.source);
             kontainerSelect.appendChild(newOption);
         });
         console.log('No size selected - showing all kontainers:', window.allKontainerOptions.length);
@@ -705,6 +711,7 @@ function filterNomorKontainerBySize() {
                 newOption.textContent = optionData.text;
                 newOption.setAttribute('data-ukuran', optionData.ukuran);
                 newOption.setAttribute('data-tipe', optionData.tipe);
+                newOption.setAttribute('data-source', optionData.source);
                 kontainerSelect.appendChild(newOption);
                 filteredCount++;
             }

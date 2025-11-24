@@ -12,19 +12,19 @@
         <div class="flex justify-between items-center p-6 border-b border-gray-200">
             <h1 class="text-2xl font-semibold text-gray-900">Daftar Pranota Kontainer Sewa</h1>
             <div class="flex items-center space-x-3">
+                <a href="{{ route('pembayaran-pranota-kontainer.create') }}"
+                   class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
+                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197m13.5-9a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"></path>
+                    </svg>
+                    Bayar Pranota
+                </a>
                 <a href="{{ route('pranota-kontainer-sewa.import') }}"
                    class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
                     <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                     </svg>
                     Import Pranota
-                </a>
-                <a href="{{ route('pranota-kontainer-sewa.create') }}"
-                   class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                    <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-                    </svg>
-                    Buat Pranota Baru
                 </a>
             </div>
         </div>
@@ -126,57 +126,17 @@
                 </div>
             @endif
 
-            <!-- Bulk Actions -->
-            <div class="flex justify-between items-center mb-4">
-                <div class="flex items-center space-x-4">
-                    <label class="flex items-center">
-                        <input type="checkbox" id="selectAll" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
-                        <span class="ml-2 text-sm text-gray-700">Pilih Semua</span>
-                    </label>
-                    <span id="selectedCount" class="text-sm text-gray-500">0 pranota dipilih</span>
-                </div>
 
-                <!-- Bulk Delete Button -->
-                <div id="bulkActionsContainer" class="hidden">
-                    @can('pranota-kontainer-sewa-delete')
-                    <button type="button"
-                            onclick="bulkDelete()"
-                            class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center">
-                        <svg class="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
-                        </svg>
-                        Hapus Terpilih
-                    </button>
-                    @endcan
-                </div>
-            </div>
-
-            <!-- Bulk Delete Form (Hidden) -->
-            <form id="bulkDeleteForm" action="{{ route('pranota-kontainer-sewa.bulk-delete') }}" method="POST" style="display: none;">
-                @csrf
-                @method('DELETE')
-                <input type="hidden" name="pranota_ids" id="bulkDeleteIds">
-            </form>
 
             <!-- Table -->
             <div class="table-container overflow-x-auto max-h-screen">
                 <table class="min-w-full divide-y divide-gray-200 resizable-table" id="pranotaTable">
                     <thead class="sticky-table-header bg-gray-50 sticky top-0 z-10 shadow-sm">
-                        <tr><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">
-                                <input type="checkbox" id="selectAllHeader" class="rounded border-gray-300 text-indigo-600 focus:ring-indigo-500" onchange="toggleAllCheckboxes()">
-                            <div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Jumlah Tagihan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Total Biaya<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pembayaran<div class="resize-handle"></div></th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th></tr>
+                        <tr><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No. Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pranota<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Jumlah Tagihan<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Total Biaya<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Pembayaran<div class="resize-handle"></div></th><th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal Pembayaran<div class="resize-handle"></div></th><th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th></tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200 table-body-text">
                         @forelse($pranotaList as $index => $pranota)
                         <tr class="hover:bg-gray-50">
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <input type="checkbox"
-                                       class="pranota-checkbox rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
-                                       value="{{ $pranota->id }}"
-                                       data-amount="{{ $pranota->total_amount }}"
-                                       data-no-invoice="{{ $pranota->no_invoice }}"
-                                       onchange="updateSelection()">
-                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                                 {{ $pranotaList->firstItem() + $index }}
                             </td>
@@ -272,7 +232,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="11" class="px-6 py-12 text-center">
+                            <td colspan="10" class="px-6 py-12 text-center">
                                 <div class="flex flex-col items-center">
                                     @if(request('search') || request('status'))
                                         <!-- No Search Results -->
@@ -312,75 +272,6 @@
 </div>
 
 <script>
-function toggleAllCheckboxes() {
-    const selectAll = document.getElementById('selectAll');
-    const selectAllHeader = document.getElementById('selectAllHeader');
-    const checkboxes = document.querySelectorAll('.pranota-checkbox');
-
-    // Sync both select all checkboxes
-    if (selectAll.checked) {
-        selectAllHeader.checked = true;
-    } else {
-        selectAllHeader.checked = false;
-    }
-
-    // If triggered from header checkbox, sync with sidebar checkbox
-    if (event.target.id === 'selectAllHeader') {
-        selectAll.checked = selectAllHeader.checked;
-    }
-
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = selectAll.checked;
-    });
-
-    updateSelection();
-}
-
-function updateSelection() {
-    const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
-    const selectedCount = checkboxes.length;
-    const totalAmount = Array.from(checkboxes).reduce((sum, checkbox) => {
-        return sum + parseFloat(checkbox.dataset.amount);
-    }, 0);
-
-    // Update count display
-    document.getElementById('selectedCount').textContent =
-        selectedCount > 0 ?
-        `${selectedCount} pranota dipilih (Total: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)})` :
-        '0 pranota dipilih';
-
-    // Show/hide bulk actions container
-    const bulkActionsContainer = document.getElementById('bulkActionsContainer');
-    if (bulkActionsContainer) {
-        if (selectedCount > 0) {
-            bulkActionsContainer.classList.remove('hidden');
-        } else {
-            bulkActionsContainer.classList.add('hidden');
-        }
-    }
-
-    // Update select all checkboxes
-    const allCheckboxes = document.querySelectorAll('.pranota-checkbox');
-    const selectAll = document.getElementById('selectAll');
-    const selectAllHeader = document.getElementById('selectAllHeader');
-
-    if (selectedCount === 0) {
-        selectAll.indeterminate = false;
-        selectAll.checked = false;
-        selectAllHeader.indeterminate = false;
-        selectAllHeader.checked = false;
-    } else if (selectedCount === allCheckboxes.length) {
-        selectAll.indeterminate = false;
-        selectAll.checked = true;
-        selectAllHeader.indeterminate = false;
-        selectAllHeader.checked = true;
-    } else {
-        selectAll.indeterminate = true;
-        selectAll.checked = false;
-        selectAllHeader.indeterminate = true;
-        selectAllHeader.checked = false;
-    }
-}
 
 // Confirm delete single pranota
 function confirmDelete(event, pranotaNo) {
@@ -392,27 +283,6 @@ function confirmDelete(event, pranotaNo) {
 
     return false;
 }
-
-// Bulk delete function
-function bulkDelete() {
-    const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
-    const selectedCount = checkboxes.length;
-
-    if (selectedCount === 0) {
-        alert('Pilih minimal 1 pranota untuk dihapus.');
-        return;
-    }
-
-    const pranotaNumbers = Array.from(checkboxes).map(cb => cb.dataset.noInvoice).join(', ');
-    const confirmMessage = `Apakah Anda yakin ingin menghapus ${selectedCount} pranota?\n\nPranota yang akan dihapus:\n${pranotaNumbers}\n\nTindakan ini tidak dapat dibatalkan!`;
-
-    if (confirm(confirmMessage)) {
-        const pranotaIds = Array.from(checkboxes).map(cb => cb.value);
-        document.getElementById('bulkDeleteIds').value = JSON.stringify(pranotaIds);
-        document.getElementById('bulkDeleteForm').submit();
-    }
-}
-
 
 
 // Server-side Search Functions
@@ -426,88 +296,10 @@ function debounceSearch() {
     window.searchTimeout = setTimeout(performServerSearch, 1000); // 1 second delay
 }
 
-// Enhanced updateSelection function for server-side pagination
-function updateSelection() {
-    const checkboxes = document.querySelectorAll('.pranota-checkbox:checked');
-    const selectedCount = checkboxes.length;
-    const totalAmount = Array.from(checkboxes).reduce((sum, checkbox) => {
-        return sum + parseFloat(checkbox.dataset.amount || 0);
-    }, 0);
 
-    // Update count display
-    document.getElementById('selectedCount').textContent =
-        selectedCount > 0 ?
-        `${selectedCount} pranota dipilih (Total: Rp ${new Intl.NumberFormat('id-ID').format(totalAmount)})` :
-        '0 pranota dipilih';
-
-    // Show/hide bulk actions container
-    const bulkActionsContainer = document.getElementById('bulkActionsContainer');
-    if (bulkActionsContainer) {
-        if (selectedCount > 0) {
-            bulkActionsContainer.classList.remove('hidden');
-        } else {
-            bulkActionsContainer.classList.add('hidden');
-        }
-    }
-
-    // Update select all checkboxes
-    const allCheckboxes = document.querySelectorAll('.pranota-checkbox');
-    const selectAll = document.getElementById('selectAll');
-    const selectAllHeader = document.getElementById('selectAllHeader');
-
-    if (selectedCount === 0) {
-        selectAll.indeterminate = false;
-        selectAll.checked = false;
-        selectAllHeader.indeterminate = false;
-        selectAllHeader.checked = false;
-    } else if (selectedCount === allCheckboxes.length) {
-        selectAll.indeterminate = false;
-        selectAll.checked = true;
-        selectAllHeader.indeterminate = false;
-        selectAllHeader.checked = true;
-    } else {
-        selectAll.indeterminate = true;
-        selectAll.checked = false;
-        selectAllHeader.indeterminate = true;
-        selectAllHeader.checked = false;
-    }
-}
-
-// Enhanced toggleAllCheckboxes for server-side pagination
-function toggleAllCheckboxes() {
-    const selectAll = document.getElementById('selectAll');
-    const selectAllHeader = document.getElementById('selectAllHeader');
-    const allCheckboxes = document.querySelectorAll('.pranota-checkbox');
-
-    // Sync both select all checkboxes
-    if (selectAll.checked) {
-        selectAllHeader.checked = true;
-    } else {
-        selectAllHeader.checked = false;
-    }
-
-    // If triggered from header checkbox, sync with sidebar checkbox
-    if (event.target.id === 'selectAllHeader') {
-        selectAll.checked = selectAllHeader.checked;
-    }
-
-    // Toggle all checkboxes on current page
-    allCheckboxes.forEach(checkbox => {
-        checkbox.checked = selectAll.checked;
-    });
-
-    updateSelection();
-}
 
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
-    // Add change listeners to existing checkboxes
-    document.querySelectorAll('.pranota-checkbox').forEach(checkbox => {
-        checkbox.addEventListener('change', updateSelection);
-    });
-
-    // Initial update
-    updateSelection();
 
     // Keyboard shortcuts
     document.addEventListener('keydown', function(e) {

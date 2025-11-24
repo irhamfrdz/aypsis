@@ -333,8 +333,12 @@ class OrderController extends Controller
         $data['exclude_buruh_bongkar'] = $request->buruh_bongkar_option === 'exclude';
         $data['include_buruh_bongkar'] = $request->buruh_bongkar_option === 'include';
 
-        // Remove the radio button fields from data
-        unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option'], $data['tujuan_kirim_id'], $data['tujuan_ambil_id']);
+        // Store the ID fields for relationships
+        $data['tujuan_kirim_id'] = $request->tujuan_kirim_id;
+        $data['tujuan_ambil_id'] = $request->tujuan_ambil_id;
+
+        // Remove the radio button fields from data (but keep the ID fields)
+        unset($data['ftz03_option'], $data['sppb_option'], $data['buruh_bongkar_option']);
 
         // Handle changes to unit_kontainer field for outstanding tracking
         // Always sync units with unit_kontainer for consistency
