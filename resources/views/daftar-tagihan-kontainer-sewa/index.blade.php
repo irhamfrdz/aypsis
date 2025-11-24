@@ -3572,7 +3572,9 @@ window.bulkAddInvoice = function() {
         dpps: [],
         adjustments: [],
         ppns: [],
-        pphs: []
+        pphs: [],
+        invoiceVendors: [],
+        tanggalVendors: []
     };
 
     checkedBoxes.forEach((checkbox, index) => {
@@ -3582,13 +3584,15 @@ window.bulkAddInvoice = function() {
             return;
         }
 
-        // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, 8=masa, 9=tarif, 10=dpp, 11=adjustment, ..., 13=ppn, 14=pph, 17=grand_total
+        // Kolom: 1=checkbox, 2=no, 3=grup, 4=vendor, 5=kontainer, 6=size, 7=periode, 8=masa, 9=tarif, 10=dpp, 11=adjustment, 12=invoice_vendor, 13=tanggal_vendor, 14=ppn, 15=pph, 16=grand_total
         const vendorElement = row.querySelector('td:nth-child(4) .font-semibold');
         const containerElement = row.querySelector('td:nth-child(5)');
         const sizeElement = row.querySelector('td:nth-child(6) .inline-flex');
         const periodeElement = row.querySelector('td:nth-child(7) .inline-flex');
         const dppElement = row.querySelector('td:nth-child(10)');
         const adjustmentElement = row.querySelector('td:nth-child(11)');
+        const invoiceVendorElement = row.querySelector('td:nth-child(12)'); // Invoice Vendor column
+        const tanggalVendorElement = row.querySelector('td:nth-child(13)'); // Tanggal Vendor column
         const ppnElement = row.querySelector('td:nth-child(15)');
         const pphElement = row.querySelector('td:nth-child(16)');
         const totalElement = row.querySelector('td:nth-child(17)');
@@ -3604,9 +3608,27 @@ window.bulkAddInvoice = function() {
         selectedData.adjustments.push(adjustmentElement ? adjustmentElement.textContent.trim() : '0');
         selectedData.ppns.push(ppnElement ? ppnElement.textContent.trim() : '0');
         selectedData.pphs.push(pphElement ? pphElement.textContent.trim() : '0');
+        
+        // Extract Invoice Vendor and Tanggal Vendor
+        selectedData.invoiceVendors.push(invoiceVendorElement ? invoiceVendorElement.textContent.trim() : '');
+        selectedData.tanggalVendors.push(tanggalVendorElement ? tanggalVendorElement.textContent.trim() : '');
     });
 
     console.log('Invoice data extracted:', selectedData);
+
+    // Check if all selected items have the same invoice vendor
+    const uniqueInvoiceVendors = [...new Set(selectedData.invoiceVendors.filter(inv => inv && inv !== '-' && inv !== ''))];
+    const uniqueTanggalVendors = [...new Set(selectedData.tanggalVendors.filter(tgl => tgl && tgl !== '-' && tgl !== ''))];
+    
+    console.log('Unique Invoice Vendors:', uniqueInvoiceVendors);
+    console.log('Unique Tanggal Vendors:', uniqueTanggalVendors);
+    
+    // Determine if we should auto-fill or ask for input
+    const shouldAutoFillInvoiceVendor = uniqueInvoiceVendors.length === 1;
+    const shouldAutoFillTanggalVendor = uniqueTanggalVendors.length === 1;
+    
+    const existingInvoiceVendor = shouldAutoFillInvoiceVendor ? uniqueInvoiceVendors[0] : '';
+    const existingTanggalVendor = shouldAutoFillTanggalVendor ? uniqueTanggalVendors[0] : '';
 
     // Create detailed table for selected items
     let containerRows = '';
@@ -3724,23 +3746,52 @@ window.bulkAddInvoice = function() {
                         </div>
                     </div>
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Nomor Invoice Vendor <span class="text-red-500">*</span>
-                        </label>
-                        <input type="text" id="bulk_nomor_invoice_vendor" name="nomor_invoice_vendor" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                               placeholder="Masukkan nomor invoice dari vendor">
-                        <p class="text-xs text-gray-500 mt-1">Nomor invoice yang diberikan oleh vendor</p>
-                    </div>
+                    ${shouldAutoFillInvoiceVendor ? `
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-sm text-blue-800">
+                                    <strong>Otomatis menggunakan</strong> nomor invoice vendor yang sudah ada: <strong>${existingInvoiceVendor}</strong>
+                                </p>
+                            </div>
+                        </div>
+                        <input type="hidden" id="bulk_nomor_invoice_vendor" name="nomor_invoice_vendor" value="${existingInvoiceVendor}">
+                    ` : `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Nomor Invoice Vendor <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" id="bulk_nomor_invoice_vendor" name="nomor_invoice_vendor" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                   placeholder="Masukkan nomor invoice dari vendor">
+                            <p class="text-xs text-gray-500 mt-1">Nomor invoice yang diberikan oleh vendor</p>
+                        </div>
+                    `}
 
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-2">
-                            Tanggal Invoice Vendor <span class="text-red-500">*</span>
-                        </label>
-                        <input type="date" id="bulk_tanggal_vendor" name="tanggal_vendor" required
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
-                    </div>
+                    ${shouldAutoFillTanggalVendor ? `
+                        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+                            <div class="flex items-center">
+                                <svg class="w-5 h-5 text-blue-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <p class="text-sm text-blue-800">
+                                    <strong>Otomatis menggunakan</strong> tanggal vendor yang sudah ada: <strong>${existingTanggalVendor}</strong>
+                                </p>
+                            </div>
+                        </div>
+                        <input type="hidden" id="bulk_tanggal_vendor" name="tanggal_vendor" value="${existingTanggalVendor}">
+                    ` : `
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Invoice Vendor <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" id="bulk_tanggal_vendor" name="tanggal_vendor" required
+                                   class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                                   value="${existingTanggalVendor || new Date().toISOString().split('T')[0]}">
+                        </div>
+                    `}
 
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
                         <p class="text-sm text-blue-800">
@@ -3795,18 +3846,26 @@ window.bulkAddInvoice = function() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
-            const nomorInvoiceVendor = document.getElementById('bulk_nomor_invoice_vendor').value.trim();
-            const tanggalVendor = document.getElementById('bulk_tanggal_vendor').value;
+            const nomorInvoiceVendorField = document.getElementById('bulk_nomor_invoice_vendor');
+            const tanggalVendorField = document.getElementById('bulk_tanggal_vendor');
+            
+            const nomorInvoiceVendor = nomorInvoiceVendorField ? nomorInvoiceVendorField.value.trim() : '';
+            const tanggalVendor = tanggalVendorField ? tanggalVendorField.value : '';
 
-            if (!nomorInvoiceVendor) {
+            // Only validate if fields are visible (not auto-filled)
+            if (!shouldAutoFillInvoiceVendor && !nomorInvoiceVendor) {
                 showNotification('error', 'Validasi Gagal', 'Nomor invoice vendor harus diisi');
                 return;
             }
 
-            if (!tanggalVendor) {
+            if (!shouldAutoFillTanggalVendor && !tanggalVendor) {
                 showNotification('error', 'Validasi Gagal', 'Tanggal invoice vendor harus diisi');
                 return;
             }
+            
+            // Use auto-filled values if available
+            const finalNomorInvoiceVendor = shouldAutoFillInvoiceVendor ? existingInvoiceVendor : nomorInvoiceVendor;
+            const finalTanggalVendor = shouldAutoFillTanggalVendor ? existingTanggalVendor : tanggalVendor;
 
             // Show loading state
             const submitBtn = form.querySelector('button[type="submit"]');
@@ -3818,8 +3877,8 @@ window.bulkAddInvoice = function() {
             // Prepare form data to create invoice record
             const formData = new FormData();
             formData.append('_token', '{{ csrf_token() }}');
-            formData.append('nomor_invoice_vendor', nomorInvoiceVendor);
-            formData.append('tanggal_invoice', tanggalVendor);
+            formData.append('nomor_invoice_vendor', finalNomorInvoiceVendor);
+            formData.append('tanggal_invoice', finalTanggalVendor);
             formData.append('vendor_name', selectedData.vendors[0] || ''); // Use first vendor name
             formData.append('subtotal', totalDpp.toString());
             formData.append('ppn', totalPpn.toString());
@@ -3831,8 +3890,8 @@ window.bulkAddInvoice = function() {
             formData.append('auto_generate_number', 'true'); // Flag untuk backend generate nomor
             
             console.log('Sending invoice data:', {
-                nomor_invoice_vendor: nomorInvoiceVendor,
-                tanggal_invoice: tanggalVendor,
+                nomor_invoice_vendor: finalNomorInvoiceVendor,
+                tanggal_invoice: finalTanggalVendor,
                 vendor_name: selectedData.vendors[0] || '',
                 subtotal: totalDpp,
                 ppn: totalPpn,
@@ -3840,7 +3899,9 @@ window.bulkAddInvoice = function() {
                 adjustment: totalAdjustment,
                 total: grandTotal,
                 tagihan_ids: selectedIds,
-                auto_generate_number: true
+                auto_generate_number: true,
+                auto_filled_invoice: shouldAutoFillInvoiceVendor,
+                auto_filled_tanggal: shouldAutoFillTanggalVendor
             });
             
             // Add tagihan IDs
