@@ -2,17 +2,28 @@
 
 namespace App\Models;
 
-// DEPRECATED: This model is no longer used in the system
-// Use specific pranota models instead:
-// - App\Models\PranotaTagihanKontainerSewa (for container lease invoices)
-// - App\Models\PranotaSuratJalan (for delivery note invoices)
-// - App\Models\PranotaUangJalan (for travel money invoices)
-// - App\Models\PranotaUangRit (for trip money invoices)
-// - App\Models\PranotaPerbaikanKontainer (for container repair invoices)
+use Illuminate\Database\Eloquent\Model;
 
-// This class now acts as a factory/helper to direct to the correct model
-class Pranota
+class Pranota extends Model
 {
+    protected $fillable = [
+        'nomor_pranota',
+        'tanggal_pranota',
+        'jenis_pranota',
+        'tagihan_ids',
+        'total_amount',
+        'jumlah_tagihan',
+        'status',
+        'keterangan'
+    ];
+
+    protected $casts = [
+        'tagihan_ids' => 'array',
+        'tanggal_pranota' => 'date',
+        'total_amount' => 'decimal:2'
+    ];
+
+    // Factory methods for creating specific types of pranota
     public static function forKontainerSewa()
     {
         return new PranotaTagihanKontainerSewa();
@@ -32,19 +43,6 @@ class Pranota
     {
         return new PranotaPerbaikanKontainer();
     }
-
-    // If someone tries to instantiate this class directly, show helpful error
-    public function __construct()
-    {
-        throw new \Exception(
-            'Model Pranota is deprecated. Use specific pranota models instead:' . PHP_EOL .
-            '- PranotaTagihanKontainerSewa for container lease invoices' . PHP_EOL .
-            '- PranotaSuratJalan for delivery note invoices' . PHP_EOL .
-            '- PranotaUangJalan for travel money invoices' . PHP_EOL .
-            '- PranotaPerbaikanKontainer for container repair invoices'
-        );
-    }
-}
 
     public function getTagihanItems()
     {

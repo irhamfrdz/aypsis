@@ -396,7 +396,7 @@
                                     <option value="">Pilih Supir</option>
                                     @foreach($supirs as $supir)
                                         <option value="{{ $supir->nama_lengkap }}" {{ old('supir', $tandaTerimaTanpaSuratJalan->supir) == $supir->nama_lengkap ? 'selected' : '' }}>
-                                            {{ $supir->nama_lengkap }}
+                                            {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
                                         </option>
                                     @endforeach
                                 </select>

@@ -442,7 +442,7 @@
                                 <option value="{{ $supir->nama_lengkap }}"
                                         data-plat="{{ $supir->plat }}"
                                         {{ old('supir') == $supir->nama_lengkap ? 'selected' : '' }}>
-                                    {{ $supir->nama_lengkap }}
+                                    {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
                                 </option>
                             @endforeach
                         @endif

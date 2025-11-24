@@ -210,7 +210,7 @@ class SuratJalanBongkaranController extends Controller
         // Get karyawan dengan divisi supir untuk dropdown supir
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
                                                 ->whereNull('tanggal_berhenti')
-                                                ->orderBy('nama_lengkap')
+                                                ->orderBy('nama_panggilan')
                                                 ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
         
         // Find selected kapal by ID

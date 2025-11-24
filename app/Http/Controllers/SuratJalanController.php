@@ -132,8 +132,8 @@ class SuratJalanController extends Controller
         // Get karyawan supir data - hanya divisi supir
         $supirs = Karyawan::where('divisi', 'supir')
                          ->whereNotNull('nama_lengkap')
-                         ->orderBy('nama_lengkap')
-                         ->get(['id', 'nama_lengkap', 'plat']);
+                         ->orderBy('nama_panggilan')
+                         ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
         // Get karyawan kenek data - hanya divisi krani
         $keneks = Karyawan::where('divisi', 'krani')
@@ -342,8 +342,8 @@ class SuratJalanController extends Controller
         // Get karyawan supir data - hanya divisi supir
         $supirs = Karyawan::where('divisi', 'supir')
                          ->whereNotNull('nama_lengkap')
-                         ->orderBy('nama_lengkap')
-                         ->get(['id', 'nama_lengkap', 'plat']);
+                         ->orderBy('nama_panggilan')
+                         ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
         // Get karyawan kenek data - hanya divisi krani
         $keneks = Karyawan::where('divisi', 'krani')
@@ -819,8 +819,8 @@ class SuratJalanController extends Controller
         // Get karyawan supir data - hanya divisi supir
         $supirs = Karyawan::where('divisi', 'supir')
                          ->whereNotNull('nama_lengkap')
-                         ->orderBy('nama_lengkap')
-                         ->get(['id', 'nama_lengkap', 'plat']);
+                         ->orderBy('nama_panggilan')
+                         ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
 
         // Get karyawan kenek data - hanya divisi krani
         $keneks = Karyawan::where('divisi', 'krani')

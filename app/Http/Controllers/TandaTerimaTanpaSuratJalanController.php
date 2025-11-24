@@ -126,7 +126,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
 
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])->get();
+        $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
+                          ->orderBy('nama_panggilan')
+                          ->get(['id', 'nama_lengkap', 'nama_panggilan']);
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
         $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->orderBy('nama_tujuan')->get();
         $master_kapals = MasterKapal::where('status', 'aktif')->get();
@@ -144,7 +146,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])->get();
+        $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
+                          ->orderBy('nama_panggilan')
+                          ->get(['id', 'nama_lengkap', 'nama_panggilan']);
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
         $tujuanKegiatanUtamas = MasterTujuanKirim::where('status', 'active')->get();
         
@@ -339,7 +343,9 @@ class TandaTerimaTanpaSuratJalanController extends Controller
     {
         $terms = Term::where('status', 'active')->get();
         $pengirims = Pengirim::where('status', 'active')->get();
-        $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])->get();
+        $supirs = Karyawan::whereRaw('UPPER(divisi) = ?', ['SUPIR'])
+                          ->orderBy('nama_panggilan')
+                          ->get(['id', 'nama_lengkap', 'nama_panggilan']);
         $kranis = Karyawan::whereRaw('UPPER(divisi) = ?', ['KRANI'])->get();
         $tujuan_kirims = MasterTujuanKirim::where('status', 'active')->get();
         $master_kapals = MasterKapal::where('status', 'aktif')->get();

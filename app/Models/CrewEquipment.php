@@ -3,9 +3,8 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
-
-
 use App\Traits\Auditable;
+
 class CrewEquipment extends Model
 {
     use Auditable;
@@ -22,9 +21,9 @@ class CrewEquipment extends Model
         'catatan'
     ];
 
-    protected $dates = [
-        'issued_date',
-        'expired_date'
+    protected $casts = [
+        'issued_date' => 'date',
+        'expired_date' => 'date'
     ];
 
     public function karyawan()
@@ -32,7 +31,7 @@ class CrewEquipment extends Model
         return $this->belongsTo(Karyawan::class);
     }
 
-    public static function getDefaultItems()
+    public static function getDefaultItems(): array
     {
         return [
             'Formulir Data Karyawan',
@@ -59,7 +58,7 @@ class CrewEquipment extends Model
         ];
     }
 
-    public static function createDefaultChecklistForKaryawan($karyawanId)
+    public static function createDefaultChecklistForKaryawan(int $karyawanId): void
     {
         $defaultItems = self::getDefaultItems();
 

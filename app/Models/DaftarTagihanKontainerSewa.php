@@ -69,23 +69,20 @@ class DaftarTagihanKontainerSewa extends Model
 
     /**
      * Calculate and set the grand total
-     * Formula: (DPP + Adjustment) + PPN - PPH
+     * Formula: DPP + PPN - PPH (adjustment is already included in DPP)
      */
     public function calculateGrandTotal()
     {
-        // First, recalculate PPN and PPH based on current DPP and adjustment
+        // First, recalculate PPN and PPH based on current DPP 
         $this->recalculateTaxes();
 
         $dpp = floatval($this->dpp ?? 0);
-        $adjustment = floatval($this->adjustment ?? 0);
         $ppn = floatval($this->ppn ?? 0);
         $pph = floatval($this->pph ?? 0);
 
-        // Calculate base with DPP + adjustment (adjustment will be 0 after being applied)
-        $calculationBase = $dpp + $adjustment;
-
-        // Calculate grand total: Base + PPN - PPH
-        $this->grand_total = $calculationBase + $ppn - $pph;
+        // Calculate grand total: DPP + PPN - PPH
+        // Note: DPP already includes any adjustments
+        $this->grand_total = $dpp + $ppn - $pph;
 
         return $this->grand_total;
     }
@@ -96,16 +93,16 @@ class DaftarTagihanKontainerSewa extends Model
      */
     public function recalculateTaxes()
     {
-        $dpp = floatval($this->dpp ?? 0);
-        $adjustment = floatval($this->adjustment ?? 0);
-        
-        // Calculate from DPP + adjustment (for cases where adjustment hasn't been applied yet)
-        $calculationBase = $dpp + $adjustment;
+        // Use DPP as the calculation base since adjustment is already applied to DPP
+        $calculationBase = floatval($this->dpp ?? 0);
 
-        // PPN = 11% of calculation base
-        $this->ppn = $calculationBase * 0.11;
+        // Calculate dpp_nilai_lain (12% component for PPN calculation)
+        $this->dpp_nilai_lain = $calculationBase * 11 / 12;
 
-        // PPH = 2% of calculation base
+        // PPN = 11% of dpp_nilai_lain (which becomes 12% of DPP in total)
+        $this->ppn = $this->dpp_nilai_lain * 0.12;
+
+        // PPH = 2% of DPP
         $this->pph = $calculationBase * 0.02;
 
         // Grand total will be auto-calculated by calculateGrandTotal
