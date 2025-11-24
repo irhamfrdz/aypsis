@@ -257,8 +257,35 @@ use Illuminate\Support\Str;
                                 </div>
                             </td>
                             <td class="px-2 py-2 text-xs text-gray-900">
-                                <div class="overflow-hidden text-ellipsis" title="{{ $suratJalan->supir ?? '-' }}">
-                                    {{ $suratJalan->supir ?? '-' }}
+                                @php
+                                    $supirDisplay = '-';
+                                    $supirTitle = '-';
+                                    if ($suratJalan->supir) {
+                                        // Cari data supir dari model Karyawan
+                                        $karyawan = \App\Models\Karyawan::where('nama_panggilan', $suratJalan->supir)
+                                                                       ->orWhere('nama_lengkap', $suratJalan->supir)
+                                                                       ->first();
+                                        
+                                        if ($karyawan) {
+                                            // Format: nama_panggilan (nama_lengkap)
+                                            $namaPanggilan = $karyawan->nama_panggilan ?: $karyawan->nama_lengkap;
+                                            $namaLengkap = $karyawan->nama_lengkap ?: $karyawan->nama_panggilan;
+                                            
+                                            if ($namaPanggilan !== $namaLengkap) {
+                                                $supirDisplay = $namaPanggilan . ' (' . $namaLengkap . ')';
+                                            } else {
+                                                $supirDisplay = $namaPanggilan;
+                                            }
+                                            $supirTitle = $supirDisplay;
+                                        } else {
+                                            // Jika tidak ditemukan di master karyawan, tampilkan seperti biasa
+                                            $supirDisplay = $suratJalan->supir;
+                                            $supirTitle = $suratJalan->supir;
+                                        }
+                                    }
+                                @endphp
+                                <div class="overflow-hidden text-ellipsis" title="{{ $supirTitle }}">
+                                    {{ $supirDisplay }}
                                 </div>
                             </td>
                             <td class="px-2 py-2 whitespace-nowrap">
