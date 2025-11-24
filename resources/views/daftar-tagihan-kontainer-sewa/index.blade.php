@@ -3718,10 +3718,20 @@ window.bulkAddInvoice = function() {
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
                             </svg>
                             <p class="text-sm text-green-800">
-                                <strong>Nomor invoice akan digenerate otomatis</strong> setelah data berhasil disimpan<br>
+                                <strong>Nomor invoice internal akan digenerate otomatis</strong> setelah data berhasil disimpan<br>
                                 Format: MS-MMYY-0000001
                             </p>
                         </div>
+                    </div>
+
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">
+                            Nomor Invoice Vendor <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" id="bulk_nomor_invoice_vendor" name="nomor_invoice_vendor" required
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                               placeholder="Masukkan nomor invoice dari vendor">
+                        <p class="text-xs text-gray-500 mt-1">Nomor invoice yang diberikan oleh vendor</p>
                     </div>
 
                     <div>
@@ -3785,7 +3795,13 @@ window.bulkAddInvoice = function() {
         form.addEventListener('submit', function(e) {
             e.preventDefault();
 
+            const nomorInvoiceVendor = document.getElementById('bulk_nomor_invoice_vendor').value.trim();
             const tanggalVendor = document.getElementById('bulk_tanggal_vendor').value;
+
+            if (!nomorInvoiceVendor) {
+                showNotification('error', 'Validasi Gagal', 'Nomor invoice vendor harus diisi');
+                return;
+            }
 
             if (!tanggalVendor) {
                 showNotification('error', 'Validasi Gagal', 'Tanggal invoice vendor harus diisi');
@@ -3802,7 +3818,7 @@ window.bulkAddInvoice = function() {
             // Prepare form data to create invoice record
             const formData = new FormData();
             formData.append('_token', '{{ csrf_token() }}');
-            // Remove nomor_invoice from frontend - will be generated on backend after successful save
+            formData.append('nomor_invoice_vendor', nomorInvoiceVendor);
             formData.append('tanggal_invoice', tanggalVendor);
             formData.append('vendor_name', selectedData.vendors[0] || ''); // Use first vendor name
             formData.append('subtotal', totalDpp.toString());
@@ -3815,6 +3831,7 @@ window.bulkAddInvoice = function() {
             formData.append('auto_generate_number', 'true'); // Flag untuk backend generate nomor
             
             console.log('Sending invoice data:', {
+                nomor_invoice_vendor: nomorInvoiceVendor,
                 tanggal_invoice: tanggalVendor,
                 vendor_name: selectedData.vendors[0] || '',
                 subtotal: totalDpp,
