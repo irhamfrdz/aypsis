@@ -2169,14 +2169,18 @@ Route::get('/test-gate-in-ajax', function () {
                     ->name('daftar-tagihan-kontainer-sewa.bulk-update-status')
                     ->middleware('can:tagihan-kontainer-update');
 
-               // Invoice Kontainer Sewa routes
-               Route::resource('invoice-tagihan-sewa', \App\Http\Controllers\InvoiceKontainerSewaController::class);
+               // Invoice Kontainer Sewa routes - menggunakan permission tagihan-kontainer-sewa
+               Route::resource('invoice-tagihan-sewa', \App\Http\Controllers\InvoiceKontainerSewaController::class)
+                    ->middleware('can:tagihan-kontainer-sewa-index');
                Route::delete('invoice-tagihan-sewa-bulk-delete', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'bulkDelete'])
-                    ->name('invoice-tagihan-sewa.bulk-delete');
+                    ->name('invoice-tagihan-sewa.bulk-delete')
+                    ->middleware('can:tagihan-kontainer-sewa-delete');
                Route::post('invoice-tagihan-sewa-details', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'details'])
-                    ->name('invoice-tagihan-sewa.details');
+                    ->name('invoice-tagihan-sewa.details')
+                    ->middleware('can:tagihan-kontainer-sewa-view');
                Route::post('invoice-tagihan-sewa-store-pranota', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'storePranotaFromInvoice'])
-                    ->name('invoice-tagihan-sewa.store-pranota');
+                    ->name('invoice-tagihan-sewa.store-pranota')
+                    ->middleware('can:tagihan-kontainer-sewa-create');
 
                // Pembayaran Pranota Kontainer routes
                Route::prefix('pembayaran-pranota-kontainer')->name('pembayaran-pranota-kontainer.')->group(function () {

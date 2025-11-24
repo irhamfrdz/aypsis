@@ -17,6 +17,7 @@
                     </svg>
                     Kembali
                 </a>
+                @can('tagihan-kontainer-sewa-update')
                 <a href="{{ route('invoice-tagihan-sewa.edit', $invoice->id) }}" 
                    class="inline-flex items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                     <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -24,6 +25,7 @@
                     </svg>
                     Edit Invoice
                 </a>
+                @endcan
             </div>
         </div>
     </div>
@@ -225,6 +227,7 @@
                     <h2 class="text-lg font-semibold text-white">Aksi</h2>
                 </div>
                 <div class="p-6 space-y-3">
+                    @can('tagihan-kontainer-sewa-print')
                     <button onclick="window.print()" 
                             class="w-full inline-flex justify-center items-center px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -232,7 +235,9 @@
                         </svg>
                         Cetak Invoice
                     </button>
+                    @endcan
 
+                    @can('tagihan-kontainer-sewa-update')
                     <a href="{{ route('invoice-tagihan-sewa.edit', $invoice->id) }}" 
                        class="w-full inline-flex justify-center items-center px-4 py-2 bg-yellow-600 hover:bg-yellow-700 text-white font-medium rounded-lg transition duration-150 ease-in-out">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -240,7 +245,9 @@
                         </svg>
                         Edit Invoice
                     </a>
+                    @endcan
 
+                    @can('tagihan-kontainer-sewa-delete')
                     <form action="{{ route('invoice-tagihan-sewa.destroy', $invoice->id) }}" 
                           method="POST"
                           onsubmit="return confirm('Apakah Anda yakin ingin menghapus invoice ini? Tindakan ini tidak dapat dibatalkan.')">
@@ -254,6 +261,7 @@
                             Hapus Invoice
                         </button>
                     </form>
+                    @endcan
                 </div>
             </div>
         </div>
