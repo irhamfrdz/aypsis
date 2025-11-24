@@ -439,9 +439,9 @@
                         <option value="">Pilih Supir</option>
                         @if(isset($supirs))
                             @foreach($supirs as $supir)
-                                <option value="{{ $supir->nama_lengkap }}"
+                                <option value="{{ $supir->nama_panggilan ?? $supir->nama_lengkap }}"
                                         data-plat="{{ $supir->plat }}"
-                                        {{ old('supir') == $supir->nama_lengkap ? 'selected' : '' }}>
+                                        {{ old('supir') == ($supir->nama_panggilan ?? $supir->nama_lengkap) ? 'selected' : '' }}>
                                     {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
                                 </option>
                             @endforeach
