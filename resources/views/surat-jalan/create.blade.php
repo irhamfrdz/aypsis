@@ -442,7 +442,11 @@
                                 <option value="{{ $supir->nama_panggilan ?? $supir->nama_lengkap }}"
                                         data-plat="{{ $supir->plat }}"
                                         {{ old('supir') == ($supir->nama_panggilan ?? $supir->nama_lengkap) ? 'selected' : '' }}>
-                                    {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
+                                    @if($supir->nama_panggilan && $supir->nama_lengkap && $supir->nama_panggilan != $supir->nama_lengkap)
+                                        {{ $supir->nama_panggilan }} ({{ $supir->nama_lengkap }})
+                                    @else
+                                        {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
+                                    @endif
                                 </option>
                             @endforeach
                         @endif
