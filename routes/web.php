@@ -2174,10 +2174,10 @@ Route::get('/test-gate-in-ajax', function () {
                     ->middleware('can:tagihan-kontainer-sewa-index');
                Route::delete('invoice-tagihan-sewa-bulk-delete', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'bulkDelete'])
                     ->name('invoice-tagihan-sewa.bulk-delete')
-                    ->middleware('can:tagihan-kontainer-sewa-delete');
+                    ->middleware('can:tagihan-kontainer-sewa-destroy');
                Route::post('invoice-tagihan-sewa-details', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'details'])
                     ->name('invoice-tagihan-sewa.details')
-                    ->middleware('can:tagihan-kontainer-sewa-view');
+                    ->middleware('can:tagihan-kontainer-sewa-index');
                Route::post('invoice-tagihan-sewa-store-pranota', [\App\Http\Controllers\InvoiceKontainerSewaController::class, 'storePranotaFromInvoice'])
                     ->name('invoice-tagihan-sewa.store-pranota')
                     ->middleware('can:tagihan-kontainer-sewa-create');

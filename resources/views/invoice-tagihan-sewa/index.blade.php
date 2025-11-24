@@ -203,7 +203,7 @@
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
                                 <div class="flex items-center gap-2">
-                                    @can('tagihan-kontainer-sewa-view')
+                                    @can('tagihan-kontainer-sewa-index')
                                     <a href="{{ route('invoice-tagihan-sewa.show', $invoice->id) }}" 
                                        class="text-blue-600 hover:text-blue-900 transition"
                                        title="Lihat Detail">
@@ -222,7 +222,7 @@
                                         </svg>
                                     </a>
                                     @endcan
-                                    @can('tagihan-kontainer-sewa-delete')
+                                    @can('tagihan-kontainer-sewa-destroy')
                                     <form action="{{ route('invoice-tagihan-sewa.destroy', $invoice->id) }}" 
                                           method="POST" 
                                           class="inline-block"
