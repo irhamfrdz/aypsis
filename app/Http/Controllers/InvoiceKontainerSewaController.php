@@ -54,8 +54,11 @@ class InvoiceKontainerSewaController extends Controller
      */
     public function store(Request $request)
     {
-        $request->validate([
-            'nomor_invoice' => 'required|string|unique:invoices_kontainer_sewa,nomor_invoice',
+        // Check if auto-generate flag is set
+        $autoGenerate = $request->has('auto_generate_number') && $request->auto_generate_number;
+        
+        // Prepare validation rules
+        $validationRules = [
             'tanggal_invoice' => 'required|date',
             'vendor_name' => 'nullable|string',
             'subtotal' => 'required|numeric|min:0',
@@ -68,12 +71,27 @@ class InvoiceKontainerSewaController extends Controller
             'catatan' => 'nullable|string',
             'tagihan_ids' => 'nullable|array',
             'tagihan_ids.*' => 'exists:daftar_tagihan_kontainer_sewa,id',
-        ]);
+        ];
+        
+        // Add nomor_invoice validation only if not auto-generating
+        if (!$autoGenerate) {
+            $validationRules['nomor_invoice'] = 'required|string|unique:invoices_kontainer_sewa,nomor_invoice';
+        }
+        
+        // Add nomor_invoice_vendor validation if provided
+        if ($request->has('nomor_invoice_vendor')) {
+            $validationRules['nomor_invoice_vendor'] = 'required|string';
+        }
+
+        $request->validate($validationRules);
 
         \DB::beginTransaction();
         try {
+            // Generate invoice number if auto-generate is enabled
+            $nomorInvoice = $autoGenerate ? $this->generateInvoiceNumber() : $request->nomor_invoice;
+            
             $invoice = InvoiceKontainerSewa::create([
-                'nomor_invoice' => $request->nomor_invoice,
+                'nomor_invoice' => $nomorInvoice,
                 'tanggal_invoice' => $request->tanggal_invoice,
                 'vendor_name' => $request->vendor_name,
                 'subtotal' => $request->subtotal ?? 0,
@@ -97,8 +115,16 @@ class InvoiceKontainerSewaController extends Controller
                             'jumlah' => $tagihan->grand_total ?? 0,
                         ]);
                         
-                        // Update tagihan with invoice_id
-                        $tagihan->update(['invoice_id' => $invoice->id]);
+                        // Update tagihan with invoice_id and vendor info if provided
+                        $updateData = ['invoice_id' => $invoice->id];
+                        
+                        // Update vendor info if provided
+                        if ($request->has('nomor_invoice_vendor')) {
+                            $updateData['invoice_vendor'] = $request->nomor_invoice_vendor;
+                            $updateData['tanggal_vendor'] = $request->tanggal_invoice;
+                        }
+                        
+                        $tagihan->update($updateData);
                     }
                 }
             }
@@ -109,8 +135,11 @@ class InvoiceKontainerSewaController extends Controller
             if ($request->ajax() || $request->wantsJson()) {
                 return response()->json([
                     'success' => true,
-                    'message' => 'Invoice berhasil dibuat',
-                    'invoice' => $invoice
+                    'message' => $autoGenerate 
+                        ? "Invoice berhasil dibuat dengan nomor: {$nomorInvoice}"
+                        : 'Invoice berhasil dibuat',
+                    'invoice' => $invoice,
+                    'invoice_number' => $nomorInvoice
                 ]);
             }
             
@@ -473,5 +502,34 @@ class InvoiceKontainerSewaController extends Controller
                 'message' => 'Gagal membuat pranota: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    /**
+     * Generate invoice number with format MS-MMYY-0000001
+     */
+    private function generateInvoiceNumber()
+    {
+        // Get current month and year
+        $currentMonth = date('m');
+        $currentYear = date('y');
+        $prefix = "MS-{$currentMonth}{$currentYear}-";
+        
+        // Get the last invoice number for current month/year
+        $lastInvoice = InvoiceKontainerSewa::where('nomor_invoice', 'like', $prefix . '%')
+            ->orderBy('nomor_invoice', 'desc')
+            ->first();
+        
+        if ($lastInvoice) {
+            // Extract the sequence number from the last invoice
+            $lastNumber = str_replace($prefix, '', $lastInvoice->nomor_invoice);
+            $nextNumber = intval($lastNumber) + 1;
+        } else {
+            $nextNumber = 1;
+        }
+        
+        // Format with 7 digits padding
+        $sequence = str_pad($nextNumber, 7, '0', STR_PAD_LEFT);
+        
+        return $prefix . $sequence;
     }
 }
