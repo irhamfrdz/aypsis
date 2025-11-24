@@ -427,12 +427,21 @@
 
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                    <input type="text"
-                           name="supir"
-                           value="{{ old('supir', $suratJalan->supir) }}"
-                           placeholder="Nama supir utama"
-                           readonly
-                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 bg-gray-50 @error('supir') border-red-500 @enderror">
+                    <select name="supir"
+                            id="supir-select"
+                            onchange="updateNoPlat()"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
+                        <option value="">Pilih Supir</option>
+                        @if(isset($supirs))
+                            @foreach($supirs as $supir)
+                                <option value="{{ $supir->nama_panggilan ?? $supir->nama_lengkap }}"
+                                        data-plat="{{ $supir->plat }}"
+                                        {{ old('supir', $suratJalan->supir) == ($supir->nama_panggilan ?? $supir->nama_lengkap) ? 'selected' : '' }}>
+                                    {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
+                                </option>
+                            @endforeach
+                        @endif
+                    </select>
                     @error('supir')
                         <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                     @enderror
