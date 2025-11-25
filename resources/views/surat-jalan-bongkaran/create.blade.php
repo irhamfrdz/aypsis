@@ -352,10 +352,18 @@
                     <!-- Kenek -->
                     <div>
                         <label for="kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                        <input type="text" name="kenek" id="kenek"
-                               value="{{ old('kenek') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kenek') border-red-300 @enderror"
-                               placeholder="Masukkan nama kenek">
+                        <select name="kenek" id="kenek"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kenek') border-red-300 @enderror">
+                            <option value="">Pilih Kenek</option>
+                            @foreach($karyawanKranis as $krani)
+                                <option value="{{ $krani->nama_lengkap }}" {{ old('kenek') == $krani->nama_lengkap ? 'selected' : '' }}>
+                                    {{ $krani->nama_panggilan ?? $krani->nama_lengkap }}
+                                </option>
+                            @endforeach
+                        </select>
+                        <p class="mt-1 text-xs text-blue-600">
+                            <i class="fas fa-search mr-1"></i>Ketik nama kenek untuk mencari dengan cepat
+                        </p>
                         @error('kenek')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -709,6 +717,28 @@ document.addEventListener('DOMContentLoaded', function() {
             },
             inputTooShort: function() {
                 return "Ketik nama supir untuk mencari";
+            }
+        },
+        escapeMarkup: function(markup) {
+            return markup; // Allow HTML in results
+        }
+    });
+    
+    // Initialize Select2 for kenek dropdown
+    $('#kenek').select2({
+        placeholder: '🔍 Ketik untuk mencari kenek...',
+        allowClear: true,
+        width: '100%',
+        minimumInputLength: 0,
+        language: {
+            noResults: function() {
+                return "<i class='fas fa-exclamation-circle'></i> Tidak ada kenek ditemukan";
+            },
+            searching: function() {
+                return "<i class='fas fa-spinner fa-spin'></i> Mencari kenek...";
+            },
+            inputTooShort: function() {
+                return "Ketik nama kenek untuk mencari";
             }
         },
         escapeMarkup: function(markup) {

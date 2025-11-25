@@ -215,6 +215,12 @@ class SuratJalanBongkaranController extends Controller
                                                 ->orderBy('nama_panggilan')
                                                 ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
         
+        // Get karyawan dengan divisi krani untuk dropdown kenek
+        $karyawanKranis = \App\Models\Karyawan::where('divisi', 'krani')
+                                              ->whereNull('tanggal_berhenti')
+                                              ->orderBy('nama_panggilan')
+                                              ->get(['id', 'nama_lengkap', 'nama_panggilan']);
+        
         // Get tujuan kegiatan utama untuk dropdown tujuan pengambilan
         $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
                                                                ->orderBy('ke')
@@ -265,7 +271,7 @@ class SuratJalanBongkaranController extends Controller
             ];
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'masterKegiatans'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans'));
     }
 
     /**
