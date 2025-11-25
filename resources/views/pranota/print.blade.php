@@ -191,7 +191,7 @@
             margin: 0 auto;
             padding: 3mm 3mm 3mm 3mm;
             position: relative;
-            padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '80px' : ($paperSize === 'Folio' ? '50px' : '100px'))) }};
+            padding-bottom: {{ $paperSize === 'Half-A4' ? '25px' : ($paperSize === 'Half-Folio' ? '25px' : ($paperSize === 'A4' ? '50px' : ($paperSize === 'Folio' ? '35px' : '70px'))) }};
             box-sizing: border-box;
             overflow: hidden;
         }
@@ -397,7 +397,7 @@
             text-align: center;
             page-break-inside: avoid;
             position: absolute;
-            bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '40px' }};
+            bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '20px' }};
             left: 0;
             right: 0;
             width: 100%;
@@ -429,12 +429,12 @@
         }
 
         .footer {
-            margin-top: 30px;
+            margin-top: 15px;
             text-align: center;
             font-size: 10px;
             color: #666;
             border-top: 1px solid #ddd;
-            padding-top: 15px;
+            padding-top: 10px;
         }
 
         @media print {
@@ -478,12 +478,11 @@
             /* Multi-page layout - prevent unnecessary page breaks */
             .page-container {
                 padding: 5mm 5mm 5mm 5mm;
-                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '60px' : '150px'))) }};
+                padding-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : ($paperSize === 'A4' ? '60px' : ($paperSize === 'Folio' ? '30px' : '80px'))) }};
                 margin: 0;
                 box-sizing: border-box;
                 position: relative;
                 page-break-inside: avoid;
-                min-height: {{ $paperSize === 'Folio' ? '400px' : '300px' }};
             }
 
             .page-container:last-child {
@@ -647,13 +646,13 @@
                 page-break-inside: avoid;
                 position: absolute;
                 @if($paperSize === 'Half-A4')
-                    bottom: 10mm;
+                    bottom: 5mm;
                 @elseif($paperSize === 'Half-Folio')
-                    bottom: 10mm;
+                    bottom: 5mm;
                 @elseif($paperSize === 'Folio')
-                    bottom: 15mm;
+                    bottom: 8mm;
                 @else
-                    bottom: {{ $paperSize === 'A4' ? '15mm' : '20mm' }};
+                    bottom: {{ $paperSize === 'A4' ? '8mm' : '10mm' }};
                 @endif
                 left: 0;
                 right: 0;
@@ -680,8 +679,8 @@
             }
 
             .footer {
-                margin-top: 20px;
-                padding-top: 10px;
+                margin-top: 10px;
+                padding-top: 5px;
                 font-size: 8px;
             }
 
@@ -1011,15 +1010,15 @@
         </div>
 
         <!-- Keterangan Table -->
-        <div class="keterangan-table" style="margin-top: 8px; margin-bottom: 8px;">
+        <div class="keterangan-table" style="margin-top: 5px; margin-bottom: 5px;">
             <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
                 <tbody>
                     <tr>
-                        <td style="padding: 8px; border: 2px solid #333; font-size: 11px; height: 45px; min-height: 45px; vertical-align: top; line-height: 1.4;">
+                        <td style="padding: 6px; border: 2px solid #333; font-size: 11px; height: 35px; min-height: 35px; vertical-align: top; line-height: 1.4;">
                             {{ $pranota->keterangan ?: '' }}
                             @if(!$pranota->keterangan)
-                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
-                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 6px; height: 14px;"></div>
+                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 4px; height: 12px;"></div>
+                                <div style="border-bottom: 1px solid #ccc; margin-bottom: 4px; height: 12px;"></div>
                             @endif
                         </td>
                     </tr>
