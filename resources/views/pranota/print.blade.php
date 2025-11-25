@@ -514,6 +514,8 @@
 
             /* Ensure header is visible on all pages */
             .header {
+                margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
+                padding-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
                 page-break-inside: avoid;
                 page-break-after: avoid;
                 display: block !important;
@@ -524,6 +526,47 @@
                 left: 0 !important;
                 width: 100% !important;
                 z-index: 999 !important;
+                text-align: center;
+                border-bottom: 2px solid #333;
+            }
+
+            /* Force header to show on every page container */
+            .page-container .header,
+            div.header,
+            .force-new-page .header {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                height: auto !important;
+                max-height: none !important;
+                overflow: visible !important;
+            }
+
+            /* Specific rules for Folio paper size */
+            @media print and (size: 8.5in 13in) {
+                .header,
+                .page-container .header,
+                div.header {
+                    display: block !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    position: static !important;
+                    margin-bottom: 6px;
+                    padding-bottom: 5px;
+                    border-bottom: 2px solid #333;
+                    text-align: center;
+                }
+                
+                .header h1 {
+                    display: block !important;
+                    visibility: visible !important;
+                    font-size: 20px !important;
+                }
+                
+                .header div {
+                    display: flex !important;
+                    visibility: visible !important;
+                }
             }
 
             /* Prevent orphaned elements */
@@ -537,17 +580,6 @@
                 page-break-inside: avoid;
                 orphans: 4;
                 widows: 4;
-            }
-
-            .header {
-                margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
-                padding-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
-                page-break-inside: avoid;
-                page-break-after: avoid;
-                display: block !important;
-                visibility: visible !important;
-                position: static !important;
-                z-index: 1 !important;
             }
 
             .header h1 {
