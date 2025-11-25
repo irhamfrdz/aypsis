@@ -909,7 +909,13 @@
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->nomor_invoice }}</td>
                         <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->vendor_name ?: '-' }}</td>
-                        <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->invoice_vendor ?: '-' }}</td>
+                        <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">
+                            @php
+                                // Get invoice vendor from related tagihan items
+                                $invoiceVendor = $tagihanItems->where('invoice_id', $invoice->id)->first()->invoice_vendor ?? '-';
+                            @endphp
+                            {{ $invoiceVendor }}
+                        </td>
                         <td class="text-center" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->format('d-M-Y') : '-' }}</td>
                         <td class="text-right" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ number_format($invoice->total ?? 0, 0, ',', '.') }}</td>
                         <td class="text-center">
