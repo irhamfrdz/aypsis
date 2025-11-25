@@ -727,7 +727,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }
             
             if (uangJalan > 0) {
-                uangJalanNominalInput.value = uangJalan;
+                uangJalanNominalInput.value = Math.round(uangJalan);
             }
         }
     }
