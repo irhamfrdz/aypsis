@@ -677,21 +677,28 @@
 
             .signature-table {
                 margin-top: 5px;
+                border-collapse: collapse !important;
+                border: 2px solid #000 !important;
             }
 
             .signature-cell {
-                padding: 5px 3px;
+                padding: 8px 5px !important;
+                border: 1px solid #000 !important;
+                vertical-align: top !important;
             }
 
             .signature-label {
-                margin-bottom: 8px;
-                font-size: 8px;
+                margin-bottom: 15px !important;
+                font-size: 9px !important;
+                font-weight: bold !important;
+                text-align: center !important;
             }
 
             .signature-name {
-                font-size: 8px;
-                margin-bottom: 3px;
-                font-weight: bold;
+                font-size: 8px !important;
+                margin-bottom: 3px !important;
+                font-weight: bold !important;
+                text-align: center !important;
             }
 
             .footer {
@@ -896,11 +903,12 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '30%' : '25%' }};">Nomor Invoice</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '25%' : '25%' }};">Vendor</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '25%' : '20%' }};">Nomor Invoice</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '20%' : '20%' }};">Vendor</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Invoice Vendor</th>
                         <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Tanggal Invoice</th>
                         <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Total Invoice</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '10%' : '15%' }};">Status</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '5%' : '10%' }};">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -909,6 +917,7 @@
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->nomor_invoice }}</td>
                         <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->vendor_name ?: '-' }}</td>
+                        <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->invoice_vendor ?: '-' }}</td>
                         <td class="text-center" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->format('d-M-Y') : '-' }}</td>
                         <td class="text-right" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ number_format($invoice->total ?? 0, 0, ',', '.') }}</td>
                         <td class="text-center">
@@ -928,7 +937,7 @@
                     </tr>
                     @endforeach
                     <tr class="total-row">
-                        <td colspan="4" class="text-center" style="font-weight: bold;">TOTAL INVOICE</td>
+                        <td colspan="5" class="text-center" style="font-weight: bold;">TOTAL INVOICE</td>
                         <td class="text-right">{{ number_format($invoices->sum('total'), 0, ',', '.') }}</td>
                         <td class="text-center">-</td>
                     </tr>
@@ -1049,19 +1058,22 @@
 
         <!-- Signature Section -->
         <div class="signature-section">
-            <table class="signature-table">
+            <table class="signature-table" style="border-collapse: collapse; border: 1px solid #333;">
                 <tr>
-                    <td class="signature-cell">
-                        <div class="signature-label">Dibuat Oleh</div>
-                        <div class="signature-name">&nbsp;</div>
+                    <td class="signature-cell" style="border: 1px solid #333; padding: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '12px 8px' : '15px 10px' }}; vertical-align: top;">
+                        <div class="signature-label" style="font-weight: bold; margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '25px' : '35px' }}; font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }}; text-align: center;">Dibuat Oleh</div>
+                        <div style="border-bottom: 1px solid #333; margin-bottom: 8px; height: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '25px' }};"></div>
+                        <div class="signature-name" style="font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '9px' : '10px' }}; font-weight: bold; text-align: center;">(_____________)</div>
                     </td>
-                    <td class="signature-cell">
-                        <div class="signature-label">Disetujui Oleh</div>
-                        <div class="signature-name">&nbsp;</div>
+                    <td class="signature-cell" style="border: 1px solid #333; padding: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '12px 8px' : '15px 10px' }}; vertical-align: top;">
+                        <div class="signature-label" style="font-weight: bold; margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '25px' : '35px' }}; font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }}; text-align: center;">Disetujui Oleh</div>
+                        <div style="border-bottom: 1px solid #333; margin-bottom: 8px; height: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '25px' }};"></div>
+                        <div class="signature-name" style="font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '9px' : '10px' }}; font-weight: bold; text-align: center;">(_____________)</div>
                     </td>
-                    <td class="signature-cell">
-                        <div class="signature-label">Diterima Oleh</div>
-                        <div class="signature-name">&nbsp;</div>
+                    <td class="signature-cell" style="border: 1px solid #333; padding: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '12px 8px' : '15px 10px' }}; vertical-align: top;">
+                        <div class="signature-label" style="font-weight: bold; margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '25px' : '35px' }}; font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }}; text-align: center;">Diterima Oleh</div>
+                        <div style="border-bottom: 1px solid #333; margin-bottom: 8px; height: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '25px' }};"></div>
+                        <div class="signature-name" style="font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '9px' : '10px' }}; font-weight: bold; text-align: center;">(_____________)</div>
                     </td>
                 </tr>
             </table>
