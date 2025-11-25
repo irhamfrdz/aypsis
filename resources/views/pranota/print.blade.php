@@ -83,8 +83,7 @@
         'A4' => 35,          // Full A4 has much more space
         'Custom-215' => 35,  // Same as A4
         'Folio' => ($invoices->isNotEmpty() ? 
-            ($invoices->count() <= 3 ? 35 : 
-            ($invoices->count() <= 7 ? 30 : 25)) : 40), // Dynamic based on invoice count
+            max(20, 40 - ($invoices->count() * 2)) : 40), // Reduce 2 rows per invoice
         default => 20
     };
     
@@ -884,7 +883,7 @@
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($invoices->take(10) as $index => $invoice)
+                    @foreach($invoices as $index => $invoice)
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->nomor_invoice }}</td>
@@ -907,13 +906,6 @@
                         </td>
                     </tr>
                     @endforeach
-                    @if($invoices->count() > 10)
-                    <tr>
-                        <td colspan="6" class="text-center" style="font-style: italic; color: #666; font-size: 8px;">
-                            ... dan {{ $invoices->count() - 10 }} invoice lainnya
-                        </td>
-                    </tr>
-                    @endif
                     <tr class="total-row">
                         <td colspan="4" class="text-center" style="font-weight: bold;">TOTAL INVOICE</td>
                         <td class="text-right">{{ number_format($invoices->sum('total'), 0, ',', '.') }}</td>
