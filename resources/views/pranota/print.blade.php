@@ -850,8 +850,7 @@
             <h1>PRANOTA TAGIHAN KONTAINER</h1>
         </div>
 
-        <!-- Info Section (only on first page) -->
-        @if($pageIndex === 0)
+        <!-- Info Section (on every page for consistency) -->
         <div class="info-section">
             <div class="info-left">
                 @if($vendorList->isNotEmpty())
@@ -867,7 +866,7 @@
         </div>
 
         <!-- Invoice Table (only on first page and if not too many invoices) -->
-        @if($invoices->isNotEmpty())
+        @if($pageIndex === 0 && $invoices->isNotEmpty())
         <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }};">
             <h3 style="font-size: {{ $paperSize === 'Folio' ? '10px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
             <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '6px' }}; {{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">
