@@ -494,12 +494,10 @@
                 visibility: visible;
             }
 
-            /* Ensure every page shows header */
+            /* Ensure every page shows header - SIMPLE */
             .page-container .header {
                 display: block !important;
                 visibility: visible !important;
-                opacity: 1 !important;
-                position: static !important;
             }
 
             .page-container:last-child {
@@ -512,61 +510,30 @@
                 page-break-before: always;
             }
 
-            /* Ensure header is visible on all pages */
+            /* Ensure header is visible on all pages - SIMPLIFIED */
             .header {
+                display: block !important;
+                visibility: visible !important;
+                position: relative !important;
                 margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
                 padding-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
-                page-break-inside: avoid;
-                page-break-after: avoid;
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: relative !important;
-                top: 0 !important;
-                left: 0 !important;
-                width: 100% !important;
-                z-index: 999 !important;
-                text-align: center;
                 border-bottom: 2px solid #333;
+                text-align: center;
+                background: white;
+                width: 100%;
+                z-index: 9999;
             }
 
-            /* Force header to show on every page container */
-            .page-container .header,
-            div.header,
-            .force-new-page .header {
+            .header * {
                 display: block !important;
                 visibility: visible !important;
-                opacity: 1 !important;
-                height: auto !important;
-                max-height: none !important;
-                overflow: visible !important;
             }
 
-            /* Specific rules for Folio paper size */
-            @media print and (size: 8.5in 13in) {
-                .header,
-                .page-container .header,
-                div.header {
-                    display: block !important;
-                    visibility: visible !important;
-                    opacity: 1 !important;
-                    position: static !important;
-                    margin-bottom: 6px;
-                    padding-bottom: 5px;
-                    border-bottom: 2px solid #333;
-                    text-align: center;
-                }
-                
-                .header h1 {
-                    display: block !important;
-                    visibility: visible !important;
-                    font-size: 20px !important;
-                }
-                
-                .header div {
-                    display: flex !important;
-                    visibility: visible !important;
-                }
+            .header h1 {
+                font-size: {{ $paperSize === 'A4' ? '16px' : ($paperSize === 'Folio' ? '20px' : '14px') }};
+                margin-bottom: {{ $paperSize === 'Half-A4' ? '2px' : ($paperSize === 'Half-Folio' ? '2px' : '3px') }};
+                font-weight: bold;
+                color: #000;
             }
 
             /* Prevent orphaned elements */
@@ -893,25 +860,25 @@
     @foreach($chunkedItems as $pageIndex => $pageItems)
     <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
         <!-- Header for each page -->
-        <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px;">
-                <div style="text-align: left;">
-                    <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
-                    <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span><br>
+        <div class="header" style="display: block !important; visibility: visible !important; opacity: 1 !important; position: relative !important; width: 100% !important; background: white !important; z-index: 9999 !important;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; visibility: visible !important;">
+                <div style="text-align: left; visibility: visible !important;">
+                    <strong style="font-size: 12px; visibility: visible !important; display: inline !important;">PT. ALEXINDO YAKINPRIMA</strong><br>
+                    <span style="font-size: 10px; visibility: visible !important; display: inline !important;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span><br>
                 </div>
             </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                <span style="font-size: 10px; font-weight: bold;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; visibility: visible !important;">
+                <span style="font-size: 10px; font-weight: bold; visibility: visible !important; display: inline !important;">
                     Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}
                 </span>
-                <div style="text-align: right;">
-                    <span style="font-size: 10px; font-weight: bold;">{{ $pranota->no_invoice }}</span>
+                <div style="text-align: right; visibility: visible !important;">
+                    <span style="font-size: 10px; font-weight: bold; visibility: visible !important; display: inline !important;">{{ $pranota->no_invoice }}</span>
                     @if($totalPages > 1)
-                    <br><span style="font-size: 8px; color: #666;">Hal {{ $pageIndex + 1 }} dari {{ $totalPages }}</span>
+                    <br><span style="font-size: 8px; color: #666; visibility: visible !important; display: inline !important;">Hal {{ $pageIndex + 1 }} dari {{ $totalPages }}</span>
                     @endif
                 </div>
             </div>
-            <h1>PRANOTA TAGIHAN KONTAINER</h1>
+            <h1 style="visibility: visible !important; display: block !important; font-size: {{ $paperSize === 'Folio' ? '20px' : '16px' }} !important;">PRANOTA TAGIHAN KONTAINER</h1>
         </div>
 
         <!-- Info Section (on every page for consistency) -->
