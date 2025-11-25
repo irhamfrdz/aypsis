@@ -792,6 +792,11 @@
 
     @php
         $globalRowNumber = 0; // Initialize global row counter
+        
+        // Get unique invoices from tagihan items
+        $invoices = $tagihanItems->map(function($item) {
+            return $item->invoice;
+        })->filter()->unique('id')->values();
     @endphp
     @foreach($chunkedItems as $pageIndex => $pageItems)
     <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
@@ -832,6 +837,55 @@
                 <!-- Info right can be used for other information if needed -->
             </div>
         </div>
+
+        <!-- Invoice Table (only on first page) -->
+        @if($invoices->isNotEmpty())
+        <div class="invoice-section" style="margin-bottom: 15px;">
+            <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
+            <table class="table" style="margin-bottom: 10px;">
+                <thead>
+                    <tr>
+                        <th style="width: 5%;">No</th>
+                        <th style="width: 25%;">Nomor Invoice</th>
+                        <th style="width: 25%;">Vendor</th>
+                        <th style="width: 15%;">Tanggal Invoice</th>
+                        <th style="width: 15%;">Total Invoice</th>
+                        <th style="width: 15%;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach($invoices as $index => $invoice)
+                    <tr>
+                        <td class="text-center">{{ $index + 1 }}</td>
+                        <td>{{ $invoice->nomor_invoice }}</td>
+                        <td>{{ $invoice->vendor_name ?: '-' }}</td>
+                        <td class="text-center">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->format('d-M-Y') : '-' }}</td>
+                        <td class="text-right">{{ number_format($invoice->total ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-center">
+                            @php
+                                $statusLabels = [
+                                    'draft' => 'Draft',
+                                    'submitted' => 'Submitted', 
+                                    'approved' => 'Approved',
+                                    'paid' => 'Paid',
+                                    'cancelled' => 'Cancelled',
+                                ];
+                            @endphp
+                            <span style="padding: 2px 6px; font-size: 8px; border: 1px solid #333; border-radius: 3px;">
+                                {{ $statusLabels[$invoice->status] ?? $invoice->status }}
+                            </span>
+                        </td>
+                    </tr>
+                    @endforeach
+                    <tr class="total-row">
+                        <td colspan="4" class="text-center" style="font-weight: bold;">TOTAL INVOICE</td>
+                        <td class="text-right">{{ number_format($invoices->sum('total'), 0, ',', '.') }}</td>
+                        <td class="text-center">-</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @endif
         @endif
 
         <!-- Table for current page -->
