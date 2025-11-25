@@ -117,10 +117,10 @@
                     <label for="status_perkawinan" class="{{ $labelClasses }}">Status Pernikahan</label>
                     <select name="status_perkawinan" id="status_perkawinan" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Status Perkawinan --</option>
-                        <option value="Menikah" {{ old('status_perkawinan', $karyawan->status_perkawinan) == 'Menikah' ? 'selected' : '' }}>Menikah</option>
-                        <option value="Belum Menikah" {{ old('status_perkawinan', $karyawan->status_perkawinan) == 'Belum Menikah' ? 'selected' : '' }}>Belum Menikah</option>
-                        <option value="Janda" {{ old('status_perkawinan', $karyawan->status_perkawinan) == 'Janda' ? 'selected' : '' }}>Janda</option>
-                        <option value="Duda" {{ old('status_perkawinan', $karyawan->status_perkawinan) == 'Duda' ? 'selected' : '' }}>Duda</option>
+                        <option value="Menikah" {{ (old('status_perkawinan', $karyawan->status_perkawinan) == 'Menikah' || old('status_perkawinan', $karyawan->status_perkawinan) == 'MENIKAH') ? 'selected' : '' }}>Menikah</option>
+                        <option value="Belum Menikah" {{ (old('status_perkawinan', $karyawan->status_perkawinan) == 'Belum Menikah' || old('status_perkawinan', $karyawan->status_perkawinan) == 'BELUM MENIKAH') ? 'selected' : '' }}>Belum Menikah</option>
+                        <option value="Janda" {{ (old('status_perkawinan', $karyawan->status_perkawinan) == 'Janda' || old('status_perkawinan', $karyawan->status_perkawinan) == 'JANDA') ? 'selected' : '' }}>Janda</option>
+                        <option value="Duda" {{ (old('status_perkawinan', $karyawan->status_perkawinan) == 'Duda' || old('status_perkawinan', $karyawan->status_perkawinan) == 'DUDA') ? 'selected' : '' }}>Duda</option>
                     </select>
                 </div>
 
