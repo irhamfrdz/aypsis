@@ -82,17 +82,14 @@
         'Half-Folio' => 22,  // Slightly more space
         'A4' => 35,          // Full A4 has much more space
         'Custom-215' => 35,  // Same as A4
-        'Folio' => ($invoices->isNotEmpty() ? 30 : 40), // Reduced when invoice table exists
+        'Folio' => ($invoices->isNotEmpty() ? 
+            ($invoices->count() <= 3 ? 35 : 
+            ($invoices->count() <= 7 ? 30 : 25)) : 40), // Dynamic based on invoice count
         default => 20
     };
     
     // Only create multiple pages if data actually exceeds the limit
     $totalItems = $tagihanItems->count();
-    
-    // For Folio with invoice table, be more conservative
-    if ($paperSize === 'Folio' && $invoices->isNotEmpty() && $invoices->count() > 3) {
-        $maxRowsPerPage = 25; // Further reduce if many invoices
-    }
     
     if ($totalItems <= $maxRowsPerPage) {
         // All data fits in one page
@@ -872,26 +869,26 @@
         </div>
 
         <!-- Invoice Table (only on first page and if not too many invoices) -->
-        @if($invoices->isNotEmpty() && $invoices->count() <= 5)
+        @if($invoices->isNotEmpty())
         <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '15px' }};">
             <h3 style="font-size: {{ $paperSize === 'Folio' ? '10px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
             <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '10px' }}; {{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: 25%;">Nomor Invoice</th>
-                        <th style="width: 25%;">Vendor</th>
-                        <th style="width: 15%;">Tanggal Invoice</th>
-                        <th style="width: 15%;">Total Invoice</th>
-                        <th style="width: 15%;">Status</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '30%' : '25%' }};">Nomor Invoice</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '25%' : '25%' }};">Vendor</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Tanggal Invoice</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Total Invoice</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '10%' : '15%' }};">Status</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach($invoices as $index => $invoice)
+                    @foreach($invoices->take(10) as $index => $invoice)
                     <tr>
                         <td class="text-center">{{ $index + 1 }}</td>
-                        <td>{{ $invoice->nomor_invoice }}</td>
-                        <td>{{ $invoice->vendor_name ?: '-' }}</td>
+                        <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->nomor_invoice }}</td>
+                        <td style="{{ $paperSize === 'Folio' ? 'font-size: 8px;' : '' }}">{{ $invoice->vendor_name ?: '-' }}</td>
                         <td class="text-center" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->format('d-M-Y') : '-' }}</td>
                         <td class="text-right" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ number_format($invoice->total ?? 0, 0, ',', '.') }}</td>
                         <td class="text-center">
@@ -904,12 +901,19 @@
                                     'cancelled' => 'Cancelled',
                                 ];
                             @endphp
-                            <span style="padding: {{ $paperSize === 'Folio' ? '1px 4px' : '2px 6px' }}; font-size: {{ $paperSize === 'Folio' ? '8px' : '8px' }}; border: 1px solid #333; border-radius: 3px;">
+                            <span style="padding: {{ $paperSize === 'Folio' ? '1px 4px' : '2px 6px' }}; font-size: {{ $paperSize === 'Folio' ? '7px' : '8px' }}; border: 1px solid #333; border-radius: 3px;">
                                 {{ $statusLabels[$invoice->status] ?? $invoice->status }}
                             </span>
                         </td>
                     </tr>
                     @endforeach
+                    @if($invoices->count() > 10)
+                    <tr>
+                        <td colspan="6" class="text-center" style="font-style: italic; color: #666; font-size: 8px;">
+                            ... dan {{ $invoices->count() - 10 }} invoice lainnya
+                        </td>
+                    </tr>
+                    @endif
                     <tr class="total-row">
                         <td colspan="4" class="text-center" style="font-weight: bold;">TOTAL INVOICE</td>
                         <td class="text-right">{{ number_format($invoices->sum('total'), 0, ',', '.') }}</td>
