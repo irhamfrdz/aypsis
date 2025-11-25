@@ -103,13 +103,13 @@
                     <label for="agama" class="{{ $labelClasses }}">Agama</label>
                     <select name="agama" id="agama" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Agama --</option>
-                        <option value="Islam" {{ old('agama', $karyawan->agama) == 'Islam' ? 'selected' : '' }}>Islam</option>
-                        <option value="Kristen" {{ old('agama', $karyawan->agama) == 'Kristen' ? 'selected' : '' }}>Kristen</option>
-                        <option value="Katolik" {{ old('agama', $karyawan->agama) == 'Katolik' ? 'selected' : '' }}>Katolik</option>
-                        <option value="Hindu" {{ old('agama', $karyawan->agama) == 'Hindu' ? 'selected' : '' }}>Hindu</option>
-                        <option value="Budha" {{ old('agama', $karyawan->agama) == 'Budha' ? 'selected' : '' }}>Budha</option>
-                        <option value="Konghucu" {{ old('agama', $karyawan->agama) == 'Konghucu' ? 'selected' : '' }}>Konghucu</option>
-                        <option value="Lainnya" {{ old('agama', $karyawan->agama) == 'Lainnya' ? 'selected' : '' }}>Lainnya</option>
+                        <option value="Islam" {{ (old('agama', $karyawan->agama) == 'Islam' || old('agama', $karyawan->agama) == 'ISLAM') ? 'selected' : '' }}>Islam</option>
+                        <option value="Kristen" {{ (old('agama', $karyawan->agama) == 'Kristen' || old('agama', $karyawan->agama) == 'KRISTEN') ? 'selected' : '' }}>Kristen</option>
+                        <option value="Katolik" {{ (old('agama', $karyawan->agama) == 'Katolik' || old('agama', $karyawan->agama) == 'KATOLIK') ? 'selected' : '' }}>Katolik</option>
+                        <option value="Hindu" {{ (old('agama', $karyawan->agama) == 'Hindu' || old('agama', $karyawan->agama) == 'HINDU') ? 'selected' : '' }}>Hindu</option>
+                        <option value="Budha" {{ (old('agama', $karyawan->agama) == 'Budha' || old('agama', $karyawan->agama) == 'BUDHA') ? 'selected' : '' }}>Budha</option>
+                        <option value="Konghucu" {{ (old('agama', $karyawan->agama) == 'Konghucu' || old('agama', $karyawan->agama) == 'KONGHUCU') ? 'selected' : '' }}>Konghucu</option>
+                        <option value="Lainnya" {{ (old('agama', $karyawan->agama) == 'Lainnya' || old('agama', $karyawan->agama) == 'LAINNYA') ? 'selected' : '' }}>Lainnya</option>
                     </select>
                 </div>
 
@@ -158,7 +158,7 @@
                     <select name="divisi" id="divisi" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Divisi --</option>
                         @foreach($divisis as $divisi)
-                        <option value="{{ $divisi->nama_divisi }}" {{ old('divisi', $karyawan->divisi) == $divisi->nama_divisi ? 'selected' : '' }}>{{ $divisi->nama_divisi }}</option>
+                        <option value="{{ $divisi->nama_divisi }}" {{ (old('divisi', $karyawan->divisi) == $divisi->nama_divisi || strtoupper(old('divisi', $karyawan->divisi)) == strtoupper($divisi->nama_divisi)) ? 'selected' : '' }}>{{ $divisi->nama_divisi }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -206,7 +206,7 @@
                     <select name="cabang" id="cabang" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Kantor Cabang AYP --</option>
                         @foreach($cabangs as $cabang)
-                        <option value="{{ $cabang->nama_cabang }}" {{ old('cabang', $karyawan->cabang) == $cabang->nama_cabang ? 'selected' : '' }}>{{ $cabang->nama_cabang }}</option>
+                        <option value="{{ $cabang->nama_cabang }}" {{ (old('cabang', $karyawan->cabang) == $cabang->nama_cabang || strtoupper(old('cabang', $karyawan->cabang)) == strtoupper($cabang->nama_cabang)) ? 'selected' : '' }}>{{ $cabang->nama_cabang }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -291,7 +291,7 @@
                     <select name="nama_bank" id="nama_bank" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Bank --</option>
                         @foreach($banks as $bank)
-                        <option value="{{ $bank->name }}" {{ old('nama_bank', $karyawan->nama_bank) == $bank->name ? 'selected' : '' }}>{{ $bank->name }}</option>
+                        <option value="{{ $bank->name }}" {{ (old('nama_bank', $karyawan->nama_bank) == $bank->name || strtoupper(old('nama_bank', $karyawan->nama_bank)) == strtoupper($bank->name)) ? 'selected' : '' }}>{{ $bank->name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -324,7 +324,7 @@
                     <select name="status_pajak" id="status_pajak" class="{{ $selectClasses }}">
                         <option value="">-- Pilih Status Pajak --</option>
                         @foreach($pajaks as $pajak)
-                        <option value="{{ $pajak->nama_status }}" {{ old('status_pajak', $karyawan->status_pajak) == $pajak->nama_status ? 'selected' : '' }}>{{ $pajak->nama_status }} - {{ $pajak->keterangan }}</option>
+                        <option value="{{ $pajak->nama_status }}" {{ (old('status_pajak', $karyawan->status_pajak) == $pajak->nama_status || strtoupper(old('status_pajak', $karyawan->status_pajak)) == strtoupper($pajak->nama_status)) ? 'selected' : '' }}>{{ $pajak->nama_status }} - {{ $pajak->keterangan }}</option>
                         @endforeach
                     </select>
                 </div>
