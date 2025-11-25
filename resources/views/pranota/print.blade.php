@@ -77,7 +77,7 @@
         'Half-Folio' => 22,  // Slightly more space
         'A4' => 35,          // Full A4 has much more space
         'Custom-215' => 35,  // Same as A4
-        'Folio' => 40,       // Largest paper
+        'Folio' => 45,       // Increase for Folio to accommodate invoice table
         default => 20
     };
     
@@ -174,7 +174,7 @@
             margin: 0 auto;
             padding: 5mm 5mm 5mm 5mm;
             position: relative;
-            padding-bottom: {{ $paperSize === 'Half-A4' ? '60px' : ($paperSize === 'Half-Folio' ? '60px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
+            padding-bottom: {{ $paperSize === 'Half-A4' ? '60px' : ($paperSize === 'Half-Folio' ? '60px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '80px' : '150px'))) }};
             box-sizing: border-box;
             overflow: hidden;
         }
@@ -451,7 +451,7 @@
                 width: {{ $currentPaper['containerWidth'] }};
                 min-height: {{ $currentPaper['height'] }};
                 padding: 5mm 5mm 5mm 5mm;
-                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
+                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '60px' : '150px'))) }};
                 margin: 0;
                 box-sizing: border-box;
                 position: relative;
@@ -461,7 +461,7 @@
             /* Multi-page layout - let content flow naturally */
             .page-container {
                 padding: 5mm 5mm 5mm 5mm;
-                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : '150px')) }};
+                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '60px' : '150px'))) }};
                 margin: 0;
                 box-sizing: border-box;
                 position: relative;
@@ -618,6 +618,8 @@
                     bottom: 10mm;
                 @elseif($paperSize === 'Half-Folio')
                     bottom: 10mm;
+                @elseif($paperSize === 'Folio')
+                    bottom: 15mm;
                 @else
                     bottom: {{ $paperSize === 'A4' ? '15mm' : '20mm' }};
                 @endif
@@ -840,9 +842,9 @@
 
         <!-- Invoice Table (only on first page) -->
         @if($invoices->isNotEmpty())
-        <div class="invoice-section" style="margin-bottom: 15px;">
-            <h3 style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
-            <table class="table" style="margin-bottom: 10px;">
+        <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '8px' : '15px' }};">
+            <h3 style="font-size: {{ $paperSize === 'Folio' ? '11px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
+            <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '8px' : '10px' }};">
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
@@ -871,7 +873,7 @@
                                     'cancelled' => 'Cancelled',
                                 ];
                             @endphp
-                            <span style="padding: 2px 6px; font-size: 8px; border: 1px solid #333; border-radius: 3px;">
+                            <span style="padding: 2px 6px; font-size: {{ $paperSize === 'Folio' ? '9px' : '8px' }}; border: 1px solid #333; border-radius: 3px;">
                                 {{ $statusLabels[$invoice->status] ?? $invoice->status }}
                             </span>
                         </td>
