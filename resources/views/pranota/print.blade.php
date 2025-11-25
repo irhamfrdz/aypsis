@@ -505,28 +505,79 @@
                 min-height: auto;
             }
 
-            /* Only add page break when explicitly needed and content is substantial */
+            /* Force page break for subsequent pages - CRITICAL */
             .force-new-page {
-                page-break-before: always;
+                page-break-before: always !important;
+                clear: both !important;
             }
 
-            /* Ensure header is visible on all pages - SIMPLIFIED */
+            /* Ensure header is visible on all pages - CRITICAL FIX */
             .header {
                 display: block !important;
                 visibility: visible !important;
                 position: relative !important;
-                margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
-                padding-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
-                border-bottom: 2px solid #333;
-                text-align: center;
-                background: white;
-                width: 100%;
-                z-index: 9999;
+                margin: 0 0 {{ $paperSize === 'Folio' ? '6px' : '10px' }} 0 !important;
+                padding: 0 0 {{ $paperSize === 'Folio' ? '5px' : '8px' }} 0 !important;
+                border-bottom: 2px solid #333 !important;
+                text-align: center !important;
+                background: white !important;
+                width: 100% !important;
+                z-index: 9999 !important;
+                page-break-inside: avoid !important;
+                clear: both !important;
+                box-sizing: border-box !important;
+                opacity: 1 !important;
+                float: none !important;
             }
 
             .header * {
                 display: block !important;
                 visibility: visible !important;
+                opacity: 1 !important;
+                color: #000 !important;
+            }
+
+            .header div {
+                display: block !important;
+                visibility: visible !important;
+            }
+
+            .header span, .header strong {
+                display: inline !important;
+                visibility: visible !important;
+            }
+
+            /* Critical: Force header visibility on page 2+ */
+            .page-container:nth-child(n+2) .header,
+            .force-new-page .header {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                background: white !important;
+                z-index: 10000 !important;
+                margin: 0 0 10px 0 !important;
+                padding: 5px 0 !important;
+                border-bottom: 2px solid #333 !important;
+                page-break-inside: avoid !important;
+                clear: both !important;
+                width: 100% !important;
+                box-sizing: border-box !important;
+            }
+
+            .page-container:nth-child(n+2) .header *,
+            .force-new-page .header * {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                color: #000 !important;
+            }
+
+            .page-container:nth-child(n+2) .header span,
+            .page-container:nth-child(n+2) .header strong,
+            .force-new-page .header span,
+            .force-new-page .header strong {
+                display: inline !important;
             }
 
             .header h1 {
