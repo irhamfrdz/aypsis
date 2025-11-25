@@ -707,10 +707,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const tujuanPengambilanSelect = document.getElementById('tujuan_pengambilan');
     const uangJalanNominalInput = document.getElementById('uang_jalan_nominal');
     const sizeInput = document.querySelector('input[name="size"]');
+    const uangJalanTypeRadios = document.querySelectorAll('input[name="uang_jalan_type"]');
     
     function calculateUangJalan() {
         const selectedTujuan = tujuanPengambilanSelect.value;
         const containerSize = sizeInput ? sizeInput.value : '';
+        const uangJalanType = document.querySelector('input[name="uang_jalan_type"]:checked');
         
         if (selectedTujuan && tujuanKegiatanData[selectedTujuan]) {
             const tujuanData = tujuanKegiatanData[selectedTujuan];
@@ -726,6 +728,11 @@ document.addEventListener('DOMContentLoaded', function() {
                 uangJalan = tujuanData.uang_jalan_20ft || 0;
             }
             
+            // Apply half calculation if "setengah" is selected
+            if (uangJalanType && uangJalanType.value === 'setengah') {
+                uangJalan = uangJalan / 2;
+            }
+            
             if (uangJalan > 0) {
                 uangJalanNominalInput.value = Math.round(uangJalan);
             }
@@ -734,6 +741,11 @@ document.addEventListener('DOMContentLoaded', function() {
     
     if (tujuanPengambilanSelect && uangJalanNominalInput) {
         tujuanPengambilanSelect.addEventListener('change', calculateUangJalan);
+        
+        // Add event listeners to uang jalan type radio buttons
+        uangJalanTypeRadios.forEach(radio => {
+            radio.addEventListener('change', calculateUangJalan);
+        });
         
         // Also trigger calculation on page load if values are pre-selected
         if (tujuanPengambilanSelect.value) {
