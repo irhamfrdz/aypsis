@@ -553,17 +553,29 @@
                     <!-- Uang Jalan -->
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-3">Uang Jalan</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="uang_jalan_type" value="full" {{ old('uang_jalan_type') == 'full' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Full</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="uang_jalan_type" value="setengah" {{ old('uang_jalan_type') == 'setengah' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Setengah</span>
-                            </label>
+                        <div class="space-y-3">
+                            <div class="space-y-2">
+                                <label class="flex items-center">
+                                    <input type="radio" name="uang_jalan_type" value="full" {{ old('uang_jalan_type') == 'full' ? 'checked' : '' }}
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Full</span>
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="radio" name="uang_jalan_type" value="setengah" {{ old('uang_jalan_type') == 'setengah' ? 'checked' : '' }}
+                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                    <span class="ml-2 text-sm text-gray-700">Setengah</span>
+                                </label>
+                            </div>
+                            <div>
+                                <label for="uang_jalan_nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal Uang Jalan</label>
+                                <input type="number" name="uang_jalan_nominal" id="uang_jalan_nominal"
+                                       value="{{ old('uang_jalan_nominal') }}"
+                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('uang_jalan_nominal') border-red-300 @enderror"
+                                       placeholder="Masukkan nominal uang jalan" min="0" step="1000">
+                                @error('uang_jalan_nominal')
+                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
                         </div>
                         @error('uang_jalan_type')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
