@@ -659,8 +659,28 @@
 @endsection
 
 @push('scripts')
+<!-- Select2 CSS -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Select2 JS -->
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Initialize Select2 for supir dropdown
+    $('#supir').select2({
+        placeholder: 'Pilih atau cari supir...',
+        allowClear: true,
+        width: '100%',
+        language: {
+            noResults: function() {
+                return "Tidak ada hasil ditemukan";
+            },
+            searching: function() {
+                return "Mencari...";
+            }
+        }
+    });
+    
     // Tujuan kegiatan utama data for uang jalan calculation
     const tujuanKegiatanData = @json($tujuanKegiatanUtamas->keyBy('ke'));
     
@@ -689,19 +709,18 @@ document.addEventListener('DOMContentLoaded', function() {
     }
     
     // Auto-fill plat nomor when supir is selected
-    const supirSelect = document.getElementById('supir');
     const noPlatInput = document.getElementById('no_plat');
     
-    if (supirSelect && noPlatInput) {
-        supirSelect.addEventListener('change', function() {
-            const selectedOption = this.options[this.selectedIndex];
-            const platNumber = selectedOption.getAttribute('data-plat');
-            
-            if (platNumber && platNumber.trim() !== '' && !noPlatInput.value) {
-                noPlatInput.value = platNumber;
-            }
-        });
-    }
+    // Handle Select2 change event for supir
+    $('#supir').on('select2:select', function(e) {
+        const selectedData = e.params.data;
+        const selectedElement = selectedData.element;
+        const platNumber = selectedElement.getAttribute('data-plat');
+        
+        if (platNumber && platNumber.trim() !== '' && !noPlatInput.value) {
+            noPlatInput.value = platNumber;
+        }
+    });
     
     // Auto-calculate uang jalan based on tujuan pengambilan
     const tujuanPengambilanSelect = document.getElementById('tujuan_pengambilan');
