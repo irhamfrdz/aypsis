@@ -77,14 +77,14 @@
 
     // Calculate maximum rows that can fit on one page (including headers, footers, etc.)
     $maxRowsPerPage = match($paperSize) {
-        'Half-A4' => 20,     // Conservative but allows for headers/footers
-        'Half-Custom-215' => 20,  // Same as Half-A4
-        'Half-Folio' => 22,  // Slightly more space
-        'A4' => 35,          // Full A4 has much more space
-        'Custom-215' => 35,  // Same as A4
+        'Half-A4' => 40,     // Increased further - with optimized spacing should fit more
+        'Half-Custom-215' => 40,  // Same as Half-A4
+        'Half-Folio' => 45,  // Increased from 40
+        'A4' => 50,          // Increased from 35 - full A4 has much more space
+        'Custom-215' => 50,  // Same as A4
         'Folio' => ($invoices->isNotEmpty() ? 
-            max(20, 40 - ($invoices->count() * 2)) : 40), // Reduce 2 rows per invoice
-        default => 20
+            max(40, 70 - ($invoices->count() * 1)) : 70), // Less aggressive: reduce 1 row per invoice, base 70
+        default => 35
     };
     
     // Only create multiple pages if data actually exceeds the limit
