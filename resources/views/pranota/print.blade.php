@@ -474,46 +474,44 @@
             .container {
                 width: {{ $currentPaper['containerWidth'] }};
                 min-height: {{ $currentPaper['height'] }};
-                padding: 15mm;
+                padding: 5mm 5mm 5mm 5mm;
+                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '60px' : '150px'))) }};
                 margin: 0;
                 box-sizing: border-box;
                 position: relative;
                 page-break-inside: avoid;
             }
 
-            /* Header sederhana yang muncul di setiap halaman */
-            .header {
-                display: block;
-                margin-bottom: 15px;
-                page-break-inside: avoid;
-            }
-
-            /* Multi-page layout sederhana */
+            /* Multi-page layout - prevent unnecessary page breaks */
             .page-container {
-                padding: 15mm;
+                padding: 5mm 5mm 5mm 5mm;
+                padding-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : ($paperSize === 'A4' ? '60px' : ($paperSize === 'Folio' ? '30px' : '80px'))) }};
                 margin: 0;
                 box-sizing: border-box;
+                position: relative;
                 page-break-inside: avoid;
+                display: block;
+                visibility: visible;
             }
 
-            /* Force page break untuk halaman selanjutnya */
+            .page-container:last-child {
+                page-break-after: avoid;
+                min-height: auto;
+            }
+
+            /* Only add page break when explicitly needed and content is substantial */
             .force-new-page {
                 page-break-before: always;
             }
 
-            /* Header sederhana untuk setiap halaman */
+            /* Header styling - only appears on first page */
             .header {
-                display: block;
-                margin-bottom: 15px;
-                page-break-inside: avoid;
-            }
-
-            .header h1 {
-                font-size: {{ $paperSize === 'Folio' ? '18px' : '16px' }};
-                margin: 5px 0;
-                font-weight: bold;
+                margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
+                padding-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
+                border-bottom: 2px solid #333;
                 text-align: center;
-            }
+                background: white;
+                width: 100%;
             }
 
             .header h1 {
@@ -846,20 +844,34 @@
     @endphp
     @foreach($chunkedItems as $pageIndex => $pageItems)
     <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
-        <!-- Header untuk setiap halaman -->
-        <div class="header">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
-                <div style="text-align: left;">
-                    <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
-                    <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
-                </div>
-                <div style="text-align: right;">
-                    <span style="font-size: 10px; font-weight: bold;">{{ $pranota->no_invoice }}</span><br>
-                    <span style="font-size: 10px;">Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}</span>
+        <!-- Header only on first page -->
+        @if($pageIndex === 0)
+        <div class="header" style="display: block !important; visibility: visible !important; opacity: 1 !important; position: relative !important; width: 100% !important; background: white !important; z-index: 9999 !important;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; visibility: visible !important;">
+                <div style="text-align: left; visibility: visible !important;">
+                    <strong style="font-size: 12px; visibility: visible !important; display: inline !important;">PT. ALEXINDO YAKINPRIMA</strong><br>
+                    <span style="font-size: 10px; visibility: visible !important; display: inline !important;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span><br>
                 </div>
             </div>
-            <h1 style="font-size: {{ $paperSize === 'Folio' ? '18px' : '16px' }}; margin: 5px 0; font-weight: bold; text-align: center; border-bottom: 2px solid #333; padding-bottom: 5px;">PRANOTA TAGIHAN KONTAINER</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; visibility: visible !important;">
+                <span style="font-size: 10px; font-weight: bold; visibility: visible !important; display: inline !important;">
+                    Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}
+                </span>
+                <div style="text-align: right; visibility: visible !important;">
+                    <span style="font-size: 10px; font-weight: bold; visibility: visible !important; display: inline !important;">{{ $pranota->no_invoice }}</span>
+                    @if($totalPages > 1)
+                    <br><span style="font-size: 8px; color: #666; visibility: visible !important; display: inline !important;">Hal {{ $pageIndex + 1 }} dari {{ $totalPages }}</span>
+                    @endif
+                </div>
+            </div>
+            <h1 style="visibility: visible !important; display: block !important; font-size: {{ $paperSize === 'Folio' ? '20px' : '16px' }} !important;">PRANOTA TAGIHAN KONTAINER</h1>
         </div>
+        @else
+        <!-- Simple page indicator for subsequent pages -->
+        <div style="text-align: right; margin-bottom: 10px; padding: 5px 0; font-size: 10px; color: #666;">
+            Halaman {{ $pageIndex + 1 }} dari {{ $totalPages }}
+        </div>
+        @endif
 
         <!-- Info Section (on every page for consistency) -->
         <div class="info-section">
