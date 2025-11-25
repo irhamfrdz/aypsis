@@ -661,6 +661,9 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Tujuan kegiatan utama data for uang jalan calculation
+    const tujuanKegiatanData = @json($tujuanKegiatanUtamas->keyBy('ke'));
+    
     // Auto generate nomor surat jalan if needed
     const generateNomor = () => {
         const today = new Date();
@@ -698,6 +701,44 @@ document.addEventListener('DOMContentLoaded', function() {
                 noPlatInput.value = platNumber;
             }
         });
+    }
+    
+    // Auto-calculate uang jalan based on tujuan pengambilan
+    const tujuanPengambilanSelect = document.getElementById('tujuan_pengambilan');
+    const uangJalanNominalInput = document.getElementById('uang_jalan_nominal');
+    const sizeInput = document.querySelector('input[name="size"]');
+    
+    function calculateUangJalan() {
+        const selectedTujuan = tujuanPengambilanSelect.value;
+        const containerSize = sizeInput ? sizeInput.value : '';
+        
+        if (selectedTujuan && tujuanKegiatanData[selectedTujuan]) {
+            const tujuanData = tujuanKegiatanData[selectedTujuan];
+            let uangJalan = 0;
+            
+            // Determine uang jalan based on container size
+            if (containerSize === '20' || containerSize === '20ft') {
+                uangJalan = tujuanData.uang_jalan_20ft || 0;
+            } else if (containerSize === '40' || containerSize === '40ft' || containerSize === '40hc' || containerSize === '40 hc') {
+                uangJalan = tujuanData.uang_jalan_40ft || 0;
+            } else {
+                // Default to 20ft if size is not clear
+                uangJalan = tujuanData.uang_jalan_20ft || 0;
+            }
+            
+            if (uangJalan > 0) {
+                uangJalanNominalInput.value = uangJalan;
+            }
+        }
+    }
+    
+    if (tujuanPengambilanSelect && uangJalanNominalInput) {
+        tujuanPengambilanSelect.addEventListener('change', calculateUangJalan);
+        
+        // Also trigger calculation on page load if values are pre-selected
+        if (tujuanPengambilanSelect.value) {
+            calculateUangJalan();
+        }
     }
 
 });

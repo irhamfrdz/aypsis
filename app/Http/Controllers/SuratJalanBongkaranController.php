@@ -216,9 +216,7 @@ class SuratJalanBongkaranController extends Controller
                                                 ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
         
         // Get tujuan kegiatan utama untuk dropdown tujuan pengambilan
-        $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::select('ke')
-                                                               ->distinct()
-                                                               ->whereNotNull('ke')
+        $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::whereNotNull('ke')
                                                                ->orderBy('ke')
                                                                ->get();
         
