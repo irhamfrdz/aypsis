@@ -924,7 +924,7 @@
                     <tr>
                         <th style="width: 5%;">No</th>
                         <th style="width: {{ $invoices->count() > 3 ? '30%' : '25%' }};">Nomor Invoice</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '25%' : '25%" }};">Vendor</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '25%' : '25%' }};">Vendor</th>
                         <th style="width: {{ $invoices->count() > 3 ? '20%' : '20%' }};">Invoice Vendor</th>
                         <th style="width: {{ $invoices->count() > 3 ? '15%' : '20%' }};">Tanggal Invoice</th>
                         <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Total Invoice</th>
