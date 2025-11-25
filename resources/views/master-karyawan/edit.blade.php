@@ -172,8 +172,7 @@
 
                 <div>
                     <label for="tanggal_masuk" class="{{ $labelClasses }}">Tanggal Masuk</label>
-                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $readonlyInputClasses }}" readonly value="{{ old('tanggal_masuk', $karyawan->tanggal_masuk ? (\is_object($karyawan->tanggal_masuk) ? $karyawan->tanggal_masuk->format('Y-m-d') : $karyawan->tanggal_masuk) : '') }}">
-                    <p class="text-xs text-gray-500 mt-1">Tanggal masuk tidak dapat diubah setelah data dibuat</p>
+                    <input type="date" name="tanggal_masuk" id="tanggal_masuk" class="{{ $inputClasses }}" value="{{ old('tanggal_masuk', $karyawan->tanggal_masuk ? (\is_object($karyawan->tanggal_masuk) ? $karyawan->tanggal_masuk->format('Y-m-d') : $karyawan->tanggal_masuk) : '') }}">
                 </div>
 
                 <div>
