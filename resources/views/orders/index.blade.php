@@ -1,7 +1,7 @@
 @extends('layouts.app')
 
-@section('title', 'Orders')
-@section('page_title', 'Orders')
+@section('title', 'Pesanan Pengambilan Barang')
+@section('page_title', 'Pesanan Pengambilan Barang')
 
 @section('content')
 <div class="min-h-screen bg-gray-50 py-6">
@@ -11,8 +11,8 @@
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
             <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                 <div class="mb-4 sm:mb-0">
-                    <h1 class="text-3xl font-bold text-gray-900">Orders</h1>
-                    <p class="mt-1 text-sm text-gray-600">Kelola data order dalam sistem</p>
+                    <h1 class="text-3xl font-bold text-gray-900">Pesanan Pengambilan Barang</h1>
+                    <p class="mt-1 text-sm text-gray-600">Kelola data pesanan pengambilan barang dalam sistem</p>
                 </div>
                 <div class="flex flex-col sm:flex-row gap-3">
                     <a href="{{ route('orders.download.template') }}" class="inline-flex items-center justify-center px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors duration-200 shadow-sm">
@@ -25,19 +25,19 @@
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path>
                         </svg>
-                        Kelola Data Order
+                        Kelola Data Pesanan
                     </a>
                     <a href="{{ route('outstanding.index') }}" class="inline-flex items-center justify-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/>
                         </svg>
-                        Outstanding Orders
+                        Pesanan Outstanding
                     </a>
                     <a href="{{ route('orders.create') }}" class="inline-flex items-center justify-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200 shadow-sm">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
                         </svg>
-                        Tambah Order
+                        Tambah Pesanan
                     </a>
                 </div>
             </div>
@@ -55,7 +55,7 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Order Belum Lengkap</p>
+                        <p class="text-sm font-medium text-gray-600">Pesanan Belum Lengkap</p>
                         <p class="text-2xl font-bold text-gray-900" id="incompleteOrdersCount">-</p>
                     </div>
                 </div>
@@ -71,7 +71,7 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Order Sedang Dikerjakan</p>
+                        <p class="text-sm font-medium text-gray-600">Pesanan Sedang Dikerjakan</p>
                         <p class="text-2xl font-bold text-gray-900" id="partialOrdersCount">-</p>
                     </div>
                 </div>
@@ -87,7 +87,7 @@
                         </div>
                     </div>
                     <div class="ml-4">
-                        <p class="text-sm font-medium text-gray-600">Order Selesai</p>
+                        <p class="text-sm font-medium text-gray-600">Pesanan Selesai</p>
                         <p class="text-2xl font-bold text-gray-900" id="completedOrdersCount">-</p>
                     </div>
                 </div>
@@ -134,9 +134,9 @@
                         <svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
                         </svg>
-                        Cari Order
+                        Cari Pesanan
                     </label>
-                    <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nomor order, tujuan ambil, tujuan kirim, pengirim..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
+                    <input type="text" name="search" id="search" value="{{ request('search') }}" placeholder="Cari berdasarkan nomor pesanan, tujuan ambil, tujuan kirim, pengirim..." class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500">
                 </div>
                 <div class="flex items-end gap-2">
                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-indigo-600 text-white text-sm font-medium rounded-lg hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
@@ -157,15 +157,15 @@
         <!-- Table Section -->
         <div class="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
             <div class="px-6 py-4 border-b border-gray-200">
-                <h3 class="text-lg font-medium text-gray-900">Daftar Order</h3>
-                <p class="mt-1 text-sm text-gray-600">Total: {{ $orders->total() }} order</p>
+                <h3 class="text-lg font-medium text-gray-900">Daftar Pesanan Pengambilan Barang</h3>
+                <p class="mt-1 text-sm text-gray-600">Total: {{ $orders->total() }} pesanan</p>
             </div>
 
                         <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200" id="ordersTable">
                     <thead class="bg-gray-50">
                         <tr>
-                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nomor Order<div class="resize-handle"></div></th>
+                            <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nomor Pesanan<div class="resize-handle"></div></th>
                             <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tanggal<div class="resize-handle"></div></th>
                             <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Pengirim<div class="resize-handle"></div></th>
                             <th class="resizable-th px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Tujuan Ambil<div class="resize-handle"></div></th>
@@ -213,7 +213,7 @@
                                                 </svg>
                                             </button>
                                         @endcan
-                                        <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus order ini?')">
+                                        <form action="{{ route('orders.destroy', $order) }}" method="POST" class="inline" onsubmit="return confirm('Apakah Anda yakin ingin menghapus pesanan ini?')">>
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="text-red-600 hover:text-red-900" title="Hapus">
@@ -232,8 +232,8 @@
                                         <svg class="w-12 h-12 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                                         </svg>
-                                        <p class="text-gray-500 text-base">Belum ada data order</p>
-                                        <p class="text-gray-400 text-sm mt-1">Tambah order pertama untuk memulai</p>
+                                        <p class="text-gray-500 text-base">Belum ada data pesanan</p>
+                                        <p class="text-gray-400 text-sm mt-1">Tambah pesanan pertama untuk memulai</p>
                                     </div>
                                 </td>
                             </tr>

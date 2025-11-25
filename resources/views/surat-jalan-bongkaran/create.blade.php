@@ -255,16 +255,32 @@
                     <!-- Jenis Pengiriman -->
                     <div>
                         <label for="jenis_pengiriman" class="block text-sm font-medium text-gray-700 mb-1">Jenis Pengiriman</label>
+                        @php
+                            $defaultJenisPengiriman = '';
+                            if (isset($selectedContainer) && isset($selectedContainer->jenis_pengiriman)) {
+                                $defaultJenisPengiriman = strtolower($selectedContainer->jenis_pengiriman);
+                            }
+                            $selectedJenisPengiriman = old('jenis_pengiriman', $defaultJenisPengiriman);
+                        @endphp
                         <select name="jenis_pengiriman" id="jenis_pengiriman"
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('jenis_pengiriman') border-red-300 @enderror">
                             <option value="">Pilih jenis pengiriman</option>
-                            <option value="ekspor" {{ old('jenis_pengiriman') == 'ekspor' ? 'selected' : '' }}>Ekspor</option>
-                            <option value="impor" {{ old('jenis_pengiriman') == 'impor' ? 'selected' : '' }}>Impor</option>
-                            <option value="domestik" {{ old('jenis_pengiriman') == 'domestik' ? 'selected' : '' }}>Domestik</option>
+                            <option value="fcl" {{ $selectedJenisPengiriman == 'fcl' ? 'selected' : '' }}>FCL</option>
+                            <option value="lcl" {{ $selectedJenisPengiriman == 'lcl' ? 'selected' : '' }}>LCL</option>
+                            <option value="cargo" {{ $selectedJenisPengiriman == 'cargo' ? 'selected' : '' }}>Cargo</option>
                         </select>
                         @error('jenis_pengiriman')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        @if(isset($selectedContainer) && $selectedContainer->jenis_pengiriman)
+                            <p class="mt-1 text-xs text-blue-600">
+                                Default dari BL: {{ strtoupper($selectedContainer->jenis_pengiriman) }}
+                            </p>
+                        @else
+                            <p class="mt-1 text-xs text-gray-500">
+                                Tidak ada data di BL, silakan pilih jenis pengiriman
+                            </p>
+                        @endif
                     </div>
 
                     <!-- Tanggal Ambil Barang -->

@@ -517,21 +517,22 @@ class BlController extends Controller
             'F1' => 'Pelabuhan Asal',
             'G1' => 'Pelabuhan Tujuan',
             'H1' => 'Nama Barang',
-            'I1' => 'Penerima',
-            'J1' => 'Alamat Pengiriman',
-            'K1' => 'Contact Person',
-            'L1' => 'Tipe Kontainer',
-            'M1' => 'Ukuran Kontainer',
-            'N1' => 'Tonnage',
-            'O1' => 'Volume',
-            'P1' => 'Satuan',
-            'Q1' => 'Kuantitas',
-            'R1' => 'Term',
-            'S1' => 'Supir OB',
-            'T1' => 'Tanggal Muat',
-            'U1' => 'Jam Muat',
-            'V1' => 'Prospek ID',
-            'W1' => 'Keterangan'
+            'I1' => 'Pengirim',
+            'J1' => 'Penerima',
+            'K1' => 'Alamat Pengiriman',
+            'L1' => 'Contact Person',
+            'M1' => 'Tipe Kontainer',
+            'N1' => 'Ukuran Kontainer',
+            'O1' => 'Tonnage',
+            'P1' => 'Volume',
+            'Q1' => 'Satuan',
+            'R1' => 'Kuantitas',
+            'S1' => 'Term',
+            'T1' => 'Supir OB',
+            'U1' => 'Tanggal Muat',
+            'V1' => 'Jam Muat',
+            'W1' => 'Prospek ID',
+            'X1' => 'Keterangan'
         ];
 
         // Set headers with styling
@@ -554,7 +555,9 @@ class BlController extends Controller
                 'KM SINAR HARAPAN',
                 'SH001',
                 'Batam',
+                'Jakarta',
                 'Elektronik',
+                'PT. Supplier Electronics',
                 'PT. ABC Indonesia',
                 'Jl. Raya Industri No. 123, Batam',
                 'Budi Santoso (08123456789)',
@@ -578,7 +581,9 @@ class BlController extends Controller
                 'KM CAHAYA LAUT',
                 'CL002',
                 'Jakarta',
+                'Surabaya',
                 'Makanan & Minuman',
+                'CV. Produsen Makanan',
                 'CV. XYZ Trading',
                 'Jl. Mangga Dua Raya No. 456, Jakarta',
                 'Ahmad Wijaya (08234567890)',
@@ -608,7 +613,7 @@ class BlController extends Controller
         }
 
         // Auto-size columns
-        foreach (range('A', 'V') as $col) {
+        foreach (range('A', 'X') as $col) {
             $sheet->getColumnDimension($col)->setAutoSize(true);
         }
 
@@ -760,26 +765,27 @@ class BlController extends Controller
                         // 5: pelabuhan_asal
                         // 6: pelabuhan_tujuan
                         // 7: nama_barang
-                        // 8: penerima
-                        // 9: alamat_pengiriman
-                        // 10: contact_person
-                        // 11: tipe_kontainer
-                        // 12: ukuran_kontainer
-                        // 13: tonnage
-                        // 14: volume
-                        // 15: satuan
-                        // 16: kuantitas
-                        // 17: term
-                        // 18: supir_ob
-                        // 19: tanggal_muat
-                        // 20: jam_muat
-                        // 21: prospek_id
-                        // 22: keterangan
+                        // 8: pengirim
+                        // 9: penerima
+                        // 10: alamat_pengiriman
+                        // 11: contact_person
+                        // 12: tipe_kontainer
+                        // 13: ukuran_kontainer
+                        // 14: tonnage
+                        // 15: volume
+                        // 16: satuan
+                        // 17: kuantitas
+                        // 18: term
+                        // 19: supir_ob
+                        // 20: tanggal_muat
+                        // 21: jam_muat
+                        // 22: prospek_id
+                        // 23: keterangan
                         
                         $nomorKontainer = isset($row[1]) ? trim($row[1]) : null;
                         $namaKapal = isset($row[3]) ? trim($row[3]) : null;
                         $noVoyage = isset($row[4]) ? trim($row[4]) : null;
-                        $sizeKontainerFromFile = isset($row[12]) ? trim($row[12]) : null;
+                        $sizeKontainerFromFile = isset($row[13]) ? trim($row[13]) : null;
                         
                         // Auto-generate container number if empty
                         if (empty($nomorKontainer)) {
@@ -802,14 +808,14 @@ class BlController extends Controller
 
                         // Parse tonnage dan volume
                         $tonnage = null;
-                        if (isset($row[13]) && !empty(trim($row[13]))) {
-                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[13]));
+                        if (isset($row[14]) && !empty(trim($row[14]))) {
+                            $tonnageStr = str_replace(['.', ','], ['', '.'], trim($row[14]));
                             $tonnage = (float)$tonnageStr;
                         }
                         
                         $volume = null;
-                        if (isset($row[14]) && !empty(trim($row[14]))) {
-                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[14]));
+                        if (isset($row[15]) && !empty(trim($row[15]))) {
+                            $volumeStr = str_replace(['.', ','], ['', '.'], trim($row[15]));
                             $volume = (float)$volumeStr;
                         }
 
@@ -823,17 +829,18 @@ class BlController extends Controller
                             'pelabuhan_asal' => isset($row[5]) ? trim($row[5]) : null,
                             'pelabuhan_tujuan' => isset($row[6]) ? trim($row[6]) : null,
                             'nama_barang' => isset($row[7]) ? trim($row[7]) : null,
-                            'penerima' => isset($row[8]) ? trim($row[8]) : null,
-                            'alamat_pengiriman' => isset($row[9]) ? trim($row[9]) : null,
-                            'contact_person' => isset($row[10]) ? trim($row[10]) : null,
-                            'tipe_kontainer' => isset($row[11]) ? trim($row[11]) : null,
+                            'pengirim' => isset($row[8]) ? trim($row[8]) : null,
+                            'penerima' => isset($row[9]) ? trim($row[9]) : null,
+                            'alamat_pengiriman' => isset($row[10]) ? trim($row[10]) : null,
+                            'contact_person' => isset($row[11]) ? trim($row[11]) : null,
+                            'tipe_kontainer' => isset($row[12]) ? trim($row[12]) : null,
                             'size_kontainer' => $autoFilledSize['size'],
                             'tonnage' => $tonnage,
                             'volume' => $volume,
-                            'satuan' => isset($row[15]) ? trim($row[15]) : null,
-                            'kuantitas' => isset($row[16]) && !empty(trim($row[16])) ? (int)trim($row[16]) : null,
-                            'term' => isset($row[17]) ? trim($row[17]) : null,
-                            'supir_ob' => isset($row[18]) ? trim($row[18]) : null,
+                            'satuan' => isset($row[16]) ? trim($row[16]) : null,
+                            'kuantitas' => isset($row[17]) && !empty(trim($row[17])) ? (int)trim($row[17]) : null,
+                            'term' => isset($row[18]) ? trim($row[18]) : null,
+                            'supir_ob' => isset($row[19]) ? trim($row[19]) : null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
@@ -857,7 +864,7 @@ class BlController extends Controller
                         $nomorKontainer = $worksheet->getCell("B{$row}")->getValue();
                         $namaKapal = $worksheet->getCell("D{$row}")->getValue();
                         $noVoyage = $worksheet->getCell("E{$row}")->getValue();
-                        $sizeKontainerFromFile = $worksheet->getCell("M{$row}")->getValue();
+                        $sizeKontainerFromFile = $worksheet->getCell("N{$row}")->getValue();
 
                         // Skip empty rows
                         if (empty($namaKapal) && empty($noVoyage)) {
@@ -892,17 +899,18 @@ class BlController extends Controller
                             'pelabuhan_asal' => $worksheet->getCell("F{$row}")->getValue() ?: null,
                             'pelabuhan_tujuan' => $worksheet->getCell("G{$row}")->getValue() ?: null,
                             'nama_barang' => $worksheet->getCell("H{$row}")->getValue() ?: null,
-                            'penerima' => $worksheet->getCell("I{$row}")->getValue() ?: null,
-                            'alamat_pengiriman' => $worksheet->getCell("J{$row}")->getValue() ?: null,
-                            'contact_person' => $worksheet->getCell("K{$row}")->getValue() ?: null,
-                            'tipe_kontainer' => $worksheet->getCell("L{$row}")->getValue() ?: null,
+                            'pengirim' => $worksheet->getCell("I{$row}")->getValue() ?: null,
+                            'penerima' => $worksheet->getCell("J{$row}")->getValue() ?: null,
+                            'alamat_pengiriman' => $worksheet->getCell("K{$row}")->getValue() ?: null,
+                            'contact_person' => $worksheet->getCell("L{$row}")->getValue() ?: null,
+                            'tipe_kontainer' => $worksheet->getCell("M{$row}")->getValue() ?: null,
                             'size_kontainer' => $autoFilledSize['size'],
-                            'tonnage' => $worksheet->getCell("N{$row}")->getValue() ?: null,
-                            'volume' => $worksheet->getCell("O{$row}")->getValue() ?: null,
-                            'satuan' => $worksheet->getCell("P{$row}")->getValue() ?: null,
-                            'kuantitas' => $worksheet->getCell("Q{$row}")->getValue() ?: null,
-                            'term' => $worksheet->getCell("R{$row}")->getValue() ?: null,
-                            'supir_ob' => $worksheet->getCell("S{$row}")->getValue() ?: null,
+                            'tonnage' => $worksheet->getCell("O{$row}")->getValue() ?: null,
+                            'volume' => $worksheet->getCell("P{$row}")->getValue() ?: null,
+                            'satuan' => $worksheet->getCell("Q{$row}")->getValue() ?: null,
+                            'kuantitas' => $worksheet->getCell("R{$row}")->getValue() ?: null,
+                            'term' => $worksheet->getCell("S{$row}")->getValue() ?: null,
+                            'supir_ob' => $worksheet->getCell("T{$row}")->getValue() ?: null,
                             'status_bongkar' => 'Belum Bongkar',
                         ]);
 
