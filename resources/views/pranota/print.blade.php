@@ -109,6 +109,11 @@
     }
     
     $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
+    
+    // Get unique invoices from tagihan items - define early for use in calculations
+    $invoices = $tagihanItems->map(function($item) {
+        return $item->invoice;
+    })->filter()->unique('id')->values();
 @endphp
 <head>
     <meta charset="UTF-8">
@@ -825,11 +830,6 @@
 
     @php
         $globalRowNumber = 0; // Initialize global row counter
-        
-        // Get unique invoices from tagihan items
-        $invoices = $tagihanItems->map(function($item) {
-            return $item->invoice;
-        })->filter()->unique('id')->values();
     @endphp
     @foreach($chunkedItems as $pageIndex => $pageItems)
     <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
