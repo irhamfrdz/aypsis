@@ -329,6 +329,9 @@
                                 </option>
                             @endforeach
                         </select>
+                        <p class="mt-1 text-xs text-blue-600">
+                            <i class="fas fa-search mr-1"></i>Ketik nama supir untuk mencari dengan cepat
+                        </p>
                         @error('supir')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror
@@ -659,8 +662,33 @@
 @endsection
 
 @push('scripts')
+<!-- FontAwesome for icons -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <!-- Select2 CSS -->
 <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<!-- Custom Select2 styling -->
+<style>
+.select2-container--default .select2-search--dropdown .select2-search__field {
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    padding: 0.5rem;
+}
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: #3b82f6;
+}
+.select2-container--default .select2-selection--single {
+    height: 42px;
+    border: 1px solid #d1d5db;
+    border-radius: 0.5rem;
+}
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 42px;
+    padding-left: 12px;
+}
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 40px;
+}
+</style>
 <!-- Select2 JS -->
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
@@ -668,16 +696,23 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Select2 for supir dropdown
     $('#supir').select2({
-        placeholder: 'Pilih atau cari supir...',
+        placeholder: '🔍 Ketik untuk mencari supir...',
         allowClear: true,
         width: '100%',
+        minimumInputLength: 0,
         language: {
             noResults: function() {
-                return "Tidak ada hasil ditemukan";
+                return "<i class='fas fa-exclamation-circle'></i> Tidak ada supir ditemukan";
             },
             searching: function() {
-                return "Mencari...";
+                return "<i class='fas fa-spinner fa-spin'></i> Mencari supir...";
+            },
+            inputTooShort: function() {
+                return "Ketik nama supir untuk mencari";
             }
+        },
+        escapeMarkup: function(markup) {
+            return markup; // Allow HTML in results
         }
     });
     
