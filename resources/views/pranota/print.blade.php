@@ -83,7 +83,7 @@
         'A4' => 35,          // Full A4 has much more space
         'Custom-215' => 35,  // Same as A4
         'Folio' => ($invoices->isNotEmpty() ? 
-            max(35, 55 - ($invoices->count() * 2)) : 55), // Much more space for Folio (8.5x13 in)
+            max(50, 75 - ($invoices->count() * 2)) : 75), // Much more space for Folio (8.5x13 in) - increased capacity
         default => 20
     };
     
