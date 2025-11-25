@@ -205,6 +205,9 @@
             visibility: visible !important;
             page-break-inside: avoid;
             page-break-after: avoid;
+            opacity: 1 !important;
+            position: relative !important;
+            z-index: 999 !important;
         }
 
         .header h1 {
@@ -491,6 +494,14 @@
                 visibility: visible;
             }
 
+            /* Ensure every page shows header */
+            .page-container .header {
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: static !important;
+            }
+
             .page-container:last-child {
                 page-break-after: avoid;
                 min-height: auto;
@@ -499,11 +510,6 @@
             /* Only add page break when explicitly needed and content is substantial */
             .force-new-page {
                 page-break-before: always;
-                @if($paperSize === 'Half-A4')
-                    border-top: 2px dashed #999;
-                @elseif($paperSize === 'Half-Folio')
-                    border-top: 2px dashed #999;
-                @endif
             }
 
             /* Ensure header is visible on all pages */
@@ -512,6 +518,12 @@
                 page-break-after: avoid;
                 display: block !important;
                 visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                top: 0 !important;
+                left: 0 !important;
+                width: 100% !important;
+                z-index: 999 !important;
             }
 
             /* Prevent orphaned elements */
