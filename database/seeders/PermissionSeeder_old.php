@@ -707,7 +707,7 @@ class PermissionSeeder extends Seeder
             'vendor-kontainer-sewa-delete',
 
             // ═══════════════════════════════════════════════════════════════════════
-            // 📋 ORDER MANAGEMENT PERMISSIONS
+            // 📋 PESANAN PENGAMBILAN BARANG PERMISSIONS
             // ═══════════════════════════════════════════════════════════════════════
             'order-view',
             'order-create',

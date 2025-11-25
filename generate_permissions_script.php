@@ -120,7 +120,7 @@ $permissions = [
     'uang-jalan-approve', 'uang-jalan-print', 'uang-jalan-export',
     'uang-jalan-batam.view', 'uang-jalan-batam.create', 'uang-jalan-batam.edit', 'uang-jalan-batam.delete',
     
-    // Order Management
+    // Pesanan Pengambilan Barang
     'order-view', 'order-create', 'order-update', 'order-delete', 'order-print', 'order-export',
     
     // Surat Jalan Management

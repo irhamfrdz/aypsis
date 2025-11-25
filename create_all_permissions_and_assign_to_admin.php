@@ -297,7 +297,7 @@ $permissions = [
     'uang-jalan-batam.edit',
     'uang-jalan-batam.delete',
     
-    // Order Management
+    // Pesanan Pengambilan Barang
     'order-view',
     'order-create',
     'order-update',

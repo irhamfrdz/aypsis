@@ -40,7 +40,7 @@ foreach ($permissions as $perm) {
     } elseif (strpos($name, 'gate-in') !== false) {
         $categories['Gate In'][] = $name;
     } elseif (strpos($name, 'order') !== false) {
-        $categories['Order Management'][] = $name;
+        $categories['Pesanan Pengambilan Barang'][] = $name;
     } elseif (strpos($name, 'pembayaran') !== false) {
         $categories['Pembayaran'][] = $name;
     } elseif (strpos($name, 'pranota') !== false) {

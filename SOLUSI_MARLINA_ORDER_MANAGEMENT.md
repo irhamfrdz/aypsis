@@ -1,4 +1,4 @@
-# 🎯 SOLUSI MASALAH AKSES ORDER MANAGEMENT - MARLINA
+# 🎯 SOLUSI MASALAH AKSES PESANAN PENGAMBILAN BARANG - MARLINA
 
 ## STATUS ANALISIS
 ✅ **Permission Database**: Marlina memiliki order-view, order-create, order-update, order-print, order-export
@@ -31,17 +31,17 @@ php artisan permission:cache-reset
 - User Marlina harus **LOGOUT** dari sistem
 - Clear browser cache (Ctrl+Shift+Del atau Ctrl+F5)  
 - **LOGIN** kembali ke sistem
-- Cek menu Order Management di sidebar
+- Cek menu Pesanan Pengambilan Barang di sidebar
 
 ### 4. VERIFIKASI PERMISSION (untuk admin)
 Akses: Master → User Management → Edit Marlina
 Pastikan checkbox berikut ini TERCENTANG:
-- ✅ Order Management → View
-- ✅ Order Management → Create  
-- ✅ Order Management → Update
-- ✅ Order Management → Print
-- ✅ Order Management → Export
-- ❌ Order Management → Delete (tidak perlu sesuai permintaan)
+- ✅ Pesanan Pengambilan Barang → View
+- ✅ Pesanan Pengambilan Barang → Create  
+- ✅ Pesanan Pengambilan Barang → Update
+- ✅ Pesanan Pengambilan Barang → Print
+- ✅ Pesanan Pengambilan Barang → Export
+- ❌ Pesanan Pengambilan Barang → Delete (tidak perlu sesuai permintaan)
 
 ### 5. TEST AKSES LANGSUNG
 Setelah login ulang, akses langsung URL:
