@@ -70,6 +70,11 @@
 
     $currentPaper = $paperMap[$paperSize] ?? $paperMap['Half-A4'];
 
+    // Get unique invoices from tagihan items - define early for maxRowsPerPage calculation
+    $invoices = $tagihanItems->map(function($item) {
+        return $item->invoice;
+    })->filter()->unique('id')->values();
+
     // Calculate maximum rows that can fit on one page (including headers, footers, etc.)
     $maxRowsPerPage = match($paperSize) {
         'Half-A4' => 20,     // Conservative but allows for headers/footers
@@ -109,11 +114,6 @@
     }
     
     $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
-    
-    // Get unique invoices from tagihan items - define early for use in calculations
-    $invoices = $tagihanItems->map(function($item) {
-        return $item->invoice;
-    })->filter()->unique('id')->values();
 @endphp
 <head>
     <meta charset="UTF-8">
