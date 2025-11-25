@@ -231,10 +231,15 @@
                     <!-- Tujuan Pengambilan -->
                     <div>
                         <label for="tujuan_pengambilan" class="block text-sm font-medium text-gray-700 mb-1">Tujuan Pengambilan</label>
-                        <input type="text" name="tujuan_pengambilan" id="tujuan_pengambilan"
-                               value="{{ old('tujuan_pengambilan') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_pengambilan') border-red-300 @enderror"
-                               placeholder="Masukkan tujuan pengambilan">
+                        <select name="tujuan_pengambilan" id="tujuan_pengambilan"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('tujuan_pengambilan') border-red-300 @enderror">
+                            <option value="">Pilih tujuan pengambilan</option>
+                            @foreach($tujuanKegiatanUtamas as $tujuan)
+                                <option value="{{ $tujuan->ke }}" {{ old('tujuan_pengambilan') == $tujuan->ke ? 'selected' : '' }}>
+                                    {{ $tujuan->ke }}
+                                </option>
+                            @endforeach
+                        </select>
                         @error('tujuan_pengambilan')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror

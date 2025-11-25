@@ -7,6 +7,7 @@ use App\Models\Order;
 use App\Models\MasterKapal;
 use App\Models\Bl;
 use App\Models\User;
+use App\Models\TujuanKegiatanUtama;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -213,6 +214,13 @@ class SuratJalanBongkaranController extends Controller
                                                 ->orderBy('nama_panggilan')
                                                 ->get(['id', 'nama_lengkap', 'nama_panggilan', 'plat']);
         
+        // Get tujuan kegiatan utama untuk dropdown tujuan pengambilan
+        $tujuanKegiatanUtamas = \App\Models\TujuanKegiatanUtama::select('ke')
+                                                               ->distinct()
+                                                               ->whereNotNull('ke')
+                                                               ->orderBy('ke')
+                                                               ->get();
+        
         // Find selected kapal by ID
         $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
         $noVoyage = $request->no_voyage;
@@ -252,7 +260,7 @@ class SuratJalanBongkaranController extends Controller
             ];
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'tujuanKegiatanUtamas'));
     }
 
     /**
