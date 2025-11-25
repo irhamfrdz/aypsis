@@ -400,14 +400,11 @@
 
         /* Signature section for screen preview */
         .signature-section {
-            margin-top: auto;
+            margin-top: 15px;
             text-align: center;
             page-break-inside: avoid;
-            position: absolute;
-            bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : ($paperSize === 'Folio' ? '30px' : '20px') }};
-            left: 0;
-            right: 0;
             width: 100%;
+            clear: both;
         }
 
         .signature-table {
@@ -658,53 +655,42 @@
             }
 
             .signature-section {
-                margin-top: auto;
+                margin-top: 15px;
                 page-break-inside: avoid;
-                position: absolute;
-                @if($paperSize === 'Half-A4')
-                    bottom: 5mm;
-                @elseif($paperSize === 'Half-Folio')
-                    bottom: 5mm;
-                @elseif($paperSize === 'Folio')
-                    bottom: 15mm;
-                @else
-                    bottom: {{ $paperSize === 'A4' ? '8mm' : '10mm' }};
-                @endif
-                left: 0;
-                right: 0;
                 width: 100%;
+                clear: both;
             }
 
             .signature-section table {
                 width: 100% !important;
                 border-collapse: collapse !important;
                 border: 2px solid #000 !important;
-                margin-top: 8px !important;
+                margin-top: 15px !important;
             }
 
             .signature-section td {
                 width: 33.33% !important;
                 border: 1px solid #000 !important;
-                padding: 10px 8px !important;
+                padding: 10px 6px !important;
                 text-align: center !important;
                 vertical-align: top !important;
             }
 
             .signature-section td div:first-child {
                 font-weight: bold !important;
-                margin-bottom: 25px !important;
-                font-size: 10px !important;
+                margin-bottom: 20px !important;
+                font-size: 9px !important;
             }
 
             .signature-section td div:nth-child(2) {
-                height: 35px !important;
-                border-bottom: 1px solid #000 !important;
-                margin-bottom: 5px !important;
+                height: 30px !important;
+                margin-bottom: 6px !important;
             }
 
             .signature-section td div:last-child {
-                font-size: 9px !important;
-                font-weight: bold !important;
+                font-size: 8px !important;
+                border-top: 1px solid #000 !important;
+                padding-top: 2px !important;
             }
 
             .footer {
@@ -1063,23 +1049,23 @@
         </div>
 
         <!-- Signature Section -->
-        <div class="signature-section">
-            <table style="width: 100%; border-collapse: collapse; border: 2px solid #333; margin-top: 10px;">
+        <div class="signature-section" style="margin-top: 20px; clear: both;">
+            <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
                 <tr>
-                    <td style="width: 33.33%; border: 1px solid #333; padding: 15px 10px; text-align: center; vertical-align: top;">
-                        <div style="font-weight: bold; margin-bottom: 30px; font-size: 11px;">Dibuat Oleh</div>
-                        <div style="height: 40px; border-bottom: 1px solid #333; margin-bottom: 5px;"></div>
-                        <div style="font-size: 10px; font-weight: bold;">(_____________)</div>
+                    <td style="width: 33.33%; border: 1px solid #333; padding: 12px 8px; text-align: center; vertical-align: top;">
+                        <div style="font-weight: bold; margin-bottom: 25px; font-size: 10px;">Dibuat Oleh</div>
+                        <div style="height: 35px; margin-bottom: 8px;"></div>
+                        <div style="border-top: 1px solid #333; padding-top: 3px; font-size: 9px;">(_____________)</div>
                     </td>
-                    <td style="width: 33.33%; border: 1px solid #333; padding: 15px 10px; text-align: center; vertical-align: top;">
-                        <div style="font-weight: bold; margin-bottom: 30px; font-size: 11px;">Disetujui Oleh</div>
-                        <div style="height: 40px; border-bottom: 1px solid #333; margin-bottom: 5px;"></div>
-                        <div style="font-size: 10px; font-weight: bold;">(_____________)</div>
+                    <td style="width: 33.33%; border: 1px solid #333; padding: 12px 8px; text-align: center; vertical-align: top;">
+                        <div style="font-weight: bold; margin-bottom: 25px; font-size: 10px;">Disetujui Oleh</div>
+                        <div style="height: 35px; margin-bottom: 8px;"></div>
+                        <div style="border-top: 1px solid #333; padding-top: 3px; font-size: 9px;">(_____________)</div>
                     </td>
-                    <td style="width: 33.33%; border: 1px solid #333; padding: 15px 10px; text-align: center; vertical-align: top;">
-                        <div style="font-weight: bold; margin-bottom: 30px; font-size: 11px;">Diterima Oleh</div>
-                        <div style="height: 40px; border-bottom: 1px solid #333; margin-bottom: 5px;"></div>
-                        <div style="font-size: 10px; font-weight: bold;">(_____________)</div>
+                    <td style="width: 33.33%; border: 1px solid #333; padding: 12px 8px; text-align: center; vertical-align: top;">
+                        <div style="font-weight: bold; margin-bottom: 25px; font-size: 10px;">Diterima Oleh</div>
+                        <div style="height: 35px; margin-bottom: 8px;"></div>
+                        <div style="border-top: 1px solid #333; padding-top: 3px; font-size: 9px;">(_____________)</div>
                     </td>
                 </tr>
             </table>
