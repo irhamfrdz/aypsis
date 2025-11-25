@@ -913,7 +913,6 @@
             </table>
         </div>
         @endif
-        @endif
 
         <!-- Table for current page -->
         <table class="table">
