@@ -174,9 +174,15 @@
                     <!-- Aktifitas -->
                     <div class="md:col-span-2 lg:col-span-3">
                         <label for="aktifitas" class="block text-sm font-medium text-gray-700 mb-1">Aktifitas</label>
-                        <textarea name="aktifitas" id="aktifitas" rows="3"
-                                  class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('aktifitas') border-red-300 @enderror"
-                                  placeholder="Masukkan aktifitas">{{ old('aktifitas') }}</textarea>
+                        <select name="aktifitas" id="aktifitas"
+                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('aktifitas') border-red-300 @enderror">
+                            <option value="">Pilih aktifitas</option>
+                            @foreach($masterKegiatans as $kegiatan)
+                                <option value="{{ $kegiatan->nama_kegiatan }}" {{ old('aktifitas') == $kegiatan->nama_kegiatan ? 'selected' : '' }}>
+                                    {{ $kegiatan->nama_kegiatan }}
+                                </option>
+                            @endforeach
+                        </select>
                         @error('aktifitas')
                             <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                         @enderror

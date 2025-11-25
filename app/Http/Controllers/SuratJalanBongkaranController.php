@@ -8,6 +8,7 @@ use App\Models\MasterKapal;
 use App\Models\Bl;
 use App\Models\User;
 use App\Models\TujuanKegiatanUtama;
+use App\Models\MasterKegiatan;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
@@ -221,6 +222,12 @@ class SuratJalanBongkaranController extends Controller
                                                                ->orderBy('ke')
                                                                ->get();
         
+        // Get master kegiatans dengan type kegiatan surat jalan untuk dropdown aktifitas
+        $masterKegiatans = MasterKegiatan::where('type', 'kegiatan surat jalan')
+                                         ->where('status', 'aktif')
+                                         ->orderBy('nama_kegiatan')
+                                         ->get();
+        
         // Find selected kapal by ID
         $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
         $noVoyage = $request->no_voyage;
@@ -260,7 +267,7 @@ class SuratJalanBongkaranController extends Controller
             ];
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'tujuanKegiatanUtamas'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'tujuanKegiatanUtamas', 'masterKegiatans'));
     }
 
     /**
