@@ -90,22 +90,50 @@
     // Only create multiple pages if data actually exceeds the limit
     $totalItems = $tagihanItems->count();
     
-    if ($totalItems <= $maxRowsPerPage) {
-        // All data fits in one page
-        $chunkedItems = collect([$tagihanItems]);
-        $totalPages = 1;
-    } else {
-        // Split data across multiple pages
-        $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
-        $totalPages = $chunkedItems->count();
-        
-        // If last chunk has very few items (less than 5), merge with previous
-        if ($totalPages > 1 && $chunkedItems->last()->count() < 5) {
-            $lastChunk = $chunkedItems->pop();
-            $secondLastChunk = $chunkedItems->pop();
-            $mergedChunk = $secondLastChunk->merge($lastChunk);
-            $chunkedItems->push($mergedChunk);
+    // If we have invoices, we need at least 2 pages (page 1 for invoices, page 2+ for pranota)
+    if ($invoices->isNotEmpty()) {
+        // Always create at least 2 pages when invoices exist
+        if ($totalItems <= $maxRowsPerPage) {
+            // All pranota data fits in one page (page 2)
+            $chunkedItems = collect([collect(), $tagihanItems]); // Empty page 1, pranota on page 2
+            $totalPages = 2;
+        } else {
+            // Split pranota data across multiple pages (starting from page 2)
+            $chunkedItems = collect([collect()]); // Empty page 1 for invoices only
+            $pranoteChunks = $tagihanItems->chunk($maxRowsPerPage);
+            foreach($pranoteChunks as $chunk) {
+                $chunkedItems->push($chunk);
+            }
             $totalPages = $chunkedItems->count();
+            
+            // If last chunk has very few items (less than 5), merge with previous
+            if ($totalPages > 2 && $chunkedItems->last()->count() < 5) {
+                $lastChunk = $chunkedItems->pop();
+                $secondLastChunk = $chunkedItems->pop();
+                $mergedChunk = $secondLastChunk->merge($lastChunk);
+                $chunkedItems->push($mergedChunk);
+                $totalPages = $chunkedItems->count();
+            }
+        }
+    } else {
+        // No invoices, use original logic for pranota only
+        if ($totalItems <= $maxRowsPerPage) {
+            // All data fits in one page
+            $chunkedItems = collect([$tagihanItems]);
+            $totalPages = 1;
+        } else {
+            // Split data across multiple pages
+            $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
+            $totalPages = $chunkedItems->count();
+            
+            // If last chunk has very few items (less than 5), merge with previous
+            if ($totalPages > 1 && $chunkedItems->last()->count() < 5) {
+                $lastChunk = $chunkedItems->pop();
+                $secondLastChunk = $chunkedItems->pop();
+                $mergedChunk = $secondLastChunk->merge($lastChunk);
+                $chunkedItems->push($mergedChunk);
+                $totalPages = $chunkedItems->count();
+            }
         }
     }
     
@@ -887,7 +915,7 @@
             </div>
         </div>
 
-        <!-- Invoice Table (only on first page and if not too many invoices) -->
+        <!-- Invoice Table (always on first page if invoices exist) -->
         @if($pageIndex === 0 && $invoices->isNotEmpty())
         <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }};">
             <h3 style="font-size: {{ $paperSize === 'Folio' ? '10px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
@@ -895,12 +923,11 @@
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '25%' : '20%' }};">Nomor Invoice</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '20%' : '20%' }};">Vendor</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Invoice Vendor</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Tanggal Invoice</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '30%' : '25%' }};">Nomor Invoice</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '25%' : '25%" }};">Vendor</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '20%' : '20%' }};">Invoice Vendor</th>
+                        <th style="width: {{ $invoices->count() > 3 ? '15%' : '20%' }};">Tanggal Invoice</th>
                         <th style="width: {{ $invoices->count() > 3 ? '15%' : '15%' }};">Total Invoice</th>
-                        <th style="width: {{ $invoices->count() > 3 ? '5%' : '10%' }};">Status</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -918,33 +945,19 @@
                         </td>
                         <td class="text-center" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->format('d-M-Y') : '-' }}</td>
                         <td class="text-right" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ number_format($invoice->total ?? 0, 0, ',', '.') }}</td>
-                        <td class="text-center">
-                            @php
-                                $statusLabels = [
-                                    'draft' => 'Draft',
-                                    'submitted' => 'Submitted', 
-                                    'approved' => 'Approved',
-                                    'paid' => 'Paid',
-                                    'cancelled' => 'Cancelled',
-                                ];
-                            @endphp
-                            <span style="padding: {{ $paperSize === 'Folio' ? '1px 4px' : '2px 6px' }}; font-size: {{ $paperSize === 'Folio' ? '7px' : '8px' }}; border: 1px solid #333; border-radius: 3px;">
-                                {{ $statusLabels[$invoice->status] ?? $invoice->status }}
-                            </span>
-                        </td>
                     </tr>
                     @endforeach
                     <tr class="total-row">
                         <td colspan="5" class="text-center" style="font-weight: bold;">TOTAL INVOICE</td>
                         <td class="text-right">{{ number_format($invoices->sum('total'), 0, ',', '.') }}</td>
-                        <td class="text-center">-</td>
                     </tr>
                 </tbody>
             </table>
         </div>
         @endif
 
-        <!-- Table for current page -->
+        <!-- Table for current page - start from page 2 if invoices exist -->
+        @if(!($pageIndex === 0 && $invoices->isNotEmpty()))
         <table class="table">
             <thead>
                 <tr>
@@ -963,7 +976,10 @@
             <tbody>
                 @forelse($pageItems as $index => $item)
                 @php
-                    $globalRowNumber++; // Increment for each row across all pages
+                    // Only increment for pranota items (not for invoice-only pages)
+                    if ($pageItems->isNotEmpty()) {
+                        $globalRowNumber++; // Increment for each row across all pages
+                    }
                 @endphp
                 <tr>
                     <td class="text-center">{{ $globalRowNumber }}</td>
@@ -1026,6 +1042,7 @@
                 @endif
             </tbody>
         </table>
+        @endif
 
         <!-- Show summary, keterangan, and signature only on last page -->
         @if($pageIndex === $totalPages - 1)
