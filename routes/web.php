@@ -958,6 +958,12 @@ Route::middleware([
          ->name('pengirim.import.process')
          ->middleware('can:master-pengirim-create');
 
+    // 📦 Pengirim - Special routes for Order form (no permission required)
+    Route::get('order/pengirim/create', [PengirimController::class, 'createForOrder'])
+         ->name('order.pengirim.create');
+    Route::post('order/pengirim/store', [PengirimController::class, 'storeForOrder'])
+         ->name('order.pengirim.store');
+
     // 📦 Jenis Barang (Item Type) Management with permissions
     Route::resource('master/jenis-barang', JenisBarangController::class)
          ->names('jenis-barang')
@@ -3001,4 +3007,34 @@ Route::middleware(['auth', \App\Http\Middleware\EnsureKaryawanPresent::class, \A
                
           Route::get('bl-api/by-kapal-voyage', [\App\Http\Controllers\BlController::class, 'getByKapalVoyage'])->name('bl.api.by-kapal-voyage')
                ->middleware('can:bl-view');
+});
+
+// Test route for ZipArchive
+Route::get('/test-zip', function () {
+    $result = [];
+    
+    // Test 1: Check if extension is loaded
+    $result['extension_loaded'] = extension_loaded('zip');
+    
+    // Test 2: Check if class exists
+    $result['class_exists'] = class_exists('ZipArchive');
+    
+    // Test 3: Try to instantiate ZipArchive
+    try {
+        $zip = new ZipArchive();
+        $result['instantiate'] = 'Success';
+        $result['zip_object'] = get_class($zip);
+    } catch (Exception $e) {
+        $result['instantiate'] = 'Error: ' . $e->getMessage();
+    }
+    
+    // Test 4: Check loaded extensions
+    $result['loaded_extensions'] = get_loaded_extensions();
+    $result['zip_in_extensions'] = in_array('zip', $result['loaded_extensions']);
+    
+    // Test 5: PHP version and info
+    $result['php_version'] = phpversion();
+    $result['php_sapi'] = php_sapi_name();
+    
+    return response()->json($result, 200, [], JSON_PRETTY_PRINT);
 });

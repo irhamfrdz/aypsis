@@ -39,7 +39,7 @@
                             </label>
                             <div class="flex">
                                 <input type="text" name="nomor_order" id="nomor_order" value="{{ old('nomor_order', $nextOrderNumber ?? '') }}" required readonly autocomplete="off"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500 @error('nomor_order') border-red-500 @enderror"
+                                       class="w-full px-3 py-2 border rounded-lg bg-gray-50 focus:ring-indigo-500 focus:border-indigo-500 {{ $errors->has('nomor_order') ? 'border-red-500' : 'border-gray-300' }}"
                                        placeholder="Otomatis tergenerate">
                                 <button type="button" id="generate_nomor_order"
                                         class="ml-2 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors duration-200">
@@ -219,7 +219,7 @@
                                 <label for="pengirim_id" class="text-sm font-medium text-gray-700">
                                     Pengirim
                                 </label>
-                                <a href="{{ route('pengirim.create') }}" id="add_pengirim_link"
+                                <a href="{{ route('order.pengirim.create') }}" id="add_pengirim_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -728,37 +728,35 @@ document.addEventListener('DOMContentLoaded', function() {
     }    // Handle Pengirim "Tambah" link
     const addPengirimLink = document.getElementById('add_pengirim_link');
     const searchPengirimInput = document.getElementById('search_pengirim');
-    if (addPengirimLink && searchPengirimInput) {
-        addPengirimLink.addEventListener('click', function(e) {
-            e.preventDefault();
-            const searchValue = searchPengirimInput.value.trim();
-            let url = "{{ route('pengirim.create') }}";
+        if (addPengirimLink && searchPengirimInput) {
+            addPengirimLink.addEventListener('click', function(e) {
+                e.preventDefault();
+                const searchValue = searchPengirimInput.value.trim();
+                let url = "{{ route('order.pengirim.create') }}";
 
-            // Add popup parameter and nama_pengirim if available
-            const params = new URLSearchParams();
-            params.append('popup', '1');
+                // Add popup parameter and nama_pengirim if available
+                const params = new URLSearchParams();
+                params.append('popup', '1');
 
-            if (searchValue) {
-                params.append('search', searchValue);
-            }
+                if (searchValue) {
+                    params.append('search', searchValue);
+                }
 
-            url += '?' + params.toString();
+                url += '?' + params.toString();
 
-            // Open as popup window with specific dimensions
-            const popup = window.open(
-                url,
-                'addPengirim',
-                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
-            );
+                // Open as popup window with specific dimensions
+                const popup = window.open(
+                    url,
+                    'addPengirim',
+                    'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+                );
 
-            // Focus on the popup window
-            if (popup) {
-                popup.focus();
-            }
-        });
-    }
-
-    // Handle Jenis Barang "Tambah" link
+                // Focus on the popup window
+                if (popup) {
+                    popup.focus();
+                }
+            });
+        }    // Handle Jenis Barang "Tambah" link
     const addJenisBarangLink = document.getElementById('add_jenis_barang_link');
     const searchJenisBarangInput = document.getElementById('search_jenis_barang');
     if (addJenisBarangLink && searchJenisBarangInput) {

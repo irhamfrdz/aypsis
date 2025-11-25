@@ -235,4 +235,41 @@ class PengirimController extends Controller
         // Format: MP + 5 digit angka (MP00001)
         return 'MP' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Show the form for creating a new resource specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function createForOrder(Request $request)
+    {
+        // Pre-fill nama_pengirim if search parameter exists
+        $searchValue = $request->query('search', '');
+        
+        return view('master-pengirim.create-for-order', compact('searchValue'));
+    }
+
+    /**
+     * Store a newly created resource in storage specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function storeForOrder(Request $request)
+    {
+        // Handle code generation request
+        if ($request->has('_generate_code_only')) {
+            $code = $this->generatePengirimCode();
+            return response()->json(['code' => $code]);
+        }
+
+        $request->validate([
+            'kode' => 'required|string|unique:pengirim,kode',
+            'nama_pengirim' => 'required|string|max:255',
+            'catatan' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $pengirim = Pengirim::create($request->all());
+
+        // Always return popup success view for order form
+        return view('master-pengirim.success-for-order', compact('pengirim'));
+    }
 }
