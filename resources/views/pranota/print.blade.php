@@ -83,7 +83,7 @@
         'A4' => 35,          // Full A4 has much more space
         'Custom-215' => 35,  // Same as A4
         'Folio' => ($invoices->isNotEmpty() ? 
-            max(20, 40 - ($invoices->count() * 2)) : 40), // Reduce 2 rows per invoice
+            max(35, 55 - ($invoices->count() * 2)) : 55), // Much more space for Folio (8.5x13 in)
         default => 20
     };
     
@@ -191,9 +191,9 @@
             margin: 0 auto;
             padding: 3mm 3mm 3mm 3mm;
             position: relative;
-            padding-bottom: {{ $paperSize === 'Half-A4' ? '25px' : ($paperSize === 'Half-Folio' ? '25px' : ($paperSize === 'A4' ? '50px' : ($paperSize === 'Folio' ? '35px' : '70px'))) }};
+            padding-bottom: {{ $paperSize === 'Half-A4' ? '25px' : ($paperSize === 'Half-Folio' ? '25px' : ($paperSize === 'A4' ? '50px' : ($paperSize === 'Folio' ? '60px' : '70px'))) }};
             box-sizing: border-box;
-            overflow: hidden;
+            overflow: {{ $paperSize === 'Folio' ? 'visible' : 'hidden' }};
         }
 
         .header {
@@ -401,7 +401,7 @@
             text-align: center;
             page-break-inside: avoid;
             position: absolute;
-            bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '20px' }};
+            bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : ($paperSize === 'Folio' ? '30px' : '20px') }};
             left: 0;
             right: 0;
             width: 100%;
@@ -670,7 +670,7 @@
                 @elseif($paperSize === 'Half-Folio')
                     bottom: 5mm;
                 @elseif($paperSize === 'Folio')
-                    bottom: 8mm;
+                    bottom: 15mm;
                 @else
                     bottom: {{ $paperSize === 'A4' ? '8mm' : '10mm' }};
                 @endif
