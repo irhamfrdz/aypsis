@@ -201,6 +201,10 @@
             margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '6px' }};
             border-bottom: 2px solid #333;
             padding-bottom: {{ $paperSize === 'Folio' ? '4px' : '5px' }};
+            display: block !important;
+            visibility: visible !important;
+            page-break-inside: avoid;
+            page-break-after: avoid;
         }
 
         .header h1 {
@@ -483,6 +487,8 @@
                 box-sizing: border-box;
                 position: relative;
                 page-break-inside: avoid;
+                display: block;
+                visibility: visible;
             }
 
             .page-container:last-child {
@@ -498,6 +504,14 @@
                 @elseif($paperSize === 'Half-Folio')
                     border-top: 2px dashed #999;
                 @endif
+            }
+
+            /* Ensure header is visible on all pages */
+            .header {
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                display: block !important;
+                visibility: visible !important;
             }
 
             /* Prevent orphaned elements */
@@ -516,6 +530,12 @@
             .header {
                 margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
                 padding-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
+                page-break-inside: avoid;
+                page-break-after: avoid;
+                display: block !important;
+                visibility: visible !important;
+                position: static !important;
+                z-index: 1 !important;
             }
 
             .header h1 {
