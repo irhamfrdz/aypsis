@@ -108,7 +108,7 @@
                                 <label for="tujuan_kirim_id" class="text-sm font-medium text-gray-700">
                                     Tujuan Kirim <span class="text-red-500">*</span>
                                 </label>
-                                <a href="{{ route('tujuan-kirim.create') }}" id="add_tujuan_kirim_link"
+                                <a href="{{ route('order.tujuan-kirim.create') }}" id="add_tujuan_kirim_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -143,7 +143,7 @@
                                 <label for="tujuan_ambil_id" class="text-sm font-medium text-gray-700">
                                     Tujuan Ambil <span class="text-red-500">*</span>
                                 </label>
-                                <a href="{{ route('master.tujuan-kegiatan-utama.create') }}" id="add_tujuan_ambil_link"
+                                <a href="{{ route('order.tujuan-ambil.create') }}" id="add_tujuan_ambil_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -184,7 +184,7 @@
                                 <label for="term_id" class="text-sm font-medium text-gray-700">
                                     Term
                                 </label>
-                                <a href="{{ route('term.create') }}" id="add_term_link"
+                                <a href="{{ route('order.term.create') }}" id="add_term_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -254,7 +254,7 @@
                                 <label for="jenis_barang_id" class="text-sm font-medium text-gray-700">
                                     Jenis Barang
                                 </label>
-                                <a href="{{ route('jenis-barang.create') }}" id="add_jenis_barang_link"
+                                <a href="{{ route('order.jenis-barang.create') }}" id="add_jenis_barang_link"
                                    class="px-2 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700"
                                    title="Tambah">
                                     Tambah
@@ -668,7 +668,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTermLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTermInput.value.trim();
-            let url = "{{ route('term.create') }}";
+            let url = "{{ route('order.term.create') }}";
 
             // Add popup parameter and nama_status if available
             const params = new URLSearchParams();
@@ -701,7 +701,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addTujuanKirimLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchTujuanKirimInput.value.trim();
-            let url = "{{ route('tujuan-kirim.create') }}";
+            let url = "{{ route('order.tujuan-kirim.create') }}";
 
             // Add popup parameter and nama_tujuan if available
             const params = new URLSearchParams();
@@ -763,7 +763,7 @@ document.addEventListener('DOMContentLoaded', function() {
         addJenisBarangLink.addEventListener('click', function(e) {
             e.preventDefault();
             const searchValue = searchJenisBarangInput.value.trim();
-            let url = "{{ route('jenis-barang.create') }}";
+            let url = "{{ route('order.jenis-barang.create') }}";
 
             // Add popup parameter and nama_barang if available
             const params = new URLSearchParams();
@@ -787,7 +787,42 @@ document.addEventListener('DOMContentLoaded', function() {
                 popup.focus();
             }
         });
-    }    // Auto-refresh when new items are added
+    }
+
+    // Handle Tujuan Ambil "Tambah" link
+    const addTujuanAmbildLink = document.getElementById('add_tujuan_ambil_link');
+    const searchTujuanAmbildInput = document.getElementById('search_tujuan_ambil');
+    if (addTujuanAmbildLink && searchTujuanAmbildInput) {
+        addTujuanAmbildLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            const searchValue = searchTujuanAmbildInput.value.trim();
+            let url = "{{ route('order.tujuan-ambil.create') }}";
+
+            // Add popup parameter and nama_tujuan if available
+            const params = new URLSearchParams();
+            params.append('popup', '1');
+
+            if (searchValue) {
+                params.append('search', searchValue);
+            }
+
+            url += '?' + params.toString();
+
+            // Open as popup window with specific dimensions
+            const popup = window.open(
+                url,
+                'addTujuanAmbil',
+                'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no,location=no,status=no'
+            );
+
+            // Focus on the popup window
+            if (popup) {
+                popup.focus();
+            }
+        });
+    }
+
+    // Auto-refresh when new items are added
     window.addEventListener('message', function(event) {
         console.log('Message received:', event.data); // Debug log
 
@@ -955,6 +990,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 // Show success message
                 showNotification('Jenis Barang "' + event.data.data.nama_barang + '" berhasil ditambahkan dan dipilih!', 'success');
+            }
+        } else if (event.data.type === 'tujuan-ambil-added') {
+            console.log('Processing tujuan-ambil-added message...'); // Debug log
+            // Handle Tujuan Ambil added
+            const tujuanAmbilSelect = document.getElementById('tujuan_ambil_id');
+            const searchTujuanAmbilInput = document.getElementById('search_tujuan_ambil');
+            const dropdownOptionsTujuanAmbil = document.getElementById('dropdown_options_ambil');
+
+            if (tujuanAmbilSelect && event.data.data) {
+                // Add new option to select
+                const newOption = document.createElement('option');
+                newOption.value = event.data.data.id;
+                newOption.textContent = event.data.data.nama_tujuan;
+                tujuanAmbilSelect.appendChild(newOption);
+
+                // Select the new option
+                tujuanAmbilSelect.value = event.data.data.id;
+
+                // Update search input to show selected value
+                if (searchTujuanAmbilInput) {
+                    searchTujuanAmbilInput.value = event.data.data.nama_tujuan;
+                }
+
+                // Update the dropdown options in the searchable dropdown
+                if (dropdownOptionsTujuanAmbil) {
+                    const newOptionDiv = document.createElement('div');
+                    newOptionDiv.className = 'px-3 py-2 hover:bg-blue-50 cursor-pointer border-b border-gray-100';
+                    newOptionDiv.textContent = event.data.data.nama_tujuan;
+                    newOptionDiv.setAttribute('data-value', event.data.data.id);
+
+                    newOptionDiv.addEventListener('click', function() {
+                        const value = this.getAttribute('data-value');
+                        const text = this.textContent;
+                        tujuanAmbilSelect.value = value;
+                        searchTujuanAmbilInput.value = text;
+                        dropdownOptionsTujuanAmbil.classList.add('hidden');
+                        tujuanAmbilSelect.dispatchEvent(new Event('change'));
+                    });
+
+                    if (dropdownOptionsTujuanAmbil.children.length > 1) {
+                        dropdownOptionsTujuanAmbil.insertBefore(newOptionDiv, dropdownOptionsTujuanAmbil.children[1]);
+                    } else {
+                        dropdownOptionsTujuanAmbil.appendChild(newOptionDiv);
+                    }
+                }
+
+                // Hide dropdown
+                if (dropdownOptionsTujuanAmbil) {
+                    dropdownOptionsTujuanAmbil.classList.add('hidden');
+                }
+
+                // Trigger change event
+                tujuanAmbilSelect.dispatchEvent(new Event('change'));
+
+                // Show success message
+                showNotification('Tujuan Ambil "' + event.data.data.nama_tujuan + '" berhasil ditambahkan dan dipilih!', 'success');
             }
         } else if (event.data.type === 'term-added') {
             console.log('Processing term-added message...'); // Debug log

@@ -964,6 +964,30 @@ Route::middleware([
     Route::post('order/pengirim/store', [PengirimController::class, 'storeForOrder'])
          ->name('order.pengirim.store');
 
+    // 🎯 Tujuan Kirim - Special routes for Order form (no permission required)
+    Route::get('order/tujuan-kirim/create', [MasterTujuanKirimController::class, 'createForOrder'])
+         ->name('order.tujuan-kirim.create');
+    Route::post('order/tujuan-kirim/store', [MasterTujuanKirimController::class, 'storeForOrder'])
+         ->name('order.tujuan-kirim.store');
+
+    // 🎯 Tujuan Ambil - Special routes for Order form (no permission required)
+    Route::get('order/tujuan-ambil/create', [TujuanKegiatanUtamaController::class, 'createForOrder'])
+         ->name('order.tujuan-ambil.create');
+    Route::post('order/tujuan-ambil/store', [TujuanKegiatanUtamaController::class, 'storeForOrder'])
+         ->name('order.tujuan-ambil.store');
+
+    // 📋 Term - Special routes for Order form (no permission required)
+    Route::get('order/term/create', [TermController::class, 'createForOrder'])
+         ->name('order.term.create');
+    Route::post('order/term/store', [TermController::class, 'storeForOrder'])
+         ->name('order.term.store');
+
+    // 📦 Jenis Barang - Special routes for Order form (no permission required)
+    Route::get('order/jenis-barang/create', [JenisBarangController::class, 'createForOrder'])
+         ->name('order.jenis-barang.create');
+    Route::post('order/jenis-barang/store', [JenisBarangController::class, 'storeForOrder'])
+         ->name('order.jenis-barang.store');
+
     // 📦 Jenis Barang (Item Type) Management with permissions
     Route::resource('master/jenis-barang', JenisBarangController::class)
          ->names('jenis-barang')

@@ -339,4 +339,46 @@ class JenisBarangController extends Controller
         // Format: JB + 5 digit running number
         return 'JB' . str_pad($runningNumber, 5, '0', STR_PAD_LEFT);
     }
+
+    /**
+     * Show the form for creating a new resource specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function createForOrder(Request $request)
+    {
+        $searchValue = $request->query('search', '');
+        $nextCode = $this->generateJenisBarangCode();
+        
+        return view('master-jenis-barang.create-for-order', compact('searchValue', 'nextCode'));
+    }
+
+    /**
+     * Store a newly created resource in storage specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function storeForOrder(Request $request)
+    {
+        // Handle code generation request
+        if ($request->has('_generate_code_only')) {
+            $code = $this->generateJenisBarangCode();
+            return response()->json(['code' => $code]);
+        }
+
+        $request->validate([
+            'kode' => 'nullable|string|unique:jenis_barangs,kode',
+            'nama_barang' => 'required|string|max:255',
+            'catatan' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        // Auto-generate kode if not provided
+        $data = $request->all();
+        if (empty($data['kode'])) {
+            $data['kode'] = $this->generateJenisBarangCode();
+        }
+
+        $jenisBarang = JenisBarang::create($data);
+
+        return view('master-jenis-barang.success-for-order', compact('jenisBarang'));
+    }
 }

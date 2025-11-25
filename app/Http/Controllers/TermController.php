@@ -327,4 +327,55 @@ class TermController extends Controller
                 ->withInput();
         }
     }
+
+    /**
+     * Show the form for creating a new resource specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function createForOrder(Request $request)
+    {
+        $searchValue = $request->query('search', '');
+        
+        return view('master-term.create-for-order', compact('searchValue'));
+    }
+
+    /**
+     * Store a newly created resource in storage specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function storeForOrder(Request $request)
+    {
+        // Handle code generation request
+        if ($request->has('_generate_code_only')) {
+            $code = $this->generateTermCode();
+            return response()->json(['code' => $code]);
+        }
+
+        $request->validate([
+            'kode' => 'required|string|unique:terms,kode',
+            'nama_status' => 'required|string|max:255',
+            'catatan' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $term = Term::create($request->all());
+
+        return view('master-term.success-for-order', compact('term'));
+    }
+
+    private function generateTermCode()
+    {
+        $lastCode = Term::where('kode', 'like', 'TR%')
+            ->orderBy('kode', 'desc')
+            ->first();
+
+        if ($lastCode) {
+            $lastNumber = (int) substr($lastCode->kode, 2);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        return 'TR' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+    }
 }

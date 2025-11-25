@@ -261,7 +261,7 @@ class PengirimController extends Controller
         }
 
         $request->validate([
-            'kode' => 'required|string|unique:pengirim,kode',
+            'kode' => 'required|string|unique:pengirims,kode',
             'nama_pengirim' => 'required|string|max:255',
             'catatan' => 'nullable|string',
             'status' => 'required|in:active,inactive',

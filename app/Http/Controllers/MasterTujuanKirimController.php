@@ -374,4 +374,55 @@ class MasterTujuanKirimController extends Controller
 
         return response()->stream($callback, 200, $headers);
     }
+
+    /**
+     * Show the form for creating a new resource specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function createForOrder(Request $request)
+    {
+        $searchValue = $request->query('search', '');
+        
+        return view('master.tujuan-kirim.create-for-order', compact('searchValue'));
+    }
+
+    /**
+     * Store a newly created resource in storage specifically for Order form.
+     * This method doesn't require permissions.
+     */
+    public function storeForOrder(Request $request)
+    {
+        // Handle code generation request
+        if ($request->has('_generate_code_only')) {
+            $code = $this->generateTujuanKirimCode();
+            return response()->json(['code' => $code]);
+        }
+
+        $request->validate([
+            'kode' => 'required|string|max:10|unique:master_tujuan_kirim,kode',
+            'nama_tujuan' => 'required|string|max:255',
+            'catatan' => 'nullable|string',
+            'status' => 'required|in:active,inactive',
+        ]);
+
+        $tujuanKirim = MasterTujuanKirim::create($request->all());
+
+        return view('master.tujuan-kirim.success-for-order', compact('tujuanKirim'));
+    }
+
+    private function generateTujuanKirimCode()
+    {
+        $lastCode = MasterTujuanKirim::where('kode', 'like', 'TK%')
+            ->orderBy('kode', 'desc')
+            ->first();
+
+        if ($lastCode) {
+            $lastNumber = (int) substr($lastCode->kode, 2);
+            $nextNumber = $lastNumber + 1;
+        } else {
+            $nextNumber = 1;
+        }
+
+        return 'TK' . str_pad($nextNumber, 5, '0', STR_PAD_LEFT);
+    }
 }
