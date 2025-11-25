@@ -465,136 +465,55 @@
                 height: {{ $currentPaper['height'] }};
                 margin: 0;
                 padding: 0;
-                padding-top: 80px;
                 font-size: {{ $currentPaper['fontSize'] }};
                 color: #000;
                 position: relative;
                 overflow: visible;
             }
 
-            /* Fixed header yang akan muncul di setiap halaman */
-            .fixed-header {
-                position: fixed !important;
-                top: 0 !important;
-                left: 0 !important;
-                right: 0 !important;
-                width: 100% !important;
-                height: 75px !important;
-                background: white !important;
-                z-index: 10000 !important;
-                border-bottom: 2px solid #333 !important;
-                padding: 10px 15mm !important;
-                box-sizing: border-box !important;
-                display: block !important;
-                visibility: visible !important;
-            }
-
             .container {
                 width: {{ $currentPaper['containerWidth'] }};
                 min-height: {{ $currentPaper['height'] }};
-                padding: 0 15mm 40px 15mm;
+                padding: 15mm;
                 margin: 0;
                 box-sizing: border-box;
                 position: relative;
                 page-break-inside: avoid;
             }
 
-            /* Multi-page layout dengan padding untuk fixed header */
-            .page-container {
-                padding: 0 15mm;
-                padding-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : ($paperSize === 'A4' ? '60px' : ($paperSize === 'Folio' ? '30px' : '80px'))) }};
-                margin: 0;
-                box-sizing: border-box;
-                position: relative;
-                page-break-inside: avoid;
-                display: block;
-                visibility: visible;
-            }
-
-            /* Ensure every page shows header - SIMPLE */
-            .page-container .header {
-                display: block !important;
-                visibility: visible !important;
-            }
-
-            .page-container:last-child {
-                page-break-after: avoid;
-                min-height: auto;
-            }
-
-            /* Force page break for subsequent pages - CRITICAL */
-            .force-new-page {
-                page-break-before: always !important;
-                clear: both !important;
-            }
-
-            /* Ensure header is visible on all pages - CRITICAL FIX */
+            /* Header sederhana yang muncul di setiap halaman */
             .header {
-                display: block !important;
-                visibility: visible !important;
-                position: relative !important;
-                margin: 0 0 {{ $paperSize === 'Folio' ? '6px' : '10px' }} 0 !important;
-                padding: 0 0 {{ $paperSize === 'Folio' ? '5px' : '8px' }} 0 !important;
-                border-bottom: 2px solid #333 !important;
-                text-align: center !important;
-                background: white !important;
-                width: 100% !important;
-                z-index: 9999 !important;
-                page-break-inside: avoid !important;
-                clear: both !important;
-                box-sizing: border-box !important;
-                opacity: 1 !important;
-                float: none !important;
+                display: block;
+                margin-bottom: 15px;
+                page-break-inside: avoid;
             }
 
-            .header * {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                color: #000 !important;
+            /* Multi-page layout sederhana */
+            .page-container {
+                padding: 15mm;
+                margin: 0;
+                box-sizing: border-box;
+                page-break-inside: avoid;
             }
 
-            .header div {
-                display: block !important;
-                visibility: visible !important;
+            /* Force page break untuk halaman selanjutnya */
+            .force-new-page {
+                page-break-before: always;
             }
 
-            .header span, .header strong {
-                display: inline !important;
-                visibility: visible !important;
+            /* Header sederhana untuk setiap halaman */
+            .header {
+                display: block;
+                margin-bottom: 15px;
+                page-break-inside: avoid;
             }
 
-            /* Critical: Force header visibility on page 2+ */
-            .page-container:nth-child(n+2) .header,
-            .force-new-page .header {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                position: relative !important;
-                background: white !important;
-                z-index: 10000 !important;
-                margin: 0 0 10px 0 !important;
-                padding: 5px 0 !important;
-                border-bottom: 2px solid #333 !important;
-                page-break-inside: avoid !important;
-                clear: both !important;
-                width: 100% !important;
-                box-sizing: border-box !important;
+            .header h1 {
+                font-size: {{ $paperSize === 'Folio' ? '18px' : '16px' }};
+                margin: 5px 0;
+                font-weight: bold;
+                text-align: center;
             }
-
-            .page-container:nth-child(n+2) .header *,
-            .force-new-page .header * {
-                display: block !important;
-                visibility: visible !important;
-                opacity: 1 !important;
-                color: #000 !important;
-            }
-
-            .page-container:nth-child(n+2) .header span,
-            .page-container:nth-child(n+2) .header strong,
-            .force-new-page .header span,
-            .force-new-page .header strong {
-                display: inline !important;
             }
 
             .header h1 {
@@ -922,26 +841,26 @@
 
 
 
-    <!-- Fixed Header untuk Print - akan muncul di setiap halaman -->
-    <div class="fixed-header">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
-            <div style="text-align: left;">
-                <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
-                <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
-            </div>
-            <div style="text-align: right;">
-                <span style="font-size: 10px; font-weight: bold;">{{ $pranota->no_invoice }}</span><br>
-                <span style="font-size: 10px;">Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}</span>
-            </div>
-        </div>
-        <h1 style="font-size: {{ $paperSize === 'Folio' ? '18px' : '16px' }}; margin: 5px 0; font-weight: bold; text-align: center;">PRANOTA TAGIHAN KONTAINER</h1>
-    </div>
-
     @php
         $globalRowNumber = 0; // Initialize global row counter
     @endphp
     @foreach($chunkedItems as $pageIndex => $pageItems)
     <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
+        <!-- Header untuk setiap halaman -->
+        <div class="header">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                <div style="text-align: left;">
+                    <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
+                    <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
+                </div>
+                <div style="text-align: right;">
+                    <span style="font-size: 10px; font-weight: bold;">{{ $pranota->no_invoice }}</span><br>
+                    <span style="font-size: 10px;">Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}</span>
+                </div>
+            </div>
+            <h1 style="font-size: {{ $paperSize === 'Folio' ? '18px' : '16px' }}; margin: 5px 0; font-weight: bold; text-align: center; border-bottom: 2px solid #333; padding-bottom: 5px;">PRANOTA TAGIHAN KONTAINER</h1>
+        </div>
+
         <!-- Info Section (on every page for consistency) -->
         <div class="info-section">
             <div class="info-left">
