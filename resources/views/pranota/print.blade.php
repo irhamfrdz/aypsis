@@ -675,30 +675,36 @@
                 width: 100%;
             }
 
-            .signature-table {
-                margin-top: 5px;
+            .signature-section table {
+                width: 100% !important;
                 border-collapse: collapse !important;
                 border: 2px solid #000 !important;
+                margin-top: 8px !important;
             }
 
-            .signature-cell {
-                padding: 8px 5px !important;
+            .signature-section td {
+                width: 33.33% !important;
                 border: 1px solid #000 !important;
+                padding: 10px 8px !important;
+                text-align: center !important;
                 vertical-align: top !important;
             }
 
-            .signature-label {
-                margin-bottom: 15px !important;
-                font-size: 9px !important;
+            .signature-section td div:first-child {
                 font-weight: bold !important;
-                text-align: center !important;
+                margin-bottom: 25px !important;
+                font-size: 10px !important;
             }
 
-            .signature-name {
-                font-size: 8px !important;
-                margin-bottom: 3px !important;
+            .signature-section td div:nth-child(2) {
+                height: 35px !important;
+                border-bottom: 1px solid #000 !important;
+                margin-bottom: 5px !important;
+            }
+
+            .signature-section td div:last-child {
+                font-size: 9px !important;
                 font-weight: bold !important;
-                text-align: center !important;
             }
 
             .footer {
@@ -1058,22 +1064,22 @@
 
         <!-- Signature Section -->
         <div class="signature-section">
-            <table class="signature-table" style="border-collapse: collapse; border: 1px solid #333;">
+            <table style="width: 100%; border-collapse: collapse; border: 2px solid #333; margin-top: 10px;">
                 <tr>
-                    <td class="signature-cell" style="border: 1px solid #333; padding: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '12px 8px' : '15px 10px' }}; vertical-align: top;">
-                        <div class="signature-label" style="font-weight: bold; margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '25px' : '35px' }}; font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }}; text-align: center;">Dibuat Oleh</div>
-                        <div style="border-bottom: 1px solid #333; margin-bottom: 8px; height: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '25px' }};"></div>
-                        <div class="signature-name" style="font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '9px' : '10px' }}; font-weight: bold; text-align: center;">(_____________)</div>
+                    <td style="width: 33.33%; border: 1px solid #333; padding: 15px 10px; text-align: center; vertical-align: top;">
+                        <div style="font-weight: bold; margin-bottom: 30px; font-size: 11px;">Dibuat Oleh</div>
+                        <div style="height: 40px; border-bottom: 1px solid #333; margin-bottom: 5px;"></div>
+                        <div style="font-size: 10px; font-weight: bold;">(_____________)</div>
                     </td>
-                    <td class="signature-cell" style="border: 1px solid #333; padding: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '12px 8px' : '15px 10px' }}; vertical-align: top;">
-                        <div class="signature-label" style="font-weight: bold; margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '25px' : '35px' }}; font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }}; text-align: center;">Disetujui Oleh</div>
-                        <div style="border-bottom: 1px solid #333; margin-bottom: 8px; height: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '25px' }};"></div>
-                        <div class="signature-name" style="font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '9px' : '10px' }}; font-weight: bold; text-align: center;">(_____________)</div>
+                    <td style="width: 33.33%; border: 1px solid #333; padding: 15px 10px; text-align: center; vertical-align: top;">
+                        <div style="font-weight: bold; margin-bottom: 30px; font-size: 11px;">Disetujui Oleh</div>
+                        <div style="height: 40px; border-bottom: 1px solid #333; margin-bottom: 5px;"></div>
+                        <div style="font-size: 10px; font-weight: bold;">(_____________)</div>
                     </td>
-                    <td class="signature-cell" style="border: 1px solid #333; padding: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '12px 8px' : '15px 10px' }}; vertical-align: top;">
-                        <div class="signature-label" style="font-weight: bold; margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '25px' : '35px' }}; font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }}; text-align: center;">Diterima Oleh</div>
-                        <div style="border-bottom: 1px solid #333; margin-bottom: 8px; height: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '25px' }};"></div>
-                        <div class="signature-name" style="font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '9px' : '10px' }}; font-weight: bold; text-align: center;">(_____________)</div>
+                    <td style="width: 33.33%; border: 1px solid #333; padding: 15px 10px; text-align: center; vertical-align: top;">
+                        <div style="font-weight: bold; margin-bottom: 30px; font-size: 11px;">Diterima Oleh</div>
+                        <div style="height: 40px; border-bottom: 1px solid #333; margin-bottom: 5px;"></div>
+                        <div style="font-size: 10px; font-weight: bold;">(_____________)</div>
                     </td>
                 </tr>
             </table>
