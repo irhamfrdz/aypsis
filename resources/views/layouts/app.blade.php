@@ -962,14 +962,42 @@
                 </div>
                 @endif
 
-                {{-- Surat Jalan Bongkaran (tetap di luar) --}}
-                @if($user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete')))
-                    <a href="{{ route('surat-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1 px-3 rounded-md text-xs hover:bg-gray-50 hover:text-gray-900 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.*') ? 'bg-blue-50 text-blue-700 font-medium' : 'text-gray-600' }}">
-                        <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"/>
+                {{-- Surat Jalan Bongkaran Sub-Dropdown --}}
+                @php
+                    $isSuratJalanBongkaranRoute = Request::routeIs('surat-jalan-bongkaran.*');
+                    $hasSuratJalanBongkaranPermissions = $user && ($user->can('surat-jalan-bongkaran-view') || $user->can('surat-jalan-bongkaran-create') || $user->can('surat-jalan-bongkaran-update') || $user->can('surat-jalan-bongkaran-delete'));
+                @endphp
+
+                @if($hasSuratJalanBongkaranPermissions)
+                <div class="mx-1 mb-2">
+                    <button id="surat-jalan-bongkaran-menu-toggle" class="w-full flex justify-between items-center py-1.5 px-2 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 group {{ $isSuratJalanBongkaranRoute ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                        <span class="text-xs font-medium">Surat Jalan Bongkaran</span>
+                        <svg class="w-3 h-3 transition-transform duration-200 dropdown-arrow {{ $isSuratJalanBongkaranRoute ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
                         </svg>
-                        Surat Jalan Bongkaran
-                    </a>
+                    </button>
+                    <div id="surat-jalan-bongkaran-menu-content" class="dropdown-content ml-3 mt-1 space-y-1" @if($isSuratJalanBongkaranRoute) style="display: block;" @endif>
+                        {{-- Daftar Surat Jalan Bongkaran --}}
+                        @if($user && $user->can('surat-jalan-bongkaran-view'))
+                            <a href="{{ route('surat-jalan-bongkaran.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.index') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                </svg>
+                                <span class="text-xs">Daftar Surat Jalan Bongkaran</span>
+                            </a>
+                        @endif
+
+                        {{-- Tambah Surat Jalan Bongkaran --}}
+                        @if($user && $user->can('surat-jalan-bongkaran-create'))
+                            <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-teal-50 hover:text-teal-700 transition-all duration-200 {{ Request::routeIs('surat-jalan-bongkaran.create') || Request::routeIs('surat-jalan-bongkaran.select-kapal') ? 'bg-teal-50 text-teal-700 font-medium shadow-sm' : 'text-gray-600' }}">
+                                <svg class="w-2.5 h-2.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                                </svg>
+                                <span class="text-xs">Tambah Surat Jalan Bongkaran</span>
+                            </a>
+                        @endif
+                    </div>
+                </div>
                 @endif
 
 
@@ -1592,6 +1620,7 @@
         setupDropdown('aktivitas-supir-menu-toggle', 'aktivitas-supir-menu-content');
         setupDropdown('memo-menu-toggle', 'memo-menu-content');
         setupDropdown('surat-jalan-menu-toggle', 'surat-jalan-menu-content');
+        setupDropdown('surat-jalan-bongkaran-menu-toggle', 'surat-jalan-bongkaran-menu-content');
         setupDropdown('rit-menu-toggle', 'rit-menu-content');
         setupDropdown('aktivitas-kontainer-menu-toggle', 'aktivitas-kontainer-menu-content');
         setupDropdown('aktivitas-aktivitas-kontainer-menu-toggle', 'aktivitas-aktivitas-kontainer-menu-content');
