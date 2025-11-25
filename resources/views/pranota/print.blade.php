@@ -465,26 +465,43 @@
                 height: {{ $currentPaper['height'] }};
                 margin: 0;
                 padding: 0;
+                padding-top: 80px;
                 font-size: {{ $currentPaper['fontSize'] }};
                 color: #000;
                 position: relative;
                 overflow: visible;
             }
 
+            /* Fixed header yang akan muncul di setiap halaman */
+            .fixed-header {
+                position: fixed !important;
+                top: 0 !important;
+                left: 0 !important;
+                right: 0 !important;
+                width: 100% !important;
+                height: 75px !important;
+                background: white !important;
+                z-index: 10000 !important;
+                border-bottom: 2px solid #333 !important;
+                padding: 10px 15mm !important;
+                box-sizing: border-box !important;
+                display: block !important;
+                visibility: visible !important;
+            }
+
             .container {
                 width: {{ $currentPaper['containerWidth'] }};
                 min-height: {{ $currentPaper['height'] }};
-                padding: 5mm 5mm 5mm 5mm;
-                padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '60px' : '150px'))) }};
+                padding: 0 15mm 40px 15mm;
                 margin: 0;
                 box-sizing: border-box;
                 position: relative;
                 page-break-inside: avoid;
             }
 
-            /* Multi-page layout - prevent unnecessary page breaks */
+            /* Multi-page layout dengan padding untuk fixed header */
             .page-container {
-                padding: 5mm 5mm 5mm 5mm;
+                padding: 0 15mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '20px' : ($paperSize === 'Half-Folio' ? '20px' : ($paperSize === 'A4' ? '60px' : ($paperSize === 'Folio' ? '30px' : '80px'))) }};
                 margin: 0;
                 box-sizing: border-box;
@@ -905,33 +922,26 @@
 
 
 
+    <!-- Fixed Header untuk Print - akan muncul di setiap halaman -->
+    <div class="fixed-header">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+            <div style="text-align: left;">
+                <strong style="font-size: 12px;">PT. ALEXINDO YAKINPRIMA</strong><br>
+                <span style="font-size: 10px;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span>
+            </div>
+            <div style="text-align: right;">
+                <span style="font-size: 10px; font-weight: bold;">{{ $pranota->no_invoice }}</span><br>
+                <span style="font-size: 10px;">Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}</span>
+            </div>
+        </div>
+        <h1 style="font-size: {{ $paperSize === 'Folio' ? '18px' : '16px' }}; margin: 5px 0; font-weight: bold; text-align: center;">PRANOTA TAGIHAN KONTAINER</h1>
+    </div>
+
     @php
         $globalRowNumber = 0; // Initialize global row counter
     @endphp
     @foreach($chunkedItems as $pageIndex => $pageItems)
     <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
-        <!-- Header for each page -->
-        <div class="header" style="display: block !important; visibility: visible !important; opacity: 1 !important; position: relative !important; width: 100% !important; background: white !important; z-index: 9999 !important;">
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 10px; visibility: visible !important;">
-                <div style="text-align: left; visibility: visible !important;">
-                    <strong style="font-size: 12px; visibility: visible !important; display: inline !important;">PT. ALEXINDO YAKINPRIMA</strong><br>
-                    <span style="font-size: 10px; visibility: visible !important; display: inline !important;">Jalan Pluit Raya No.8 Blok B No.12, Jakarta Utara 14440</span><br>
-                </div>
-            </div>
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; visibility: visible !important;">
-                <span style="font-size: 10px; font-weight: bold; visibility: visible !important; display: inline !important;">
-                    Tanggal: {{ \Carbon\Carbon::parse($pranota->tanggal_pranota)->format('d-M-Y') }}
-                </span>
-                <div style="text-align: right; visibility: visible !important;">
-                    <span style="font-size: 10px; font-weight: bold; visibility: visible !important; display: inline !important;">{{ $pranota->no_invoice }}</span>
-                    @if($totalPages > 1)
-                    <br><span style="font-size: 8px; color: #666; visibility: visible !important; display: inline !important;">Hal {{ $pageIndex + 1 }} dari {{ $totalPages }}</span>
-                    @endif
-                </div>
-            </div>
-            <h1 style="visibility: visible !important; display: block !important; font-size: {{ $paperSize === 'Folio' ? '20px' : '16px' }} !important;">PRANOTA TAGIHAN KONTAINER</h1>
-        </div>
-
         <!-- Info Section (on every page for consistency) -->
         <div class="info-section">
             <div class="info-left">
