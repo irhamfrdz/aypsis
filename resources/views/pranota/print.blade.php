@@ -173,7 +173,7 @@
         body {
             font-family: Arial, sans-serif;
             font-size: {{ $currentPaper['fontSize'] }};
-            line-height: 1.4;
+            line-height: 1.2;
             color: #333;
             background: white;
             position: relative;
@@ -189,18 +189,18 @@
             height: {{ $currentPaper['height'] }};
             max-height: {{ $currentPaper['height'] }};
             margin: 0 auto;
-            padding: 5mm 5mm 5mm 5mm;
+            padding: 3mm 3mm 3mm 3mm;
             position: relative;
-            padding-bottom: {{ $paperSize === 'Half-A4' ? '60px' : ($paperSize === 'Half-Folio' ? '60px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '80px' : '150px'))) }};
+            padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '80px' : ($paperSize === 'Folio' ? '50px' : '100px'))) }};
             box-sizing: border-box;
             overflow: hidden;
         }
 
         .header {
             text-align: center;
-            margin-bottom: {{ $paperSize === 'Folio' ? '8px' : '10px' }};
+            margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '6px' }};
             border-bottom: 2px solid #333;
-            padding-bottom: {{ $paperSize === 'Folio' ? '6px' : '8px' }};
+            padding-bottom: {{ $paperSize === 'Folio' ? '4px' : '5px' }};
         }
 
         .header h1 {
@@ -219,7 +219,7 @@
         .info-section {
             display: flex;
             justify-content: space-between;
-            margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
+            margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '5px' }};
         }
 
         .info-left, .info-right {
@@ -227,7 +227,7 @@
         }
 
         .info-item {
-            margin-bottom: 4px;
+            margin-bottom: 2px;
         }
 
         .info-label {
@@ -251,14 +251,14 @@
         .table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 8px;
+            margin-bottom: 4px;
             table-layout: fixed;
         }
 
         .table th,
         .table td {
             border: 1px solid #333;
-            padding: 4px 2px;
+            padding: 2px 1px;
             text-align: left;
             vertical-align: middle;
             word-wrap: break-word;
@@ -418,7 +418,7 @@
 
         .signature-label {
             font-weight: bold;
-            margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '20px' : '30px' }};
+            margin-bottom: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '15px' : '20px' }};
             font-size: {{ in_array($paperSize, ['Half-A4', 'Half-Custom-215', 'Half-Folio']) ? '10px' : '11px' }};
         }
 
@@ -429,12 +429,12 @@
         }
 
         .footer {
-            margin-top: 50px;
+            margin-top: 30px;
             text-align: center;
             font-size: 10px;
             color: #666;
             border-top: 1px solid #ddd;
-            padding-top: 20px;
+            padding-top: 15px;
         }
 
         @media print {
@@ -669,7 +669,7 @@
             }
 
             .signature-label {
-                margin-bottom: 15px;
+                margin-bottom: 8px;
                 font-size: 8px;
             }
 
@@ -722,8 +722,8 @@
             /* Keterangan table for print */
             .keterangan-table {
                 page-break-inside: avoid;
-                margin-top: 15px;
-                margin-bottom: 15px;
+                margin-top: 8px;
+                margin-bottom: 8px;
             }
 
             .keterangan-table td {
@@ -869,9 +869,9 @@
 
         <!-- Invoice Table (only on first page and if not too many invoices) -->
         @if($invoices->isNotEmpty())
-        <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '15px' }};">
+        <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }};">
             <h3 style="font-size: {{ $paperSize === 'Folio' ? '10px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
-            <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '10px' }}; {{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">
+            <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '6px' }}; {{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
@@ -1011,7 +1011,7 @@
         </div>
 
         <!-- Keterangan Table -->
-        <div class="keterangan-table" style="margin-top: 15px; margin-bottom: 15px;">
+        <div class="keterangan-table" style="margin-top: 8px; margin-bottom: 8px;">
             <table style="width: 100%; border-collapse: collapse; border: 2px solid #333;">
                 <tbody>
                     <tr>
