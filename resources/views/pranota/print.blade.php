@@ -181,9 +181,9 @@
 
         .header {
             text-align: center;
-            margin-bottom: 10px;
+            margin-bottom: {{ $paperSize === 'Folio' ? '8px' : '10px' }};
             border-bottom: 2px solid #333;
-            padding-bottom: 8px;
+            padding-bottom: {{ $paperSize === 'Folio' ? '6px' : '8px' }};
         }
 
         .header h1 {
@@ -202,7 +202,7 @@
         .info-section {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 8px;
+            margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
         }
 
         .info-left, .info-right {
@@ -483,8 +483,8 @@
             }
 
             .header {
-                margin-bottom: 10px;
-                padding-bottom: 8px;
+                margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
+                padding-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }};
             }
 
             .header h1 {
@@ -513,7 +513,7 @@
             }
 
             .info-section {
-                margin-bottom: 10px;
+                margin-bottom: {{ $paperSize === 'Folio' ? '6px' : '10px' }};
                 font-size: 9px;
             }
 
@@ -528,9 +528,9 @@
 
             .table {
                 page-break-inside: avoid;
-                margin-bottom: {{ $paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '10px') }};
+                margin-bottom: {{ $paperSize === 'Folio' ? '3px' : ($paperSize === 'Half-A4' ? '5px' : ($paperSize === 'Half-Folio' ? '5px' : '10px')) }};
                 width: 100%;
-                font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : '10px')) }};
+                font-size: {{ $paperSize === 'Half-A4' ? '7px' : ($paperSize === 'Half-Folio' ? '7px' : ($paperSize === 'A4' ? '9px' : ($paperSize === 'Folio' ? '8px' : '10px'))) }};
             }
 
             .table th,
@@ -842,9 +842,9 @@
 
         <!-- Invoice Table (only on first page) -->
         @if($invoices->isNotEmpty())
-        <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '8px' : '15px' }};">
-            <h3 style="font-size: {{ $paperSize === 'Folio' ? '11px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
-            <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '8px' : '10px' }};">
+        <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '15px' }};">
+            <h3 style="font-size: {{ $paperSize === 'Folio' ? '10px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
+            <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '10px' }}; {{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">
                 <thead>
                     <tr>
                         <th style="width: 5%;">No</th>
@@ -861,8 +861,8 @@
                         <td class="text-center">{{ $index + 1 }}</td>
                         <td>{{ $invoice->nomor_invoice }}</td>
                         <td>{{ $invoice->vendor_name ?: '-' }}</td>
-                        <td class="text-center">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->format('d-M-Y') : '-' }}</td>
-                        <td class="text-right">{{ number_format($invoice->total ?? 0, 0, ',', '.') }}</td>
+                        <td class="text-center" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ $invoice->tanggal_invoice ? $invoice->tanggal_invoice->format('d-M-Y') : '-' }}</td>
+                        <td class="text-right" style="{{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">{{ number_format($invoice->total ?? 0, 0, ',', '.') }}</td>
                         <td class="text-center">
                             @php
                                 $statusLabels = [
@@ -873,7 +873,7 @@
                                     'cancelled' => 'Cancelled',
                                 ];
                             @endphp
-                            <span style="padding: 2px 6px; font-size: {{ $paperSize === 'Folio' ? '9px' : '8px' }}; border: 1px solid #333; border-radius: 3px;">
+                            <span style="padding: {{ $paperSize === 'Folio' ? '1px 4px' : '2px 6px' }}; font-size: {{ $paperSize === 'Folio' ? '8px' : '8px' }}; border: 1px solid #333; border-radius: 3px;">
                                 {{ $statusLabels[$invoice->status] ?? $invoice->status }}
                             </span>
                         </td>
