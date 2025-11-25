@@ -48,12 +48,12 @@ Scripts:
 
 ### 3. Pranota Permissions
 
--   **Pranota Supir** (Driver Notes)
+-   **Pranota Memo** (Driver Notes)
 -   **Pranota Tagihan Kontainer** (Container Billing Notes)
 
 ### 4. Pembayaran Permissions
 
--   **Pembayaran Pranota Supir** (Driver Note Payments)
+-   **Pembayaran Pranota Memo** (Driver Note Payments)
 -   **Pembayaran Pranota Kontainer** (Container Note Payments)
 -   **Pembayaran Pranota Perbaikan Kontainer** (Container Repair Note Payments)
 

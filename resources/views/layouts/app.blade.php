@@ -814,17 +814,17 @@
                             </a>
                         @endif
 
-                        {{-- Pranota Supir --}}
+                        {{-- Pranota Memo --}}
                         @if($user && $user->can('pranota-supir-view'))
                             <a href="{{ route('pranota-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Pranota Supir</span>
+                                <span class="text-xs">Pranota Memo</span>
                             </a>
                         @endif
 
-                        {{-- Bayar Pranota Supir --}}
+                        {{-- Bayar Pranota Memo --}}
                         @if(Route::has('pembayaran-pranota-supir.index') && $user && $user->can('pembayaran-pranota-supir-view'))
                             <a href="{{ route('pembayaran-pranota-supir.index') }}" target="_blank" class="flex items-center py-1.5 px-3 mx-1 rounded-md text-xs hover:bg-indigo-50 hover:text-indigo-700 transition-all duration-200 {{ Request::routeIs('pembayaran-pranota-supir.*') ? 'bg-indigo-50 text-indigo-700 font-medium shadow-sm' : 'text-gray-600' }}">
-                                <span class="text-xs">Bayar Pranota Supir</span>
+                                <span class="text-xs">Bayar Pranota Memo</span>
                             </a>
                         @endif
 

@@ -9,8 +9,8 @@
  * - user-approval: Persetujuan user baru
  * - tagihan-kontainer: Menu tagihan kontainer sewa
  * - permohonan: Menu permohonan memo
- * - pranota-supir: Menu pranota supir
- * - pembayaran-pranota-supir: Menu pembayaran pranota supir
+ * - pranota-supir: Menu pranota memo
+ * - pembayaran-pranota-supir: Menu pembayaran pranota memo
  *
  * Sub-permissions untuk master data:
  * - master-karyawan
@@ -62,13 +62,13 @@ return [
             'required' => true,
         ],
         'pranota-supir' => [
-            'name' => 'Pranota Supir',
-            'description' => 'Menu pranota supir',
+            'name' => 'Pranota Memo',
+            'description' => 'Menu pranota memo',
             'required' => true,
         ],
         'pembayaran-pranota-supir' => [
-            'name' => 'Pembayaran Pranota Supir',
-            'description' => 'Menu pembayaran pranota supir',
+            'name' => 'Pembayaran Pranota Memo',
+            'description' => 'Menu pembayaran pranota memo',
             'required' => true,
         ],
     ],
@@ -89,10 +89,10 @@ return [
         // Permohonan - butuh permohonan
         'permohonan' => ['permohonan'],
 
-        // Pranota Supir - butuh pranota-supir
+        // Pranota Memo - butuh pranota-supir
         'pranota-supir' => ['pranota-supir'],
 
-        // Pembayaran Pranota Supir - butuh pembayaran-pranota-supir
+        // Pembayaran Pranota Memo - butuh pembayaran-pranota-supir
         'pembayaran-pranota-supir' => ['pembayaran-pranota-supir'],
     ]
 ];

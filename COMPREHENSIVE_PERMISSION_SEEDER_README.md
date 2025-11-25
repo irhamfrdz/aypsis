@@ -103,7 +103,7 @@ Contoh:
 
 -   `master-user-view` = Melihat Data User
 -   `master-user-create` = Membuat User Baru
--   `pranota-supir-print` = Print Pranota Supir
+-   `pranota-supir-print` = Print Pranota Memo
 -   `pembayaran-ob-delete` = Menghapus Pembayaran OB
 
 ### Action Types
