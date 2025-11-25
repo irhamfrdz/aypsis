@@ -77,12 +77,18 @@
         'Half-Folio' => 22,  // Slightly more space
         'A4' => 35,          // Full A4 has much more space
         'Custom-215' => 35,  // Same as A4
-        'Folio' => 45,       // Increase for Folio to accommodate invoice table
+        'Folio' => ($invoices->isNotEmpty() ? 30 : 40), // Reduced when invoice table exists
         default => 20
     };
     
     // Only create multiple pages if data actually exceeds the limit
     $totalItems = $tagihanItems->count();
+    
+    // For Folio with invoice table, be more conservative
+    if ($paperSize === 'Folio' && $invoices->isNotEmpty() && $invoices->count() > 3) {
+        $maxRowsPerPage = 25; // Further reduce if many invoices
+    }
+    
     if ($totalItems <= $maxRowsPerPage) {
         // All data fits in one page
         $chunkedItems = collect([$tagihanItems]);
@@ -91,6 +97,15 @@
         // Split data across multiple pages
         $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
         $totalPages = $chunkedItems->count();
+        
+        // If last chunk has very few items (less than 5), merge with previous
+        if ($totalPages > 1 && $chunkedItems->last()->count() < 5) {
+            $lastChunk = $chunkedItems->pop();
+            $secondLastChunk = $chunkedItems->pop();
+            $mergedChunk = $secondLastChunk->merge($lastChunk);
+            $chunkedItems->push($mergedChunk);
+            $totalPages = $chunkedItems->count();
+        }
     }
     
     $vendorList = $tagihanItems->pluck('vendor')->unique()->filter()->values();
@@ -123,10 +138,11 @@
             margin: 0;
         }
 
-        /* Page break rules for multi-page */
+        /* Prevent orphaned content and optimize page breaks */
         .page-container {
             position: relative;
-            /* Remove automatic page breaks - let content flow naturally */
+            page-break-inside: avoid;
+            min-height: {{ $paperSize === 'Folio' ? '200px' : '150px' }};
         }
 
         .page-container:last-child {
@@ -458,21 +474,23 @@
                 page-break-inside: avoid;
             }
 
-            /* Multi-page layout - let content flow naturally */
+            /* Multi-page layout - prevent unnecessary page breaks */
             .page-container {
                 padding: 5mm 5mm 5mm 5mm;
                 padding-bottom: {{ $paperSize === 'Half-A4' ? '40px' : ($paperSize === 'Half-Folio' ? '40px' : ($paperSize === 'A4' ? '120px' : ($paperSize === 'Folio' ? '60px' : '150px'))) }};
                 margin: 0;
                 box-sizing: border-box;
                 position: relative;
-                /* Remove fixed heights and page breaks - let content determine layout */
+                page-break-inside: avoid;
+                min-height: {{ $paperSize === 'Folio' ? '400px' : '300px' }};
             }
 
             .page-container:last-child {
                 page-break-after: avoid;
+                min-height: auto;
             }
 
-            /* Only add page break when explicitly needed */
+            /* Only add page break when explicitly needed and content is substantial */
             .force-new-page {
                 page-break-before: always;
                 @if($paperSize === 'Half-A4')
@@ -480,6 +498,19 @@
                 @elseif($paperSize === 'Half-Folio')
                     border-top: 2px dashed #999;
                 @endif
+            }
+
+            /* Prevent orphaned elements */
+            .invoice-section {
+                page-break-inside: avoid;
+                orphans: 3;
+                widows: 3;
+            }
+
+            .table {
+                page-break-inside: avoid;
+                orphans: 4;
+                widows: 4;
             }
 
             .header {
@@ -840,8 +871,8 @@
             </div>
         </div>
 
-        <!-- Invoice Table (only on first page) -->
-        @if($invoices->isNotEmpty())
+        <!-- Invoice Table (only on first page and if not too many invoices) -->
+        @if($invoices->isNotEmpty() && $invoices->count() <= 5)
         <div class="invoice-section" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '15px' }};">
             <h3 style="font-size: {{ $paperSize === 'Folio' ? '10px' : '12px' }}; font-weight: bold; margin-bottom: {{ $paperSize === 'Folio' ? '3px' : '8px' }}; color: #333;">INVOICE YANG DIGUNAKAN:</h3>
             <table class="table" style="margin-bottom: {{ $paperSize === 'Folio' ? '5px' : '10px' }}; {{ $paperSize === 'Folio' ? 'font-size: 9px;' : '' }}">
