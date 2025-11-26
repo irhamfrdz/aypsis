@@ -931,11 +931,15 @@ class UserController extends Controller
                             $action = str_replace('term-', '', $action);
                             $module = 'master-term';
                         } else {
-                            // For master-karyawan-view, split further
-                            $subParts = explode('-', $action, 2);
-                            if (count($subParts) == 2) {
-                                $module = $module . '-' . $subParts[0]; // master-karyawan
-                                $action = $subParts[1]; // view
+                            // For master-* patterns, split using last hyphen so submodules can contain hyphens
+                            $lastPos = strrpos($action, '-');
+                            if ($lastPos !== false) {
+                                $subModule = substr($action, 0, $lastPos);
+                                $subAction = substr($action, $lastPos + 1);
+                                if ($subModule !== '') {
+                                    $module = $module . '-' . $subModule; // e.g. master-kelola-bbm
+                                    $action = $subAction; // e.g. view
+                                }
                             }
                         }
                     }
