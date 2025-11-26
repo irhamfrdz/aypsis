@@ -240,11 +240,14 @@ class PergerakanKapalController extends Controller
             return response()->json(['error' => 'Data tujuan tidak ditemukan'], 400);
         }
 
-        // 1 Digit Tujuan Asal (berdasarkan kota)
-        $kodeAsal = $kotaCodes[$tujuanAsalData->kota] ?? strtoupper(substr($tujuanAsalData->kota, 0, 1));
+        // Use the `nama_tujuan` field for mapping — `kota` column doesn't exist in the current schema.
+        // 1 Digit Tujuan Asal (berdasarkan nama_tujuan)
+        $kotaAsal = $tujuanAsalData->nama_tujuan ?? '';
+        $kodeAsal = $kotaCodes[$kotaAsal] ?? strtoupper(substr($kotaAsal, 0, 1));
 
-        // 1 Digit Tujuan Kirim (berdasarkan kota)
-        $kodeTujuan = $kotaCodes[$tujuanTujuanData->kota] ?? strtoupper(substr($tujuanTujuanData->kota, 0, 1));
+        // 1 Digit Tujuan Kirim (berdasarkan nama_tujuan)
+        $kotaTujuan = $tujuanTujuanData->nama_tujuan ?? '';
+        $kodeTujuan = $kotaCodes[$kotaTujuan] ?? strtoupper(substr($kotaTujuan, 0, 1));
 
         // 2 Digit Tahun
         $tahun = date('y');
