@@ -556,6 +556,7 @@ class UserController extends Controller
             $operationalModules = [
                 'order-management' => 'order', // Map order-management to order for permission names
                 'surat-jalan' => 'surat-jalan',
+                'surat-jalan-bongkaran' => 'surat-jalan-bongkaran',
                 'tanda-terima' => 'tanda-terima',
                 'gate-in' => 'gate-in',
                 'pranota-surat-jalan' => 'pranota-surat-jalan',
@@ -2884,6 +2885,27 @@ class UserController extends Controller
                             'delete' => 'surat-jalan-delete',
                             'print' => 'surat-jalan-print',
                             'export' => 'surat-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle surat-jalan-bongkaran permissions explicitly
+                    if ($module === 'surat-jalan-bongkaran' && in_array($action, ['view', 'create', 'update', 'delete', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'surat-jalan-bongkaran-view',
+                            'create' => 'surat-jalan-bongkaran-create',
+                            'update' => 'surat-jalan-bongkaran-update',
+                            'delete' => 'surat-jalan-bongkaran-delete',
+                            'print' => 'surat-jalan-bongkaran-print',
+                            'export' => 'surat-jalan-bongkaran-export'
                         ];
 
                         if (isset($actionMap[$action])) {
