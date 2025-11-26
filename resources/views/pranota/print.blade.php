@@ -143,27 +143,15 @@
         /* Prevent orphaned content and optimize page breaks */
         .page-container {
             position: relative;
-            page-break-inside: avoid;
             min-height: {{ $paperSize === 'Folio' ? '200px' : '150px' }};
+        }
+
+        .page-container:not(:first-child) {
+            page-break-before: always;
         }
 
         .page-container:last-child {
             page-break-after: avoid;
-        }
-
-        /* Prevent table rows from breaking across pages */
-        .table tbody tr {
-            page-break-inside: avoid;
-        }
-
-        /* Force new page when needed - only when content actually overflows */
-        .force-new-page {
-            page-break-before: always;
-        }
-
-        /* Let content flow naturally within page boundaries */
-        .content-flow {
-            page-break-inside: avoid;
         }
 
         html {
@@ -843,7 +831,7 @@
         $globalRowNumber = 0; // Initialize global row counter
     @endphp
     @foreach($chunkedItems as $pageIndex => $pageItems)
-    <div class="page-container {{ $pageIndex > 0 ? 'force-new-page' : '' }}">
+    <div class="page-container">
         <!-- Header only on first page -->
         @if($pageIndex === 0)
         <div class="header" style="display: block !important; visibility: visible !important; opacity: 1 !important; position: relative !important; width: 100% !important; background: white !important; z-index: 9999 !important;">
@@ -866,12 +854,12 @@
             </div>
             <h1 style="visibility: visible !important; display: block !important; font-size: {{ $paperSize === 'Folio' ? '20px' : '16px' }} !important;">PRANOTA TAGIHAN KONTAINER</h1>
         </div>
-        @else
+        @if($pageIndex > 0)
         <!-- Simple page indicator for subsequent pages -->
         <div style="text-align: right; margin-bottom: 10px; padding: 5px 0; font-size: 10px; color: #666;">
             Halaman {{ $pageIndex + 1 }} dari {{ $totalPages }}
         </div>
-        @endif
+        @else
 
         <!-- Info Section (on every page for consistency) -->
         <div class="info-section">
