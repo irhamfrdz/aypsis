@@ -86,25 +86,27 @@ class SuratJalanBongkaranController extends Controller
      */
     public function selectKapal(Request $request)
     {
-        // Get unique kapal names from BLs table and match with master_kapals
-        $blKapals = Bl::select('nama_kapal')
-                      ->whereNotNull('nama_kapal')
-                      ->distinct()
-                      ->pluck('nama_kapal');
-        
-        // Get matching kapals from master_kapals table using actual IDs
-        $kapals = MasterKapal::whereIn('nama_kapal', $blKapals)
-                             ->orderBy('nama_kapal')
-                             ->get(['id', 'nama_kapal']);
+        // Get unique kapal names from BLs table
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->map(function($bl, $index) {
+                        return (object)[
+                            'id' => $index + 1, // Use incremental ID
+                            'nama_kapal' => $bl->nama_kapal
+                        ];
+                    });
         
         // Get BL data based on selected kapal
         $bls = collect();
         if ($request->filled('kapal_id')) {
-            // Find kapal by actual master_kapals ID
-            $selectedKapal = MasterKapal::find($request->kapal_id);
+            // Find kapal name by the incremental ID
+            $selectedKapalName = $kapals->where('id', $request->kapal_id)->first()?->nama_kapal;
             
-            if ($selectedKapal) {
-                $bls = Bl::where('nama_kapal', $selectedKapal->nama_kapal)
+            if ($selectedKapalName) {
+                $bls = Bl::where('nama_kapal', $selectedKapalName)
                         ->distinct()
                         ->get(['no_voyage', 'nomor_bl'])
                         ->groupBy('no_voyage');
@@ -123,8 +125,20 @@ class SuratJalanBongkaranController extends Controller
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
-        // Get kapal name from master_kapals table using actual ID
-        $selectedKapal = MasterKapal::find($request->kapal_id);
+        // Get kapal name from BLs table using incremental ID
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->map(function($bl, $index) {
+                        return (object)[
+                            'id' => $index + 1,
+                            'nama_kapal' => $bl->nama_kapal
+                        ];
+                    });
+        
+        $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
         if (!$selectedKapal) {
             return response()->json(['voyages' => [], 'bls' => []]);
         }
@@ -179,20 +193,22 @@ class SuratJalanBongkaranController extends Controller
         
         // Validate that kapal and voyage are provided
         $request->validate([
-            'kapal_id' => 'required|exists:master_kapals,id',
+            'kapal_id' => 'required|integer',
             'no_voyage' => 'required|string',
         ]);
 
-        // Get unique kapal names from BLs table and match with master_kapals
-        $blKapals = Bl::select('nama_kapal')
-                      ->whereNotNull('nama_kapal')
-                      ->distinct()
-                      ->pluck('nama_kapal');
-        
-        // Get matching kapals from master_kapals table using actual IDs
-        $kapals = MasterKapal::whereIn('nama_kapal', $blKapals)
-                             ->orderBy('nama_kapal')
-                             ->get(['id', 'nama_kapal']);
+        // Get unique kapal names from BLs table
+        $kapals = Bl::select('nama_kapal')
+                    ->whereNotNull('nama_kapal')
+                    ->distinct()
+                    ->orderBy('nama_kapal')
+                    ->get()
+                    ->map(function($bl, $index) {
+                        return (object)[
+                            'id' => $index + 1,
+                            'nama_kapal' => $bl->nama_kapal
+                        ];
+                    });
         
         $users = User::orderBy('username')->get();
         
@@ -271,7 +287,7 @@ class SuratJalanBongkaranController extends Controller
     public function store(Request $request)
     {
         $validatedData = $request->validate([
-            'kapal_id' => 'nullable|exists:master_kapals,id',
+            'kapal_id' => 'nullable|integer',
             'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string|max:255',
