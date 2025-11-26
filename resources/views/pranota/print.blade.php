@@ -90,46 +90,23 @@
     // Only create multiple pages if data actually exceeds the limit
     $totalItems = $tagihanItems->count();
     
-    // If we have invoices, we need at least 2 pages (page 1 for invoices, page 2+ for pranota)
-    if ($invoices->isNotEmpty()) {
-        // Always create at least 2 pages when invoices exist
-        if ($totalItems <= $maxRowsPerPage) {
-            // All pranota data fits in one page (page 2)
-            $chunkedItems = collect([$tagihanItems]); // Page 1 will have pranota items
-            $totalPages = 1; // Only one page needed for pranota, invoice will be shown on same page
-        } else {
-            // Split pranota data across multiple pages
-            $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
-            $totalPages = $chunkedItems->count();
-            
-            // If last chunk has very few items (less than 5), merge with previous
-            if ($totalPages > 1 && $chunkedItems->last()->count() < 5) {
-                $lastChunk = $chunkedItems->pop();
-                $secondLastChunk = $chunkedItems->pop();
-                $mergedChunk = $secondLastChunk->merge($lastChunk);
-                $chunkedItems->push($mergedChunk);
-                $totalPages = $chunkedItems->count();
-            }
-        }
+    // Simple pagination logic - always start with all data on first page
+    if ($totalItems <= $maxRowsPerPage) {
+        // All data fits in one page
+        $chunkedItems = collect([$tagihanItems]);
+        $totalPages = 1;
     } else {
-        // No invoices, use original logic for pranota only
-        if ($totalItems <= $maxRowsPerPage) {
-            // All data fits in one page
-            $chunkedItems = collect([$tagihanItems]);
-            $totalPages = 1;
-        } else {
-            // Split data across multiple pages
-            $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
+        // Split data across multiple pages
+        $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
+        $totalPages = $chunkedItems->count();
+        
+        // If last chunk has very few items (less than 5), merge with previous
+        if ($totalPages > 1 && $chunkedItems->last()->count() < 5) {
+            $lastChunk = $chunkedItems->pop();
+            $secondLastChunk = $chunkedItems->pop();
+            $mergedChunk = $secondLastChunk->merge($lastChunk);
+            $chunkedItems->push($mergedChunk);
             $totalPages = $chunkedItems->count();
-            
-            // If last chunk has very few items (less than 5), merge with previous
-            if ($totalPages > 1 && $chunkedItems->last()->count() < 5) {
-                $lastChunk = $chunkedItems->pop();
-                $secondLastChunk = $chunkedItems->pop();
-                $mergedChunk = $secondLastChunk->merge($lastChunk);
-                $chunkedItems->push($mergedChunk);
-                $totalPages = $chunkedItems->count();
-            }
         }
     }
     
@@ -952,7 +929,7 @@
         </div>
         @endif
 
-        <!-- Table for current page pranota items -->
+        <!-- Pranota Table - always show on every page that has items -->
         @if($pageItems->isNotEmpty())
         <table class="table">
             <thead>
