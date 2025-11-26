@@ -54,7 +54,7 @@ class SuratJalanBongkaranController extends Controller
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                $q->where('no_surat_jalan', 'like', "%{$search}%")
                   ->orWhere('nomor_container', 'like', "%{$search}%")
                   ->orWhere('nomor_seal', 'like', "%{$search}%")
                   ->orWhere('nama_pengirim', 'like', "%{$search}%")
@@ -387,7 +387,7 @@ class SuratJalanBongkaranController extends Controller
     {
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|exists:master_kapals,id',
-            'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,nomor_surat_jalan,' . $suratJalanBongkaran->id,
+            'no_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,no_surat_jalan,' . $suratJalanBongkaran->id,
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',

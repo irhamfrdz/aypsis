@@ -152,7 +152,7 @@
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $suratJalanBongkarans->firstItem() + $index }}</td>
                                 <td class="px-4 py-3 text-sm">
-                                    <span class="font-semibold text-gray-900">{{ $sjb->nomor_surat_jalan }}</span>
+                                    <span class="font-semibold text-gray-900">{{ $sjb->no_surat_jalan }}</span>
                                 </td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->order ? $sjb->order->nomor_order : '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->kapal ? $sjb->kapal->nama_kapal : '-' }}</td>
