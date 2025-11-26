@@ -231,6 +231,9 @@ class SuratJalanBongkaranController extends Controller
                                          ->where('status', 'aktif')
                                          ->orderBy('nama_kegiatan')
                                          ->get();
+
+        // Get terms untuk dropdown term pembayaran  
+        $terms = \App\Models\Term::orderBy('kode')->get();
         
         // Find selected kapal by ID
         $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
@@ -271,7 +274,7 @@ class SuratJalanBongkaranController extends Controller
             ];
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
     }
 
     /**
@@ -363,8 +366,11 @@ class SuratJalanBongkaranController extends Controller
     {
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
         $users = User::orderBy('username')->get();
+        
+        // Get terms untuk dropdown term pembayaran  
+        $terms = \App\Models\Term::orderBy('kode')->get();
 
-        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'kapals', 'users'));
+        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'kapals', 'users', 'terms'));
     }
 
     /**
