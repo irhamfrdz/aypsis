@@ -275,6 +275,10 @@
     @endif
 </div>
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/choices.js/public/assets/styles/choices.min.css" />
+@endpush
+
             <style>
                 /* Searchable Multi-Select Styling */
                 #prospek_container {
@@ -358,6 +362,24 @@
                     box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
                 }
             </style><script>
+            @push('scripts')
+                <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const kapalEl = document.getElementById('kapal_id');
+                        if (kapalEl && typeof Choices !== 'undefined') {
+                            // Initialize Choices for searchable dropdown while keeping native select behavior
+                            const choices = new Choices(kapalEl, {
+                                searchEnabled: true,
+                                shouldSort: false,
+                                searchPlaceholderValue: 'Cari nama kapal...'
+                            });
+                            // Keep the reference to underlying select for existing code
+                            kapalEl.choicesInstance = choices;
+                        }
+                    });
+                </script>
+            @endpush
 document.addEventListener('DOMContentLoaded', function() {
     const kapalSelect = document.getElementById('kapal_id');
     const voyageSelect = document.getElementById('no_voyage');
