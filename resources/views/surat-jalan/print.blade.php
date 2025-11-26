@@ -15,6 +15,7 @@
             margin: 0;
             padding: 0;
             background: white;
+            font-size: 14px; /* increased base font-size for print */
         }
         
         .container {
@@ -31,7 +32,7 @@
             position: absolute;
             top: 15mm;  /* 1.5cm dari atas */
             left: 100mm;  /* 10cm dari kiri */
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
         }
         
@@ -40,7 +41,7 @@
             position: absolute;
             top: 35mm;  /* 3.5cm dari atas */
             left: 100mm;  /* 10cm dari kiri */
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
         }
         
@@ -49,7 +50,7 @@
             position: absolute;
             top: 55mm;  /* 5.5cm dari atas */
             left: 85mm; /* 8.5cm dari kiri */
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
         }
         
@@ -65,7 +66,7 @@
         
         .col {
             width: 50mm;
-            font-size: 11px;
+            font-size: 13px;
             font-weight: bold;
             text-align: left;
             padding-right: 5mm;
@@ -76,7 +77,7 @@
             position: absolute;
             top: 90mm;  /* 9cm dari atas */
             left: 60mm; /* 6cm dari kiri */
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
         
@@ -85,7 +86,7 @@
             position: absolute;
             top: 115mm;  /* 11.5cm dari atas */
             left: 110mm; /* 11cm dari kiri */
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
         
@@ -94,7 +95,7 @@
             position: absolute;
             top: 90mm;  /* 9cm dari atas */
             left: 110mm; /* 11cm dari kiri */
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
         
@@ -103,7 +104,7 @@
             position: absolute;
             top: 140mm;  /* 14cm dari atas */
             left: 110mm; /* 11cm dari kiri */
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
         
@@ -112,7 +113,7 @@
             position: absolute;
             top: 140mm;  /* 14cm dari atas */
             left: 10mm;  /* 1cm dari kiri */
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
         
@@ -121,7 +122,7 @@
             position: absolute;
             top: 110mm;  /* 11cm dari atas */
             left: 10mm;  /* 1cm dari kiri */
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
         
@@ -137,14 +138,14 @@
         
         .seal-col {
             width: 50mm;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             padding-right: 5mm;
         }
         
         .ukuran-col {
             width: 50mm;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
             font-family: 'Times New Roman', serif;
             padding-right: 5mm;
@@ -152,7 +153,7 @@
         
         .pengirim-col {
             width: 50mm;
-            font-size: 14px;
+            font-size: 16px;
             font-weight: bold;
         }
         
@@ -178,7 +179,7 @@
         
         .ttd-col {
             width: 50mm;
-            font-size: 15px;
+            font-size: 17px;
             font-weight: bold;
         }
         
@@ -187,6 +188,8 @@
             top: 190mm;  /* 19cm dari atas */
             left: 60mm;  /* 6cm dari kiri */
             text-align: center;
+            font-size: 17px;
+            font-weight: bold;
         }
         
         @media print {
@@ -248,7 +251,7 @@
 </head>
 <body>
     <!-- Print Instructions (only visible on screen) -->
-    <div style="display: block; padding: 10px; background: #f0f0f0; margin-bottom: 10px; font-size: 12px; border: 1px solid #ccc;">
+            <div style="display: block; padding: 10px; background: #f0f0f0; margin-bottom: 10px; font-size: 14px; border: 1px solid #ccc;">
         <strong>PETUNJUK PRINT:</strong> Untuk menghilangkan URL dan nomor halaman, pastikan <strong>"Headers and footers"</strong> dinonaktifkan di pengaturan print browser (Ctrl+P → More settings → hapus centang "Headers and footers")
     </div>
 
