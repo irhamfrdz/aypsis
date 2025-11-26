@@ -1506,6 +1506,21 @@
                                 <td><input type="checkbox" name="permissions[approval-surat-jalan][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-surat-jalan']['export']) && $userMatrixPermissions['approval-surat-jalan']['export']) checked @endif></td>
                             </tr>
 
+                            {{-- Approval Order --}}
+                            <tr class="submodule-row" data-parent="approval">
+                                <td class="submodule">
+                                    <span class="module-icon">🎯</span>
+                                    Approval Order
+                                </td>
+                                <td><input type="checkbox" name="permissions[approval-order][view]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['view']) && $userMatrixPermissions['approval-order']['view']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-order][create]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['create']) && $userMatrixPermissions['approval-order']['create']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-order][update]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['update']) && $userMatrixPermissions['approval-order']['update']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-order][delete]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['delete']) && $userMatrixPermissions['approval-order']['delete']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-order][approve]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['approve']) && $userMatrixPermissions['approval-order']['approve']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-order][print]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['print']) && $userMatrixPermissions['approval-order']['print']) checked @endif></td>
+                                <td><input type="checkbox" name="permissions[approval-order][export]" value="1" class="permission-checkbox" @if(isset($userMatrixPermissions['approval-order']['export']) && $userMatrixPermissions['approval-order']['export']) checked @endif></td>
+                            </tr>
+
                             {{-- Aktivitas Lain-lain --}}
                             <tr class="module-row" data-module="aktivitas-lainnya">
                                 <td class="module-header">

@@ -525,6 +525,33 @@ class UserController extends Controller
                 continue; // Skip other patterns
             }
 
+            // Special handling for approval-order permissions (dash notation)
+            if (strpos($permissionName, 'approval-order-') === 0) {
+                $module = 'approval-order';
+                $action = str_replace('approval-order-', '', $permissionName);
+
+                // Initialize module array if not exists
+                if (!isset($matrixPermissions[$module])) {
+                    $matrixPermissions[$module] = [];
+                }
+
+                // Map database actions to matrix actions
+                $actionMap = [
+                    'view' => 'view',
+                    'create' => 'create',
+                    'update' => 'update', 
+                    'delete' => 'delete',
+                    'approve' => 'approve',
+                    'reject' => 'reject',
+                    'print' => 'print',
+                    'export' => 'export'
+                ];
+
+                $mappedAction = isset($actionMap[$action]) ? $actionMap[$action] : $action;
+                $matrixPermissions[$module][$mappedAction] = true;
+                continue; // Skip other patterns
+            }
+
             // OPERATIONAL MODULES: Handle operational management permissions (order-management, surat-jalan, etc.)
             $operationalModules = [
                 'order-management' => 'order', // Map order-management to order for permission names
@@ -2986,6 +3013,29 @@ class UserController extends Controller
                             'reject' => 'approval-surat-jalan-reject',
                             'print' => 'approval-surat-jalan-print',
                             'export' => 'approval-surat-jalan-export'
+                        ];
+
+                        if (isset($actionMap[$action])) {
+                            $permissionName = $actionMap[$action];
+                            $directPermission = Permission::where('name', $permissionName)->first();
+                            if ($directPermission) {
+                                $permissionIds[] = $directPermission->id;
+                                $found = true;
+                            }
+                        }
+                    }
+
+                    // Handle approval-order permissions explicitly
+                    if ($module === 'approval-order' && in_array($action, ['view', 'create', 'update', 'delete', 'approve', 'reject', 'print', 'export'])) {
+                        $actionMap = [
+                            'view' => 'approval-order-view',
+                            'create' => 'approval-order-create',
+                            'update' => 'approval-order-update',
+                            'delete' => 'approval-order-delete',
+                            'approve' => 'approval-order-approve',
+                            'reject' => 'approval-order-reject',
+                            'print' => 'approval-order-print',
+                            'export' => 'approval-order-export'
                         ];
 
                         if (isset($actionMap[$action])) {
