@@ -95,19 +95,15 @@
         // Always create at least 2 pages when invoices exist
         if ($totalItems <= $maxRowsPerPage) {
             // All pranota data fits in one page (page 2)
-            $chunkedItems = collect([collect(), $tagihanItems]); // Empty page 1, pranota on page 2
-            $totalPages = 2;
+            $chunkedItems = collect([$tagihanItems]); // Page 1 will have pranota items
+            $totalPages = 1; // Only one page needed for pranota, invoice will be shown on same page
         } else {
-            // Split pranota data across multiple pages (starting from page 2)
-            $chunkedItems = collect([collect()]); // Empty page 1 for invoices only
-            $pranoteChunks = $tagihanItems->chunk($maxRowsPerPage);
-            foreach($pranoteChunks as $chunk) {
-                $chunkedItems->push($chunk);
-            }
+            // Split pranota data across multiple pages
+            $chunkedItems = $tagihanItems->chunk($maxRowsPerPage);
             $totalPages = $chunkedItems->count();
             
             // If last chunk has very few items (less than 5), merge with previous
-            if ($totalPages > 2 && $chunkedItems->last()->count() < 5) {
+            if ($totalPages > 1 && $chunkedItems->last()->count() < 5) {
                 $lastChunk = $chunkedItems->pop();
                 $secondLastChunk = $chunkedItems->pop();
                 $mergedChunk = $secondLastChunk->merge($lastChunk);
@@ -956,8 +952,8 @@
         </div>
         @endif
 
-        <!-- Table for current page - start from page 2 if invoices exist -->
-        @if(!($pageIndex === 0 && $invoices->isNotEmpty()))
+        <!-- Table for current page pranota items -->
+        @if($pageItems->isNotEmpty())
         <table class="table">
             <thead>
                 <tr>
@@ -976,10 +972,7 @@
             <tbody>
                 @forelse($pageItems as $index => $item)
                 @php
-                    // Only increment for pranota items (not for invoice-only pages)
-                    if ($pageItems->isNotEmpty()) {
-                        $globalRowNumber++; // Increment for each row across all pages
-                    }
+                    $globalRowNumber++; // Increment for each row across all pages
                 @endphp
                 <tr>
                     <td class="text-center">{{ $globalRowNumber }}</td>
