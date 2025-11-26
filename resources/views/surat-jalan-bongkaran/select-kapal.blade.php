@@ -29,12 +29,12 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <!-- Kapal -->
                     <div>
-                        <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-2">Kapal</label>
-                        <select name="kapal_id" id="kapal_id" required
+                        <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-2">Kapal</label>
+                        <select name="nama_kapal" id="nama_kapal" required
                                 class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
                             <option value="">-Pilih Kapal-</option>
                             @foreach($kapals as $kapal)
-                                <option value="{{ $kapal->id }}" {{ request('kapal_id') == $kapal->id ? 'selected' : '' }}>
+                                <option value="{{ $kapal->nama_kapal }}" {{ request('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
                                     {{ $kapal->nama_kapal }}
                                 </option>
                             @endforeach
@@ -88,7 +88,7 @@
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    const kapalSelect = document.getElementById('kapal_id');
+    const kapalSelect = document.getElementById('nama_kapal');
     const voyageSelect = document.getElementById('no_voyage');
     const blSelect = document.getElementById('no_bl');
     const loadingOption = document.getElementById('loading-option');
@@ -97,13 +97,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let blData = {};
     
     kapalSelect.addEventListener('change', function() {
-        const kapalId = this.value;
+        const namaKapal = this.value;
         
         // Reset voyage and BL dropdowns
         voyageSelect.innerHTML = '<option value="">-PILIH-</option>';
         blSelect.innerHTML = '<option value="">-PILIH-</option>';
         
-        if (!kapalId) {
+        if (!namaKapal) {
             return;
         }
         
@@ -112,7 +112,7 @@ document.addEventListener('DOMContentLoaded', function() {
         voyageSelect.appendChild(loadingOption);
         
         // Fetch BL data via AJAX
-        fetch(`{{ route('surat-jalan-bongkaran.bl-data') }}?kapal_id=${kapalId}`)
+        fetch(`{{ route('surat-jalan-bongkaran.bl-data') }}?nama_kapal=${encodeURIComponent(namaKapal)}`)
             .then(response => response.json())
             .then(data => {
                 // Hide loading
@@ -234,12 +234,28 @@ document.addEventListener('DOMContentLoaded', function() {
     kapalForm.addEventListener('submit', function(e) {
         e.preventDefault();
         
+        console.log('Form submitted'); // Debug
+        
+        // Basic validation
+        const namaKapal = document.getElementById('nama_kapal').value;
+        const noVoyage = document.getElementById('no_voyage').value;
+        
+        if (!namaKapal || !noVoyage) {
+            alert('Harap pilih kapal dan voyage terlebih dahulu!');
+            return;
+        }
+        
+        console.log('Validation passed'); // Debug
+        
         const formData = new FormData(this);
         const params = new URLSearchParams();
         
         // Add form fields
         for (let [key, value] of formData.entries()) {
-            if (value) params.append(key, value);
+            if (value) {
+                params.append(key, value);
+                console.log('Adding param:', key, '=', value); // Debug
+            }
         }
         
         // Add container details if available
@@ -254,7 +270,9 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         // Navigate to create page with parameters
-        window.location.href = this.action + '?' + params.toString();
+        const finalUrl = this.action + '?' + params.toString();
+        console.log('Navigating to:', finalUrl); // Debug
+        window.location.href = finalUrl;
     });
     
     // Trigger kapal change if there's a pre-selected value

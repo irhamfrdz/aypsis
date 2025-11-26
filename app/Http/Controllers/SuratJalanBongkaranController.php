@@ -29,7 +29,7 @@ class SuratJalanBongkaranController extends Controller
      */
     public function index(Request $request)
     {
-        $query = SuratJalanBongkaran::with(['kapal', 'user']);
+        $query = SuratJalanBongkaran::with(['inputBy']);
 
         // Filter berdasarkan tanggal
         if ($request->filled('start_date')) {
@@ -41,24 +41,19 @@ class SuratJalanBongkaranController extends Controller
         }
 
         // Filter berdasarkan kapal
-        if ($request->filled('kapal_id')) {
-            $query->where('kapal_id', $request->kapal_id);
-        }
-
-        // Filter berdasarkan order
-        if ($request->filled('order_id')) {
-            $query->where('order_id', $request->order_id);
+        if ($request->filled('nama_kapal')) {
+            $query->where('nama_kapal', $request->nama_kapal);
         }
 
         // Search
         if ($request->filled('search')) {
             $search = $request->search;
             $query->where(function($q) use ($search) {
-                $q->where('no_surat_jalan', 'like', "%{$search}%")
-                  ->orWhere('nomor_container', 'like', "%{$search}%")
-                  ->orWhere('nomor_seal', 'like', "%{$search}%")
-                  ->orWhere('nama_pengirim', 'like', "%{$search}%")
-                  ->orWhere('nama_penerima', 'like', "%{$search}%");
+                $q->where('nomor_surat_jalan', 'like', "%{$search}%")
+                  ->orWhere('no_kontainer', 'like', "%{$search}%")
+                  ->orWhere('no_seal', 'like', "%{$search}%")
+                  ->orWhere('pengirim', 'like', "%{$search}%")
+                  ->orWhere('tujuan_alamat', 'like', "%{$search}%");
             });
         }
 
@@ -76,9 +71,8 @@ class SuratJalanBongkaranController extends Controller
                             'nama_kapal' => $bl->nama_kapal
                         ];
                     });
-        $orders = Order::orderBy('nomor_order')->get();
 
-        return view('surat-jalan-bongkaran.index', compact('suratJalanBongkarans', 'kapals', 'orders'));
+        return view('surat-jalan-bongkaran.index', compact('suratJalanBongkarans', 'kapals'));
     }
 
     /**
@@ -101,16 +95,11 @@ class SuratJalanBongkaranController extends Controller
         
         // Get BL data based on selected kapal
         $bls = collect();
-        if ($request->filled('kapal_id')) {
-            // Find kapal name by the incremental ID
-            $selectedKapalName = $kapals->where('id', $request->kapal_id)->first()?->nama_kapal;
-            
-            if ($selectedKapalName) {
-                $bls = Bl::where('nama_kapal', $selectedKapalName)
-                        ->distinct()
-                        ->get(['no_voyage', 'nomor_bl'])
-                        ->groupBy('no_voyage');
-            }
+        if ($request->filled('nama_kapal')) {
+            $bls = Bl::where('nama_kapal', $request->nama_kapal)
+                    ->distinct()
+                    ->get(['no_voyage', 'nomor_bl'])
+                    ->groupBy('no_voyage');
         }
         
         return view('surat-jalan-bongkaran.select-kapal', compact('kapals', 'bls'));
@@ -121,7 +110,7 @@ class SuratJalanBongkaranController extends Controller
      */
     public function getBlData(Request $request)
     {
-        if (!$request->filled('kapal_id')) {
+        if (!$request->filled('nama_kapal')) {
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
@@ -138,13 +127,14 @@ class SuratJalanBongkaranController extends Controller
                         ];
                     });
         
-        $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
-        if (!$selectedKapal) {
+        // Find selected kapal by nama_kapal
+        $selectedKapalName = $request->nama_kapal;
+        if (!$selectedKapalName) {
             return response()->json(['voyages' => [], 'bls' => []]);
         }
 
         // Get BL data for this kapal with container information
-        $bls = Bl::where('nama_kapal', $selectedKapal->nama_kapal)
+        $bls = Bl::where('nama_kapal', $selectedKapalName)
               ->whereNotNull('no_voyage')
               ->whereNotNull('nomor_kontainer')
               ->get(['no_voyage', 'nomor_bl', 'nomor_kontainer', 'tipe_kontainer', 'size_kontainer', 'no_seal']);
@@ -193,7 +183,7 @@ class SuratJalanBongkaranController extends Controller
         
         // Validate that kapal and voyage are provided
         $request->validate([
-            'kapal_id' => 'required|integer',
+            'nama_kapal' => 'required|string',
             'no_voyage' => 'required|string',
         ]);
 
@@ -209,8 +199,6 @@ class SuratJalanBongkaranController extends Controller
                             'nama_kapal' => $bl->nama_kapal
                         ];
                     });
-        
-        $users = User::orderBy('username')->get();
         
         // Get karyawan dengan divisi supir untuk dropdown supir
         $karyawanSupirs = \App\Models\Karyawan::where('divisi', 'supir')
@@ -238,14 +226,20 @@ class SuratJalanBongkaranController extends Controller
         // Get terms untuk dropdown term pembayaran  
         $terms = \App\Models\Term::orderBy('kode')->get();
         
-        // Find selected kapal by ID
-        $selectedKapal = $kapals->where('id', $request->kapal_id)->first();
+        // Get selected kapal name and voyage from request
+        $selectedKapalName = $request->nama_kapal;
         $noVoyage = $request->no_voyage;
         $selectedContainer = null;
 
+        // Find kapal object for backward compatibility with view
+        $selectedKapal = null;
+        if ($selectedKapalName) {
+            $selectedKapal = (object)['nama_kapal' => $selectedKapalName];
+        }
+
         // If no_bl (container) is selected, get the container details
-        if ($request->filled('no_bl') && $selectedKapal) {
-            $selectedContainer = Bl::where('nama_kapal', $selectedKapal->nama_kapal)
+        if ($request->filled('no_bl') && $selectedKapalName) {
+            $selectedContainer = Bl::where('nama_kapal', $selectedKapalName)
                                    ->where('no_voyage', $noVoyage)
                                    ->where('nomor_kontainer', $request->no_bl)
                                    ->first(['nomor_kontainer', 'no_seal', 'tipe_kontainer', 'size_kontainer', 'pengirim', 'penerima', 'alamat_pengiriman', 'pelabuhan_tujuan']);
@@ -278,7 +272,7 @@ class SuratJalanBongkaranController extends Controller
             ];
         }
 
-        return view('surat-jalan-bongkaran.create', compact('kapals', 'users', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
+        return view('surat-jalan-bongkaran.create', compact('kapals', 'selectedKapal', 'noVoyage', 'selectedContainer', 'karyawanSupirs', 'karyawanKranis', 'tujuanKegiatanUtamas', 'masterKegiatans', 'terms'));
     }
 
     /**
@@ -291,7 +285,9 @@ class SuratJalanBongkaranController extends Controller
         
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|integer',
-            'no_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
+            'no_voyage' => 'nullable|string|max:255',
+            'no_bl' => 'nullable|string|max:255',
+            'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans',
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',
@@ -336,9 +332,10 @@ class SuratJalanBongkaranController extends Controller
             'keterangan' => 'nullable|string',
             'catatan_khusus' => 'nullable|string',
             'dokumentasi' => 'nullable|string',
+            'uang_jalan_nominal' => 'nullable|numeric|min:0',
         ]);
 
-        $validatedData['user_id'] = Auth::id();
+        $validatedData['input_by'] = Auth::id();
 
         try {
             DB::beginTransaction();
@@ -361,7 +358,7 @@ class SuratJalanBongkaranController extends Controller
      */
     public function show(SuratJalanBongkaran $suratJalanBongkaran)
     {
-        $suratJalanBongkaran->load(['order', 'kapal', 'user']);
+        $suratJalanBongkaran->load(['inputBy']);
         
         return view('surat-jalan-bongkaran.show', compact('suratJalanBongkaran'));
     }
@@ -372,12 +369,11 @@ class SuratJalanBongkaranController extends Controller
     public function edit(SuratJalanBongkaran $suratJalanBongkaran)
     {
         $kapals = MasterKapal::orderBy('nama_kapal')->get();
-        $users = User::orderBy('username')->get();
         
         // Get terms untuk dropdown term pembayaran  
         $terms = \App\Models\Term::orderBy('kode')->get();
 
-        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'kapals', 'users', 'terms'));
+        return view('surat-jalan-bongkaran.edit', compact('suratJalanBongkaran', 'kapals', 'terms'));
     }
 
     /**
@@ -387,7 +383,7 @@ class SuratJalanBongkaranController extends Controller
     {
         $validatedData = $request->validate([
             'kapal_id' => 'nullable|exists:master_kapals,id',
-            'no_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,no_surat_jalan,' . $suratJalanBongkaran->id,
+            'nomor_surat_jalan' => 'required|string|max:255|unique:surat_jalan_bongkarans,nomor_surat_jalan,' . $suratJalanBongkaran->id,
             'tanggal_surat_jalan' => 'required|date',
             'term' => 'nullable|string|max:255',
             'aktifitas' => 'nullable|string',

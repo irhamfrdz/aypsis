@@ -67,7 +67,7 @@
         <div class="p-6">
             <!-- Filter Form -->
             <form method="GET" action="{{ route('surat-jalan-bongkaran.index') }}" class="mb-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
                     <div>
                         <label for="start_date" class="block text-sm font-medium text-gray-700 mb-1">Tanggal Mulai</label>
                         <input type="date" 
@@ -85,26 +85,13 @@
                                value="{{ request('end_date') }}">
                     </div>
                     <div>
-                        <label for="order_id" class="block text-sm font-medium text-gray-700 mb-1">Order</label>
+                        <label for="nama_kapal" class="block text-sm font-medium text-gray-700 mb-1">Kapal</label>
                         <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                id="order_id" 
-                                name="order_id">
-                            <option value="">Semua Order</option>
-                            @foreach($orders as $order)
-                                <option value="{{ $order->id }}" {{ request('order_id') == $order->id ? 'selected' : '' }}>
-                                    {{ $order->nomor_order }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div>
-                        <label for="kapal_id" class="block text-sm font-medium text-gray-700 mb-1">Kapal</label>
-                        <select class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500" 
-                                id="kapal_id" 
-                                name="kapal_id">
+                                id="nama_kapal" 
+                                name="nama_kapal">
                             <option value="">Semua Kapal</option>
                             @foreach($kapals as $kapal)
-                                <option value="{{ $kapal->id }}" {{ request('kapal_id') == $kapal->id ? 'selected' : '' }}>
+                                <option value="{{ $kapal->nama_kapal }}" {{ request('nama_kapal') == $kapal->nama_kapal ? 'selected' : '' }}>
                                     {{ $kapal->nama_kapal }}
                                 </option>
                             @endforeach
@@ -145,29 +132,28 @@
             <div class="overflow-x-auto">
                 <table class="min-w-full divide-y divide-gray-200 resizable-table" id="suratJalanBongkaranTable">
                     <thead class="bg-gray-50">
-                        <tr><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nomor Surat Jalan<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Order<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Container<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Pengirim<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Penerima<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Pembayaran<div class="resize-handle"></div></th><th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
+                        <tr><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">No<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Nomor Surat Jalan<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Kapal<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Container<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Pengirim<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Penerima<div class="resize-handle"></div></th><th class="resizable-th px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider" style="position: relative;">Status Pembayaran<div class="resize-handle"></div></th><th class="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Aksi</th></tr>
                     </thead>
                     <tbody class="bg-white divide-y divide-gray-200">
                         @forelse($suratJalanBongkarans as $index => $sjb)
                             <tr class="hover:bg-gray-50">
                                 <td class="px-4 py-3 text-sm text-gray-900">{{ $suratJalanBongkarans->firstItem() + $index }}</td>
                                 <td class="px-4 py-3 text-sm">
-                                    <span class="font-semibold text-gray-900">{{ $sjb->no_surat_jalan }}</span>
+                                    <span class="font-semibold text-gray-900">{{ $sjb->nomor_surat_jalan }}</span>
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->order ? $sjb->order->nomor_order : '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->kapal ? $sjb->kapal->nama_kapal : '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->nama_kapal ?: '-' }}</td>
                                 <td class="px-4 py-3 text-sm text-gray-900">
-                                    @if($sjb->nomor_container)
-                                        <div>{{ $sjb->nomor_container }}</div>
-                                        @if($sjb->ukuran_container)
-                                            <div class="text-xs text-gray-500">{{ $sjb->ukuran_container }}</div>
+                                    @if($sjb->no_kontainer)
+                                        <div>{{ $sjb->no_kontainer }}</div>
+                                        @if($sjb->size)
+                                            <div class="text-xs text-gray-500">{{ $sjb->size }}</div>
                                         @endif
                                     @else
                                         -
                                     @endif
                                 </td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->nama_pengirim ?: '-' }}</td>
-                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->nama_penerima ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->pengirim ?: '-' }}</td>
+                                <td class="px-4 py-3 text-sm text-gray-900">{{ $sjb->tujuan_alamat ?: '-' }}</td>
                                 <td class="px-4 py-3 text-sm">
                                     @if($sjb->status_pembayaran)
                                         @php
@@ -229,7 +215,7 @@
                             </tr>
                         @empty
                             <tr>
-                                <td colspan="10" class="px-4 py-12 text-center">
+                                <td colspan="8" class="px-4 py-12 text-center">
                                     <div class="flex flex-col items-center">
                                         <svg class="w-16 h-16 text-gray-400 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
@@ -274,7 +260,7 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Auto submit form when filters change
-    const filterElements = document.querySelectorAll('#start_date, #end_date, #order_id, #kapal_id');
+    const filterElements = document.querySelectorAll('#start_date, #end_date, #nama_kapal');
     filterElements.forEach(element => {
         element.addEventListener('change', function() {
             this.closest('form').submit();

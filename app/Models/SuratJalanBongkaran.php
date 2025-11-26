@@ -15,10 +15,10 @@ class SuratJalanBongkaran extends Model
 
     protected $fillable = [
         'tanggal_surat_jalan',
-        'no_surat_jalan',
+        'nomor_surat_jalan',
         'kegiatan',
         'pengirim',
-        'alamat',
+        'tujuan_alamat',
         'telp',
         'tujuan_pengambilan',
         'retur_barang',
@@ -28,6 +28,7 @@ class SuratJalanBongkaran extends Model
         'supir2',
         'no_plat',
         'kenek',
+        'krani',
         'tipe_kontainer',
         'no_kontainer',
         'no_seal',
@@ -43,6 +44,11 @@ class SuratJalanBongkaran extends Model
         'term',
         'rit',
         'uang_jalan',
+        'uang_jalan_type',
+        'uang_jalan_nominal',
+        'tagihan_ayp',
+        'tagihan_atb',
+        'tagihan_pb',
         'no_pemesanan',
         'gambar',
         'gambar_checkpoint',
@@ -54,7 +60,12 @@ class SuratJalanBongkaran extends Model
         'status_pembayaran_uang_rit_kenek',
         'total_tarif',
         'jumlah_terbayar',
-        'aktifitas'
+        'aktifitas',
+        'nama_kapal',
+        'no_voyage',
+        'no_bl',
+        'jenis_pengiriman',
+        'tanggal_ambil_barang'
     ];
 
     protected $casts = [
@@ -81,6 +92,13 @@ class SuratJalanBongkaran extends Model
     {
         return $this->belongsTo(User::class, 'input_by');
     }
+
+    public function order()
+    {
+        return $this->belongsTo(Order::class, 'order_id');
+    }
+
+    // Note: Removed kapal relationship - now storing nama_kapal directly
 
     // Scopes
     public function scopeActive($query)

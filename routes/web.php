@@ -186,16 +186,38 @@ Route::middleware([
     // ═══════════════════════════════════════════════════════════════════════
 
     Route::prefix('master')->name('master.')->middleware(['auth'])->group(function() {
-        // Core User CRUD operations - Resource routes with granular permissions
-        Route::resource('user', UserController::class)->middleware([
-            'index' => 'can:master-user-view',
-            'show' => 'can:master-user-view',
-            'create' => 'can:master-user-create',
-            'store' => 'can:master-user-create',
-            'edit' => 'can:master-user-update',
-            'update' => 'can:master-user-update',
-            'destroy' => 'can:master-user-delete'
-        ]);
+        // User Management - Separate routes to avoid middleware conflicts
+        Route::get('user', [UserController::class, 'index'])
+             ->name('user.index')
+             ->middleware('can:master-user-view');
+        
+        Route::get('user/create', [UserController::class, 'create'])
+             ->name('user.create')
+             ->middleware('can:master-user-create');
+        
+        Route::post('user', [UserController::class, 'store'])
+             ->name('user.store')
+             ->middleware('can:master-user-create');
+        
+        Route::get('user/{user}', [UserController::class, 'show'])
+             ->name('user.show')
+             ->middleware('can:master-user-view');
+        
+        Route::get('user/{user}/edit', [UserController::class, 'edit'])
+             ->name('user.edit')
+             ->middleware('can:master-user-update');
+        
+        Route::put('user/{user}', [UserController::class, 'update'])
+             ->name('user.update')
+             ->middleware('can:master-user-update');
+        
+        Route::patch('user/{user}', [UserController::class, 'update'])
+             ->name('user.update')
+             ->middleware('can:master-user-update');
+        
+        Route::delete('user/{user}', [UserController::class, 'destroy'])
+             ->name('user.destroy')
+             ->middleware('can:master-user-delete');
 
         // Additional user management routes with specific permissions
         Route::prefix('user')->name('user.')->group(function() {
@@ -575,15 +597,38 @@ Route::middleware([
              ->name('pricelist-cat.import')
              ->middleware('can:master-pricelist-cat-create');
 
-        Route::resource('pricelist-cat', PricelistCatController::class)->middleware([
-            'index' => 'can:master-pricelist-cat-view',
-            'show' => 'can:master-pricelist-cat-view',
-            'create' => 'can:master-pricelist-cat-create',
-            'store' => 'can:master-pricelist-cat-create',
-            'edit' => 'can:master-pricelist-cat-update',
-            'update' => 'can:master-pricelist-cat-update',
-            'destroy' => 'can:master-pricelist-cat-delete'
-        ]);
+        // Pricelist CAT Management - Separate routes to avoid middleware conflicts
+        Route::get('pricelist-cat', [PricelistCatController::class, 'index'])
+             ->name('pricelist-cat.index')
+             ->middleware('can:master-pricelist-cat-view');
+        
+        Route::get('pricelist-cat/create', [PricelistCatController::class, 'create'])
+             ->name('pricelist-cat.create')
+             ->middleware('can:master-pricelist-cat-create');
+        
+        Route::post('pricelist-cat', [PricelistCatController::class, 'store'])
+             ->name('pricelist-cat.store')
+             ->middleware('can:master-pricelist-cat-create');
+        
+        Route::get('pricelist-cat/{pricelistCat}', [PricelistCatController::class, 'show'])
+             ->name('pricelist-cat.show')
+             ->middleware('can:master-pricelist-cat-view');
+        
+        Route::get('pricelist-cat/{pricelistCat}/edit', [PricelistCatController::class, 'edit'])
+             ->name('pricelist-cat.edit')
+             ->middleware('can:master-pricelist-cat-update');
+        
+        Route::put('pricelist-cat/{pricelistCat}', [PricelistCatController::class, 'update'])
+             ->name('pricelist-cat.update')
+             ->middleware('can:master-pricelist-cat-update');
+        
+        Route::patch('pricelist-cat/{pricelistCat}', [PricelistCatController::class, 'update'])
+             ->name('pricelist-cat.update')
+             ->middleware('can:master-pricelist-cat-update');
+        
+        Route::delete('pricelist-cat/{pricelistCat}', [PricelistCatController::class, 'destroy'])
+             ->name('pricelist-cat.destroy')
+             ->middleware('can:master-pricelist-cat-delete');
 
         // Master pricelist gate in routes - granular permissions
         // Import/Export routes (must be BEFORE resource routes)
@@ -597,26 +642,71 @@ Route::middleware([
              ->name('pricelist-gate-in.download-template')
              ->middleware('can:master-pricelist-gate-in-view');
 
-        Route::resource('pricelist-gate-in', \App\Http\Controllers\PricelistGateInController::class)->middleware([
-            'index' => 'can:master-pricelist-gate-in-view',
-            'show' => 'can:master-pricelist-gate-in-view',
-            'create' => 'can:master-pricelist-gate-in-create',
-            'store' => 'can:master-pricelist-gate-in-create',
-            'edit' => 'can:master-pricelist-gate-in-update',
-            'update' => 'can:master-pricelist-gate-in-update',
-            'destroy' => 'can:master-pricelist-gate-in-delete'
-        ]);
+        // Pricelist Gate In Management - Separate routes to avoid middleware conflicts
+        Route::get('pricelist-gate-in', [\App\Http\Controllers\PricelistGateInController::class, 'index'])
+             ->name('pricelist-gate-in.index')
+             ->middleware('can:master-pricelist-gate-in-view');
+        
+        Route::get('pricelist-gate-in/create', [\App\Http\Controllers\PricelistGateInController::class, 'create'])
+             ->name('pricelist-gate-in.create')
+             ->middleware('can:master-pricelist-gate-in-create');
+        
+        Route::post('pricelist-gate-in', [\App\Http\Controllers\PricelistGateInController::class, 'store'])
+             ->name('pricelist-gate-in.store')
+             ->middleware('can:master-pricelist-gate-in-create');
+        
+        Route::get('pricelist-gate-in/{pricelistGateIn}', [\App\Http\Controllers\PricelistGateInController::class, 'show'])
+             ->name('pricelist-gate-in.show')
+             ->middleware('can:master-pricelist-gate-in-view');
+        
+        Route::get('pricelist-gate-in/{pricelistGateIn}/edit', [\App\Http\Controllers\PricelistGateInController::class, 'edit'])
+             ->name('pricelist-gate-in.edit')
+             ->middleware('can:master-pricelist-gate-in-update');
+        
+        Route::put('pricelist-gate-in/{pricelistGateIn}', [\App\Http\Controllers\PricelistGateInController::class, 'update'])
+             ->name('pricelist-gate-in.update')
+             ->middleware('can:master-pricelist-gate-in-update');
+        
+        Route::patch('pricelist-gate-in/{pricelistGateIn}', [\App\Http\Controllers\PricelistGateInController::class, 'update'])
+             ->name('pricelist-gate-in.update')
+             ->middleware('can:master-pricelist-gate-in-update');
+        
+        Route::delete('pricelist-gate-in/{pricelistGateIn}', [\App\Http\Controllers\PricelistGateInController::class, 'destroy'])
+             ->name('pricelist-gate-in.destroy')
+             ->middleware('can:master-pricelist-gate-in-delete');
 
-        // Master pricelist OB routes - resource with permissions
-        Route::resource('pricelist-ob', MasterPricelistObController::class)->middleware([
-            'index' => 'can:master-pricelist-ob-view',
-            'show' => 'can:master-pricelist-ob-view',
-            'create' => 'can:master-pricelist-ob-create',
-            'store' => 'can:master-pricelist-ob-create',
-            'edit' => 'can:master-pricelist-ob-update',
-            'update' => 'can:master-pricelist-ob-update',
-            'destroy' => 'can:master-pricelist-ob-delete'
-        ]);
+        // Pricelist OB Management - Separate routes to avoid middleware conflicts
+        Route::get('pricelist-ob', [MasterPricelistObController::class, 'index'])
+             ->name('pricelist-ob.index')
+             ->middleware('can:master-pricelist-ob-view');
+        
+        Route::get('pricelist-ob/create', [MasterPricelistObController::class, 'create'])
+             ->name('pricelist-ob.create')
+             ->middleware('can:master-pricelist-ob-create');
+        
+        Route::post('pricelist-ob', [MasterPricelistObController::class, 'store'])
+             ->name('pricelist-ob.store')
+             ->middleware('can:master-pricelist-ob-create');
+        
+        Route::get('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'show'])
+             ->name('pricelist-ob.show')
+             ->middleware('can:master-pricelist-ob-view');
+        
+        Route::get('pricelist-ob/{pricelistOb}/edit', [MasterPricelistObController::class, 'edit'])
+             ->name('pricelist-ob.edit')
+             ->middleware('can:master-pricelist-ob-update');
+        
+        Route::put('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'update'])
+             ->name('pricelist-ob.update')
+             ->middleware('can:master-pricelist-ob-update');
+        
+        Route::patch('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'update'])
+             ->name('pricelist-ob.update')
+             ->middleware('can:master-pricelist-ob-update');
+        
+        Route::delete('pricelist-ob/{pricelistOb}', [MasterPricelistObController::class, 'destroy'])
+             ->name('pricelist-ob.destroy')
+             ->middleware('can:master-pricelist-ob-delete');
 
         // Download template for divisi import
         Route::get('divisi/download-template', [DivisiController::class, 'downloadTemplate'])
@@ -683,15 +773,38 @@ Route::middleware([
     \App\Http\Middleware\EnsureUserApproved::class,
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
-    Route::resource('master/divisi', DivisiController::class)->names('master.divisi')->middleware([
-        'index' => 'can:master-divisi-view',
-        'show' => 'can:master-divisi-view',
-        'create' => 'can:master-divisi-create',
-        'store' => 'can:master-divisi-create',
-        'edit' => 'can:master-divisi-update',
-        'update' => 'can:master-divisi-update',
-        'destroy' => 'can:master-divisi-delete'
-    ]);
+    // Master Divisi Management - Separate routes to avoid middleware conflicts
+    Route::get('master/divisi', [DivisiController::class, 'index'])
+         ->name('master.divisi.index')
+         ->middleware('can:master-divisi-view');
+    
+    Route::get('master/divisi/create', [DivisiController::class, 'create'])
+         ->name('master.divisi.create')
+         ->middleware('can:master-divisi-create');
+    
+    Route::post('master/divisi', [DivisiController::class, 'store'])
+         ->name('master.divisi.store')
+         ->middleware('can:master-divisi-create');
+    
+    Route::get('master/divisi/{divisi}', [DivisiController::class, 'show'])
+         ->name('master.divisi.show')
+         ->middleware('can:master-divisi-view');
+    
+    Route::get('master/divisi/{divisi}/edit', [DivisiController::class, 'edit'])
+         ->name('master.divisi.edit')
+         ->middleware('can:master-divisi-update');
+    
+    Route::put('master/divisi/{divisi}', [DivisiController::class, 'update'])
+         ->name('master.divisi.update')
+         ->middleware('can:master-divisi-update');
+    
+    Route::patch('master/divisi/{divisi}', [DivisiController::class, 'update'])
+         ->name('master.divisi.update')
+         ->middleware('can:master-divisi-update');
+    
+    Route::delete('master/divisi/{divisi}', [DivisiController::class, 'destroy'])
+         ->name('master.divisi.destroy')
+         ->middleware('can:master-divisi-delete');
     Route::post('master/divisi/import', [DivisiController::class, 'import'])
          ->name('master.divisi.import')
          ->middleware('can:master-divisi-create');
@@ -705,16 +818,38 @@ Route::middleware([
     \App\Http\Middleware\EnsureCrewChecklistComplete::class,
 ])->group(function () {
 
-    // Master pajak routes - HYBRID: Resource + additional routes with permissions
-    Route::resource('master/pajak', PajakController::class)->names('master.pajak')->middleware([
-        'index' => 'can:master-pajak-view',
-        'show' => 'can:master-pajak-view',
-        'create' => 'can:master-pajak-create',
-        'store' => 'can:master-pajak-create',
-        'edit' => 'can:master-pajak-update',
-        'update' => 'can:master-pajak-update',
-        'destroy' => 'can:master-pajak-destroy'
-    ]);
+    // Master Pajak Management - Separate routes to avoid middleware conflicts
+    Route::get('master/pajak', [PajakController::class, 'index'])
+         ->name('master.pajak.index')
+         ->middleware('can:master-pajak-view');
+    
+    Route::get('master/pajak/create', [PajakController::class, 'create'])
+         ->name('master.pajak.create')
+         ->middleware('can:master-pajak-create');
+    
+    Route::post('master/pajak', [PajakController::class, 'store'])
+         ->name('master.pajak.store')
+         ->middleware('can:master-pajak-create');
+    
+    Route::get('master/pajak/{pajak}', [PajakController::class, 'show'])
+         ->name('master.pajak.show')
+         ->middleware('can:master-pajak-view');
+    
+    Route::get('master/pajak/{pajak}/edit', [PajakController::class, 'edit'])
+         ->name('master.pajak.edit')
+         ->middleware('can:master-pajak-update');
+    
+    Route::put('master/pajak/{pajak}', [PajakController::class, 'update'])
+         ->name('master.pajak.update')
+         ->middleware('can:master-pajak-update');
+    
+    Route::patch('master/pajak/{pajak}', [PajakController::class, 'update'])
+         ->name('master.pajak.update')
+         ->middleware('can:master-pajak-update');
+    
+    Route::delete('master/pajak/{pajak}', [PajakController::class, 'destroy'])
+         ->name('master.pajak.destroy')
+         ->middleware('can:master-pajak-destroy');
     Route::post('master/pajak/import', [PajakController::class, 'import'])
          ->name('master.pajak.import')
          ->middleware('can:master-pajak-create');
@@ -764,16 +899,38 @@ Route::middleware([
          ->middleware('can:master-coa-view')
          ->where(['coa' => '[0-9]+']);
 
-    // Master pekerjaan routes - HYBRID: Resource + additional routes with permissions
-    Route::resource('master/pekerjaan', PekerjaanController::class)->names('master.pekerjaan')->middleware([
-        'index' => 'can:master-pekerjaan-view',
-        'show' => 'can:master-pekerjaan-view',
-        'create' => 'can:master-pekerjaan-create',
-        'store' => 'can:master-pekerjaan-create',
-        'edit' => 'can:master-pekerjaan-update',
-        'update' => 'can:master-pekerjaan-update',
-        'destroy' => 'can:master-pekerjaan-destroy'
-    ]);
+    // Master Pekerjaan Management - Separate routes to avoid middleware conflicts
+    Route::get('master/pekerjaan', [PekerjaanController::class, 'index'])
+         ->name('master.pekerjaan.index')
+         ->middleware('can:master-pekerjaan-view');
+    
+    Route::get('master/pekerjaan/create', [PekerjaanController::class, 'create'])
+         ->name('master.pekerjaan.create')
+         ->middleware('can:master-pekerjaan-create');
+    
+    Route::post('master/pekerjaan', [PekerjaanController::class, 'store'])
+         ->name('master.pekerjaan.store')
+         ->middleware('can:master-pekerjaan-create');
+    
+    Route::get('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'show'])
+         ->name('master.pekerjaan.show')
+         ->middleware('can:master-pekerjaan-view');
+    
+    Route::get('master/pekerjaan/{pekerjaan}/edit', [PekerjaanController::class, 'edit'])
+         ->name('master.pekerjaan.edit')
+         ->middleware('can:master-pekerjaan-update');
+    
+    Route::put('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'update'])
+         ->name('master.pekerjaan.update')
+         ->middleware('can:master-pekerjaan-update');
+    
+    Route::patch('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'update'])
+         ->name('master.pekerjaan.update')
+         ->middleware('can:master-pekerjaan-update');
+    
+    Route::delete('master/pekerjaan/{pekerjaan}', [PekerjaanController::class, 'destroy'])
+         ->name('master.pekerjaan.destroy')
+         ->middleware('can:master-pekerjaan-destroy');
     Route::get('master/pekerjaan/export-template', [PekerjaanController::class, 'exportTemplate'])
          ->name('master.pekerjaan.export-template')
          ->middleware('can:master-pekerjaan-view');
@@ -1147,7 +1304,7 @@ Route::middleware([
 // � ORDER MANAGEMENT ROUTES
 // ═══════════════════════════════════════════════════════════════════════
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth'])->group(function () {
     // Order Data Management Routes (formerly approval)
     Route::prefix('orders/approval')->name('orders.approval.')->group(function () {
         Route::get('/', [OrderDataManagementController::class, 'index'])->name('index');
@@ -1158,17 +1315,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('orders.download.template')
          ->middleware('can:order-view');
 
-    // 📋 Order Management with permissions
-    Route::resource('orders', OrderController::class)
-         ->middleware([
-             'index' => 'can:order-view',
-             'create' => 'can:order-create',
-             'store' => 'can:order-create',
-             'show' => 'can:order-view',
-             'edit' => 'can:order-update',
-             'update' => 'can:order-update',
-             'destroy' => 'can:order-delete'
-         ]);
+    // 📋 Order Management with permissions - Separate routes to avoid middleware conflicts
+    Route::get('orders', [OrderController::class, 'index'])
+         ->name('orders.index')
+         ->middleware('can:order-view');
+    
+    Route::get('orders/create', [OrderController::class, 'create'])
+         ->name('orders.create')
+         ->middleware('can:order-create');
+    
+    Route::post('orders', [OrderController::class, 'store'])
+         ->name('orders.store')
+         ->middleware('can:order-create');
+    
+    Route::get('orders/{order}', [OrderController::class, 'show'])
+         ->name('orders.show')
+         ->middleware('can:order-view');
+    
+    Route::get('orders/{order}/edit', [OrderController::class, 'edit'])
+         ->name('orders.edit')
+         ->middleware('can:order-update');
+    
+    Route::put('orders/{order}', [OrderController::class, 'update'])
+         ->name('orders.update')
+         ->middleware('can:order-update');
+    
+    Route::patch('orders/{order}', [OrderController::class, 'update'])
+         ->name('orders.update')
+         ->middleware('can:order-update');
+    
+    Route::delete('orders/{order}', [OrderController::class, 'destroy'])
+         ->name('orders.destroy')
+         ->middleware('can:order-delete');
 
     // Notification Routes
     Route::prefix('notifications')->name('notifications.')->group(function () {
@@ -1256,17 +1434,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('surat-jalan.store-without-order')
          ->middleware('can:surat-jalan-create');
 
-    // Surat Jalan Management with permissions
-    Route::resource('surat-jalan', \App\Http\Controllers\SuratJalanController::class)
-         ->middleware([
-             'index' => 'can:surat-jalan-view',
-             'create' => 'can:surat-jalan-create',
-             'store' => 'can:surat-jalan-create',
-             'show' => 'can:surat-jalan-view',
-             'edit' => 'can:surat-jalan-update',
-             'update' => 'can:surat-jalan-update',
-             'destroy' => 'can:surat-jalan-delete'
-         ]);
+    // Surat Jalan Management with permissions - Separate routes to avoid middleware conflicts
+    Route::get('surat-jalan', [\App\Http\Controllers\SuratJalanController::class, 'index'])
+         ->name('surat-jalan.index')
+         ->middleware('can:surat-jalan-view');
+    
+    Route::get('surat-jalan/create', [\App\Http\Controllers\SuratJalanController::class, 'create'])
+         ->name('surat-jalan.create')
+         ->middleware('can:surat-jalan-create');
+    
+    Route::post('surat-jalan', [\App\Http\Controllers\SuratJalanController::class, 'store'])
+         ->name('surat-jalan.store')
+         ->middleware('can:surat-jalan-create');
+    
+    Route::get('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'show'])
+         ->name('surat-jalan.show')
+         ->middleware('can:surat-jalan-view');
+    
+    Route::get('surat-jalan/{suratJalan}/edit', [\App\Http\Controllers\SuratJalanController::class, 'edit'])
+         ->name('surat-jalan.edit')
+         ->middleware('can:surat-jalan-update');
+    
+    Route::put('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'update'])
+         ->name('surat-jalan.update')
+         ->middleware('can:surat-jalan-update');
+    
+    Route::patch('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'update'])
+         ->name('surat-jalan.update')
+         ->middleware('can:surat-jalan-update');
+    
+    Route::delete('surat-jalan/{suratJalan}', [\App\Http\Controllers\SuratJalanController::class, 'destroy'])
+         ->name('surat-jalan.destroy')
+         ->middleware('can:surat-jalan-delete');
 
     // AJAX route for generating surat jalan number
     Route::get('/surat-jalan/generate-nomor', [\App\Http\Controllers\SuratJalanController::class, 'generateNomorSuratJalan'])
@@ -1389,17 +1588,38 @@ Route::middleware(['auth', 'verified'])->group(function () {
          ->name('surat-jalan-bongkaran.bl-data')
          ->middleware('can:surat-jalan-bongkaran-create');
     
-    // Surat Jalan Bongkaran resource routes
-    Route::resource('surat-jalan-bongkaran', \App\Http\Controllers\SuratJalanBongkaranController::class)
-         ->middleware([
-             'index' => 'can:surat-jalan-bongkaran-view',
-             'create' => 'can:surat-jalan-bongkaran-create',
-             'store' => 'can:surat-jalan-bongkaran-create',
-             'show' => 'can:surat-jalan-bongkaran-view',
-             'edit' => 'can:surat-jalan-bongkaran-update',
-             'update' => 'can:surat-jalan-bongkaran-update',
-             'destroy' => 'can:surat-jalan-bongkaran-delete'
-         ]);
+    // Surat Jalan Bongkaran Management with permissions - Separate routes to avoid middleware conflicts
+    Route::get('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'index'])
+         ->name('surat-jalan-bongkaran.index')
+         ->middleware('can:surat-jalan-bongkaran-view');
+    
+    Route::get('surat-jalan-bongkaran/create', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'create'])
+         ->name('surat-jalan-bongkaran.create')
+         ->middleware('can:surat-jalan-bongkaran-create');
+    
+    Route::post('surat-jalan-bongkaran', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'store'])
+         ->name('surat-jalan-bongkaran.store')
+         ->middleware('can:surat-jalan-bongkaran-create');
+    
+    Route::get('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'show'])
+         ->name('surat-jalan-bongkaran.show')
+         ->middleware('can:surat-jalan-bongkaran-view');
+    
+    Route::get('surat-jalan-bongkaran/{suratJalanBongkaran}/edit', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'edit'])
+         ->name('surat-jalan-bongkaran.edit')
+         ->middleware('can:surat-jalan-bongkaran-update');
+    
+    Route::put('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'update'])
+         ->name('surat-jalan-bongkaran.update')
+         ->middleware('can:surat-jalan-bongkaran-update');
+    
+    Route::patch('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'update'])
+         ->name('surat-jalan-bongkaran.update')
+         ->middleware('can:surat-jalan-bongkaran-update');
+    
+    Route::delete('surat-jalan-bongkaran/{suratJalanBongkaran}', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'destroy'])
+         ->name('surat-jalan-bongkaran.destroy')
+         ->middleware('can:surat-jalan-bongkaran-delete');
 
     // Print surat jalan bongkaran
     Route::get('/surat-jalan-bongkaran/{suratJalanBongkaran}/print', [\App\Http\Controllers\SuratJalanBongkaranController::class, 'print'])
