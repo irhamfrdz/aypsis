@@ -3,20 +3,80 @@
 @section('title', 'Tambah Surat Jalan Bongkaran')
 
 @section('content')
-<div class="flex-1 p-6">
-    <!-- Page Header -->
-    <div class="flex items-center justify-between mb-6">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Tambah Surat Jalan Bongkaran</h1>
-            <nav class="flex text-sm text-gray-600 mt-1">
-                <a href="{{ route('dashboard') }}" class="hover:text-blue-600">Dashboard</a>
-                <span class="mx-2">/</span>
-                <a href="{{ route('surat-jalan-bongkaran.index') }}" class="hover:text-blue-600">Surat Jalan Bongkaran</a>
-                <span class="mx-2">/</span>
-                <span class="text-gray-500">Tambah</span>
-            </nav>
+<div class="container mx-auto px-4 py-4">
+    <div class="max-w-4xl mx-auto bg-white rounded-lg shadow-sm border border-gray-200">
+        <!-- Header -->
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 p-4 border-b border-gray-200">
+            <div>
+                <h1 class="text-xl font-semibold text-gray-900">Tambah Surat Jalan Bongkaran</h1>
+                <p class="text-xs text-gray-600 mt-1">Buat surat jalan bongkaran baru untuk pengiriman barang</p>
+            </div>
+            <a href="{{ route('surat-jalan-bongkaran.index') }}"
+               class="bg-gray-600 hover:bg-gray-700 text-white px-3 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm whitespace-nowrap">
+                <svg class="h-4 w-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                </svg>
+                Kembali
+            </a>
         </div>
-    </div>
+
+        @if($selectedKapal && $noVoyage)
+        <!-- Selected Kapal & Voyage Info -->
+        <div class="bg-blue-50 border border-blue-200 rounded-lg mx-4 mt-4 p-4">
+            <div class="flex items-start">
+                <svg class="h-5 w-5 text-blue-400 mt-0.5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                </svg>
+                <div class="flex-1">
+                    <h4 class="text-sm font-medium text-blue-800">Kapal & Voyage Terpilih</h4>
+                    <div class="mt-1 text-sm text-blue-700">
+                        <strong>{{ $selectedKapal->nama_kapal }}</strong> | Voyage: <strong>{{ $noVoyage }}</strong>
+                        @if(request('no_bl'))
+                            | BL: <strong>{{ request('no_bl') }}</strong>
+                        @endif
+                    </div>
+                    <input type="hidden" name="kapal_id" value="{{ $selectedKapal->id }}">
+                    <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
+                    @if(request('no_bl'))
+                        <input type="hidden" name="no_bl" value="{{ request('no_bl') }}">
+                    @endif
+                </div>
+                <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}"
+                   class="text-blue-600 hover:text-blue-800 text-xs font-medium">
+                    Ubah Pilihan
+                </a>
+            </div>
+        </div>
+        @endif
+
+        @if(isset($selectedContainer) && $selectedContainer->nomor_kontainer)
+        <!-- Selected Container Info -->
+        <div class="bg-green-50 border border-green-200 rounded-lg mx-4 mt-4 p-4">
+            <div class="flex items-center">
+                <svg class="h-5 w-5 text-green-400 mt-0.5 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+                </svg>
+                <div class="flex-1">
+                    <h4 class="text-sm font-medium text-green-800">Kontainer Terpilih</h4>
+                    <div class="mt-1 text-sm text-green-700">
+                        <strong>{{ $selectedContainer->nomor_kontainer }}</strong>
+                        @if($selectedContainer->no_seal)
+                            | Seal: <strong>{{ $selectedContainer->no_seal }}</strong>
+                        @endif
+                        @if(isset($selectedContainer->size_kontainer) && $selectedContainer->size_kontainer)
+                            | Size: <strong>{{ strtoupper($selectedContainer->size_kontainer) }}</strong>
+                        @elseif(isset($selectedContainer->tipe_kontainer) && $selectedContainer->tipe_kontainer)
+                            | Size: <strong>{{ strtoupper($selectedContainer->tipe_kontainer) }}</strong>
+                        @endif
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        <!-- Form -->
+        <form action="{{ route('surat-jalan-bongkaran.store') }}" method="POST" class="p-4">
+            @csrf
 
     <!-- Alert Messages -->
     @if(session('error'))
@@ -46,73 +106,11 @@
         </div>
     @endif
 
-    <!-- Main Form -->
-    <form action="{{ route('surat-jalan-bongkaran.store') }}" method="POST" class="space-y-6">
-        @csrf
-        
-        <!-- Basic Information Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Informasi Dasar</h2>
-            </div>
-            <div class="p-6">
-                <!-- Selected Kapal & Voyage Info (Read-only) -->
-                @if(isset($selectedKapal) && isset($noVoyage))
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                            <div>
-                                <label class="block text-sm font-medium text-blue-700 mb-1">Kapal Terpilih</label>
-                                <p class="text-sm font-semibold text-blue-900">{{ $selectedKapal->nama_kapal }}</p>
-                                <input type="hidden" name="kapal_id" value="{{ $selectedKapal->id }}">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-blue-700 mb-1">No Voyage</label>
-                                <p class="text-sm font-semibold text-blue-900">{{ $noVoyage }}</p>
-                                <input type="hidden" name="no_voyage" value="{{ $noVoyage }}">
-                            </div>
-                            <div>
-                                <label class="block text-sm font-medium text-blue-700 mb-1">No BL</label>
-                                <p class="text-sm font-semibold text-blue-900">{{ request('no_bl', '-') }}</p>
-                                @if(request('no_bl'))
-                                    <input type="hidden" name="no_bl" value="{{ request('no_bl') }}">
-                                @endif
-                            </div>
-                        </div>
-                        <div class="mt-3 text-right">
-                            <a href="{{ route('surat-jalan-bongkaran.select-kapal') }}" 
-                               class="text-blue-600 hover:text-blue-800 text-sm font-medium">
-                                Ubah Pilihan
-                            </a>
-                        </div>
-                    </div>
-                @endif
-
-                <!-- Container Selection Info -->
-                @if(isset($selectedContainer) && $selectedContainer->nomor_kontainer)
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                        <div class="flex items-center">
-                            <svg class="w-5 h-5 text-green-600 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-                            </svg>
-                            <div>
-                                <h4 class="font-medium text-green-900">Kontainer Terpilih</h4>
-                                <p class="text-sm text-green-700 mt-1">
-                                    Data kontainer telah diisi otomatis: <strong>{{ $selectedContainer->nomor_kontainer }}</strong>
-                                    @if($selectedContainer->no_seal)
-                                        | Seal: <strong>{{ $selectedContainer->no_seal }}</strong>
-                                    @endif
-                                    @if(isset($selectedContainer->size_kontainer) && $selectedContainer->size_kontainer)
-                                        | Size: <strong>{{ strtoupper($selectedContainer->size_kontainer) }}</strong>
-                                    @elseif(isset($selectedContainer->tipe_kontainer) && $selectedContainer->tipe_kontainer)
-                                        | Size: <strong>{{ strtoupper($selectedContainer->tipe_kontainer) }}</strong>
-                                    @endif
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                @endif
-
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <!-- Basic Information -->
+                <div class="md:col-span-2">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Dasar</h3>
+                </div>
                     <!-- Kapal (if not pre-selected) -->
                     @if(!isset($selectedKapal))
                     <div>
@@ -313,305 +311,277 @@
             </div>
         </div>
 
-        <!-- Informasi Personal Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Informasi Personal</h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                    <!-- Supir -->
-                    <div>
-                        <label for="supir" class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
-                        <select name="supir" id="supir"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('supir') border-red-300 @enderror">
-                            <option value="">Pilih Supir</option>
-                            @foreach($karyawanSupirs as $supir)
-                                <option value="{{ $supir->nama_lengkap }}" 
-                                        data-plat="{{ $supir->plat }}"
-                                        {{ old('supir') == $supir->nama_lengkap ? 'selected' : '' }}>
-                                    {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-blue-600">
-                            <i class="fas fa-search mr-1"></i>Ketik nama supir untuk mencari dengan cepat
-                        </p>
-                        @error('supir')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- No Plat -->
-                    <div>
-                        <label for="no_plat" class="block text-sm font-medium text-gray-700 mb-1">No Plat</label>
-                        <input type="text" name="no_plat" id="no_plat"
-                               value="{{ old('no_plat') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('no_plat') border-red-300 @enderror"
-                               placeholder="Masukkan nomor plat">
-                        @error('no_plat')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Kenek -->
-                    <div>
-                        <label for="kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
-                        <select name="kenek" id="kenek"
-                                class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('kenek') border-red-300 @enderror">
-                            <option value="">Pilih Kenek</option>
-                            @foreach($karyawanKranis as $krani)
-                                <option value="{{ $krani->nama_lengkap }}" {{ old('kenek') == $krani->nama_lengkap ? 'selected' : '' }}>
-                                    {{ $krani->nama_panggilan ?? $krani->nama_lengkap }}
-                                </option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-blue-600">
-                            <i class="fas fa-search mr-1"></i>Ketik nama kenek untuk mencari dengan cepat
-                        </p>
-                        @error('kenek')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Krani -->
-                    <div>
-                        <label for="krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
-                        <input type="text" name="krani" id="krani"
-                               value="{{ old('krani') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('krani') border-red-300 @enderror"
-                               placeholder="Masukkan nama krani">
-                        @error('krani')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <!-- Informasi Personal -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Personal</h3>
                 </div>
-            </div>
-        </div>
+                <!-- Supir -->
+                <div>
+                    <label for="supir" class="block text-sm font-medium text-gray-700 mb-1">Supir</label>
+                    <select name="supir" id="supir"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('supir') border-red-500 @enderror">
+                        <option value="">Pilih Supir</option>
+                        @foreach($karyawanSupirs as $supir)
+                            <option value="{{ $supir->nama_lengkap }}" 
+                                    data-plat="{{ $supir->plat }}"
+                                    {{ old('supir') == $supir->nama_lengkap ? 'selected' : '' }}>
+                                {{ $supir->nama_panggilan ?? $supir->nama_lengkap }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-blue-600">
+                        Ketik nama supir untuk mencari dengan cepat
+                    </p>
+                    @error('supir')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
-        <!-- Informasi Container Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Informasi Container</h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <!-- No Kontainer -->
-                    <div>
-                        <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">No Kontainer</label>
-                        <input type="text" name="no_kontainer" id="no_kontainer" readonly
-                               value="{{ old('no_kontainer', isset($selectedContainer) ? $selectedContainer->nomor_kontainer : '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700 @error('no_kontainer') border-red-300 @enderror"
-                               placeholder="Nomor kontainer akan terisi otomatis">
-                        @error('no_kontainer')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                <!-- No Plat -->
+                <div>
+                    <label for="no_plat" class="block text-sm font-medium text-gray-700 mb-1">No Plat</label>
+                    <input type="text" name="no_plat" id="no_plat"
+                           value="{{ old('no_plat') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('no_plat') border-red-500 @enderror"
+                           placeholder="Masukkan nomor plat">
+                    @error('no_plat')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <!-- No Seal -->
-                    <div>
-                        <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">No Seal</label>
-                        <input type="text" name="no_seal" id="no_seal" readonly
-                               value="{{ old('no_seal', isset($selectedContainer) ? $selectedContainer->no_seal : '') }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700 @error('no_seal') border-red-300 @enderror"
-                               placeholder="Nomor seal akan terisi otomatis">
-                        @error('no_seal')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        @if(isset($selectedContainer) && $selectedContainer->no_seal)
-                            <p class="mt-1 text-xs text-green-600">
-                                Seal terisi otomatis dari kontainer: {{ $selectedContainer->no_seal }}
-                            </p>
-                        @endif
-                    </div>
+                <!-- Kenek -->
+                <div>
+                    <label for="kenek" class="block text-sm font-medium text-gray-700 mb-1">Kenek</label>
+                    <select name="kenek" id="kenek"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('kenek') border-red-500 @enderror">
+                        <option value="">Pilih Kenek</option>
+                        @foreach($karyawanKranis as $krani)
+                            <option value="{{ $krani->nama_lengkap }}" {{ old('kenek') == $krani->nama_lengkap ? 'selected' : '' }}>
+                                {{ $krani->nama_panggilan ?? $krani->nama_lengkap }}
+                            </option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1 text-xs text-blue-600">
+                        Ketik nama kenek untuk mencari dengan cepat
+                    </p>
+                    @error('kenek')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
 
-                    <!-- Size Kontainer -->
-                    <div>
-                        <label for="size" class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
-                        @php
-                            $defaultSize = '';
-                            $displaySize = '';
-                            if (isset($selectedContainer)) {
-                                // Prioritas: size_kontainer, lalu tipe_kontainer, lalu dari parameter
-                                $defaultSize = $selectedContainer->size_kontainer 
-                                    ?: $selectedContainer->tipe_kontainer 
-                                    ?: '';
-                                
-                                // Format untuk display
-                                $displaySize = $defaultSize;
-                                if ($defaultSize == '20' || $defaultSize == '20ft') {
-                                    $displaySize = '20ft';
-                                } elseif ($defaultSize == '40' || $defaultSize == '40ft') {
-                                    $displaySize = '40ft';
-                                } elseif (strtolower($defaultSize) == '40hc' || strtolower($defaultSize) == '40 hc') {
-                                    $displaySize = '40HC';
-                                } elseif ($defaultSize == '45' || $defaultSize == '45ft') {
-                                    $displaySize = '45ft';
-                                }
+                <!-- Krani -->
+                <div>
+                    <label for="krani" class="block text-sm font-medium text-gray-700 mb-1">Krani</label>
+                    <input type="text" name="krani" id="krani"
+                           value="{{ old('krani') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('krani') border-red-500 @enderror"
+                           placeholder="Masukkan nama krani">
+                    @error('krani')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Informasi Container -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Container</h3>
+                </div>
+
+                <!-- No Kontainer -->
+                <div>
+                    <label for="no_kontainer" class="block text-sm font-medium text-gray-700 mb-1">No Kontainer</label>
+                    <input type="text" name="no_kontainer" id="no_kontainer" readonly
+                           value="{{ old('no_kontainer', isset($selectedContainer) ? $selectedContainer->nomor_kontainer : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_kontainer') border-red-500 @enderror"
+                           placeholder="Nomor kontainer akan terisi otomatis">
+                    @error('no_kontainer')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- No Seal -->
+                <div>
+                    <label for="no_seal" class="block text-sm font-medium text-gray-700 mb-1">No Seal</label>
+                    <input type="text" name="no_seal" id="no_seal" readonly
+                           value="{{ old('no_seal', isset($selectedContainer) ? $selectedContainer->no_seal : '') }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none @error('no_seal') border-red-500 @enderror"
+                           placeholder="Nomor seal akan terisi otomatis">
+                    @error('no_seal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedContainer) && $selectedContainer->no_seal)
+                        <p class="mt-1 text-xs text-green-600">
+                            Seal terisi otomatis dari kontainer: {{ $selectedContainer->no_seal }}
+                        </p>
+                    @endif
+                </div>
+
+                <!-- Size Kontainer -->
+                <div>
+                    <label for="size" class="block text-sm font-medium text-gray-700 mb-1">Size Kontainer</label>
+                    @php
+                        $defaultSize = '';
+                        $displaySize = '';
+                        if (isset($selectedContainer)) {
+                            $defaultSize = $selectedContainer->size_kontainer 
+                                ?: $selectedContainer->tipe_kontainer 
+                                ?: '';
+                            
+                            $displaySize = $defaultSize;
+                            if ($defaultSize == '20' || $defaultSize == '20ft') {
+                                $displaySize = '20ft';
+                            } elseif ($defaultSize == '40' || $defaultSize == '40ft') {
+                                $displaySize = '40ft';
+                            } elseif (strtolower($defaultSize) == '40hc' || strtolower($defaultSize) == '40 hc') {
+                                $displaySize = '40HC';
+                            } elseif ($defaultSize == '45' || $defaultSize == '45ft') {
+                                $displaySize = '45ft';
                             }
-                            $selectedSize = old('size', $defaultSize);
-                        @endphp
-                        <input type="text" name="size_display" id="size_display" readonly
-                               value="{{ $displaySize ?: 'Belum dipilih' }}"
-                               class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-gray-50 text-gray-700"
-                               placeholder="Size kontainer akan terisi otomatis">
-                        <input type="hidden" name="size" value="{{ $selectedSize }}">
-                        @error('size')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                        @if(isset($selectedContainer) && $defaultSize)
-                            <p class="mt-1 text-xs text-green-600">
-                                Size terisi otomatis dari kontainer: {{ $defaultSize }}
-                            </p>
-                        @endif
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Informasi Packaging Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Informasi Packaging</h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <!-- Karton -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-3">Karton</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="karton" value="ya" {{ old('karton') == 'ya' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Ya</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="karton" value="tidak" {{ old('karton', 'tidak') == 'tidak' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Tidak</span>
-                            </label>
-                        </div>
-                        @error('karton')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Plastik -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-3">Plastik</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="plastik" value="ya" {{ old('plastik') == 'ya' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Ya</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="plastik" value="tidak" {{ old('plastik', 'tidak') == 'tidak' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Tidak</span>
-                            </label>
-                        </div>
-                        @error('plastik')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Terpal -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-3">Terpal</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="terpal" value="ya" {{ old('terpal') == 'ya' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Ya</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="terpal" value="tidak" {{ old('terpal', 'tidak') == 'tidak' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Tidak</span>
-                            </label>
-                        </div>
-                        @error('terpal')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Informasi Keuangan Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
-            <div class="px-6 py-4 border-b border-gray-200">
-                <h2 class="text-lg font-semibold text-gray-900">Informasi Keuangan</h2>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <!-- RIT -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-3">RIT</label>
-                        <div class="space-y-2">
-                            <label class="flex items-center">
-                                <input type="radio" name="rit" value="menggunakan_rit" {{ old('rit') == 'menggunakan_rit' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Menggunakan RIT</span>
-                            </label>
-                            <label class="flex items-center">
-                                <input type="radio" name="rit" value="tidak_menggunakan_rit" {{ old('rit') == 'tidak_menggunakan_rit' ? 'checked' : '' }}
-                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                <span class="ml-2 text-sm text-gray-700">Tidak Menggunakan RIT</span>
-                            </label>
-                        </div>
-                        @error('rit')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
-
-                    <!-- Uang Jalan -->
-                    <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-3">Uang Jalan</label>
-                        <div class="space-y-3">
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="radio" name="uang_jalan_type" value="full" {{ old('uang_jalan_type') == 'full' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-2 text-sm text-gray-700">Full</span>
-                                </label>
-                                <label class="flex items-center">
-                                    <input type="radio" name="uang_jalan_type" value="setengah" {{ old('uang_jalan_type') == 'setengah' ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
-                                    <span class="ml-2 text-sm text-gray-700">Setengah</span>
-                                </label>
-                            </div>
-                            <div>
-                                <label for="uang_jalan_nominal" class="block text-sm font-medium text-gray-700 mb-1">Nominal Uang Jalan</label>
-                                <input type="number" name="uang_jalan_nominal" id="uang_jalan_nominal"
-                                       value="{{ old('uang_jalan_nominal') }}"
-                                       class="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 @error('uang_jalan_nominal') border-red-300 @enderror"
-                                       placeholder="Masukkan nominal uang jalan" min="0" step="1000">
-                                @error('uang_jalan_nominal')
-                                    <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-                        </div>
-                        @error('uang_jalan_type')
-                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
-                        @enderror
-                    </div>
+                        }
+                        $selectedSize = old('size', $defaultSize);
+                    @endphp
+                    <input type="text" name="size_display" id="size_display" readonly
+                           value="{{ $displaySize ?: 'Belum dipilih' }}"
+                           class="w-full px-3 py-2 border border-gray-300 rounded-lg bg-gray-50 text-gray-700 focus:outline-none"
+                           placeholder="Size kontainer akan terisi otomatis">
+                    <input type="hidden" name="size" value="{{ $selectedSize }}">
+                    @error('size')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @if(isset($selectedContainer) && $defaultSize)
+                        <p class="mt-1 text-xs text-green-600">
+                            Size terisi otomatis dari kontainer: {{ $defaultSize }}
+                        </p>
+                    @endif
                 </div>
 
-                <div class="mt-6">
-                    <h3 class="text-md font-medium text-gray-700 mb-4">Tagihan</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Informasi Packaging -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Packaging</h3>
+                </div>
+
+                <!-- Karton -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Karton</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="karton" value="ya" {{ old('karton') == 'ya' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="karton" value="tidak" {{ old('karton', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                    @error('karton')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Plastik -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Plastik</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="plastik" value="ya" {{ old('plastik') == 'ya' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="plastik" value="tidak" {{ old('plastik', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                    @error('plastik')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Terpal -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Terpal</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="terpal" value="ya" {{ old('terpal') == 'ya' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Ya</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="terpal" value="tidak" {{ old('terpal', 'tidak') == 'tidak' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak</span>
+                        </label>
+                    </div>
+                    @error('terpal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Informasi Keuangan -->
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-lg font-medium text-gray-900 mb-3">Informasi Keuangan</h3>
+                </div>
+
+                <!-- RIT -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">RIT</label>
+                    <div class="flex space-x-4">
+                        <label class="flex items-center">
+                            <input type="radio" name="rit" value="menggunakan_rit" {{ old('rit') == 'menggunakan_rit' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Menggunakan RIT</span>
+                        </label>
+                        <label class="flex items-center">
+                            <input type="radio" name="rit" value="tidak_menggunakan_rit" {{ old('rit') == 'tidak_menggunakan_rit' ? 'checked' : '' }}
+                                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                            <span class="ml-2 text-sm text-gray-700">Tidak Menggunakan RIT</span>
+                        </label>
+                    </div>
+                    @error('rit')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+
+                <!-- Uang Jalan -->
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-1">Uang Jalan</label>
+                    <div class="space-y-2">
+                        <div class="flex space-x-4">
+                            <label class="flex items-center">
+                                <input type="radio" name="uang_jalan_type" value="full" {{ old('uang_jalan_type') == 'full' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Full</span>
+                            </label>
+                            <label class="flex items-center">
+                                <input type="radio" name="uang_jalan_type" value="setengah" {{ old('uang_jalan_type') == 'setengah' ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300">
+                                <span class="ml-2 text-sm text-gray-700">Setengah</span>
+                            </label>
+                        </div>
+                        <input type="number" name="uang_jalan_nominal" id="uang_jalan_nominal"
+                               value="{{ old('uang_jalan_nominal') }}"
+                               class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500 @error('uang_jalan_nominal') border-red-500 @enderror"
+                               placeholder="Nominal uang jalan" min="0" step="1000">
+                    </div>
+                    @error('uang_jalan_type')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                    @error('uang_jalan_nominal')
+                        <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                    @enderror
+                </div>
+                <div class="md:col-span-2 mt-4">
+                    <h3 class="text-md font-medium text-gray-700 mb-2">Tagihan</h3>
+                    <div class="grid grid-cols-3 gap-4">
                         <!-- AYP -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">AYP</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="tagihan_ayp" value="1" {{ old('tagihan_ayp') ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                    <span class="ml-2 text-sm text-gray-700">Ya</span>
-                                </label>
-                            </div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="tagihan_ayp" value="1" {{ old('tagihan_ayp') ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">AYP</span>
+                            </label>
                             @error('tagihan_ayp')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -619,14 +589,11 @@
 
                         <!-- ATB -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">ATB</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="tagihan_atb" value="1" {{ old('tagihan_atb') ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                    <span class="ml-2 text-sm text-gray-700">Ya</span>
-                                </label>
-                            </div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="tagihan_atb" value="1" {{ old('tagihan_atb') ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">ATB</span>
+                            </label>
                             @error('tagihan_atb')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -634,14 +601,11 @@
 
                         <!-- PB -->
                         <div>
-                            <label class="block text-sm font-medium text-gray-700 mb-3">PB</label>
-                            <div class="space-y-2">
-                                <label class="flex items-center">
-                                    <input type="checkbox" name="tagihan_pb" value="1" {{ old('tagihan_pb') ? 'checked' : '' }}
-                                           class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
-                                    <span class="ml-2 text-sm text-gray-700">Ya</span>
-                                </label>
-                            </div>
+                            <label class="flex items-center">
+                                <input type="checkbox" name="tagihan_pb" value="1" {{ old('tagihan_pb') ? 'checked' : '' }}
+                                       class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                                <span class="ml-2 text-sm text-gray-700">PB</span>
+                            </label>
                             @error('tagihan_pb')
                                 <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
                             @enderror
@@ -649,108 +613,44 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-
-
-        <!-- Action Buttons -->
-        <div class="flex justify-end space-x-4 pt-6">
-            <a href="{{ route('surat-jalan-bongkaran.index') }}" 
-               class="inline-flex items-center px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                </svg>
-                Batal
-            </a>
-            <button type="submit" 
-                    class="inline-flex items-center px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-lg transition-colors duration-200">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
-                </svg>
-                Simpan
-            </button>
-        </div>
-    </form>
+            <!-- Submit Buttons -->
+            <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                <a href="{{ route('surat-jalan-bongkaran.index') }}"
+                   class="bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    Batal
+                </a>
+                <button type="submit"
+                        class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-150 flex items-center text-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Simpan
+                </button>
+            </div>
+        </form>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
-<!-- FontAwesome for icons -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<!-- Select2 CSS -->
-<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<!-- Custom Select2 styling -->
 <style>
-.select2-container--default .select2-search--dropdown .select2-search__field {
-    border: 1px solid #d1d5db;
-    border-radius: 0.375rem;
-    padding: 0.5rem;
-}
-.select2-container--default .select2-results__option--highlighted[aria-selected] {
-    background-color: #3b82f6;
-}
-.select2-container--default .select2-selection--single {
-    height: 42px;
-    border: 1px solid #d1d5db;
-    border-radius: 0.5rem;
-}
-.select2-container--default .select2-selection--single .select2-selection__rendered {
-    line-height: 42px;
-    padding-left: 12px;
-}
-.select2-container--default .select2-selection--single .select2-selection__arrow {
-    height: 40px;
-}
+    /* Custom styling for select elements */
+    .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 0.5rem center;
+        background-repeat: no-repeat;
+        background-size: 1.5em 1.5em;
+        padding-right: 2.5rem;
+    }
 </style>
-<!-- Select2 JS -->
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize Select2 for supir dropdown
-    $('#supir').select2({
-        placeholder: '🔍 Ketik untuk mencari supir...',
-        allowClear: true,
-        width: '100%',
-        minimumInputLength: 0,
-        language: {
-            noResults: function() {
-                return "<i class='fas fa-exclamation-circle'></i> Tidak ada supir ditemukan";
-            },
-            searching: function() {
-                return "<i class='fas fa-spinner fa-spin'></i> Mencari supir...";
-            },
-            inputTooShort: function() {
-                return "Ketik nama supir untuk mencari";
-            }
-        },
-        escapeMarkup: function(markup) {
-            return markup; // Allow HTML in results
-        }
-    });
-    
-    // Initialize Select2 for kenek dropdown
-    $('#kenek').select2({
-        placeholder: '🔍 Ketik untuk mencari kenek...',
-        allowClear: true,
-        width: '100%',
-        minimumInputLength: 0,
-        language: {
-            noResults: function() {
-                return "<i class='fas fa-exclamation-circle'></i> Tidak ada kenek ditemukan";
-            },
-            searching: function() {
-                return "<i class='fas fa-spinner fa-spin'></i> Mencari kenek...";
-            },
-            inputTooShort: function() {
-                return "Ketik nama kenek untuk mencari";
-            }
-        },
-        escapeMarkup: function(markup) {
-            return markup; // Allow HTML in results
-        }
-    });
-    
     // Tujuan kegiatan utama data for uang jalan calculation
     const tujuanKegiatanData = @json($tujuanKegiatanUtamas->keyBy('ke'));
     
@@ -767,30 +667,31 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set default nomor if empty
     const nomorInput = document.getElementById('nomor_surat_jalan');
-    if (!nomorInput.value) {
+    if (nomorInput && !nomorInput.value) {
         nomorInput.value = generateNomor();
     }
     
     // Set default tanggal to today
     const tanggalInput = document.getElementById('tanggal_surat_jalan');
-    if (!tanggalInput.value) {
+    if (tanggalInput && !tanggalInput.value) {
         const today = new Date().toISOString().split('T')[0];
         tanggalInput.value = today;
     }
     
     // Auto-fill plat nomor when supir is selected
+    const supirSelect = document.getElementById('supir');
     const noPlatInput = document.getElementById('no_plat');
     
-    // Handle Select2 change event for supir
-    $('#supir').on('select2:select', function(e) {
-        const selectedData = e.params.data;
-        const selectedElement = selectedData.element;
-        const platNumber = selectedElement.getAttribute('data-plat');
-        
-        if (platNumber && platNumber.trim() !== '' && !noPlatInput.value) {
-            noPlatInput.value = platNumber;
-        }
-    });
+    if (supirSelect && noPlatInput) {
+        supirSelect.addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            const platNumber = selectedOption.getAttribute('data-plat');
+            
+            if (platNumber && platNumber.trim() !== '' && !noPlatInput.value) {
+                noPlatInput.value = platNumber;
+            }
+        });
+    }
     
     // Auto-calculate uang jalan based on tujuan pengambilan
     const tujuanPengambilanSelect = document.getElementById('tujuan_pengambilan');
@@ -841,7 +742,6 @@ document.addEventListener('DOMContentLoaded', function() {
             calculateUangJalan();
         }
     }
-
 });
 </script>
 @endpush
